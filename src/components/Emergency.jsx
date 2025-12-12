@@ -92,6 +92,11 @@ export default function Emergency({ language = 'en', user }) {
             return;
         }
 
+        if (regForm.phone.length !== 10) {
+            alert('Please enter a valid 10-digit phone number.');
+            return;
+        }
+
         setIsRegistering(true);
         try {
             // Prepare profile updates
@@ -476,9 +481,14 @@ export default function Emergency({ language = 'en', user }) {
                                     type="tel"
                                     required
                                     value={regForm.phone}
-                                    onChange={(e) => setRegForm({ ...regForm, phone: e.target.value })}
+                                    onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                        setRegForm({ ...regForm, phone: val });
+                                    }}
+                                    pattern="[0-9]{10}"
+                                    title="Please enter a valid 10-digit phone number"
                                     className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-red-500"
-                                    placeholder="+91"
+                                    placeholder="10-digit mobile number"
                                 />
                             </div>
 
