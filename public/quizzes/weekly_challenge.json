@@ -1,0 +1,57 @@
+[
+    {
+        "id": "q1",
+        "question_text": "What is the primary purpose of a lightning arrester?",
+        "options": [
+            "To measure voltage",
+            "To protect equipment from high voltage surges",
+            "To increase line current",
+            "To support the utility pole"
+        ],
+        "correct_option_index": 1
+    },
+    {
+        "id": "q2",
+        "question_text": "Which class of fire extinguisher is used for electrical fires?",
+        "options": [
+            "Class A",
+            "Class B",
+            "Class C",
+            "Class D"
+        ],
+        "correct_option_index": 2
+    },
+    {
+        "id": "q3",
+        "question_text": "What is the minimum safe approach distance for 11kV lines?",
+        "options": [
+            "0.5 meters",
+            "1.2 meters",
+            "2.0 meters",
+            "5.0 meters"
+        ],
+        "correct_option_index": 1
+    },
+    {
+        "id": "q4",
+        "question_text": "In case of electric shock, what is the FIRST thing you should do?",
+        "options": [
+            "Pull the person away with your hands",
+            "Pour water on the person",
+            "Switch off the power source",
+            "Call the police"
+        ],
+        "correct_option_index": 2
+    },
+    {
+        "id": "q5",
+        "question_text": "What does 'PPE' stand for?",
+        "options": [
+            "Personal Protective Equipment",
+            "Power Plant Engineering",
+            "Public Power Enterprise",
+            "Protective Power Equipment"
+        ],
+        "correct_option_index": 0
+    }
+]
