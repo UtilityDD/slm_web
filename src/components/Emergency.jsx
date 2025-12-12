@@ -11,6 +11,7 @@ export default function Emergency({ language = 'en', user }) {
 
     // Registration Form State
     const [regForm, setRegForm] = useState({
+        fullName: '',
         bloodGroup: '',
         lastDonated: '',
         district: '',
@@ -367,14 +368,14 @@ export default function Emergency({ language = 'en', user }) {
 
                         <form onSubmit={handleRegister} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Full Name (Auto-filled)</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
                                 <input
                                     type="text"
                                     required
                                     value={regForm.fullName}
                                     onChange={(e) => setRegForm({ ...regForm, fullName: e.target.value })}
                                     className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-red-500 bg-slate-50"
-                                    placeholder="Name from email"
+                                    placeholder="Enter your name"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">

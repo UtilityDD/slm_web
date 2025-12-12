@@ -169,13 +169,7 @@ export default function SmartLinemanUI() {
                 {t.nav.competitions}
                 <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${currentView === 'competitions' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
               </a>
-              <a
-                className={`hover:text-blue-700 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'emergency' ? 'text-blue-700 font-semibold' : ''}`}
-                onClick={() => setCurrentView('emergency')}
-              >
-                {t.nav.emergency}
-                <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${currentView === 'emergency' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
-              </a>
+
             </nav>
 
             <div className="flex items-center gap-2 sm:gap-3">
