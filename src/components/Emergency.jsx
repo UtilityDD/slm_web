@@ -1,6 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
+const Spinner = () => (
+    <div className="flex justify-center items-center py-10">
+        <svg className="animate-spin -ml-1 mr-3 h-10 w-10 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+    </div>
+);
+
+const EmptyState = ({ icon, title, message }) => (
+    <div className="text-center py-10 px-4 animate-fade-in">
+        <div className="inline-block p-4 rounded-full bg-slate-100 text-slate-500 text-4xl mb-4">
+            {icon}
+        </div>
+        <h3 className="text-xl font-bold text-slate-800 mb-2">{title}</h3>
+        <p className="text-slate-500">{message}</p>
+    </div>
+);
+
+const Toast = ({ message, type, show, onDismiss }) => {
+    if (!show) return null;
+
+    const baseClasses = "fixed top-20 right-5 p-4 rounded-lg shadow-xl text-white transition-all duration-300 z-50 animate-slide-down-toast";
+    const typeClasses = {
+        success: "bg-green-500",
+        error: "bg-red-500",
+        info: "bg-blue-500"
+    };
+
+    return (
+        <div className={`${baseClasses} ${typeClasses[type]}`} onClick={onDismiss}>
+            {message}
+        </div>
+    );
+};
+
+
 export default function Emergency({ language = 'en', user }) {
     const [activeTab, setActiveTab] = useState('blood');
     const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -8,6 +45,15 @@ export default function Emergency({ language = 'en', user }) {
     const [selectedDistrict, setSelectedDistrict] = useState('All');
     const [donors, setDonors] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [toast, setToast] = useState({ message: '', type: 'info', show: false });
+
+    const showToast = (message, type = 'info') => {
+        setToast({ message, type, show: true });
+        setTimeout(() => {
+            setToast(t => ({ ...t, show: false }));
+        }, 3000); // Hide after 3 seconds
+    };
+
 
     // Registration Form State
     const [regForm, setRegForm] = useState({
@@ -108,12 +154,12 @@ export default function Emergency({ language = 'en', user }) {
     const handleRegister = async (e) => {
         e.preventDefault();
         if (!user) {
-            alert('Please login to register as a donor.');
+            showToast('Please login to register as a donor.', 'error');
             return;
         }
 
         if (regForm.phone.length !== 10) {
-            alert('Please enter a valid 10-digit phone number.');
+            showToast('Please enter a valid 10-digit phone number.', 'error');
             return;
         }
 
@@ -139,13 +185,13 @@ export default function Emergency({ language = 'en', user }) {
 
             if (error) throw error;
 
-            alert(isDonor ? 'Donor profile updated successfully!' : 'Successfully registered as a donor!');
+            showToast(isDonor ? 'Donor profile updated successfully!' : 'Successfully registered as a donor!', 'success');
             setIsDonor(true);
             setShowRegisterModal(false);
             fetchDonors(); // Refresh list
         } catch (error) {
             console.error('Error registering:', error);
-            alert(`Failed to register: ${error.message || 'Unknown error'}`);
+            showToast(`Failed to register: ${error.message || 'Unknown error'}`, 'error');
         } finally {
             setIsRegistering(false);
         }
@@ -218,6 +264,7 @@ export default function Emergency({ language = 'en', user }) {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <Toast message={toast.message} type={toast.type} show={toast.show} onDismiss={() => setToast(t => ({ ...t, show: false }))} />
             {/* Header Section */}
             <div className="mb-8 text-center">
                 <div className="inline-block p-3 rounded-full bg-red-100 text-red-600 text-3xl mb-4 animate-pulse">
@@ -273,7 +320,7 @@ export default function Emergency({ language = 'en', user }) {
                                 </p>
                                 <button
                                     onClick={() => {
-                                        if (!user) alert('Please login first');
+                                        if (!user) showToast('Please login first', 'error');
                                         else setShowRegisterModal(true);
                                     }}
                                     className="px-8 py-3 bg-white text-red-600 rounded-xl font-bold hover:bg-red-50 transition-all shadow-lg"
@@ -338,9 +385,13 @@ export default function Emergency({ language = 'en', user }) {
 
                     {/* Results Grid */}
                     {loading ? (
-                        <div className="text-center py-10 text-slate-500">Searching donors...</div>
+                        <Spinner />
                     ) : donors.length === 0 ? (
-                        <div className="text-center py-10 text-slate-500">No donors found matching your criteria.</div>
+                        <EmptyState 
+                            icon="🤷" 
+                            title="No Donors Found"
+                            message="No donors match your current filters. Try a different search."
+                        />
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {donors.map((donor) => (
@@ -377,7 +428,13 @@ export default function Emergency({ language = 'en', user }) {
                 <div className="animate-slide-down">
                     {/* Services Grid */}
                     {loading ? (
-                        <div className="text-center py-10 text-slate-500">Loading services...</div>
+                        <Spinner />
+                    ) : services.length === 0 ? (
+                        <EmptyState
+                            icon="📯"
+                            title="No Services Found"
+                            message="There are no emergency services listed at the moment."
+                        />
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {services.map((service) => (
