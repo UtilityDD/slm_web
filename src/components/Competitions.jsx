@@ -11,6 +11,7 @@ export default function Competitions({ language = 'en', user }) {
     const [quizSubmitted, setQuizSubmitted] = useState(false);
     const [score, setScore] = useState(0);
     const [leaderboard, setLeaderboard] = useState([]);
+    const [hourlyQuiz, setHourlyQuiz] = useState(null);
 
     const t = {
         en: {
@@ -22,7 +23,7 @@ export default function Competitions({ language = 'en', user }) {
             points: "Points",
             participants: "Participants",
             startQuiz: "Start Quiz Now",
-            dailyQuiz: "Daily Lightning Round",
+            dailyQuiz: "Quiz for every hour",
             leaderboard: "Regional Leaderboard",
             yourStats: "Your Performance",
             hallOfFame: "Hall of Fame",
@@ -45,7 +46,7 @@ export default function Competitions({ language = 'en', user }) {
             points: "পয়েন্ট",
             participants: "অংশগ্রহণকারী",
             startQuiz: "কুইজ শুরু করুন",
-            dailyQuiz: "দৈনিক লাইটনিং রাউন্ড",
+            dailyQuiz: "প্রতি ঘন্টায় কুইজ",
             leaderboard: "আঞ্চলিক লিডারবোর্ড",
             yourStats: "আপনার পারফরম্যান্স",
             hallOfFame: "হল অফ ফেম",
@@ -64,7 +65,18 @@ export default function Competitions({ language = 'en', user }) {
     useEffect(() => {
         fetchQuizzes();
         fetchLeaderboard();
+        fetchHourlyQuiz();
     }, []);
+
+    const fetchHourlyQuiz = async () => {
+        try {
+            const response = await fetch('/quizzes/hourly_challenge.json');
+            const data = await response.json();
+            setHourlyQuiz({ ...data, isLocal: true });
+        } catch (error) {
+            console.error('Error fetching hourly quiz:', error);
+        }
+    };
 
     const fetchQuizzes = async () => {
         try {
@@ -104,6 +116,16 @@ export default function Competitions({ language = 'en', user }) {
             return;
         }
         setActiveQuiz(quiz);
+
+        if (quiz.isLocal) {
+            setQuizQuestions(quiz.questions || []);
+            setCurrentQuestionIndex(0);
+            setUserAnswers({});
+            setQuizSubmitted(false);
+            setScore(0);
+            return;
+        }
+
         setLoading(true);
         try {
             const { data, error } = await supabase
@@ -151,6 +173,12 @@ export default function Competitions({ language = 'en', user }) {
         setScore(calculatedScore);
         setQuizSubmitted(true);
 
+        if (activeQuiz.isLocal) {
+            console.log('Local quiz submitted, score:', calculatedScore);
+            // Not saving to supabase for local quiz
+            return;
+        }
+
         try {
             // 1. Record Attempt
             await supabase.from('quiz_attempts').insert({
@@ -184,7 +212,6 @@ export default function Competitions({ language = 'en', user }) {
 
     // Helper to find specific quizzes for UI slots
     const featuredQuiz = quizzes.find(q => q.title.includes('Monsoon')) || quizzes[0];
-    const dailyQuiz = quizzes.find(q => q.title.includes('Daily')) || quizzes[1];
 
     if (loading && quizzes.length === 0) {
         return <div className="text-center py-20 text-slate-500">{t.loading}</div>;
@@ -263,34 +290,34 @@ export default function Competitions({ language = 'en', user }) {
                     </div>
                 )}
 
-                {/* Daily Quick Quiz */}
-                {dailyQuiz && (
+                {/* Hourly Quick Quiz */}
+                {hourlyQuiz && (
                     <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl shadow-lg text-white p-8 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
 
                         <div className="relative z-10">
                             <div className="flex items-center gap-2 mb-4">
                                 <span className="text-2xl">⚡</span>
-                                <h3 className="text-xl font-bold">{dailyQuiz.title}</h3>
+                                <h3 className="text-xl font-bold">{t.dailyQuiz}</h3>
                             </div>
 
                             <p className="text-slate-300 mb-6 text-sm">
-                                {dailyQuiz.description}
+                                {hourlyQuiz.description}
                             </p>
 
                             <div className="space-y-4 mb-8">
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-slate-400">Time Limit</span>
-                                    <span className="font-medium text-blue-300">{dailyQuiz.duration_minutes} Minutes</span>
+                                    <span className="font-medium text-blue-300">{hourlyQuiz.duration_minutes} Minutes</span>
                                 </div>
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-slate-400">Reward</span>
-                                    <span className="font-medium text-yellow-400">{dailyQuiz.points_reward} Points</span>
+                                    <span className="font-medium text-yellow-400">{hourlyQuiz.points_reward} Points</span>
                                 </div>
                             </div>
 
                             <button
-                                onClick={() => startQuiz(dailyQuiz)}
+                                onClick={() => startQuiz(hourlyQuiz)}
                                 className="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl font-bold transition-all backdrop-blur-sm"
                             >
                                 Play Now
@@ -395,6 +422,9 @@ export default function Competitions({ language = 'en', user }) {
 
                                 {quizQuestions.length > 0 ? (
                                     <div className="space-y-6">
+                                        {quizQuestions[currentQuestionIndex].image_url && (
+                                            <img src={quizQuestions[currentQuestionIndex].image_url} alt="Quiz question" className="mb-4 rounded-lg max-h-60 w-full object-contain" />
+                                        )}
                                         <div className="text-lg font-medium text-slate-800">
                                             {quizQuestions[currentQuestionIndex].question_text}
                                         </div>
