@@ -60,16 +60,23 @@ export default function Emergency({ language = 'en', user }) {
 
         setIsRegistering(true);
         try {
+            // Prepare profile updates
+            const updates = {
+                id: user.id,
+                blood_group: regForm.bloodGroup,
+                district: regForm.district,
+                phone: regForm.phone,
+                last_donation_date: regForm.lastDonated || null,
+                is_donor: true,
+                email: user.email,
+                full_name: regForm.fullName,
+                updated_at: new Date().toISOString()
+            };
+
+            // Use upsert to create profile if it doesn't exist
             const { error } = await supabase
                 .from('profiles')
-                .update({
-                    blood_group: regForm.bloodGroup,
-                    district: regForm.district,
-                    phone: regForm.phone,
-                    last_donation_date: regForm.lastDonated || null,
-                    is_donor: true
-                })
-                .eq('id', user.id);
+                .upsert(updates);
 
             if (error) throw error;
 
@@ -78,7 +85,7 @@ export default function Emergency({ language = 'en', user }) {
             fetchDonors(); // Refresh list
         } catch (error) {
             console.error('Error registering:', error);
-            alert('Failed to register. Please try again.');
+            alert(`Failed to register: ${error.message || 'Unknown error'}`);
         } finally {
             setIsRegistering(false);
         }
