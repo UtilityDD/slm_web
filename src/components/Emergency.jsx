@@ -179,8 +179,7 @@ export default function Emergency({ language = 'en', user }) {
                 fire: "Fire Station",
                 police: "Police",
                 power: "Power Dept (WBSEDCL)",
-                call: "Call",
-                directions: "Directions"
+                call: "Call"
             }
         },
         bn: {
@@ -210,8 +209,7 @@ export default function Emergency({ language = 'en', user }) {
                 fire: "দমকল কেন্দ্র",
                 police: "পুলিশ",
                 power: "বিদ্যুৎ দপ্তর (WBSEDCL)",
-                call: "কল",
-                directions: "দিকনির্দেশ"
+                call: "কল"
             }
         }
     }[language];
@@ -401,10 +399,7 @@ export default function Emergency({ language = 'en', user }) {
                                     <h3 className="font-bold text-lg text-slate-900 mb-1">{service.name}</h3>
                                     <p className="text-sm text-slate-500 mb-6">{service.location}</p>
 
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <button className="py-2.5 bg-slate-50 text-slate-700 font-semibold rounded-lg hover:bg-slate-100 transition-all text-sm">
-                                            {t.services.directions}
-                                        </button>
+                                    <div className="grid grid-cols-1 gap-3">
                                         <a href={`tel:${service.phone}`} className="block w-full">
                                             <button className="w-full py-2.5 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-all text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-green-200">
                                                 <span>📞</span> {t.services.call}

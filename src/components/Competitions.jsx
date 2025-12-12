@@ -106,34 +106,13 @@ export default function Competitions({ language = 'en', user }) {
         setActiveQuiz(quiz);
         setLoading(true);
         try {
-            let questions = [];
+            const { data, error } = await supabase
+                .from('quiz_questions')
+                .select('*')
+                .eq('quiz_id', quiz.id);
 
-            if (quiz.questions_url) {
-                // Fetch from JSON file
-                const response = await fetch(quiz.questions_url);
-                if (!response.ok) throw new Error('Failed to fetch quiz data');
-                questions = await response.json();
-
-                // Shuffle and select 10 random questions
-                if (questions.length > 10) {
-                    for (let i = questions.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [questions[i], questions[j]] = [questions[j], questions[i]];
-                    }
-                    questions = questions.slice(0, 10);
-                }
-            } else {
-                // Fallback to database (legacy)
-                const { data, error } = await supabase
-                    .from('quiz_questions')
-                    .select('*')
-                    .eq('quiz_id', quiz.id);
-
-                if (error) throw error;
-                questions = data || [];
-            }
-
-            setQuizQuestions(questions);
+            if (error) throw error;
+            setQuizQuestions(data || []);
             setCurrentQuestionIndex(0);
             setUserAnswers({});
             setQuizSubmitted(false);
@@ -253,7 +232,7 @@ export default function Competitions({ language = 'en', user }) {
 
                             <div className="grid grid-cols-3 gap-4 mb-8 border-y border-slate-100 py-6">
                                 <div className="text-center border-r border-slate-100">
-                                    <div className="text-2xl font-bold text-slate-900">10</div>
+                                    <div className="text-2xl font-bold text-slate-900">?</div>
                                     <div className="text-xs text-slate-500 uppercase tracking-wide">{t.questions}</div>
                                 </div>
                                 <div className="text-center border-r border-slate-100">
