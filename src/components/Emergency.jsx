@@ -19,6 +19,40 @@ export default function Emergency({ language = 'en', user }) {
     });
     const [isRegistering, setIsRegistering] = useState(false);
 
+    const [isDonor, setIsDonor] = useState(false);
+
+    // Check if user is already a donor
+    useEffect(() => {
+        if (user) {
+            checkDonorStatus();
+        }
+    }, [user]);
+
+    const checkDonorStatus = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (error) throw error;
+
+            if (data && data.is_donor) {
+                setIsDonor(true);
+                setRegForm({
+                    fullName: data.full_name || '',
+                    bloodGroup: data.blood_group || '',
+                    lastDonated: data.last_donation_date || '',
+                    district: data.district || '',
+                    phone: data.phone || ''
+                });
+            }
+        } catch (error) {
+            console.error('Error checking donor status:', error);
+        }
+    };
+
     // Fetch Donors
     useEffect(() => {
         if (activeTab === 'blood') {
@@ -80,7 +114,8 @@ export default function Emergency({ language = 'en', user }) {
 
             if (error) throw error;
 
-            alert('Successfully registered as a donor!');
+            alert(isDonor ? 'Donor profile updated successfully!' : 'Successfully registered as a donor!');
+            setIsDonor(true);
             setShowRegisterModal(false);
             fetchDonors(); // Refresh list
         } catch (error) {
@@ -102,7 +137,7 @@ export default function Emergency({ language = 'en', user }) {
             blood: {
                 heroTitle: "Every Drop Counts",
                 heroDesc: "Connect with voluntary blood donors in your area or register to save a life.",
-                registerBtn: "Register as Donor",
+                registerBtn: isDonor ? "Update Donor Info" : "Register as Donor",
                 findBtn: "Find Donors",
                 filters: {
                     group: "Blood Group",
@@ -133,7 +168,7 @@ export default function Emergency({ language = 'en', user }) {
             blood: {
                 heroTitle: "প্রতিটি ফোঁটা মূল্যবান",
                 heroDesc: "আপনার এলাকার রক্তদাতাদের সাথে যোগাযোগ করুন বা জীবন বাঁচাতে নিবন্ধন করুন।",
-                registerBtn: "রক্তদাতা হিসেবে নিবন্ধন করুন",
+                registerBtn: isDonor ? "রক্তদাতা তথ্য আপডেট করুন" : "রক্তদাতা হিসেবে নিবন্ধন করুন",
                 findBtn: "রক্তদাতা খুঁজুন",
                 filters: {
                     group: "রক্তের গ্রুপ",
@@ -364,7 +399,9 @@ export default function Emergency({ language = 'en', user }) {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
                     <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-scale-up">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-slate-900">Register as Blood Donor</h3>
+                            <h3 className="text-xl font-bold text-slate-900">
+                                {isDonor ? (language === 'en' ? 'Update Donor Profile' : 'রক্তদাতা প্রোফাইল আপডেট') : (language === 'en' ? 'Register as Blood Donor' : 'রক্তদাতা হিসেবে নিবন্ধন')}
+                            </h3>
                             <button
                                 onClick={() => setShowRegisterModal(false)}
                                 className="text-slate-400 hover:text-slate-600"
@@ -451,7 +488,7 @@ export default function Emergency({ language = 'en', user }) {
                                     disabled={isRegistering}
                                     className="w-full py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-md disabled:opacity-70"
                                 >
-                                    {isRegistering ? 'Registering...' : 'Register Now'}
+                                    {isRegistering ? 'Processing...' : (isDonor ? 'Update Profile' : 'Register Now')}
                                 </button>
                             </div>
                         </form>
