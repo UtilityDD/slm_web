@@ -53,12 +53,32 @@ export default function Emergency({ language = 'en', user }) {
         }
     };
 
-    // Fetch Donors
+    const [services, setServices] = useState([]);
+
+    // Fetch Donors & Services
     useEffect(() => {
         if (activeTab === 'blood') {
             fetchDonors();
+        } else if (activeTab === 'services') {
+            fetchServices();
         }
     }, [activeTab, selectedBloodGroup, selectedDistrict]);
+
+    const fetchServices = async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('emergency_services')
+                .select('*');
+
+            if (error) throw error;
+            setServices(data || []);
+        } catch (error) {
+            console.error('Error fetching services:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchDonors = async () => {
         setLoading(true);
@@ -196,13 +216,7 @@ export default function Emergency({ language = 'en', user }) {
         }
     }[language];
 
-    const services = [
-        { id: 1, type: "hospitals", name: "SSKM Hospital", location: "Kolkata", phone: "033 2223 6001", distance: "2.5 km" },
-        { id: 2, type: "hospitals", name: "Howrah District Hospital", location: "Howrah", phone: "033 2641 2000", distance: "5.1 km" },
-        { id: 3, type: "fire", name: "Fire Brigade HQ", location: "Kolkata", phone: "101", distance: "3.0 km" },
-        { id: 4, type: "police", name: "Lalbazar Police HQ", location: "Kolkata", phone: "100", distance: "4.2 km" },
-        { id: 5, type: "power", name: "WBSEDCL Control Room", location: "Salt Lake", phone: "1912", distance: "6.5 km" },
-    ];
+    // Removed hardcoded services array
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -364,38 +378,43 @@ export default function Emergency({ language = 'en', user }) {
             ) : (
                 <div className="animate-slide-down">
                     {/* Services Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {services.map((service) => (
-                            <div key={service.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all group">
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${service.type === 'hospitals' ? 'bg-blue-50 text-blue-600' :
-                                        service.type === 'fire' ? 'bg-orange-50 text-orange-600' :
-                                            service.type === 'police' ? 'bg-slate-100 text-slate-600' :
-                                                service.type === 'power' ? 'bg-yellow-50 text-yellow-600' :
-                                                    'bg-slate-50 text-slate-600'
-                                        }`}>
-                                        {service.type === 'hospitals' ? '🏥' :
-                                            service.type === 'fire' ? '🚒' :
-                                                service.type === 'police' ? '👮' :
-                                                    service.type === 'power' ? '⚡' : '🚑'}
+                    {loading ? (
+                        <div className="text-center py-10 text-slate-500">Loading services...</div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {services.map((service) => (
+                                <div key={service.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all group">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${service.type === 'hospitals' ? 'bg-blue-50 text-blue-600' :
+                                            service.type === 'fire' ? 'bg-orange-50 text-orange-600' :
+                                                service.type === 'police' ? 'bg-slate-100 text-slate-600' :
+                                                    service.type === 'power' ? 'bg-yellow-50 text-yellow-600' :
+                                                        'bg-slate-50 text-slate-600'
+                                            }`}>
+                                            {service.type === 'hospitals' ? '🏥' :
+                                                service.type === 'fire' ? '🚒' :
+                                                    service.type === 'police' ? '👮' :
+                                                        service.type === 'power' ? '⚡' : '🚑'}
+                                        </div>
                                     </div>
-                                    <span className="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-md">{service.distance}</span>
-                                </div>
 
-                                <h3 className="font-bold text-lg text-slate-900 mb-1">{service.name}</h3>
-                                <p className="text-sm text-slate-500 mb-6">{service.location}</p>
+                                    <h3 className="font-bold text-lg text-slate-900 mb-1">{service.name}</h3>
+                                    <p className="text-sm text-slate-500 mb-6">{service.location}</p>
 
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button className="py-2.5 bg-slate-50 text-slate-700 font-semibold rounded-lg hover:bg-slate-100 transition-all text-sm">
-                                        {t.services.directions}
-                                    </button>
-                                    <button className="py-2.5 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-all text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-green-200">
-                                        <span>📞</span> {t.services.call}
-                                    </button>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button className="py-2.5 bg-slate-50 text-slate-700 font-semibold rounded-lg hover:bg-slate-100 transition-all text-sm">
+                                            {t.services.directions}
+                                        </button>
+                                        <a href={`tel:${service.phone}`} className="block w-full">
+                                            <button className="w-full py-2.5 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-all text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-green-200">
+                                                <span>📞</span> {t.services.call}
+                                            </button>
+                                        </a>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
