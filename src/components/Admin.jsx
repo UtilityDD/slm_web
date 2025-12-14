@@ -5,6 +5,7 @@ export default function Admin({ user, language }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null);
 
   useEffect(() => {
     fetchUsers();
@@ -23,22 +24,66 @@ export default function Admin({ user, language }) {
 
   const handleEdit = (user) => {
     setEditingUser({ ...user });
+    setAvatarFile(null);
   };
 
   const handleCancelEdit = () => {
     setEditingUser(null);
+    setAvatarFile(null);
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setAvatarFile(e.target.files[0]);
+    }
   };
 
   const handleSave = async () => {
     if (!editingUser) return;
+
+    let avatar_url = editingUser.avatar_url;
+
+    if (avatarFile) {
+      const fileExt = avatarFile.name.split('.').pop();
+      const fileName = `${editingUser.id}-${Date.now()}.${fileExt}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, avatarFile, {
+          cacheControl: '3600',
+          upsert: true,
+        });
+
+      if (uploadError) {
+        console.error('Error uploading avatar:', uploadError);
+        alert('Failed to upload new avatar.');
+        return;
+      }
+
+       const { data: publicUrlData } = supabase.storage
+         .from("avatars")
+         .getPublicUrl(fileName);
+
+       if (!publicUrlData) {
+         console.error("Could not get public URL for uploaded avatar");
+         alert("Failed to get public URL for new avatar.");
+         return;
+       }
+
+      avatar_url = publicUrlData.publicUrl;
+    }
+
+
     const { id, ...updates } = editingUser;
+    updates.avatar_url = avatar_url;
     delete updates.email; // Do not update email
+
     const { error } = await supabase.from('profiles').update(updates).eq('id', id);
     if (error) {
       console.error('Error updating user:', error);
       alert('Failed to update user.');
     } else {
       setEditingUser(null);
+      setAvatarFile(null);
       fetchUsers(); // Refresh users list
       alert('User updated successfully!');
     }
@@ -88,22 +133,32 @@ export default function Admin({ user, language }) {
           <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl">
             <h2 className="text-xl font-bold mb-4">Edit User: {editingUser.full_name}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input type="text" name="full_name" value={editingUser.full_name || ''} onChange={handleChange} placeholder="Full Name" className="p-2 border rounded" />
-              <input type="email" name="email" value={editingUser.email || ''} onChange={handleChange} placeholder="Email" className="p-2 border rounded bg-gray-100" readOnly />
-              <input type="text" name="phone" value={editingUser.phone || ''} onChange={handleChange} placeholder="Phone" className="p-2 border rounded" />
-              <input type="text" name="district" value={editingUser.district || ''} onChange={handleChange} placeholder="District" className="p-2 border rounded" />
-              <input type="text" name="blood_group" value={editingUser.blood_group || ''} onChange={handleChange} placeholder="Blood Group" className="p-2 border rounded" />
-              <input type="number" name="points" value={editingUser.points || 0} onChange={handleChange} placeholder="Points" className="p-2 border rounded" />
-              <div className="flex items-center">
-                <input type="checkbox" name="is_donor" checked={editingUser.is_donor || false} onChange={handleChange} className="mr-2" />
-                <label>Is Donor</label>
+              {/* Left Column */}
+              <div>
+                <input type="text" name="full_name" value={editingUser.full_name || ''} onChange={handleChange} placeholder="Full Name" className="p-2 border rounded w-full mb-4" />
+                <input type="email" name="email" value={editingUser.email || ''} onChange={handleChange} placeholder="Email" className="p-2 border rounded bg-gray-100 w-full mb-4" readOnly />
+                <input type="text" name="phone" value={editingUser.phone || ''} onChange={handleChange} placeholder="Phone" className="p-2 border rounded w-full mb-4" />
+                <input type="text" name="district" value={editingUser.district || ''} onChange={handleChange} placeholder="District" className="p-2 border rounded w-full" />
               </div>
-              <input type="date" name="last_donation_date" value={editingUser.last_donation_date || ''} onChange={handleChange} className="p-2 border rounded" />
-              <select name="role" value={editingUser.role || 'lineman'} onChange={handleChange} className="p-2 border rounded">
-                <option value="lineman">Lineman</option>
-                <option value="safety mitra">Safety Mitra</option>
-                <option value="admin">Admin</option>
-              </select>
+              {/* Right Column */}
+              <div>
+                <div className="flex items-center mb-4">
+                  {editingUser.avatar_url && <img src={editingUser.avatar_url} alt="Avatar" className="w-16 h-16 rounded-full mr-4" />}
+                  <input type="file" onChange={handleFileChange} accept="image/*" className="p-2 border rounded w-full" />
+                </div>
+                <input type="text" name="blood_group" value={editingUser.blood_group || ''} onChange={handleChange} placeholder="Blood Group" className="p-2 border rounded w-full mb-4" />
+                <input type="number" name="points" value={editingUser.points || 0} onChange={handleChange} placeholder="Points" className="p-2 border rounded w-full mb-4" />
+                <div className="flex items-center mb-4">
+                  <input type="checkbox" name="is_donor" checked={editingUser.is_donor || false} onChange={handleChange} className="mr-2" />
+                  <label>Is Donor</label>
+                </div>
+                <input type="date" name="last_donation_date" value={editingUser.last_donation_date || ''} onChange={handleChange} className="p-2 border rounded w-full mb-4" />
+                <select name="role" value={editingUser.role || 'lineman'} onChange={handleChange} className="p-2 border rounded w-full">
+                  <option value="lineman">Lineman</option>
+                  <option value="safety mitra">Safety Mitra</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
             </div>
             <div className="mt-6 flex justify-end gap-4">
               <button onClick={handleCancelEdit} className="px-4 py-2 bg-gray-200 rounded">Cancel</button>
