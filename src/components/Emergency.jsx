@@ -2,37 +2,36 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
 const Spinner = () => (
-    <div className="flex justify-center items-center py-10">
-        <svg className="animate-spin -ml-1 mr-3 h-10 w-10 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
+    <div className="flex justify-center items-center py-12">
+        <div className="w-10 h-10 border-4 border-slate-200 border-t-red-600 rounded-full animate-spin"></div>
     </div>
 );
 
 const EmptyState = ({ icon, title, message }) => (
-    <div className="text-center py-10 px-4 animate-fade-in">
-        <div className="inline-block p-4 rounded-full bg-slate-100 text-slate-500 text-4xl mb-4">
+    <div className="text-center py-12 px-4">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center text-2xl text-slate-400">
             {icon}
         </div>
-        <h3 className="text-xl font-bold text-slate-800 mb-2">{title}</h3>
-        <p className="text-slate-500">{message}</p>
+        <h3 className="text-lg font-semibold text-slate-800 mb-2">{title}</h3>
+        <p className="text-slate-500 text-sm">{message}</p>
     </div>
 );
 
 const Toast = ({ message, type, show, onDismiss }) => {
     if (!show) return null;
 
-    const baseClasses = "fixed top-20 right-5 p-4 rounded-lg shadow-xl text-white transition-all duration-300 z-50 animate-slide-down-toast";
+    const baseClasses = "fixed top-20 right-5 p-4 rounded-xl shadow-xl text-white transition-all duration-300 z-50 elevation-5";
     const typeClasses = {
-        success: "bg-green-500",
-        error: "bg-red-500",
-        info: "bg-blue-500"
+        success: "bg-green-600",
+        error: "bg-red-600",
+        info: "bg-blue-600"
     };
 
     return (
         <div className={`${baseClasses} ${typeClasses[type]}`} onClick={onDismiss}>
-            {message}
+            <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">{message}</span>
+            </div>
         </div>
     );
 };
@@ -51,7 +50,7 @@ export default function Emergency({ language = 'en', user }) {
         setToast({ message, type, show: true });
         setTimeout(() => {
             setToast(t => ({ ...t, show: false }));
-        }, 3000); // Hide after 3 seconds
+        }, 3000);
     };
 
 
@@ -165,7 +164,6 @@ export default function Emergency({ language = 'en', user }) {
 
         setIsRegistering(true);
         try {
-            // Prepare profile updates
             const updates = {
                 id: user.id,
                 blood_group: regForm.bloodGroup,
@@ -178,7 +176,6 @@ export default function Emergency({ language = 'en', user }) {
                 updated_at: new Date().toISOString()
             };
 
-            // Use upsert to create profile if it doesn't exist
             const { error } = await supabase
                 .from('profiles')
                 .upsert(updates);
@@ -188,7 +185,7 @@ export default function Emergency({ language = 'en', user }) {
             showToast(isDonor ? 'Donor profile updated successfully!' : 'Successfully registered as a donor!', 'success');
             setIsDonor(true);
             setShowRegisterModal(false);
-            fetchDonors(); // Refresh list
+            fetchDonors();
         } catch (error) {
             console.error('Error registering:', error);
             showToast(`Failed to register: ${error.message || 'Unknown error'}`, 'error');
@@ -199,24 +196,24 @@ export default function Emergency({ language = 'en', user }) {
 
     const t = {
         en: {
-            title: "Emergency Response Hub",
-            subtitle: "Quick access to life-saving resources and community support.",
+            title: "Emergency Hub",
+            subtitle: "Quick access to life-saving resources",
             tabs: {
                 blood: "Blood Network",
                 services: "Emergency Services"
             },
             blood: {
-                heroTitle: "Every Drop Counts",
-                heroDesc: "Connect with voluntary blood donors in your area or register to save a life.",
-                registerBtn: isDonor ? "Update Donor Info" : "Register as Donor",
-                findBtn: "Find Donors",
+                heroTitle: "Save Lives Through Blood Donation",
+                heroDesc: "Connect with verified donors in your area or register to help others.",
+                registerBtn: isDonor ? "Update Info" : "Register as Donor",
+                findBtn: "Search Donors",
                 filters: {
                     group: "Blood Group",
-                    district: "District/Zone"
+                    district: "District"
                 },
                 donorsFound: "Donors Found",
-                lastDonated: "Last Donated",
-                call: "Call Now",
+                lastDonated: "Last donated",
+                call: "Call",
                 unavailable: "Unavailable"
             },
             services: {
@@ -224,25 +221,25 @@ export default function Emergency({ language = 'en', user }) {
                 ambulance: "Ambulance",
                 fire: "Fire Station",
                 police: "Police",
-                power: "Power Dept (WBSEDCL)",
+                power: "Power Dept",
                 call: "Call"
             }
         },
         bn: {
-            title: "জরুরি পরিষেবা হাব",
-            subtitle: "জীবন রক্ষাকারী রিসোর্স এবং কমিউনিটি সাপোর্টে দ্রুত অ্যাক্সেস।",
+            title: "জরুরি হাব",
+            subtitle: "জীবন রক্ষাকারী রিসোর্সে দ্রুত অ্যাক্সেস",
             tabs: {
                 blood: "রক্তের নেটওয়ার্ক",
                 services: "জরুরি পরিষেবা"
             },
             blood: {
-                heroTitle: "প্রতিটি ফোঁটা মূল্যবান",
-                heroDesc: "আপনার এলাকার রক্তদাতাদের সাথে যোগাযোগ করুন বা জীবন বাঁচাতে নিবন্ধন করুন।",
-                registerBtn: isDonor ? "রক্তদাতা তথ্য আপডেট করুন" : "রক্তদাতা হিসেবে নিবন্ধন করুন",
+                heroTitle: "রক্তদানের মাধ্যমে জীবন বাঁচান",
+                heroDesc: "আপনার এলাকার যাচাইকৃত রক্তদাতাদের সাথে যোগাযোগ করুন।",
+                registerBtn: isDonor ? "তথ্য আপডেট করুন" : "রক্তদাতা হিসেবে নিবন্ধন",
                 findBtn: "রক্তদাতা খুঁজুন",
                 filters: {
                     group: "রক্তের গ্রুপ",
-                    district: "জেলা/জোন"
+                    district: "জেলা"
                 },
                 donorsFound: "রক্তদাতা পাওয়া গেছে",
                 lastDonated: "শেষ রক্তদান",
@@ -254,95 +251,89 @@ export default function Emergency({ language = 'en', user }) {
                 ambulance: "অ্যাম্বুলেন্স",
                 fire: "দমকল কেন্দ্র",
                 police: "পুলিশ",
-                power: "বিদ্যুৎ দপ্তর (WBSEDCL)",
+                power: "বিদ্যুৎ দপ্তর",
                 call: "কল"
             }
         }
     }[language];
 
-    // Removed hardcoded services array
-
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto mobile-container mobile-section">
             <Toast message={toast.message} type={toast.type} show={toast.show} onDismiss={() => setToast(t => ({ ...t, show: false }))} />
-            {/* Header Section */}
-            <div className="mb-8 text-center">
-                <div className="inline-block p-3 rounded-full bg-red-100 text-red-600 text-3xl mb-4 animate-pulse">
-                    🚑
+
+            {/* Modern Header */}
+            <div className="mb-8">
+                <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{t.title}</h1>
+                        <p className="text-sm text-slate-500">{t.subtitle}</p>
+                    </div>
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
-                    {language === 'en' ? (
-                        <>Emergency <span className="text-red-600">Response</span></>
-                    ) : (
-                        <>{t.title}</>
-                    )}
-                </h1>
-                <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                    {t.subtitle}
-                </p>
             </div>
 
-            {/* Tabs */}
-            <div className="flex justify-center mb-10">
-                <div className="bg-white p-1 rounded-xl shadow-sm border border-slate-200 inline-flex">
+            {/* Refined Tabs */}
+            <div className="mb-6">
+                <div className="bg-slate-100 p-1 rounded-xl inline-flex gap-1">
                     <button
                         onClick={() => setActiveTab('blood')}
-                        className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'blood'
-                            ? 'bg-red-600 text-white shadow-md'
-                            : 'text-slate-600 hover:bg-slate-50'
+                        className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'blood'
+                            ? 'bg-white text-red-600 elevation-1'
+                            : 'text-slate-600 hover:text-slate-900'
                             }`}
                     >
-                        <span>🩸</span> {t.tabs.blood}
+                        {t.tabs.blood}
                     </button>
                     <button
                         onClick={() => setActiveTab('services')}
-                        className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'services'
-                            ? 'bg-blue-700 text-white shadow-md'
-                            : 'text-slate-600 hover:bg-slate-50'
+                        className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'services'
+                            ? 'bg-white text-blue-600 elevation-1'
+                            : 'text-slate-600 hover:text-slate-900'
                             }`}
                     >
-                        <span>🏥</span> {t.tabs.services}
+                        {t.tabs.services}
                     </button>
                 </div>
             </div>
 
             {/* Content Area */}
             {activeTab === 'blood' ? (
-                <div className="animate-slide-down">
-                    {/* Blood Network Hero */}
-                    <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-3xl p-8 sm:p-12 text-white mb-10 relative overflow-hidden shadow-xl shadow-red-900/20">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3"></div>
-                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                            <div className="text-center md:text-left">
-                                <h2 className="text-3xl font-bold mb-4">{t.blood.heroTitle}</h2>
-                                <p className="text-red-100 text-lg mb-8 max-w-xl">
-                                    {t.blood.heroDesc}
-                                </p>
+                <div className="space-y-6">
+                    {/* Clean Hero Card */}
+                    <div className="material-card elevation-2 p-6 sm:p-8">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                            <div className="flex-1">
+                                <h2 className="text-xl font-bold text-slate-900 mb-2">{t.blood.heroTitle}</h2>
+                                <p className="text-slate-600 text-sm mb-4">{t.blood.heroDesc}</p>
                                 <button
                                     onClick={() => {
                                         if (!user) showToast('Please login first', 'error');
                                         else setShowRegisterModal(true);
                                     }}
-                                    className="px-8 py-3 bg-white text-red-600 rounded-xl font-bold hover:bg-red-50 transition-all shadow-lg"
+                                    className="material-button-primary ripple"
                                 >
                                     {t.blood.registerBtn}
                                 </button>
                             </div>
-                            <div className="text-9xl opacity-20 animate-pulse">
+                            <div className="hidden sm:block text-6xl opacity-10">
                                 ❤️
                             </div>
                         </div>
                     </div>
 
-                    {/* Filters */}
-                    <div className="material-card elevation-2 p-6 sm:p-8 mb-8">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Streamlined Filters */}
+                    <div className="material-card elevation-1 p-4 sm:p-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">{t.blood.filters.group}</label>
+                                <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wide">{t.blood.filters.group}</label>
                                 <select
                                     value={selectedBloodGroup}
                                     onChange={(e) => setSelectedBloodGroup(e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-red-500 bg-slate-50"
+                                    className="material-input"
                                 >
                                     <option value="All">All Groups</option>
                                     <option value="A+">A+</option>
@@ -356,11 +347,11 @@ export default function Emergency({ language = 'en', user }) {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">{t.blood.filters.district}</label>
+                                <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wide">{t.blood.filters.district}</label>
                                 <select
                                     value={selectedDistrict}
                                     onChange={(e) => setSelectedDistrict(e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-red-500 bg-slate-50"
+                                    className="material-input"
                                 >
                                     <option value="All">All Districts</option>
                                     <option value="Kolkata">Kolkata</option>
@@ -375,48 +366,56 @@ export default function Emergency({ language = 'en', user }) {
                             <div className="flex items-end">
                                 <button
                                     onClick={fetchDonors}
-                                    className="w-full px-6 py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all"
+                                    className="material-button-outlined ripple-dark w-full flex items-center justify-center gap-2"
                                 >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
                                     {t.blood.findBtn}
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Results Grid */}
+                    {/* Results */}
                     {loading ? (
                         <Spinner />
                     ) : donors.length === 0 ? (
                         <EmptyState
-                            icon="🤷"
+                            icon="🔍"
                             title="No Donors Found"
-                            message="No donors match your current filters. Try a different search."
+                            message="No donors match your search criteria. Try adjusting filters."
                         />
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {donors.map((donor) => (
-                                <div key={donor.id} className="material-card p-6 sm:p-8 group">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center font-bold text-lg border border-red-100">
-                                                {donor.blood_group}
+                                <div key={donor.id} className="material-card elevation-1 p-6 hover:elevation-3 transition-all">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center">
+                                                <span className="text-red-600 font-bold text-sm">{donor.blood_group}</span>
                                             </div>
                                             <div>
-                                                <h3 className="font-bold text-slate-900">{donor.full_name || 'Unknown'}</h3>
-                                                <div className="text-xs text-slate-500">{donor.district}</div>
+                                                <h3 className="font-semibold text-slate-900 text-sm">{donor.full_name || 'Unknown'}</h3>
+                                                <p className="text-xs text-slate-500">{donor.district}</p>
                                             </div>
                                         </div>
-                                        <span className="px-2 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-md">Available</span>
+                                        <span className="px-2 py-1 bg-green-50 text-green-700 text-xs font-semibold rounded-md">Active</span>
                                     </div>
 
-                                    <div className="flex items-center gap-2 text-sm text-slate-500 mb-6 bg-slate-50 p-3 rounded-lg">
-                                        <span>🕒</span>
+                                    <div className="flex items-center gap-2 text-xs text-slate-500 mb-4 pb-4 border-b border-slate-100">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
                                         <span>{t.blood.lastDonated}: <span className="font-medium text-slate-700">{donor.last_donation_date || 'N/A'}</span></span>
                                     </div>
 
                                     <a href={`tel:${donor.phone}`} className="block w-full">
-                                        <button className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all bg-red-600 text-white hover:bg-red-700 shadow-sm hover:shadow-red-200">
-                                            <span>📞</span> {t.blood.call}
+                                        <button className="material-button-primary w-full ripple flex items-center justify-center gap-2">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                            </svg>
+                                            {t.blood.call}
                                         </button>
                                     </a>
                                 </div>
@@ -425,44 +424,48 @@ export default function Emergency({ language = 'en', user }) {
                     )}
                 </div>
             ) : (
-                <div className="animate-slide-down">
-                    {/* Services Grid */}
+                <div>
                     {loading ? (
                         <Spinner />
                     ) : services.length === 0 ? (
                         <EmptyState
-                            icon="📯"
+                            icon="📋"
                             title="No Services Found"
-                            message="There are no emergency services listed at the moment."
+                            message="Emergency services data is currently unavailable."
                         />
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {services.map((service) => (
-                                <div key={service.id} className="material-card p-6 sm:p-8 group">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${service.type === 'hospitals' ? 'bg-blue-50 text-blue-600' :
+                                <div key={service.id} className="material-card elevation-1 p-6 hover:elevation-3 transition-all">
+                                    <div className="flex items-start gap-4 mb-4">
+                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${service.type === 'hospitals' ? 'bg-blue-50 text-blue-600' :
                                             service.type === 'fire' ? 'bg-orange-50 text-orange-600' :
-                                                service.type === 'police' ? 'bg-slate-100 text-slate-600' :
+                                                service.type === 'police' ? 'bg-slate-100 text-slate-700' :
                                                     service.type === 'power' ? 'bg-yellow-50 text-yellow-600' :
                                                         'bg-slate-50 text-slate-600'
                                             }`}>
-                                            {service.type === 'hospitals' ? '🏥' :
-                                                service.type === 'fire' ? '🚒' :
-                                                    service.type === 'police' ? '👮' :
-                                                        service.type === 'power' ? '⚡' : '🚑'}
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                {service.type === 'hospitals' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />}
+                                                {service.type === 'fire' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />}
+                                                {service.type === 'police' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />}
+                                                {service.type === 'power' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />}
+                                                {!['hospitals', 'fire', 'police', 'power'].includes(service.type) && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />}
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-semibold text-slate-900 mb-1">{service.name}</h3>
+                                            <p className="text-xs text-slate-500">{service.location}</p>
                                         </div>
                                     </div>
 
-                                    <h3 className="font-bold text-lg text-slate-900 mb-1">{service.name}</h3>
-                                    <p className="text-sm text-slate-500 mb-6">{service.location}</p>
-
-                                    <div className="grid grid-cols-1 gap-3">
-                                        <a href={`tel:${service.phone}`} className="block w-full">
-                                            <button className="w-full py-2.5 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-all text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-green-200">
-                                                <span>📞</span> {t.services.call}
-                                            </button>
-                                        </a>
-                                    </div>
+                                    <a href={`tel:${service.phone}`} className="block w-full">
+                                        <button className="material-button-primary w-full ripple flex items-center justify-center gap-2">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                            </svg>
+                                            {t.services.call}
+                                        </button>
+                                    </a>
                                 </div>
                             ))}
                         </div>
@@ -470,42 +473,44 @@ export default function Emergency({ language = 'en', user }) {
                 </div>
             )}
 
-            {/* Registration Modal */}
+            {/* Modern Registration Modal */}
             {showRegisterModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
                     <div className="material-card elevation-5 w-full max-w-md p-6 sm:p-8 animate-scale-up">
-                        <div className="flex justify-between items-center mb-6">
+                        <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
                             <h3 className="text-xl font-bold text-slate-900">
                                 {isDonor ? (language === 'en' ? 'Update Donor Profile' : 'রক্তদাতা প্রোফাইল আপডেট') : (language === 'en' ? 'Register as Blood Donor' : 'রক্তদাতা হিসেবে নিবন্ধন')}
                             </h3>
                             <button
                                 onClick={() => setShowRegisterModal(false)}
-                                className="text-slate-400 hover:text-slate-600"
+                                className="text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors"
                             >
-                                ✕
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                             </button>
                         </div>
 
                         <form onSubmit={handleRegister} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Full Name</label>
                                 <input
                                     type="text"
                                     required
                                     value={regForm.fullName}
                                     onChange={(e) => setRegForm({ ...regForm, fullName: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-red-500 bg-slate-50"
+                                    className="material-input"
                                     placeholder="Enter your name"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Blood Group</label>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-2">Blood Group</label>
                                     <select
                                         required
                                         value={regForm.bloodGroup}
                                         onChange={(e) => setRegForm({ ...regForm, bloodGroup: e.target.value })}
-                                        className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-red-500"
+                                        className="material-input"
                                     >
                                         <option value="">Select</option>
                                         <option value="A+">A+</option>
@@ -519,22 +524,22 @@ export default function Emergency({ language = 'en', user }) {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Last Donated</label>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-2">Last Donated</label>
                                     <input
                                         type="date"
                                         value={regForm.lastDonated}
                                         onChange={(e) => setRegForm({ ...regForm, lastDonated: e.target.value })}
-                                        className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-red-500"
+                                        className="material-input"
                                     />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">District</label>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">District</label>
                                 <select
                                     required
                                     value={regForm.district}
                                     onChange={(e) => setRegForm({ ...regForm, district: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-red-500"
+                                    className="material-input"
                                 >
                                     <option value="">Select District</option>
                                     <option value="Kolkata">Kolkata</option>
@@ -547,7 +552,7 @@ export default function Emergency({ language = 'en', user }) {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Phone Number</label>
                                 <input
                                     type="tel"
                                     required
@@ -558,18 +563,25 @@ export default function Emergency({ language = 'en', user }) {
                                     }}
                                     pattern="[0-9]{10}"
                                     title="Please enter a valid 10-digit phone number"
-                                    className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-red-500"
+                                    className="material-input"
                                     placeholder="10-digit mobile number"
                                 />
                             </div>
 
-                            <div className="pt-4">
+                            <div className="pt-4 flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowRegisterModal(false)}
+                                    className="material-button-outlined ripple-dark flex-1"
+                                >
+                                    Cancel
+                                </button>
                                 <button
                                     type="submit"
                                     disabled={isRegistering}
-                                    className="w-full py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-md disabled:opacity-70"
+                                    className="material-button-primary ripple flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {isRegistering ? 'Processing...' : (isDonor ? 'Update Profile' : 'Register Now')}
+                                    {isRegistering ? 'Processing...' : (isDonor ? 'Update' : 'Register')}
                                 </button>
                             </div>
                         </form>
