@@ -6,6 +6,7 @@ export default function Admin({ user, language }) {
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
 
   useEffect(() => {
     fetchUsers();
@@ -25,16 +26,27 @@ export default function Admin({ user, language }) {
   const handleEdit = (user) => {
     setEditingUser({ ...user });
     setAvatarFile(null);
+    setAvatarPreview(user.avatar_url);
   };
 
   const handleCancelEdit = () => {
     setEditingUser(null);
     setAvatarFile(null);
+    setAvatarPreview(null);
   };
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      setAvatarFile(e.target.files[0]);
+      const file = e.target.files[0];
+
+      // File size validation (2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        alert("File size exceeds 2MB limit. Please choose a smaller image.");
+        return;
+      }
+
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
     }
   };
 
@@ -59,15 +71,15 @@ export default function Admin({ user, language }) {
         return;
       }
 
-       const { data: publicUrlData } = supabase.storage
-         .from("avatars")
-         .getPublicUrl(fileName);
+      const { data: publicUrlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
 
-       if (!publicUrlData) {
-         console.error("Could not get public URL for uploaded avatar");
-         alert("Failed to get public URL for new avatar.");
-         return;
-       }
+      if (!publicUrlData) {
+        console.error("Could not get public URL for uploaded avatar");
+        alert("Failed to get public URL for new avatar.");
+        return;
+      }
 
       avatar_url = publicUrlData.publicUrl;
     }
@@ -84,6 +96,7 @@ export default function Admin({ user, language }) {
     } else {
       setEditingUser(null);
       setAvatarFile(null);
+      setAvatarPreview(null);
       fetchUsers(); // Refresh users list
       alert('User updated successfully!');
     }
@@ -129,40 +142,100 @@ export default function Admin({ user, language }) {
       </div>
 
       {editingUser && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-          <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl">
-            <h2 className="text-xl font-bold mb-4">Edit User: {editingUser.full_name}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Left Column */}
-              <div>
-                <input type="text" name="full_name" value={editingUser.full_name || ''} onChange={handleChange} placeholder="Full Name" className="p-2 border rounded w-full mb-4" />
-                <input type="email" name="email" value={editingUser.email || ''} onChange={handleChange} placeholder="Email" className="p-2 border rounded bg-gray-100 w-full mb-4" readOnly />
-                <input type="text" name="phone" value={editingUser.phone || ''} onChange={handleChange} placeholder="Phone" className="p-2 border rounded w-full mb-4" />
-                <input type="text" name="district" value={editingUser.district || ''} onChange={handleChange} placeholder="District" className="p-2 border rounded w-full" />
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+          <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-2xl border border-slate-100">
+            <h2 className="text-xl font-bold mb-6 text-slate-800 border-b pb-2">Edit User Profile</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left Column - Avatar & Basic Info */}
+              <div className="flex flex-col items-center">
+                {/* Avatar Preview Section */}
+                <div className="relative group mb-6">
+                  <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-slate-100 shadow-md">
+                    {avatarPreview ? (
+                      <img
+                        src={avatarPreview}
+                        alt="Avatar Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-400 text-4xl font-bold">
+                        {editingUser.full_name ? editingUser.full_name.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Hidden File Input & Custom Button */}
+                  <label
+                    htmlFor="avatar-upload"
+                    className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full cursor-pointer shadow-lg transition-transform hover:scale-105"
+                    title="Change Photo"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </label>
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                </div>
+
+                <input type="text" name="full_name" value={editingUser.full_name || ''} onChange={handleChange} placeholder="Full Name" className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none mb-4" />
+                <input type="email" name="email" value={editingUser.email || ''} onChange={handleChange} placeholder="Email" className="w-full px-4 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-500 mb-4 cursor-not-allowed" readOnly />
               </div>
-              {/* Right Column */}
-              <div>
-                <div className="flex items-center mb-4">
-                  {editingUser.avatar_url && <img src={editingUser.avatar_url} alt="Avatar" className="w-16 h-16 rounded-full mr-4" />}
-                  <input type="file" onChange={handleFileChange} accept="image/*" className="p-2 border rounded w-full" />
+
+              {/* Right Column - Details */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+                  <input type="text" name="phone" value={editingUser.phone || ''} onChange={handleChange} placeholder="Phone" className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
                 </div>
-                <input type="text" name="blood_group" value={editingUser.blood_group || ''} onChange={handleChange} placeholder="Blood Group" className="p-2 border rounded w-full mb-4" />
-                <input type="number" name="points" value={editingUser.points || 0} onChange={handleChange} placeholder="Points" className="p-2 border rounded w-full mb-4" />
-                <div className="flex items-center mb-4">
-                  <input type="checkbox" name="is_donor" checked={editingUser.is_donor || false} onChange={handleChange} className="mr-2" />
-                  <label>Is Donor</label>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">District</label>
+                  <input type="text" name="district" value={editingUser.district || ''} onChange={handleChange} placeholder="District" className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
                 </div>
-                <input type="date" name="last_donation_date" value={editingUser.last_donation_date || ''} onChange={handleChange} className="p-2 border rounded w-full mb-4" />
-                <select name="role" value={editingUser.role || 'lineman'} onChange={handleChange} className="p-2 border rounded w-full">
-                  <option value="lineman">Lineman</option>
-                  <option value="safety mitra">Safety Mitra</option>
-                  <option value="admin">Admin</option>
-                </select>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Blood Group</label>
+                    <input type="text" name="blood_group" value={editingUser.blood_group || ''} onChange={handleChange} placeholder="Blood Group" className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Points</label>
+                    <input type="number" name="points" value={editingUser.points || 0} onChange={handleChange} placeholder="Points" className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
+                  <select name="role" value={editingUser.role || 'lineman'} onChange={handleChange} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    <option value="lineman">Lineman</option>
+                    <option value="safety mitra">Safety Mitra</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center p-3 bg-slate-50 rounded-lg border border-slate-100">
+                  <input type="checkbox" id="is_donor" name="is_donor" checked={editingUser.is_donor || false} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
+                  <label htmlFor="is_donor" className="ml-2 text-sm text-slate-700 font-medium cursor-pointer">Register as Blood Donor</label>
+                </div>
+
+                {editingUser.is_donor && (
+                  <div className="animate-fade-in">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Last Donation Date</label>
+                    <input type="date" name="last_donation_date" value={editingUser.last_donation_date || ''} onChange={handleChange} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                )}
               </div>
             </div>
-            <div className="mt-6 flex justify-end gap-4">
-              <button onClick={handleCancelEdit} className="px-4 py-2 bg-gray-200 rounded">Cancel</button>
-              <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white rounded">Save Changes</button>
+            <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-slate-100">
+              <button onClick={handleCancelEdit} className="px-5 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors">Cancel</button>
+              <button onClick={handleSave} className="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all">Save Changes</button>
             </div>
           </div>
         </div>
