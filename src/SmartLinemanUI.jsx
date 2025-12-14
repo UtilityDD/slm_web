@@ -26,6 +26,11 @@ export default function SmartLinemanUI() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Scroll to top when view changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentView]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
