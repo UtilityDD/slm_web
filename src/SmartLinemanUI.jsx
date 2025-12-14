@@ -16,13 +16,14 @@ export default function SmartLinemanUI() {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async (user) => {
       if (user) {
         const { data, error } = await supabase
           .from('profiles')
-          .select('role')
+          .select('role, avatar_url')
           .eq('id', user.id)
           .single();
         if (error) {
@@ -259,8 +260,17 @@ export default function SmartLinemanUI() {
               {/* User menu - Desktop only */}
               {user ? (
                 <div className="hidden md:flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-xs elevation-1">
-                    {user.email ? user.email[0].toUpperCase() : 'U'}
+                  <div className="w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-xs elevation-1 overflow-hidden">
+                    {userProfile?.avatar_url && !imageError ? (
+                      <img
+                        src={userProfile.avatar_url}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                        onError={() => setImageError(true)}
+                      />
+                    ) : (
+                      user.email ? user.email[0].toUpperCase() : 'U'
+                    )}
                   </div>
                   <button
                     onClick={handleLogout}
@@ -283,10 +293,19 @@ export default function SmartLinemanUI() {
                 {user ? (
                   <button
                     onClick={handleLogout}
-                    className="w-10 h-10 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-sm elevation-1 ripple-dark touch-target"
+                    className="w-10 h-10 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-sm elevation-1 ripple-dark touch-target overflow-hidden"
                     title={t.nav.logout}
                   >
-                    {user.email ? user.email[0].toUpperCase() : 'U'}
+                    {userProfile?.avatar_url && !imageError ? (
+                      <img
+                        src={userProfile.avatar_url}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                        onError={() => setImageError(true)}
+                      />
+                    ) : (
+                      user.email ? user.email[0].toUpperCase() : 'U'
+                    )}
                   </button>
                 ) : (
                   <button
