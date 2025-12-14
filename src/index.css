@@ -153,7 +153,10 @@
 
   .bottom-nav-item {
     @apply flex flex-col items-center justify-center flex-1 text-slate-500 transition-all duration-200 cursor-pointer;
-    min-width: 80px;
+  }
+
+  .bottom-nav-item .text-[9px] {
+    @apply text-[8px];
   }
 
   .bottom-nav-item.active {
