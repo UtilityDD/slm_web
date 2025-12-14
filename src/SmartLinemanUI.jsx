@@ -6,6 +6,7 @@ import SafetyHub from "./components/SafetyHub";
 import Login from "./components/Login";
 import { supabase } from "./supabaseClient";
 import LogoutConfirmationModal from "./components/LogoutConfirmationModal";
+import Admin from "./components/Admin";
 
 export default function SmartLinemanUI() {
   const [hoveredCard, setHoveredCard] = useState(null);
@@ -13,16 +14,38 @@ export default function SmartLinemanUI() {
   const [currentView, setCurrentView] = useState('home');
   const [language, setLanguage] = useState('en');
   const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   useEffect(() => {
+    const fetchProfile = async (user) => {
+      if (user) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        if (error) {
+          console.error('Error fetching profile:', error);
+        } else if (data) {
+          setUserProfile(data);
+        }
+      }
+    };
+
     // Check active session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      fetchProfile(session?.user);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session) {
+        fetchProfile(session.user);
+      } else {
+        setUserProfile(null);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -40,6 +63,7 @@ export default function SmartLinemanUI() {
   const confirmLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setUserProfile(null);
     setShowLogoutModal(false);
     setCurrentView('home');
   };
@@ -57,7 +81,8 @@ export default function SmartLinemanUI() {
         leaderboard: "Leaderboard",
         emergency: "Emergency",
         login: "Login",
-        logout: "Logout"
+        logout: "Logout",
+        admin: "Admin"
       },
       hero: {
         title: "SmartLineman",
@@ -83,7 +108,8 @@ export default function SmartLinemanUI() {
         leaderboard: "লিডারবোর্ড",
         emergency: "জরুরি",
         login: "লগ ইন",
-        logout: "লগ আউট"
+        logout: "লগ আউট",
+        admin: "অ্যাডমিন"
       },
       hero: {
         title: "স্মার্ট লাইনম্যান",
@@ -119,6 +145,8 @@ export default function SmartLinemanUI() {
         return <Emergency language={language} user={user} />;
       case 'safety':
         return <SafetyHub language={language} user={user} />;
+      case 'admin':
+        return <Admin language={language} user={user} />;
       case 'home':
       default:
         return <HomeContent
@@ -200,6 +228,15 @@ export default function SmartLinemanUI() {
                 <span className="text-red-600 hover:text-red-700 font-bold">{t.nav.emergency}</span>
                 <span className={`absolute bottom-0 left-0 h-0.5 bg-red-600 transition-all duration-300 ${currentView === 'emergency' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
               </a>
+              {userProfile?.role === 'admin' && (
+                <a
+                  className={`hover:text-blue-700 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'admin' ? 'text-blue-700 font-semibold' : ''}`}
+                  onClick={() => setCurrentView('admin')}
+                >
+                  {t.nav.admin}
+                  <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${currentView === 'admin' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
+                </a>
+              )}
             </nav>
 
             <div className="flex items-center gap-2 sm:gap-3">
@@ -310,6 +347,19 @@ export default function SmartLinemanUI() {
             </svg>
             <span className="text-[9px] font-medium">{language === 'en' ? 'Compete' : 'প্রতিযোগিতা'}</span>
           </button>
+
+          {userProfile?.role === 'admin' && (
+            <button
+              onClick={() => setCurrentView('admin')}
+              className={`bottom-nav-item ripple-dark ${currentView === 'admin' ? 'active' : ''}`}
+            >
+              <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" strokeWidth={currentView === 'admin' ? 2.5 : 1.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span className="text-[9px] font-medium">{t.nav.admin}</span>
+            </button>
+          )}
 
           <button
             onClick={() => setCurrentView('emergency')}
