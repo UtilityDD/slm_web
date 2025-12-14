@@ -334,7 +334,7 @@ export default function Competitions({ language = 'en', user }) {
                         <h3 className="text-xl font-bold text-slate-900">🏆 {t.leaderboard}</h3>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="material-card elevation-2 overflow-hidden">
                         <table className="w-full">
                             <thead className="bg-slate-50 border-b border-slate-200">
                                 <tr>
@@ -383,7 +383,7 @@ export default function Competitions({ language = 'en', user }) {
                 {/* Sidebar */}
                 <div className="space-y-8">
                     {/* Your Stats */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <div className="material-card elevation-2 p-6 sm:p-8">
                         <h3 className="font-bold text-slate-900 mb-4">{t.yourStats}</h3>
                         {user ? (
                             <div className="flex items-center justify-between mb-6">
@@ -409,7 +409,7 @@ export default function Competitions({ language = 'en', user }) {
             {/* Quiz Modal */}
             {activeQuiz && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-2xl animate-scale-up max-h-[90vh] overflow-y-auto">
+                    <div className="material-card elevation-5 w-full max-w-2xl p-6 sm:p-8 animate-scale-up max-h-[90vh] overflow-y-auto">
                         {!quizSubmitted ? (
                             <>
                                 <div className="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">

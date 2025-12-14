@@ -124,29 +124,30 @@ export default function SmartLinemanUI() {
         <div className="absolute bottom-0 left-0 w-[40vw] h-[40vw] bg-cyan-100/40 rounded-full blur-3xl -translate-x-1/4 translate-y-1/4"></div>
       </div>
 
-      {/* Header */}
-      <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+      {/* Header - Material Design */}
+      <header className="bg-white elevation-2 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto mobile-container">
+          <div className="flex justify-between items-center h-14 md:h-16">
             <div
-              className="flex items-center gap-2 sm:gap-3 group cursor-pointer"
+              className="flex items-center gap-2 sm:gap-3 group cursor-pointer ripple-dark rounded-lg px-2 py-1 -ml-2"
               onClick={() => setCurrentView('home')}
             >
               <div className="relative">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-700 to-blue-600 rounded-lg flex items-center justify-center font-bold text-sm text-white shadow-md transition-all duration-300 group-hover:scale-105">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-700 to-blue-600 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm text-white elevation-2 transition-all duration-300 group-hover:scale-105">
                   SL
                 </div>
               </div>
-              <div>
-                <div className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+              <div className="hidden sm:block">
+                <div className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
                   {language === 'en' ? 'SmartLineman' : 'স্মার্ট লাইনম্যান'}
                 </div>
-                <div className="text-[10px] sm:text-xs text-slate-500 font-medium hidden xs:block">
+                <div className="text-[10px] sm:text-xs text-slate-500 font-medium">
                   {language === 'en' ? 'West Bengal' : 'পশ্চিমবঙ্গ'}
                 </div>
               </div>
             </div>
 
+            {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium text-slate-600">
               <a
                 className={`hover:text-blue-700 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'safety' ? 'text-blue-700 font-semibold' : ''}`}
@@ -169,41 +170,41 @@ export default function SmartLinemanUI() {
                 {t.nav.competitions}
                 <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${currentView === 'competitions' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
               </a>
-
+              <a
+                className={`hover:text-blue-700 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'emergency' ? 'text-blue-700 font-semibold' : ''}`}
+                onClick={() => setCurrentView('emergency')}
+              >
+                <span className="text-red-600 hover:text-red-700 font-bold">{t.nav.emergency}</span>
+                <span className={`absolute bottom-0 left-0 h-0.5 bg-red-600 transition-all duration-300 ${currentView === 'emergency' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
+              </a>
             </nav>
 
             <div className="flex items-center gap-2 sm:gap-3">
-              {/* Language Switcher */}
-              <div className="flex items-center bg-slate-100 rounded-lg p-1 mr-2">
+              {/* Language Switcher - More compact on mobile */}
+              <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
                 <button
                   onClick={() => setLanguage('en')}
-                  className={`px-2 py-1 text-xs font-bold rounded-md transition-all ${language === 'en' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-1.5 sm:px-2 py-1 text-xs font-bold rounded-md transition-all touch-target ${language === 'en' ? 'bg-white text-blue-700 elevation-1' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   EN
                 </button>
                 <button
                   onClick={() => setLanguage('bn')}
-                  className={`px-2 py-1 text-xs font-bold rounded-md transition-all ${language === 'bn' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-1.5 sm:px-2 py-1 text-xs font-bold rounded-md transition-all touch-target ${language === 'bn' ? 'bg-white text-blue-700 elevation-1' : 'text-slate-500 hover:text-slate-700'}`}
                 >
-                  বাংলা
+                  বাং
                 </button>
               </div>
 
-              <button
-                className="hidden sm:inline-block px-3 sm:px-4 py-2 text-red-600 hover:text-red-700 text-xs sm:text-sm font-bold transition-colors duration-200 animate-pulse"
-                onClick={() => setCurrentView('emergency')}
-              >
-                {t.nav.emergency}
-              </button>
-
+              {/* User menu - Desktop only */}
               {user ? (
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-xs">
+                <div className="hidden md:flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-xs elevation-1">
                     {user.email ? user.email[0].toUpperCase() : 'U'}
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="text-slate-500 hover:text-slate-700 text-xs sm:text-sm font-medium"
+                    className="text-slate-500 hover:text-slate-700 text-xs sm:text-sm font-medium ripple-dark px-2 py-1 rounded"
                   >
                     {t.nav.logout}
                   </button>
@@ -211,63 +212,70 @@ export default function SmartLinemanUI() {
               ) : (
                 <button
                   onClick={() => setCurrentView('login')}
-                  className="px-3 sm:px-5 py-1.5 sm:py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs sm:text-sm font-semibold shadow-sm hover:shadow-md transition-all duration-200"
+                  className="hidden md:inline-block material-button-primary text-xs sm:text-sm"
                 >
                   {t.nav.login}
                 </button>
               )}
-
-
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
-                aria-label="Toggle menu"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  {mobileMenuOpen ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  )}
-                </svg>
-              </button>
             </div>
           </div>
-
-          {/* Mobile Menu Dropdown */}
-          {mobileMenuOpen && (
-            <div className="md:hidden py-4 border-t border-slate-200 animate-slide-down bg-white/95 backdrop-blur-md">
-              <nav className="flex flex-col gap-1 text-sm font-medium text-slate-600">
-                <a className="hover:text-blue-700 hover:bg-blue-50 transition-all duration-200 cursor-pointer py-3 px-4 rounded-lg">
-                  {t.nav.safety}
-                </a>
-                <a
-                  className={`hover:text-blue-700 hover:bg-blue-50 transition-all duration-200 cursor-pointer py-3 px-4 rounded-lg ${currentView === 'community' ? 'text-blue-700 bg-blue-50' : ''}`}
-                  onClick={() => {
-                    setCurrentView('community');
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  {t.nav.community}
-                </a>
-                <a
-                  className={`hover:text-blue-700 hover:bg-blue-50 transition-all duration-200 cursor-pointer py-3 px-4 rounded-lg ${currentView === 'competitions' ? 'text-blue-700 bg-blue-50' : ''}`}
-                  onClick={() => {
-                    setCurrentView('competitions');
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  {t.nav.competitions}
-                </a>
-                <a className="hover:text-blue-700 hover:bg-blue-50 transition-all duration-200 cursor-pointer py-3 px-4 rounded-lg">
-                  {t.nav.leaderboard}
-                </a>
-              </nav>
-            </div>
-          )}
         </div>
       </header>
+
+      {/* Mobile Bottom Navigation - Material Design */}
+      <nav className="md:hidden bottom-nav">
+        <div className="flex items-center justify-around h-full">
+          <button
+            onClick={() => setCurrentView('home')}
+            className={`bottom-nav-item ripple-dark ${currentView === 'home' ? 'active' : ''}`}
+          >
+            <svg className="w-6 h-6 mb-1" fill={currentView === 'home' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span className="text-[10px] font-medium">{language === 'en' ? 'Home' : 'হোম'}</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentView('safety')}
+            className={`bottom-nav-item ripple-dark ${currentView === 'safety' ? 'active' : ''}`}
+          >
+            <svg className="w-6 h-6 mb-1" fill={currentView === 'safety' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span className="text-[10px] font-medium">{language === 'en' ? 'Safety' : 'নিরাপত্তা'}</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentView('community')}
+            className={`bottom-nav-item ripple-dark ${currentView === 'community' ? 'active' : ''}`}
+          >
+            <svg className="w-6 h-6 mb-1" fill={currentView === 'community' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span className="text-[10px] font-medium">{language === 'en' ? 'Community' : 'সম্প্রদায়'}</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentView('competitions')}
+            className={`bottom-nav-item ripple-dark ${currentView === 'competitions' ? 'active' : ''}`}
+          >
+            <svg className="w-6 h-6 mb-1" fill={currentView === 'competitions' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </svg>
+            <span className="text-[10px] font-medium">{language === 'en' ? 'Compete' : 'প্রতিযোগিতা'}</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentView('emergency')}
+            className={`bottom-nav-item ripple-dark ${currentView === 'emergency' ? 'active' : ''}`}
+          >
+            <svg className="w-6 h-6 mb-1" fill={currentView === 'emergency' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span className="text-[10px] font-medium text-red-600">{language === 'en' ? 'SOS' : 'জরুরি'}</span>
+          </button>
+        </div>
+      </nav>
 
       {/* Main Content Area */}
       {renderContent()}
@@ -503,42 +511,42 @@ function HomeContent({ hoveredCard, setHoveredCard, setCurrentView, language, t,
 
 function StatCard({ number, label, icon }) {
   return (
-    <div className="bg-white rounded-xl p-4 sm:p-6 text-center shadow-sm border border-slate-100 hover:shadow-md hover:border-blue-100 transition-all duration-300 group">
-      <div className="text-2xl sm:text-3xl mb-2 group-hover:scale-110 transition-transform duration-300">{icon}</div>
-      <div className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">{number}</div>
-      <div className="text-xs sm:text-sm text-slate-500 font-medium">{label}</div>
+    <div className="material-card p-5 sm:p-6 text-center group">
+      <div className="text-3xl sm:text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">{icon}</div>
+      <div className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">{number}</div>
+      <div className="text-sm sm:text-base text-slate-500 font-medium">{label}</div>
     </div>
   );
 }
 
 function QuickFeatureCard({ icon, title, description, color, hoverColor }) {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md hover:border-blue-100 transition-all duration-300 group cursor-pointer">
-      <div className={`w-12 h-12 rounded-lg ${color} ${hoverColor} flex items-center justify-center text-2xl mb-4 transition-colors duration-300`}>
+    <div className="material-card p-6 sm:p-8 group cursor-pointer ripple-dark touch-target">
+      <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl elevation-2 ${color} ${hoverColor} flex items-center justify-center text-3xl sm:text-4xl mb-5 transition-all duration-300 group-hover:scale-110`}>
         {icon}
       </div>
-      <h3 className="font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">{title}</h3>
-      <p className="text-sm text-slate-500">{description}</p>
+      <h3 className="font-bold text-base sm:text-lg text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">{title}</h3>
+      <p className="text-sm sm:text-base text-slate-500 leading-relaxed">{description}</p>
     </div>
   );
 }
 
 function SafetyAlert({ language }) {
   return (
-    <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 mb-16 relative overflow-hidden">
+    <div className="bg-orange-50 border-2 border-orange-200 rounded-2xl p-6 sm:p-8 mb-16 relative overflow-hidden elevation-2">
       <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-      <div className="flex items-start gap-4 relative z-10">
-        <div className="text-3xl sm:text-4xl bg-white rounded-full p-2 shadow-sm">⚠️</div>
+      <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6 relative z-10">
+        <div className="text-4xl sm:text-5xl bg-white rounded-full p-3 sm:p-4 elevation-2 flex-shrink-0">⚠️</div>
         <div className="flex-1">
-          <h3 className="text-lg sm:text-xl font-bold text-orange-800 mb-2">
+          <h3 className="text-xl sm:text-2xl font-bold text-orange-800 mb-3">
             {language === 'en' ? "Safety Alert: Nor'wester (Kalbaishakhi)" : "সতর্কতা: কালবৈশাখী ঝড়"}
           </h3>
-          <p className="text-orange-700 mb-4 text-sm sm:text-base">
+          <p className="text-orange-700 mb-5 text-base sm:text-lg leading-relaxed">
             {language === 'en'
               ? "Storms expected in Kolkata, Howrah, and Hooghly districts. Review storm protocols."
               : "কলকাতা, হাওড়া এবং হুগলি জেলায় ঝড়ের সম্ভাবনা। ঝড়ের প্রোটোকল মেনে চলুন।"}
           </p>
-          <button className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-semibold shadow-sm transition-all">
+          <button className="material-button-primary ripple">
             {language === 'en' ? "View Guidelines" : "নির্দেশিকা দেখুন"}
           </button>
         </div>
@@ -566,27 +574,27 @@ function LeaderboardTable({ language }) {
   ];
 
   return (
-    <div className="space-y-1">
-      <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-2">
+    <div className="space-y-2">
+      <div className="grid grid-cols-12 gap-4 px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-200 mb-3">
         <div className="col-span-8 sm:col-span-6">{language === 'en' ? "Lineman" : "লাইনম্যান"}</div>
         <div className="col-span-4 sm:col-span-6 text-right">{language === 'en' ? "Score" : "স্কোর"}</div>
       </div>
       {leaders.map((leader, index) => (
-        <div key={leader.rank} className={`flex items-center justify-between p-4 rounded-xl transition-all ${index === 0 ? 'bg-blue-50 border border-blue-100' : 'hover:bg-slate-50 border border-transparent hover:border-slate-100'}`}>
-          <div className="flex items-center gap-4">
-            <div className="text-2xl w-8 text-center font-bold text-slate-400">{leader.badge}</div>
+        <div key={leader.rank} className={`flex items-center justify-between p-4 sm:p-5 rounded-xl transition-all touch-target ${index === 0 ? 'bg-blue-50 border-2 border-blue-200 elevation-1' : 'hover:bg-slate-50 border border-transparent hover:border-slate-200'}`}>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="text-2xl sm:text-3xl w-10 text-center font-bold">{leader.badge}</div>
             <div>
-              <div className="font-bold text-slate-900">{leader.name}</div>
-              <div className="text-sm text-slate-500">{leader.region}</div>
+              <div className="font-bold text-base sm:text-lg text-slate-900">{leader.name}</div>
+              <div className="text-sm sm:text-base text-slate-500">{leader.region}</div>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-xl font-bold text-blue-700">{leader.score}</div>
-            <div className="text-xs text-slate-400">points</div>
+            <div className="text-xl sm:text-2xl font-bold text-blue-700">{leader.score}</div>
+            <div className="text-xs sm:text-sm text-slate-400">points</div>
           </div>
         </div>
       ))}
-      <button className="w-full py-3 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-xl transition-all font-semibold mt-4 text-sm">
+      <button className="w-full material-button-outlined ripple-dark mt-5">
         {language === 'en' ? "View Full Leaderboard →" : "সম্পূর্ণ লিডারবোর্ড দেখুন →"}
       </button>
     </div>
@@ -595,22 +603,22 @@ function LeaderboardTable({ language }) {
 
 function CommunityCard({ title, author, replies, likes, time }) {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md hover:border-blue-200 transition-all duration-300 cursor-pointer group">
-      <div className="flex items-start justify-between mb-3">
-        <div className="inline-block px-2 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-md">Discussion</div>
-        <span className="text-xs text-slate-400">{time}</span>
+    <div className="material-card p-6 sm:p-8 cursor-pointer group ripple-dark">
+      <div className="flex items-start justify-between mb-4">
+        <div className="inline-block px-3 py-1.5 bg-blue-50 text-blue-700 text-xs sm:text-sm font-semibold rounded-lg elevation-1">Discussion</div>
+        <span className="text-xs sm:text-sm text-slate-400">{time}</span>
       </div>
-      <h3 className="font-bold text-lg mb-3 text-slate-900 group-hover:text-blue-700 transition-colors">{title}</h3>
-      <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
-        <span className="font-medium text-slate-700">👤 {author}</span>
+      <h3 className="font-bold text-lg sm:text-xl mb-4 text-slate-900 group-hover:text-blue-700 transition-colors leading-snug">{title}</h3>
+      <div className="flex items-center gap-2 text-sm sm:text-base text-slate-500 mb-5">
+        <span className="font-medium text-slate-700 text-base">👤 {author}</span>
       </div>
-      <div className="flex items-center gap-6 text-sm border-t border-slate-100 pt-4">
-        <div className="flex items-center gap-2 text-slate-500">
-          <span>💬</span>
+      <div className="flex items-center gap-6 sm:gap-8 text-sm sm:text-base border-t border-slate-100 pt-5">
+        <div className="flex items-center gap-2 text-slate-500 touch-target">
+          <span className="text-lg">💬</span>
           <span>{replies} replies</span>
         </div>
-        <div className="flex items-center gap-2 text-slate-500">
-          <span>❤️</span>
+        <div className="flex items-center gap-2 text-slate-500 touch-target">
+          <span className="text-lg">❤️</span>
           <span>{likes} likes</span>
         </div>
       </div>
@@ -620,22 +628,22 @@ function CommunityCard({ title, author, replies, likes, time }) {
 
 function EventCard({ title, date, participants, type, typeColor }) {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md hover:border-blue-200 transition-all duration-300 group">
-      <div className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${typeColor} mb-4`}>
+    <div className="material-card p-6 sm:p-8 group">
+      <div className={`inline-block px-4 py-2 rounded-full text-xs sm:text-sm font-bold ${typeColor} mb-5 elevation-1`}>
         {type}
       </div>
-      <h3 className="font-bold text-lg mb-2 text-slate-900 group-hover:text-blue-700 transition-colors">{title}</h3>
-      <div className="text-sm text-slate-500 mb-5 space-y-2">
-        <div className="flex items-center gap-2">
-          <span>📅</span>
+      <h3 className="font-bold text-lg sm:text-xl mb-4 text-slate-900 group-hover:text-blue-700 transition-colors leading-snug">{title}</h3>
+      <div className="text-sm sm:text-base text-slate-500 mb-6 space-y-3">
+        <div className="flex items-center gap-3">
+          <span className="text-lg">📅</span>
           <span className="font-medium">{date}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <span>👥</span>
+        <div className="flex items-center gap-3">
+          <span className="text-lg">👥</span>
           <span>{participants}</span>
         </div>
       </div>
-      <button className="w-full py-2.5 border border-slate-200 text-slate-600 hover:border-blue-600 hover:text-blue-600 rounded-lg transition-all font-semibold text-sm">
+      <button className="w-full material-button-outlined ripple-dark">
         Register Now
       </button>
     </div>

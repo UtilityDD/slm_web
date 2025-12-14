@@ -55,7 +55,7 @@ export default function Community({ language = 'en' }) {
                 {/* Left Sidebar - Navigation & Groups */}
                 <div className="lg:col-span-1 space-y-6">
                     {/* Navigation Menu */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="material-card elevation-2 overflow-hidden">
                         <nav className="flex flex-col">
                             <button
                                 onClick={() => setActiveTab('discussions')}
@@ -85,7 +85,7 @@ export default function Community({ language = 'en' }) {
                     </div>
 
                     {/* My Groups */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                    <div className="material-card elevation-2 p-5 sm:p-6">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-bold text-slate-900">{t.myGroups}</h3>
                             <button className="text-xs text-blue-700 font-semibold hover:underline">View All</button>
@@ -98,7 +98,7 @@ export default function Community({ language = 'en' }) {
                     </div>
 
                     {/* Trending Tags */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                    <div className="material-card elevation-2 p-5 sm:p-6">
                         <h3 className="font-bold text-slate-900 mb-4">{t.trending}</h3>
                         <div className="flex flex-wrap gap-2">
                             <Tag label="#Kalbaishakhi" />
@@ -168,7 +168,7 @@ export default function Community({ language = 'en' }) {
 
                 {/* Right Sidebar - Top Contributors */}
                 <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                    <div className="material-card elevation-2 p-5 sm:p-6">
                         <h3 className="font-bold text-slate-900 mb-4">{t.topContributors}</h3>
                         <div className="space-y-4">
                             <ContributorItem name="Amit Patel" points="12,450" badge="🥇" role="Supervisor" />

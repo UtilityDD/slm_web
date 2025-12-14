@@ -335,7 +335,7 @@ export default function Emergency({ language = 'en', user }) {
                     </div>
 
                     {/* Filters */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
+                    <div className="material-card elevation-2 p-6 sm:p-8 mb-8">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700 mb-2">{t.blood.filters.group}</label>
@@ -387,15 +387,15 @@ export default function Emergency({ language = 'en', user }) {
                     {loading ? (
                         <Spinner />
                     ) : donors.length === 0 ? (
-                        <EmptyState 
-                            icon="🤷" 
+                        <EmptyState
+                            icon="🤷"
                             title="No Donors Found"
                             message="No donors match your current filters. Try a different search."
                         />
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {donors.map((donor) => (
-                                <div key={donor.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md hover:border-red-100 transition-all group">
+                                <div key={donor.id} className="material-card p-6 sm:p-8 group">
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex items-center gap-4">
                                             <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center font-bold text-lg border border-red-100">
@@ -438,7 +438,7 @@ export default function Emergency({ language = 'en', user }) {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {services.map((service) => (
-                                <div key={service.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all group">
+                                <div key={service.id} className="material-card p-6 sm:p-8 group">
                                     <div className="flex items-start justify-between mb-4">
                                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${service.type === 'hospitals' ? 'bg-blue-50 text-blue-600' :
                                             service.type === 'fire' ? 'bg-orange-50 text-orange-600' :
@@ -473,7 +473,7 @@ export default function Emergency({ language = 'en', user }) {
             {/* Registration Modal */}
             {showRegisterModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-scale-up">
+                    <div className="material-card elevation-5 w-full max-w-md p-6 sm:p-8 animate-scale-up">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-slate-900">
                                 {isDonor ? (language === 'en' ? 'Update Donor Profile' : 'রক্তদাতা প্রোফাইল আপডেট') : (language === 'en' ? 'Register as Blood Donor' : 'রক্তদাতা হিসেবে নিবন্ধন')}

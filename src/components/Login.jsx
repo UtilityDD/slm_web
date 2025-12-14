@@ -42,52 +42,52 @@ export default function Login({ onLogin }) {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-            <div className="max-w-md w-full bg-white rounded-3xl shadow-xl border border-slate-100 p-8 relative overflow-hidden">
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 mobile-container py-8">
+            <div className="max-w-md w-full material-card elevation-4 p-8 sm:p-10 relative overflow-hidden">
                 {/* Decorative Background */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none"></div>
 
                 <div className="relative z-10">
                     <div className="text-center mb-8">
-                        <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg shadow-blue-900/20 text-white">
+                        <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-5 elevation-3 text-white">
                             ⚡
                         </div>
-                        <h2 className="text-3xl font-bold text-slate-900">
+                        <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
                             {isSignUp ? 'Join SmartLineman' : 'Welcome Back'}
                         </h2>
-                        <p className="text-slate-500 mt-2">
+                        <p className="text-slate-500 text-base sm:text-lg">
                             {isSignUp ? 'Create your account to get started' : 'Sign in to access your dashboard'}
                         </p>
                     </div>
 
                     {error && (
-                        <div className="mb-6 p-4 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 flex items-start gap-2">
-                            <span>⚠️</span>
+                        <div className="mb-6 p-4 bg-red-50 text-red-600 text-sm sm:text-base rounded-xl border-2 border-red-200 flex items-start gap-3 elevation-1">
+                            <span className="text-xl">⚠️</span>
                             <span>{error}</span>
                         </div>
                     )}
 
-                    <form onSubmit={handleAuth} className="space-y-5">
+                    <form onSubmit={handleAuth} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Address</label>
+                            <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-2">Email Address</label>
                             <input
                                 type="email"
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all bg-slate-50 focus:bg-white"
+                                className="material-input"
                                 placeholder="lineman@example.com"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
+                            <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-2">Password</label>
                             <input
                                 type="password"
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all bg-slate-50 focus:bg-white"
+                                className="material-input"
                                 placeholder="••••••••"
                             />
                         </div>
@@ -95,10 +95,10 @@ export default function Login({ onLogin }) {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-900/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full material-button-primary disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 ripple text-base sm:text-lg"
                         >
                             {loading ? (
-                                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                <span className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></span>
                             ) : (
                                 isSignUp ? 'Create Account' : 'Sign In'
                             )}
@@ -106,11 +106,11 @@ export default function Login({ onLogin }) {
                     </form>
 
                     <div className="mt-8 text-center">
-                        <p className="text-slate-600 text-sm">
+                        <p className="text-slate-600 text-sm sm:text-base">
                             {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
                             <button
                                 onClick={() => setIsSignUp(!isSignUp)}
-                                className="text-blue-600 font-bold hover:underline"
+                                className="text-blue-600 font-bold hover:underline touch-target ripple-dark rounded px-1"
                             >
                                 {isSignUp ? 'Sign In' : 'Sign Up'}
                             </button>

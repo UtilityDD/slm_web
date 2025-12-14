@@ -84,4 +84,212 @@
       transform: translateY(0);
     }
   }
+
+  /* =================== MATERIAL DESIGN UTILITIES =================== */
+  
+  /* Material Elevation System */
+  .elevation-0 {
+    box-shadow: none;
+  }
+
+  .elevation-1 {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .elevation-2 {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  .elevation-3 {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  }
+
+  .elevation-4 {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  }
+
+  .elevation-5 {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  }
+
+  .elevation-6 {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Material Ripple Effect */
+  .ripple {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ripple::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  .ripple:active::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  .ripple-dark::before {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  /* Bottom Navigation */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 safe-area-inset-bottom z-50;
+    height: 56px;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.08);
+  }
+
+  .bottom-nav-item {
+    @apply flex flex-col items-center justify-center flex-1 text-slate-500 transition-all duration-200 cursor-pointer;
+    min-width: 80px;
+  }
+
+  .bottom-nav-item.active {
+    @apply text-blue-600;
+  }
+
+  .bottom-nav-item:active {
+    @apply bg-blue-50;
+  }
+
+  /* FAB (Floating Action Button) */
+  .fab {
+    @apply fixed bottom-20 right-4 w-14 h-14 rounded-full flex items-center justify-center text-white transition-all duration-300 cursor-pointer z-40;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3), 0 8px 16px rgba(37, 99, 235, 0.2);
+  }
+
+  .fab:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(37, 99, 235, 0.4), 0 12px 24px rgba(37, 99, 235, 0.3);
+  }
+
+  .fab:active {
+    transform: scale(0.95);
+  }
+
+  /* Material Card */
+  .material-card {
+    @apply bg-white rounded-2xl border border-slate-100 transition-all duration-300;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  .material-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    border-color: rgba(37, 99, 235, 0.2);
+  }
+
+  /* Bottom Sheet */
+  .bottom-sheet {
+    @apply fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[85vh] overflow-y-auto z-50;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -2px rgba(0, 0, 0, 0.1);
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  /* Touch Targets */
+  .touch-target {
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  /* Mobile Spacing */
+  .mobile-container {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  .mobile-section {
+    @apply py-4 sm:py-6 lg:py-8;
+  }
+
+  /* Material Text Field */
+  .material-input {
+    @apply w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:outline-none focus:border-blue-600 focus:ring-0 transition-all bg-slate-50 focus:bg-white text-base;
+    min-height: 48px;
+  }
+
+  /* Material Button */
+  .material-button {
+    @apply px-6 py-3 rounded-xl font-semibold transition-all duration-200 touch-target;
+    min-height: 48px;
+  }
+
+  .material-button-primary {
+    @apply material-button bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+  }
+
+  .material-button-primary:active {
+    box-shadow: 0 1px 2px rgba(37, 99, 235, 0.3);
+  }
+
+  .material-button-outlined {
+    @apply material-button border-2 border-blue-600 text-blue-600 bg-white hover:bg-blue-50 active:bg-blue-100;
+  }
+
+  /* Safe area for mobile devices */
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Mobile-only utilities */
+  @media (max-width: 767px) {
+    .hide-on-mobile {
+      display: none !important;
+    }
+    
+    /* Add bottom padding to prevent content from being hidden by bottom nav */
+    body {
+      padding-bottom: 72px;
+    }
+  }
+
+  /* Desktop-only utilities */
+  @media (min-width: 768px) {
+    .show-on-mobile-only {
+      display: none !important;
+    }
+
+    /* Remove bottom padding on desktop */
+    body {
+      padding-bottom: 0;
+    }
+  }
+
+  /* Improved mobile typography */
+  @media (max-width: 767px) {
+    h1 {
+      @apply text-3xl sm:text-4xl;
+    }
+    h2 {
+      @apply text-2xl sm:text-3xl;
+    }
+    h3 {
+      @apply text-xl sm:text-2xl;
+    }
+    p, span, div {
+      font-size: 16px;
+      line-height: 1.6;
+    }
+  }
 }

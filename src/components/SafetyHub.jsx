@@ -131,8 +131,8 @@ export default function SafetyHub({ language = 'en' }) {
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === tab
-                                ? 'bg-orange-600 text-white shadow-md'
-                                : 'bg-white text-slate-600 hover:bg-orange-50 border border-slate-200'
+                            ? 'bg-orange-600 text-white shadow-md'
+                            : 'bg-white text-slate-600 hover:bg-orange-50 border border-slate-200'
                             }`}
                     >
                         {t.tabs[tab]}
@@ -177,7 +177,7 @@ export default function SafetyHub({ language = 'en' }) {
                 {activeTab === 'training' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[1, 2, 3].map((item) => (
-                            <div key={item} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all group">
+                            <div key={item} className="material-card elevation-2 overflow-hidden group ripple-dark">
                                 <div className="relative h-48 bg-slate-200">
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         <div className="w-12 h-12 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-xl cursor-pointer hover:scale-110 transition-transform">
