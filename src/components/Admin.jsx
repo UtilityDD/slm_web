@@ -99,8 +99,9 @@ export default function Admin({ user, language }) {
                 <label>Is Donor</label>
               </div>
               <input type="date" name="last_donation_date" value={editingUser.last_donation_date || ''} onChange={handleChange} className="p-2 border rounded" />
-              <select name="role" value={editingUser.role || 'user'} onChange={handleChange} className="p-2 border rounded">
-                <option value="user">User</option>
+              <select name="role" value={editingUser.role || 'lineman'} onChange={handleChange} className="p-2 border rounded">
+                <option value="lineman">Lineman</option>
+                <option value="safety mitra">Safety Mitra</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
