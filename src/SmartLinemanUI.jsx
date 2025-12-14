@@ -5,6 +5,7 @@ import Emergency from "./components/Emergency";
 import SafetyHub from "./components/SafetyHub";
 import Login from "./components/Login";
 import { supabase } from "./supabaseClient";
+import LogoutConfirmationModal from "./components/LogoutConfirmationModal";
 
 export default function SmartLinemanUI() {
   const [hoveredCard, setHoveredCard] = useState(null);
@@ -12,6 +13,7 @@ export default function SmartLinemanUI() {
   const [currentView, setCurrentView] = useState('home');
   const [language, setLanguage] = useState('en');
   const [user, setUser] = useState(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   useEffect(() => {
     // Check active session
@@ -31,10 +33,19 @@ export default function SmartLinemanUI() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentView]);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setShowLogoutModal(false);
     setCurrentView('home');
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
   };
 
   const translations = {
@@ -123,6 +134,13 @@ export default function SmartLinemanUI() {
 
   return (
     <div className={`min-h-screen bg-slate-50 text-slate-900 ${language === 'bn' ? 'font-bengali' : 'font-sans'}`}>
+      {showLogoutModal && (
+        <LogoutConfirmationModal
+          onConfirm={confirmLogout}
+          onCancel={cancelLogout}
+          language={language}
+        />
+      )}
       {/* Background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-[50vw] h-[50vw] bg-blue-100/40 rounded-full blur-3xl translate-x-1/4 -translate-y-1/4"></div>
