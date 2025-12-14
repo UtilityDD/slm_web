@@ -222,6 +222,29 @@ export default function SmartLinemanUI() {
                   {t.nav.login}
                 </button>
               )}
+
+              {/* Mobile User Icon */}
+              <div className="md:hidden">
+                {user ? (
+                  <button
+                    onClick={handleLogout}
+                    className="w-10 h-10 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-sm elevation-1 ripple-dark touch-target"
+                    title={t.nav.logout}
+                  >
+                    {user.email ? user.email[0].toUpperCase() : 'U'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setCurrentView('login')}
+                    className="w-10 h-10 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center elevation-1 ripple-dark touch-target hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                    title={t.nav.login}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
