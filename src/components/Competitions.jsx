@@ -4,10 +4,10 @@ import { supabase } from '../supabaseClient';
 export default function Competitions({ language = 'en', user }) {
     const [quizzes, setQuizzes] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeQuiz, setActiveQuiz] = useState(null); // The quiz currently being taken
+    const [activeQuiz, setActiveQuiz] = useState(null);
     const [quizQuestions, setQuizQuestions] = useState([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [userAnswers, setUserAnswers] = useState({}); // { questionId: selectedOptionIndex }
+    const [userAnswers, setUserAnswers] = useState({});
     const [quizSubmitted, setQuizSubmitted] = useState(false);
     const [score, setScore] = useState(0);
     const [leaderboard, setLeaderboard] = useState([]);
@@ -15,48 +15,32 @@ export default function Competitions({ language = 'en', user }) {
 
     const t = {
         en: {
-            title: "Competitions & Quizzes",
-            subtitle: "Test your knowledge, compete with peers, and win recognition.",
-            weeklyChallenge: "WEEKLY CHALLENGE",
+            title: "Competitions",
+            subtitle: "Challenge yourself and win recognition.",
+            weekly: "Weekly Challenge",
+            hourly: "Hourly Quiz",
+            play: "Play Now",
             questions: "Questions",
-            duration: "Duration",
-            points: "Points",
-            participants: "Participants",
-            startQuiz: "Start Quiz Now",
-            dailyQuiz: "Quiz for every hour",
-            leaderboard: "Regional Leaderboard",
-            yourStats: "Your Performance",
-            hallOfFame: "Hall of Fame",
-            loading: "Loading competitions...",
-            submit: "Submit Quiz",
-            next: "Next",
-            previous: "Previous",
+            mins: "Mins",
+            points: "Pts",
+            leaderboard: "Top Performers",
             completed: "Quiz Completed!",
-            scoreMsg: "You scored",
-            earned: "Points Earned",
+            score: "Your Score",
             close: "Close",
             loginReq: "Please login to participate"
         },
         bn: {
-            title: "প্রতিযোগিতা এবং কুইজ",
-            subtitle: "আপনার জ্ঞান পরীক্ষা করুন, সহকর্মীদের সাথে প্রতিযোগিতা করুন এবং স্বীকৃতি জিতুন।",
-            weeklyChallenge: "সাপ্তাহিক চ্যালেঞ্জ",
+            title: "প্রতিযোগিতা",
+            subtitle: "নিজেকে চ্যালেঞ্জ করুন এবং স্বীকৃতি জিতুন।",
+            weekly: "সাপ্তাহিক চ্যালেঞ্জ",
+            hourly: "ঘন্টাভিত্তিক কুইজ",
+            play: "খেলুন",
             questions: "প্রশ্ন",
-            duration: "সময়",
+            mins: "মিনিট",
             points: "পয়েন্ট",
-            participants: "অংশগ্রহণকারী",
-            startQuiz: "কুইজ শুরু করুন",
-            dailyQuiz: "প্রতি ঘন্টায় কুইজ",
-            leaderboard: "আঞ্চলিক লিডারবোর্ড",
-            yourStats: "আপনার পারফরম্যান্স",
-            hallOfFame: "হল অফ ফেম",
-            loading: "প্রতিযোগিতা লোড হচ্ছে...",
-            submit: "কুইজ জমা দিন",
-            next: "পরবর্তী",
-            previous: "পূর্ববর্তী",
-            completed: "কুইজ সম্পন্ন হয়েছে!",
-            scoreMsg: "আপনার স্কোর",
-            earned: "অর্জিত পয়েন্ট",
+            leaderboard: "সেরা পারফর্মার",
+            completed: "কুইজ সম্পন্ন!",
+            score: "আপনার স্কোর",
             close: "বন্ধ করুন",
             loginReq: "অংশগ্রহণ করতে লগইন করুন"
         }
@@ -101,7 +85,7 @@ export default function Competitions({ language = 'en', user }) {
                 .from('profiles')
                 .select('full_name, district, points, avatar_url')
                 .order('points', { ascending: false })
-                .limit(10);
+                .limit(5); // Limit to top 5 for minimal view
 
             if (error) throw error;
             setLeaderboard(data || []);
@@ -141,7 +125,7 @@ export default function Competitions({ language = 'en', user }) {
             setScore(0);
         } catch (error) {
             console.error('Error fetching questions:', error);
-            alert('Failed to load quiz. Please try again.');
+            alert('Failed to load quiz');
             setActiveQuiz(null);
         } finally {
             setLoading(false);
@@ -149,351 +133,213 @@ export default function Competitions({ language = 'en', user }) {
     };
 
     const handleAnswerSelect = (questionId, optionIndex) => {
-        setUserAnswers(prev => ({
-            ...prev,
-            [questionId]: optionIndex
-        }));
+        setUserAnswers(prev => ({ ...prev, [questionId]: optionIndex }));
     };
 
     const submitQuiz = async () => {
         let calculatedScore = 0;
         let correctCount = 0;
-
         quizQuestions.forEach(q => {
-            if (userAnswers[q.id] === q.correct_option_index) {
-                correctCount++;
-            }
+            if (userAnswers[q.id] === q.correct_option_index) correctCount++;
         });
-
-        // Simple scoring: (correct / total) * max_points
         if (quizQuestions.length > 0) {
             calculatedScore = Math.round((correctCount / quizQuestions.length) * activeQuiz.points_reward);
         }
-
         setScore(calculatedScore);
         setQuizSubmitted(true);
 
-        if (activeQuiz.isLocal) {
-            console.log('Local quiz submitted, score:', calculatedScore);
-            // Not saving to supabase for local quiz
-            return;
-        }
-
-        try {
-            // 1. Record Attempt
-            await supabase.from('quiz_attempts').insert({
-                user_id: user.id,
-                quiz_id: activeQuiz.id,
-                score: calculatedScore
-            });
-
-            // 2. Update User Points
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('points')
-                .eq('id', user.id)
-                .single();
-
-            const currentPoints = profile?.points || 0;
-
-            await supabase
-                .from('profiles')
-                .update({ points: currentPoints + calculatedScore })
-                .eq('id', user.id);
-
-            // Refresh leaderboard
-            fetchLeaderboard();
-
-        } catch (error) {
-            console.error('Error submitting quiz:', error);
-            alert('Error saving results, but you scored: ' + calculatedScore);
+        if (!activeQuiz.isLocal) {
+            try {
+                await supabase.from('quiz_attempts').insert({
+                    user_id: user.id,
+                    quiz_id: activeQuiz.id,
+                    score: calculatedScore
+                });
+                const { data: profile } = await supabase.from('profiles').select('points').eq('id', user.id).single();
+                await supabase.from('profiles').update({ points: (profile?.points || 0) + calculatedScore }).eq('id', user.id);
+                fetchLeaderboard();
+            } catch (error) {
+                console.error('Error saving result:', error);
+            }
         }
     };
 
-    // Helper to find specific quizzes for UI slots
     const featuredQuiz = quizzes.find(q => q.title.includes('Monsoon')) || quizzes[0];
 
-    if (loading && quizzes.length === 0) {
-        return <div className="text-center py-20 text-slate-500">{t.loading}</div>;
-    }
-
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* Header Section */}
-            <div className="mb-10 text-center">
-                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-                    {language === 'en' ? (
-                        <>Competitions & <span className="text-blue-700">Quizzes</span></>
-                    ) : (
-                        <>{t.title}</>
-                    )}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+            {/* Minimal Header */}
+            <div className="text-center mb-12 animate-fade-in">
+                <div className="inline-block p-3 rounded-2xl bg-slate-50 mb-4 shadow-sm border border-slate-100">
+                    <span className="text-4xl">🏆</span>
+                </div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3 tracking-tight">
+                    {t.title}
                 </h1>
-                <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
                     {t.subtitle}
                 </p>
             </div>
 
-            {/* Active Competitions Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
-                {/* Main Featured Quiz */}
+            {/* Quiz Cards - 2 Column Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto mb-16">
+                {/* 1. Weekly Challenge */}
                 {featuredQuiz && (
-                    <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative group">
-                        <div className="absolute top-0 right-0 bg-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg z-10">
-                            FEATURED
+                    <div className="bg-white rounded-3xl p-8 border border-yellow-100 shadow-sm hover:shadow-yellow-100 transition-all group relative overflow-hidden animate-scale-up">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <span className="text-9xl">⚡</span>
                         </div>
-                        <div className="p-8">
-                            <div className="flex items-start justify-between mb-6">
-                                <div>
-                                    <span className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold mb-3">
-                                        {t.weeklyChallenge}
-                                    </span>
-                                    <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                                        {featuredQuiz.title}
-                                    </h2>
-                                    <p className="text-slate-600">
-                                        {featuredQuiz.description}
-                                    </p>
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-3 bg-yellow-50 text-yellow-600 rounded-xl">
+                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                 </div>
-                                <div className="text-5xl">⛈️</div>
+                                <h2 className="text-xl font-bold text-slate-900">{t.weekly}</h2>
+                            </div>
+                            <h3 className="text-2xl font-bold text-slate-800 mb-2">{featuredQuiz.title}</h3>
+                            <p className="text-slate-500 mb-6 line-clamp-2">{featuredQuiz.description}</p>
+
+                            <div className="flex items-center gap-4 text-sm text-slate-500 mb-8">
+                                <span className="flex items-center gap-1">⏱️ {featuredQuiz.duration_minutes} {t.mins}</span>
+                                <span className="flex items-center gap-1">🎫 {featuredQuiz.points_reward} {t.points}</span>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4 mb-8 border-y border-slate-100 py-6">
-                                <div className="text-center border-r border-slate-100">
-                                    <div className="text-2xl font-bold text-slate-900">?</div>
-                                    <div className="text-xs text-slate-500 uppercase tracking-wide">{t.questions}</div>
-                                </div>
-                                <div className="text-center border-r border-slate-100">
-                                    <div className="text-2xl font-bold text-slate-900">{featuredQuiz.duration_minutes}m</div>
-                                    <div className="text-xs text-slate-500 uppercase tracking-wide">{t.duration}</div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-slate-900">{featuredQuiz.points_reward}</div>
-                                    <div className="text-xs text-slate-500 uppercase tracking-wide">{t.points}</div>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                                <div className="flex items-center gap-2 text-sm text-slate-500">
-                                    <span>👥 100+ {t.participants}</span>
-                                </div>
-                                <button
-                                    onClick={() => startQuiz(featuredQuiz)}
-                                    className="w-full sm:w-auto px-8 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5"
-                                >
-                                    {t.startQuiz}
-                                </button>
-                            </div>
-                        </div>
-                        <div className="h-2 bg-slate-100">
-                            <div className="h-full w-3/4 bg-blue-600 rounded-r-full"></div>
+                            <button onClick={() => startQuiz(featuredQuiz)} className="w-full py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-bold shadow-md shadow-yellow-200 transition-colors">
+                                {t.play}
+                            </button>
                         </div>
                     </div>
                 )}
 
-                {/* Hourly Quick Quiz */}
+                {/* 2. Hourly Quiz */}
                 {hourlyQuiz && (
-                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl shadow-lg text-white p-8 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-
+                    <div className="bg-white rounded-3xl p-8 border border-blue-100 shadow-sm hover:shadow-blue-100 transition-all group relative overflow-hidden animate-scale-up" style={{ animationDelay: '100ms' }}>
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <span className="text-9xl">⏱️</span>
+                        </div>
                         <div className="relative z-10">
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="text-2xl">⚡</span>
-                                <h3 className="text-xl font-bold">{t.dailyQuiz}</h3>
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
+                                <h2 className="text-xl font-bold text-slate-900">{t.hourly}</h2>
+                            </div>
+                            <h3 className="text-2xl font-bold text-slate-800 mb-2">General Knowledge</h3>
+                            <p className="text-slate-500 mb-6 line-clamp-2">{hourlyQuiz.description}</p>
+
+                            <div className="flex items-center gap-4 text-sm text-slate-500 mb-8">
+                                <span className="flex items-center gap-1">⏱️ {hourlyQuiz.duration_minutes} {t.mins}</span>
+                                <span className="flex items-center gap-1">🎫 {hourlyQuiz.points_reward} {t.points}</span>
                             </div>
 
-                            <p className="text-slate-300 mb-6 text-sm">
-                                {hourlyQuiz.description}
-                            </p>
-
-                            <div className="space-y-4 mb-8">
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate-400">Time Limit</span>
-                                    <span className="font-medium text-blue-300">{hourlyQuiz.duration_minutes} Minutes</span>
-                                </div>
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate-400">Reward</span>
-                                    <span className="font-medium text-yellow-400">{hourlyQuiz.points_reward} Points</span>
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={() => startQuiz(hourlyQuiz)}
-                                className="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl font-bold transition-all backdrop-blur-sm"
-                            >
-                                Play Now
+                            <button onClick={() => startQuiz(hourlyQuiz)} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md shadow-blue-200 transition-colors">
+                                {t.play}
                             </button>
                         </div>
                     </div>
                 )}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Leaderboard Column */}
-                <div className="lg:col-span-2">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-bold text-slate-900">🏆 {t.leaderboard}</h3>
-                    </div>
-
-                    <div className="material-card elevation-2 overflow-hidden">
-                        <table className="w-full">
-                            <thead className="bg-slate-50 border-b border-slate-200">
-                                <tr>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Rank</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Lineman</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Region</th>
-                                    <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Score</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {leaderboard.map((item, index) => (
-                                    <tr key={index} className="hover:bg-blue-50/50 transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="text-xl">
-                                                {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 mr-3">
-                                                    {item.full_name ? item.full_name.charAt(0) : 'U'}
-                                                </div>
-                                                <div className="text-sm font-medium text-slate-900">{item.full_name || 'Unknown User'}</div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                            {item.district || 'West Bengal'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-blue-700">
-                                            {item.points}
-                                        </td>
-                                    </tr>
-                                ))}
-                                {leaderboard.length === 0 && (
-                                    <tr>
-                                        <td colSpan="4" className="px-6 py-8 text-center text-slate-500">
-                                            No data available yet. Be the first to score!
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* Sidebar */}
-                <div className="space-y-8">
-                    {/* Your Stats */}
-                    <div className="material-card elevation-2 p-6 sm:p-8">
-                        <h3 className="font-bold text-slate-900 mb-4">{t.yourStats}</h3>
-                        {user ? (
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-slate-900">
-                                        {leaderboard.find(l => l.full_name === user.user_metadata?.full_name)?.points || 0}
-                                    </div>
-                                    <div className="text-xs text-slate-500">Total Points</div>
-                                </div>
-                                <div className="text-center border-l border-slate-100 pl-4">
-                                    <div className="text-2xl font-bold text-green-600">Active</div>
-                                    <div className="text-xs text-slate-500">Status</div>
+            {/* Leaderboard - Minimal List */}
+            <div className="max-w-3xl mx-auto animate-fade-in" style={{ animationDelay: '200ms' }}>
+                <h3 className="text-center font-bold text-slate-800 mb-8 flex items-center justify-center gap-2">
+                    <span>🏅</span> {t.leaderboard}
+                </h3>
+                <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden divide-y divide-slate-100">
+                    {leaderboard.map((item, index) => (
+                        <div key={index} className="flex items-center p-4 sm:p-6 hover:bg-slate-50 transition-colors">
+                            <div className="font-bold text-slate-300 w-8 text-lg">#{index + 1}</div>
+                            <div className="flex-shrink-0 mr-4">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-100 flex items-center justify-center text-lg font-bold text-slate-600 overflow-hidden">
+                                    {item.avatar_url ? <img src={item.avatar_url} alt="" className="w-full h-full object-cover" /> : (item.full_name?.[0] || 'U')}
                                 </div>
                             </div>
-                        ) : (
-                            <div className="text-center text-slate-500 py-4">Login to see stats</div>
-                        )}
-
-                    </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm sm:text-lg font-bold text-slate-900 truncate">
+                                    {item.full_name || 'Anonymous'}
+                                </p>
+                                <p className="text-xs sm:text-sm text-slate-500 truncate">
+                                    {item.district || 'West Bengal'}
+                                </p>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-sm sm:text-lg font-bold text-blue-600">
+                                    {item.points}
+                                </div>
+                                <div className="text-xs text-slate-400">{t.points}</div>
+                            </div>
+                        </div>
+                    ))}
+                    {leaderboard.length === 0 && (
+                        <div className="p-8 text-center text-slate-400">Loading leaders...</div>
+                    )}
                 </div>
             </div>
 
             {/* Quiz Modal */}
             {activeQuiz && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in">
-                    <div className="material-card elevation-5 w-full max-w-2xl p-6 sm:p-8 animate-scale-up max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-6 sm:p-10 animate-scale-up max-h-[90vh] overflow-y-auto">
                         {!quizSubmitted ? (
                             <>
-                                <div className="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+                                <div className="flex justify-between items-center mb-8">
                                     <div>
                                         <h3 className="text-xl font-bold text-slate-900">{activeQuiz.title}</h3>
-                                        <p className="text-sm text-slate-500">Question {currentQuestionIndex + 1} of {quizQuestions.length}</p>
+                                        <p className="text-sm text-slate-500">{t.questions} {currentQuestionIndex + 1} / {quizQuestions.length}</p>
                                     </div>
-                                    <button onClick={() => setActiveQuiz(null)} className="text-slate-400 hover:text-slate-600">✕</button>
+                                    <button onClick={() => setActiveQuiz(null)} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200">✕</button>
                                 </div>
 
-                                {quizQuestions.length > 0 ? (
-                                    <div className="space-y-6">
-                                        {quizQuestions[currentQuestionIndex].image_url && (
-                                            <img src={quizQuestions[currentQuestionIndex].image_url} alt="Quiz question" className="mb-4 rounded-lg max-h-60 w-full object-contain" />
-                                        )}
-                                        <div className="text-lg font-medium text-slate-800">
-                                            {quizQuestions[currentQuestionIndex].question_text}
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            {quizQuestions[currentQuestionIndex].options.map((option, idx) => (
-                                                <button
-                                                    key={idx}
-                                                    onClick={() => handleAnswerSelect(quizQuestions[currentQuestionIndex].id, idx)}
-                                                    className={`w-full text-left p-4 rounded-xl border transition-all ${userAnswers[quizQuestions[currentQuestionIndex].id] === idx
-                                                        ? 'border-blue-500 bg-blue-50 text-blue-700 font-medium shadow-sm'
-                                                        : 'border-slate-200 hover:border-blue-300 hover:bg-slate-50'
-                                                        }`}
-                                                >
-                                                    <span className="inline-block w-6 h-6 rounded-full border border-slate-300 mr-3 text-center leading-5 text-xs text-slate-400">
-                                                        {String.fromCharCode(65 + idx)}
-                                                    </span>
-                                                    {option}
-                                                </button>
-                                            ))}
-                                        </div>
-
-                                        <div className="flex justify-between pt-6 border-t border-slate-100">
-                                            <button
-                                                disabled={currentQuestionIndex === 0}
-                                                onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
-                                                className="px-6 py-2 text-slate-600 hover:bg-slate-100 rounded-lg disabled:opacity-50"
-                                            >
-                                                {t.previous}
-                                            </button>
-
-                                            {currentQuestionIndex === quizQuestions.length - 1 ? (
-                                                <button
-                                                    onClick={submitQuiz}
-                                                    className="px-8 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 shadow-md"
-                                                >
-                                                    {t.submit}
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
-                                                    className="px-8 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 shadow-md"
-                                                >
-                                                    {t.next}
-                                                </button>
-                                            )}
-                                        </div>
+                                <div className="mb-8">
+                                    <div className="w-full bg-slate-100 h-2 rounded-full mb-6">
+                                        <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}></div>
                                     </div>
-                                ) : (
-                                    <div className="text-center py-10">Loading questions...</div>
-                                )}
+                                    <h2 className="text-lg sm:text-xl font-semibold text-slate-800 leading-relaxed mb-6">
+                                        {quizQuestions[currentQuestionIndex]?.question_text}
+                                    </h2>
+                                    <div className="space-y-3">
+                                        {quizQuestions[currentQuestionIndex]?.options.map((option, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => handleAnswerSelect(quizQuestions[currentQuestionIndex].id, idx)}
+                                                className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${userAnswers[quizQuestions[currentQuestionIndex].id] === idx
+                                                        ? 'border-blue-600 bg-blue-50 text-blue-700 font-bold'
+                                                        : 'border-slate-100 hover:border-blue-200 hover:bg-slate-50 text-slate-600'
+                                                    }`}
+                                            >
+                                                <span className="mr-3 text-slate-400">{String.fromCharCode(65 + idx)}.</span> {option}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-between items-center pt-6 border-t border-slate-100">
+                                    <button
+                                        disabled={currentQuestionIndex === 0}
+                                        onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
+                                        className="text-slate-500 hover:text-slate-800 font-semibold disabled:opacity-30 px-4"
+                                    >
+                                        ← Prev
+                                    </button>
+                                    {currentQuestionIndex === quizQuestions.length - 1 ? (
+                                        <button onClick={submitQuiz} className="px-8 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 shadow-md">
+                                            Finish Quiz
+                                        </button>
+                                    ) : (
+                                        <button onClick={() => setCurrentQuestionIndex(prev => prev + 1)} className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-md">
+                                            Next →
+                                        </button>
+                                    )}
+                                </div>
                             </>
                         ) : (
-                            <div className="text-center py-10">
-                                <div className="text-6xl mb-4">🎉</div>
-                                <h3 className="text-2xl font-bold text-slate-900 mb-2">{t.completed}</h3>
-                                <p className="text-slate-600 mb-6">
-                                    {t.scoreMsg}: <span className="text-3xl font-bold text-blue-700 block mt-2">{score} / {activeQuiz.points_reward}</span>
-                                </p>
-                                <div className="inline-block px-4 py-2 bg-green-100 text-green-700 rounded-lg font-bold mb-8">
-                                    +{score} {t.points}
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        setActiveQuiz(null);
-                                        setQuizSubmitted(false);
-                                    }}
-                                    className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800"
-                                >
+                            <div className="text-center py-8">
+                                <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 animate-scale-up">🎉</div>
+                                <h2 className="text-3xl font-bold text-slate-900 mb-2">{t.completed}</h2>
+                                <p className="text-slate-500 mb-8">{t.score}</p>
+                                <div className="text-6xl font-bold text-blue-600 mb-2">{score}</div>
+                                <div className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-10">Total Points Earned</div>
+                                <button onClick={() => { setActiveQuiz(null); setQuizSubmitted(false); }} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 shadow-xl shadow-slate-200">
                                     {t.close}
                                 </button>
                             </div>
