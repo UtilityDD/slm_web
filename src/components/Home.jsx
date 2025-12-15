@@ -27,12 +27,28 @@ export default function Home({ setCurrentView, language, user, t }) {
                         </p>
                     </div>
                     {/* Compact Status Pill */}
-                    <div className="flex items-center gap-3 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100 shadow-sm">
-                        <span className="relative flex h-3 w-3">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                        </span>
-                        <span className="text-sm font-semibold">{t.hero.stats.safety}: 99.2%</span>
+                    <div
+                        onClick={() => !user && setCurrentView('login')}
+                        className={`flex items-center gap-3 px-4 py-2 rounded-full border shadow-sm transition-all cursor-pointer ${user
+                                ? 'bg-blue-50 text-blue-700 border-blue-100'
+                                : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200'
+                            }`}
+                    >
+                        {user ? (
+                            <>
+                                <span className="text-xl">⭐</span>
+                                <span className="text-sm font-bold">
+                                    {language === 'en' ? 'My Score:' : 'আমার স্কোর:'} <span className="text-lg">1,250</span>
+                                </span>
+                            </>
+                        ) : (
+                            <>
+                                <span className="text-lg">🔒</span>
+                                <span className="text-sm font-semibold">
+                                    {language === 'en' ? 'Login to view score' : 'স্কোর দেখতে লগইন করুন'}
+                                </span>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

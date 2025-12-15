@@ -156,6 +156,7 @@ export default function SmartLinemanUI() {
           language={language}
           t={t}
           user={user}
+          userProfile={userProfile}
         />;
     }
   };
