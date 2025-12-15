@@ -4,7 +4,12 @@ export default function Community({ language = 'en' }) {
     const t = {
         en: {
             title: "Community Hub",
-            subtitle: "Join our official channels to connect, learn, and grow.",
+            subtitle: "By Linemen, For Linemen. Mutual learning by sharing knowledge.",
+            rewards: {
+                title: "Share Knowledge, Earn Prizes!",
+                desc: "Post your tips, safety videos, and field experiences. The most liked and shared posts win exciting rewards every week!",
+                action: "Start Sharing"
+            },
             cards: {
                 facebook: {
                     title: "Facebook Group",
@@ -26,7 +31,12 @@ export default function Community({ language = 'en' }) {
         },
         bn: {
             title: "কমিউনিটি হাব",
-            subtitle: "আমাদের অফিসিয়াল চ্যানেলগুলিতে যোগ দিন এবং সংযুক্ত থাকুন।",
+            subtitle: "লাইনম্যানদের দ্বারা, লাইনম্যানদের জন্য। জ্ঞান শেয়ার করে একে অপরের থেকে শিখুন।",
+            rewards: {
+                title: "জ্ঞান শেয়ার করুন, পুরস্কার জিতুন!",
+                desc: "আপনার টিপস, সেফটি ভিডিও এবং অভিজ্ঞতার কথা পোস্ট করুন। সবচেয়ে বেশি লাইক এবং শেয়ার করা পোস্ট প্রতি সপ্তাহে পুরস্কার জিতবে!",
+                action: "শেয়ার করা শুরু করুন"
+            },
             cards: {
                 facebook: {
                     title: "ফেসবুক গ্রুপ",
@@ -103,9 +113,30 @@ export default function Community({ language = 'en' }) {
                 <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3 tracking-tight">
                     {t.title}
                 </h1>
-                <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed font-medium">
                     {t.subtitle}
                 </p>
+            </div>
+
+            {/* Rewards Banner */}
+            <div className="max-w-6xl mx-auto mb-16 animate-scale-up">
+                <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl p-8 md:p-12 text-white shadow-xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
+                        <div className="bg-white/20 p-4 rounded-2xl backdrop-blur-sm">
+                            <span className="text-5xl">🎁</span>
+                        </div>
+                        <div className="flex-1">
+                            <h2 className="text-2xl md:text-3xl font-bold mb-3">{t.rewards.title}</h2>
+                            <p className="text-indigo-100 text-lg leading-relaxed max-w-2xl">
+                                {t.rewards.desc}
+                            </p>
+                        </div>
+                        <button className="px-8 py-3 bg-white text-indigo-700 rounded-xl font-bold shadow-lg hover:shadow-xl hover:bg-indigo-50 transition-all transform hover:-translate-y-1">
+                            {t.rewards.action}
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* Cards Grid */}
