@@ -1,9 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-const Spinner = () => (
-    <div className="flex justify-center items-center py-12">
-        <div className="w-10 h-10 border-4 border-slate-200 border-t-red-600 rounded-full animate-spin"></div>
+// Skeleton Loaders
+const DonorCardSkeleton = () => (
+    <div className="material-card elevation-1 p-6">
+        <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-slate-200 animate-pulse"></div>
+                <div className="space-y-2">
+                    <div className="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
+                    <div className="h-3 w-16 bg-slate-200 rounded animate-pulse"></div>
+                </div>
+            </div>
+            <div className="h-6 w-12 bg-slate-200 rounded-md animate-pulse"></div>
+        </div>
+        <div className="h-px bg-slate-100 mb-4"></div>
+        <div className="h-4 w-32 bg-slate-200 rounded animate-pulse mb-4"></div>
+        <div className="h-10 w-full bg-slate-200 rounded-xl animate-pulse"></div>
+    </div>
+);
+
+const ServiceCardSkeleton = () => (
+    <div className="material-card elevation-1 p-6">
+        <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-200 animate-pulse"></div>
+                <div className="space-y-2">
+                    <div className="h-5 w-32 bg-slate-200 rounded animate-pulse"></div>
+                    <div className="h-3 w-24 bg-slate-200 rounded animate-pulse"></div>
+                </div>
+            </div>
+        </div>
+        <div className="space-y-2">
+            <div className="flex items-center gap-2">
+                <div className="h-4 w-4 bg-slate-200 rounded animate-pulse"></div>
+                <div className="h-3 flex-1 bg-slate-200 rounded animate-pulse"></div>
+            </div>
+            <div className="flex items-center gap-2">
+                <div className="h-4 w-4 bg-slate-200 rounded animate-pulse"></div>
+                <div className="h-3 flex-1 bg-slate-200 rounded animate-pulse"></div>
+            </div>
+        </div>
+        <div className="h-10 w-full bg-slate-200 rounded-xl animate-pulse mt-4"></div>
     </div>
 );
 
@@ -37,7 +75,7 @@ const Toast = ({ message, type, show, onDismiss }) => {
 };
 
 
-export default function Emergency({ language = 'en', user }) {
+export default function Emergency({ language = 'en', user, setCurrentView }) {
     const [activeTab, setActiveTab] = useState('blood');
     const [activeCategory, setActiveCategory] = useState('all');
     const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -155,7 +193,7 @@ export default function Emergency({ language = 'en', user }) {
     const handleRegister = async (e) => {
         e.preventDefault();
         if (!user) {
-            showToast('Please login to register as a donor.', 'error');
+            setCurrentView('login');
             return;
         }
 
@@ -313,7 +351,7 @@ export default function Emergency({ language = 'en', user }) {
                                 <p className="text-slate-600 text-sm mb-4">{t.blood.heroDesc}</p>
                                 <button
                                     onClick={() => {
-                                        if (!user) showToast('Please login first', 'error');
+                                        if (!user) setCurrentView('login');
                                         else setShowRegisterModal(true);
                                     }}
                                     className="material-button-primary ripple"
@@ -381,7 +419,14 @@ export default function Emergency({ language = 'en', user }) {
 
                     {/* Results */}
                     {loading ? (
-                        <Spinner />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <DonorCardSkeleton />
+                            <DonorCardSkeleton />
+                            <DonorCardSkeleton />
+                            <DonorCardSkeleton />
+                            <DonorCardSkeleton />
+                            <DonorCardSkeleton />
+                        </div>
                     ) : donors.length === 0 ? (
                         <EmptyState
                             icon="🔍"
@@ -428,7 +473,14 @@ export default function Emergency({ language = 'en', user }) {
             ) : (
                 <div>
                     {loading ? (
-                        <Spinner />
+                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <ServiceCardSkeleton />
+                            <ServiceCardSkeleton />
+                            <ServiceCardSkeleton />
+                            <ServiceCardSkeleton />
+                            <ServiceCardSkeleton />
+                            <ServiceCardSkeleton />
+                        </div>
                     ) : services.length === 0 ? (
                         <EmptyState
                             icon="📋"

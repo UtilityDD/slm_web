@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-export default function Competitions({ language = 'en', user }) {
+export default function Competitions({ language = 'en', user, setCurrentView }) {
     const [quizzes, setQuizzes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeQuiz, setActiveQuiz] = useState(null);
@@ -108,7 +108,7 @@ export default function Competitions({ language = 'en', user }) {
 
     const startQuiz = async (quiz) => {
         if (!user) {
-            alert(t.loginReq);
+            setCurrentView('login');
             return;
         }
         setActiveQuiz(quiz);

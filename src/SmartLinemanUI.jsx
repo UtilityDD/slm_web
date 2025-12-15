@@ -140,11 +140,11 @@ export default function SmartLinemanUI() {
 
     switch (currentView) {
       case 'competitions':
-        return <Competitions language={language} user={user} />;
+        return <Competitions language={language} user={user} setCurrentView={setCurrentView} />;
       case 'community':
         return <Community language={language} user={user} />;
       case 'emergency':
-        return <Emergency language={language} user={user} />;
+        return <Emergency language={language} user={user} setCurrentView={setCurrentView} />;
       case 'safety':
         return <SafetyHub language={language} user={user} />;
       case 'admin':
