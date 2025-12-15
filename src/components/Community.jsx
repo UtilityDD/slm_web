@@ -1,300 +1,149 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 export default function Community({ language = 'en' }) {
-    const [activeTab, setActiveTab] = useState('discussions');
-
     const t = {
         en: {
             title: "Community Hub",
-            subtitle: "Connect, share, and grow with linemen across West Bengal.",
-            startDiscussion: "Start Discussion",
-            discussions: "General Discussions",
-            safety: "Safety First",
-            stories: "Success Stories",
-            jobs: "Career Growth",
-            myGroups: "My Groups",
-            trending: "Trending Topics",
-            topContributors: "Top Contributors"
+            subtitle: "Join our official channels to connect, learn, and grow.",
+            cards: {
+                facebook: {
+                    title: "Facebook Group",
+                    desc: "Join discussions, share photos, and get community updates.",
+                    action: "Join Group"
+                },
+                whatsapp: {
+                    title: "WhatsApp Alerts",
+                    desc: "Get instant real-time alerts and official announcements.",
+                    action: "Join Channel"
+                },
+                youtube: {
+                    title: "Training & Tutorials",
+                    desc: "Watch video tutorials, safety guides, and event highlights.",
+                    action: "Watch Videos"
+                }
+            },
+            footer: "Official SmartLineman Community Channels"
         },
         bn: {
             title: "কমিউনিটি হাব",
-            subtitle: "পশ্চিমবঙ্গের লাইনম্যানদের সাথে সংযোগ স্থাপন করুন, শেয়ার করুন এবং এগিয়ে যান।",
-            startDiscussion: "আলোচনা শুরু করুন",
-            discussions: "সাধারণ আলোচনা",
-            safety: "সুরক্ষা প্রথম",
-            stories: "সাফল্যের গল্প",
-            jobs: "ক্যারিয়ার বৃদ্ধি",
-            myGroups: "আমার গ্রুপ",
-            trending: "ট্রেন্ডিং বিষয়",
-            topContributors: "সেরা অবদানকারী"
+            subtitle: "আমাদের অফিসিয়াল চ্যানেলগুলিতে যোগ দিন এবং সংযুক্ত থাকুন।",
+            cards: {
+                facebook: {
+                    title: "ফেসবুক গ্রুপ",
+                    desc: "আলোচনায় যোগ দিন, ছবি শেয়ার করুন এবং আপডেট পান।",
+                    action: "গ্রুপে যোগ দিন"
+                },
+                whatsapp: {
+                    title: "হোয়াটসঅ্যাপ অ্যালার্ট",
+                    desc: "তাৎক্ষণিক রিয়েল-টাইম অ্যালার্ট এবং ঘোষণা পান।",
+                    action: "চ্যানেলে যোগ দিন"
+                },
+                youtube: {
+                    title: "ট্রেনিং এবং টিউটোরিয়াল",
+                    desc: "ভিডিও টিউটোরিয়াল, সেফটি গাইড এবং ইভেন্ট হাইলাইট দেখুন।",
+                    action: "ভিডিও দেখুন"
+                }
+            },
+            footer: "অফিসিয়াল স্মার্টলাইনম্যান কমিউনিটি চ্যানেল"
         }
     }[language];
 
+    const cards = [
+        {
+            id: 'facebook',
+            icon: (
+                <svg className="w-12 h-12 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
+                </svg>
+            ),
+            bg: 'bg-blue-50',
+            button: 'bg-blue-600 hover:bg-blue-700 text-white',
+            border: 'border-blue-100',
+            shadow: 'hover:shadow-blue-200',
+            data: t.cards.facebook,
+            link: "#"
+        },
+        {
+            id: 'whatsapp',
+            icon: (
+                <svg className="w-12 h-12 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+            ),
+            bg: 'bg-green-50',
+            button: 'bg-green-600 hover:bg-green-700 text-white',
+            border: 'border-green-100',
+            shadow: 'hover:shadow-green-200',
+            data: t.cards.whatsapp,
+            link: "#"
+        },
+        {
+            id: 'youtube',
+            icon: (
+                <svg className="w-12 h-12 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                </svg>
+            ),
+            bg: 'bg-red-50',
+            button: 'bg-red-600 hover:bg-red-700 text-white',
+            border: 'border-red-100',
+            shadow: 'hover:shadow-red-200',
+            data: t.cards.youtube,
+            link: "#"
+        }
+    ];
+
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* Header Section */}
-            <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
-                        {language === 'en' ? (
-                            <>Community <span className="text-blue-700">Hub</span></>
-                        ) : (
-                            <>{t.title}</>
-                        )}
-                    </h1>
-                    <p className="text-lg text-slate-600">
-                        {t.subtitle}
-                    </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+            {/* Header */}
+            <div className="text-center mb-12 animate-fade-in">
+                <div className="inline-block p-3 rounded-2xl bg-slate-50 mb-4 shadow-sm border border-slate-100">
+                    <span className="text-4xl">🌐</span>
                 </div>
-                <button className="px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2 w-full md:w-auto justify-center">
-                    <span>✍️</span> {t.startDiscussion}
-                </button>
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3 tracking-tight">
+                    {t.title}
+                </h1>
+                <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                    {t.subtitle}
+                </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                {/* Left Sidebar - Navigation & Groups */}
-                <div className="lg:col-span-1 space-y-6">
-                    {/* Navigation Menu */}
-                    <div className="material-card elevation-2 overflow-hidden">
-                        <nav className="flex flex-col">
-                            <button
-                                onClick={() => setActiveTab('discussions')}
-                                className={`px-5 py-4 text-left font-medium flex items-center gap-3 transition-colors ${activeTab === 'discussions' ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
-                            >
-                                <span>💬</span> {t.discussions}
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('safety')}
-                                className={`px-5 py-4 text-left font-medium flex items-center gap-3 transition-colors ${activeTab === 'safety' ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
-                            >
-                                <span>🦺</span> {t.safety}
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('stories')}
-                                className={`px-5 py-4 text-left font-medium flex items-center gap-3 transition-colors ${activeTab === 'stories' ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
-                            >
-                                <span>🌟</span> {t.stories}
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('jobs')}
-                                className={`px-5 py-4 text-left font-medium flex items-center gap-3 transition-colors ${activeTab === 'jobs' ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
-                            >
-                                <span>💼</span> {t.jobs}
-                            </button>
-                        </nav>
-                    </div>
-
-                    {/* My Groups */}
-                    <div className="material-card elevation-2 p-5 sm:p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-bold text-slate-900">{t.myGroups}</h3>
-                            <button className="text-xs text-blue-700 font-semibold hover:underline">View All</button>
+            {/* Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+                {cards.map((card, index) => (
+                    <a
+                        href={card.link}
+                        key={card.id}
+                        className={`group relative bg-white p-8 rounded-3xl border ${card.border} shadow-sm transition-all duration-300 transform hover:-translate-y-1 ${card.shadow} flex flex-col items-center text-center h-full animate-scale-up`}
+                        style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                        {/* Icon Background */}
+                        <div className={`w-24 h-24 rounded-full ${card.bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                            {card.icon}
                         </div>
-                        <div className="space-y-3">
-                            <GroupItem name="Kolkata Zone Linemen" members="1.2k" active={true} />
-                            <GroupItem name="Safety Officers WB" members="850" active={false} />
-                            <GroupItem name="WBSEDCL Tech Updates" members="3.4k" active={true} />
-                        </div>
-                    </div>
 
-                    {/* Trending Tags */}
-                    <div className="material-card elevation-2 p-5 sm:p-6">
-                        <h3 className="font-bold text-slate-900 mb-4">{t.trending}</h3>
-                        <div className="flex flex-wrap gap-2">
-                            <Tag label="#Kalbaishakhi" />
-                            <Tag label="#NewEquipment" />
-                            <Tag label="#SalaryHike" />
-                            <Tag label="#ExamPrep" />
-                            <Tag label="#HeroLineman" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Main Content Feed */}
-                <div className="lg:col-span-2 space-y-6">
-                    {/* Pinned Post */}
-                    <div className="bg-blue-50 rounded-2xl p-6 border border-blue-100">
-                        <div className="flex items-start gap-4">
-                            <div className="text-3xl">📢</div>
-                            <div>
-                                <h3 className="font-bold text-blue-900 mb-1">Community Guidelines Updated</h3>
-                                <p className="text-blue-800 text-sm mb-3">
-                                    We've updated our posting rules to ensure a safer and more respectful environment for everyone. Please review them before posting.
-                                </p>
-                                <button className="text-xs font-bold text-blue-700 hover:underline">Read Guidelines</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Discussion Posts */}
-                    <PostCard
-                        author="Sanjay Mehta"
-                        role="Supervisor"
-                        time="2 hours ago"
-                        title="Best practices for transformer maintenance during high humidity?"
-                        content="I've noticed increased arcing in some of our older distribution transformers with the current humidity levels (85%+). Apart from regular silica gel replacement, what other on-field quick fixes or preventive measures are you guys using in coastal areas like Digha?"
-                        tags={["Maintenance", "Technical"]}
-                        likes={45}
-                        comments={12}
-                        views={230}
-                    />
-
-                    <PostCard
-                        author="Rahul Singh"
-                        role="Lineman"
-                        time="5 hours ago"
-                        title="Finally got my certification! 🎓"
-                        content="After 3 months of studying after shifts, I finally cleared the Advanced Safety Protocol certification exam today. Thanks to everyone in the #ExamPrep group for the study materials!"
-                        image="https://via.placeholder.com/600x300/e2e8f0/64748b?text=Certificate+Achievement"
-                        tags={["Success Story", "Certification"]}
-                        likes={189}
-                        comments={42}
-                        views={850}
-                    />
-
-                    <PostCard
-                        author="Vikram Reddy"
-                        role="Safety Officer"
-                        time="1 day ago"
-                        title="Urgent: Check your safety belt harness clips"
-                        content="We found a manufacturing defect in the batch of safety belts issued last month (Batch ID: SB-2024-05). The secondary lock spring seems weak. Please inspect yours immediately and report to the store if you find any looseness."
-                        tags={["Safety Alert", "Equipment"]}
-                        likes={342}
-                        comments={89}
-                        views={1500}
-                        isAlert={true}
-                    />
-                </div>
-
-                {/* Right Sidebar - Top Contributors */}
-                <div className="lg:col-span-1 space-y-6">
-                    <div className="material-card elevation-2 p-5 sm:p-6">
-                        <h3 className="font-bold text-slate-900 mb-4">{t.topContributors}</h3>
-                        <div className="space-y-4">
-                            <ContributorItem name="Amit Patel" points="12,450" badge="🥇" role="Supervisor" />
-                            <ContributorItem name="Rajesh Kumar" points="11,200" badge="🥈" role="Lineman" />
-                            <ContributorItem name="Priya Sharma" points="10,850" badge="🥉" role="Safety Officer" />
-                            <ContributorItem name="David John" points="9,500" badge="🏅" role="Lineman" />
-                        </div>
-                        <button className="w-full mt-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50 rounded-lg transition-colors">
-                            View Leaderboard
-                        </button>
-                    </div>
-
-                    <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-2xl shadow-lg p-6 text-white text-center">
-                        <div className="text-4xl mb-3">🤝</div>
-                        <h3 className="font-bold text-lg mb-2">Invite a Colleague</h3>
-                        <p className="text-blue-100 text-sm mb-4">
-                            Grow our community! Invite fellow linemen and earn 500 bonus points.
+                        {/* Content */}
+                        <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-900 transition-colors">
+                            {card.data.title}
+                        </h3>
+                        <p className="text-slate-500 mb-8 leading-relaxed flex-grow">
+                            {card.data.desc}
                         </p>
-                        <button className="w-full py-2 bg-white text-blue-800 font-bold rounded-lg hover:bg-blue-50 transition-colors">
-                            Send Invite
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
 
-/* Helper Components */
-
-function GroupItem({ name, members, active }) {
-    return (
-        <div className="flex items-center justify-between p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors group">
-            <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-lg group-hover:bg-white group-hover:shadow-sm transition-all">
-                    👥
-                </div>
-                <div>
-                    <div className="font-medium text-slate-900 text-sm">{name}</div>
-                    <div className="text-xs text-slate-500">{members} members</div>
-                </div>
-            </div>
-            {active && <div className="w-2 h-2 rounded-full bg-green-500"></div>}
-        </div>
-    );
-}
-
-function Tag({ label }) {
-    return (
-        <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-full hover:bg-blue-50 hover:text-blue-700 cursor-pointer transition-colors">
-            {label}
-        </span>
-    );
-}
-
-function ContributorItem({ name, points, badge, role }) {
-    return (
-        <div className="flex items-center gap-3">
-            <div className="text-xl">{badge}</div>
-            <div className="flex-1">
-                <div className="font-bold text-slate-900 text-sm">{name}</div>
-                <div className="text-xs text-slate-500">{role}</div>
-            </div>
-            <div className="text-xs font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded-md">
-                {points}
-            </div>
-        </div>
-    );
-}
-
-function PostCard({ author, role, time, title, content, image, tags, likes, comments, views, isAlert }) {
-    return (
-        <div className={`bg-white rounded-2xl shadow-sm border p-6 transition-all hover:shadow-md ${isAlert ? 'border-red-200 bg-red-50/30' : 'border-slate-200'}`}>
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600">
-                        {author.charAt(0)}
-                    </div>
-                    <div>
-                        <div className="font-bold text-slate-900 text-sm">{author}</div>
-                        <div className="text-xs text-slate-500">{role} • {time}</div>
-                    </div>
-                </div>
-                <button className="text-slate-400 hover:text-slate-600">•••</button>
-            </div>
-
-            <h3 className={`text-lg font-bold mb-2 ${isAlert ? 'text-red-700' : 'text-slate-900'}`}>
-                {isAlert && <span className="mr-2">🚨</span>}
-                {title}
-            </h3>
-
-            <p className="text-slate-600 text-sm mb-4 leading-relaxed">
-                {content}
-            </p>
-
-            {image && (
-                <div className="mb-4 rounded-xl overflow-hidden border border-slate-100">
-                    <div className="bg-slate-100 h-48 w-full flex items-center justify-center text-slate-400">
-                        [Image Placeholder: {tags[0]}]
-                    </div>
-                </div>
-            )}
-
-            <div className="flex flex-wrap gap-2 mb-4">
-                {tags.map((tag, index) => (
-                    <span key={index} className={`text-xs px-2 py-1 rounded-md font-medium ${isAlert ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600'}`}>
-                        #{tag}
-                    </span>
+                        {/* Button */}
+                        <span className={`px-8 py-3 rounded-xl font-semibold shadow-md transition-all w-full md:w-auto ${card.button} flex items-center justify-center gap-2`}>
+                            {card.data.action}
+                            <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
+                        </span>
+                    </a>
                 ))}
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                <div className="flex gap-6">
-                    <button className="flex items-center gap-2 text-slate-500 hover:text-blue-600 text-sm font-medium transition-colors">
-                        <span>👍</span> {likes}
-                    </button>
-                    <button className="flex items-center gap-2 text-slate-500 hover:text-blue-600 text-sm font-medium transition-colors">
-                        <span>💬</span> {comments}
-                    </button>
-                    <button className="flex items-center gap-2 text-slate-500 hover:text-blue-600 text-sm font-medium transition-colors">
-                        <span>↗️</span> Share
-                    </button>
-                </div>
-                <div className="text-xs text-slate-400">
-                    {views} views
-                </div>
+            {/* Footer */}
+            <div className="mt-16 text-center text-slate-400 text-sm font-medium border-t border-slate-100 pt-8 animate-fade-in">
+                {t.footer}
             </div>
         </div>
     );
