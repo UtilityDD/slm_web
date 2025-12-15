@@ -39,6 +39,7 @@ const Toast = ({ message, type, show, onDismiss }) => {
 
 export default function Emergency({ language = 'en', user }) {
     const [activeTab, setActiveTab] = useState('blood');
+    const [activeCategory, setActiveCategory] = useState('all');
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [selectedBloodGroup, setSelectedBloodGroup] = useState('All');
     const [selectedDistrict, setSelectedDistrict] = useState('All');
@@ -462,25 +463,58 @@ export default function Emergency({ language = 'en', user }) {
                                 </div>
                             </div>
 
-                            {/* Grouped Services */}
-                            <div className="space-y-8">
-                                {/* Group services by type */}
+                            {/* Category Tabs */}
+                            <div className="mb-6 overflow-x-auto pb-2 scrollbar-hide">
+                                <div className="flex gap-2">
+                                    {['all', 'hospitals', 'ambulance', 'fire', 'police', 'power'].map((type) => {
+                                        const typeConfig = {
+                                            all: { label: language === 'en' ? 'All Services' : 'সকল পরিষেবা', icon: 'grid', color: 'slate' },
+                                            hospitals: { label: t.services.hospitals, icon: 'hospital', color: 'blue' },
+                                            ambulance: { label: t.services.ambulance, icon: 'ambulance', color: 'red' },
+                                            fire: { label: t.services.fire, icon: 'fire', color: 'orange' },
+                                            police: { label: t.services.police, icon: 'police', color: 'slate' },
+                                            power: { label: t.services.power, icon: 'power', color: 'yellow' }
+                                        };
+                                        const config = typeConfig[type];
+                                        const isActive = activeCategory === type;
+
+                                        return (
+                                            <button
+                                                key={type}
+                                                onClick={() => setActiveCategory(type)}
+                                                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${isActive
+                                                    ? `bg-${config.color === 'slate' ? 'slate-800' : `${config.color}-600`} text-white shadow-md transform scale-105`
+                                                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                                                    }`}
+                                            >
+                                                <span>{config.label}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Services Display */}
+                            <div className={activeCategory === 'all' ? "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start" : "space-y-4"}>
                                 {(() => {
                                     const searchLower = serviceSearch.toLowerCase();
-                                    const filteredServices = serviceSearch
-                                        ? services.filter(s =>
+                                    const filteredServices = services.filter(s => {
+                                        const matchesSearch = !serviceSearch ||
                                             s.name?.toLowerCase().includes(searchLower) ||
-                                            s.location?.toLowerCase().includes(searchLower)
-                                        )
-                                        : services;
+                                            s.location?.toLowerCase().includes(searchLower);
+                                        const matchesCategory = activeCategory === 'all' || s.type === activeCategory;
+                                        return matchesSearch && matchesCategory;
+                                    });
 
                                     if (filteredServices.length === 0) {
                                         return (
-                                            <EmptyState
-                                                icon="🔍"
-                                                title={language === 'en' ? 'No Results' : 'কোন ফলাফল নেই'}
-                                                message={language === 'en' ? `No services found for "${serviceSearch}"` : `"${serviceSearch}" এর জন্য কোন পরিষেবা পাওয়া যায়নি`}
-                                            />
+                                            <div className="col-span-full">
+                                                <EmptyState
+                                                    icon="🔍"
+                                                    title={language === 'en' ? 'No Results' : 'কোন ফলাফল নেই'}
+                                                    message={language === 'en' ? `No services found` : `কোন পরিষেবা পাওয়া যায়নি`}
+                                                />
+                                            </div>
                                         );
                                     }
 
@@ -501,6 +535,48 @@ export default function Emergency({ language = 'en', user }) {
 
                                     const typeOrder = ['hospitals', 'ambulance', 'fire', 'police', 'power'];
 
+                                    // If specific category is selected, just show the grid of cards directly
+                                    if (activeCategory !== 'all') {
+                                        const servicesOfType = filteredServices;
+                                        const type = activeCategory;
+                                        const config = typeConfig[type] || { label: type, icon: 'other', color: 'slate' };
+
+                                        return (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                {servicesOfType.map((service) => (
+                                                    <div key={service.id} className="material-card elevation-1 p-5 hover:elevation-3 transition-all flex items-center justify-between group">
+                                                        <div className="min-w-0 pr-4">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className={`w-2 h-2 rounded-full ${config.color === 'blue' ? 'bg-blue-500' :
+                                                                    config.color === 'red' ? 'bg-red-500' :
+                                                                        config.color === 'orange' ? 'bg-orange-500' :
+                                                                            config.color === 'yellow' ? 'bg-yellow-500' :
+                                                                                'bg-slate-500'
+                                                                    }`}></span>
+                                                                <h4 className="font-semibold text-slate-900 text-sm truncate">{service.name}</h4>
+                                                            </div>
+                                                            <p className="text-xs text-slate-500 truncate pl-4">{service.location}</p>
+                                                        </div>
+
+                                                        <a href={`tel:${service.phone}`} className="flex-shrink-0">
+                                                            <button className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${config.color === 'blue' ? 'bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white' :
+                                                                config.color === 'red' ? 'bg-red-100 text-red-600 hover:bg-red-600 hover:text-white' :
+                                                                    config.color === 'orange' ? 'bg-orange-100 text-orange-600 hover:bg-orange-600 hover:text-white' :
+                                                                        config.color === 'yellow' ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-600 hover:text-white' :
+                                                                            'bg-slate-200 text-slate-600 hover:bg-slate-600 hover:text-white'
+                                                                }`}>
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                                </svg>
+                                                            </button>
+                                                        </a>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    }
+
+                                    // 'All' view: Show Masonry Groups (same as before)
                                     return typeOrder.map(type => {
                                         const servicesOfType = groupedServices[type];
                                         if (!servicesOfType || servicesOfType.length === 0) return null;
@@ -508,9 +584,9 @@ export default function Emergency({ language = 'en', user }) {
                                         const config = typeConfig[type] || { label: type, icon: 'other', color: 'slate' };
 
                                         return (
-                                            <div key={type} className="space-y-4">
+                                            <div key={type} className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all">
                                                 {/* Category Header */}
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-50">
                                                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${config.color === 'blue' ? 'bg-blue-100 text-blue-600' :
                                                         config.color === 'red' ? 'bg-red-100 text-red-600' :
                                                             config.color === 'orange' ? 'bg-orange-100 text-orange-600' :
@@ -531,26 +607,25 @@ export default function Emergency({ language = 'en', user }) {
                                                     </div>
                                                 </div>
 
-                                                {/* Services Grid */}
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                {/* Services List (Compact) */}
+                                                <div className="space-y-3">
                                                     {servicesOfType.map((service) => (
-                                                        <div key={service.id} className="material-card elevation-1 p-5 hover:elevation-3 transition-all">
-                                                            <div className="mb-3">
-                                                                <h4 className="font-semibold text-slate-900 text-sm">{service.name}</h4>
-                                                                <p className="text-xs text-slate-500 mt-1">{service.location}</p>
+                                                        <div key={service.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors group">
+                                                            <div className="min-w-0 pr-3">
+                                                                <h4 className="font-semibold text-slate-900 text-sm truncate">{service.name}</h4>
+                                                                <p className="text-xs text-slate-500 truncate">{service.location}</p>
                                                             </div>
 
-                                                            <a href={`tel:${service.phone}`} className="block w-full">
-                                                                <button className={`w-full py-2.5 rounded-xl font-semibold text-sm ripple flex items-center justify-center gap-2 transition-all ${config.color === 'blue' ? 'bg-blue-600 text-white hover:bg-blue-700' :
-                                                                    config.color === 'red' ? 'bg-red-600 text-white hover:bg-red-700' :
-                                                                        config.color === 'orange' ? 'bg-orange-600 text-white hover:bg-orange-700' :
-                                                                            config.color === 'yellow' ? 'bg-yellow-600 text-white hover:bg-yellow-700' :
-                                                                                'bg-slate-700 text-white hover:bg-slate-800'
+                                                            <a href={`tel:${service.phone}`} className="flex-shrink-0">
+                                                                <button className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${config.color === 'blue' ? 'bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white' :
+                                                                    config.color === 'red' ? 'bg-red-100 text-red-600 hover:bg-red-600 hover:text-white' :
+                                                                        config.color === 'orange' ? 'bg-orange-100 text-orange-600 hover:bg-orange-600 hover:text-white' :
+                                                                            config.color === 'yellow' ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-600 hover:text-white' :
+                                                                                'bg-slate-200 text-slate-600 hover:bg-slate-600 hover:text-white'
                                                                     }`}>
                                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                                                     </svg>
-                                                                    {t.services.call}
                                                                 </button>
                                                             </a>
                                                         </div>
