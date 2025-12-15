@@ -10,8 +10,17 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
         name: '',
         age_months: '',
         condition: 'Good',
-        details: ''
+        details: '',
+        count: 1
     });
+
+    const PPE_ITEMS = [
+        "Safety Helmet", "Safety Shoes/Boots", "Insulated Gloves",
+        "Reflective Jacket", "Safety Belt", "Full Body Harness",
+        "Voltage Detector", "Discharge Rod", "Plier",
+        "Screwdriver Set", "Wrench Set", "Hammer",
+        "Safety Goggles", "Raincoat", "Torch/Emergency Light"
+    ];
 
     useEffect(() => {
         if (activeTab === 'my_ppe' && user) {
@@ -48,13 +57,15 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                     name: newItem.name,
                     age_months: parseInt(newItem.age_months) || 0,
                     condition: newItem.condition,
-                    details: newItem.details
+                    details: newItem.details,
+                    count: parseInt(newItem.count) || 1
                 }]);
 
             if (error) throw error;
 
             setShowAddModal(false);
-            setNewItem({ name: '', age_months: '', condition: 'Good', details: '' });
+            setShowAddModal(false);
+            setNewItem({ name: '', age_months: '', condition: 'Good', details: '', count: 1 });
             fetchPPE();
         } catch (error) {
             console.error('Error adding PPE:', error);
@@ -104,6 +115,8 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 empty: "No PPE items added yet.",
                 fields: {
                     name: "Item Name",
+                    count: "Quantity",
+                    age: "Age (Months)",
                     age: "Age (Months)",
                     condition: "Condition",
                     details: "Details / Specs"
@@ -153,6 +166,8 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 empty: "এখনও কোন পিপিই যোগ করা হয়নি।",
                 fields: {
                     name: "আইটেমের নাম",
+                    count: "পরিমাণ",
+                    age: "বয়স (মাস)",
                     age: "বয়স (মাস)",
                     condition: "অবস্থা",
                     details: "বিবরণ"
@@ -317,7 +332,8 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                             </span>
                                         </div>
                                         <div className="space-y-1 text-sm text-slate-600 mb-3">
-                                            <p><span className="font-semibold text-slate-400">Age:</span> {item.age_months} Months</p>
+                                            {item.count > 1 && <p><span className="font-semibold text-slate-400">{t.my_ppe.fields.count}:</span> {item.count}</p>}
+                                            <p><span className="font-semibold text-slate-400">{t.my_ppe.fields.age}:</span> {item.age_months}</p>
                                             {item.details && <p><span className="font-semibold text-slate-400">Details:</span> {item.details}</p>}
                                         </div>
                                         <button
@@ -339,15 +355,30 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                     <form onSubmit={handleAddPPE} className="space-y-4">
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">{t.my_ppe.fields.name}</label>
-                                            <input
+                                            <select
                                                 required
-                                                type="text"
                                                 value={newItem.name}
                                                 onChange={e => setNewItem({ ...newItem, name: e.target.value })}
-                                                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
-                                            />
+                                                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-white"
+                                            >
+                                                <option value="">Select PPE</option>
+                                                {PPE_ITEMS.map(item => (
+                                                    <option key={item} value={item}>{item}</option>
+                                                ))}
+                                            </select>
                                         </div>
+
                                         <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">{t.my_ppe.fields.count}</label>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    value={newItem.count}
+                                                    onChange={e => setNewItem({ ...newItem, count: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                                                />
+                                            </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-700 mb-1">{t.my_ppe.fields.age}</label>
                                                 <input
@@ -357,6 +388,8 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                                     className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
                                                 />
                                             </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-700 mb-1">{t.my_ppe.fields.condition}</label>
                                                 <select
