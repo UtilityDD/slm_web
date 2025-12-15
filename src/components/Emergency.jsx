@@ -434,40 +434,85 @@ export default function Emergency({ language = 'en', user }) {
                             message="Emergency services data is currently unavailable."
                         />
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {services.map((service) => (
-                                <div key={service.id} className="material-card elevation-1 p-6 hover:elevation-3 transition-all">
-                                    <div className="flex items-start gap-4 mb-4">
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${service.type === 'hospitals' ? 'bg-blue-50 text-blue-600' :
-                                            service.type === 'fire' ? 'bg-orange-50 text-orange-600' :
-                                                service.type === 'police' ? 'bg-slate-100 text-slate-700' :
-                                                    service.type === 'power' ? 'bg-yellow-50 text-yellow-600' :
-                                                        'bg-slate-50 text-slate-600'
-                                            }`}>
-                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                {service.type === 'hospitals' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />}
-                                                {service.type === 'fire' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />}
-                                                {service.type === 'police' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />}
-                                                {service.type === 'power' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />}
-                                                {!['hospitals', 'fire', 'police', 'power'].includes(service.type) && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />}
-                                            </svg>
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="font-semibold text-slate-900 mb-1">{service.name}</h3>
-                                            <p className="text-xs text-slate-500">{service.location}</p>
-                                        </div>
-                                    </div>
+                        <div className="space-y-8">
+                            {/* Group services by type */}
+                            {(() => {
+                                const groupedServices = services.reduce((acc, service) => {
+                                    const type = service.type || 'other';
+                                    if (!acc[type]) acc[type] = [];
+                                    acc[type].push(service);
+                                    return acc;
+                                }, {});
 
-                                    <a href={`tel:${service.phone}`} className="block w-full">
-                                        <button className="material-button-primary w-full ripple flex items-center justify-center gap-2">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                            </svg>
-                                            {t.services.call}
-                                        </button>
-                                    </a>
-                                </div>
-                            ))}
+                                const typeConfig = {
+                                    hospitals: { label: t.services.hospitals, icon: 'hospital', color: 'blue' },
+                                    ambulance: { label: t.services.ambulance, icon: 'ambulance', color: 'red' },
+                                    fire: { label: t.services.fire, icon: 'fire', color: 'orange' },
+                                    police: { label: t.services.police, icon: 'police', color: 'slate' },
+                                    power: { label: t.services.power, icon: 'power', color: 'yellow' }
+                                };
+
+                                const typeOrder = ['hospitals', 'ambulance', 'fire', 'police', 'power'];
+
+                                return typeOrder.map(type => {
+                                    const servicesOfType = groupedServices[type];
+                                    if (!servicesOfType || servicesOfType.length === 0) return null;
+
+                                    const config = typeConfig[type] || { label: type, icon: 'other', color: 'slate' };
+
+                                    return (
+                                        <div key={type} className="space-y-4">
+                                            {/* Category Header */}
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${config.color === 'blue' ? 'bg-blue-100 text-blue-600' :
+                                                        config.color === 'red' ? 'bg-red-100 text-red-600' :
+                                                            config.color === 'orange' ? 'bg-orange-100 text-orange-600' :
+                                                                config.color === 'yellow' ? 'bg-yellow-100 text-yellow-600' :
+                                                                    'bg-slate-100 text-slate-600'
+                                                    }`}>
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        {type === 'hospitals' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />}
+                                                        {type === 'ambulance' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />}
+                                                        {type === 'fire' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />}
+                                                        {type === 'police' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />}
+                                                        {type === 'power' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />}
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-slate-900">{config.label}</h3>
+                                                    <p className="text-xs text-slate-500">{servicesOfType.length} {servicesOfType.length === 1 ? 'service' : 'services'}</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Services Grid */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                {servicesOfType.map((service) => (
+                                                    <div key={service.id} className="material-card elevation-1 p-5 hover:elevation-3 transition-all">
+                                                        <div className="mb-3">
+                                                            <h4 className="font-semibold text-slate-900 text-sm">{service.name}</h4>
+                                                            <p className="text-xs text-slate-500 mt-1">{service.location}</p>
+                                                        </div>
+
+                                                        <a href={`tel:${service.phone}`} className="block w-full">
+                                                            <button className={`w-full py-2.5 rounded-xl font-semibold text-sm ripple flex items-center justify-center gap-2 transition-all ${config.color === 'blue' ? 'bg-blue-600 text-white hover:bg-blue-700' :
+                                                                    config.color === 'red' ? 'bg-red-600 text-white hover:bg-red-700' :
+                                                                        config.color === 'orange' ? 'bg-orange-600 text-white hover:bg-orange-700' :
+                                                                            config.color === 'yellow' ? 'bg-yellow-600 text-white hover:bg-yellow-700' :
+                                                                                'bg-slate-700 text-white hover:bg-slate-800'
+                                                                }`}>
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                                </svg>
+                                                                {t.services.call}
+                                                            </button>
+                                                        </a>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                });
+                            })()}
                         </div>
                     )}
                 </div>
