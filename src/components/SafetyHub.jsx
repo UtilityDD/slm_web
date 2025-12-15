@@ -17,8 +17,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     const PPE_ITEMS = [
         "Safety Helmet", "Safety Shoes/Boots", "Insulated Gloves",
         "Reflective Jacket", "Safety Belt", "Full Body Harness",
-        "Voltage Detector", "Discharge Rod", "Plier",
-        "Screwdriver Set", "Wrench Set", "Hammer",
+        "Voltage Detector", "Discharge Rod",
         "Safety Goggles", "Raincoat", "Torch/Emergency Light"
     ];
 
