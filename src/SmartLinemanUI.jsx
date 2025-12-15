@@ -146,7 +146,7 @@ export default function SmartLinemanUI() {
       case 'emergency':
         return <Emergency language={language} user={user} setCurrentView={setCurrentView} />;
       case 'safety':
-        return <SafetyHub language={language} user={user} />;
+        return <SafetyHub language={language} user={user} setCurrentView={setCurrentView} />;
       case 'admin':
         return <Admin language={language} user={user} />;
       case 'home':

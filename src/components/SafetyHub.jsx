@@ -1,14 +1,81 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 
-export default function SafetyHub({ language = 'en' }) {
+export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     const [activeTab, setActiveTab] = useState('protocols');
-    const [checklist, setChecklist] = useState({
-        helmet: false,
-        gloves: false,
-        boots: false,
-        belt: false,
-        tester: false
+    const [ppeList, setPpeList] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [newItem, setNewItem] = useState({
+        name: '',
+        age_months: '',
+        condition: 'Good',
+        details: ''
     });
+
+    useEffect(() => {
+        if (activeTab === 'my_ppe' && user) {
+            fetchPPE();
+        }
+    }, [activeTab, user]);
+
+    const fetchPPE = async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('user_ppe')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setPpeList(data || []);
+        } catch (error) {
+            console.error('Error fetching PPE:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAddPPE = async (e) => {
+        e.preventDefault();
+        if (!user) return;
+
+        try {
+            const { error } = await supabase
+                .from('user_ppe')
+                .insert([{
+                    user_id: user.id,
+                    name: newItem.name,
+                    age_months: parseInt(newItem.age_months) || 0,
+                    condition: newItem.condition,
+                    details: newItem.details
+                }]);
+
+            if (error) throw error;
+
+            setShowAddModal(false);
+            setNewItem({ name: '', age_months: '', condition: 'Good', details: '' });
+            fetchPPE();
+        } catch (error) {
+            console.error('Error adding PPE:', error);
+            alert('Failed to add item');
+        }
+    };
+
+    const handleDeletePPE = async (id) => {
+        if (!confirm('Are you sure you want to remove this item?')) return;
+        try {
+            const { error } = await supabase
+                .from('user_ppe')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            fetchPPE();
+        } catch (error) {
+            console.error('Error deleting PPE:', error);
+        }
+    };
 
     const t = {
         en: {
@@ -17,7 +84,7 @@ export default function SafetyHub({ language = 'en' }) {
             tabs: {
                 protocols: "Protocols",
                 training: "Training Zone",
-                checklist: "Daily Checklist",
+                my_ppe: "My PPE",
                 report: "Report Incident"
             },
             protocols: {
@@ -30,18 +97,23 @@ export default function SafetyHub({ language = 'en' }) {
                 desc: "Watch expert tutorials to upgrade your skills.",
                 watch: "Watch Now"
             },
-            checklist: {
-                title: "Pre-Work Safety Check",
-                desc: "Ensure you have all necessary PPE before starting your shift.",
-                items: {
-                    helmet: "Safety Helmet",
-                    gloves: "Insulated Gloves",
-                    boots: "Safety Boots",
-                    belt: "Safety Belt/Harness",
-                    tester: "Voltage Tester"
+            my_ppe: {
+                title: "My Personal Protective Equipment",
+                desc: "Track and manage your essential safety gear.",
+                addBtn: "Add New PPE",
+                empty: "No PPE items added yet.",
+                fields: {
+                    name: "Item Name",
+                    age: "Age (Months)",
+                    condition: "Condition",
+                    details: "Details / Specs"
                 },
-                submit: "Submit Checklist",
-                submitted: "Checklist Submitted!"
+                conditions: {
+                    Good: "Good",
+                    Fair: "Fair",
+                    Damaged: "Damaged",
+                    Expired: "Expired"
+                }
             },
             report: {
                 title: "Report a Hazard",
@@ -61,7 +133,7 @@ export default function SafetyHub({ language = 'en' }) {
             tabs: {
                 protocols: "প্রোটোকল",
                 training: "প্রশিক্ষণ জোন",
-                checklist: "দৈনিক চেকলিস্ট",
+                my_ppe: "আমার পিপিই",
                 report: "রিপোর্ট করুন"
             },
             protocols: {
@@ -74,18 +146,23 @@ export default function SafetyHub({ language = 'en' }) {
                 desc: "আপনার দক্ষতা বাড়াতে বিশেষজ্ঞ টিউটোরিয়াল দেখুন।",
                 watch: "এখন দেখুন"
             },
-            checklist: {
-                title: "কাজের আগে নিরাপত্তা পরীক্ষা",
-                desc: "শিফট শুরু করার আগে আপনার সমস্ত প্রয়োজনীয় পিপিই আছে কিনা নিশ্চিত করুন।",
-                items: {
-                    helmet: "সেফটি হেলমেট",
-                    gloves: "ইনসুলেটেড গ্লাভস",
-                    boots: "সেফটি বুট",
-                    belt: "সেফটি বেল্ট/হারনেস",
-                    tester: "ভোল্টেজ টেস্টার"
+            my_ppe: {
+                title: "আমার ব্যক্তিগত সুরক্ষা সরঞ্জাম",
+                desc: "আপনার প্রয়োজনীয় নিরাপত্তা সরঞ্জাম ট্র্যাক এবং পরিচালনা করুন।",
+                addBtn: "নতুন পিপিই যোগ করুন",
+                empty: "এখনও কোন পিপিই যোগ করা হয়নি।",
+                fields: {
+                    name: "আইটেমের নাম",
+                    age: "বয়স (মাস)",
+                    condition: "অবস্থা",
+                    details: "বিবরণ"
                 },
-                submit: "চেকলিস্ট জমা দিন",
-                submitted: "চেকলিস্ট জমা দেওয়া হয়েছে!"
+                conditions: {
+                    Good: "ভালো",
+                    Fair: "মোটামুটি",
+                    Damaged: "ক্ষতিগ্রস্ত",
+                    Expired: "মেয়াদোত্তীর্ণ"
+                }
             },
             report: {
                 title: "বিপদ রিপোর্ট করুন",
@@ -101,9 +178,7 @@ export default function SafetyHub({ language = 'en' }) {
         }
     }[language];
 
-    const toggleChecklist = (item) => {
-        setChecklist(prev => ({ ...prev, [item]: !prev[item] }));
-    };
+
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -126,7 +201,7 @@ export default function SafetyHub({ language = 'en' }) {
 
             {/* Navigation Tabs */}
             <div className="flex flex-wrap justify-center gap-2 mb-10">
-                {['protocols', 'training', 'checklist', 'report'].map((tab) => (
+                {['protocols', 'training', 'my_ppe', 'report'].map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -205,30 +280,125 @@ export default function SafetyHub({ language = 'en' }) {
                     </div>
                 )}
 
-                {activeTab === 'checklist' && (
-                    <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
+                {activeTab === 'my_ppe' && (
+                    <div className="max-w-4xl mx-auto">
                         <div className="text-center mb-8">
-                            <h2 className="text-2xl font-bold text-slate-900 mb-2">{t.checklist.title}</h2>
-                            <p className="text-slate-600">{t.checklist.desc}</p>
+                            <h2 className="text-2xl font-bold text-slate-900 mb-2">{t.my_ppe.title}</h2>
+                            <p className="text-slate-600 mb-6">{t.my_ppe.desc}</p>
+
+                            <button
+                                onClick={() => user ? setShowAddModal(true) : setCurrentView('login')}
+                                className="px-6 py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-md flex items-center gap-2 mx-auto"
+                            >
+                                <span>+</span> {t.my_ppe.addBtn}
+                            </button>
                         </div>
 
-                        <div className="space-y-4 mb-8">
-                            {Object.entries(t.checklist.items).map(([key, label]) => (
-                                <label key={key} className="flex items-center p-4 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-all">
-                                    <input
-                                        type="checkbox"
-                                        checked={checklist[key]}
-                                        onChange={() => toggleChecklist(key)}
-                                        className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500 border-gray-300"
-                                    />
-                                    <span className="ml-4 font-medium text-slate-700">{label}</span>
-                                </label>
-                            ))}
-                        </div>
+                        {loading ? (
+                            <div className="flex justify-center p-12">
+                                <div className="w-8 h-8 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin"></div>
+                            </div>
+                        ) : ppeList.length === 0 ? (
+                            <div className="text-center py-12 bg-white rounded-3xl border border-slate-200 border-dashed">
+                                <div className="text-4xl mb-4">📭</div>
+                                <p className="text-slate-500">{t.my_ppe.empty}</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {ppeList.map((item) => (
+                                    <div key={item.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all relative group">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <h3 className="font-bold text-lg text-slate-900">{item.name}</h3>
+                                            <span className={`px-2 py-1 rounded-md text-xs font-bold ${item.condition === 'Good' ? 'bg-green-100 text-green-700' :
+                                                item.condition === 'Fair' ? 'bg-yellow-100 text-yellow-700' :
+                                                    'bg-red-100 text-red-700'
+                                                }`}>
+                                                {t.my_ppe.conditions[item.condition] || item.condition}
+                                            </span>
+                                        </div>
+                                        <div className="space-y-1 text-sm text-slate-600 mb-3">
+                                            <p><span className="font-semibold text-slate-400">Age:</span> {item.age_months} Months</p>
+                                            {item.details && <p><span className="font-semibold text-slate-400">Details:</span> {item.details}</p>}
+                                        </div>
+                                        <button
+                                            onClick={() => handleDeletePPE(item.id)}
+                                            className="absolute top-4 right-4 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
 
-                        <button className="w-full py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all shadow-md">
-                            {t.checklist.submit}
-                        </button>
+                        {/* Add Modal */}
+                        {showAddModal && (
+                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                                <div className="bg-white rounded-2xl w-full max-w-md p-6 animate-scale-in">
+                                    <h3 className="text-xl font-bold mb-4">{t.my_ppe.addBtn}</h3>
+                                    <form onSubmit={handleAddPPE} className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">{t.my_ppe.fields.name}</label>
+                                            <input
+                                                required
+                                                type="text"
+                                                value={newItem.name}
+                                                onChange={e => setNewItem({ ...newItem, name: e.target.value })}
+                                                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">{t.my_ppe.fields.age}</label>
+                                                <input
+                                                    type="number"
+                                                    value={newItem.age_months}
+                                                    onChange={e => setNewItem({ ...newItem, age_months: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">{t.my_ppe.fields.condition}</label>
+                                                <select
+                                                    value={newItem.condition}
+                                                    onChange={e => setNewItem({ ...newItem, condition: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-white"
+                                                >
+                                                    <option value="Good">Good</option>
+                                                    <option value="Fair">Fair</option>
+                                                    <option value="Damaged">Damaged</option>
+                                                    <option value="Expired">Expired</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">{t.my_ppe.fields.details}</label>
+                                            <textarea
+                                                rows="2"
+                                                value={newItem.details}
+                                                onChange={e => setNewItem({ ...newItem, details: e.target.value })}
+                                                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                                            ></textarea>
+                                        </div>
+                                        <div className="flex gap-3 pt-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowAddModal(false)}
+                                                className="flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                className="flex-1 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700"
+                                            >
+                                                Save
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
