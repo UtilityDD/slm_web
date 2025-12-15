@@ -47,16 +47,30 @@ export default function Competitions({ language = 'en', user }) {
     }[language];
 
     useEffect(() => {
-        fetchQuizzes();
-        fetchLeaderboard();
-        fetchHourlyQuiz();
+        const loadData = async () => {
+            setLoading(true);
+            try {
+                await Promise.all([
+                    fetchQuizzes(),
+                    fetchHourlyQuiz(),
+                    fetchLeaderboard()
+                ]);
+            } catch (error) {
+                console.error("Error loading competition data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
     }, []);
 
     const fetchHourlyQuiz = async () => {
         try {
             const response = await fetch('/quizzes/hourly_challenge.json');
-            const data = await response.json();
-            setHourlyQuiz({ ...data, isLocal: true });
+            if (response.ok) {
+                const data = await response.json();
+                setHourlyQuiz({ ...data, isLocal: true });
+            }
         } catch (error) {
             console.error('Error fetching hourly quiz:', error);
         }
@@ -74,8 +88,6 @@ export default function Competitions({ language = 'en', user }) {
             setQuizzes(data || []);
         } catch (error) {
             console.error('Error fetching quizzes:', error);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -183,60 +195,69 @@ export default function Competitions({ language = 'en', user }) {
 
             {/* Quiz Cards - 2 Column Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto mb-16">
-                {/* 1. Weekly Challenge */}
-                {featuredQuiz && (
-                    <div className="bg-white rounded-3xl p-8 border border-yellow-100 shadow-sm hover:shadow-yellow-100 transition-all group relative overflow-hidden animate-scale-up">
-                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <span className="text-9xl">⚡</span>
-                        </div>
-                        <div className="relative z-10">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="p-3 bg-yellow-50 text-yellow-600 rounded-xl">
-                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                {loading ? (
+                    <>
+                        <SkeletonCard />
+                        <SkeletonCard />
+                    </>
+                ) : (
+                    <>
+                        {/* 1. Weekly Challenge */}
+                        {featuredQuiz && (
+                            <div className="bg-white rounded-3xl p-8 border border-yellow-100 shadow-sm hover:shadow-yellow-100 transition-all group relative overflow-hidden animate-scale-up">
+                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <span className="text-9xl">⚡</span>
                                 </div>
-                                <h2 className="text-xl font-bold text-slate-900">{t.weekly}</h2>
-                            </div>
-                            <h3 className="text-2xl font-bold text-slate-800 mb-2">{featuredQuiz.title}</h3>
-                            <p className="text-slate-500 mb-6 line-clamp-2">{featuredQuiz.description}</p>
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-3 bg-yellow-50 text-yellow-600 rounded-xl">
+                                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                        </div>
+                                        <h2 className="text-xl font-bold text-slate-900">{t.weekly}</h2>
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-slate-800 mb-2">{featuredQuiz.title}</h3>
+                                    <p className="text-slate-500 mb-6 line-clamp-2">{featuredQuiz.description}</p>
 
-                            <div className="flex items-center gap-4 text-sm text-slate-500 mb-8">
-                                <span className="flex items-center gap-1">⏱️ {featuredQuiz.duration_minutes} {t.mins}</span>
-                                <span className="flex items-center gap-1">🎫 {featuredQuiz.points_reward} {t.points}</span>
-                            </div>
+                                    <div className="flex items-center gap-4 text-sm text-slate-500 mb-8">
+                                        <span className="flex items-center gap-1">⏱️ {featuredQuiz.duration_minutes} {t.mins}</span>
+                                        <span className="flex items-center gap-1">🎫 {featuredQuiz.points_reward} {t.points}</span>
+                                    </div>
 
-                            <button onClick={() => startQuiz(featuredQuiz)} className="w-full py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-bold shadow-md shadow-yellow-200 transition-colors">
-                                {t.play}
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* 2. Hourly Quiz */}
-                {hourlyQuiz && (
-                    <div className="bg-white rounded-3xl p-8 border border-blue-100 shadow-sm hover:shadow-blue-100 transition-all group relative overflow-hidden animate-scale-up" style={{ animationDelay: '100ms' }}>
-                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <span className="text-9xl">⏱️</span>
-                        </div>
-                        <div className="relative z-10">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    <button onClick={() => startQuiz(featuredQuiz)} className="w-full py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-bold shadow-md shadow-yellow-200 transition-colors">
+                                        {t.play}
+                                    </button>
                                 </div>
-                                <h2 className="text-xl font-bold text-slate-900">{t.hourly}</h2>
                             </div>
-                            <h3 className="text-2xl font-bold text-slate-800 mb-2">General Knowledge</h3>
-                            <p className="text-slate-500 mb-6 line-clamp-2">{hourlyQuiz.description}</p>
+                        )}
 
-                            <div className="flex items-center gap-4 text-sm text-slate-500 mb-8">
-                                <span className="flex items-center gap-1">⏱️ {hourlyQuiz.duration_minutes} {t.mins}</span>
-                                <span className="flex items-center gap-1">🎫 {hourlyQuiz.points_reward} {t.points}</span>
+                        {/* 2. Hourly Quiz */}
+                        {hourlyQuiz && (
+                            <div className="bg-white rounded-3xl p-8 border border-blue-100 shadow-sm hover:shadow-blue-100 transition-all group relative overflow-hidden animate-scale-up" style={{ animationDelay: '100ms' }}>
+                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <span className="text-9xl">⏱️</span>
+                                </div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        </div>
+                                        <h2 className="text-xl font-bold text-slate-900">{t.hourly}</h2>
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-slate-800 mb-2">General Knowledge</h3>
+                                    <p className="text-slate-500 mb-6 line-clamp-2">{hourlyQuiz.description}</p>
+
+                                    <div className="flex items-center gap-4 text-sm text-slate-500 mb-8">
+                                        <span className="flex items-center gap-1">⏱️ {hourlyQuiz.duration_minutes} {t.mins}</span>
+                                        <span className="flex items-center gap-1">🎫 {hourlyQuiz.points_reward} {t.points}</span>
+                                    </div>
+
+                                    <button onClick={() => startQuiz(hourlyQuiz)} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md shadow-blue-200 transition-colors">
+                                        {t.play}
+                                    </button>
+                                </div>
                             </div>
-
-                            <button onClick={() => startQuiz(hourlyQuiz)} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md shadow-blue-200 transition-colors">
-                                {t.play}
-                            </button>
-                        </div>
-                    </div>
+                        )}
+                    </>
                 )}
             </div>
 
@@ -303,8 +324,8 @@ export default function Competitions({ language = 'en', user }) {
                                                 key={idx}
                                                 onClick={() => handleAnswerSelect(quizQuestions[currentQuestionIndex].id, idx)}
                                                 className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${userAnswers[quizQuestions[currentQuestionIndex].id] === idx
-                                                        ? 'border-blue-600 bg-blue-50 text-blue-700 font-bold'
-                                                        : 'border-slate-100 hover:border-blue-200 hover:bg-slate-50 text-slate-600'
+                                                    ? 'border-blue-600 bg-blue-50 text-blue-700 font-bold'
+                                                    : 'border-slate-100 hover:border-blue-200 hover:bg-slate-50 text-slate-600'
                                                     }`}
                                             >
                                                 <span className="mr-3 text-slate-400">{String.fromCharCode(65 + idx)}.</span> {option}
@@ -350,3 +371,20 @@ export default function Competitions({ language = 'en', user }) {
         </div>
     );
 }
+
+const SkeletonCard = () => (
+    <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm relative overflow-hidden">
+        <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-slate-200 rounded-xl animate-pulse"></div>
+            <div className="h-6 w-32 bg-slate-200 rounded animate-pulse"></div>
+        </div>
+        <div className="h-8 w-3/4 bg-slate-200 rounded mb-4 animate-pulse"></div>
+        <div className="h-4 w-full bg-slate-200 rounded mb-2 animate-pulse"></div>
+        <div className="h-4 w-2/3 bg-slate-200 rounded mb-6 animate-pulse"></div>
+        <div className="flex gap-4 mb-8">
+            <div className="h-4 w-20 bg-slate-200 rounded animate-pulse"></div>
+            <div className="h-4 w-20 bg-slate-200 rounded animate-pulse"></div>
+        </div>
+        <div className="h-12 w-full bg-slate-200 rounded-xl animate-pulse"></div>
+    </div>
+);
