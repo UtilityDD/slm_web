@@ -56,6 +56,23 @@ export default function Admin({ user, language }) {
     let avatar_url = editingUser.avatar_url;
 
     if (avatarFile) {
+      // Delete old avatar if it exists
+      if (editingUser.avatar_url) {
+        try {
+          const oldUrl = editingUser.avatar_url;
+          // Extract filename from URL - assumes standard Supabase storage URL format
+          // Format: .../storage/v1/object/public/avatars/filename
+          const oldFileName = oldUrl.split('/').pop().split('?')[0];
+
+          if (oldFileName && !oldUrl.includes('googleusercontent')) { // Avoid deleting Google auth avatars
+            await supabase.storage.from('avatars').remove([oldFileName]);
+          }
+        } catch (err) {
+          console.error("Error deleting old avatar:", err);
+          // Continue with upload even if delete fails
+        }
+      }
+
       const fileExt = avatarFile.name.split('.').pop();
       const fileName = `${editingUser.id}-${Date.now()}.${fileExt}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
