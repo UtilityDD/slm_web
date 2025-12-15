@@ -1,27 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
+import React from 'react';
 
 export default function Home({ setCurrentView, language, user, t }) {
-    const [leaderboard, setLeaderboard] = useState([]);
-    const [loadingLeaders, setLoadingLeaders] = useState(true);
 
-    useEffect(() => {
-        const fetchLeaders = async () => {
-            try {
-                const { data } = await supabase
-                    .from('profiles')
-                    .select('full_name, district, points, avatar_url')
-                    .order('points', { ascending: false })
-                    .limit(3);
-                setLeaderboard(data || []);
-            } catch (error) {
-                console.error('Error fetching leaders:', error);
-            } finally {
-                setLoadingLeaders(false);
-            }
-        };
-        fetchLeaders();
-    }, []);
 
     // Helper to get greeting based on time
     const getGreeting = () => {
@@ -133,85 +113,7 @@ export default function Home({ setCurrentView, language, user, t }) {
                 </div>
             </div>
 
-            {/* Content Grid: Leaderboard & Updates */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                {/* Top Performers (Compact List) */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-bold text-slate-900">{t.nav.leaderboard}</h2>
-                        <button
-                            onClick={() => setCurrentView('competitions')}
-                            className="text-sm font-medium text-blue-600 hover:text-blue-700"
-                        >
-                            {language === 'en' ? 'View All' : 'সব দেখুন'}
-                        </button>
-                    </div>
-
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                        {loadingLeaders ? (
-                            [1, 2, 3].map(i => (
-                                <div key={i} className="flex items-center p-4 border-b border-slate-50 last:border-0">
-                                    <div className="w-8 h-8 bg-slate-100 rounded-full animate-pulse mr-4"></div>
-                                    <div className="flex-1 space-y-2">
-                                        <div className="h-4 w-24 bg-slate-100 rounded animate-pulse"></div>
-                                        <div className="h-3 w-16 bg-slate-100 rounded animate-pulse"></div>
-                                    </div>
-                                    <div className="h-5 w-10 bg-slate-100 rounded animate-pulse"></div>
-                                </div>
-                            ))
-                        ) : (
-                            leaderboard.map((leader, i) => (
-                                <div key={i} className={`flex items-center justify-between p-4 ${i !== leaderboard.length - 1 ? 'border-b border-slate-50' : ''} hover:bg-slate-50 transition-colors`}>
-                                    <div className="flex items-center gap-4">
-                                        <span className="text-xl">{['🥇', '🥈', '🥉'][i] || '🏅'}</span>
-                                        <div>
-                                            <div className="font-semibold text-slate-900 text-sm">{leader.full_name || 'Anonymous'}</div>
-                                            <div className="text-xs text-slate-500">{leader.district || 'West Bengal'}</div>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="font-bold text-blue-700">{leader.points}</div>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                        {!loadingLeaders && leaderboard.length === 0 && (
-                            <div className="p-4 text-center text-slate-400 text-sm">No leaders found</div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Notifications / News */}
-                <div className="space-y-6">
-                    <h2 className="text-xl font-bold text-slate-900">{language === 'en' ? 'Highlights' : 'হাইলাইট'}</h2>
-
-                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden group cursor-pointer" onClick={() => setCurrentView('community')}>
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-                        <div className="relative z-10">
-                            <span className="inline-block px-3 py-1 rounded-lg bg-white/10 text-xs font-semibold mb-4 backdrop-blur-sm">Storm Alert</span>
-                            <h3 className="font-bold text-lg mb-2">Kalbaishakhi Warning</h3>
-                            <p className="text-slate-300 text-sm mb-4">
-                                {language === 'en' ? 'Check updated protocols for optimal safety today.' : 'আজকের সর্বোত্তম নিরাপত্তার জন্য আপডেট করা প্রোটোকল দেখুন।'}
-                            </p>
-                            <div className="flex items-center gap-2 text-xs text-blue-300 font-medium group-hover:text-blue-200 transition-colors">
-                                <span>Read Guidelines</span>
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer" onClick={() => setCurrentView('competitions')}>
-                        <div className="flex items-start gap-4">
-                            <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-sm">WE</div>
-                            <div>
-                                <h4 className="font-semibold text-slate-900 text-sm">New Seminar Added</h4>
-                                <p className="text-xs text-slate-500 mt-1">WBSEDCL Safety Workshop • Tomorrow, 10 AM</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </main>
     );
 }
