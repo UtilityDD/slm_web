@@ -267,32 +267,44 @@ export default function Competitions({ language = 'en', user }) {
                     <span>🏅</span> {t.leaderboard}
                 </h3>
                 <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden divide-y divide-slate-100">
-                    {leaderboard.map((item, index) => (
-                        <div key={index} className="flex items-center p-4 sm:p-6 hover:bg-slate-50 transition-colors">
-                            <div className="font-bold text-slate-300 w-8 text-lg">#{index + 1}</div>
-                            <div className="flex-shrink-0 mr-4">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-100 flex items-center justify-center text-lg font-bold text-slate-600 overflow-hidden">
-                                    {item.avatar_url ? <img src={item.avatar_url} alt="" className="w-full h-full object-cover" /> : (item.full_name?.[0] || 'U')}
+                    {loading ? (
+                        <>
+                            <SkeletonRow />
+                            <SkeletonRow />
+                            <SkeletonRow />
+                            <SkeletonRow />
+                            <SkeletonRow />
+                        </>
+                    ) : (
+                        <>
+                            {leaderboard.map((item, index) => (
+                                <div key={index} className="flex items-center p-4 sm:p-6 hover:bg-slate-50 transition-colors">
+                                    <div className="font-bold text-slate-300 w-8 text-lg">#{index + 1}</div>
+                                    <div className="flex-shrink-0 mr-4">
+                                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-100 flex items-center justify-center text-lg font-bold text-slate-600 overflow-hidden">
+                                            {item.avatar_url ? <img src={item.avatar_url} alt="" className="w-full h-full object-cover" /> : (item.full_name?.[0] || 'U')}
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm sm:text-lg font-bold text-slate-900 truncate">
+                                            {item.full_name || 'Anonymous'}
+                                        </p>
+                                        <p className="text-xs sm:text-sm text-slate-500 truncate">
+                                            {item.district || 'West Bengal'}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-sm sm:text-lg font-bold text-blue-600">
+                                            {item.points}
+                                        </div>
+                                        <div className="text-xs text-slate-400">{t.points}</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm sm:text-lg font-bold text-slate-900 truncate">
-                                    {item.full_name || 'Anonymous'}
-                                </p>
-                                <p className="text-xs sm:text-sm text-slate-500 truncate">
-                                    {item.district || 'West Bengal'}
-                                </p>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-sm sm:text-lg font-bold text-blue-600">
-                                    {item.points}
-                                </div>
-                                <div className="text-xs text-slate-400">{t.points}</div>
-                            </div>
-                        </div>
-                    ))}
-                    {leaderboard.length === 0 && (
-                        <div className="p-8 text-center text-slate-400">Loading leaders...</div>
+                            ))}
+                            {leaderboard.length === 0 && (
+                                <div className="p-8 text-center text-slate-400">Loading leaders...</div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
