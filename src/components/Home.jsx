@@ -65,7 +65,7 @@ export default function Home({ setCurrentView, language, user, t }) {
                         <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-2xl mb-6">🏆</div>
                         <h3 className="text-xl font-bold mb-2">{t.nav.competitions}</h3>
                         <p className="text-blue-100 text-sm leading-relaxed mb-4">
-                            {language === 'en' ? 'Join the Weekly Challenge' : 'সাপ্তাহিক চ্যালেঞ্জে যোগ দিন'}
+                            {language === 'en' ? 'Hourly Safety Challenge' : 'ঘন্টাভিত্তিক নিরাপত্তা চ্যালেঞ্জ'}
                         </p>
                         <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider bg-white/10 px-3 py-1 rounded-lg backdrop-blur-md">
                             <span>Live Now</span>
