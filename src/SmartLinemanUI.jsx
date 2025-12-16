@@ -14,6 +14,7 @@ export default function SmartLinemanUI() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentView, setCurrentView] = useState('home');
   const [language, setLanguage] = useState('en');
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -57,6 +58,22 @@ export default function SmartLinemanUI() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentView]);
+
+  // Check LocalStorage for Language on mount
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage');
+    if (savedLang) {
+      setLanguage(savedLang);
+    } else {
+      setShowLanguageModal(true);
+    }
+  }, []);
+
+  const handleLanguageSelect = (lang) => {
+    setLanguage(lang);
+    localStorage.setItem('appLanguage', lang);
+    setShowLanguageModal(false);
+  };
 
   const handleLogout = () => {
     setShowLogoutModal(true);
@@ -244,13 +261,13 @@ export default function SmartLinemanUI() {
               {/* Language Switcher - More compact on mobile */}
               <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
                 <button
-                  onClick={() => setLanguage('en')}
+                  onClick={() => handleLanguageSelect('en')}
                   className={`px-1.5 sm:px-2 py-1 text-xs font-bold rounded-md transition-all touch-target ${language === 'en' ? 'bg-white text-blue-700 elevation-1' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   EN
                 </button>
                 <button
-                  onClick={() => setLanguage('bn')}
+                  onClick={() => handleLanguageSelect('bn')}
                   className={`px-1.5 sm:px-2 py-1 text-xs font-bold rounded-md transition-all touch-target ${language === 'bn' ? 'bg-white text-blue-700 elevation-1' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   বাং
@@ -449,7 +466,40 @@ export default function SmartLinemanUI() {
           </div>
         </div>
       </footer>
-    </div>
+
+      {/* Language Selection Modal */}
+      {
+        showLanguageModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="bg-white rounded-3xl w-full max-w-sm p-8 shadow-2xl text-center animate-scale-in relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100/50 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+
+              <div className="text-5xl mb-6 relative z-10">🌍</div>
+
+              <h2 className="text-2xl font-bold text-slate-900 mb-2 relative z-10">Select Language</h2>
+              <h2 className="text-xl font-bold text-slate-500 mb-8 font-bengali relative z-10">ভাষা নির্বাচন করুন</h2>
+
+              <div className="space-y-4 relative z-10">
+                <button
+                  onClick={() => handleLanguageSelect('en')}
+                  className="w-full py-4 rounded-xl border-2 border-slate-100 hover:border-blue-600 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-lg transition-all flex items-center justify-between px-6 group"
+                >
+                  <span>English</span>
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                </button>
+                <button
+                  onClick={() => handleLanguageSelect('bn')}
+                  className="w-full py-4 rounded-xl border-2 border-slate-100 hover:border-blue-600 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-lg transition-all flex items-center justify-between px-6 font-bengali group"
+                >
+                  <span>বাংলা</span>
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+    </div >
   );
 }
 
