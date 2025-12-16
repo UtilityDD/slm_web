@@ -12,6 +12,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     const [leaderboard, setLeaderboard] = useState([]);
     const [hourlyQuiz, setHourlyQuiz] = useState(null);
     const [timeLeft, setTimeLeft] = useState('');
+    const [lastAttemptTime, setLastAttemptTime] = useState(null);
 
     const t = {
         en: {
@@ -85,6 +86,30 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             console.error('Error fetching hourly quiz:', error);
         }
     };
+
+    const fetchLastAttempt = async (quizId) => {
+        if (!user) return;
+        try {
+            const { data, error } = await supabase
+                .from('quiz_attempts')
+                .select('created_at')
+                .eq('user_id', user.id)
+                .eq('quiz_id', quizId)
+                .limit(1);
+
+            if (data && data.length > 0) {
+                setLastAttemptTime(data[0].created_at);
+            }
+        } catch (error) {
+            console.error('Error fetching last attempt:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (user && hourlyQuiz) {
+            fetchLastAttempt(hourlyQuiz.id);
+        }
+    }, [user, hourlyQuiz]);
 
 
 
@@ -166,6 +191,10 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
             // Refresh leaderboard to show updated score immediately
             fetchLeaderboard();
+            // Refresh lock status
+            if (activeQuiz && activeQuiz.id) {
+                fetchLastAttempt(activeQuiz.id);
+            }
         } catch (error) {
             console.error('Error saving result:', error);
             alert(`Error saving score: ${error.message || 'Unknown error'}`);
@@ -226,9 +255,48 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                     <span className="flex items-center gap-1">🎫 50 {t.points}</span>
                                 </div>
 
-                                <button onClick={() => startQuiz(hourlyQuiz)} className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md shadow-blue-200 transition-colors flex items-center justify-center gap-2">
-                                    <span>{t.play}</span>
-                                    <span className="text-blue-200">→</span>
+                                <button
+                                    onClick={() => startQuiz(hourlyQuiz)}
+                                    disabled={(() => {
+                                        if (!lastAttemptTime) return false;
+                                        const last = new Date(lastAttemptTime);
+                                        const now = new Date();
+                                        return last.getHours() === now.getHours() && last.getDate() === now.getDate();
+                                    })()}
+                                    className={`w-full py-4 rounded-xl font-bold shadow-md transition-all flex items-center justify-center gap-2 ${(() => {
+                                        if (!lastAttemptTime) return 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200';
+                                        const last = new Date(lastAttemptTime);
+                                        const now = new Date();
+                                        const isLocked = last.getHours() === now.getHours() && last.getDate() === now.getDate();
+
+                                        return isLocked
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
+                                            : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200';
+                                    })()
+                                        }`}
+                                >
+                                    {(() => {
+                                        if (!lastAttemptTime) return (
+                                            <>
+                                                <span>{t.play}</span>
+                                                <span className="text-blue-200">→</span>
+                                            </>
+                                        );
+                                        const last = new Date(lastAttemptTime);
+                                        const now = new Date();
+                                        const isLocked = last.getHours() === now.getHours() && last.getDate() === now.getDate();
+
+                                        if (isLocked) {
+                                            const minutesLeft = 60 - now.getMinutes();
+                                            return <span>Next attempt in {minutesLeft}m</span>;
+                                        }
+                                        return (
+                                            <>
+                                                <span>{t.play}</span>
+                                                <span className="text-blue-200">→</span>
+                                            </>
+                                        );
+                                    })()}
                                 </button>
                             </div>
                         </div>
