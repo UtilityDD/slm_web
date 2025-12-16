@@ -246,7 +246,7 @@ export default function SmartLinemanUI() {
                 <span className="text-red-600 hover:text-red-700 font-bold">{t.nav.emergency}</span>
                 <span className={`absolute bottom-0 left-0 h-0.5 bg-red-600 transition-all duration-300 ${currentView === 'emergency' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
               </a>
-              {userProfile?.role === 'admin' && (
+              {['admin', 'safety mitra'].includes(userProfile?.role) && (
                 <a
                   className={`hover:text-blue-700 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'admin' ? 'text-blue-700 font-semibold' : ''}`}
                   onClick={() => setCurrentView('admin')}
@@ -384,7 +384,7 @@ export default function SmartLinemanUI() {
             <span className="text-[9px] font-medium">{language === 'en' ? 'Compete' : 'প্রতিযোগিতা'}</span>
           </button>
 
-          {userProfile?.role === 'admin' && (
+          {['admin', 'safety mitra'].includes(userProfile?.role) && (
             <button
               onClick={() => setCurrentView('admin')}
               className={`bottom-nav-item ripple-dark ${currentView === 'admin' ? 'active' : ''}`}

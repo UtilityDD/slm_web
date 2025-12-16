@@ -23,10 +23,15 @@ export default function Admin({ user, language }) {
     setLoading(false);
   };
 
-  const handleEdit = (user) => {
-    setEditingUser({ ...user });
+  const handleEdit = (targetUser) => {
+    // Safety Mitra Restriction: Cannot edit Admins
+    if (user.role === 'safety mitra' && targetUser.role === 'admin') {
+      alert("Permission Denied: Safety Mitras cannot edit Administrators.");
+      return;
+    }
+    setEditingUser({ ...targetUser });
     setAvatarFile(null);
-    setAvatarPreview(user.avatar_url);
+    setAvatarPreview(targetUser.avatar_url);
   };
 
   const handleCancelEdit = () => {
@@ -130,7 +135,9 @@ export default function Admin({ user, language }) {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <h1 className="text-2xl font-bold mb-4">Admin - User Management</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        {user.role === 'safety mitra' ? 'Safety Mitra Dashboard' : 'Admin - User Management'}
+      </h1>
       <div className="bg-white shadow rounded-lg overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -230,10 +237,16 @@ export default function Admin({ user, language }) {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
-                  <select name="role" value={editingUser.role || 'lineman'} onChange={handleChange} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                  <select
+                    name="role"
+                    value={editingUser.role || 'lineman'}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                    disabled={user.role === 'safety mitra' && editingUser.role === 'admin'} // Extra safety
+                  >
                     <option value="lineman">Lineman</option>
                     <option value="safety mitra">Safety Mitra</option>
-                    <option value="admin">Admin</option>
+                    {user.role === 'admin' && <option value="admin">Admin</option>} {/* Safety Mitra cannot promote to Admin */}
                   </select>
                 </div>
 
