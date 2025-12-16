@@ -6,6 +6,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     const [ppeList, setPpeList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
+    const [editingId, setEditingId] = useState(null);
     const [newItem, setNewItem] = useState({
         name: '',
         age_months: '',
@@ -44,32 +45,61 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
         }
     };
 
-    const handleAddPPE = async (e) => {
+    const handleSavePPE = async (e) => {
         e.preventDefault();
         if (!user) return;
 
         try {
-            const { error } = await supabase
-                .from('user_ppe')
-                .insert([{
-                    user_id: user.id,
-                    name: newItem.name,
-                    age_months: parseInt(newItem.age_months) || 0,
-                    condition: newItem.condition,
-                    details: newItem.details,
-                    count: parseInt(newItem.count) || 1
-                }]);
+            if (editingId) {
+                // Update existing item
+                const { error } = await supabase
+                    .from('user_ppe')
+                    .update({
+                        name: newItem.name,
+                        age_months: parseInt(newItem.age_months) || 0,
+                        condition: newItem.condition,
+                        details: newItem.details,
+                        count: parseInt(newItem.count) || 1
+                    })
+                    .eq('id', editingId);
 
-            if (error) throw error;
+                if (error) throw error;
+            } else {
+                // Add new item
+                const { error } = await supabase
+                    .from('user_ppe')
+                    .insert([{
+                        user_id: user.id,
+                        name: newItem.name,
+                        age_months: parseInt(newItem.age_months) || 0,
+                        condition: newItem.condition,
+                        details: newItem.details,
+                        count: parseInt(newItem.count) || 1
+                    }]);
 
-            setShowAddModal(false);
+                if (error) throw error;
+            }
+
             setShowAddModal(false);
             setNewItem({ name: '', age_months: '', condition: 'Good', details: '', count: 1 });
+            setEditingId(null);
             fetchPPE();
         } catch (error) {
-            console.error('Error adding PPE:', error);
-            alert('Failed to add item');
+            console.error('Error saving PPE:', error);
+            alert('Failed to save item');
         }
+    };
+
+    const handleEditPPE = (item) => {
+        setNewItem({
+            name: item.name,
+            age_months: item.age_months,
+            condition: item.condition,
+            details: item.details,
+            count: item.count
+        });
+        setEditingId(item.id);
+        setShowAddModal(true);
     };
 
     const handleDeletePPE = async (id) => {
@@ -111,6 +141,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 title: "My Personal Protective Equipment",
                 desc: "Track and manage your essential safety gear.",
                 addBtn: "Add New PPE",
+                editBtn: "Edit PPE",
                 empty: "No PPE items added yet.",
                 fields: {
                     name: "Item Name",
@@ -162,6 +193,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 title: "আমার ব্যক্তিগত সুরক্ষা সরঞ্জাম",
                 desc: "আপনার প্রয়োজনীয় নিরাপত্তা সরঞ্জাম ট্র্যাক এবং পরিচালনা করুন।",
                 addBtn: "নতুন পিপিই যোগ করুন",
+                editBtn: "পিপিই সম্পাদনা করুন",
                 empty: "এখনও কোন পিপিই যোগ করা হয়নি।",
                 fields: {
                     name: "আইটেমের নাম",
@@ -301,7 +333,11 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                             <p className="text-slate-600 mb-6">{t.my_ppe.desc}</p>
 
                             <button
-                                onClick={() => user ? setShowAddModal(true) : setCurrentView('login')}
+                                onClick={() => {
+                                    setEditingId(null);
+                                    setNewItem({ name: '', age_months: '', condition: 'Good', details: '', count: 1 });
+                                    user ? setShowAddModal(true) : setCurrentView('login');
+                                }}
                                 className="px-6 py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-md flex items-center gap-2 mx-auto"
                             >
                                 <span>+</span> {t.my_ppe.addBtn}
@@ -335,12 +371,20 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                             <p><span className="font-semibold text-slate-400">{t.my_ppe.fields.age}:</span> {item.age_months}</p>
                                             {item.details && <p><span className="font-semibold text-slate-400">Details:</span> {item.details}</p>}
                                         </div>
-                                        <button
-                                            onClick={() => handleDeletePPE(item.id)}
-                                            className="absolute top-4 right-4 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                        </button>
+                                        <div className="absolute bottom-4 right-4 flex gap-2">
+                                            <button
+                                                onClick={() => handleEditPPE(item)}
+                                                className="text-slate-300 hover:text-blue-500"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeletePPE(item.id)}
+                                                className="text-slate-300 hover:text-red-500"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -350,8 +394,8 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                         {showAddModal && (
                             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                                 <div className="bg-white rounded-2xl w-full max-w-md p-6 animate-scale-in">
-                                    <h3 className="text-xl font-bold mb-4">{t.my_ppe.addBtn}</h3>
-                                    <form onSubmit={handleAddPPE} className="space-y-4">
+                                    <h3 className="text-xl font-bold mb-4">{editingId ? t.my_ppe.editBtn : t.my_ppe.addBtn}</h3>
+                                    <form onSubmit={handleSavePPE} className="space-y-4">
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">{t.my_ppe.fields.name}</label>
                                             <select

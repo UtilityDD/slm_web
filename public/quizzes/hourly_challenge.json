@@ -1,45 +1,174 @@
 {
-    "id": "hourly-1",
-    "title": "Hourly Safety Quiz",
-    "description": "Identify the safety issue in the image.",
+    "id": "hourly-challenge",
+    "title": "Hourly Safety Challenge",
+    "description": "Test your safety knowledge! New questions every hour.",
     "duration_minutes": 5,
     "points_reward": 50,
     "questions": [
         {
-            "id": "hq-1",
-            "question_text": "What is the primary safety concern in this image?",
-            "image_url": "/quizzes/images/image1.jpg",
+            "id": "q1",
+            "question_text": "What is the minimum safe distance from a 11kV overhead line?",
             "options": [
-                "Improperly secured ladder",
-                "No safety helmet",
-                "Working too close to power lines",
-                "Lack of safety gloves"
+                "1.2 meters",
+                "2.0 meters",
+                "3.0 meters",
+                "0.5 meters"
+            ],
+            "correct_option_index": 0
+        },
+        {
+            "id": "q2",
+            "question_text": "Which class of fire extinguisher is used for electrical fires?",
+            "options": [
+                "Class A",
+                "Class B",
+                "Class C",
+                "Class D"
             ],
             "correct_option_index": 2
         },
         {
-            "id": "hq-2",
-            "question_text": "Which piece of personal protective equipment (PPE) is missing?",
-            "image_url": "/quizzes/images/image2.jpg",
+            "id": "q3",
+            "question_text": "What does PPE stand for?",
             "options": [
-                "Safety glasses",
-                "Steel-toed boots",
-                "High-visibility vest",
-                "Hearing protection"
+                "Personal Protective Equipment",
+                "Public Power Energy",
+                "Primary Power Equipment",
+                "Personal Power Efficiency"
             ],
             "correct_option_index": 0
         },
         {
-            "id": "hq-3",
-            "question_text": "What is wrong with the grounding setup in this picture?",
-            "image_url": "/quizzes/images/image3.jpg",
+            "id": "q4",
+            "question_text": "Before climbing a pole, you must check:",
             "options": [
-                "Grounding clamp is not attached",
-                "Grounding cable is too thin",
-                "Grounding rod is not deep enough",
-                "No issue is visible"
+                "The weather forecast",
+                "The pole's structural integrity",
+                "Your lunch box",
+                "The time of day"
+            ],
+            "correct_option_index": 1
+        },
+        {
+            "id": "q5",
+            "question_text": "What color is the ground wire typically?",
+            "options": [
+                "Red",
+                "Black",
+                "Green or Green/Yellow",
+                "Blue"
+            ],
+            "correct_option_index": 2
+        },
+        {
+            "id": "q6",
+            "question_text": "High visibility clothing helps you to be seen by:",
+            "options": [
+                "Birds",
+                "Traffic and coworkers",
+                "The sun",
+                "No one"
+            ],
+            "correct_option_index": 1
+        },
+        {
+            "id": "q7",
+            "question_text": "When should you inspect your safety belt?",
+            "options": [
+                "Once a year",
+                "Once a month",
+                "Before every use",
+                "Only when it breaks"
+            ],
+            "correct_option_index": 2
+        },
+        {
+            "id": "q8",
+            "question_text": "A 'Lockout/Tagout' procedure is used to:",
+            "options": [
+                "Secure the gate",
+                "Prevent accidental energization",
+                "Tag equipment prices",
+                "Lock the office"
+            ],
+            "correct_option_index": 1
+        },
+        {
+            "id": "q9",
+            "question_text": "Which tool is NOT insulated?",
+            "options": [
+                "Standard screwdriver",
+                "VDE Plier",
+                "Insulated Wrench",
+                "Voltage Detector"
             ],
             "correct_option_index": 0
+        },
+        {
+            "id": "q10",
+            "question_text": "CPR stands for:",
+            "options": [
+                "Cardiopulmonary Resuscitation",
+                "Central Power Resource",
+                "Computer Program Run",
+                "Critical Pole Repair"
+            ],
+            "correct_option_index": 0
+        },
+        {
+            "id": "q11",
+            "question_text": "If you see a downed power line, you should:",
+            "options": [
+                "Pick it up",
+                "Jump over it",
+                "Stay back and report it",
+                "Drive over it"
+            ],
+            "correct_option_index": 2
+        },
+        {
+            "id": "q12",
+            "question_text": "Rubber gloves must be tested for:",
+            "options": [
+                "Color",
+                "Air leaks (Pinholes)",
+                "Size",
+                "Smell"
+            ],
+            "correct_option_index": 1
+        },
+        {
+            "id": "q13",
+            "question_text": "Who is responsible for safety on the job site?",
+            "options": [
+                "Only the manager",
+                "Only the safety officer",
+                "Everyone",
+                "The customer"
+            ],
+            "correct_option_index": 2
+        },
+        {
+            "id": "q14",
+            "question_text": "What is the voltage of a standard household outlet in India?",
+            "options": [
+                "110V",
+                "230V",
+                "440V",
+                "12V"
+            ],
+            "correct_option_index": 1
+        },
+        {
+            "id": "q15",
+            "question_text": "Which is a sign of heat exhaustion?",
+            "options": [
+                "Feeling cold",
+                "Excessive sweating and dizziness",
+                "Hunger",
+                "Hyperactivity"
+            ],
+            "correct_option_index": 1
         }
     ]
 }

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
 export default function Competitions({ language = 'en', user, setCurrentView }) {
-    const [quizzes, setQuizzes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeQuiz, setActiveQuiz] = useState(null);
     const [quizQuestions, setQuizQuestions] = useState([]);
@@ -12,6 +11,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     const [score, setScore] = useState(0);
     const [leaderboard, setLeaderboard] = useState([]);
     const [hourlyQuiz, setHourlyQuiz] = useState(null);
+    const [timeLeft, setTimeLeft] = useState('');
 
     const t = {
         en: {
@@ -51,7 +51,6 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             setLoading(true);
             try {
                 await Promise.all([
-                    fetchQuizzes(),
                     fetchHourlyQuiz(),
                     fetchLeaderboard()
                 ]);
@@ -62,6 +61,17 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             }
         };
         loadData();
+
+        // Timer Logic
+        const updateTimer = () => {
+            const now = new Date();
+            const minutes = 59 - now.getMinutes();
+            const seconds = 59 - now.getSeconds();
+            setTimeLeft(`${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+        };
+        updateTimer();
+        const interval = setInterval(updateTimer, 1000);
+        return () => clearInterval(interval);
     }, []);
 
     const fetchHourlyQuiz = async () => {
@@ -76,20 +86,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         }
     };
 
-    const fetchQuizzes = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('quizzes')
-                .select('*')
-                .eq('is_active', true)
-                .order('created_at', { ascending: false });
 
-            if (error) throw error;
-            setQuizzes(data || []);
-        } catch (error) {
-            console.error('Error fetching quizzes:', error);
-        }
-    };
 
     const fetchLeaderboard = async () => {
         try {
@@ -113,35 +110,18 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         }
         setActiveQuiz(quiz);
 
-        if (quiz.isLocal) {
-            setQuizQuestions(quiz.questions || []);
-            setCurrentQuestionIndex(0);
-            setUserAnswers({});
-            setQuizSubmitted(false);
-            setScore(0);
-            return;
+        // Randomly select 5 questions
+        if (quiz.questions && quiz.questions.length > 0) {
+            const shuffled = [...quiz.questions].sort(() => 0.5 - Math.random());
+            setQuizQuestions(shuffled.slice(0, 5));
+        } else {
+            setQuizQuestions([]);
         }
 
-        setLoading(true);
-        try {
-            const { data, error } = await supabase
-                .from('quiz_questions')
-                .select('*')
-                .eq('quiz_id', quiz.id);
-
-            if (error) throw error;
-            setQuizQuestions(data || []);
-            setCurrentQuestionIndex(0);
-            setUserAnswers({});
-            setQuizSubmitted(false);
-            setScore(0);
-        } catch (error) {
-            console.error('Error fetching questions:', error);
-            alert('Failed to load quiz');
-            setActiveQuiz(null);
-        } finally {
-            setLoading(false);
-        }
+        setCurrentQuestionIndex(0);
+        setUserAnswers({});
+        setQuizSubmitted(false);
+        setScore(0);
     };
 
     const handleAnswerSelect = (questionId, optionIndex) => {
@@ -155,7 +135,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             if (userAnswers[q.id] === q.correct_option_index) correctCount++;
         });
         if (quizQuestions.length > 0) {
-            calculatedScore = Math.round((correctCount / quizQuestions.length) * activeQuiz.points_reward);
+            calculatedScore = correctCount * 10;
         }
         setScore(calculatedScore);
         setQuizSubmitted(true);
@@ -176,7 +156,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         }
     };
 
-    const featuredQuiz = quizzes.find(q => q.title.includes('Monsoon')) || quizzes[0];
+
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
@@ -193,71 +173,50 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                 </p>
             </div>
 
-            {/* Quiz Cards - 2 Column Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto mb-16">
+            {/* Hourly Quiz Card Centered */}
+            <div className="max-w-md mx-auto mb-16">
                 {loading ? (
-                    <>
-                        <SkeletonCard />
-                        <SkeletonCard />
-                    </>
+                    <SkeletonCard />
                 ) : (
-                    <>
-                        {/* 1. Weekly Challenge */}
-                        {featuredQuiz && (
-                            <div className="bg-white rounded-3xl p-8 border border-yellow-100 shadow-sm hover:shadow-yellow-100 transition-all group relative overflow-hidden animate-scale-up">
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                    <span className="text-9xl">⚡</span>
-                                </div>
-                                <div className="relative z-10">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <div className="p-3 bg-yellow-50 text-yellow-600 rounded-xl">
-                                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                        </div>
-                                        <h2 className="text-xl font-bold text-slate-900">{t.weekly}</h2>
-                                    </div>
-                                    <h3 className="text-2xl font-bold text-slate-800 mb-2">{featuredQuiz.title}</h3>
-                                    <p className="text-slate-500 mb-6 line-clamp-2">{featuredQuiz.description}</p>
-
-                                    <div className="flex items-center gap-4 text-sm text-slate-500 mb-8">
-                                        <span className="flex items-center gap-1">⏱️ {featuredQuiz.duration_minutes} {t.mins}</span>
-                                        <span className="flex items-center gap-1">🎫 {featuredQuiz.points_reward} {t.points}</span>
-                                    </div>
-
-                                    <button onClick={() => startQuiz(featuredQuiz)} className="w-full py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-bold shadow-md shadow-yellow-200 transition-colors">
-                                        {t.play}
-                                    </button>
-                                </div>
+                    hourlyQuiz && (
+                        <div className="bg-white rounded-3xl p-8 border border-blue-100 shadow-sm hover:shadow-blue-100 transition-all group relative overflow-hidden animate-scale-up">
+                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <span className="text-9xl">⏱️</span>
                             </div>
-                        )}
-
-                        {/* 2. Hourly Quiz */}
-                        {hourlyQuiz && (
-                            <div className="bg-white rounded-3xl p-8 border border-blue-100 shadow-sm hover:shadow-blue-100 transition-all group relative overflow-hidden animate-scale-up" style={{ animationDelay: '100ms' }}>
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                    <span className="text-9xl">⏱️</span>
-                                </div>
-                                <div className="relative z-10">
-                                    <div className="flex items-center gap-3 mb-4">
+                            <div className="relative z-10">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-3">
                                         <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
                                             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                         </div>
-                                        <h2 className="text-xl font-bold text-slate-900">{t.hourly}</h2>
+                                        <div>
+                                            <h2 className="text-xl font-bold text-slate-900">{t.hourly}</h2>
+                                            <p className="text-xs text-blue-600 font-bold">Live Now</p>
+                                        </div>
                                     </div>
-                                    <h3 className="text-2xl font-bold text-slate-800 mb-2">General Knowledge</h3>
-                                    <p className="text-slate-500 mb-6 line-clamp-2">{hourlyQuiz.description}</p>
-
-                                    <div className="flex items-center gap-4 text-sm text-slate-500 mb-8">
-                                        <span className="flex items-center gap-1">⏱️ {hourlyQuiz.duration_minutes} {t.mins}</span>
-                                        <span className="flex items-center gap-1">🎫 {hourlyQuiz.points_reward} {t.points}</span>
+                                    <div className="text-right">
+                                        <div className="text-2xl font-mono font-bold text-slate-800 tracking-wider">
+                                            {timeLeft}
+                                        </div>
+                                        <div className="text-xs text-slate-400">Next in</div>
                                     </div>
-
-                                    <button onClick={() => startQuiz(hourlyQuiz)} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md shadow-blue-200 transition-colors">
-                                        {t.play}
-                                    </button>
                                 </div>
+
+                                <h3 className="text-2xl font-bold text-slate-800 mb-2">{hourlyQuiz.title}</h3>
+                                <p className="text-slate-500 mb-6 line-clamp-2">{hourlyQuiz.description}</p>
+
+                                <div className="flex items-center gap-4 text-sm text-slate-500 mb-8">
+                                    <span className="flex items-center gap-1">❓ 5 {t.questions}</span>
+                                    <span className="flex items-center gap-1">🎫 50 {t.points}</span>
+                                </div>
+
+                                <button onClick={() => startQuiz(hourlyQuiz)} className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md shadow-blue-200 transition-colors flex items-center justify-center gap-2">
+                                    <span>{t.play}</span>
+                                    <span className="text-blue-200">→</span>
+                                </button>
                             </div>
-                        )}
-                    </>
+                        </div>
+                    )
                 )}
             </div>
 
