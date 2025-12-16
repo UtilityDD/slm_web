@@ -3,23 +3,27 @@ import { supabase } from '../supabaseClient';
 
 export default function Home({ setCurrentView, language, user, t }) {
     const [score, setScore] = useState(0);
+    const [fullName, setFullName] = useState(null);
 
     useEffect(() => {
-        const fetchScore = async () => {
+        const fetchProfile = async () => {
             if (!user) return;
             try {
                 const { data, error } = await supabase
                     .from('profiles')
-                    .select('points')
+                    .select('points, full_name')
                     .eq('id', user.id)
                     .single();
 
-                if (data) setScore(data.points || 0);
+                if (data) {
+                    setScore(data.points || 0);
+                    setFullName(data.full_name);
+                }
             } catch (error) {
-                console.error('Error fetching score:', error);
+                console.error('Error fetching profile:', error);
             }
         };
-        fetchScore();
+        fetchProfile();
     }, [user]);
 
     // Helper to get greeting based on time
@@ -38,7 +42,7 @@ export default function Home({ setCurrentView, language, user, t }) {
                     <div>
                         <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
                             <span className="text-slate-400 font-medium block text-lg sm:text-xl mb-1">{getGreeting()},</span>
-                            {user?.email ? (user.email.split('@')[0]) : (language === 'en' ? 'Lineman' : 'লাইনম্যান')}
+                            {fullName || (user?.email ? user.email.split('@')[0] : (language === 'en' ? 'Lineman' : 'লাইনম্যান'))}
                         </h1>
                         <p className="text-slate-500 mt-2 max-w-xl text-sm sm:text-base">
                             {language === 'en'
