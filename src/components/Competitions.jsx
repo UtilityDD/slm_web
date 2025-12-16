@@ -13,6 +13,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     const [hourlyQuiz, setHourlyQuiz] = useState(null);
     const [timeLeft, setTimeLeft] = useState('');
     const [lastAttemptTime, setLastAttemptTime] = useState(null);
+    const [reviewMode, setReviewMode] = useState(false);
 
     const t = {
         en: {
@@ -161,6 +162,21 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         setUserAnswers({});
         setQuizSubmitted(false);
         setScore(0);
+        setReviewMode(false);
+    };
+
+    const startReview = () => {
+        const saved = localStorage.getItem(`review_${hourlyQuiz.id}`);
+        if (!saved) return;
+        const data = JSON.parse(saved);
+
+        setActiveQuiz(hourlyQuiz);
+        setQuizQuestions(data.questions);
+        setUserAnswers(data.answers);
+        setScore(data.score);
+        setReviewMode(true);
+        setQuizSubmitted(false);
+        setCurrentQuestionIndex(0);
     };
 
     const handleAnswerSelect = (questionId, optionIndex) => {
@@ -195,6 +211,16 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             if (activeQuiz && activeQuiz.id) {
                 fetchLastAttempt(activeQuiz.id);
             }
+
+            // Save for Review (Local Storage)
+            const attemptData = {
+                timestamp: new Date().toISOString(),
+                questions: quizQuestions,
+                answers: userAnswers,
+                score: calculatedScore
+            };
+            localStorage.setItem(`review_${activeQuiz.id}`, JSON.stringify(attemptData));
+
         } catch (error) {
             console.error('Error saving result:', error);
             alert(`Error saving score: ${error.message || 'Unknown error'}`);
@@ -298,6 +324,15 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                         );
                                     })()}
                                 </button>
+
+                                {lastAttemptTime && (
+                                    <button
+                                        onClick={startReview}
+                                        className="w-full mt-3 py-3 rounded-xl font-bold bg-white border-2 border-slate-200 text-slate-600 hover:border-blue-200 hover:text-blue-600 transition-all shadow-sm"
+                                    >
+                                        Review Last Attempt
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )
@@ -374,18 +409,33 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                         {quizQuestions[currentQuestionIndex]?.question_text}
                                     </h2>
                                     <div className="space-y-3">
-                                        {quizQuestions[currentQuestionIndex]?.options.map((option, idx) => (
-                                            <button
-                                                key={idx}
-                                                onClick={() => handleAnswerSelect(quizQuestions[currentQuestionIndex].id, idx)}
-                                                className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${userAnswers[quizQuestions[currentQuestionIndex].id] === idx
-                                                    ? 'border-blue-600 bg-blue-50 text-blue-700 font-bold'
-                                                    : 'border-slate-100 hover:border-blue-200 hover:bg-slate-50 text-slate-600'
-                                                    }`}
-                                            >
-                                                <span className="mr-3 text-slate-400">{String.fromCharCode(65 + idx)}.</span> {option}
-                                            </button>
-                                        ))}
+                                        {quizQuestions[currentQuestionIndex]?.options.map((option, idx) => {
+                                            const isSelected = userAnswers[quizQuestions[currentQuestionIndex].id] === idx;
+                                            const isCorrect = idx === quizQuestions[currentQuestionIndex].correct_option_index;
+
+                                            let buttonClass = 'border-slate-100 hover:border-blue-200 hover:bg-slate-50 text-slate-600';
+
+                                            if (reviewMode) {
+                                                if (isCorrect) buttonClass = 'border-green-500 bg-green-50 text-green-700 font-bold';
+                                                else if (isSelected && !isCorrect) buttonClass = 'border-red-500 bg-red-50 text-red-700';
+                                                else buttonClass = 'border-slate-100 opacity-60';
+                                            } else if (isSelected) {
+                                                buttonClass = 'border-blue-600 bg-blue-50 text-blue-700 font-bold';
+                                            }
+
+                                            return (
+                                                <button
+                                                    key={idx}
+                                                    onClick={() => !reviewMode && handleAnswerSelect(quizQuestions[currentQuestionIndex].id, idx)}
+                                                    disabled={reviewMode}
+                                                    className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${buttonClass}`}
+                                                >
+                                                    <span className="mr-3 text-slate-400">{String.fromCharCode(65 + idx)}.</span> {option}
+                                                    {reviewMode && isCorrect && <span className="float-right text-green-600">✓</span>}
+                                                    {reviewMode && isSelected && !isCorrect && <span className="float-right text-red-600">✗</span>}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
 
@@ -398,8 +448,8 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                         ← Prev
                                     </button>
                                     {currentQuestionIndex === quizQuestions.length - 1 ? (
-                                        <button onClick={submitQuiz} className="px-8 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 shadow-md">
-                                            Finish Quiz
+                                        <button onClick={reviewMode ? () => setActiveQuiz(null) : submitQuiz} className={`px-8 py-3 rounded-xl font-bold shadow-md ${reviewMode ? 'bg-slate-800 text-white hover:bg-slate-900' : 'bg-green-600 text-white hover:bg-green-700'}`}>
+                                            {reviewMode ? 'Close Review' : 'Finish Quiz'}
                                         </button>
                                     ) : (
                                         <button onClick={() => setCurrentQuestionIndex(prev => prev + 1)} className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-md">
