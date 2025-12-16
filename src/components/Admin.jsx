@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-export default function Admin({ user, language }) {
+export default function Admin({ user, userProfile, language }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState(null);
@@ -25,7 +25,7 @@ export default function Admin({ user, language }) {
 
   const handleEdit = (targetUser) => {
     // Safety Mitra Restriction: Cannot edit Admins
-    if (user.role === 'safety mitra' && targetUser.role === 'admin') {
+    if (userProfile?.role === 'safety mitra' && targetUser.role === 'admin') {
       alert("Permission Denied: Safety Mitras cannot edit Administrators.");
       return;
     }
@@ -136,7 +136,7 @@ export default function Admin({ user, language }) {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <h1 className="text-2xl font-bold mb-4">
-        {user.role === 'safety mitra' ? 'Safety Mitra Dashboard' : 'Admin - User Management'}
+        {userProfile?.role === 'safety mitra' ? 'Safety Mitra Dashboard' : 'Admin - User Management'}
       </h1>
       <div className="bg-white shadow rounded-lg overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
@@ -157,16 +157,18 @@ export default function Admin({ user, language }) {
                 <td className="px-6 py-4 whitespace-nowrap">{targetUser.role}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{targetUser.district}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => handleEdit(targetUser)}
-                    disabled={user.role === 'safety mitra' && targetUser.role === 'admin'}
-                    className={`text-indigo-600 hover:text-indigo-900 ${user.role === 'safety mitra' && targetUser.role === 'admin'
+                  {!(userProfile?.role === 'safety mitra' && targetUser.role === 'admin') && (
+                    <button
+                      onClick={() => handleEdit(targetUser)}
+                      disabled={userProfile?.role === 'safety mitra' && targetUser.role === 'admin'}
+                      className={`text-indigo-600 hover:text-indigo-900 ${userProfile?.role === 'safety mitra' && targetUser.role === 'admin'
                         ? 'opacity-50 cursor-not-allowed grayscale'
                         : ''
-                      }`}
-                  >
-                    Edit
-                  </button>
+                        }`}
+                    >
+                      Edit
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -251,11 +253,11 @@ export default function Admin({ user, language }) {
                     value={editingUser.role || 'lineman'}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                    disabled={user.role === 'safety mitra' && editingUser.role === 'admin'} // Extra safety
+                    disabled={userProfile?.role === 'safety mitra' && editingUser.role === 'admin'} // Extra safety
                   >
                     <option value="lineman">Lineman</option>
                     <option value="safety mitra">Safety Mitra</option>
-                    {user.role === 'admin' && <option value="admin">Admin</option>} {/* Safety Mitra cannot promote to Admin */}
+                    {userProfile?.role === 'admin' && <option value="admin">Admin</option>} {/* Safety Mitra cannot promote to Admin */}
                   </select>
                 </div>
 
