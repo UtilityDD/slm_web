@@ -23,7 +23,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             questions: "Questions",
             mins: "Mins",
             points: "Pts",
-            leaderboard: "Top Performers",
+            leaderboard: "Leaderboard",
             completed: "Quiz Completed!",
             score: "Your Score",
             close: "Close",
@@ -38,7 +38,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             questions: "প্রশ্ন",
             mins: "মিনিট",
             points: "পয়েন্ট",
-            leaderboard: "সেরা পারফর্মার",
+            leaderboard: "লিডারবোর্ড",
             completed: "কুইজ সম্পন্ন!",
             score: "আপনার স্কোর",
             close: "বন্ধ করুন",
@@ -90,16 +90,30 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
     const fetchLeaderboard = async () => {
         try {
+            // Query the View which already handles deduping and MAX score
             const { data, error } = await supabase
-                .from('profiles')
-                .select('full_name, district, points, avatar_url')
-                .order('points', { ascending: false })
-                .limit(5); // Limit to top 5 for minimal view
+                .from('leaderboard_view')
+                .select('*')
+                .order('score', { ascending: false })
+                .limit(10);
 
             if (error) throw error;
-            setLeaderboard(data || []);
+
+            // View returns flat structure, so mapping is simpler
+            const formattedData = data.map(item => ({
+                full_name: item.full_name,
+                district: item.district,
+                avatar_url: item.avatar_url,
+                points: item.score
+            }));
+
+            setLeaderboard(formattedData || []);
         } catch (error) {
             console.error('Error fetching leaderboard:', error);
+            // Fallback for user feedback if View doesn't exist yet
+            if (error.code === '42P01') {
+                console.warn("View doesn't exist yet");
+            }
         }
     };
 
@@ -140,19 +154,21 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         setScore(calculatedScore);
         setQuizSubmitted(true);
 
-        if (!activeQuiz.isLocal) {
-            try {
-                await supabase.from('quiz_attempts').insert({
-                    user_id: user.id,
-                    quiz_id: activeQuiz.id,
-                    score: calculatedScore
-                });
-                const { data: profile } = await supabase.from('profiles').select('points').eq('id', user.id).single();
-                await supabase.from('profiles').update({ points: (profile?.points || 0) + calculatedScore }).eq('id', user.id);
-                fetchLeaderboard();
-            } catch (error) {
-                console.error('Error saving result:', error);
-            }
+        // Always attempt to save result, regardless of quiz source
+        try {
+            // Use the RPC function for atomic transaction
+            const { error } = await supabase.rpc('submit_quiz_result', {
+                p_quiz_id: activeQuiz.id || 'unknown_quiz', // Fallback ID if missing
+                p_score: calculatedScore
+            });
+
+            if (error) throw error;
+
+            // Refresh leaderboard to show updated score immediately
+            fetchLeaderboard();
+        } catch (error) {
+            console.error('Error saving result:', error);
+            alert(`Error saving score: ${error.message || 'Unknown error'}`);
         }
     };
 
@@ -261,7 +277,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                 </div>
                             ))}
                             {leaderboard.length === 0 && (
-                                <div className="p-8 text-center text-slate-400">Loading leaders...</div>
+                                <div className="p-8 text-center text-slate-400">No participants yet. Be the first!</div>
                             )}
                         </>
                     )}
