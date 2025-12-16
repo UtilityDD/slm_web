@@ -14,6 +14,10 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     const [timeLeft, setTimeLeft] = useState('');
     const [lastAttemptTime, setLastAttemptTime] = useState(null);
     const [reviewMode, setReviewMode] = useState(false);
+    const [userRank, setUserRank] = useState(null);
+    const [showFullLeaderboard, setShowFullLeaderboard] = useState(false);
+    const [fullLeaderboard, setFullLeaderboard] = useState([]);
+    const [loadingFull, setLoadingFull] = useState(false);
 
     const t = {
         en: {
@@ -114,6 +118,32 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
 
 
+    const fetchUserRank = async () => {
+        if (!user) return;
+        try {
+            // 1. Get my score
+            const { data: myData, error: myError } = await supabase
+                .from('leaderboard_view')
+                .select('score')
+                .eq('user_id', user.id)
+                .single();
+
+            if (myError || !myData) return;
+
+            // 2. Count people with MORE points than me
+            const { count, error: countError } = await supabase
+                .from('leaderboard_view')
+                .select('*', { count: 'exact', head: true })
+                .gt('score', myData.score);
+
+            if (!countError) {
+                setUserRank({ rank: count + 1, score: myData.score });
+            }
+        } catch (error) {
+            console.error('Error fetching rank:', error);
+        }
+    };
+
     const fetchLeaderboard = async () => {
         try {
             // Query the View which already handles deduping and MAX score
@@ -125,21 +155,46 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
             if (error) throw error;
 
-            // View returns flat structure, so mapping is simpler
+            // View returns flat structure
             const formattedData = data.map(item => ({
-                full_name: item.full_name,
-                district: item.district,
-                avatar_url: item.avatar_url,
+                ...item, // Keep all fields including user_id if available
                 points: item.score
             }));
 
             setLeaderboard(formattedData || []);
+
+            // Also fetch my specific rank
+            if (user) fetchUserRank();
+
         } catch (error) {
             console.error('Error fetching leaderboard:', error);
-            // Fallback for user feedback if View doesn't exist yet
             if (error.code === '42P01') {
                 console.warn("View doesn't exist yet");
             }
+        }
+    };
+
+    const fetchFullLeaderboard = async () => {
+        setLoadingFull(true);
+        setShowFullLeaderboard(true);
+        try {
+            const { data, error } = await supabase
+                .from('leaderboard_view')
+                .select('*')
+                .order('score', { ascending: false })
+                .limit(50); // Fetch top 50 for now
+
+            if (error) throw error;
+
+            const formattedData = data.map(item => ({
+                ...item,
+                points: item.score
+            }));
+            setFullLeaderboard(formattedData || []);
+        } catch (error) {
+            console.error('Error fetching full leaderboard:', error);
+        } finally {
+            setLoadingFull(false);
         }
     };
 
@@ -207,6 +262,8 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
             // Refresh leaderboard to show updated score immediately
             fetchLeaderboard();
+            // Refresh my rank
+            fetchUserRank();
             // Refresh lock status
             if (activeQuiz && activeQuiz.id) {
                 fetchLastAttempt(activeQuiz.id);
@@ -382,10 +439,73 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                             {leaderboard.length === 0 && (
                                 <div className="p-8 text-center text-slate-400">No participants yet. Be the first!</div>
                             )}
+
+                            {/* View All Button */}
+                            {leaderboard.length > 0 && (
+                                <div className="p-4 text-center border-t border-slate-50">
+                                    <button
+                                        onClick={fetchFullLeaderboard}
+                                        className="text-blue-600 font-bold hover:text-blue-700 text-sm"
+                                    >
+                                        View Full Leaderboard
+                                    </button>
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
+
+                {/* Sticky My Rank (if User exists and Rank exists) */}
+                {user && userRank && (
+                    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 shadow-2xl transform transition-transform duration-300 z-40 sm:hidden">
+                        <div className="flex items-center justify-between max-w-sm mx-auto">
+                            <div className="flex items-center gap-3">
+                                <span className="text-xl font-bold text-slate-400">#{userRank.rank}</span>
+                                <div className="text-sm">
+                                    <div className="font-bold text-slate-800">You</div>
+                                    <div className="text-slate-500 text-xs">{userRank.score} pts</div>
+                                </div>
+                            </div>
+                            <button onClick={fetchFullLeaderboard} className="text-blue-600 text-sm font-bold">View All</button>
+                        </div>
+                    </div>
+                )}
             </div>
+
+            {/* Full Leaderboard Modal */}
+            {showFullLeaderboard && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white w-full h-full sm:h-auto sm:max-w-2xl sm:rounded-3xl sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+                        <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
+                            <h3 className="font-bold text-lg text-slate-800">Leaderboard</h3>
+                            <button onClick={() => setShowFullLeaderboard(false)} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">✕</button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4">
+                            {loadingFull ? (
+                                <div className="text-center py-10 text-slate-400">Loading...</div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {fullLeaderboard.map((item, index) => (
+                                        <div key={index} className={`flex items-center p-3 rounded-xl ${item.user_id === user?.id ? 'bg-blue-50 border border-blue-100' : 'bg-white border border-slate-100'}`}>
+                                            <div className={`font-bold w-10 text-lg ${index < 3 ? 'text-yellow-500' : 'text-slate-400'}`}>#{index + 1}</div>
+                                            <div className="w-10 h-10 rounded-full bg-slate-100 mr-3 overflow-hidden flex-shrink-0">
+                                                {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className={`font-bold truncate ${item.user_id === user?.id ? 'text-blue-700' : 'text-slate-800'}`}>
+                                                    {item.user_id === user?.id ? 'You' : item.full_name}
+                                                </div>
+                                                <div className="text-xs text-slate-500">{item.district}</div>
+                                            </div>
+                                            <div className={`font-bold ${item.user_id === user?.id ? 'text-blue-600' : 'text-slate-600'}`}>{item.points}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Quiz Modal */}
             {activeQuiz && (
