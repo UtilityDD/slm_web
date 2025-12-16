@@ -150,14 +150,23 @@ export default function Admin({ user, language }) {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{user.full_name}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{user.role}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{user.district}</td>
+            {users.map((targetUser) => (
+              <tr key={targetUser.id}>
+                <td className="px-6 py-4 whitespace-nowrap">{targetUser.full_name}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{targetUser.email}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{targetUser.role}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{targetUser.district}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button onClick={() => handleEdit(user)} className="text-indigo-600 hover:text-indigo-900">Edit</button>
+                  <button
+                    onClick={() => handleEdit(targetUser)}
+                    disabled={user.role === 'safety mitra' && targetUser.role === 'admin'}
+                    className={`text-indigo-600 hover:text-indigo-900 ${user.role === 'safety mitra' && targetUser.role === 'admin'
+                        ? 'opacity-50 cursor-not-allowed grayscale'
+                        : ''
+                      }`}
+                  >
+                    Edit
+                  </button>
                 </td>
               </tr>
             ))}
