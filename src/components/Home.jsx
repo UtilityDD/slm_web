@@ -1,6 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 
 export default function Home({ setCurrentView, language, user, t }) {
+    const [score, setScore] = useState(0);
+
+    useEffect(() => {
+        const fetchScore = async () => {
+            if (!user) return;
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('points')
+                    .eq('id', user.id)
+                    .single();
+
+                if (data) setScore(data.points || 0);
+            } catch (error) {
+                console.error('Error fetching score:', error);
+            }
+        };
+        fetchScore();
+    }, [user]);
+
     // Helper to get greeting based on time
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -38,7 +59,7 @@ export default function Home({ setCurrentView, language, user, t }) {
                             <>
                                 <span className="text-xl">⭐</span>
                                 <span className="text-sm font-bold">
-                                    {language === 'en' ? 'My Score:' : 'আমার স্কোর:'} <span className="text-lg">1,250</span>
+                                    {language === 'en' ? 'My Score:' : 'আমার স্কোর:'} <span className="text-lg">{score.toLocaleString()}</span>
                                 </span>
                             </>
                         ) : (
