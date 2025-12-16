@@ -101,7 +101,8 @@ export default function SmartLinemanUI() {
         emergency: "Emergency",
         login: "Login",
         logout: "Logout",
-        admin: "Admin"
+        admin: "Admin",
+        safetyMitra: "Safety Mitra"
       },
       hero: {
         title: "SmartLineman",
@@ -128,7 +129,8 @@ export default function SmartLinemanUI() {
         emergency: "জরুরি",
         login: "লগ ইন",
         logout: "লগ আউট",
-        admin: "অ্যাডমিন"
+        admin: "অ্যাডমিন",
+        safetyMitra: "সেফটি মিত্র"
       },
       hero: {
         title: "স্মার্ট লাইনম্যান",
@@ -251,7 +253,7 @@ export default function SmartLinemanUI() {
                   className={`hover:text-blue-700 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'admin' ? 'text-blue-700 font-semibold' : ''}`}
                   onClick={() => setCurrentView('admin')}
                 >
-                  {userProfile?.role === 'safety mitra' ? 'Safety Mitra' : t.nav.admin}
+                  {userProfile?.role === 'safety mitra' ? t.nav.safetyMitra : t.nav.admin}
                   <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${currentView === 'admin' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
                 </a>
               )}
@@ -393,7 +395,7 @@ export default function SmartLinemanUI() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <span className="text-[9px] font-medium">{userProfile?.role === 'safety mitra' ? 'Safety Mitra' : t.nav.admin}</span>
+              <span className="text-[9px] font-medium">{userProfile?.role === 'safety mitra' ? t.nav.safetyMitra : t.nav.admin}</span>
             </button>
           )}
 
