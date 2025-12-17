@@ -6,7 +6,7 @@ const DonorCardSkeleton = () => (
     <div className="material-card elevation-1 p-6">
         <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-slate-200 animate-pulse"></div>
+                <div className="w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
                 <div className="space-y-2">
                     <div className="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
                     <div className="h-3 w-16 bg-slate-200 rounded animate-pulse"></div>
@@ -24,7 +24,7 @@ const ServiceCardSkeleton = () => (
     <div className="material-card elevation-1 p-6">
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-200 animate-pulse"></div>
+                <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
                 <div className="space-y-2">
                     <div className="h-5 w-32 bg-slate-200 rounded animate-pulse"></div>
                     <div className="h-3 w-24 bg-slate-200 rounded animate-pulse"></div>
@@ -500,7 +500,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                         value={serviceSearch}
                                         onChange={(e) => setServiceSearch(e.target.value)}
                                         placeholder={language === 'en' ? 'Search services by name or location...' : 'নাম বা অবস্থান দ্বারা সার্চ করুন...'}
-                                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50 text-sm transition-all"
+                                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50 text-sm transition-all dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100 dark:focus:ring-blue-900"
                                     />
                                     {serviceSearch && (
                                         <button
@@ -536,7 +536,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                                 onClick={() => setActiveCategory(type)}
                                                 className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${isActive
                                                     ? `bg-${config.color === 'slate' ? 'slate-800' : `${config.color}-600`} text-white shadow-md transform scale-105`
-                                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 hover:bg-slate-50'
+                                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 dark:border-slate-600'
                                                     }`}
                                             >
                                                 <span>{config.label}</span>
@@ -607,7 +607,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                                                     }`}></span>
                                                                 <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">{service.name}</h4>
                                                             </div>
-                                                            <p className="text-xs text-slate-500 truncate pl-4">{service.location}</p>
+                                                            <p className="text-xs text-slate-500 truncate pl-4 dark:text-slate-400">{service.location}</p>
                                                         </div>
 
                                                         <a href={`tel:${service.phone}`} className="flex-shrink-0">
@@ -615,7 +615,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                                                 config.color === 'red' ? 'bg-red-100 text-red-600 hover:bg-red-600 hover:text-white' :
                                                                     config.color === 'orange' ? 'bg-orange-100 text-orange-600 hover:bg-orange-600 hover:text-white' :
                                                                         config.color === 'yellow' ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-600 hover:text-white' :
-                                                                            'bg-slate-200 text-slate-600 dark:text-slate-400 hover:bg-slate-600 hover:text-white'
+                                                                            'bg-slate-200 text-slate-600 dark:text-slate-400 hover:bg-slate-600 hover:text-white dark:bg-slate-700'
                                                                 }`}>
                                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -638,7 +638,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                         return (
                                             <div key={type} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
                                                 {/* Category Header */}
-                                                <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-50">
+                                                <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-50 dark:border-slate-700">
                                                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${config.color === 'blue' ? 'bg-blue-100 text-blue-600' :
                                                         config.color === 'red' ? 'bg-red-100 text-red-600' :
                                                             config.color === 'orange' ? 'bg-orange-100 text-orange-600' :
@@ -662,10 +662,10 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                                 {/* Services List (Compact) */}
                                                 <div className="space-y-3">
                                                     {servicesOfType.map((service) => (
-                                                        <div key={service.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors group">
+                                                        <div key={service.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors group dark:bg-slate-700 dark:hover:bg-slate-600">
                                                             <div className="min-w-0 pr-3">
                                                                 <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">{service.name}</h4>
-                                                                <p className="text-xs text-slate-500 truncate">{service.location}</p>
+                                                                <p className="text-xs text-slate-500 truncate dark:text-slate-400">{service.location}</p>
                                                             </div>
 
                                                             <a href={`tel:${service.phone}`} className="flex-shrink-0">
