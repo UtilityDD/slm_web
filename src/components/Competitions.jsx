@@ -346,15 +346,15 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                         const now = new Date();
                                         return last.getHours() === now.getHours() && last.getDate() === now.getDate();
                                     })()}
-                                    className={`w-full py-4 rounded-xl font-bold shadow-md transition-all flex items-center justify-center gap-2 ${(() => {
-                                        if (!lastAttemptTime) return 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200';
+                                    className={`w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${(() => {
+                                        if (!lastAttemptTime) return 'bg-blue-600 hover:bg-blue-700 text-white';
                                         const last = new Date(lastAttemptTime);
                                         const now = new Date();
                                         const isLocked = last.getHours() === now.getHours() && last.getDate() === now.getDate();
 
                                         return isLocked
-                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
-                                            : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200';
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                            : 'bg-blue-600 hover:bg-blue-700 text-white';
                                     })()
                                         }`}
                                 >
