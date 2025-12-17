@@ -14,6 +14,7 @@ export default function SmartLinemanUI() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentView, setCurrentView] = useState('home');
   const [language, setLanguage] = useState('en');
+  const [theme, setTheme] = useState('light');
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
@@ -69,10 +70,37 @@ export default function SmartLinemanUI() {
     }
   }, []);
 
+  // Check LocalStorage for Theme on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('appTheme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } else {
+      // Default to light mode if no saved preference
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
   const handleLanguageSelect = (lang) => {
     setLanguage(lang);
     localStorage.setItem('appLanguage', lang);
     setShowLanguageModal(false);
+  };
+
+  const handleThemeToggle = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('appTheme', newTheme);
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   };
 
   const handleLogout = () => {
@@ -181,7 +209,7 @@ export default function SmartLinemanUI() {
   };
 
   return (
-    <div className={`min-h-screen bg-slate-50 text-slate-900 ${language === 'bn' ? 'font-bengali' : 'font-sans'}`}>
+    <div className={`min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : 'font-sans'}`}>
       {showLogoutModal && (
         <LogoutConfirmationModal
           onConfirm={confirmLogout}
@@ -191,12 +219,12 @@ export default function SmartLinemanUI() {
       )}
       {/* Background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[50vw] h-[50vw] bg-blue-100/40 rounded-full blur-3xl translate-x-1/4 -translate-y-1/4"></div>
-        <div className="absolute bottom-0 left-0 w-[40vw] h-[40vw] bg-cyan-100/40 rounded-full blur-3xl -translate-x-1/4 translate-y-1/4"></div>
+        <div className="absolute top-0 right-0 w-[50vw] h-[50vw] bg-blue-100/40 dark:bg-blue-900/20 rounded-full blur-3xl translate-x-1/4 -translate-y-1/4"></div>
+        <div className="absolute bottom-0 left-0 w-[40vw] h-[40vw] bg-cyan-100/40 dark:bg-cyan-900/20 rounded-full blur-3xl -translate-x-1/4 translate-y-1/4"></div>
       </div>
 
       {/* Header - Material Design */}
-      <header className="bg-white elevation-2 sticky top-0 z-50">
+      <header className="bg-white dark:bg-slate-800 elevation-2 sticky top-0 z-50 border-b border-slate-200 dark:border-slate-700">
         <div className="max-w-7xl mx-auto mobile-container">
           <div className="flex justify-between items-center h-14 md:h-16">
             <div
@@ -204,22 +232,22 @@ export default function SmartLinemanUI() {
               onClick={() => setCurrentView('home')}
             >
               <div className="relative">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-700 to-blue-600 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm text-white elevation-2 transition-all duration-300 group-hover:scale-105">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-700 to-blue-600 dark:from-blue-600 dark:to-blue-500 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm text-white elevation-2 transition-all duration-300 group-hover:scale-105">
                   SL
                 </div>
               </div>
               <div className="hidden sm:block">
-                <div className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
+                <div className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                   {language === 'en' ? 'SmartLineman' : 'স্মার্ট লাইনম্যান'}
                 </div>
-                <div className="text-[10px] sm:text-xs text-slate-500 font-medium">
+                <div className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
                   {language === 'en' ? 'West Bengal' : 'পশ্চিমবঙ্গ'}
                 </div>
               </div>
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium text-slate-600">
+            <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
               <a
                 className={`hover:text-blue-700 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'safety' ? 'text-blue-700 font-semibold' : ''}`}
                 onClick={() => setCurrentView('safety')}
@@ -260,13 +288,30 @@ export default function SmartLinemanUI() {
             </nav>
 
             <div className="flex items-center gap-2 sm:gap-3">
+              {/* Theme Toggle Button */}
+              <button
+                onClick={handleThemeToggle}
+                className="flex items-center justify-center p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-all touch-target"
+                title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+              >
+                {theme === 'light' ? (
+                  <svg className="w-4 h-4 text-slate-700 dark:text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                )}
+              </button>
+
               {/* Language Toggle Button */}
               <button
                 onClick={() => handleLanguageSelect(language === 'en' ? 'bn' : 'en')}
-                className="px-2 sm:px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all touch-target"
+                className="px-2 sm:px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-all touch-target"
                 title={language === 'en' ? 'Switch to Bengali' : 'Switch to English'}
               >
-                <span className="text-xs font-bold text-slate-700">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
                   {language === 'en' ? 'বাং' : 'EN'}
                 </span>
               </button>
