@@ -260,21 +260,16 @@ export default function SmartLinemanUI() {
             </nav>
 
             <div className="flex items-center gap-2 sm:gap-3">
-              {/* Language Switcher - More compact on mobile */}
-              <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
-                <button
-                  onClick={() => handleLanguageSelect('en')}
-                  className={`px-1.5 sm:px-2 py-1 text-xs font-bold rounded-md transition-all touch-target ${language === 'en' ? 'bg-white text-blue-700 elevation-1' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  EN
-                </button>
-                <button
-                  onClick={() => handleLanguageSelect('bn')}
-                  className={`px-1.5 sm:px-2 py-1 text-xs font-bold rounded-md transition-all touch-target ${language === 'bn' ? 'bg-white text-blue-700 elevation-1' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  বাং
-                </button>
-              </div>
+              {/* Language Toggle Button */}
+              <button
+                onClick={() => handleLanguageSelect(language === 'en' ? 'bn' : 'en')}
+                className="px-2 sm:px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all touch-target"
+                title={language === 'en' ? 'Switch to Bengali' : 'Switch to English'}
+              >
+                <span className="text-xs font-bold text-slate-700">
+                  {language === 'en' ? 'বাং' : 'EN'}
+                </span>
+              </button>
 
               {/* User menu - Desktop only */}
               {user ? (
