@@ -455,56 +455,29 @@ export default function SmartLinemanUI() {
       {renderContent()}
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-sm text-white">
-                  SL
-                </div>
-                <span className="font-bold text-white text-lg">
-                  {language === 'en' ? 'SmartLineman' : 'স্মার্ট লাইনম্যান'}
-                </span>
+      {/* Minimal Footer */}
+      <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 mt-20">
+        <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-sm text-white shadow-md shadow-blue-600/20">
+                SL
               </div>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                {t.footer.desc}
-              </p>
+              <span className="font-bold text-slate-700 dark:text-slate-200 text-lg tracking-tight">
+                {language === 'en' ? 'SmartLineman' : 'স্মার্ট লাইনম্যান'}
+              </span>
             </div>
-            <div>
-              <h3 className="font-semibold text-white mb-4">{t.footer.quickLinks}</h3>
-              <ul className="space-y-2 text-sm text-slate-400">
-                <li><a href="#" className="hover:text-blue-400 transition-colors">{t.nav.safety}</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">{t.nav.community}</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">{t.nav.competitions}</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Events</a></li>
-              </ul>
+
+            <div className="flex flex-wrap justify-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-400">
+              <button onClick={() => setCurrentView('safety')} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{t.nav.safety}</button>
+              <button onClick={() => setCurrentView('community')} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{t.nav.community}</button>
+              <button onClick={() => setCurrentView('competitions')} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{t.nav.competitions}</button>
+              <button onClick={() => setCurrentView('emergency')} className="text-red-500 hover:text-red-600 transition-colors">{t.nav.emergency}</button>
             </div>
-            <div>
-              <h3 className="font-semibold text-white mb-4">{t.footer.resources}</h3>
-              <ul className="space-y-2 text-sm text-slate-400">
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Safety Protocols</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Training Materials</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Guidelines</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">FAQs</a></li>
-              </ul>
+
+            <div className="text-sm text-slate-400 font-medium">
+              &copy; {new Date().getFullYear()} SmartLineman.
             </div>
-            <div>
-              <h3 className="font-semibold text-white mb-4">{t.footer.emergency}</h3>
-              <div className="space-y-3">
-                <div className="bg-slate-800 rounded-lg p-3 border border-slate-700">
-                  <div className="text-xs text-slate-400">Emergency Hotline (WB)</div>
-                  <div className="text-lg font-bold text-red-500">1912 / 1800-345-5220</div>
-                </div>
-                <div className="bg-slate-800 rounded-lg p-3 border border-slate-700">
-                  <div className="text-xs text-slate-400">Safety Support</div>
-                  <div className="text-lg font-bold text-yellow-500">24/7 Available</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-slate-800 mt-8 pt-8 text-center text-sm text-slate-500">
-            <p>&copy; 2024 SmartLineman West Bengal.</p>
           </div>
         </div>
       </footer>
