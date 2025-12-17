@@ -20,12 +20,12 @@ export default function LogoutConfirmationModal({ onConfirm, onCancel, language 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm m-4 animate-fade-in-up">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm m-4 animate-fade-in-up">
         <div className="p-6">
-          <h2 className="text-xl font-bold text-slate-900 mb-3">{t.title}</h2>
-          <p className="text-slate-600 mb-6">{t.message}</p>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">{t.title}</h2>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">{t.message}</p>
         </div>
-        <div className="bg-slate-50 px-6 py-4 flex justify-end gap-3 rounded-b-2xl">
+        <div className="bg-slate-50 dark:bg-slate-700 px-6 py-4 flex justify-end gap-3 rounded-b-2xl">
           <button
             onClick={onCancel}
             className="material-button-outlined"

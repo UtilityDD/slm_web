@@ -233,14 +233,14 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 <div className="inline-block p-3 rounded-full bg-orange-100 text-orange-600 text-3xl mb-4">
                     🦺
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-2">
                     {language === 'en' ? (
                         <>Safety <span className="text-orange-600">Hub</span></>
                     ) : (
                         <>{t.title}</>
                     )}
                 </h1>
-                <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
                     {t.subtitle}
                 </p>
             </div>
@@ -253,7 +253,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                         onClick={() => setActiveTab(tab)}
                         className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === tab
                             ? 'bg-orange-600 text-white shadow-md'
-                            : 'bg-white text-slate-600 hover:bg-orange-50 border border-slate-200'
+                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-orange-50 border border-slate-200 dark:border-slate-600'
                             }`}
                     >
                         {t.tabs[tab]}
@@ -267,12 +267,12 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Featured Protocol */}
                         <div className="md:col-span-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-3xl p-8 text-white relative overflow-hidden shadow-lg">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3"></div>
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white dark:bg-slate-800/10 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3"></div>
                             <div className="relative z-10">
                                 <h2 className="text-2xl font-bold mb-2">{t.protocols.title}</h2>
                                 <p className="text-orange-100 mb-6 max-w-xl">{t.protocols.desc}</p>
                                 <div className="flex gap-4">
-                                    <button className="px-6 py-3 bg-white text-orange-600 rounded-xl font-bold hover:bg-orange-50 transition-all">
+                                    <button className="px-6 py-3 bg-white dark:bg-slate-800 text-orange-600 rounded-xl font-bold hover:bg-orange-50 transition-all">
                                         Download PDF
                                     </button>
                                 </div>
@@ -281,14 +281,14 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
 
                         {/* Protocol Categories */}
                         {t.protocols.categories.map((category, index) => (
-                            <div key={index} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:border-orange-200 hover:shadow-md transition-all cursor-pointer group">
+                            <div key={index} className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-600 hover:border-orange-200 hover:shadow-md transition-all cursor-pointer group">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
                                         {index === 0 ? '⚡' : index === 1 ? '🔧' : index === 2 ? '⛈️' : '🩹'}
                                     </div>
                                     <span className="text-slate-400">→</span>
                                 </div>
-                                <h3 className="font-bold text-lg text-slate-900 mb-1">{category}</h3>
+                                <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100 mb-1">{category}</h3>
                                 <p className="text-sm text-slate-500">12 Guidelines</p>
                             </div>
                         ))}
@@ -301,7 +301,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                             <div key={item} className="material-card elevation-2 overflow-hidden group ripple-dark">
                                 <div className="relative h-48 bg-slate-200">
                                     <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="w-12 h-12 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-xl cursor-pointer hover:scale-110 transition-transform">
+                                        <div className="w-12 h-12 bg-white dark:bg-slate-800/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-xl cursor-pointer hover:scale-110 transition-transform">
                                             ▶
                                         </div>
                                     </div>
@@ -311,7 +311,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                 </div>
                                 <div className="p-5">
                                     <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-md">Safety</span>
-                                    <h3 className="font-bold text-lg text-slate-900 mt-2 mb-1 group-hover:text-orange-600 transition-colors">
+                                    <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100 mt-2 mb-1 group-hover:text-orange-600 transition-colors">
                                         {language === 'en' ? "Proper Use of Safety Harness" : "সেফটি হারনেস এর সঠিক ব্যবহার"}
                                     </h3>
                                     <p className="text-sm text-slate-500 mb-4">
@@ -329,8 +329,8 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 {activeTab === 'my_ppe' && (
                     <div className="max-w-4xl mx-auto">
                         <div className="text-center mb-8">
-                            <h2 className="text-2xl font-bold text-slate-900 mb-2">{t.my_ppe.title}</h2>
-                            <p className="text-slate-600 mb-6">{t.my_ppe.desc}</p>
+                            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.my_ppe.title}</h2>
+                            <p className="text-slate-600 dark:text-slate-400 mb-6">{t.my_ppe.desc}</p>
 
                             <button
                                 onClick={() => {
@@ -349,16 +349,16 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                 <div className="w-8 h-8 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin"></div>
                             </div>
                         ) : ppeList.length === 0 ? (
-                            <div className="text-center py-12 bg-white rounded-3xl border border-slate-200 border-dashed">
+                            <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-600 border-dashed">
                                 <div className="text-4xl mb-4">📭</div>
                                 <p className="text-slate-500">{t.my_ppe.empty}</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {ppeList.map((item) => (
-                                    <div key={item.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all relative group">
+                                    <div key={item.id} className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-md transition-all relative group">
                                         <div className="flex justify-between items-start mb-2">
-                                            <h3 className="font-bold text-lg text-slate-900">{item.name}</h3>
+                                            <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">{item.name}</h3>
                                             <span className={`px-2 py-1 rounded-md text-xs font-bold ${item.condition === 'Good' ? 'bg-green-100 text-green-700' :
                                                 item.condition === 'Fair' ? 'bg-yellow-100 text-yellow-700' :
                                                     'bg-red-100 text-red-700'
@@ -366,7 +366,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                                 {t.my_ppe.conditions[item.condition] || item.condition}
                                             </span>
                                         </div>
-                                        <div className="space-y-1 text-sm text-slate-600 mb-3">
+                                        <div className="space-y-1 text-sm text-slate-600 dark:text-slate-400 mb-3">
                                             {item.count > 1 && <p><span className="font-semibold text-slate-400">{t.my_ppe.fields.count}:</span> {item.count}</p>}
                                             <p><span className="font-semibold text-slate-400">{t.my_ppe.fields.age}:</span> {item.age_months}</p>
                                             {item.details && <p><span className="font-semibold text-slate-400">Details:</span> {item.details}</p>}
@@ -393,7 +393,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                         {/* Add Modal */}
                         {showAddModal && (
                             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                                <div className="bg-white rounded-2xl w-full max-w-md p-6 animate-scale-in">
+                                <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-6 animate-scale-in">
                                     <h3 className="text-xl font-bold mb-4">{editingId ? t.my_ppe.editBtn : t.my_ppe.addBtn}</h3>
                                     <form onSubmit={handleSavePPE} className="space-y-4">
                                         <div>
@@ -402,7 +402,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                                 required
                                                 value={newItem.name}
                                                 onChange={e => setNewItem({ ...newItem, name: e.target.value })}
-                                                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-white"
+                                                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800"
                                             >
                                                 <option value="">Select PPE</option>
                                                 {PPE_ITEMS.map(item => (
@@ -419,7 +419,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                                     min="1"
                                                     value={newItem.count}
                                                     onChange={e => setNewItem({ ...newItem, count: e.target.value })}
-                                                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                                                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
                                                 />
                                             </div>
                                             <div>
@@ -428,7 +428,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                                     type="number"
                                                     value={newItem.age_months}
                                                     onChange={e => setNewItem({ ...newItem, age_months: e.target.value })}
-                                                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                                                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
                                                 />
                                             </div>
                                         </div>
@@ -438,7 +438,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                                 <select
                                                     value={newItem.condition}
                                                     onChange={e => setNewItem({ ...newItem, condition: e.target.value })}
-                                                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-white"
+                                                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800"
                                                 >
                                                     <option value="Good">Good</option>
                                                     <option value="Fair">Fair</option>
@@ -453,7 +453,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                                 rows="2"
                                                 value={newItem.details}
                                                 onChange={e => setNewItem({ ...newItem, details: e.target.value })}
-                                                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                                                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
                                             ></textarea>
                                         </div>
                                         <div className="flex gap-3 pt-2">
@@ -479,24 +479,24 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 )}
 
                 {activeTab === 'report' && (
-                    <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
+                    <div className="max-w-2xl mx-auto bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-600 p-8">
                         <div className="text-center mb-8">
                             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
                                 ⚠️
                             </div>
-                            <h2 className="text-2xl font-bold text-slate-900 mb-2">{t.report.title}</h2>
-                            <p className="text-slate-600">{t.report.desc}</p>
+                            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.report.title}</h2>
+                            <p className="text-slate-600 dark:text-slate-400">{t.report.desc}</p>
                         </div>
 
                         <form className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">{t.report.form.location}</label>
-                                    <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-orange-500" placeholder="e.g. Sector 5, Pole 24" />
+                                    <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 focus:outline-none focus:border-orange-500" placeholder="e.g. Sector 5, Pole 24" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">{t.report.form.type}</label>
-                                    <select className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-orange-500 bg-white">
+                                    <select className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 focus:outline-none focus:border-orange-500 bg-white dark:bg-slate-800">
                                         <option>Damaged Pole</option>
                                         <option>Loose Wire</option>
                                         <option>Sparking</option>
@@ -507,7 +507,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
 
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-2">{t.report.form.desc}</label>
-                                <textarea rows="4" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-orange-500" placeholder="Describe the issue..."></textarea>
+                                <textarea rows="4" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 focus:outline-none focus:border-orange-500" placeholder="Describe the issue..."></textarea>
                             </div>
 
                             <div>

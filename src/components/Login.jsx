@@ -42,7 +42,7 @@ export default function Login({ onLogin }) {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 mobile-container py-8">
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 mobile-container py-8">
             <div className="max-w-md w-full material-card elevation-4 p-8 sm:p-10 relative overflow-hidden">
                 {/* Decorative Background */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none"></div>
@@ -52,10 +52,10 @@ export default function Login({ onLogin }) {
                         <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-5 elevation-3 text-white">
                             ⚡
                         </div>
-                        <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
+                        <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-2">
                             {isSignUp ? 'Join SmartLineman' : 'Welcome Back'}
                         </h2>
-                        <p className="text-slate-500 text-base sm:text-lg">
+                        <p className="text-slate-500 dark:text-slate-400 text-base sm:text-lg">
                             {isSignUp ? 'Create your account to get started' : 'Sign in to access your dashboard'}
                         </p>
                     </div>
@@ -69,7 +69,7 @@ export default function Login({ onLogin }) {
 
                     <form onSubmit={handleAuth} className="space-y-6">
                         <div>
-                            <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-2">Email Address</label>
+                            <label className="block text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-200 mb-2">Email Address</label>
                             <input
                                 type="email"
                                 required
@@ -81,7 +81,7 @@ export default function Login({ onLogin }) {
                         </div>
 
                         <div>
-                            <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-2">Password</label>
+                            <label className="block text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-200 mb-2">Password</label>
                             <input
                                 type="password"
                                 required
@@ -106,7 +106,7 @@ export default function Login({ onLogin }) {
                     </form>
 
                     <div className="mt-8 text-center">
-                        <p className="text-slate-600 text-sm sm:text-base">
+                        <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
                             {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
                             <button
                                 onClick={() => setIsSignUp(!isSignUp)}

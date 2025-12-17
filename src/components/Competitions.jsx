@@ -290,13 +290,13 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
             {/* Minimal Header */}
             <div className="text-center mb-12 animate-fade-in">
-                <div className="inline-block p-3 rounded-2xl bg-slate-50 mb-4 shadow-sm border border-slate-100">
+                <div className="inline-block p-3 rounded-2xl bg-slate-50 mb-4 shadow-sm border border-slate-100 dark:border-slate-700">
                     <span className="text-4xl">🏆</span>
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3 tracking-tight">
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-3 tracking-tight">
                     {t.title}
                 </h1>
-                <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
                     {t.subtitle}
                 </p>
             </div>
@@ -307,7 +307,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                     <SkeletonCard />
                 ) : (
                     hourlyQuiz && (
-                        <div className="bg-white rounded-3xl p-8 border border-blue-100 shadow-sm hover:shadow-blue-100 transition-all group relative overflow-hidden animate-scale-up">
+                        <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-blue-100 shadow-sm hover:shadow-blue-100 transition-all group relative overflow-hidden animate-scale-up">
                             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                                 <span className="text-9xl">⏱️</span>
                             </div>
@@ -318,19 +318,19 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                         </div>
                                         <div>
-                                            <h2 className="text-xl font-bold text-slate-900">{t.hourly}</h2>
+                                            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{t.hourly}</h2>
                                             <p className="text-xs text-blue-600 font-bold">Live Now</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-2xl font-mono font-bold text-slate-800 tracking-wider">
+                                        <div className="text-2xl font-mono font-bold text-slate-800 dark:text-slate-200 tracking-wider">
                                             {timeLeft}
                                         </div>
                                         <div className="text-xs text-slate-400">Next in</div>
                                     </div>
                                 </div>
 
-                                <h3 className="text-2xl font-bold text-slate-800 mb-2">{hourlyQuiz.title}</h3>
+                                <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">{hourlyQuiz.title}</h3>
                                 <p className="text-slate-500 mb-6 line-clamp-2">{hourlyQuiz.description}</p>
 
                                 <div className="flex items-center gap-4 text-sm text-slate-500 mb-8">
@@ -385,7 +385,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                 {lastAttemptTime && (
                                     <button
                                         onClick={startReview}
-                                        className="w-full mt-3 py-3 rounded-xl font-bold bg-white border-2 border-slate-200 text-slate-600 hover:border-blue-200 hover:text-blue-600 transition-all shadow-sm"
+                                        className="w-full mt-3 py-3 rounded-xl font-bold bg-white dark:bg-slate-800 border-2 border-slate-200 text-slate-600 dark:text-slate-400 hover:border-blue-200 hover:text-blue-600 transition-all shadow-sm"
                                     >
                                         Review Last Attempt
                                     </button>
@@ -398,10 +398,10 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
             {/* Leaderboard - Minimal List */}
             <div className="max-w-3xl mx-auto animate-fade-in" style={{ animationDelay: '200ms' }}>
-                <h3 className="text-center font-bold text-slate-800 mb-8 flex items-center justify-center gap-2">
+                <h3 className="text-center font-bold text-slate-800 dark:text-slate-200 mb-8 flex items-center justify-center gap-2">
                     <span>🏅</span> {t.leaderboard}
                 </h3>
-                <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden divide-y divide-slate-100">
+                <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden divide-y divide-slate-100">
                     {loading ? (
                         <>
                             <SkeletonRow />
@@ -416,12 +416,12 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                 <div key={index} className="flex items-center p-4 sm:p-6 hover:bg-slate-50 transition-colors">
                                     <div className="font-bold text-slate-300 w-8 text-lg">#{index + 1}</div>
                                     <div className="flex-shrink-0 mr-4">
-                                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-100 flex items-center justify-center text-lg font-bold text-slate-600 overflow-hidden">
+                                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-100 flex items-center justify-center text-lg font-bold text-slate-600 dark:text-slate-400 overflow-hidden">
                                             {item.avatar_url ? <img src={item.avatar_url} alt="" className="w-full h-full object-cover" /> : (item.full_name?.[0] || 'U')}
                                         </div>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm sm:text-lg font-bold text-slate-900 truncate">
+                                        <p className="text-sm sm:text-lg font-bold text-slate-900 dark:text-slate-100 truncate">
                                             {item.full_name || 'Anonymous'}
                                         </p>
                                         <p className="text-xs sm:text-sm text-slate-500 truncate">
@@ -457,12 +457,12 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
                 {/* Sticky My Rank (if User exists and Rank exists) */}
                 {user && userRank && (
-                    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 shadow-2xl transform transition-transform duration-300 z-40 sm:hidden">
+                    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 p-4 shadow-2xl transform transition-transform duration-300 z-40 sm:hidden">
                         <div className="flex items-center justify-between max-w-sm mx-auto">
                             <div className="flex items-center gap-3">
                                 <span className="text-xl font-bold text-slate-400">#{userRank.rank}</span>
                                 <div className="text-sm">
-                                    <div className="font-bold text-slate-800">You</div>
+                                    <div className="font-bold text-slate-800 dark:text-slate-200">You</div>
                                     <div className="text-slate-500 text-xs">{userRank.score} pts</div>
                                 </div>
                             </div>
@@ -475,9 +475,9 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             {/* Full Leaderboard Modal */}
             {showFullLeaderboard && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white w-full h-full sm:h-auto sm:max-w-2xl sm:rounded-3xl sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-                        <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
-                            <h3 className="font-bold text-lg text-slate-800">Leaderboard</h3>
+                    <div className="bg-white dark:bg-slate-800 w-full h-full sm:h-auto sm:max-w-2xl sm:rounded-3xl sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+                        <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-800 z-10">
+                            <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">Leaderboard</h3>
                             <button onClick={() => setShowFullLeaderboard(false)} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">✕</button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-4">
@@ -486,18 +486,18 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                             ) : (
                                 <div className="space-y-2">
                                     {fullLeaderboard.map((item, index) => (
-                                        <div key={index} className={`flex items-center p-3 rounded-xl ${item.user_id === user?.id ? 'bg-blue-50 border border-blue-100' : 'bg-white border border-slate-100'}`}>
+                                        <div key={index} className={`flex items-center p-3 rounded-xl ${item.user_id === user?.id ? 'bg-blue-50 border border-blue-100' : 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700'}`}>
                                             <div className={`font-bold w-10 text-lg ${index < 3 ? 'text-yellow-500' : 'text-slate-400'}`}>#{index + 1}</div>
                                             <div className="w-10 h-10 rounded-full bg-slate-100 mr-3 overflow-hidden flex-shrink-0">
                                                 {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className={`font-bold truncate ${item.user_id === user?.id ? 'text-blue-700' : 'text-slate-800'}`}>
+                                                <div className={`font-bold truncate ${item.user_id === user?.id ? 'text-blue-700' : 'text-slate-800 dark:text-slate-200'}`}>
                                                     {item.user_id === user?.id ? 'You' : item.full_name}
                                                 </div>
                                                 <div className="text-xs text-slate-500">{item.district}</div>
                                             </div>
-                                            <div className={`font-bold ${item.user_id === user?.id ? 'text-blue-600' : 'text-slate-600'}`}>{item.points}</div>
+                                            <div className={`font-bold ${item.user_id === user?.id ? 'text-blue-600' : 'text-slate-600 dark:text-slate-400'}`}>{item.points}</div>
                                         </div>
                                     ))}
                                 </div>
@@ -510,12 +510,12 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             {/* Quiz Modal */}
             {activeQuiz && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-6 sm:p-10 animate-scale-up max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl p-6 sm:p-10 animate-scale-up max-h-[90vh] overflow-y-auto">
                         {!quizSubmitted ? (
                             <>
                                 <div className="flex justify-between items-center mb-8">
                                     <div>
-                                        <h3 className="text-xl font-bold text-slate-900">{activeQuiz.title}</h3>
+                                        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">{activeQuiz.title}</h3>
                                         <p className="text-sm text-slate-500">{t.questions} {currentQuestionIndex + 1} / {quizQuestions.length}</p>
                                     </div>
                                     <button onClick={() => setActiveQuiz(null)} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200">✕</button>
@@ -525,7 +525,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                     <div className="w-full bg-slate-100 h-2 rounded-full mb-6">
                                         <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}></div>
                                     </div>
-                                    <h2 className="text-lg sm:text-xl font-semibold text-slate-800 leading-relaxed mb-6">
+                                    <h2 className="text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-200 leading-relaxed mb-6">
                                         {quizQuestions[currentQuestionIndex]?.question_text}
                                     </h2>
                                     <div className="space-y-3">
@@ -533,12 +533,12 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                             const isSelected = userAnswers[quizQuestions[currentQuestionIndex].id] === idx;
                                             const isCorrect = idx === quizQuestions[currentQuestionIndex].correct_option_index;
 
-                                            let buttonClass = 'border-slate-100 hover:border-blue-200 hover:bg-slate-50 text-slate-600';
+                                            let buttonClass = 'border-slate-100 dark:border-slate-700 hover:border-blue-200 hover:bg-slate-50 text-slate-600 dark:text-slate-400';
 
                                             if (reviewMode) {
                                                 if (isCorrect) buttonClass = 'border-green-500 bg-green-50 text-green-700 font-bold';
                                                 else if (isSelected && !isCorrect) buttonClass = 'border-red-500 bg-red-50 text-red-700';
-                                                else buttonClass = 'border-slate-100 opacity-60';
+                                                else buttonClass = 'border-slate-100 dark:border-slate-700 opacity-60';
                                             } else if (isSelected) {
                                                 buttonClass = 'border-blue-600 bg-blue-50 text-blue-700 font-bold';
                                             }
@@ -559,11 +559,11 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                     </div>
                                 </div>
 
-                                <div className="flex justify-between items-center pt-6 border-t border-slate-100">
+                                <div className="flex justify-between items-center pt-6 border-t border-slate-100 dark:border-slate-700">
                                     <button
                                         disabled={currentQuestionIndex === 0}
                                         onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
-                                        className="text-slate-500 hover:text-slate-800 font-semibold disabled:opacity-30 px-4"
+                                        className="text-slate-500 hover:text-slate-800 dark:text-slate-200 font-semibold disabled:opacity-30 px-4"
                                     >
                                         ← Prev
                                     </button>
@@ -581,7 +581,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                         ) : (
                             <div className="text-center py-8">
                                 <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 animate-scale-up">🎉</div>
-                                <h2 className="text-3xl font-bold text-slate-900 mb-2">{t.completed}</h2>
+                                <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.completed}</h2>
                                 <p className="text-slate-500 mb-8">{t.score}</p>
                                 <div className="text-6xl font-bold text-blue-600 mb-2">{score}</div>
                                 <div className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-10">Total Points Earned</div>
@@ -598,7 +598,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 }
 
 const SkeletonCard = () => (
-    <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm relative overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
         <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-slate-200 rounded-xl animate-pulse"></div>
             <div className="h-6 w-32 bg-slate-200 rounded animate-pulse"></div>

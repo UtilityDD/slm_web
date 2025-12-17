@@ -40,11 +40,11 @@ export default function Home({ setCurrentView, language, user, t }) {
             <div className="mb-10 sm:mb-12">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
-                            <span className="text-slate-400 font-medium block text-lg sm:text-xl mb-1">{getGreeting()},</span>
+                        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                            <span className="text-slate-400 dark:text-slate-400 font-medium block text-lg sm:text-xl mb-1">{getGreeting()},</span>
                             {fullName || (user?.email ? user.email.split('@')[0] : (language === 'en' ? 'Lineman' : 'লাইনম্যান'))}
                         </h1>
-                        <p className="text-slate-500 mt-2 max-w-xl text-sm sm:text-base">
+                        <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-xl text-sm sm:text-base">
                             {language === 'en'
                                 ? "Here's your daily safety and performance overview."
                                 : "এখানে আপনার দৈনিক নিরাপত্তা এবং পারফরম্যান্স ওভারভিউ।"
@@ -102,11 +102,11 @@ export default function Home({ setCurrentView, language, user, t }) {
                 {/* Safety Hub - Large Card 2 */}
                 <div
                     onClick={() => setCurrentView('safety')}
-                    className="group bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 cursor-pointer transition-all hover:shadow-md hover:border-orange-200 hover:-translate-y-1"
+                    className="group bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer transition-all hover:shadow-md hover:border-orange-200 hover:-translate-y-1"
                 >
-                    <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">🦺</div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-2">{t.nav.safety}</h3>
-                    <p className="text-slate-500 text-sm leading-relaxed">
+                    <div className="w-12 h-12 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">🦺</div>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.nav.safety}</h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
                         {language === 'en' ? 'Access protocols & guidelines' : 'প্রোটোকল এবং নির্দেশিকা অ্যাক্সেস করুন'}
                     </p>
                 </div>
@@ -114,11 +114,11 @@ export default function Home({ setCurrentView, language, user, t }) {
                 {/* Community - Large Card 3 */}
                 <div
                     onClick={() => setCurrentView('community')}
-                    className="group bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 cursor-pointer transition-all hover:shadow-md hover:border-blue-200 hover:-translate-y-1"
+                    className="group bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer transition-all hover:shadow-md hover:border-blue-200 hover:-translate-y-1"
                 >
-                    <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">💬</div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-2">{t.nav.community}</h3>
-                    <p className="text-slate-500 text-sm leading-relaxed">
+                    <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">💬</div>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.nav.community}</h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
                         {language === 'en' ? 'Connect with peers' : 'সহকর্মীদের সাথে সংযোগ করুন'}
                     </p>
                 </div>
