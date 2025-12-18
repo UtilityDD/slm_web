@@ -37,12 +37,19 @@ export default function SmartLinemanUI() {
       if (user) {
         const { data, error } = await supabase
           .from('profiles')
-          .select('role, avatar_url')
+          .select('role, avatar_url, current_session_id')
           .eq('id', user.id)
           .single();
         if (error) {
           console.error('Error fetching profile:', error);
         } else if (data) {
+          // Check for session mismatch
+          const localSessionId = localStorage.getItem('slm_session_id');
+          if (data.current_session_id && localSessionId && data.current_session_id !== localSessionId) {
+            console.warn('Session mismatch detected. Logging out.');
+            confirmLogout(true); // Pass true to indicate automatic logout
+            return;
+          }
           setUserProfile(data);
         }
       }
@@ -138,15 +145,22 @@ export default function SmartLinemanUI() {
     setShowLogoutModal(true);
   };
 
-  const confirmLogout = async () => {
+  const confirmLogout = async (isAutomatic = false) => {
     setIsLoggingOut(true);
     setGlobalLoading(true);
     try {
       await supabase.auth.signOut();
       setUser(null);
       setUserProfile(null);
+      localStorage.removeItem('slm_session_id');
       setShowLogoutModal(false);
-      showNotification(language === 'en' ? 'Logged out successfully' : 'সফলভাবে লগ আউট হয়েছে');
+
+      if (isAutomatic) {
+        showNotification(language === 'en' ? 'Logged in from another device' : 'অন্য ডিভাইস থেকে লগ ইন করা হয়েছে', 'error');
+      } else {
+        showNotification(language === 'en' ? 'Logged out successfully' : 'সফলভাবে লগ আউট হয়েছে');
+      }
+
       setTimeout(() => {
         setCurrentView('home');
         setGlobalLoading(false);

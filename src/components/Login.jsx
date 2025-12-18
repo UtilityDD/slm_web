@@ -27,7 +27,26 @@ export default function Login({ onLogin, showNotification }) {
                     password,
                 });
                 if (error) throw error;
-                if (data.user) onLogin(data.user);
+                if (data.user) {
+                    // Generate a unique session ID
+                    const sessionId = crypto.randomUUID();
+
+                    // Update the profile with the new session ID
+                    const { error: profileError } = await supabase
+                        .from('profiles')
+                        .update({ current_session_id: sessionId })
+                        .eq('id', data.user.id);
+
+                    if (profileError) {
+                        console.error('Error updating session ID:', profileError);
+                    }
+
+                    // Store session ID locally
+                    localStorage.setItem('slm_session_id', sessionId);
+                    console.log('Session ID set:', sessionId);
+
+                    onLogin(data.user);
+                }
             }
         } catch (error) {
             setError(error.message);
@@ -35,6 +54,9 @@ export default function Login({ onLogin, showNotification }) {
             // For demo purposes, if Supabase isn't configured, we'll simulate a login
             if (error.message.includes('valid URL') || error.message.includes('fetch')) {
                 console.warn("Supabase not configured. Simulating login for demo.");
+                const demoSessionId = 'demo-session-' + Date.now();
+                localStorage.setItem('slm_session_id', demoSessionId);
+                console.log('Demo Session ID set:', demoSessionId);
                 onLogin({ email: email || 'demo@smartlineman.in', id: 'demo-user' });
             }
         } finally {
