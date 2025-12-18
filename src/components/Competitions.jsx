@@ -73,7 +73,9 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             }
         };
         loadData();
+    }, []); // Run once on mount
 
+    useEffect(() => {
         // Timer Logic
         const updateTimer = () => {
             const now = getSyncedTime();
@@ -84,7 +86,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         updateTimer();
         const interval = setInterval(updateTimer, 1000);
         return () => clearInterval(interval);
-    }, [serverTimeOffset]);
+    }, [serverTimeOffset]); // Update timer when offset is calculated
 
     const fetchServerTime = async () => {
         try {
