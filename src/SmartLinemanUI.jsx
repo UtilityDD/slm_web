@@ -353,36 +353,36 @@ export default function SmartLinemanUI() {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
               <a
-                className={`hover:text-blue-700 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'safety' ? 'text-blue-700 font-semibold' : ''}`}
+                className={`hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'safety' ? 'text-blue-700 dark:text-blue-400 font-semibold' : ''}`}
                 onClick={() => setCurrentView('safety')}
               >
                 {t.nav.safety}
                 <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${currentView === 'safety' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
               </a>
               <a
-                className={`hover:text-blue-700 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'community' ? 'text-blue-700 font-semibold' : ''}`}
+                className={`hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'community' ? 'text-blue-700 dark:text-blue-400 font-semibold' : ''}`}
                 onClick={() => setCurrentView('community')}
               >
                 {t.nav.community}
                 <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${currentView === 'community' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
               </a>
               <a
-                className={`hover:text-blue-700 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'competitions' ? 'text-blue-700 font-semibold' : ''}`}
+                className={`hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'competitions' ? 'text-blue-700 dark:text-blue-400 font-semibold' : ''}`}
                 onClick={() => setCurrentView('competitions')}
               >
                 {t.nav.competitions}
                 <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${currentView === 'competitions' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
               </a>
               <a
-                className={`hover:text-blue-700 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'emergency' ? 'text-blue-700 font-semibold' : ''}`}
+                className={`hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'emergency' ? 'text-blue-700 dark:text-blue-400 font-semibold' : ''}`}
                 onClick={() => setCurrentView('emergency')}
               >
-                <span className="text-red-600 hover:text-red-700 font-bold">{t.nav.emergency}</span>
+                <span className="text-red-600 hover:text-red-700 dark:hover:text-red-400 font-bold">{t.nav.emergency}</span>
                 <span className={`absolute bottom-0 left-0 h-0.5 bg-red-600 transition-all duration-300 ${currentView === 'emergency' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
               </a>
               {['admin', 'safety mitra'].includes(userProfile?.role) && (
                 <a
-                  className={`hover:text-blue-700 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'admin' ? 'text-blue-700 font-semibold' : ''}`}
+                  className={`hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'admin' ? 'text-blue-700 dark:text-blue-400 font-semibold' : ''}`}
                   onClick={() => setCurrentView('admin')}
                 >
                   {userProfile?.role === 'safety mitra' ? t.nav.safetyMitra : t.nav.admin}

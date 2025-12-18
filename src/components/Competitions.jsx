@@ -497,7 +497,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                     ) : (
                         <>
                             {leaderboard.map((item, index) => (
-                                <div key={index} className="flex items-center p-4 sm:p-6 hover:bg-slate-50 transition-colors">
+                                <div key={index} className="flex items-center p-4 sm:p-6 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                     <div className="font-bold text-slate-300 w-8 text-lg">#{index + 1}</div>
                                     <div className="flex-shrink-0 mr-4">
                                         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-100 flex items-center justify-center text-lg font-bold text-slate-600 dark:text-slate-400 overflow-hidden">
@@ -570,18 +570,21 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                             ) : (
                                 <div className="space-y-2">
                                     {fullLeaderboard.map((item, index) => (
-                                        <div key={index} className={`flex items-center p-3 rounded-xl ${item.user_id === user?.id ? 'bg-blue-50 border border-blue-100' : 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700'}`}>
+                                        <div key={index} className={`flex items-center p-3 rounded-xl ${item.user_id === user?.id
+                                            ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800'
+                                            : 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700'
+                                            }`}>
                                             <div className={`font-bold w-10 text-lg ${index < 3 ? 'text-yellow-500' : 'text-slate-400'}`}>#{index + 1}</div>
-                                            <div className="w-10 h-10 rounded-full bg-slate-100 mr-3 overflow-hidden flex-shrink-0">
+                                            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 mr-3 overflow-hidden flex-shrink-0">
                                                 {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className={`font-bold truncate ${item.user_id === user?.id ? 'text-blue-700' : 'text-slate-800 dark:text-slate-200'}`}>
+                                                <div className={`font-bold truncate ${item.user_id === user?.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>
                                                     {item.user_id === user?.id ? 'You' : item.full_name}
                                                 </div>
                                                 <div className="text-xs text-slate-500">{item.district}</div>
                                             </div>
-                                            <div className={`font-bold ${item.user_id === user?.id ? 'text-blue-600' : 'text-slate-600 dark:text-slate-400'}`}>{item.points}</div>
+                                            <div className={`font-bold ${item.user_id === user?.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>{item.points}</div>
                                         </div>
                                     ))}
                                 </div>
@@ -617,14 +620,14 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                             const isSelected = userAnswers[quizQuestions[currentQuestionIndex].id] === idx;
                                             const isCorrect = idx === quizQuestions[currentQuestionIndex].correct_option_index;
 
-                                            let buttonClass = 'border-slate-100 dark:border-slate-700 hover:border-blue-200 hover:bg-slate-50 text-slate-600 dark:text-slate-400';
+                                            let buttonClass = 'border-slate-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-600 dark:text-slate-400';
 
                                             if (reviewMode) {
-                                                if (isCorrect) buttonClass = 'border-green-500 bg-green-50 text-green-700 font-bold';
-                                                else if (isSelected && !isCorrect) buttonClass = 'border-red-500 bg-red-50 text-red-700';
+                                                if (isCorrect) buttonClass = 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-bold';
+                                                else if (isSelected && !isCorrect) buttonClass = 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400';
                                                 else buttonClass = 'border-slate-100 dark:border-slate-700 opacity-60';
                                             } else if (isSelected) {
-                                                buttonClass = 'border-blue-600 bg-blue-50 text-blue-700 font-bold';
+                                                buttonClass = 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-bold';
                                             }
 
                                             return (
