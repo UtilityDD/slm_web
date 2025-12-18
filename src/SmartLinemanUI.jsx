@@ -14,6 +14,7 @@ export default function SmartLinemanUI() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentView, setCurrentView] = useState(() => {
     const hash = window.location.hash.replace('#/', '');
+    if (hash.includes('access_token=') || hash.includes('type=recovery')) return 'login';
     return hash || 'home';
   });
   const [language, setLanguage] = useState('en');
@@ -61,8 +62,11 @@ export default function SmartLinemanUI() {
       fetchProfile(session?.user);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      if (event === 'PASSWORD_RECOVERY') {
+        setCurrentView('login');
+      }
       if (session) {
         fetchProfile(session.user);
       } else {
@@ -87,7 +91,9 @@ export default function SmartLinemanUI() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#/', '');
-      if (hash && hash !== currentView) {
+      if (hash.includes('access_token=') || hash.includes('type=recovery')) {
+        setCurrentView('login');
+      } else if (hash && hash !== currentView) {
         setCurrentView(hash);
       } else if (!hash && currentView !== 'home') {
         setCurrentView('home');
@@ -239,7 +245,7 @@ export default function SmartLinemanUI() {
   const t = translations[language];
 
   const renderContent = () => {
-    if (currentView === 'login' && !user) {
+    if (currentView === 'login') {
       return <Login
         onLogin={(u) => {
           setGlobalLoading(true);

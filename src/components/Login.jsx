@@ -5,8 +5,16 @@ export default function Login({ onLogin, showNotification }) {
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [isSignUp, setIsSignUp] = useState(false);
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [view, setView] = useState('login'); // login, signup, forgot, update
     const [error, setError] = useState(null);
+
+    React.useEffect(() => {
+        // Check if we're in a password recovery flow
+        if (window.location.hash.includes('type=recovery') || window.location.href.includes('type=recovery')) {
+            setView('update');
+        }
+    }, []);
 
     const handleAuth = async (e) => {
         e.preventDefault();
@@ -14,51 +22,49 @@ export default function Login({ onLogin, showNotification }) {
         setError(null);
 
         try {
-            if (isSignUp) {
+            if (view === 'signup') {
                 const { error } = await supabase.auth.signUp({
                     email,
                     password,
                 });
                 if (error) throw error;
                 showNotification('Check your email for the login link!');
-            } else {
+            } else if (view === 'login') {
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email,
                     password,
                 });
                 if (error) throw error;
                 if (data.user) {
-                    // Generate a unique session ID
                     const sessionId = crypto.randomUUID();
-
-                    // Update the profile with the new session ID
                     const { error: profileError } = await supabase
                         .from('profiles')
                         .update({ current_session_id: sessionId })
                         .eq('id', data.user.id);
 
-                    if (profileError) {
-                        console.error('Error updating session ID:', profileError);
-                    }
-
-                    // Store session ID locally
+                    if (profileError) console.error('Error updating session ID:', profileError);
                     localStorage.setItem('slm_session_id', sessionId);
-                    console.log('Session ID set:', sessionId);
-
                     onLogin(data.user);
                 }
+            } else if (view === 'forgot') {
+                const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}${window.location.pathname}#/login`,
+                });
+                if (error) throw error;
+                showNotification('Password reset link sent to your email!');
+                setView('login');
+            } else if (view === 'update') {
+                if (password !== confirmPassword) {
+                    throw new Error("Passwords do not match");
+                }
+                const { error } = await supabase.auth.updateUser({ password });
+                if (error) throw error;
+                showNotification('Password updated successfully! You can now sign in.');
+                setView('login');
             }
         } catch (error) {
             setError(error.message);
             showNotification(error.message, 'error');
-            // For demo purposes, if Supabase isn't configured, we'll simulate a login
-            if (error.message.includes('valid URL') || error.message.includes('fetch')) {
-                console.warn("Supabase not configured. Simulating login for demo.");
-                const demoSessionId = 'demo-session-' + Date.now();
-                localStorage.setItem('slm_session_id', demoSessionId);
-                console.log('Demo Session ID set:', demoSessionId);
-                onLogin({ email: email || 'demo@smartlineman.in', id: 'demo-user' });
-            }
         } finally {
             setLoading(false);
         }
@@ -76,10 +82,14 @@ export default function Login({ onLogin, showNotification }) {
                             ⚡
                         </div>
                         <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                            {isSignUp ? 'Join SmartLineman' : 'Welcome Back'}
+                            {view === 'signup' ? 'Join SmartLineman' :
+                                view === 'forgot' ? 'Reset Password' :
+                                    view === 'update' ? 'New Password' : 'Welcome Back'}
                         </h2>
                         <p className="text-slate-500 dark:text-slate-400 text-base sm:text-lg">
-                            {isSignUp ? 'Create your account to get started' : 'Sign in to access your dashboard'}
+                            {view === 'signup' ? 'Create your account to get started' :
+                                view === 'forgot' ? 'Enter your email to receive a reset link' :
+                                    view === 'update' ? 'Enter your new secure password' : 'Sign in to access your dashboard'}
                         </p>
                     </div>
 
@@ -91,29 +101,60 @@ export default function Login({ onLogin, showNotification }) {
                     )}
 
                     <form onSubmit={handleAuth} className="space-y-6">
-                        <div>
-                            <label className="block text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-200 mb-2">Email Address</label>
-                            <input
-                                type="email"
-                                required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="material-input"
-                                placeholder="lineman@example.com"
-                            />
-                        </div>
+                        {(view === 'login' || view === 'signup' || view === 'forgot') && (
+                            <div>
+                                <label className="block text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-200 mb-2">Email Address</label>
+                                <input
+                                    type="email"
+                                    required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="material-input"
+                                    placeholder="lineman@example.com"
+                                />
+                            </div>
+                        )}
 
-                        <div>
-                            <label className="block text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-200 mb-2">Password</label>
-                            <input
-                                type="password"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="material-input"
-                                placeholder="••••••••"
-                            />
-                        </div>
+                        {(view === 'login' || view === 'signup' || view === 'update') && (
+                            <div>
+                                <div className="flex justify-between items-center mb-2">
+                                    <label className="block text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-200">
+                                        {view === 'update' ? 'New Password' : 'Password'}
+                                    </label>
+                                    {view === 'login' && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setView('forgot')}
+                                            className="text-xs font-bold text-blue-600 hover:underline"
+                                        >
+                                            Forgot Password?
+                                        </button>
+                                    )}
+                                </div>
+                                <input
+                                    type="password"
+                                    required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="material-input"
+                                    placeholder="••••••••"
+                                />
+                            </div>
+                        )}
+
+                        {view === 'update' && (
+                            <div>
+                                <label className="block text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-200 mb-2">Confirm New Password</label>
+                                <input
+                                    type="password"
+                                    required
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="material-input"
+                                    placeholder="••••••••"
+                                />
+                            </div>
+                        )}
 
                         <button
                             type="submit"
@@ -123,19 +164,22 @@ export default function Login({ onLogin, showNotification }) {
                             {loading ? (
                                 <span className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></span>
                             ) : (
-                                isSignUp ? 'Create Account' : 'Sign In'
+                                view === 'signup' ? 'Create Account' :
+                                    view === 'forgot' ? 'Send Reset Link' :
+                                        view === 'update' ? 'Update Password' : 'Sign In'
                             )}
                         </button>
                     </form>
 
                     <div className="mt-8 text-center">
                         <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
-                            {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+                            {view === 'signup' ? 'Already have an account?' :
+                                view === 'forgot' || view === 'update' ? 'Remember your password?' : "Don't have an account?"}{' '}
                             <button
-                                onClick={() => setIsSignUp(!isSignUp)}
+                                onClick={() => setView(view === 'signup' || view === 'forgot' || view === 'update' ? 'login' : 'signup')}
                                 className="text-blue-600 font-bold hover:underline touch-target ripple-dark rounded px-1"
                             >
-                                {isSignUp ? 'Sign In' : 'Sign Up'}
+                                {view === 'signup' || view === 'forgot' || view === 'update' ? 'Sign In' : 'Sign Up'}
                             </button>
                         </p>
                     </div>
