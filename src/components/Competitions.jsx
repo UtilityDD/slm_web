@@ -18,6 +18,11 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     const [showFullLeaderboard, setShowFullLeaderboard] = useState(false);
     const [fullLeaderboard, setFullLeaderboard] = useState([]);
     const [loadingFull, setLoadingFull] = useState(false);
+    const [serverTimeOffset, setServerTimeOffset] = useState(0);
+
+    const getSyncedTime = () => {
+        return new Date(Date.now() + serverTimeOffset);
+    };
 
     const t = {
         en: {
@@ -56,6 +61,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         const loadData = async () => {
             setLoading(true);
             try {
+                await fetchServerTime();
                 await Promise.all([
                     fetchHourlyQuiz(),
                     fetchLeaderboard()
@@ -70,7 +76,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
         // Timer Logic
         const updateTimer = () => {
-            const now = new Date();
+            const now = getSyncedTime();
             const minutes = 59 - now.getMinutes();
             const seconds = 59 - now.getSeconds();
             setTimeLeft(`${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
@@ -78,7 +84,30 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         updateTimer();
         const interval = setInterval(updateTimer, 1000);
         return () => clearInterval(interval);
-    }, []);
+    }, [serverTimeOffset]);
+
+    const fetchServerTime = async () => {
+        try {
+            // Try to get server time from Supabase
+            const { data, error } = await supabase.rpc('get_server_time');
+            if (data) {
+                const serverTime = new Date(data).getTime();
+                const localTime = Date.now();
+                setServerTimeOffset(serverTime - localTime);
+            } else {
+                // Fallback: Use a public time API if RPC fails
+                const response = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
+                if (response.ok) {
+                    const data = await response.json();
+                    const serverTime = new Date(data.datetime).getTime();
+                    const localTime = Date.now();
+                    setServerTimeOffset(serverTime - localTime);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching server time:', error);
+        }
+    };
 
     const fetchHourlyQuiz = async () => {
         try {
@@ -343,13 +372,13 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                     disabled={(() => {
                                         if (!lastAttemptTime) return false;
                                         const last = new Date(lastAttemptTime);
-                                        const now = new Date();
+                                        const now = getSyncedTime();
                                         return last.getHours() === now.getHours() && last.getDate() === now.getDate();
                                     })()}
                                     className={`w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${(() => {
                                         if (!lastAttemptTime) return 'bg-blue-600 hover:bg-blue-700 text-white';
                                         const last = new Date(lastAttemptTime);
-                                        const now = new Date();
+                                        const now = getSyncedTime();
                                         const isLocked = last.getHours() === now.getHours() && last.getDate() === now.getDate();
 
                                         return isLocked
@@ -366,7 +395,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                             </>
                                         );
                                         const last = new Date(lastAttemptTime);
-                                        const now = new Date();
+                                        const now = getSyncedTime();
                                         const isLocked = last.getHours() === now.getHours() && last.getDate() === now.getDate();
 
                                         if (isLocked) {
