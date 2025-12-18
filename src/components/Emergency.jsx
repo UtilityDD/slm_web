@@ -3,20 +3,17 @@ import { supabase } from '../supabaseClient';
 
 // Skeleton Loaders
 const DonorCardSkeleton = () => (
-    <div className="material-card elevation-1 p-6">
-        <div className="flex items-start justify-between mb-4">
+    <div className="material-card elevation-1 p-4">
+        <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
+                <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
                 <div className="space-y-2">
                     <div className="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
                     <div className="h-3 w-16 bg-slate-200 rounded animate-pulse"></div>
                 </div>
             </div>
-            <div className="h-6 w-12 bg-slate-200 rounded-md animate-pulse"></div>
+            <div className="w-8 h-8 rounded-full bg-slate-200 animate-pulse"></div>
         </div>
-        <div className="h-px bg-slate-100 mb-4"></div>
-        <div className="h-4 w-32 bg-slate-200 rounded animate-pulse mb-4"></div>
-        <div className="h-10 w-full bg-slate-200 rounded-xl animate-pulse"></div>
     </div>
 );
 
@@ -86,6 +83,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
     const [toast, setToast] = useState({ message: '', type: 'info', show: false });
     const [serviceSearch, setServiceSearch] = useState('');
     const [expandedServiceId, setExpandedServiceId] = useState(null);
+    const [expandedDonorId, setExpandedDonorId] = useState(null);
 
     const showToast = (message, type = 'info') => {
         setToast({ message, type, show: true });
@@ -366,15 +364,14 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                         </div>
                     </div>
 
-                    {/* Streamlined Filters */}
-                    <div className="material-card elevation-1 p-4 sm:p-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wide">{t.blood.filters.group}</label>
+                    {/* Compact Filters */}
+                    <div className="material-card elevation-1 p-3 sm:p-4">
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <div className="flex-1 grid grid-cols-2 gap-3">
                                 <select
                                     value={selectedBloodGroup}
                                     onChange={(e) => setSelectedBloodGroup(e.target.value)}
-                                    className="material-input"
+                                    className="material-input py-2 text-sm"
                                 >
                                     <option value="All">All Groups</option>
                                     <option value="A+">A+</option>
@@ -386,13 +383,10 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                     <option value="AB+">AB+</option>
                                     <option value="AB-">AB-</option>
                                 </select>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wide">{t.blood.filters.district}</label>
                                 <select
                                     value={selectedDistrict}
                                     onChange={(e) => setSelectedDistrict(e.target.value)}
-                                    className="material-input"
+                                    className="material-input py-2 text-sm"
                                 >
                                     <option value="All">All Districts</option>
                                     <option value="Kolkata">Kolkata</option>
@@ -404,26 +398,21 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                     <option value="Durgapur">Durgapur</option>
                                 </select>
                             </div>
-                            <div className="flex items-end">
-                                <button
-                                    onClick={fetchDonors}
-                                    className="material-button-outlined ripple-dark w-full flex items-center justify-center gap-2"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                    {t.blood.findBtn}
-                                </button>
-                            </div>
+                            <button
+                                onClick={fetchDonors}
+                                className="material-button-primary py-2 px-6 ripple flex items-center justify-center gap-2 text-sm whitespace-nowrap"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                {t.blood.findBtn}
+                            </button>
                         </div>
                     </div>
 
                     {/* Results */}
                     {loading ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <DonorCardSkeleton />
-                            <DonorCardSkeleton />
-                            <DonorCardSkeleton />
                             <DonorCardSkeleton />
                             <DonorCardSkeleton />
                             <DonorCardSkeleton />
@@ -435,39 +424,60 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                             message="No donors match your search criteria. Try adjusting filters."
                         />
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {donors.map((donor) => (
-                                <div key={donor.id} className="material-card elevation-1 p-6 hover:elevation-3 transition-all">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center">
-                                                <span className="text-red-600 font-bold text-sm">{donor.blood_group}</span>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {donors.map((donor) => {
+                                const isExpanded = expandedDonorId === donor.id;
+                                return (
+                                    <div
+                                        key={donor.id}
+                                        onClick={() => setExpandedDonorId(isExpanded ? null : donor.id)}
+                                        className={`material-card elevation-1 p-4 hover:elevation-2 transition-all cursor-pointer group ${isExpanded ? 'ring-2 ring-red-500' : ''}`}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className="w-10 h-10 rounded-xl bg-red-50 flex-shrink-0 flex items-center justify-center">
+                                                    <span className="text-red-600 font-bold text-xs">{donor.blood_group}</span>
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">{donor.full_name || 'Unknown'}</h3>
+                                                    <p className="text-[11px] text-slate-500 truncate">{donor.district}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm">{donor.full_name || 'Unknown'}</h3>
-                                                <p className="text-xs text-slate-500">{donor.district}</p>
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                                <a
+                                                    href={`tel:${donor.phone}`}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="flex-shrink-0"
+                                                >
+                                                    <button className="w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-600 hover:text-white transition-all">
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                        </svg>
+                                                    </button>
+                                                </a>
                                             </div>
                                         </div>
-                                        <span className="px-2 py-1 bg-green-50 text-green-700 text-xs font-semibold rounded-md">Active</span>
-                                    </div>
 
-                                    <div className="flex items-center gap-2 text-xs text-slate-500 mb-4 pb-4 border-b border-slate-100 dark:border-slate-700">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <span>{t.blood.lastDonated}: <span className="font-medium text-slate-700">{donor.last_donation_date || 'N/A'}</span></span>
+                                        {isExpanded && (
+                                            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 animate-fade-in space-y-2">
+                                                <div className="flex items-center justify-between text-[11px]">
+                                                    <span className="text-slate-500">{t.blood.lastDonated}:</span>
+                                                    <span className="font-bold text-slate-700 dark:text-slate-300">{donor.last_donation_date || 'N/A'}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between text-[11px]">
+                                                    <span className="text-slate-500">Contact:</span>
+                                                    <span className="font-bold text-slate-700 dark:text-slate-300">{donor.phone}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between text-[11px]">
+                                                    <span className="text-slate-500">Status:</span>
+                                                    <span className="text-green-600 font-bold uppercase tracking-wider">Available</span>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-
-                                    <a href={`tel:${donor.phone}`} className="block w-full">
-                                        <button className="material-button-primary w-full ripple flex items-center justify-center gap-2">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                            </svg>
-                                            {t.blood.call}
-                                        </button>
-                                    </a>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
