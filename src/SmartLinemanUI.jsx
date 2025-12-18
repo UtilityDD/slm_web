@@ -155,7 +155,7 @@ export default function SmartLinemanUI() {
       localStorage.removeItem('slm_session_id');
       setShowLogoutModal(false);
 
-      if (isAutomatic) {
+      if (isAutomatic === true) {
         showNotification(language === 'en' ? 'Logged in from another device' : 'অন্য ডিভাইস থেকে লগ ইন করা হয়েছে', 'error');
       } else {
         showNotification(language === 'en' ? 'Logged out successfully' : 'সফলভাবে লগ আউট হয়েছে');
@@ -281,7 +281,7 @@ export default function SmartLinemanUI() {
     <div className={`min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : 'font-sans'}`}>
       {showLogoutModal && (
         <LogoutConfirmationModal
-          onConfirm={confirmLogout}
+          onConfirm={() => confirmLogout(false)}
           onCancel={cancelLogout}
           language={language}
           loading={isLoggingOut}
