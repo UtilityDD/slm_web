@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import HomeSkeleton from './loaders/HomeSkeleton';
 
 export default function Home({ setCurrentView, language, user, t }) {
     const [score, setScore] = useState(0);
     const [fullName, setFullName] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchProfile = async () => {
-            if (!user) return;
+            if (!user) {
+                setLoading(false);
+                return;
+            }
             try {
                 const { data, error } = await supabase
                     .from('profiles')
@@ -21,9 +26,17 @@ export default function Home({ setCurrentView, language, user, t }) {
                 }
             } catch (error) {
                 console.error('Error fetching profile:', error);
+            } finally {
+                setLoading(false);
             }
         };
-        fetchProfile();
+
+        // Simulate a minimum loading time for better UX
+        const timer = setTimeout(() => {
+            fetchProfile();
+        }, 500); // 500ms delay
+
+        return () => clearTimeout(timer);
     }, [user]);
 
     // Helper to get greeting based on time
@@ -33,6 +46,10 @@ export default function Home({ setCurrentView, language, user, t }) {
         if (hour < 18) return language === 'en' ? 'Good Afternoon' : 'শুভ অপরাহ্ন';
         return language === 'en' ? 'Good Evening' : 'শুভ সন্ধ্যা';
     };
+
+    if (loading) {
+        return <HomeSkeleton />;
+    }
 
     return (
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 mb-20">
