@@ -282,7 +282,7 @@ export default function SmartLinemanUI() {
             <div className="absolute top-0 left-0 w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           </div>
           <p className="mt-4 font-bold text-slate-600 dark:text-slate-300 animate-pulse">
-            {language === 'en' ? 'Updating your experience...' : 'আপনার অভিজ্ঞতা আপডেট করা হচ্ছে...'}
+            {language === 'en' ? 'Please wait...' : 'দয়া করে অপেক্ষা করুন...'}
           </p>
         </div>
       )}
