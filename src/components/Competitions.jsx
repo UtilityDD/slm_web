@@ -131,7 +131,28 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             const response = await fetch('/quizzes/hourly_challenge.json');
             if (response.ok) {
                 const data = await response.json();
-                const quizData = { ...data, isLocal: true };
+
+                // Transform new format (array) to old format (object) if necessary
+                let quizData;
+                if (Array.isArray(data)) {
+                    quizData = {
+                        id: 'hourly-challenge',
+                        title: language === 'en' ? 'Hourly Safety Challenge' : 'প্রতি ঘন্টায় সুরক্ষা চ্যালেঞ্জ',
+                        description: language === 'en' ? 'Test your safety knowledge! New questions every hour.' : 'আপনার সুরক্ষা জ্ঞান পরীক্ষা করুন! প্রতি ঘন্টায় নতুন প্রশ্ন।',
+                        duration_minutes: 5,
+                        points_reward: 50,
+                        questions: data.map((q, index) => ({
+                            id: `q-${index}`,
+                            question_text: q.questionText,
+                            options: q.options,
+                            correct_option_index: q.correctAnswerIndex
+                        })),
+                        isLocal: true
+                    };
+                } else {
+                    quizData = { ...data, isLocal: true };
+                }
+
                 setHourlyQuiz(quizData);
                 cacheHelper.set('hourly_quiz', quizData, 10); // Cache for 10 mins
             }
