@@ -85,6 +85,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState({ message: '', type: 'info', show: false });
     const [serviceSearch, setServiceSearch] = useState('');
+    const [expandedServiceId, setExpandedServiceId] = useState(null);
 
     const showToast = (message, type = 'info') => {
         setToast({ message, type, show: true });
@@ -595,35 +596,83 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
 
                                         return (
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                {servicesOfType.map((service) => (
-                                                    <div key={service.id} className="material-card elevation-1 p-5 hover:elevation-3 transition-all flex items-center justify-between group">
-                                                        <div className="min-w-0 pr-4">
-                                                            <div className="flex items-center gap-2 mb-1">
-                                                                <span className={`w-2 h-2 rounded-full ${config.color === 'blue' ? 'bg-blue-500' :
-                                                                    config.color === 'red' ? 'bg-red-500' :
-                                                                        config.color === 'orange' ? 'bg-orange-500' :
-                                                                            config.color === 'yellow' ? 'bg-yellow-500' :
-                                                                                'bg-slate-500'
-                                                                    }`}></span>
-                                                                <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">{service.name}</h4>
-                                                            </div>
-                                                            <p className="text-xs text-slate-500 truncate pl-4 dark:text-slate-400">{service.location}</p>
-                                                        </div>
+                                                {servicesOfType.map((service) => {
+                                                    const isExpanded = expandedServiceId === service.id;
+                                                    return (
+                                                        <div
+                                                            key={service.id}
+                                                            onClick={() => setExpandedServiceId(isExpanded ? null : service.id)}
+                                                            className={`material-card elevation-1 p-5 hover:elevation-3 transition-all cursor-pointer group ${isExpanded ? 'ring-2 ring-blue-500' : ''}`}
+                                                        >
+                                                            <div className="flex items-start justify-between">
+                                                                <div className="min-w-0 pr-4">
+                                                                    <div className="flex items-center gap-2 mb-1">
+                                                                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${config.color === 'blue' ? 'bg-blue-500' :
+                                                                            config.color === 'red' ? 'bg-red-500' :
+                                                                                config.color === 'orange' ? 'bg-orange-500' :
+                                                                                    config.color === 'yellow' ? 'bg-yellow-500' :
+                                                                                        'bg-slate-500'
+                                                                            }`}></span>
+                                                                        <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">{service.name}</h4>
+                                                                    </div>
+                                                                    <p className="text-xs text-slate-500 truncate pl-4 dark:text-slate-400">{service.location}</p>
+                                                                </div>
 
-                                                        <a href={`tel:${service.phone}`} className="flex-shrink-0">
-                                                            <button className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${config.color === 'blue' ? 'bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white' :
-                                                                config.color === 'red' ? 'bg-red-100 text-red-600 hover:bg-red-600 hover:text-white' :
-                                                                    config.color === 'orange' ? 'bg-orange-100 text-orange-600 hover:bg-orange-600 hover:text-white' :
-                                                                        config.color === 'yellow' ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-600 hover:text-white' :
-                                                                            'bg-slate-200 text-slate-600 dark:text-slate-400 hover:bg-slate-600 hover:text-white dark:bg-slate-700'
-                                                                }`}>
-                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                                                </svg>
-                                                            </button>
-                                                        </a>
-                                                    </div>
-                                                ))}
+                                                                <a
+                                                                    href={`tel:${service.phone}`}
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                    className="flex-shrink-0"
+                                                                >
+                                                                    <button className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${config.color === 'blue' ? 'bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white' :
+                                                                        config.color === 'red' ? 'bg-red-100 text-red-600 hover:bg-red-600 hover:text-white' :
+                                                                            config.color === 'orange' ? 'bg-orange-100 text-orange-600 hover:bg-orange-600 hover:text-white' :
+                                                                                config.color === 'yellow' ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-600 hover:text-white' :
+                                                                                    'bg-slate-200 text-slate-600 dark:text-slate-400 hover:bg-slate-600 hover:text-white dark:bg-slate-700'
+                                                                        }`}>
+                                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                                        </svg>
+                                                                    </button>
+                                                                </a>
+                                                            </div>
+
+                                                            {isExpanded && (
+                                                                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 animate-fade-in space-y-3">
+                                                                    <div className="flex items-start gap-2">
+                                                                        <svg className="w-4 h-4 text-slate-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                        </svg>
+                                                                        <div>
+                                                                            <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Address</p>
+                                                                            <p className="text-xs text-slate-500 dark:text-slate-400">{service.address || service.location || 'Address not available'}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    {service.description && (
+                                                                        <div className="flex items-start gap-2">
+                                                                            <svg className="w-4 h-4 text-slate-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                            </svg>
+                                                                            <div>
+                                                                                <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Details</p>
+                                                                                <p className="text-xs text-slate-500 dark:text-slate-400">{service.description}</p>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                    <div className="flex items-start gap-2">
+                                                                        <svg className="w-4 h-4 text-slate-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                                        </svg>
+                                                                        <div>
+                                                                            <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Contact</p>
+                                                                            <p className="text-xs text-slate-500 dark:text-slate-400">{service.phone}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         );
                                     }
@@ -661,27 +710,60 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
 
                                                 {/* Services List (Compact) */}
                                                 <div className="space-y-3">
-                                                    {servicesOfType.map((service) => (
-                                                        <div key={service.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors group dark:bg-slate-700 dark:hover:bg-slate-600">
-                                                            <div className="min-w-0 pr-3">
-                                                                <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">{service.name}</h4>
-                                                                <p className="text-xs text-slate-500 truncate dark:text-slate-400">{service.location}</p>
-                                                            </div>
+                                                    {servicesOfType.map((service) => {
+                                                        const isExpanded = expandedServiceId === service.id;
+                                                        return (
+                                                            <div
+                                                                key={service.id}
+                                                                onClick={() => setExpandedServiceId(isExpanded ? null : service.id)}
+                                                                className={`p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer group dark:bg-slate-700 dark:hover:bg-slate-600 ${isExpanded ? 'ring-2 ring-blue-500' : ''}`}
+                                                            >
+                                                                <div className="flex items-center justify-between">
+                                                                    <div className="min-w-0 pr-3">
+                                                                        <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">{service.name}</h4>
+                                                                        <p className="text-xs text-slate-500 truncate dark:text-slate-400">{service.location}</p>
+                                                                    </div>
 
-                                                            <a href={`tel:${service.phone}`} className="flex-shrink-0">
-                                                                <button className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${config.color === 'blue' ? 'bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white' :
-                                                                    config.color === 'red' ? 'bg-red-100 text-red-600 hover:bg-red-600 hover:text-white' :
-                                                                        config.color === 'orange' ? 'bg-orange-100 text-orange-600 hover:bg-orange-600 hover:text-white' :
-                                                                            config.color === 'yellow' ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-600 hover:text-white' :
-                                                                                'bg-slate-200 text-slate-600 dark:text-slate-400 hover:bg-slate-600 hover:text-white'
-                                                                    }`}>
-                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                                                    </svg>
-                                                                </button>
-                                                            </a>
-                                                        </div>
-                                                    ))}
+                                                                    <a
+                                                                        href={`tel:${service.phone}`}
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                        className="flex-shrink-0"
+                                                                    >
+                                                                        <button className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${config.color === 'blue' ? 'bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white' :
+                                                                            config.color === 'red' ? 'bg-red-100 text-red-600 hover:bg-red-600 hover:text-white' :
+                                                                                config.color === 'orange' ? 'bg-orange-100 text-orange-600 hover:bg-orange-600 hover:text-white' :
+                                                                                    config.color === 'yellow' ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-600 hover:text-white' :
+                                                                                        'bg-slate-200 text-slate-600 dark:text-slate-400 hover:bg-slate-600 hover:text-white'
+                                                                            }`}>
+                                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                                            </svg>
+                                                                        </button>
+                                                                    </a>
+                                                                </div>
+
+                                                                {isExpanded && (
+                                                                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600 animate-fade-in space-y-2">
+                                                                        <div className="flex items-start gap-2">
+                                                                            <svg className="w-3.5 h-3.5 text-slate-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                            </svg>
+                                                                            <p className="text-[11px] text-slate-500 dark:text-slate-400">{service.address || service.location || 'Address not available'}</p>
+                                                                        </div>
+                                                                        {service.description && (
+                                                                            <div className="flex items-start gap-2">
+                                                                                <svg className="w-3.5 h-3.5 text-slate-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                                </svg>
+                                                                                <p className="text-[11px] text-slate-500 dark:text-slate-400">{service.description}</p>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                         );
