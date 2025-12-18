@@ -176,6 +176,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                 .select('created_at')
                 .eq('user_id', user.id)
                 .eq('quiz_id', quizId)
+                .order('created_at', { ascending: false })
                 .limit(1);
 
             if (data && data.length > 0) {
@@ -298,10 +299,28 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         }
         setActiveQuiz(quiz);
 
-        // Randomly select 5 questions
+        // Randomly select 5 questions and shuffle their options
         if (quiz.questions && quiz.questions.length > 0) {
-            const shuffled = [...quiz.questions].sort(() => 0.5 - Math.random());
-            setQuizQuestions(shuffled.slice(0, 5));
+            const shuffledQuestions = [...quiz.questions].sort(() => 0.5 - Math.random());
+            const selectedQuestions = shuffledQuestions.slice(0, 5).map(q => {
+                if (!q.options || q.options.length === 0) return q;
+
+                // Store the correct answer text before shuffling options
+                const correctAnswerText = q.options[q.correct_option_index];
+
+                // Shuffle the options array
+                const shuffledOptions = [...q.options].sort(() => 0.5 - Math.random());
+
+                // Find the new index of the correct answer
+                const newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
+
+                return {
+                    ...q,
+                    options: shuffledOptions,
+                    correct_option_index: newCorrectIndex !== -1 ? newCorrectIndex : q.correct_option_index
+                };
+            });
+            setQuizQuestions(selectedQuestions);
         } else {
             setQuizQuestions([]);
         }
@@ -450,7 +469,11 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                         if (!lastAttemptTime) return 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200 dark:shadow-none';
                                         const last = new Date(lastAttemptTime);
                                         const now = getSyncedTime();
-                                        const isLocked = last.getHours() === now.getHours() && last.getDate() === now.getDate();
+                                        const isLocked =
+                                            last.getFullYear() === now.getFullYear() &&
+                                            last.getMonth() === now.getMonth() &&
+                                            last.getDate() === now.getDate() &&
+                                            last.getHours() === now.getHours();
 
                                         return isLocked
                                             ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
@@ -467,7 +490,11 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                         );
                                         const last = new Date(lastAttemptTime);
                                         const now = getSyncedTime();
-                                        const isLocked = last.getHours() === now.getHours() && last.getDate() === now.getDate();
+                                        const isLocked =
+                                            last.getFullYear() === now.getFullYear() &&
+                                            last.getMonth() === now.getMonth() &&
+                                            last.getDate() === now.getDate() &&
+                                            last.getHours() === now.getHours();
 
                                         if (isLocked) {
                                             const minutesLeft = 60 - now.getMinutes();
