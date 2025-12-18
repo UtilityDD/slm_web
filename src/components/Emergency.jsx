@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { cacheHelper } from '../utils/cacheHelper';
 
 // Skeleton Loaders
 const DonorCardSkeleton = () => (
@@ -149,6 +150,12 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
     }, [activeTab, selectedBloodGroup, selectedDistrict]);
 
     const fetchServices = async () => {
+        const cachedServices = cacheHelper.get('emergency_services');
+        if (cachedServices) {
+            setServices(cachedServices);
+            return;
+        }
+
         setLoading(true);
         try {
             const { data, error } = await supabase
@@ -157,6 +164,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
 
             if (error) throw error;
             setServices(data || []);
+            cacheHelper.set('emergency_services', data || [], 30); // Cache for 30 mins
         } catch (error) {
             console.error('Error fetching services:', error);
         } finally {
@@ -165,6 +173,13 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
     };
 
     const fetchDonors = async () => {
+        const cacheKey = `donors_${selectedBloodGroup}_${selectedDistrict}`;
+        const cachedDonors = cacheHelper.get(cacheKey);
+        if (cachedDonors) {
+            setDonors(cachedDonors);
+            return;
+        }
+
         setLoading(true);
         try {
             let query = supabase
@@ -182,6 +197,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
             const { data, error } = await query;
             if (error) throw error;
             setDonors(data || []);
+            cacheHelper.set(cacheKey, data || [], 5); // Cache for 5 mins
         } catch (error) {
             console.error('Error fetching donors:', error);
         } finally {
@@ -220,6 +236,9 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                 .upsert(updates);
 
             if (error) throw error;
+
+            // Clear donor caches
+            cacheHelper.clearAll();
 
             showToast(isDonor ? 'Donor profile updated successfully!' : 'Successfully registered as a donor!', 'success');
             setIsDonor(true);

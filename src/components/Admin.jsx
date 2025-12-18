@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { cacheHelper } from '../utils/cacheHelper';
 
 export default function Admin({ user, userProfile, language }) {
   const [users, setUsers] = useState([]);
@@ -13,12 +14,20 @@ export default function Admin({ user, userProfile, language }) {
   }, []);
 
   const fetchUsers = async () => {
+    const cachedUsers = cacheHelper.get('admin_user_list');
+    if (cachedUsers) {
+      setUsers(cachedUsers);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     const { data, error } = await supabase.from('profiles').select('*');
     if (error) {
       console.error('Error fetching users:', error);
     } else {
       setUsers(data);
+      cacheHelper.set('admin_user_list', data, 10); // Cache for 10 mins
     }
     setLoading(false);
   };
@@ -116,6 +125,9 @@ export default function Admin({ user, userProfile, language }) {
       console.error('Error updating user:', error);
       alert('Failed to update user.');
     } else {
+      // Clear admin cache
+      cacheHelper.clear('admin_user_list');
+
       setEditingUser(null);
       setAvatarFile(null);
       setAvatarPreview(null);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { cacheHelper } from '../utils/cacheHelper';
 
 export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     const [activeTab, setActiveTab] = useState('protocols');
@@ -29,6 +30,14 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     }, [activeTab, user]);
 
     const fetchPPE = async () => {
+        if (!user) return;
+        const cacheKey = `user_ppe_${user.id}`;
+        const cachedPPE = cacheHelper.get(cacheKey);
+        if (cachedPPE) {
+            setPpeList(cachedPPE);
+            return;
+        }
+
         setLoading(true);
         try {
             const { data, error } = await supabase
@@ -38,6 +47,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
 
             if (error) throw error;
             setPpeList(data || []);
+            cacheHelper.set(cacheKey, data || [], 10); // Cache for 10 mins
         } catch (error) {
             console.error('Error fetching PPE:', error);
         } finally {
@@ -80,6 +90,9 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 if (error) throw error;
             }
 
+            // Clear PPE cache
+            cacheHelper.clear(`user_ppe_${user.id}`);
+
             setShowAddModal(false);
             setNewItem({ name: '', age_months: '', condition: 'Good', details: '', count: 1 });
             setEditingId(null);
@@ -111,6 +124,10 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 .eq('id', id);
 
             if (error) throw error;
+
+            // Clear PPE cache
+            cacheHelper.clear(`user_ppe_${user.id}`);
+
             fetchPPE();
         } catch (error) {
             console.error('Error deleting PPE:', error);

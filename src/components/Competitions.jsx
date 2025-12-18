@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { cacheHelper } from '../utils/cacheHelper';
 
 export default function Competitions({ language = 'en', user, setCurrentView }) {
     const [loading, setLoading] = useState(true);
@@ -89,21 +90,29 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     }, [serverTimeOffset]); // Update timer when offset is calculated
 
     const fetchServerTime = async () => {
+        const cachedOffset = cacheHelper.get('server_time_offset');
+        if (cachedOffset !== null) {
+            setServerTimeOffset(cachedOffset);
+            return;
+        }
+
         try {
-            // Try to get server time from Supabase
             const { data, error } = await supabase.rpc('get_server_time');
             if (data) {
                 const serverTime = new Date(data).getTime();
                 const localTime = Date.now();
-                setServerTimeOffset(serverTime - localTime);
+                const offset = serverTime - localTime;
+                setServerTimeOffset(offset);
+                cacheHelper.set('server_time_offset', offset, 30); // Cache for 30 mins
             } else {
-                // Fallback: Use a public time API if RPC fails
                 const response = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
                 if (response.ok) {
                     const data = await response.json();
                     const serverTime = new Date(data.datetime).getTime();
                     const localTime = Date.now();
-                    setServerTimeOffset(serverTime - localTime);
+                    const offset = serverTime - localTime;
+                    setServerTimeOffset(offset);
+                    cacheHelper.set('server_time_offset', offset, 30);
                 }
             }
         } catch (error) {
@@ -112,11 +121,19 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     };
 
     const fetchHourlyQuiz = async () => {
+        const cachedQuiz = cacheHelper.get('hourly_quiz');
+        if (cachedQuiz) {
+            setHourlyQuiz(cachedQuiz);
+            return;
+        }
+
         try {
             const response = await fetch('/quizzes/hourly_challenge.json');
             if (response.ok) {
                 const data = await response.json();
-                setHourlyQuiz({ ...data, isLocal: true });
+                const quizData = { ...data, isLocal: true };
+                setHourlyQuiz(quizData);
+                cacheHelper.set('hourly_quiz', quizData, 10); // Cache for 10 mins
             }
         } catch (error) {
             console.error('Error fetching hourly quiz:', error);
@@ -125,6 +142,13 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
     const fetchLastAttempt = async (quizId) => {
         if (!user) return;
+        const cacheKey = `last_attempt_${user.id}_${quizId}`;
+        const cachedAttempt = cacheHelper.get(cacheKey);
+        if (cachedAttempt) {
+            setLastAttemptTime(cachedAttempt);
+            return;
+        }
+
         try {
             const { data, error } = await supabase
                 .from('quiz_attempts')
@@ -135,6 +159,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
             if (data && data.length > 0) {
                 setLastAttemptTime(data[0].created_at);
+                cacheHelper.set(cacheKey, data[0].created_at, 5); // Cache for 5 mins
             }
         } catch (error) {
             console.error('Error fetching last attempt:', error);
@@ -147,12 +172,16 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         }
     }, [user, hourlyQuiz]);
 
-
-
     const fetchUserRank = async () => {
         if (!user) return;
+        const cacheKey = `user_rank_${user.id}`;
+        const cachedRank = cacheHelper.get(cacheKey);
+        if (cachedRank) {
+            setUserRank(cachedRank);
+            return;
+        }
+
         try {
-            // 1. Get my score
             const { data: myData, error: myError } = await supabase
                 .from('leaderboard_view')
                 .select('score')
@@ -161,14 +190,15 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
             if (myError || !myData) return;
 
-            // 2. Count people with MORE points than me
             const { count, error: countError } = await supabase
                 .from('leaderboard_view')
                 .select('*', { count: 'exact', head: true })
                 .gt('score', myData.score);
 
             if (!countError) {
-                setUserRank({ rank: count + 1, score: myData.score });
+                const rankData = { rank: count + 1, score: myData.score };
+                setUserRank(rankData);
+                cacheHelper.set(cacheKey, rankData, 5); // Cache for 5 mins
             }
         } catch (error) {
             console.error('Error fetching rank:', error);
@@ -176,8 +206,14 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     };
 
     const fetchLeaderboard = async () => {
+        const cachedLeaderboard = cacheHelper.get('leaderboard_top_10');
+        if (cachedLeaderboard) {
+            setLeaderboard(cachedLeaderboard);
+            if (user) fetchUserRank();
+            return;
+        }
+
         try {
-            // Query the View which already handles deduping and MAX score
             const { data, error } = await supabase
                 .from('leaderboard_view')
                 .select('*')
@@ -186,34 +222,38 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
             if (error) throw error;
 
-            // View returns flat structure
             const formattedData = data.map(item => ({
-                ...item, // Keep all fields including user_id if available
+                ...item,
                 points: item.score
             }));
 
             setLeaderboard(formattedData || []);
+            cacheHelper.set('leaderboard_top_10', formattedData || [], 5); // Cache for 5 mins
 
-            // Also fetch my specific rank
             if (user) fetchUserRank();
 
         } catch (error) {
             console.error('Error fetching leaderboard:', error);
-            if (error.code === '42P01') {
-                console.warn("View doesn't exist yet");
-            }
         }
     };
 
     const fetchFullLeaderboard = async () => {
         setLoadingFull(true);
         setShowFullLeaderboard(true);
+
+        const cachedFull = cacheHelper.get('leaderboard_full');
+        if (cachedFull) {
+            setFullLeaderboard(cachedFull);
+            setLoadingFull(false);
+            return;
+        }
+
         try {
             const { data, error } = await supabase
                 .from('leaderboard_view')
                 .select('*')
                 .order('score', { ascending: false })
-                .limit(50); // Fetch top 50 for now
+                .limit(50);
 
             if (error) throw error;
 
@@ -222,6 +262,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                 points: item.score
             }));
             setFullLeaderboard(formattedData || []);
+            cacheHelper.set('leaderboard_full', formattedData || [], 5); // Cache for 5 mins
         } catch (error) {
             console.error('Error fetching full leaderboard:', error);
         } finally {
