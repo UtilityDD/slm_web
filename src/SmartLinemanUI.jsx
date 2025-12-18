@@ -12,7 +12,10 @@ import Home from "./components/Home";
 export default function SmartLinemanUI() {
   const [hoveredCard, setHoveredCard] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentView, setCurrentView] = useState('home');
+  const [currentView, setCurrentView] = useState(() => {
+    const hash = window.location.hash.replace('#/', '');
+    return hash || 'home';
+  });
   const [language, setLanguage] = useState('en');
   const [theme, setTheme] = useState('light');
   const [showLanguageModal, setShowLanguageModal] = useState(false);
@@ -55,9 +58,29 @@ export default function SmartLinemanUI() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Scroll to top when view changes
+  // Scroll to top when view changes and sync with URL hash
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (currentView === 'home') {
+      window.history.replaceState(null, '', window.location.pathname);
+    } else {
+      window.location.hash = `/${currentView}`;
+    }
+  }, [currentView]);
+
+  // Listen for hash changes (back/forward buttons)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#/', '');
+      if (hash && hash !== currentView) {
+        setCurrentView(hash);
+      } else if (!hash && currentView !== 'home') {
+        setCurrentView('home');
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
   }, [currentView]);
 
   // Check LocalStorage for Language on mount
