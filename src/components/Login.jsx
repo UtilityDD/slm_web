@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 
-export default function Login({ onLogin }) {
+export default function Login({ onLogin, showNotification }) {
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -20,7 +20,7 @@ export default function Login({ onLogin }) {
                     password,
                 });
                 if (error) throw error;
-                alert('Check your email for the login link!');
+                showNotification('Check your email for the login link!');
             } else {
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email,
@@ -31,6 +31,7 @@ export default function Login({ onLogin }) {
             }
         } catch (error) {
             setError(error.message);
+            showNotification(error.message, 'error');
             // For demo purposes, if Supabase isn't configured, we'll simulate a login
             if (error.message.includes('valid URL') || error.message.includes('fetch')) {
                 console.warn("Supabase not configured. Simulating login for demo.");

@@ -23,6 +23,14 @@ export default function SmartLinemanUI() {
   const [userProfile, setUserProfile] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [notification, setNotification] = useState(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [globalLoading, setGlobalLoading] = useState(false);
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   useEffect(() => {
     const fetchProfile = async (user) => {
@@ -131,11 +139,24 @@ export default function SmartLinemanUI() {
   };
 
   const confirmLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setUserProfile(null);
-    setShowLogoutModal(false);
-    setCurrentView('home');
+    setIsLoggingOut(true);
+    setGlobalLoading(true);
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setUserProfile(null);
+      setShowLogoutModal(false);
+      showNotification(language === 'en' ? 'Logged out successfully' : 'সফলভাবে লগ আউট হয়েছে');
+      setTimeout(() => {
+        setCurrentView('home');
+        setGlobalLoading(false);
+      }, 800);
+    } catch (error) {
+      showNotification(error.message, 'error');
+      setGlobalLoading(false);
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const cancelLogout = () => {
@@ -205,7 +226,18 @@ export default function SmartLinemanUI() {
 
   const renderContent = () => {
     if (currentView === 'login' && !user) {
-      return <Login onLogin={(u) => { setUser(u); setCurrentView('home'); }} />;
+      return <Login
+        onLogin={(u) => {
+          setGlobalLoading(true);
+          setUser(u);
+          showNotification(language === 'en' ? 'Welcome back!' : 'আপনাকে স্বাগতম!');
+          setTimeout(() => {
+            setCurrentView('home');
+            setGlobalLoading(false);
+          }, 800);
+        }}
+        showNotification={showNotification}
+      />;
     }
 
     switch (currentView) {
@@ -238,7 +270,36 @@ export default function SmartLinemanUI() {
           onConfirm={confirmLogout}
           onCancel={cancelLogout}
           language={language}
+          loading={isLoggingOut}
         />
+      )}
+
+      {/* Global Loading Overlay */}
+      {globalLoading && (
+        <div className="fixed inset-0 z-[110] bg-white/60 dark:bg-slate-900/60 backdrop-blur-md flex flex-col items-center justify-center animate-fade-in">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-blue-100 dark:border-slate-700 rounded-full"></div>
+            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <p className="mt-4 font-bold text-slate-600 dark:text-slate-300 animate-pulse">
+            {language === 'en' ? 'Updating your experience...' : 'আপনার অভিজ্ঞতা আপডেট করা হচ্ছে...'}
+          </p>
+        </div>
+      )}
+
+      {/* Notification Toast */}
+      {notification && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xs px-4 animate-toast-in">
+          <div className={`flex items-center gap-3 p-4 rounded-2xl shadow-2xl border ${notification.type === 'success'
+            ? 'bg-green-600 border-green-500 text-white'
+            : 'bg-red-600 border-red-500 text-white'
+            }`}>
+            <span className="text-xl">
+              {notification.type === 'success' ? '✅' : '⚠️'}
+            </span>
+            <p className="text-sm font-bold">{notification.message}</p>
+          </div>
+        </div>
       )}
       {/* Background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
