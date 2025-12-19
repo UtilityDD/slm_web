@@ -369,30 +369,28 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 {activeTab === 'protocols' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Highlighted Safety Rule Carousel - Refined */}
-                        <div className={`md:col-span-2 bg-gradient-to-br ${SAFETY_RULES[currentRuleIndex].color} rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden shadow-lg transition-all duration-700 ease-in-out border border-white/10 min-h-[200px] flex flex-col justify-center`}>
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl translate-x-1/4 -translate-y-1/4"></div>
-
-                            {/* Navigation Arrows - Absolute Positioned */}
+                        <div className="md:col-span-2 bg-orange-50 dark:bg-orange-900/10 rounded-xl p-6 border border-orange-200 dark:border-orange-800 shadow-sm min-h-[200px] flex flex-col justify-center">
+                            {/* Navigation Arrows */}
                             <button
                                 onClick={prevRule}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all active:scale-90 z-20"
+                                className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 flex items-center justify-center border border-orange-200 dark:border-orange-800 transition-all active:scale-90 z-20"
                                 aria-label="Previous rule"
                             >
-                                <span className="text-lg">←</span>
+                                <span className="text-lg text-orange-600 dark:text-orange-400">←</span>
                             </button>
 
                             <button
                                 onClick={nextRule}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all active:scale-90 z-20"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 flex items-center justify-center border border-orange-200 dark:border-orange-800 transition-all active:scale-90 z-20"
                                 aria-label="Next rule"
                             >
-                                <span className="text-lg">→</span>
+                                <span className="text-lg text-orange-600 dark:text-orange-400">→</span>
                             </button>
 
                             <div className="relative z-10 flex flex-col items-center justify-center h-full px-6">
                                 {/* Rule Text */}
-                                <div key={currentRuleIndex} className="max-w-2xl text-center mb-6 animate-slide-in-left">
-                                    <p className="text-white text-lg sm:text-2xl font-bold leading-relaxed tracking-tight">
+                                <div key={currentRuleIndex} className="max-w-2xl text-center mb-6">
+                                    <p className="text-orange-900 dark:text-orange-100 text-lg sm:text-2xl font-bold leading-relaxed">
                                         {SAFETY_RULES[currentRuleIndex].rule}
                                     </p>
                                 </div>
@@ -400,7 +398,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                 {/* Indicators */}
                                 <div className="flex gap-2">
                                     {SAFETY_RULES.map((_, i) => (
-                                        <div key={i} className={`h-1 rounded-full transition-all duration-500 ${i === currentRuleIndex ? 'bg-white w-6' : 'bg-white/30 w-1.5'}`}></div>
+                                        <div key={i} className={`h-1 rounded-full transition-all duration-500 ${i === currentRuleIndex ? 'bg-orange-600 dark:bg-orange-400 w-6' : 'bg-orange-300 dark:bg-orange-700 w-1.5'}`}></div>
                                     ))}
                                 </div>
                             </div>
@@ -408,15 +406,15 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
 
                         {/* Protocol Categories - Compact */}
                         {t.protocols.categories.map((category, index) => (
-                            <div key={index} className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-600 hover:border-orange-200 hover:shadow-md transition-all cursor-pointer group">
+                            <div key={index} className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md transition-all cursor-pointer group">
                                 <div className="flex items-center justify-between mb-3">
-                                    <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                                    <div className="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
                                         {index === 0 ? '⚡' : index === 1 ? '🔧' : index === 2 ? '⛈️' : '🩹'}
                                     </div>
-                                    <span className="text-slate-400">→</span>
+                                    <span className="text-slate-400 dark:text-slate-500">→</span>
                                 </div>
                                 <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 mb-0.5">{category}</h3>
-                                <p className="text-xs text-slate-500">12 Guidelines</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">12 Guidelines</p>
                             </div>
                         ))}
                     </div>
