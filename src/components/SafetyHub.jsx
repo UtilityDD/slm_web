@@ -146,7 +146,10 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     };
 
     const handleSavePPE = async () => {
-        if (!user) return;
+        if (!user) {
+            setCurrentView('login');
+            return;
+        }
         setIsSaving(true);
 
         try {
@@ -559,7 +562,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                             <div className="p-4 sm:p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-center">
                                 <button
                                     onClick={handleSavePPE}
-                                    disabled={isSaving || !user}
+                                    disabled={isSaving}
                                     className={`px-10 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 ${isSaving ? 'bg-slate-400 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 shadow-orange-200 dark:shadow-none'}`}
                                 >
                                     {isSaving ? 'Saving...' : 'Update PPE Status'}
