@@ -71,98 +71,78 @@ export default function Login({ onLogin, showNotification }) {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 mobile-container py-8">
-            <div className="max-w-md w-full material-card elevation-4 p-8 sm:p-10 relative overflow-hidden">
-                {/* Decorative Background */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none"></div>
-
-                <div className="relative z-10">
-                    <div className="text-center mb-8">
-                        <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-5 elevation-3 text-white">
-                            ⚡
-                        </div>
-                        <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                            {view === 'signup' ? 'Join SmartLineman' :
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 px-4 py-8">
+            <div className="w-full max-w-sm">
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
+                    {/* Header */}
+                    <div className="mb-6">
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                            {view === 'signup' ? 'Create Account' :
                                 view === 'forgot' ? 'Reset Password' :
-                                    view === 'update' ? 'New Password' : 'Welcome Back'}
-                        </h2>
-                        <p className="text-slate-500 dark:text-slate-400 text-base sm:text-lg">
-                            {view === 'signup' ? 'Create your account to get started' :
-                                view === 'forgot' ? 'Enter your email to receive a reset link' :
-                                    view === 'update' ? 'Enter your new secure password' : 'Sign in to access your dashboard'}
-                        </p>
+                                    view === 'update' ? 'New Password' : 'Sign In'}
+                        </h1>
                     </div>
 
+                    {/* Error Message */}
                     {error && (
-                        <div className="mb-6 p-4 bg-red-50 text-red-600 text-sm sm:text-base rounded-xl border-2 border-red-200 flex items-start gap-3 elevation-1">
-                            <span className="text-xl">⚠️</span>
-                            <span>{error}</span>
+                        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-lg border border-red-200 dark:border-red-800">
+                            {error}
                         </div>
                     )}
 
-                    <form onSubmit={handleAuth} className="space-y-6">
+                    {/* Form */}
+                    <form onSubmit={handleAuth} className="space-y-4">
                         {(view === 'login' || view === 'signup' || view === 'forgot') && (
-                            <div>
-                                <label className="block text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-200 mb-2">Email Address</label>
-                                <input
-                                    type="email"
-                                    required
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="material-input"
-                                    placeholder="lineman@example.com"
-                                />
-                            </div>
+                            <input
+                                type="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                placeholder="Email address"
+                            />
                         )}
 
                         {(view === 'login' || view === 'signup' || view === 'update') && (
                             <div>
-                                <div className="flex justify-between items-center mb-2">
-                                    <label className="block text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-200">
-                                        {view === 'update' ? 'New Password' : 'Password'}
-                                    </label>
-                                    {view === 'login' && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setView('forgot')}
-                                            className="text-xs font-bold text-blue-600 hover:underline"
-                                        >
-                                            Forgot Password?
-                                        </button>
-                                    )}
-                                </div>
                                 <input
                                     type="password"
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="material-input"
-                                    placeholder="••••••••"
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    placeholder={view === 'update' ? 'New password' : 'Password'}
                                 />
+                                {view === 'login' && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setView('forgot')}
+                                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-2 inline-block"
+                                    >
+                                        Forgot password?
+                                    </button>
+                                )}
                             </div>
                         )}
 
                         {view === 'update' && (
-                            <div>
-                                <label className="block text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-200 mb-2">Confirm New Password</label>
-                                <input
-                                    type="password"
-                                    required
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className="material-input"
-                                    placeholder="••••••••"
-                                />
-                            </div>
+                            <input
+                                type="password"
+                                required
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                placeholder="Confirm password"
+                            />
                         )}
 
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full material-button-primary disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 ripple text-base sm:text-lg"
+                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                         >
                             {loading ? (
-                                <span className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                             ) : (
                                 view === 'signup' ? 'Create Account' :
                                     view === 'forgot' ? 'Send Reset Link' :
@@ -171,17 +151,16 @@ export default function Login({ onLogin, showNotification }) {
                         </button>
                     </form>
 
-                    <div className="mt-8 text-center">
-                        <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
-                            {view === 'signup' ? 'Already have an account?' :
-                                view === 'forgot' || view === 'update' ? 'Remember your password?' : "Don't have an account?"}{' '}
-                            <button
-                                onClick={() => setView(view === 'signup' || view === 'forgot' || view === 'update' ? 'login' : 'signup')}
-                                className="text-blue-600 font-bold hover:underline touch-target ripple-dark rounded px-1"
-                            >
-                                {view === 'signup' || view === 'forgot' || view === 'update' ? 'Sign In' : 'Sign Up'}
-                            </button>
-                        </p>
+                    {/* Footer */}
+                    <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
+                        {view === 'signup' ? 'Already have an account?' :
+                            view === 'forgot' || view === 'update' ? 'Remember your password?' : "Don't have an account?"}{' '}
+                        <button
+                            onClick={() => setView(view === 'signup' || view === 'forgot' || view === 'update' ? 'login' : 'signup')}
+                            className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                        >
+                            {view === 'signup' || view === 'forgot' || view === 'update' ? 'Sign In' : 'Sign Up'}
+                        </button>
                     </div>
                 </div>
             </div>
