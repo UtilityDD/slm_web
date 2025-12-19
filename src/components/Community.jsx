@@ -141,67 +141,64 @@ export default function Community({ language = 'en' }) {
     if (loading) return <CommunitySkeleton />;
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div className="compact-container py-6 sm:py-10 mb-20 animate-fade-in">
             {/* Header */}
-            <div className="text-center mb-12 animate-fade-in">
-                <div className="inline-block p-3 rounded-2xl bg-slate-50 mb-4 shadow-sm border border-slate-100 dark:border-slate-700">
-                    <span className="text-4xl">🌐</span>
+            <div className="text-center mb-10">
+                <div className="inline-block p-3 rounded-2xl bg-indigo-50 text-indigo-600 text-3xl mb-4 shadow-sm">
+                    🌐
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-3 tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
                     {t.title}
                 </h1>
-                <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
                     {t.subtitle}
                 </p>
             </div>
 
-            {/* Rewards Banner */}
-            <div className="max-w-6xl mx-auto mb-16 animate-scale-up">
-                <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl p-8 md:p-12 text-white shadow-xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white dark:bg-slate-800/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                    <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
-                        <div className="bg-white dark:bg-slate-800/20 p-4 rounded-2xl backdrop-blur-sm">
-                            <span className="text-5xl">🎁</span>
+            {/* Rewards Banner - Informational Only */}
+            <div className="mb-10 animate-scale-up">
+                <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
+                        <div className="bg-white/20 p-4 rounded-2xl backdrop-blur-sm">
+                            <span className="text-4xl">🎁</span>
                         </div>
                         <div className="flex-1">
-                            <h2 className="text-2xl md:text-3xl font-bold mb-3">{t.rewards.title}</h2>
-                            <p className="text-indigo-100 text-lg leading-relaxed max-w-2xl">
+                            <h2 className="text-xl sm:text-2xl font-bold mb-2">{t.rewards.title}</h2>
+                            <p className="text-indigo-100 text-sm sm:text-base leading-relaxed">
                                 {t.rewards.desc}
                             </p>
                         </div>
-                        <button className="px-8 py-3 bg-white dark:bg-slate-800 text-indigo-700 rounded-xl font-bold shadow-lg hover:shadow-xl hover:bg-indigo-50 transition-all transform hover:-translate-y-1">
-                            {t.rewards.action}
-                        </button>
                     </div>
                 </div>
             </div>
 
-            {/* Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+            {/* Channels Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {cards.map((card, index) => (
                     <a
                         href={card.link}
                         key={card.id}
-                        className={`group relative bg-white dark:bg-slate-800 p-8 rounded-3xl border ${card.border} shadow-sm transition-all duration-300 transform hover:-translate-y-1 ${card.shadow} flex flex-col items-center text-center h-full animate-scale-up`}
+                        className={`group relative bg-white dark:bg-slate-800 p-6 rounded-3xl border ${card.border} shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center text-center h-full`}
                         style={{ animationDelay: `${index * 100}ms` }}
                     >
-                        {/* Icon Background */}
-                        <div className={`w-24 h-24 rounded-full ${card.bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                            {card.icon}
+                        {/* Icon */}
+                        <div className={`w-16 h-16 rounded-2xl ${card.bg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                            {React.cloneElement(card.icon, { className: `w-8 h-8 ${card.icon.props.className.split(' ').pop()}` })}
                         </div>
 
                         {/* Content */}
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 group-hover:text-blue-900 transition-colors">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">
                             {card.data.title}
                         </h3>
-                        <p className="text-slate-500 mb-8 leading-relaxed flex-grow">
+                        <p className="text-sm text-slate-500 mb-6 leading-relaxed flex-grow">
                             {card.data.desc}
                         </p>
 
-                        {/* Button */}
-                        <span className={`px-8 py-3 rounded-xl font-semibold shadow-md transition-all w-full md:w-auto ${card.button} flex items-center justify-center gap-2`}>
+                        {/* Action Link */}
+                        <span className={`w-full py-2.5 rounded-xl text-sm font-bold ${card.button} flex items-center justify-center gap-2 transition-all opacity-90 group-hover:opacity-100`}>
                             {card.data.action}
-                            <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                             </svg>
                         </span>
@@ -210,8 +207,10 @@ export default function Community({ language = 'en' }) {
             </div>
 
             {/* Footer */}
-            <div className="mt-16 text-center text-slate-400 text-sm font-medium border-t border-slate-100 dark:border-slate-700 pt-8 animate-fade-in">
-                {t.footer}
+            <div className="mt-12 text-center">
+                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">
+                    {t.footer}
+                </p>
             </div>
         </div>
     );
