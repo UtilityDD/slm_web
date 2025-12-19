@@ -57,35 +57,30 @@ export default function Home({ setCurrentView, language, user, t }) {
             <div className="mb-8 sm:mb-10">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                            <span className="text-slate-400 dark:text-slate-400 font-medium block text-base sm:text-lg mb-0.5">{getGreeting()},</span>
-                            {fullName || (user?.email ? user.email.split('@')[0] : (language === 'en' ? 'Lineman' : 'লাইনম্যান'))}
-                        </h1>
+                        <span className="text-slate-400 dark:text-slate-400 font-medium block text-base sm:text-lg mb-0.5">{getGreeting()},</span>
+                        <div className="flex items-baseline gap-3">
+                            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                                {fullName || (user?.email ? user.email.split('@')[0] : (language === 'en' ? 'Lineman' : 'লাইনম্যান'))}
+                            </h1>
+                            {user && (
+                                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md">
+                                    <span className="text-base">💎</span>
+                                    <span className="text-sm font-bold">{score.toLocaleString()}</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    {/* Compact Status Pill */}
-                    <div
-                        onClick={() => !user && setCurrentView('login')}
-                        className={`flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border shadow-sm transition-all cursor-pointer ${user
-                            ? 'bg-blue-50 text-blue-700 border-blue-100'
-                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200'
-                            }`}
-                    >
-                        {user ? (
-                            <>
-                                <span className="text-lg">⭐</span>
-                                <span className="text-xs font-bold">
-                                    {language === 'en' ? 'My Score:' : 'আমার স্কোর:'} <span className="text-base">{score.toLocaleString()}</span>
-                                </span>
-                            </>
-                        ) : (
-                            <>
-                                <span className="text-lg">🔒</span>
-                                <span className="text-sm font-semibold">
-                                    {language === 'en' ? 'Login to view score' : 'স্কোর দেখতে লগইন করুন'}
-                                </span>
-                            </>
-                        )}
-                    </div>
+                    {!user && (
+                        <div
+                            onClick={() => setCurrentView('login')}
+                            className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border shadow-sm transition-all cursor-pointer bg-slate-50 text-slate-600 border-slate-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200"
+                        >
+                            <span className="text-lg">🔒</span>
+                            <span className="text-sm font-semibold">
+                                {language === 'en' ? 'Login to view score' : 'স্কোর দেখতে লগইন করুন'}
+                            </span>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -101,10 +96,7 @@ export default function Home({ setCurrentView, language, user, t }) {
                         <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-2xl shadow-sm">🏆</div>
                         <div className="flex items-center gap-3">
                             <h3 className="text-lg font-bold tracking-tight">{t.nav.competitions}</h3>
-                            <div className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-md border border-white/20">
-                                <span>Live</span>
-                                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-                            </div>
+                            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
                         </div>
                     </div>
                 </div>
