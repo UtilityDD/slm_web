@@ -408,12 +408,16 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
             {/* Minimal Header */}
-            <div className="text-center mb-12 animate-fade-in">
-                <div className="inline-block p-3 rounded-2xl bg-slate-50 mb-4 shadow-sm border border-slate-100 dark:border-slate-700">
-                    <span className="text-4xl">🏆</span>
+            <div className="mb-8 text-center">
+                <div className="inline-block p-2.5 rounded-full bg-blue-100 text-blue-600 text-2xl mb-3">
+                    🏆
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-0.5 tracking-tight">
-                    {t.title}
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-0.5">
+                    {language === 'en' ? (
+                        <>Compe<span className="text-blue-600">titions</span></>
+                    ) : (
+                        <>{t.title}</>
+                    )}
                 </h1>
             </div>
 

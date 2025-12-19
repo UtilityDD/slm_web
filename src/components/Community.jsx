@@ -133,12 +133,16 @@ export default function Community({ language = 'en' }) {
     return (
         <div className="compact-container py-6 sm:py-10 mb-20 animate-fade-in">
             {/* Header */}
-            <div className="text-center mb-10">
-                <div className="inline-block p-3 rounded-2xl bg-indigo-50 text-indigo-600 text-3xl mb-4 shadow-sm">
-                    🌐
+            <div className="mb-8 text-center">
+                <div className="inline-block p-2.5 rounded-full bg-indigo-100 text-indigo-600 text-2xl mb-3">
+                    💬
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-0.5">
-                    {t.title}
+                    {language === 'en' ? (
+                        <>Community <span className="text-indigo-600">Hub</span></>
+                    ) : (
+                        <>{t.title}</>
+                    )}
                 </h1>
             </div>
 
