@@ -128,6 +128,20 @@ export default function Home({ setCurrentView, language, user, t }) {
                     </p>
                 </div>
 
+                {/* Campaign - New Card */}
+                <div
+                    onClick={() => setCurrentView('campaign')}
+                    className="group material-card p-5 sm:p-6 cursor-pointer bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 border-indigo-100 dark:border-indigo-800"
+                >
+                    <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform shadow-sm">📢</div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1 tracking-tight">
+                        {language === 'en' ? 'Campaign' : 'ক্যাম্পেইন'}
+                    </h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed font-medium">
+                        {language === 'en' ? 'Create posters & share app' : 'পোস্টার তৈরি করুন এবং অ্যাপ শেয়ার করুন'}
+                    </p>
+                </div>
+
                 {/* Community - Large Card 3 */}
                 <div
                     onClick={() => setCurrentView('community')}
@@ -143,7 +157,7 @@ export default function Home({ setCurrentView, language, user, t }) {
                 {/* Emergency - Special Card */}
                 <div
                     onClick={() => setCurrentView('emergency')}
-                    className="group bg-red-50 dark:bg-red-900/10 rounded-3xl p-5 sm:p-6 border border-red-100 dark:border-red-900/30 cursor-pointer transition-all hover:shadow-lg hover:border-red-200 dark:hover:border-red-800 hover:-translate-y-1"
+                    className="group bg-red-50 dark:bg-red-900/10 rounded-3xl p-5 sm:p-6 border border-red-100 dark:border-red-900/30 cursor-pointer transition-all hover:shadow-lg hover:border-red-200 dark:hover:border-red-800 hover:-translate-y-1 col-span-1 sm:col-span-2 lg:col-span-1"
                 >
                     <div className="w-10 h-10 bg-white dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center text-xl mb-4 shadow-sm group-hover:scale-110 transition-transform">🚨</div>
                     <h3 className="text-lg font-bold text-red-700 dark:text-red-400 mb-1 tracking-tight">{t.nav.emergency}</h3>

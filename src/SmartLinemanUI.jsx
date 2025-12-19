@@ -8,9 +8,9 @@ import { supabase } from "./supabaseClient";
 import LogoutConfirmationModal from "./components/LogoutConfirmationModal";
 import Admin from "./components/Admin";
 import Home from "./components/Home";
+import Campaign from "./components/Campaign";
 
 export default function SmartLinemanUI() {
-  const [hoveredCard, setHoveredCard] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentView, setCurrentView] = useState(() => {
     const hash = window.location.hash.replace('#/', '');
@@ -276,6 +276,8 @@ export default function SmartLinemanUI() {
         return <SafetyHub language={language} user={user} setCurrentView={setCurrentView} />;
       case 'admin':
         return <Admin language={language} user={user} userProfile={userProfile} />;
+      case 'campaign':
+        return <Campaign language={language} setCurrentView={setCurrentView} />;
       case 'home':
       default:
         if (appLoading) return <Home setCurrentView={setCurrentView} language={language} t={t} user={user} userProfile={userProfile} />;
@@ -290,7 +292,7 @@ export default function SmartLinemanUI() {
   };
 
   return (
-    <div className={`min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : 'font-sans'}`}>
+    <div className={`min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 font-sans ${language === 'bn' ? 'font-bengali' : ''}`}>
       {showLogoutModal && (
         <LogoutConfirmationModal
           onConfirm={() => confirmLogout(false)}
@@ -627,4 +629,3 @@ export default function SmartLinemanUI() {
     </div >
   );
 }
-
