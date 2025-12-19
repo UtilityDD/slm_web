@@ -255,14 +255,12 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
     const t = {
         en: {
             title: "Emergency Hub",
-            subtitle: "Quick access to life-saving resources",
             tabs: {
                 blood: "Blood Network",
                 services: "Emergency Services"
             },
             blood: {
                 heroTitle: "Save Lives Through Blood Donation",
-                heroDesc: "Connect with verified donors in your area or register to help others.",
                 registerBtn: isDonor ? "Update Info" : "Register as Donor",
                 findBtn: "Search Donors",
                 filters: {
@@ -285,14 +283,12 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
         },
         bn: {
             title: "জরুরি হাব",
-            subtitle: "জীবন রক্ষাকারী রিসোর্সে দ্রুত অ্যাক্সেস",
             tabs: {
                 blood: "রক্তের নেটওয়ার্ক",
                 services: "জরুরি পরিষেবা"
             },
             blood: {
                 heroTitle: "রক্তদানের মাধ্যমে জীবন বাঁচান",
-                heroDesc: "আপনার এলাকার যাচাইকৃত রক্তদাতাদের সাথে যোগাযোগ করুন।",
                 registerBtn: isDonor ? "তথ্য আপডেট করুন" : "রক্তদাতা হিসেবে নিবন্ধন",
                 findBtn: "রক্তদাতা খুঁজুন",
                 filters: {
@@ -329,7 +325,6 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                     </div>
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-0.5">{t.title}</h1>
-                        <p className="text-xs text-slate-500">{t.subtitle}</p>
                     </div>
                 </div>
             </div>
@@ -366,8 +361,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                         <div className="absolute top-0 right-0 w-32 h-32 bg-red-50 dark:bg-red-900/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <div className="flex-1 relative z-10">
-                                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1 tracking-tight">{t.blood.heroTitle}</h2>
-                                <p className="text-slate-500 dark:text-slate-400 text-xs mb-4 font-medium">{t.blood.heroDesc}</p>
+                                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4 tracking-tight">{t.blood.heroTitle}</h2>
                                 <button
                                     onClick={() => {
                                         if (!user) setCurrentView('login');

@@ -237,7 +237,6 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     const t = {
         en: {
             title: "Safety Hub",
-            subtitle: "Your comprehensive resource for safety protocols, training, and compliance.",
             tabs: {
                 protocols: "Protocols",
                 training: "Training Zone",
@@ -246,17 +245,14 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
             },
             protocols: {
                 title: "Standard Operating Procedures",
-                desc: "Official WBSEDCL safety guidelines for all operations.",
                 categories: ["High Voltage", "Maintenance", "Storm Safety", "First Aid"]
             },
             training: {
                 title: "Video Training Library",
-                desc: "Watch expert tutorials to upgrade your skills.",
                 watch: "Watch Now"
             },
             my_ppe: {
                 title: "My Personal Protective Equipment",
-                desc: "Track and manage your essential safety gear.",
                 addBtn: "Add New PPE",
                 editBtn: "Edit PPE",
                 empty: "No PPE items added yet.",
@@ -277,7 +273,6 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
             },
             report: {
                 title: "Report a Hazard",
-                desc: "See something unsafe? Report it immediately.",
                 form: {
                     location: "Location",
                     type: "Hazard Type",
@@ -289,7 +284,6 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
         },
         bn: {
             title: "সেফটি হাব",
-            subtitle: "নিরাপত্তা প্রোটোকল, প্রশিক্ষণ এবং কমপ্লায়েন্সের জন্য আপনার সম্পূর্ণ গাইড।",
             tabs: {
                 protocols: "প্রোটোকল",
                 training: "প্রশিক্ষণ জোন",
@@ -298,17 +292,14 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
             },
             protocols: {
                 title: "স্ট্যান্ডার্ড অপারেটিং প্রসিডিউর (SOP)",
-                desc: "সমস্ত অপারেশনের জন্য অফিসিয়াল WBSEDCL নিরাপত্তা নির্দেশিকা।",
                 categories: ["উচ্চ ভোল্টেজ", "রক্ষণাবেক্ষণ", "ঝড় নিরাপত্তা", "প্রাথমিক চিকিৎসা"]
             },
             training: {
                 title: "ভিডিও প্রশিক্ষণ লাইব্রেরি",
-                desc: "আপনার দক্ষতা বাড়াতে বিশেষজ্ঞ টিউটোরিয়াল দেখুন।",
                 watch: "এখন দেখুন"
             },
             my_ppe: {
                 title: "আমার ব্যক্তিগত সুরক্ষা সরঞ্জাম",
-                desc: "আপনার প্রয়োজনীয় নিরাপত্তা সরঞ্জাম ট্র্যাক এবং পরিচালনা করুন।",
                 addBtn: "নতুন পিপিই যোগ করুন",
                 editBtn: "পিপিই সম্পাদনা করুন",
                 empty: "এখনও কোন পিপিই যোগ করা হয়নি।",
@@ -328,7 +319,6 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
             },
             report: {
                 title: "বিপদ রিপোর্ট করুন",
-                desc: "অনিরাপদ কিছু দেখছেন? অবিলম্বে রিপোর্ট করুন।",
                 form: {
                     location: "অবস্থান",
                     type: "বিপদের ধরন",
@@ -349,16 +339,13 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 <div className="inline-block p-2.5 rounded-full bg-orange-100 text-orange-600 text-2xl mb-3">
                     🦺
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-0.5">
                     {language === 'en' ? (
                         <>Safety <span className="text-orange-600">Hub</span></>
                     ) : (
                         <>{t.title}</>
                     )}
                 </h1>
-                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
-                    {t.subtitle}
-                </p>
             </div>
 
             {/* Navigation Tabs - Compact */}
@@ -476,7 +463,6 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                         <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
                             <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
                                 <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.my_ppe.title}</h2>
-                                <p className="text-xs text-slate-500 mt-1">{t.my_ppe.desc}</p>
                             </div>
 
                             <div className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -578,7 +564,6 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                 ⚠️
                             </div>
                             <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.report.title}</h2>
-                            <p className="text-slate-600 dark:text-slate-400">{t.report.desc}</p>
                         </div>
 
                         <form className="space-y-6">

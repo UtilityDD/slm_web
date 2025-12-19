@@ -28,7 +28,6 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     const t = {
         en: {
             title: "Competitions",
-            subtitle: "Challenge yourself and win recognition.",
             weekly: "Weekly Challenge",
             hourly: "Hourly Quiz",
             play: "Play Now",
@@ -43,7 +42,6 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         },
         bn: {
             title: "প্রতিযোগিতা",
-            subtitle: "নিজেকে চ্যালেঞ্জ করুন এবং স্বীকৃতি জিতুন।",
             weekly: "সাপ্তাহিক চ্যালেঞ্জ",
             hourly: "ঘন্টাভিত্তিক কুইজ",
             play: "খেলুন",
@@ -414,12 +412,9 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                 <div className="inline-block p-3 rounded-2xl bg-slate-50 mb-4 shadow-sm border border-slate-100 dark:border-slate-700">
                     <span className="text-4xl">🏆</span>
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-3 tracking-tight">
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-0.5 tracking-tight">
                     {t.title}
                 </h1>
-                <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                    {t.subtitle}
-                </p>
             </div>
 
             {/* Hourly Quiz Card - Redesigned for Impact */}
@@ -442,12 +437,9 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                 </div>
 
                                 <div className="relative z-10 mb-8">
-                                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 mb-2 tracking-tight">
+                                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 mb-6 tracking-tight">
                                         5 {language === 'en' ? 'Quizzes Every Hour!' : 'কুইজ প্রতি ঘন্টায়!'}
                                     </h2>
-                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-6">
-                                        {language === 'en' ? 'Learn & Win Recognition' : 'শিখুন এবং স্বীকৃতি জিতুন'}
-                                    </p>
                                     <div className="flex items-center justify-center gap-6 text-xs text-slate-500 dark:text-slate-400">
                                         <div className="flex flex-col items-center">
                                             <span className="text-xl mb-1">📝</span>

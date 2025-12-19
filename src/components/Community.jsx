@@ -39,26 +39,21 @@ export default function Community({ language = 'en' }) {
     const t = {
         en: {
             title: "Community Hub",
-            subtitle: "By Linemen, For Linemen. Mutual learning by sharing knowledge.",
             rewards: {
-                title: "Share Knowledge, Earn Prizes!",
-                desc: "Post your tips, safety videos, and field experiences. The most liked and shared posts win exciting rewards every week!",
-                action: "Start Sharing"
+                title: "Top Contributors",
+                action: "View All"
             },
             cards: {
                 facebook: {
                     title: "Facebook Group",
-                    desc: "Join discussions, share photos, and get community updates.",
                     action: "Join Group"
                 },
                 whatsapp: {
                     title: "WhatsApp Alerts",
-                    desc: "Get instant real-time alerts and official announcements.",
                     action: "Join Channel"
                 },
                 youtube: {
                     title: "Training & Tutorials",
-                    desc: "Watch video tutorials, safety guides, and event highlights.",
                     action: "Watch Videos"
                 }
             },
@@ -66,26 +61,21 @@ export default function Community({ language = 'en' }) {
         },
         bn: {
             title: "কমিউনিটি হাব",
-            subtitle: "লাইনম্যানদের দ্বারা, লাইনম্যানদের জন্য। জ্ঞান শেয়ার করে একে অপরের থেকে শিখুন।",
             rewards: {
-                title: "জ্ঞান শেয়ার করুন, পুরস্কার জিতুন!",
-                desc: "আপনার টিপস, সেফটি ভিডিও এবং অভিজ্ঞতার কথা পোস্ট করুন। সবচেয়ে বেশি লাইক এবং শেয়ার করা পোস্ট প্রতি সপ্তাহে পুরস্কার জিতবে!",
-                action: "শেয়ার করা শুরু করুন"
+                title: "সেরা অবদানকারী",
+                action: "সব দেখুন"
             },
             cards: {
                 facebook: {
                     title: "ফেসবুক গ্রুপ",
-                    desc: "আলোচনায় যোগ দিন, ছবি শেয়ার করুন এবং আপডেট পান।",
                     action: "গ্রুপে যোগ দিন"
                 },
                 whatsapp: {
                     title: "হোয়াটসঅ্যাপ অ্যালার্ট",
-                    desc: "তাৎক্ষণিক রিয়েল-টাইম অ্যালার্ট এবং ঘোষণা পান।",
                     action: "চ্যানেলে যোগ দিন"
                 },
                 youtube: {
                     title: "ট্রেনিং এবং টিউটোরিয়াল",
-                    desc: "ভিডিও টিউটোরিয়াল, সেফটি গাইড এবং ইভেন্ট হাইলাইট দেখুন।",
                     action: "ভিডিও দেখুন"
                 }
             },
@@ -147,12 +137,9 @@ export default function Community({ language = 'en' }) {
                 <div className="inline-block p-3 rounded-2xl bg-indigo-50 text-indigo-600 text-3xl mb-4 shadow-sm">
                     🌐
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-0.5">
                     {t.title}
                 </h1>
-                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
-                    {t.subtitle}
-                </p>
             </div>
 
             {/* Rewards Banner - Informational Only */}
@@ -164,10 +151,7 @@ export default function Community({ language = 'en' }) {
                             <span className="text-4xl">🎁</span>
                         </div>
                         <div className="flex-1">
-                            <h2 className="text-xl sm:text-2xl font-bold mb-2">{t.rewards.title}</h2>
-                            <p className="text-indigo-100 text-sm sm:text-base leading-relaxed">
-                                {t.rewards.desc}
-                            </p>
+                            <h2 className="text-xl sm:text-2xl font-bold mb-0.5">{t.rewards.title}</h2>
                         </div>
                     </div>
                 </div>
@@ -188,12 +172,9 @@ export default function Community({ language = 'en' }) {
                         </div>
 
                         {/* Content */}
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4">
                             {card.data.title}
                         </h3>
-                        <p className="text-sm text-slate-500 mb-6 leading-relaxed flex-grow">
-                            {card.data.desc}
-                        </p>
 
                         {/* Action Link */}
                         <span className={`w-full py-2.5 rounded-xl text-sm font-bold ${card.button} flex items-center justify-center gap-2 transition-all opacity-90 group-hover:opacity-100`}>
