@@ -36,12 +36,21 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
         details: '',
         count: 1
     });
+    const [ppeChecklist, setPpeChecklist] = useState([]);
+    const [isSaving, setIsSaving] = useState(false);
 
     const PPE_ITEMS = [
-        "Safety Helmet", "Safety Shoes/Boots", "Insulated Gloves",
-        "Reflective Jacket", "Safety Belt", "Full Body Harness",
-        "Voltage Detector", "Discharge Rod",
-        "Safety Goggles", "Raincoat", "Torch/Emergency Light"
+        { name: "Safety Helmet", icon: "🪖" },
+        { name: "Safety Shoes/Boots", icon: "🥾" },
+        { name: "Insulated Gloves", icon: "🧤" },
+        { name: "Reflective Jacket", icon: "🦺" },
+        { name: "Safety Belt", icon: "🧗" },
+        { name: "Full Body Harness", icon: "🧗‍♂️" },
+        { name: "Voltage Detector", icon: "🔌" },
+        { name: "Discharge Rod", icon: "🦯" },
+        { name: "Safety Goggles", icon: "🥽" },
+        { name: "Raincoat", icon: "🧥" },
+        { name: "Torch/Emergency Light", icon: "🔦" }
     ];
 
     useEffect(() => {
@@ -54,74 +63,102 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
         if (!user) return;
         const cacheKey = `user_ppe_${user.id}`;
         const cachedPPE = cacheHelper.get(cacheKey);
-        if (cachedPPE) {
-            setPpeList(cachedPPE);
-            return;
+
+        let data = cachedPPE;
+        if (!data) {
+            setLoading(true);
+            try {
+                const { data: fetchedData, error } = await supabase
+                    .from('user_ppe')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                data = fetchedData || [];
+                cacheHelper.set(cacheKey, data, 10);
+            } catch (error) {
+                console.error('Error fetching PPE:', error);
+                data = [];
+            } finally {
+                setLoading(false);
+            }
         }
 
-        setLoading(true);
-        try {
-            const { data, error } = await supabase
-                .from('user_ppe')
-                .select('*')
-                .order('created_at', { ascending: false });
+        setPpeList(data);
 
-            if (error) throw error;
-            setPpeList(data || []);
-            cacheHelper.set(cacheKey, data || [], 10); // Cache for 10 mins
+        // Initialize checklist based on fetched data
+        const checklist = PPE_ITEMS.map(item => {
+            const existing = data.find(p => p.name === item.name);
+            return {
+                ...item,
+                available: !!existing,
+                id: existing?.id || null,
+                count: existing?.count || 1,
+                condition: existing?.condition || 'Good',
+                age: existing?.age_months ?
+                    (existing.age_months <= 6 ? '<6m' :
+                        existing.age_months <= 12 ? '6-12m' :
+                            existing.age_months <= 24 ? '1-2y' : '>2y') : '<6m',
+                usage: existing?.details?.includes('Usage:') ?
+                    existing.details.split('Usage:')[1].trim() : 'Personal'
+            };
+        });
+        setPpeChecklist(checklist);
+    };
+
+    const handleSavePPE = async () => {
+        if (!user) return;
+        setIsSaving(true);
+
+        try {
+            for (const item of ppeChecklist) {
+                const ageMonths = item.age === '<6m' ? 3 :
+                    item.age === '6-12m' ? 9 :
+                        item.age === '1-2y' ? 18 : 36;
+
+                const details = `Usage: ${item.usage}`;
+
+                if (item.available) {
+                    if (item.id) {
+                        // Update
+                        await supabase.from('user_ppe').update({
+                            count: parseInt(item.count),
+                            condition: item.condition,
+                            age_months: ageMonths,
+                            details: details
+                        }).eq('id', item.id);
+                    } else {
+                        // Insert
+                        await supabase.from('user_ppe').insert([{
+                            user_id: user.id,
+                            name: item.name,
+                            count: parseInt(item.count),
+                            condition: item.condition,
+                            age_months: ageMonths,
+                            details: details
+                        }]);
+                    }
+                } else if (item.id) {
+                    // Delete if it was available but now unchecked
+                    await supabase.from('user_ppe').delete().eq('id', item.id);
+                }
+            }
+
+            cacheHelper.clear(`user_ppe_${user.id}`);
+            await fetchPPE();
+            alert('PPE Status updated successfully!');
         } catch (error) {
-            console.error('Error fetching PPE:', error);
+            console.error('Error saving PPE:', error);
+            alert('Failed to save PPE status');
         } finally {
-            setLoading(false);
+            setIsSaving(false);
         }
     };
 
-    const handleSavePPE = async (e) => {
-        e.preventDefault();
-        if (!user) return;
-
-        try {
-            if (editingId) {
-                // Update existing item
-                const { error } = await supabase
-                    .from('user_ppe')
-                    .update({
-                        name: newItem.name,
-                        age_months: parseInt(newItem.age_months) || 0,
-                        condition: newItem.condition,
-                        details: newItem.details,
-                        count: parseInt(newItem.count) || 1
-                    })
-                    .eq('id', editingId);
-
-                if (error) throw error;
-            } else {
-                // Add new item
-                const { error } = await supabase
-                    .from('user_ppe')
-                    .insert([{
-                        user_id: user.id,
-                        name: newItem.name,
-                        age_months: parseInt(newItem.age_months) || 0,
-                        condition: newItem.condition,
-                        details: newItem.details,
-                        count: parseInt(newItem.count) || 1
-                    }]);
-
-                if (error) throw error;
-            }
-
-            // Clear PPE cache
-            cacheHelper.clear(`user_ppe_${user.id}`);
-
-            setShowAddModal(false);
-            setNewItem({ name: '', age_months: '', condition: 'Good', details: '', count: 1 });
-            setEditingId(null);
-            fetchPPE();
-        } catch (error) {
-            console.error('Error saving PPE:', error);
-            alert('Failed to save item');
-        }
+    const handleChecklistChange = (index, field, value) => {
+        const updated = [...ppeChecklist];
+        updated[index] = { ...updated[index], [field]: value };
+        setPpeChecklist(updated);
     };
 
     const handleEditPPE = (item) => {
@@ -366,154 +403,104 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
 
                 {activeTab === 'my_ppe' && (
                     <div className="max-w-4xl mx-auto">
-                        <div className="text-center mb-8">
-                            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.my_ppe.title}</h2>
-                            <p className="text-slate-600 dark:text-slate-400 mb-6">{t.my_ppe.desc}</p>
+                        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                            <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
+                                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.my_ppe.title}</h2>
+                                <p className="text-xs text-slate-500 mt-1">{t.my_ppe.desc}</p>
+                            </div>
 
-                            <button
-                                onClick={() => {
-                                    setEditingId(null);
-                                    setNewItem({ name: '', age_months: '', condition: 'Good', details: '', count: 1 });
-                                    user ? setShowAddModal(true) : setCurrentView('login');
-                                }}
-                                className="px-6 py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-md flex items-center gap-2 mx-auto"
-                            >
-                                <span>+</span> {t.my_ppe.addBtn}
-                            </button>
+                            <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                                {loading ? (
+                                    <div className="p-8 text-center text-slate-400">Loading PPE list...</div>
+                                ) : (
+                                    ppeChecklist.map((item, idx) => (
+                                        <div key={item.name} className={`p-3 sm:p-4 transition-colors ${item.available ? 'bg-orange-50/30 dark:bg-orange-900/10' : ''}`}>
+                                            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                                                {/* Availability Checkbox */}
+                                                <div className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={item.available}
+                                                        onChange={(e) => handleChecklistChange(idx, 'available', e.target.checked)}
+                                                        className="w-5 h-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                                                    />
+                                                </div>
+
+                                                {/* Icon & Name */}
+                                                <div className="flex items-center gap-2 min-w-[140px] flex-1">
+                                                    <span className="text-xl">{item.icon}</span>
+                                                    <span className={`text-sm font-bold ${item.available ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'}`}>
+                                                        {item.name}
+                                                    </span>
+                                                </div>
+
+                                                {/* Compact Fields - Only show if available */}
+                                                {item.available && (
+                                                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 ml-8 sm:ml-0">
+                                                        {/* Qty */}
+                                                        <div className="flex items-center gap-1">
+                                                            <span className="text-[10px] uppercase font-bold text-slate-400">Qty</span>
+                                                            <input
+                                                                type="number"
+                                                                min="1"
+                                                                value={item.count}
+                                                                onChange={(e) => handleChecklistChange(idx, 'count', e.target.value)}
+                                                                className="w-12 px-1 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                            />
+                                                        </div>
+
+                                                        {/* Quality */}
+                                                        <select
+                                                            value={item.condition}
+                                                            onChange={(e) => handleChecklistChange(idx, 'condition', e.target.value)}
+                                                            className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                        >
+                                                            <option value="Good">Good</option>
+                                                            <option value="Fair">Fair</option>
+                                                            <option value="Damaged">Damaged</option>
+                                                        </select>
+
+                                                        {/* Age */}
+                                                        <select
+                                                            value={item.age}
+                                                            onChange={(e) => handleChecklistChange(idx, 'age', e.target.value)}
+                                                            className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                        >
+                                                            <option value="<6m">&lt;6m</option>
+                                                            <option value="6-12m">6-12m</option>
+                                                            <option value="1-2y">1-2y</option>
+                                                            <option value=">2y">&gt;2y</option>
+                                                        </select>
+
+                                                        {/* Usage */}
+                                                        <select
+                                                            value={item.usage}
+                                                            onChange={(e) => handleChecklistChange(idx, 'usage', e.target.value)}
+                                                            className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                        >
+                                                            <option value="Personal">Personal</option>
+                                                            <option value="Shared">Shared</option>
+                                                        </select>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            <div className="p-4 sm:p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-center">
+                                <button
+                                    onClick={handleSavePPE}
+                                    disabled={isSaving || !user}
+                                    className={`px-10 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 ${isSaving ? 'bg-slate-400 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 shadow-orange-200 dark:shadow-none'}`}
+                                >
+                                    {isSaving ? 'Saving...' : 'Update PPE Status'}
+                                </button>
+                            </div>
                         </div>
-
-                        {loading ? (
-                            <PPESkeleton />
-                        ) : ppeList.length === 0 ? (
-                            <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-600 border-dashed">
-                                <div className="text-4xl mb-4">📭</div>
-                                <p className="text-slate-500">{t.my_ppe.empty}</p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {ppeList.map((item) => (
-                                    <div key={item.id} className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-md transition-all relative group">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">{item.name}</h3>
-                                            <span className={`px-2 py-1 rounded-md text-xs font-bold ${item.condition === 'Good' ? 'bg-green-100 text-green-700' :
-                                                item.condition === 'Fair' ? 'bg-yellow-100 text-yellow-700' :
-                                                    'bg-red-100 text-red-700'
-                                                }`}>
-                                                {t.my_ppe.conditions[item.condition] || item.condition}
-                                            </span>
-                                        </div>
-                                        <div className="space-y-1 text-sm text-slate-600 dark:text-slate-400 mb-3">
-                                            {item.count > 1 && <p><span className="font-semibold text-slate-400">{t.my_ppe.fields.count}:</span> {item.count}</p>}
-                                            <p><span className="font-semibold text-slate-400">{t.my_ppe.fields.age}:</span> {item.age_months}</p>
-                                            {item.details && <p><span className="font-semibold text-slate-400">Details:</span> {item.details}</p>}
-                                        </div>
-                                        <div className="absolute bottom-4 right-4 flex gap-2">
-                                            <button
-                                                onClick={() => handleEditPPE(item)}
-                                                className="text-slate-300 hover:text-blue-500"
-                                            >
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeletePPE(item.id)}
-                                                className="text-slate-300 hover:text-red-500"
-                                            >
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Add Modal */}
-                        {showAddModal && (
-                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                                <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-6 animate-scale-in">
-                                    <h3 className="text-xl font-bold mb-4">{editingId ? t.my_ppe.editBtn : t.my_ppe.addBtn}</h3>
-                                    <form onSubmit={handleSavePPE} className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">{t.my_ppe.fields.name}</label>
-                                            <select
-                                                required
-                                                value={newItem.name}
-                                                onChange={e => setNewItem({ ...newItem, name: e.target.value })}
-                                                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800"
-                                            >
-                                                <option value="">Select PPE</option>
-                                                {PPE_ITEMS.map(item => (
-                                                    <option key={item} value={item}>{item}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-slate-700 mb-1">{t.my_ppe.fields.count}</label>
-                                                <input
-                                                    type="number"
-                                                    min="1"
-                                                    value={newItem.count}
-                                                    onChange={e => setNewItem({ ...newItem, count: e.target.value })}
-                                                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-slate-700 mb-1">{t.my_ppe.fields.age}</label>
-                                                <input
-                                                    type="number"
-                                                    value={newItem.age_months}
-                                                    onChange={e => setNewItem({ ...newItem, age_months: e.target.value })}
-                                                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-1 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-slate-700 mb-1">{t.my_ppe.fields.condition}</label>
-                                                <select
-                                                    value={newItem.condition}
-                                                    onChange={e => setNewItem({ ...newItem, condition: e.target.value })}
-                                                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800"
-                                                >
-                                                    <option value="Good">Good</option>
-                                                    <option value="Fair">Fair</option>
-                                                    <option value="Damaged">Damaged</option>
-                                                    <option value="Expired">Expired</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">{t.my_ppe.fields.details}</label>
-                                            <textarea
-                                                rows="2"
-                                                value={newItem.details}
-                                                onChange={e => setNewItem({ ...newItem, details: e.target.value })}
-                                                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
-                                            ></textarea>
-                                        </div>
-                                        <div className="flex gap-3 pt-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowAddModal(false)}
-                                                className="flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200"
-                                            >
-                                                Cancel
-                                            </button>
-                                            <button
-                                                type="submit"
-                                                className="flex-1 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700"
-                                            >
-                                                Save
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        )}
                     </div>
                 )}
-
                 {activeTab === 'report' && (
                     <div className="max-w-2xl mx-auto bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-600 p-8">
                         <div className="text-center mb-8">
