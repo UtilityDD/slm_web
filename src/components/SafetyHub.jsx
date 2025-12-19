@@ -265,31 +265,31 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
 
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="compact-container py-6 sm:py-10 mb-20">
             {/* Header Section */}
             <div className="mb-8 text-center">
-                <div className="inline-block p-3 rounded-full bg-orange-100 text-orange-600 text-3xl mb-4">
+                <div className="inline-block p-2.5 rounded-full bg-orange-100 text-orange-600 text-2xl mb-3">
                     🦺
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">
                     {language === 'en' ? (
                         <>Safety <span className="text-orange-600">Hub</span></>
                     ) : (
                         <>{t.title}</>
                     )}
                 </h1>
-                <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
                     {t.subtitle}
                 </p>
             </div>
 
-            {/* Navigation Tabs */}
-            <div className="flex flex-wrap justify-center gap-2 mb-10">
+            {/* Navigation Tabs - Compact */}
+            <div className="flex flex-wrap justify-center gap-2 mb-8">
                 {['protocols', 'training', 'my_ppe', 'report'].map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === tab
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === tab
                             ? 'bg-orange-600 text-white shadow-md'
                             : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-orange-50 border border-slate-200 dark:border-slate-600'
                             }`}
@@ -303,31 +303,31 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
             <div className="animate-slide-down">
                 {activeTab === 'protocols' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Featured Protocol */}
-                        <div className="md:col-span-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-3xl p-8 text-white relative overflow-hidden shadow-lg">
+                        {/* Featured Protocol - Compact */}
+                        <div className="md:col-span-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden shadow-lg">
                             <div className="absolute top-0 right-0 w-64 h-64 bg-white dark:bg-slate-800/10 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3"></div>
                             <div className="relative z-10">
-                                <h2 className="text-2xl font-bold mb-2">{t.protocols.title}</h2>
-                                <p className="text-orange-100 mb-6 max-w-xl">{t.protocols.desc}</p>
-                                <div className="flex gap-4">
-                                    <button className="px-6 py-3 bg-white dark:bg-slate-800 text-orange-600 rounded-xl font-bold hover:bg-orange-50 transition-all">
+                                <h2 className="text-xl font-bold mb-1">{t.protocols.title}</h2>
+                                <p className="text-orange-100 mb-4 max-w-xl text-sm">{t.protocols.desc}</p>
+                                <div className="flex gap-3">
+                                    <button className="px-5 py-2 bg-white dark:bg-slate-800 text-orange-600 rounded-xl font-bold hover:bg-orange-50 transition-all text-sm">
                                         Download PDF
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Protocol Categories */}
+                        {/* Protocol Categories - Compact */}
                         {t.protocols.categories.map((category, index) => (
-                            <div key={index} className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-600 hover:border-orange-200 hover:shadow-md transition-all cursor-pointer group">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                            <div key={index} className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-600 hover:border-orange-200 hover:shadow-md transition-all cursor-pointer group">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
                                         {index === 0 ? '⚡' : index === 1 ? '🔧' : index === 2 ? '⛈️' : '🩹'}
                                     </div>
                                     <span className="text-slate-400">→</span>
                                 </div>
-                                <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100 mb-1">{category}</h3>
-                                <p className="text-sm text-slate-500">12 Guidelines</p>
+                                <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 mb-0.5">{category}</h3>
+                                <p className="text-xs text-slate-500">12 Guidelines</p>
                             </div>
                         ))}
                     </div>

@@ -436,21 +436,21 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                 </div>
 
                                 {/* Main Content */}
-                                <div className="text-center mb-8">
-                                    <h3 className="text-3xl font-black text-slate-900 dark:text-slate-100 mb-2 leading-tight">
+                                <div className="text-center mb-6">
+                                    <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-1 leading-tight">
                                         {language === 'en' ? '5 Quizzes Every Hour!' : 'প্রতি ঘন্টায় ৫টি কুইজ!'}
                                     </h3>
-                                    <p className="text-blue-600 dark:text-blue-400 font-bold text-lg mb-4">
+                                    <p className="text-blue-600 dark:text-blue-400 font-bold text-base mb-3">
                                         {language === 'en' ? 'Learn & Win Recognition' : 'শিখুন এবং স্বীকৃতি জিতুন'}
                                     </p>
-                                    <div className="flex items-center justify-center gap-6 text-sm text-slate-500 dark:text-slate-400">
+                                    <div className="flex items-center justify-center gap-4 text-xs text-slate-500 dark:text-slate-400">
                                         <div className="flex flex-col items-center">
-                                            <span className="text-xl mb-1">📝</span>
+                                            <span className="text-lg mb-0.5">📝</span>
                                             <span className="font-medium">5 {t.questions}</span>
                                         </div>
-                                        <div className="w-px h-8 bg-slate-100 dark:bg-slate-700"></div>
+                                        <div className="w-px h-6 bg-slate-100 dark:bg-slate-700"></div>
                                         <div className="flex flex-col items-center">
-                                            <span className="text-xl mb-1">💎</span>
+                                            <span className="text-lg mb-0.5">💎</span>
                                             <span className="font-medium">50 {t.points}</span>
                                         </div>
                                     </div>
@@ -465,7 +465,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                         const now = getSyncedTime();
                                         return last.getHours() === now.getHours() && last.getDate() === now.getDate();
                                     })()}
-                                    className={`w-full py-4 rounded-2xl font-bold transition-all duration-300 transform active:scale-95 flex items-center justify-center gap-3 shadow-lg ${(() => {
+                                    className={`w-full py-3 rounded-xl font-bold transition-all duration-300 transform active:scale-95 flex items-center justify-center gap-2 shadow-md text-sm ${(() => {
                                         if (!lastAttemptTime) return 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200 dark:shadow-none';
                                         const last = new Date(lastAttemptTime);
                                         const now = getSyncedTime();
@@ -530,10 +530,10 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
             {/* Leaderboard - Minimal List */}
             <div className="max-w-3xl mx-auto animate-fade-in" style={{ animationDelay: '200ms' }}>
-                <h3 className="text-center font-bold text-slate-800 dark:text-slate-200 mb-8 flex items-center justify-center gap-2">
+                <h3 className="text-center font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center justify-center gap-2 text-sm">
                     <span>🏅</span> {t.leaderboard}
                 </h3>
-                <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden divide-y divide-slate-100">
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden divide-y divide-slate-50">
                     {loading ? (
                         <>
                             <SkeletonRow />
@@ -545,18 +545,18 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                     ) : (
                         <>
                             {leaderboard.map((item, index) => (
-                                <div key={index} className="flex items-center p-4 sm:p-6 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                    <div className="font-bold text-slate-300 w-8 text-lg">#{index + 1}</div>
-                                    <div className="flex-shrink-0 mr-4">
-                                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-100 flex items-center justify-center text-lg font-bold text-slate-600 dark:text-slate-400 overflow-hidden">
+                                <div key={index} className="flex items-center p-3 sm:p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                    <div className="font-bold text-slate-300 w-6 text-base">#{index + 1}</div>
+                                    <div className="flex-shrink-0 mr-3">
+                                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-100 flex items-center justify-center text-base font-bold text-slate-600 dark:text-slate-400 overflow-hidden">
                                             {item.avatar_url ? <img src={item.avatar_url} alt="" className="w-full h-full object-cover" /> : (item.full_name?.[0] || 'U')}
                                         </div>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm sm:text-lg font-bold text-slate-900 dark:text-slate-100 truncate">
+                                        <p className="text-xs sm:text-base font-bold text-slate-900 dark:text-slate-100 truncate">
                                             {item.full_name || 'Anonymous'}
                                         </p>
-                                        <p className="text-xs sm:text-sm text-slate-500 truncate">
+                                        <p className="text-[10px] sm:text-xs text-slate-500 truncate">
                                             {item.district || 'West Bengal'}
                                         </p>
                                     </div>

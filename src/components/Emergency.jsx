@@ -316,30 +316,30 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
     }[language];
 
     return (
-        <div className="max-w-7xl mx-auto mobile-container mobile-section">
+        <div className="compact-container py-6 sm:py-10 mb-20">
             <Toast message={toast.message} type={toast.type} show={toast.show} onDismiss={() => setToast(t => ({ ...t, show: false }))} />
 
-            {/* Modern Header */}
+            {/* Modern Header - Compact */}
             <div className="mb-8">
-                <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center gap-3 mb-2">
                     <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
-                        <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                     </div>
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100">{t.title}</h1>
-                        <p className="text-sm text-slate-500">{t.subtitle}</p>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-0.5">{t.title}</h1>
+                        <p className="text-xs text-slate-500">{t.subtitle}</p>
                     </div>
                 </div>
             </div>
 
-            {/* Refined Tabs */}
+            {/* Refined Tabs - Compact */}
             <div className="mb-6">
-                <div className="bg-slate-100 p-1 rounded-xl inline-flex gap-1">
+                <div className="bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl inline-flex gap-1">
                     <button
                         onClick={() => setActiveTab('blood')}
-                        className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'blood'
+                        className={`px-5 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === 'blood'
                             ? 'bg-white dark:bg-slate-800 text-red-600 elevation-1'
                             : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-slate-100'
                             }`}
@@ -348,7 +348,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                     </button>
                     <button
                         onClick={() => setActiveTab('services')}
-                        className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'services'
+                        className={`px-5 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === 'services'
                             ? 'bg-white dark:bg-slate-800 text-blue-600 elevation-1'
                             : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-slate-100'
                             }`}
@@ -361,23 +361,23 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
             {/* Content Area */}
             {activeTab === 'blood' ? (
                 <div className="space-y-6">
-                    {/* Clean Hero Card */}
-                    <div className="material-card elevation-2 p-6 sm:p-8">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                    {/* Clean Hero Card - Compact */}
+                    <div className="material-card elevation-2 p-5 sm:p-6">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <div className="flex-1">
-                                <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.blood.heroTitle}</h2>
-                                <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">{t.blood.heroDesc}</p>
+                                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">{t.blood.heroTitle}</h2>
+                                <p className="text-slate-600 dark:text-slate-400 text-xs mb-4">{t.blood.heroDesc}</p>
                                 <button
                                     onClick={() => {
                                         if (!user) setCurrentView('login');
                                         else setShowRegisterModal(true);
                                     }}
-                                    className="material-button-primary ripple"
+                                    className="material-button-primary ripple text-xs px-4 py-2"
                                 >
                                     {t.blood.registerBtn}
                                 </button>
                             </div>
-                            <div className="hidden sm:block text-6xl opacity-10">
+                            <div className="hidden sm:block text-5xl opacity-10">
                                 ❤️
                             </div>
                         </div>
