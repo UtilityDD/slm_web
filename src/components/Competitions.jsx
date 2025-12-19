@@ -121,7 +121,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     };
 
     const fetchHourlyQuiz = async () => {
-        const cachedQuiz = cacheHelper.get('hourly_quiz');
+        const cachedQuiz = cacheHelper.get('hourly_quiz_v2');
         if (cachedQuiz) {
             setHourlyQuiz(cachedQuiz);
             return;
@@ -154,7 +154,9 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                 }
 
                 setHourlyQuiz(quizData);
-                cacheHelper.set('hourly_quiz', quizData, 10); // Cache for 10 mins
+                cacheHelper.set('hourly_quiz_v2', quizData, 10); // Cache for 10 mins
+            } else {
+                console.error('Failed to fetch hourly quiz:', response.status);
             }
         } catch (error) {
             console.error('Error fetching hourly quiz:', error);
@@ -384,6 +386,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
             // Refresh lock status
             if (activeQuiz && activeQuiz.id) {
+                cacheHelper.clear(`last_attempt_${user.id}_${activeQuiz.id}`);
                 fetchLastAttempt(activeQuiz.id);
             }
 
@@ -436,13 +439,6 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                     <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
                                         🏆
                                     </div>
-                                    <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full text-[10px] font-bold uppercase tracking-widest border border-blue-200 dark:border-blue-800">
-                                        {t.hourly}
-                                    </span>
-                                    <div className="flex items-center justify-center gap-2 mt-4 text-slate-400 dark:text-slate-500 font-mono text-sm">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        <span className="font-bold">{timeLeft}</span>
-                                    </div>
                                 </div>
 
                                 <div className="relative z-10 mb-8">
@@ -466,71 +462,72 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                 </div>
 
                                 {/* Action Button */}
-                                <button
-                                    onClick={() => startQuiz(hourlyQuiz)}
-                                    disabled={(() => {
-                                        if (!lastAttemptTime) return false;
-                                        const last = new Date(lastAttemptTime);
-                                        const now = getSyncedTime();
-                                        return last.getHours() === now.getHours() && last.getDate() === now.getDate();
-                                    })()}
-                                    className={`w-full material-button-primary ${(() => {
-                                        if (!lastAttemptTime) return '';
-                                        const last = new Date(lastAttemptTime);
-                                        const now = getSyncedTime();
-                                        const isLocked =
-                                            last.getFullYear() === now.getFullYear() &&
-                                            last.getMonth() === now.getMonth() &&
-                                            last.getDate() === now.getDate() &&
-                                            last.getHours() === now.getHours();
-
-                                        return isLocked
-                                            ? 'from-slate-100 to-slate-100 dark:from-slate-700 dark:to-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
-                                            : '';
-                                    })()
-                                        }`}
-                                >
-                                    {(() => {
-                                        if (!lastAttemptTime) return (
-                                            <>
-                                                <span>{t.play}</span>
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                                            </>
-                                        );
-                                        const last = new Date(lastAttemptTime);
-                                        const now = getSyncedTime();
-                                        const isLocked =
-                                            last.getFullYear() === now.getFullYear() &&
-                                            last.getMonth() === now.getMonth() &&
-                                            last.getDate() === now.getDate() &&
-                                            last.getHours() === now.getHours();
-
-                                        if (isLocked) {
-                                            const minutesLeft = 60 - now.getMinutes();
-                                            return (
-                                                <>
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                                    <span>Next in {minutesLeft}m</span>
-                                                </>
-                                            );
-                                        }
+                                {/* Action Area */}
+                                {(() => {
+                                    if (!lastAttemptTime) {
                                         return (
-                                            <>
+                                            <button
+                                                onClick={() => startQuiz(hourlyQuiz)}
+                                                className="w-full material-button-primary"
+                                            >
                                                 <span>{t.play}</span>
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                                            </>
+                                            </button>
                                         );
-                                    })()}
-                                </button>
+                                    }
 
-                                {lastAttemptTime && (
-                                    <button
-                                        onClick={startReview}
-                                        className="w-full mt-4 py-3 rounded-2xl font-bold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-sm"
-                                    >
-                                        Review Last Attempt
-                                    </button>
-                                )}
+                                    const last = new Date(lastAttemptTime);
+                                    const now = getSyncedTime();
+                                    const isLocked =
+                                        last.getFullYear() === now.getFullYear() &&
+                                        last.getMonth() === now.getMonth() &&
+                                        last.getDate() === now.getDate() &&
+                                        last.getHours() === now.getHours();
+
+                                    if (isLocked) {
+                                        const minutesLeft = 59 - now.getMinutes();
+                                        const secondsLeft = 59 - now.getSeconds();
+                                        const timeString = `${minutesLeft}:${secondsLeft < 10 ? '0' : ''}${secondsLeft}`;
+
+                                        return (
+                                            <div className="space-y-4 animate-fade-in">
+                                                {/* Locked Status Card */}
+                                                <div className="bg-slate-100 dark:bg-slate-700/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-600">
+                                                    <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Next Quiz In</div>
+                                                    <div className="text-2xl font-mono font-black text-slate-700 dark:text-slate-300">
+                                                        {timeString}
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    onClick={startReview}
+                                                    className="w-full py-3 rounded-xl font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all text-sm flex items-center justify-center gap-2"
+                                                >
+                                                    <span>Review Last Attempt</span>
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                                </button>
+                                            </div>
+                                        );
+                                    }
+
+                                    return (
+                                        <div className="space-y-3">
+                                            <button
+                                                onClick={() => startQuiz(hourlyQuiz)}
+                                                className="w-full material-button-primary"
+                                            >
+                                                <span>{t.play}</span>
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                                            </button>
+                                            <button
+                                                onClick={startReview}
+                                                className="w-full py-3 rounded-xl font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all text-sm"
+                                            >
+                                                Review Last Attempt
+                                            </button>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         </div>
                     )
