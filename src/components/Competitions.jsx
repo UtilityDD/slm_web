@@ -194,13 +194,16 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         }
     }, [user, hourlyQuiz]);
 
-    const fetchUserRank = async () => {
+    const fetchUserRank = async (forceRefresh = false) => {
         if (!user) return;
         const cacheKey = `user_rank_${user.id}`;
-        const cachedRank = cacheHelper.get(cacheKey);
-        if (cachedRank) {
-            setUserRank(cachedRank);
-            return;
+
+        if (!forceRefresh) {
+            const cachedRank = cacheHelper.get(cacheKey);
+            if (cachedRank) {
+                setUserRank(cachedRank);
+                return;
+            }
         }
 
         try {
@@ -227,12 +230,14 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         }
     };
 
-    const fetchLeaderboard = async () => {
-        const cachedLeaderboard = cacheHelper.get('leaderboard_top_10');
-        if (cachedLeaderboard) {
-            setLeaderboard(cachedLeaderboard);
-            if (user) fetchUserRank();
-            return;
+    const fetchLeaderboard = async (forceRefresh = false) => {
+        if (!forceRefresh) {
+            const cachedLeaderboard = cacheHelper.get('leaderboard_top_10');
+            if (cachedLeaderboard) {
+                setLeaderboard(cachedLeaderboard);
+                if (user) fetchUserRank();
+                return;
+            }
         }
 
         try {
@@ -252,7 +257,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             setLeaderboard(formattedData || []);
             cacheHelper.set('leaderboard_top_10', formattedData || [], 5); // Cache for 5 mins
 
-            if (user) fetchUserRank();
+            if (user) fetchUserRank(forceRefresh);
 
         } catch (error) {
             console.error('Error fetching leaderboard:', error);
@@ -372,10 +377,11 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
             if (error) throw error;
 
-            // Refresh leaderboard to show updated score immediately
-            fetchLeaderboard();
-            // Refresh my rank
-            fetchUserRank();
+            // Refresh leaderboard to show updated score immediately (bypass cache)
+            await fetchLeaderboard(true);
+            // Refresh my rank (bypass cache)
+            await fetchUserRank(true);
+
             // Refresh lock status
             if (activeQuiz && activeQuiz.id) {
                 fetchLastAttempt(activeQuiz.id);
