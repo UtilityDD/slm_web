@@ -3,47 +3,11 @@ import { QRCodeCanvas } from 'qrcode.react';
 import html2canvas from 'html2canvas';
 
 export default function Campaign({ language = 'en', setCurrentView }) {
-    const [selectedTemplate, setSelectedTemplate] = useState('professional');
     const posterRef = useRef(null);
     const [isDownloading, setIsDownloading] = useState(false);
 
     // Placeholder URL - User can update this later
     const APP_URL = "https://smartlineman.app";
-
-    const templates = {
-        professional: {
-            name: "Professional",
-            bg: "bg-gradient-to-br from-slate-900 to-slate-800",
-            text: "text-white",
-            accent: "text-blue-400",
-            border: "border-blue-500/30",
-            description: "Clean and corporate look suitable for official communications."
-        },
-        safety: {
-            name: "Safety First",
-            bg: "bg-gradient-to-br from-orange-600 to-red-700",
-            text: "text-white",
-            accent: "text-yellow-300",
-            border: "border-yellow-500/30",
-            description: "High visibility design emphasizing safety protocols."
-        },
-        community: {
-            name: "Community",
-            bg: "bg-gradient-to-br from-emerald-600 to-teal-700",
-            text: "text-white",
-            accent: "text-emerald-200",
-            border: "border-emerald-400/30",
-            description: "Friendly and inviting design for team sharing."
-        },
-        light: {
-            name: "Clean Light",
-            bg: "bg-gradient-to-br from-slate-50 to-white",
-            text: "text-slate-900",
-            accent: "text-blue-600",
-            border: "border-slate-200",
-            description: "Minimalist light theme design."
-        }
-    };
 
     const handleDownload = async () => {
         if (!posterRef.current) return;
@@ -51,13 +15,13 @@ export default function Campaign({ language = 'en', setCurrentView }) {
 
         try {
             const canvas = await html2canvas(posterRef.current, {
-                scale: 2, // Higher resolution
+                scale: 3, // High resolution for print
                 useCORS: true,
                 backgroundColor: null
             });
 
             const link = document.createElement('a');
-            link.download = `smartlineman-campaign-${selectedTemplate}.png`;
+            link.download = `smartlineman-campaign.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
         } catch (error) {
@@ -68,170 +32,133 @@ export default function Campaign({ language = 'en', setCurrentView }) {
         }
     };
 
+    const handleWhatsAppShare = () => {
+        const text = language === 'en'
+            ? "⚡ Check out SmartLineman - The ultimate safety and community app for West Bengal Linemen! Download here: " + APP_URL
+            : "⚡ স্মার্ট লাইনম্যান অ্যাপটি দেখুন - পশ্চিমবঙ্গের লাইনম্যানদের জন্য সেরা নিরাপত্তা এবং কমিউনিটি অ্যাপ! ডাউনলোড করুন: " + APP_URL;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    };
+
     const t = {
         en: {
-            title: "Campaign Center",
-            subtitle: "Generate professional posters to share SmartLineman with your team.",
-            selectTemplate: "Select Template",
-            download: "Download Poster",
-            downloading: "Generating...",
-            scanMe: "SCAN TO DOWNLOAD",
-            tagline: "Empowering Linemen with Safety & Knowledge",
-            features: ["Safety Protocols", "Competitions", "Emergency Network"]
+            title: "Share SmartLineman",
+            subtitle: "Help your colleagues stay safe and connected.",
+            download: "Save Poster",
+            whatsapp: "Share on WhatsApp",
+            downloading: "Saving...",
+            scanMe: "Scan to Download",
+            tagline: "Safety • Community • Knowledge"
         },
         bn: {
-            title: "ক্যাম্পেইন সেন্টার",
-            subtitle: "আপনার দলের সাথে স্মার্টলাইনম্যান শেয়ার করতে পেশাদার পোস্টার তৈরি করুন।",
-            selectTemplate: "টেমপ্লেট নির্বাচন করুন",
-            download: "পোস্টার ডাউনলোড করুন",
-            downloading: "তৈরি হচ্ছে...",
+            title: "স্মার্ট লাইনম্যান শেয়ার করুন",
+            subtitle: "আপনার সহকর্মীদের নিরাপদ এবং সংযুক্ত থাকতে সাহায্য করুন।",
+            download: "পোস্টার সেভ করুন",
+            whatsapp: "হোয়াটসঅ্যাপে শেয়ার করুন",
+            downloading: "সেভ হচ্ছে...",
             scanMe: "ডাউনলোড করতে স্ক্যান করুন",
-            tagline: "নিরাপত্তা এবং জ্ঞানের সাথে লাইনম্যানদের ক্ষমতায়ন",
-            features: ["নিরাপত্তা প্রোটোকল", "প্রতিযোগিতা", "জরুরী নেটওয়ার্ক"]
+            tagline: "নিরাপত্তা • কমিউনিটি • জ্ঞান"
         }
     }[language];
 
-    const currentTheme = templates[selectedTemplate];
-
     return (
-        <div className="compact-container py-6 sm:py-10 mb-20 animate-fade-in">
+        <div className="compact-container py-8 sm:py-12 mb-20 animate-fade-in min-h-screen flex flex-col items-center justify-center">
             {/* Header */}
-            <div className="text-center mb-8">
-                <div className="inline-block p-3 rounded-2xl bg-indigo-100 text-indigo-600 text-2xl mb-3 shadow-sm">
-                    📢
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+            <div className="text-center mb-10 max-w-xl">
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-3 tracking-tight">
                     {t.title}
                 </h1>
-                <p className="text-sm text-slate-600 dark:text-slate-400 max-w-lg mx-auto">
+                <p className="text-base text-slate-600 dark:text-slate-400">
                     {t.subtitle}
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Controls */}
-                <div className="lg:col-span-4 space-y-6">
-                    <div className="material-card p-6">
-                        <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs">1</span>
-                            {t.selectTemplate}
-                        </h3>
-                        <div className="space-y-3">
-                            {Object.entries(templates).map(([key, template]) => (
-                                <div
-                                    key={key}
-                                    onClick={() => setSelectedTemplate(key)}
-                                    className={`p-3 rounded-xl border-2 cursor-pointer transition-all flex items-center gap-3 ${selectedTemplate === key
-                                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                        : 'border-transparent hover:bg-slate-50 dark:hover:bg-slate-800'
-                                        }`}
-                                >
-                                    <div className={`w-10 h-10 rounded-lg ${template.bg} shadow-sm`}></div>
-                                    <div className="flex-1">
-                                        <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">{template.name}</h4>
-                                        <p className="text-[10px] text-slate-500 leading-tight">{template.description}</p>
-                                    </div>
-                                    {selectedTemplate === key && (
-                                        <div className="text-blue-500">✓</div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <button
-                        onClick={handleDownload}
-                        disabled={isDownloading}
-                        className="w-full material-button-primary py-4 text-lg shadow-xl shadow-blue-500/20"
-                    >
-                        {isDownloading ? (
-                            <>
-                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                {t.downloading}
-                            </>
-                        ) : (
-                            <>
-                                <span>⬇️</span> {t.download}
-                            </>
-                        )}
-                    </button>
-
-                    <button
-                        onClick={() => setCurrentView('home')}
-                        className="w-full py-3 text-sm font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
-                    >
-                        Back to Home
-                    </button>
-                </div>
-
-                {/* Preview Area */}
-                <div className="lg:col-span-8 flex items-start justify-center bg-slate-100 dark:bg-slate-900/50 rounded-3xl p-4 sm:p-8 border border-slate-200 dark:border-slate-800 min-h-[600px]">
-                    {/* The Poster */}
+            {/* Poster Preview - Ultra Minimal */}
+            <div className="relative group mb-10">
+                <div className="absolute -inset-4 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 rounded-[2.5rem] blur-2xl opacity-50"></div>
+                <div className="relative bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-700">
                     <div
                         ref={posterRef}
-                        className={`w-full max-w-[400px] aspect-[3/4] ${currentTheme.bg} relative overflow-hidden shadow-2xl flex flex-col items-center text-center p-8 rounded-none`}
+                        className="w-[300px] aspect-[3/4] bg-white relative overflow-hidden flex flex-col items-center text-center p-8"
                         style={{ fontFamily: "'Inter', sans-serif" }}
                     >
-                        {/* Decorative Elements */}
-                        <div className="absolute top-0 left-0 w-full h-32 bg-white/10 blur-3xl transform -translate-y-1/2"></div>
-                        <div className="absolute bottom-0 right-0 w-64 h-64 bg-black/10 blur-3xl transform translate-y-1/2 translate-x-1/2"></div>
+                        {/* Minimal Content */}
+                        <div className="flex-1 flex flex-col items-center justify-center w-full z-10">
+                            {/* Logo */}
+                            <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-3xl text-white shadow-lg shadow-blue-200 mb-6">
+                                ⚡
+                            </div>
 
-                        {/* Content */}
-                        <div className="relative z-10 flex flex-col h-full w-full">
-                            {/* Logo Area */}
-                            <div className="mb-8">
-                                <div className="w-20 h-20 bg-white rounded-2xl mx-auto flex items-center justify-center text-4xl shadow-lg mb-4">
-                                    ⚡
-                                </div>
-                                <h2 className={`text-3xl font-black tracking-tighter ${currentTheme.text}`}>
-                                    Smart<span className={currentTheme.accent}>Lineman</span>
-                                </h2>
+                            {/* App Name */}
+                            <h2 className="text-2xl font-black tracking-tighter text-slate-900 mb-1">
+                                Smart<span className="text-blue-600">Lineman</span>
+                            </h2>
+                            <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-8">
+                                West Bengal
+                            </p>
+
+                            {/* QR Code */}
+                            <div className="bg-white p-3 rounded-2xl border-2 border-slate-100 shadow-sm mb-8">
+                                <QRCodeCanvas
+                                    value={APP_URL}
+                                    size={140}
+                                    level={"H"}
+                                    includeMargin={true}
+                                    imageSettings={{
+                                        src: "/vite.svg",
+                                        height: 20,
+                                        width: 20,
+                                        excavate: true,
+                                    }}
+                                />
                             </div>
 
                             {/* Tagline */}
-                            <div className="mb-10">
-                                <p className={`text-lg font-medium leading-relaxed opacity-90 ${currentTheme.text}`}>
-                                    {t.tagline}
-                                </p>
-                            </div>
-
-                            {/* QR Code Container */}
-                            <div className="flex-1 flex flex-col items-center justify-center">
-                                <div className="bg-white p-4 rounded-3xl shadow-2xl transform rotate-3 transition-transform hover:rotate-0 duration-500">
-                                    <QRCodeCanvas
-                                        value={APP_URL}
-                                        size={180}
-                                        level={"H"}
-                                        includeMargin={true}
-                                        imageSettings={{
-                                            src: "/vite.svg", // Using vite logo as placeholder if app logo not avail
-                                            x: undefined,
-                                            y: undefined,
-                                            height: 24,
-                                            width: 24,
-                                            excavate: true,
-                                        }}
-                                    />
-                                </div>
-                                <div className={`mt-6 font-bold tracking-widest text-sm uppercase ${currentTheme.accent}`}>
-                                    {t.scanMe}
-                                </div>
-                            </div>
-
-                            {/* Features Footer */}
-                            <div className={`mt-auto pt-8 border-t ${currentTheme.border}`}>
-                                <div className="flex justify-center gap-4 text-[10px] font-bold uppercase tracking-wider opacity-80">
-                                    {t.features.map((feature, i) => (
-                                        <span key={i} className={currentTheme.text}>{feature}</span>
-                                    ))}
-                                </div>
-                            </div>
+                            <p className="text-sm font-medium text-slate-500 mb-2">
+                                {t.tagline}
+                            </p>
+                            <p className="text-[10px] text-slate-400">
+                                smartlineman.app
+                            </p>
                         </div>
+
+                        {/* Bottom Accent */}
+                        <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
                     </div>
                 </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col w-full max-w-xs gap-3">
+                <button
+                    onClick={handleWhatsAppShare}
+                    className="w-full py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl font-bold shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5"
+                >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                    </svg>
+                    {t.whatsapp}
+                </button>
+
+                <button
+                    onClick={handleDownload}
+                    disabled={isDownloading}
+                    className="w-full py-3.5 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 flex items-center justify-center gap-2 transition-all"
+                >
+                    {isDownloading ? (
+                        <span className="animate-pulse">{t.downloading}</span>
+                    ) : (
+                        <>
+                            <span>⬇️</span> {t.download}
+                        </>
+                    )}
+                </button>
+
+                <button
+                    onClick={() => setCurrentView('home')}
+                    className="w-full py-3 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                >
+                    Back
+                </button>
             </div>
         </div>
     );
