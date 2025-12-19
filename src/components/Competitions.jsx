@@ -413,11 +413,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                     🏆
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-0.5">
-                    {language === 'en' ? (
-                        <>Compe<span className="text-blue-600">titions</span></>
-                    ) : (
-                        <>{t.title}</>
-                    )}
+                    {t.title}
                 </h1>
             </div>
 

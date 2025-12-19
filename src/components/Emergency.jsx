@@ -322,7 +322,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-0.5">
                     {language === 'en' ? (
-                        <>Emer<span className="text-red-600">gency</span></>
+                        <>Emergency <span className="text-red-600">Hub</span></>
                     ) : (
                         <>{t.title}</>
                     )}
