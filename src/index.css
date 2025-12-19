@@ -390,19 +390,6 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Compact Utilities */
-.compact-container {
-  @apply max-w-5xl mx-auto px-4 sm:px-6;
-}
-
-.section-spacing {
-  @apply mb-6 sm:mb-8;
-}
-
-.card-padding {
-  @apply p-4 sm:p-5;
-}
-
 /* Improved mobile typography - More Compact */
 @media (max-width: 767px) {
   h1 {

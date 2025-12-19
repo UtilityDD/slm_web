@@ -391,7 +391,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
 
                             <div className="relative z-10 flex flex-col items-center justify-center h-full px-8">
                                 {/* Rule Text */}
-                                <div className="max-w-2xl text-center mb-8">
+                                <div key={currentRuleIndex} className="max-w-2xl text-center mb-8 animate-slide-in-left">
                                     <p className="text-white text-xl sm:text-3xl font-bold leading-relaxed tracking-tight">
                                         {SAFETY_RULES[currentRuleIndex].rule}
                                     </p>
