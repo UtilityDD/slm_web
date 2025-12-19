@@ -42,28 +42,24 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
 
     const SAFETY_RULES = [
         {
-            title: language === 'en' ? "PPE Compliance" : "পিপিই কমপ্লায়েন্স",
-            rule: language === 'en' ? "Always wear your safety helmet, shoes, and reflective jacket before entering the site." : "সাইটে প্রবেশের আগে সর্বদা আপনার সুরক্ষা হেলমেট, জুতো এবং প্রতিফলিত জ্যাকেট পরুন।",
-            icon: "🦺",
-            color: "from-orange-500 to-orange-600"
+            rule: language === 'en' ? "Min. Ground Clearance for LT line is 15 ft./ 4.6 meter." : "এলটি লাইনের জন্য ন্যূনতম গ্রাউন্ড ক্লিয়ারেন্স হল ১৫ ফুট/ ৪.৬ মিটার।",
+            icon: "📏",
+            color: "from-blue-600 to-indigo-600"
         },
         {
-            title: language === 'en' ? "Climbing Safety" : "আরোহণের নিরাপত্তা",
-            rule: language === 'en' ? "Double-check your safety harness and belt for any signs of wear or damage before climbing." : "আরোহণের আগে আপনার সুরক্ষা হারনেস এবং বেল্ট কোনও পরিধান বা ক্ষতির চিহ্নের জন্য দুবার পরীক্ষা করুন।",
-            icon: "🧗",
-            color: "from-blue-500 to-blue-600"
-        },
-        {
-            title: language === 'en' ? "Electrical Hazard" : "বৈদ্যুতিক বিপদ",
-            rule: language === 'en' ? "Maintain a minimum safe distance from high-voltage lines and always use insulated tools." : "উচ্চ-ভোল্টেজ লাইন থেকে ন্যূনতম নিরাপদ দূরত্ব বজায় রাখুন এবং সর্বদা ইনসুলেটেড সরঞ্জাম ব্যবহার করুন।",
+            rule: language === 'en' ? "Wear PPE -> Shut down -> Earthing -> Discharge -> Work." : "পিপিই পরুন -> শাট ডাউন -> আর্থিং -> ডিসচার্জ -> কাজ করুন।",
             icon: "⚡",
-            color: "from-red-500 to-red-600"
+            color: "from-orange-600 to-red-600"
         },
         {
-            title: language === 'en' ? "Tool Inspection" : "সরঞ্জাম পরিদর্শন",
-            rule: language === 'en' ? "Inspect all tools and equipment for defects before use. Damaged tools must be reported immediately." : "ব্যবহারের আগে ত্রুটির জন্য সমস্ত সরঞ্জাম এবং সরঞ্জাম পরিদর্শন করুন। ক্ষতিগ্রস্ত সরঞ্জাম অবিলম্বে রিপোর্ট করা আবশ্যক।",
+            rule: language === 'en' ? "Always use a safety belt and helmet while working at height." : "উচ্চতায় কাজ করার সময় সর্বদা সুরক্ষা বেল্ট এবং হেলমেট ব্যবহার করুন।",
+            icon: "🧗",
+            color: "from-emerald-600 to-teal-600"
+        },
+        {
+            rule: language === 'en' ? "Check tools for damage before starting any maintenance work." : "যেকোনো রক্ষণাবেক্ষণের কাজ শুরু করার আগে সরঞ্জামগুলি ক্ষতির জন্য পরীক্ষা করুন।",
             icon: "🔧",
-            color: "from-green-500 to-green-600"
+            color: "from-slate-700 to-slate-900"
         }
     ];
 
@@ -418,11 +414,8 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                     </div>
                                 </div>
 
-                                <div className="max-w-3xl">
-                                    <h2 className="text-2xl sm:text-3xl font-black mb-4 tracking-tight leading-tight">
-                                        {SAFETY_RULES[currentRuleIndex].title}
-                                    </h2>
-                                    <p className="text-white/90 text-base sm:text-lg leading-relaxed font-medium">
+                                <div className="max-w-3xl text-center py-4">
+                                    <p className="text-white text-xl sm:text-2xl font-bold leading-relaxed tracking-tight">
                                         {SAFETY_RULES[currentRuleIndex].rule}
                                     </p>
                                 </div>
