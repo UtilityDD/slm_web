@@ -369,44 +369,39 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 {activeTab === 'protocols' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Highlighted Safety Rule Carousel - Refined */}
-                        <div className={`md:col-span-2 bg-gradient-to-br ${SAFETY_RULES[currentRuleIndex].color} rounded-3xl p-8 sm:p-10 text-white relative overflow-hidden shadow-xl transition-all duration-700 ease-in-out border border-white/10`}>
+                        <div className={`md:col-span-2 bg-gradient-to-br ${SAFETY_RULES[currentRuleIndex].color} rounded-3xl p-8 sm:p-10 text-white relative overflow-hidden shadow-xl transition-all duration-700 ease-in-out border border-white/10 min-h-[280px] flex flex-col justify-center`}>
                             <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl translate-x-1/4 -translate-y-1/4"></div>
 
-                            <div className="relative z-10">
-                                <div className="flex items-center justify-between mb-6">
-                                    <div className="flex items-center gap-3">
-                                        <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/20">
-                                            {language === 'en' ? 'Safety Protocol' : 'নিরাপত্তা প্রোটোকল'}
-                                        </span>
-                                        <div className="flex gap-1.5">
-                                            {SAFETY_RULES.map((_, i) => (
-                                                <div key={i} className={`h-1 rounded-full transition-all duration-500 ${i === currentRuleIndex ? 'bg-white w-6' : 'bg-white/30 w-2'}`}></div>
-                                            ))}
-                                        </div>
-                                    </div>
+                            {/* Navigation Arrows - Absolute Positioned */}
+                            <button
+                                onClick={prevRule}
+                                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all active:scale-90 z-20"
+                                aria-label="Previous rule"
+                            >
+                                <span className="text-xl">←</span>
+                            </button>
 
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={prevRule}
-                                            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all active:scale-90"
-                                            aria-label="Previous rule"
-                                        >
-                                            <span className="text-xl">←</span>
-                                        </button>
-                                        <button
-                                            onClick={nextRule}
-                                            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all active:scale-90"
-                                            aria-label="Next rule"
-                                        >
-                                            <span className="text-xl">→</span>
-                                        </button>
-                                    </div>
-                                </div>
+                            <button
+                                onClick={nextRule}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all active:scale-90 z-20"
+                                aria-label="Next rule"
+                            >
+                                <span className="text-xl">→</span>
+                            </button>
 
-                                <div className="max-w-3xl text-center py-4">
-                                    <p className="text-white text-xl sm:text-2xl font-bold leading-relaxed tracking-tight">
+                            <div className="relative z-10 flex flex-col items-center justify-center h-full px-8">
+                                {/* Rule Text */}
+                                <div className="max-w-2xl text-center mb-8">
+                                    <p className="text-white text-xl sm:text-3xl font-bold leading-relaxed tracking-tight">
                                         {SAFETY_RULES[currentRuleIndex].rule}
                                     </p>
+                                </div>
+
+                                {/* Indicators */}
+                                <div className="flex gap-2">
+                                    {SAFETY_RULES.map((_, i) => (
+                                        <div key={i} className={`h-1.5 rounded-full transition-all duration-500 ${i === currentRuleIndex ? 'bg-white w-8' : 'bg-white/30 w-2'}`}></div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
