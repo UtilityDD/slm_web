@@ -99,9 +99,9 @@ export default function Home({ setCurrentView, language, user, t }) {
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-white/20 transition-all"></div>
                     <div className="relative z-10 flex items-center gap-4">
                         <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-2xl shadow-sm">🏆</div>
-                        <div>
+                        <div className="flex items-center gap-3">
                             <h3 className="text-lg font-bold tracking-tight">{t.nav.competitions}</h3>
-                            <div className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-md border border-white/20 mt-1">
+                            <div className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-md border border-white/20">
                                 <span>Live</span>
                                 <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
                             </div>
