@@ -313,7 +313,6 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                     name: "আইটেমের নাম",
                     count: "পরিমাণ",
                     age: "বয়স (মাস)",
-                    age: "বয়স (মাস)",
                     condition: "অবস্থা",
                     details: "বিবরণ"
                 },

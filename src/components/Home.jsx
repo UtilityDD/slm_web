@@ -128,20 +128,6 @@ export default function Home({ setCurrentView, language, user, t }) {
                     </p>
                 </div>
 
-                {/* Campaign - New Card */}
-                <div
-                    onClick={() => setCurrentView('campaign')}
-                    className="group material-card p-5 sm:p-6 cursor-pointer bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 border-indigo-100 dark:border-indigo-800"
-                >
-                    <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform shadow-sm">📢</div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1 tracking-tight">
-                        {language === 'en' ? 'Campaign' : 'ক্যাম্পেইন'}
-                    </h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed font-medium">
-                        {language === 'en' ? 'Create posters & share app' : 'পোস্টার তৈরি করুন এবং অ্যাপ শেয়ার করুন'}
-                    </p>
-                </div>
-
                 {/* Community - Large Card 3 */}
                 <div
                     onClick={() => setCurrentView('community')}
@@ -165,6 +151,25 @@ export default function Home({ setCurrentView, language, user, t }) {
                         {language === 'en' ? 'SOS & Quick Support' : 'SOS এবং দ্রুত সহায়তা'}
                     </p>
                 </div>
+            </div>
+
+            {/* Campaign / Share App Button */}
+            <div className="flex justify-center mb-8">
+                <button
+                    onClick={() => setCurrentView('campaign')}
+                    className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl shadow-lg shadow-blue-500/30 transform transition-all hover:-translate-y-1 hover:shadow-xl flex items-center justify-center gap-3 group"
+                >
+                    <span className="text-2xl group-hover:rotate-12 transition-transform">📢</span>
+                    <div className="text-left">
+                        <div className="font-bold text-lg leading-none mb-1">
+                            {language === 'en' ? 'Share SmartLineman' : 'স্মার্ট লাইনম্যান শেয়ার করুন'}
+                        </div>
+                        <div className="text-xs text-blue-100 font-medium opacity-90">
+                            {language === 'en' ? 'Create Poster & QR Code' : 'পোস্টার এবং কিউআর কোড তৈরি করুন'}
+                        </div>
+                    </div>
+                    <span className="text-xl opacity-70 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
             </div>
         </main>
     );
