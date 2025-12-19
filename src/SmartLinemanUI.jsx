@@ -453,7 +453,7 @@ export default function SmartLinemanUI() {
               ) : (
                 <button
                   onClick={() => setCurrentView('login')}
-                  className="hidden md:inline-block material-button-primary text-xs sm:text-sm"
+                  className="hidden md:inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors"
                 >
                   {t.nav.login}
                 </button>
