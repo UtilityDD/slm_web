@@ -1,6 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+
+const CommunitySkeleton = () => (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="text-center mb-12">
+            <div className="inline-block w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-4 shimmer"></div>
+            <div className="h-10 w-64 bg-slate-200 dark:bg-slate-700 rounded mx-auto mb-3 shimmer"></div>
+            <div className="h-6 w-96 bg-slate-200 dark:bg-slate-700 rounded mx-auto shimmer"></div>
+        </div>
+
+        {/* Banner Skeleton */}
+        <div className="max-w-6xl mx-auto mb-16">
+            <div className="h-48 bg-slate-200 dark:bg-slate-700 rounded-3xl shimmer"></div>
+        </div>
+
+        {/* Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+            {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 h-80 flex flex-col items-center">
+                    <div className="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-700 mb-6 shimmer"></div>
+                    <div className="h-6 w-32 bg-slate-200 dark:bg-slate-700 rounded mb-3 shimmer"></div>
+                    <div className="h-4 w-48 bg-slate-200 dark:bg-slate-700 rounded mb-8 shimmer"></div>
+                    <div className="h-12 w-full bg-slate-200 dark:bg-slate-700 rounded-xl shimmer"></div>
+                </div>
+            ))}
+        </div>
+    </div>
+);
 
 export default function Community({ language = 'en' }) {
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setLoading(false), 600);
+        return () => clearTimeout(timer);
+    }, []);
+
     const t = {
         en: {
             title: "Community Hub",
@@ -102,6 +137,8 @@ export default function Community({ language = 'en' }) {
             link: "#"
         }
     ];
+
+    if (loading) return <CommunitySkeleton />;
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">

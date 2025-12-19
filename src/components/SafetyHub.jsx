@@ -2,6 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { cacheHelper } from '../utils/cacheHelper';
 
+const PPESkeleton = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-600 shadow-sm relative overflow-hidden">
+                <div className="flex justify-between items-start mb-4">
+                    <div className="h-6 w-32 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
+                    <div className="h-5 w-16 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
+                </div>
+                <div className="space-y-2 mb-4">
+                    <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
+                    <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
+                </div>
+                <div className="absolute bottom-4 right-4 flex gap-2">
+                    <div className="w-5 h-5 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
+                    <div className="w-5 h-5 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
+                </div>
+            </div>
+        ))}
+    </div>
+);
+
 export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     const [activeTab, setActiveTab] = useState('protocols');
     const [ppeList, setPpeList] = useState([]);
@@ -362,9 +383,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                         </div>
 
                         {loading ? (
-                            <div className="flex justify-center p-12">
-                                <div className="w-8 h-8 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin"></div>
-                            </div>
+                            <PPESkeleton />
                         ) : ppeList.length === 0 ? (
                             <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-600 border-dashed">
                                 <div className="text-4xl mb-4">📭</div>

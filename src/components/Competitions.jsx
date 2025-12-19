@@ -735,28 +735,28 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 const SkeletonCard = () => (
     <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
         <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-slate-200 rounded-xl animate-pulse"></div>
-            <div className="h-6 w-32 bg-slate-200 rounded animate-pulse"></div>
+            <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-xl shimmer"></div>
+            <div className="h-6 w-32 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
         </div>
-        <div className="h-8 w-3/4 bg-slate-200 rounded mb-4 animate-pulse"></div>
-        <div className="h-4 w-full bg-slate-200 rounded mb-2 animate-pulse"></div>
-        <div className="h-4 w-2/3 bg-slate-200 rounded mb-6 animate-pulse"></div>
+        <div className="h-8 w-3/4 bg-slate-200 dark:bg-slate-700 rounded mb-4 shimmer"></div>
+        <div className="h-4 w-full bg-slate-200 dark:bg-slate-700 rounded mb-2 shimmer"></div>
+        <div className="h-4 w-2/3 bg-slate-200 dark:bg-slate-700 rounded mb-6 shimmer"></div>
         <div className="flex gap-4 mb-8">
-            <div className="h-4 w-20 bg-slate-200 rounded animate-pulse"></div>
-            <div className="h-4 w-20 bg-slate-200 rounded animate-pulse"></div>
+            <div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
+            <div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
         </div>
-        <div className="h-12 w-full bg-slate-200 rounded-xl animate-pulse"></div>
+        <div className="h-12 w-full bg-slate-200 dark:bg-slate-700 rounded-xl shimmer"></div>
     </div>
 );
 
 const SkeletonRow = () => (
-    <div className="flex items-center p-4 sm:p-6 border-b border-slate-50 last:border-0">
-        <div className="w-8 h-8 bg-slate-200 rounded animate-pulse mr-4"></div>
-        <div className="w-12 h-12 bg-slate-200 rounded-full animate-pulse mr-4"></div>
+    <div className="flex items-center p-4 sm:p-6 border-b border-slate-50 dark:border-slate-700 last:border-0">
+        <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded shimmer mr-4"></div>
+        <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full shimmer mr-4"></div>
         <div className="flex-1 space-y-2">
-            <div className="h-4 w-32 bg-slate-200 rounded animate-pulse"></div>
-            <div className="h-3 w-20 bg-slate-200 rounded animate-pulse"></div>
+            <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
+            <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
         </div>
-        <div className="h-6 w-12 bg-slate-200 rounded animate-pulse"></div>
+        <div className="h-6 w-12 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
     </div>
 );

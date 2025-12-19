@@ -7,13 +7,13 @@ const DonorCardSkeleton = () => (
     <div className="material-card elevation-1 p-4">
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
+                <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700 shimmer"></div>
                 <div className="space-y-2">
-                    <div className="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
-                    <div className="h-3 w-16 bg-slate-200 rounded animate-pulse"></div>
+                    <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
+                    <div className="h-3 w-16 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
                 </div>
             </div>
-            <div className="w-8 h-8 rounded-full bg-slate-200 animate-pulse"></div>
+            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 shimmer"></div>
         </div>
     </div>
 );
@@ -22,24 +22,24 @@ const ServiceCardSkeleton = () => (
     <div className="material-card elevation-1 p-6">
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
+                <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700 shimmer"></div>
                 <div className="space-y-2">
-                    <div className="h-5 w-32 bg-slate-200 rounded animate-pulse"></div>
-                    <div className="h-3 w-24 bg-slate-200 rounded animate-pulse"></div>
+                    <div className="h-5 w-32 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
+                    <div className="h-3 w-24 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
                 </div>
             </div>
         </div>
         <div className="space-y-2">
             <div className="flex items-center gap-2">
-                <div className="h-4 w-4 bg-slate-200 rounded animate-pulse"></div>
-                <div className="h-3 flex-1 bg-slate-200 rounded animate-pulse"></div>
+                <div className="h-4 w-4 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
+                <div className="h-3 flex-1 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
             </div>
             <div className="flex items-center gap-2">
-                <div className="h-4 w-4 bg-slate-200 rounded animate-pulse"></div>
-                <div className="h-3 flex-1 bg-slate-200 rounded animate-pulse"></div>
+                <div className="h-4 w-4 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
+                <div className="h-3 flex-1 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
             </div>
         </div>
-        <div className="h-10 w-full bg-slate-200 rounded-xl animate-pulse mt-4"></div>
+        <div className="h-10 w-full bg-slate-200 dark:bg-slate-700 rounded-xl shimmer mt-4"></div>
     </div>
 );
 

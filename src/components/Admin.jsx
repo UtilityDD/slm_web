@@ -2,6 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { cacheHelper } from '../utils/cacheHelper';
 
+const UserTableSkeleton = () => (
+  <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
+    <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+      <thead className="bg-gray-50 dark:bg-slate-700">
+        <tr>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Full Name</th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Email</th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Role</th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">District</th>
+          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <tr key={i}>
+            <td className="px-6 py-4"><div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div></td>
+            <td className="px-6 py-4"><div className="h-4 w-48 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div></td>
+            <td className="px-6 py-4"><div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div></td>
+            <td className="px-6 py-4"><div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div></td>
+            <td className="px-6 py-4 text-right"><div className="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded shimmer ml-auto"></div></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+
 export default function Admin({ user, userProfile, language }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -150,43 +177,47 @@ export default function Admin({ user, userProfile, language }) {
       <h1 className="text-2xl font-bold mb-4">
         {userProfile?.role === 'safety mitra' ? 'Safety Mitra Dashboard' : 'Admin - User Management'}
       </h1>
-      <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
-          <thead className="bg-gray-50 dark:bg-slate-700">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Full Name</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Email</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Role</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">District</th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
-            {users.map((targetUser) => (
-              <tr key={targetUser.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{targetUser.full_name}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{targetUser.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{targetUser.role}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{targetUser.district}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  {!(userProfile?.role === 'safety mitra' && targetUser.role === 'admin') && (
-                    <button
-                      onClick={() => handleEdit(targetUser)}
-                      disabled={userProfile?.role === 'safety mitra' && targetUser.role === 'admin'}
-                      className={`text-indigo-600 hover:text-indigo-900 ${userProfile?.role === 'safety mitra' && targetUser.role === 'admin'
-                        ? 'opacity-50 cursor-not-allowed grayscale'
-                        : ''
-                        }`}
-                    >
-                      Edit
-                    </button>
-                  )}
-                </td>
+      {loading ? (
+        <UserTableSkeleton />
+      ) : (
+        <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+            <thead className="bg-gray-50 dark:bg-slate-700">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Full Name</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Email</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Role</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">District</th>
+                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+              {users.map((targetUser) => (
+                <tr key={targetUser.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">{targetUser.full_name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{targetUser.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{targetUser.role}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{targetUser.district}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    {!(userProfile?.role === 'safety mitra' && targetUser.role === 'admin') && (
+                      <button
+                        onClick={() => handleEdit(targetUser)}
+                        disabled={userProfile?.role === 'safety mitra' && targetUser.role === 'admin'}
+                        className={`text-indigo-600 hover:text-indigo-900 ${userProfile?.role === 'safety mitra' && targetUser.role === 'admin'
+                          ? 'opacity-50 cursor-not-allowed grayscale'
+                          : ''
+                          }`}
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {editingUser && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center z-50 p-4">
