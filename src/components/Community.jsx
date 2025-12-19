@@ -39,9 +39,9 @@ export default function Community({ language = 'en' }) {
     const t = {
         en: {
             title: "Community Hub",
-            rewards: {
-                title: "Top Contributors",
-                action: "View All"
+            banner: {
+                title: "Learn by Sharing",
+                subtitle: "Share your experience, help others grow, and win rewards"
             },
             cards: {
                 facebook: {
@@ -61,9 +61,9 @@ export default function Community({ language = 'en' }) {
         },
         bn: {
             title: "কমিউনিটি হাব",
-            rewards: {
-                title: "সেরা অবদানকারী",
-                action: "সব দেখুন"
+            banner: {
+                title: "শেয়ার করে শিখুন",
+                subtitle: "আপনার অভিজ্ঞতা শেয়ার করুন, অন্যদের সাহায্য করুন এবং পুরস্কার জিতুন"
             },
             cards: {
                 facebook: {
@@ -146,16 +146,17 @@ export default function Community({ language = 'en' }) {
                 </h1>
             </div>
 
-            {/* Rewards Banner - Informational Only */}
+            {/* Inspiring Banner */}
             <div className="mb-10 animate-scale-up">
-                <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+                <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                    <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
-                        <div className="bg-white/20 p-4 rounded-2xl backdrop-blur-sm">
-                            <span className="text-4xl">🎁</span>
+                    <div className="relative z-10 flex items-center gap-4">
+                        <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+                            <span className="text-3xl">💡</span>
                         </div>
                         <div className="flex-1">
-                            <h2 className="text-xl sm:text-2xl font-bold mb-0.5">{t.rewards.title}</h2>
+                            <h2 className="text-xl font-bold mb-1">{t.banner.title}</h2>
+                            <p className="text-sm text-white/90">{t.banner.subtitle}</p>
                         </div>
                     </div>
                 </div>
