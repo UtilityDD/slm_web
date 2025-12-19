@@ -97,12 +97,14 @@ export default function Home({ setCurrentView, language, user, t }) {
                     className="group relative overflow-hidden bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl p-5 sm:p-6 text-white shadow-lg cursor-pointer transition-all hover:shadow-xl hover:-translate-y-1 border border-white/10"
                 >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-white/20 transition-all"></div>
-                    <div className="relative z-10">
-                        <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-xl mb-4">🏆</div>
-                        <h3 className="text-lg font-bold mb-1 tracking-tight">{t.nav.competitions}</h3>
-                        <div className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full backdrop-blur-md border border-white/20 mt-2">
-                            <span>Live Now</span>
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                    <div className="relative z-10 flex items-center gap-4">
+                        <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-2xl shadow-sm">🏆</div>
+                        <div>
+                            <h3 className="text-lg font-bold tracking-tight">{t.nav.competitions}</h3>
+                            <div className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-md border border-white/20 mt-1">
+                                <span>Live</span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -110,28 +112,28 @@ export default function Home({ setCurrentView, language, user, t }) {
                 {/* Safety Hub - Large Card 2 */}
                 <div
                     onClick={() => setCurrentView('safety')}
-                    className="group material-card p-5 sm:p-6 cursor-pointer"
+                    className="group material-card p-5 sm:p-6 cursor-pointer flex items-center gap-4"
                 >
-                    <div className="w-10 h-10 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform shadow-sm">🦺</div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1 tracking-tight">{t.nav.safety}</h3>
+                    <div className="w-12 h-12 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform shadow-sm">🦺</div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">{t.nav.safety}</h3>
                 </div>
 
                 {/* Community - Large Card 3 */}
                 <div
                     onClick={() => setCurrentView('community')}
-                    className="group material-card p-5 sm:p-6 cursor-pointer"
+                    className="group material-card p-5 sm:p-6 cursor-pointer flex items-center gap-4"
                 >
-                    <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform shadow-sm">💬</div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1 tracking-tight">{t.nav.community}</h3>
+                    <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform shadow-sm">💬</div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">{t.nav.community}</h3>
                 </div>
 
                 {/* Emergency - Special Card */}
                 <div
                     onClick={() => setCurrentView('emergency')}
-                    className="group bg-red-50 dark:bg-red-900/10 rounded-3xl p-5 sm:p-6 border border-red-100 dark:border-red-900/30 cursor-pointer transition-all hover:shadow-lg hover:border-red-200 dark:hover:border-red-800 hover:-translate-y-1 col-span-1 sm:col-span-2 lg:col-span-1"
+                    className="group bg-red-50 dark:bg-red-900/10 rounded-3xl p-5 sm:p-6 border border-red-100 dark:border-red-900/30 cursor-pointer transition-all hover:shadow-lg hover:border-red-200 dark:hover:border-red-800 hover:-translate-y-1 col-span-1 sm:col-span-2 lg:col-span-1 flex items-center gap-4"
                 >
-                    <div className="w-10 h-10 bg-white dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center text-xl mb-4 shadow-sm group-hover:scale-110 transition-transform">🚨</div>
-                    <h3 className="text-lg font-bold text-red-700 dark:text-red-400 mb-1 tracking-tight">{t.nav.emergency}</h3>
+                    <div className="w-12 h-12 bg-white dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">🚨</div>
+                    <h3 className="text-lg font-bold text-red-700 dark:text-red-400 tracking-tight">{t.nav.emergency}</h3>
                 </div>
             </div>
 
