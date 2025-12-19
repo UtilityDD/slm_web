@@ -427,16 +427,10 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                             {/* Decorative Background Glow */}
                             <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-[2rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
 
-                            <div className="material-card p-6 sm:p-8 text-center relative overflow-hidden">
+                            <div className="material-card p-6 text-center relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 dark:bg-blue-900/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
 
                                 <div className="relative z-10 mb-6">
-                                    <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
-                                        🏆
-                                    </div>
-                                </div>
-
-                                <div className="relative z-10 mb-8">
                                     <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 mb-6 tracking-tight">
                                         5 {language === 'en' ? 'Quizzes Every Hour!' : 'কুইজ প্রতি ঘন্টায়!'}
                                     </h2>
