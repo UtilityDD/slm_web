@@ -355,37 +355,36 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
 
             {/* Content Area */}
             {activeTab === 'blood' ? (
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {/* Clean Hero Card - Compact */}
-                    <div className="material-card p-5 sm:p-6 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-red-50 dark:bg-red-900/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div className="flex-1 relative z-10">
-                                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4 tracking-tight">{t.blood.heroTitle}</h2>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="flex-1">
+                                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-2">{t.blood.heroTitle}</h2>
                                 <button
                                     onClick={() => {
                                         if (!user) setCurrentView('login');
                                         else setShowRegisterModal(true);
                                     }}
-                                    className="material-button-primary bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 shadow-red-500/20 text-xs px-5 py-2"
+                                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors"
                                 >
                                     {t.blood.registerBtn}
                                 </button>
                             </div>
-                            <div className="hidden sm:block text-5xl opacity-10 relative z-0">
+                            <div className="hidden sm:block text-4xl opacity-20">
                                 ❤️
                             </div>
                         </div>
                     </div>
 
                     {/* Compact Filters */}
-                    <div className="material-card p-3 sm:p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
                         <div className="flex flex-col sm:flex-row gap-3">
                             <div className="flex-1 grid grid-cols-2 gap-3">
                                 <select
                                     value={selectedBloodGroup}
                                     onChange={(e) => setSelectedBloodGroup(e.target.value)}
-                                    className="material-input py-2.5 text-sm font-medium"
+                                    className="px-3 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                                 >
                                     <option value="All">All Groups</option>
                                     <option value="A+">A+</option>
@@ -400,7 +399,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                 <select
                                     value={selectedDistrict}
                                     onChange={(e) => setSelectedDistrict(e.target.value)}
-                                    className="material-input py-2.5 text-sm font-medium"
+                                    className="px-3 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                                 >
                                     <option value="All">All Districts</option>
                                     <option value="Kolkata">Kolkata</option>
@@ -414,7 +413,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                             </div>
                             <button
                                 onClick={fetchDonors}
-                                className="material-button-primary bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-white shadow-none py-2.5 px-6 flex items-center justify-center gap-2 text-sm whitespace-nowrap"
+                                className="px-5 py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -445,16 +444,16 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                     <div
                                         key={donor.id}
                                         onClick={() => setExpandedDonorId(isExpanded ? null : donor.id)}
-                                        className={`material-card elevation-1 p-4 hover:elevation-2 transition-all cursor-pointer group ${isExpanded ? 'ring-2 ring-red-500' : ''}`}
+                                        className={`bg-white dark:bg-slate-800 rounded-lg p-3 border transition-all cursor-pointer ${isExpanded ? 'border-red-500 shadow-md' : 'border-slate-200 dark:border-slate-700 hover:border-red-300 hover:shadow-sm'}`}
                                     >
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-3 min-w-0">
-                                                <div className="w-10 h-10 rounded-xl bg-red-50 flex-shrink-0 flex items-center justify-center">
-                                                    <span className="text-red-600 font-bold text-xs">{donor.blood_group}</span>
+                                                <div className="w-10 h-10 rounded-lg bg-red-50 dark:bg-red-900/20 flex-shrink-0 flex items-center justify-center">
+                                                    <span className="text-red-600 dark:text-red-400 font-bold text-xs">{donor.blood_group}</span>
                                                 </div>
                                                 <div className="min-w-0">
                                                     <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">{donor.full_name || 'Unknown'}</h3>
-                                                    <p className="text-[11px] text-slate-500 truncate">{donor.district}</p>
+                                                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{donor.district}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">
@@ -464,7 +463,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                                     onClick={(e) => e.stopPropagation()}
                                                     className="flex-shrink-0"
                                                 >
-                                                    <button className="w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-600 hover:text-white transition-all">
+                                                    <button className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center justify-center hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-all">
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                                         </svg>
@@ -474,18 +473,18 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                         </div>
 
                                         {isExpanded && (
-                                            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 animate-fade-in space-y-2">
-                                                <div className="flex items-center justify-between text-[11px]">
-                                                    <span className="text-slate-500">{t.blood.lastDonated}:</span>
-                                                    <span className="font-bold text-slate-700 dark:text-slate-300">{donor.last_donation_date || 'N/A'}</span>
+                                            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 space-y-2">
+                                                <div className="flex items-center justify-between text-xs">
+                                                    <span className="text-slate-500 dark:text-slate-400">{t.blood.lastDonated}:</span>
+                                                    <span className="font-semibold text-slate-700 dark:text-slate-300">{donor.last_donation_date || 'N/A'}</span>
                                                 </div>
-                                                <div className="flex items-center justify-between text-[11px]">
-                                                    <span className="text-slate-500">Contact:</span>
-                                                    <span className="font-bold text-slate-700 dark:text-slate-300">{donor.phone}</span>
+                                                <div className="flex items-center justify-between text-xs">
+                                                    <span className="text-slate-500 dark:text-slate-400">Contact:</span>
+                                                    <span className="font-semibold text-slate-700 dark:text-slate-300">{donor.phone}</span>
                                                 </div>
-                                                <div className="flex items-center justify-between text-[11px]">
-                                                    <span className="text-slate-500">Status:</span>
-                                                    <span className="text-green-600 font-bold uppercase tracking-wider">Available</span>
+                                                <div className="flex items-center justify-between text-xs">
+                                                    <span className="text-slate-500 dark:text-slate-400">Status:</span>
+                                                    <span className="text-green-600 dark:text-green-400 font-semibold">Available</span>
                                                 </div>
                                             </div>
                                         )}
