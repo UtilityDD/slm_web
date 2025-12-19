@@ -150,16 +150,15 @@ export default function Community({ language = 'en' }) {
             </div>
 
             {/* Inspiring Banner */}
-            <div className="mb-10 animate-scale-up">
-                <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                    <div className="relative z-10 flex items-center gap-4">
-                        <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+            <div className="mb-10">
+                <div className="bg-indigo-50 dark:bg-indigo-900/10 rounded-xl p-6 border border-indigo-200 dark:border-indigo-800 shadow-sm">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-indigo-100 dark:bg-indigo-900/30 p-3 rounded-lg">
                             <span className="text-3xl">💡</span>
                         </div>
                         <div className="flex-1">
-                            <h2 className="text-xl font-bold mb-1">{t.banner.title}</h2>
-                            <p className="text-sm text-white/90">{t.banner.subtitle}</p>
+                            <h2 className="text-xl font-bold text-indigo-900 dark:text-indigo-100 mb-1">{t.banner.title}</h2>
+                            <p className="text-sm text-indigo-700 dark:text-indigo-300">{t.banner.subtitle}</p>
                         </div>
                     </div>
                 </div>
