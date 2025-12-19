@@ -429,35 +429,38 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                             {/* Decorative Background Glow */}
                             <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-[2rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
 
-                            <div className="relative bg-white dark:bg-slate-800 rounded-[2rem] p-8 border border-slate-100 dark:border-slate-700 shadow-xl overflow-hidden">
-                                {/* Top Badge & Timer */}
-                                <div className="flex items-center justify-between mb-8">
-                                    <div className="px-4 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-xs font-bold tracking-wider uppercase">
-                                        {t.hourly}
+                            <div className="material-card p-6 sm:p-8 text-center relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 dark:bg-blue-900/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+
+                                <div className="relative z-10 mb-6">
+                                    <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
+                                        🏆
                                     </div>
-                                    <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
+                                    <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full text-[10px] font-bold uppercase tracking-widest border border-blue-200 dark:border-blue-800">
+                                        {t.hourly}
+                                    </span>
+                                    <div className="flex items-center justify-center gap-2 mt-4 text-slate-400 dark:text-slate-500 font-mono text-sm">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        <span className="text-sm font-mono font-bold text-slate-700 dark:text-slate-300">{timeLeft}</span>
+                                        <span className="font-bold">{timeLeft}</span>
                                     </div>
                                 </div>
 
-                                {/* Main Content */}
-                                <div className="text-center mb-6">
-                                    <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-1 leading-tight">
-                                        {language === 'en' ? '5 Quizzes Every Hour!' : 'প্রতি ঘন্টায় ৫টি কুইজ!'}
-                                    </h3>
-                                    <p className="text-blue-600 dark:text-blue-400 font-bold text-base mb-3">
+                                <div className="relative z-10 mb-8">
+                                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 mb-2 tracking-tight">
+                                        5 {language === 'en' ? 'Quizzes Every Hour!' : 'কুইজ প্রতি ঘন্টায়!'}
+                                    </h2>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-6">
                                         {language === 'en' ? 'Learn & Win Recognition' : 'শিখুন এবং স্বীকৃতি জিতুন'}
                                     </p>
-                                    <div className="flex items-center justify-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+                                    <div className="flex items-center justify-center gap-6 text-xs text-slate-500 dark:text-slate-400">
                                         <div className="flex flex-col items-center">
-                                            <span className="text-lg mb-0.5">📝</span>
-                                            <span className="font-medium">5 {t.questions}</span>
+                                            <span className="text-xl mb-1">📝</span>
+                                            <span className="font-bold">5 {t.questions}</span>
                                         </div>
-                                        <div className="w-px h-6 bg-slate-100 dark:bg-slate-700"></div>
+                                        <div className="w-px h-8 bg-slate-100 dark:bg-slate-700"></div>
                                         <div className="flex flex-col items-center">
-                                            <span className="text-lg mb-0.5">💎</span>
-                                            <span className="font-medium">50 {t.points}</span>
+                                            <span className="text-xl mb-1">💎</span>
+                                            <span className="font-bold">50 {t.points}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -471,8 +474,8 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                         const now = getSyncedTime();
                                         return last.getHours() === now.getHours() && last.getDate() === now.getDate();
                                     })()}
-                                    className={`w-full py-3 rounded-xl font-bold transition-all duration-300 transform active:scale-95 flex items-center justify-center gap-2 shadow-md text-sm ${(() => {
-                                        if (!lastAttemptTime) return 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200 dark:shadow-none';
+                                    className={`w-full material-button-primary ${(() => {
+                                        if (!lastAttemptTime) return '';
                                         const last = new Date(lastAttemptTime);
                                         const now = getSyncedTime();
                                         const isLocked =
@@ -482,8 +485,8 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                             last.getHours() === now.getHours();
 
                                         return isLocked
-                                            ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
-                                            : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200 dark:shadow-none';
+                                            ? 'from-slate-100 to-slate-100 dark:from-slate-700 dark:to-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
+                                            : '';
                                     })()
                                         }`}
                                 >
@@ -539,7 +542,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                 <h3 className="text-center font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center justify-center gap-2 text-sm">
                     <span>🏅</span> {t.leaderboard}
                 </h3>
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden divide-y divide-slate-50">
+                <div className="material-card overflow-hidden divide-y divide-slate-50 dark:divide-slate-700/50">
                     {loading ? (
                         <>
                             <SkeletonRow />

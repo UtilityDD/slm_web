@@ -336,11 +336,11 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
 
             {/* Refined Tabs - Compact */}
             <div className="mb-6">
-                <div className="bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl inline-flex gap-1">
+                <div className="bg-slate-100 dark:bg-slate-800/50 p-1 rounded-2xl inline-flex gap-1 border border-slate-200 dark:border-slate-700">
                     <button
                         onClick={() => setActiveTab('blood')}
-                        className={`px-5 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === 'blood'
-                            ? 'bg-white dark:bg-slate-800 text-red-600 elevation-1'
+                        className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'blood'
+                            ? 'bg-white dark:bg-slate-800 text-red-600 shadow-lg shadow-red-500/10'
                             : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-slate-100'
                             }`}
                     >
@@ -348,8 +348,8 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                     </button>
                     <button
                         onClick={() => setActiveTab('services')}
-                        className={`px-5 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === 'services'
-                            ? 'bg-white dark:bg-slate-800 text-blue-600 elevation-1'
+                        className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'services'
+                            ? 'bg-white dark:bg-slate-800 text-blue-600 shadow-lg shadow-blue-500/10'
                             : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-slate-100'
                             }`}
                     >
@@ -362,35 +362,36 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
             {activeTab === 'blood' ? (
                 <div className="space-y-6">
                     {/* Clean Hero Card - Compact */}
-                    <div className="material-card elevation-2 p-5 sm:p-6">
+                    <div className="material-card p-5 sm:p-6 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-red-50 dark:bg-red-900/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div className="flex-1">
-                                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">{t.blood.heroTitle}</h2>
-                                <p className="text-slate-600 dark:text-slate-400 text-xs mb-4">{t.blood.heroDesc}</p>
+                            <div className="flex-1 relative z-10">
+                                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1 tracking-tight">{t.blood.heroTitle}</h2>
+                                <p className="text-slate-500 dark:text-slate-400 text-xs mb-4 font-medium">{t.blood.heroDesc}</p>
                                 <button
                                     onClick={() => {
                                         if (!user) setCurrentView('login');
                                         else setShowRegisterModal(true);
                                     }}
-                                    className="material-button-primary ripple text-xs px-4 py-2"
+                                    className="material-button-primary bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 shadow-red-500/20 text-xs px-5 py-2"
                                 >
                                     {t.blood.registerBtn}
                                 </button>
                             </div>
-                            <div className="hidden sm:block text-5xl opacity-10">
+                            <div className="hidden sm:block text-5xl opacity-10 relative z-0">
                                 ❤️
                             </div>
                         </div>
                     </div>
 
                     {/* Compact Filters */}
-                    <div className="material-card elevation-1 p-3 sm:p-4">
+                    <div className="material-card p-3 sm:p-4">
                         <div className="flex flex-col sm:flex-row gap-3">
                             <div className="flex-1 grid grid-cols-2 gap-3">
                                 <select
                                     value={selectedBloodGroup}
                                     onChange={(e) => setSelectedBloodGroup(e.target.value)}
-                                    className="material-input py-2 text-sm"
+                                    className="material-input py-2.5 text-sm font-medium"
                                 >
                                     <option value="All">All Groups</option>
                                     <option value="A+">A+</option>
@@ -405,7 +406,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                 <select
                                     value={selectedDistrict}
                                     onChange={(e) => setSelectedDistrict(e.target.value)}
-                                    className="material-input py-2 text-sm"
+                                    className="material-input py-2.5 text-sm font-medium"
                                 >
                                     <option value="All">All Districts</option>
                                     <option value="Kolkata">Kolkata</option>
@@ -419,7 +420,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                             </div>
                             <button
                                 onClick={fetchDonors}
-                                className="material-button-primary py-2 px-6 ripple flex items-center justify-center gap-2 text-sm whitespace-nowrap"
+                                className="material-button-primary bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-white shadow-none py-2.5 px-6 flex items-center justify-center gap-2 text-sm whitespace-nowrap"
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

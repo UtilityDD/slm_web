@@ -369,9 +369,9 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === tab
-                            ? 'bg-orange-600 text-white shadow-md'
-                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-orange-50 border border-slate-200 dark:border-slate-600'
+                        className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === tab
+                            ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20'
+                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 border border-slate-200 dark:border-slate-700'
                             }`}
                     >
                         {t.tabs[tab]}
@@ -384,14 +384,14 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 {activeTab === 'protocols' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Highlighted Safety Rule Carousel - Refined */}
-                        <div className={`md:col-span-2 bg-gradient-to-br ${SAFETY_RULES[currentRuleIndex].color} rounded-2xl p-8 sm:p-10 text-white relative overflow-hidden shadow-xl transition-all duration-700 ease-in-out border border-white/10`}>
+                        <div className={`md:col-span-2 bg-gradient-to-br ${SAFETY_RULES[currentRuleIndex].color} rounded-3xl p-8 sm:p-10 text-white relative overflow-hidden shadow-xl transition-all duration-700 ease-in-out border border-white/10`}>
                             <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl translate-x-1/4 -translate-y-1/4"></div>
 
                             <div className="relative z-10">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
                                         <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/20">
-                                            Safety Protocol
+                                            {language === 'en' ? 'Safety Protocol' : 'নিরাপত্তা প্রোটোকল'}
                                         </span>
                                         <div className="flex gap-1.5">
                                             {SAFETY_RULES.map((_, i) => (

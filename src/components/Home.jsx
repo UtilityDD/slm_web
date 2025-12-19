@@ -100,18 +100,18 @@ export default function Home({ setCurrentView, language, user, t }) {
                 {/* Competitions - Large Card 1 */}
                 <div
                     onClick={() => setCurrentView('competitions')}
-                    className="group relative overflow-hidden bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl p-5 sm:p-6 text-white shadow-lg cursor-pointer transition-all hover:shadow-xl hover:-translate-y-1"
+                    className="group relative overflow-hidden bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl p-5 sm:p-6 text-white shadow-lg cursor-pointer transition-all hover:shadow-xl hover:-translate-y-1 border border-white/10"
                 >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-white/20 transition-all"></div>
                     <div className="relative z-10">
                         <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-xl mb-4">🏆</div>
-                        <h3 className="text-lg font-bold mb-1">{t.nav.competitions}</h3>
-                        <p className="text-blue-100 text-sm leading-relaxed mb-4">
+                        <h3 className="text-lg font-bold mb-1 tracking-tight">{t.nav.competitions}</h3>
+                        <p className="text-blue-100 text-sm leading-relaxed mb-4 font-medium">
                             {language === 'en' ? 'Hourly Safety Challenge' : 'ঘন্টাভিত্তিক নিরাপত্তা চ্যালেঞ্জ'}
                         </p>
-                        <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider bg-white/10 px-3 py-1 rounded-lg backdrop-blur-md">
+                        <div className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full backdrop-blur-md border border-white/20">
                             <span>Live Now</span>
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
                         </div>
                     </div>
                 </div>
@@ -119,11 +119,11 @@ export default function Home({ setCurrentView, language, user, t }) {
                 {/* Safety Hub - Large Card 2 */}
                 <div
                     onClick={() => setCurrentView('safety')}
-                    className="group bg-white dark:bg-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700/50 cursor-pointer transition-all hover:shadow-md hover:border-orange-200 hover:-translate-y-1"
+                    className="group material-card p-5 sm:p-6 cursor-pointer"
                 >
-                    <div className="w-10 h-10 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">🦺</div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">{t.nav.safety}</h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                    <div className="w-10 h-10 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform shadow-sm">🦺</div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1 tracking-tight">{t.nav.safety}</h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed font-medium">
                         {language === 'en' ? 'Access protocols & guidelines' : 'প্রোটোকল এবং নির্দেশিকা অ্যাক্সেস করুন'}
                     </p>
                 </div>
@@ -131,11 +131,11 @@ export default function Home({ setCurrentView, language, user, t }) {
                 {/* Community - Large Card 3 */}
                 <div
                     onClick={() => setCurrentView('community')}
-                    className="group bg-white dark:bg-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700/50 cursor-pointer transition-all hover:shadow-md hover:border-blue-200 hover:-translate-y-1"
+                    className="group material-card p-5 sm:p-6 cursor-pointer"
                 >
-                    <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">💬</div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">{t.nav.community}</h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                    <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform shadow-sm">💬</div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1 tracking-tight">{t.nav.community}</h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed font-medium">
                         {language === 'en' ? 'Connect with peers' : 'সহকর্মীদের সাথে সংযোগ করুন'}
                     </p>
                 </div>
@@ -143,11 +143,11 @@ export default function Home({ setCurrentView, language, user, t }) {
                 {/* Emergency - Special Card */}
                 <div
                     onClick={() => setCurrentView('emergency')}
-                    className="group bg-red-50 rounded-2xl p-5 sm:p-6 border border-red-100 cursor-pointer transition-all hover:shadow-md hover:border-red-200 hover:-translate-y-1"
+                    className="group bg-red-50 dark:bg-red-900/10 rounded-3xl p-5 sm:p-6 border border-red-100 dark:border-red-900/30 cursor-pointer transition-all hover:shadow-lg hover:border-red-200 dark:hover:border-red-800 hover:-translate-y-1"
                 >
-                    <div className="w-10 h-10 bg-white text-red-600 rounded-xl flex items-center justify-center text-xl mb-4 shadow-sm">🚨</div>
-                    <h3 className="text-lg font-bold text-red-700 mb-1">{t.nav.emergency}</h3>
-                    <p className="text-red-600/80 text-sm leading-relaxed">
+                    <div className="w-10 h-10 bg-white dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center text-xl mb-4 shadow-sm group-hover:scale-110 transition-transform">🚨</div>
+                    <h3 className="text-lg font-bold text-red-700 dark:text-red-400 mb-1 tracking-tight">{t.nav.emergency}</h3>
+                    <p className="text-red-600/80 dark:text-red-400/80 text-sm leading-relaxed font-medium">
                         {language === 'en' ? 'SOS & Quick Support' : 'SOS এবং দ্রুত সহায়তা'}
                     </p>
                 </div>
