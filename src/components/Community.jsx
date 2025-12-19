@@ -30,6 +30,7 @@ const CommunitySkeleton = () => (
 
 export default function Community({ language = 'en' }) {
     const [loading, setLoading] = useState(true);
+    const [showToast, setShowToast] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => setLoading(false), 600);
@@ -43,6 +44,7 @@ export default function Community({ language = 'en' }) {
                 title: "Learn by Sharing",
                 subtitle: "Share your experience, help others grow, and win rewards"
             },
+            comingSoon: "Coming Soon! We're working on this feature.",
             cards: {
                 facebook: {
                     title: "Facebook Group",
@@ -65,6 +67,7 @@ export default function Community({ language = 'en' }) {
                 title: "শেয়ার করে শিখুন",
                 subtitle: "আপনার অভিজ্ঞতা শেয়ার করুন, অন্যদের সাহায্য করুন এবং পুরস্কার জিতুন"
             },
+            comingSoon: "শীঘ্রই আসছে! আমরা এই ফিচারে কাজ করছি।",
             cards: {
                 facebook: {
                     title: "ফেসবুক গ্রুপ",
@@ -162,13 +165,26 @@ export default function Community({ language = 'en' }) {
                 </div>
             </div>
 
+            {/* Toast Notification */}
+            {showToast && (
+                <div className="fixed top-20 right-5 bg-indigo-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in">
+                    <div className="flex items-center gap-2">
+                        <span className="text-lg">🚀</span>
+                        <span className="font-semibold">{t.comingSoon}</span>
+                    </div>
+                </div>
+            )}
+
             {/* Channels Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {cards.map((card, index) => (
-                    <a
-                        href={card.link}
+                    <div
                         key={card.id}
-                        className={`group relative bg-white dark:bg-slate-800 p-6 rounded-3xl border ${card.border} shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center text-center h-full`}
+                        onClick={() => {
+                            setShowToast(true);
+                            setTimeout(() => setShowToast(false), 3000);
+                        }}
+                        className={`group relative bg-white dark:bg-slate-800 p-6 rounded-3xl border ${card.border} shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center text-center h-full cursor-pointer`}
                         style={{ animationDelay: `${index * 100}ms` }}
                     >
                         {/* Icon */}
@@ -188,7 +204,7 @@ export default function Community({ language = 'en' }) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                             </svg>
                         </span>
-                    </a>
+                    </div>
                 ))}
             </div>
 
