@@ -38,6 +38,49 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     });
     const [ppeChecklist, setPpeChecklist] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
+    const [currentRuleIndex, setCurrentRuleIndex] = useState(0);
+
+    const SAFETY_RULES = [
+        {
+            title: language === 'en' ? "PPE Compliance" : "পিপিই কমপ্লায়েন্স",
+            rule: language === 'en' ? "Always wear your safety helmet, shoes, and reflective jacket before entering the site." : "সাইটে প্রবেশের আগে সর্বদা আপনার সুরক্ষা হেলমেট, জুতো এবং প্রতিফলিত জ্যাকেট পরুন।",
+            icon: "🦺",
+            color: "from-orange-500 to-orange-600"
+        },
+        {
+            title: language === 'en' ? "Climbing Safety" : "আরোহণের নিরাপত্তা",
+            rule: language === 'en' ? "Double-check your safety harness and belt for any signs of wear or damage before climbing." : "আরোহণের আগে আপনার সুরক্ষা হারনেস এবং বেল্ট কোনও পরিধান বা ক্ষতির চিহ্নের জন্য দুবার পরীক্ষা করুন।",
+            icon: "🧗",
+            color: "from-blue-500 to-blue-600"
+        },
+        {
+            title: language === 'en' ? "Electrical Hazard" : "বৈদ্যুতিক বিপদ",
+            rule: language === 'en' ? "Maintain a minimum safe distance from high-voltage lines and always use insulated tools." : "উচ্চ-ভোল্টেজ লাইন থেকে ন্যূনতম নিরাপদ দূরত্ব বজায় রাখুন এবং সর্বদা ইনসুলেটেড সরঞ্জাম ব্যবহার করুন।",
+            icon: "⚡",
+            color: "from-red-500 to-red-600"
+        },
+        {
+            title: language === 'en' ? "Tool Inspection" : "সরঞ্জাম পরিদর্শন",
+            rule: language === 'en' ? "Inspect all tools and equipment for defects before use. Damaged tools must be reported immediately." : "ব্যবহারের আগে ত্রুটির জন্য সমস্ত সরঞ্জাম এবং সরঞ্জাম পরিদর্শন করুন। ক্ষতিগ্রস্ত সরঞ্জাম অবিলম্বে রিপোর্ট করা আবশ্যক।",
+            icon: "🔧",
+            color: "from-green-500 to-green-600"
+        }
+    ];
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentRuleIndex((prev) => (prev + 1) % SAFETY_RULES.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, [SAFETY_RULES.length]);
+
+    const nextRule = () => {
+        setCurrentRuleIndex((prev) => (prev + 1) % SAFETY_RULES.length);
+    };
+
+    const prevRule = () => {
+        setCurrentRuleIndex((prev) => (prev - 1 + SAFETY_RULES.length) % SAFETY_RULES.length);
+    };
 
     const PPE_ITEMS = [
         { name: "Safety Helmet", icon: "🪖" },
@@ -340,16 +383,48 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
             <div className="animate-slide-down">
                 {activeTab === 'protocols' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Featured Protocol - Compact */}
-                        <div className="md:col-span-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden shadow-lg">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-white dark:bg-slate-800/10 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3"></div>
+                        {/* Highlighted Safety Rule Carousel - Refined */}
+                        <div className={`md:col-span-2 bg-gradient-to-br ${SAFETY_RULES[currentRuleIndex].color} rounded-2xl p-8 sm:p-10 text-white relative overflow-hidden shadow-xl transition-all duration-700 ease-in-out border border-white/10`}>
+                            <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl translate-x-1/4 -translate-y-1/4"></div>
+
                             <div className="relative z-10">
-                                <h2 className="text-xl font-bold mb-1">{t.protocols.title}</h2>
-                                <p className="text-orange-100 mb-4 max-w-xl text-sm">{t.protocols.desc}</p>
-                                <div className="flex gap-3">
-                                    <button className="px-5 py-2 bg-white dark:bg-slate-800 text-orange-600 rounded-xl font-bold hover:bg-orange-50 transition-all text-sm">
-                                        Download PDF
-                                    </button>
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-3">
+                                        <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/20">
+                                            Safety Protocol
+                                        </span>
+                                        <div className="flex gap-1.5">
+                                            {SAFETY_RULES.map((_, i) => (
+                                                <div key={i} className={`h-1 rounded-full transition-all duration-500 ${i === currentRuleIndex ? 'bg-white w-6' : 'bg-white/30 w-2'}`}></div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={prevRule}
+                                            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all active:scale-90"
+                                            aria-label="Previous rule"
+                                        >
+                                            <span className="text-xl">←</span>
+                                        </button>
+                                        <button
+                                            onClick={nextRule}
+                                            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all active:scale-90"
+                                            aria-label="Next rule"
+                                        >
+                                            <span className="text-xl">→</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="max-w-3xl">
+                                    <h2 className="text-2xl sm:text-3xl font-black mb-4 tracking-tight leading-tight">
+                                        {SAFETY_RULES[currentRuleIndex].title}
+                                    </h2>
+                                    <p className="text-white/90 text-base sm:text-lg leading-relaxed font-medium">
+                                        {SAFETY_RULES[currentRuleIndex].rule}
+                                    </p>
                                 </div>
                             </div>
                         </div>
