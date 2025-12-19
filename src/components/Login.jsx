@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
 export default function Login({ onLogin, showNotification }) {
@@ -9,7 +9,7 @@ export default function Login({ onLogin, showNotification }) {
     const [view, setView] = useState('login'); // login, signup, forgot, update
     const [error, setError] = useState(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         // Check if we're in a password recovery flow
         if (window.location.hash.includes('type=recovery') || window.location.href.includes('type=recovery')) {
             setView('update');

@@ -221,14 +221,19 @@ export default function Admin({ user, userProfile, language }) {
 
       {editingUser && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-2xl border border-slate-100 dark:border-slate-700 animate-scale-in">
-            <h2 className="text-xl font-bold mb-6 text-slate-800 dark:text-slate-100 border-b dark:border-slate-700 pb-2">Edit User Profile</h2>
+          <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl shadow-2xl w-full max-w-xl border border-slate-100 dark:border-slate-700 animate-scale-in">
+            <div className="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-700">
+              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Edit User Profile</h2>
+              <button onClick={handleCancelEdit} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column - Avatar & Basic Info */}
               <div className="flex flex-col items-center">
-                {/* Avatar Preview Section */}
-                <div className="relative group mb-6">
-                  <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-slate-100 dark:border-slate-700 shadow-md">
+                {/* Avatar Preview Section - Compact */}
+                <div className="relative group mb-4">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-slate-100 dark:border-slate-700 shadow-md">
                     {avatarPreview ? (
                       <img
                         src={avatarPreview}
@@ -236,7 +241,7 @@ export default function Admin({ user, userProfile, language }) {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-300 text-4xl font-bold">
+                      <div className="w-full h-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-300 text-3xl font-bold">
                         {editingUser.full_name ? editingUser.full_name.charAt(0).toUpperCase() : 'U'}
                       </div>
                     )}
@@ -262,51 +267,60 @@ export default function Admin({ user, userProfile, language }) {
                   />
                 </div>
 
-                <input type="text" name="full_name" value={editingUser.full_name || ''} onChange={handleChange} placeholder="Full Name" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none mb-4 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
-                <input type="email" name="email" value={editingUser.email || ''} onChange={handleChange} placeholder="Email" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 mb-4 cursor-not-allowed" readOnly />
+                <div className="w-full space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Full Name</label>
+                    <input type="text" name="full_name" value={editingUser.full_name || ''} onChange={handleChange} placeholder="Full Name" className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Email</label>
+                    <input type="email" name="email" value={editingUser.email || ''} onChange={handleChange} placeholder="Email" className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 cursor-not-allowed" readOnly />
+                  </div>
+                </div>
               </div>
 
-              {/* Right Column - Details */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Phone Number</label>
-                  <input type="text" name="phone" value={editingUser.phone || ''} onChange={handleChange} placeholder="Phone" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">District</label>
-                  <input type="text" name="district" value={editingUser.district || ''} onChange={handleChange} placeholder="District" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+              {/* Right Column - Details - Compact */}
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Blood Group</label>
-                    <input type="text" name="blood_group" value={editingUser.blood_group || ''} onChange={handleChange} placeholder="Blood Group" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Phone</label>
+                    <input type="text" name="phone" value={editingUser.phone || ''} onChange={handleChange} placeholder="Phone" className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Points</label>
-                    <input type="number" name="points" value={editingUser.points || 0} onChange={handleChange} placeholder="Points" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                    <label className="block text-xs font-medium text-slate-500 mb-1">District</label>
+                    <input type="text" name="district" value={editingUser.district || ''} onChange={handleChange} placeholder="District" className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
                   </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Blood Group</label>
+                    <input type="text" name="blood_group" value={editingUser.blood_group || ''} onChange={handleChange} placeholder="B Group" className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Points</label>
+                    <input type="number" name="points" value={editingUser.points || 0} onChange={handleChange} placeholder="Points" className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Role</label>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Role</label>
                   <select
                     name="role"
                     value={editingUser.role || 'lineman'}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
-                    disabled={userProfile?.role === 'safety mitra' && editingUser.role === 'admin'} // Extra safety
+                    className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                    disabled={userProfile?.role === 'safety mitra' && editingUser.role === 'admin'}
                   >
                     <option value="lineman">Lineman</option>
                     <option value="safety mitra">Safety Mitra</option>
-                    {userProfile?.role === 'admin' && <option value="admin">Admin</option>} {/* Safety Mitra cannot promote to Admin */}
+                    {userProfile?.role === 'admin' && <option value="admin">Admin</option>}
                   </select>
                 </div>
 
-                <div className="flex items-center p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-100 dark:border-slate-700">
+                <div className="flex items-center p-2.5 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-100 dark:border-slate-700">
                   <input type="checkbox" id="is_donor" name="is_donor" checked={editingUser.is_donor || false} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
-                  <label htmlFor="is_donor" className="ml-2 text-sm text-slate-700 dark:text-slate-200 font-medium cursor-pointer">Register as Blood Donor</label>
+                  <label htmlFor="is_donor" className="ml-2 text-xs text-slate-700 dark:text-slate-200 font-medium cursor-pointer">Register as Blood Donor</label>
                 </div>
 
                 {editingUser.is_donor && (
@@ -317,9 +331,9 @@ export default function Admin({ user, userProfile, language }) {
                 )}
               </div>
             </div>
-            <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
-              <button onClick={handleCancelEdit} className="px-5 py-2.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">Cancel</button>
-              <button onClick={handleSave} className="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all">Save Changes</button>
+            <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
+              <button onClick={handleCancelEdit} className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">Cancel</button>
+              <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all">Save Changes</button>
             </div>
           </div>
         </div>
