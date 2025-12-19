@@ -27,6 +27,7 @@ export default function SmartLinemanUI() {
   const [notification, setNotification] = useState(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [globalLoading, setGlobalLoading] = useState(false);
+  const [appLoading, setAppLoading] = useState(true);
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
@@ -59,7 +60,11 @@ export default function SmartLinemanUI() {
     // Check active session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
-      fetchProfile(session?.user);
+      if (session?.user) {
+        fetchProfile(session.user).finally(() => setAppLoading(false));
+      } else {
+        setAppLoading(false);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -273,6 +278,7 @@ export default function SmartLinemanUI() {
         return <Admin language={language} user={user} userProfile={userProfile} />;
       case 'home':
       default:
+        if (appLoading) return <Home setCurrentView={setCurrentView} language={language} t={t} user={user} userProfile={userProfile} />;
         return <Home
           setCurrentView={setCurrentView}
           language={language}
