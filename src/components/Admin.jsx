@@ -146,6 +146,7 @@ export default function Admin({ user, userProfile, language }) {
     const { id, ...updates } = editingUser;
     updates.avatar_url = avatar_url;
     delete updates.email; // Do not update email
+    delete updates.points; // Do not allow manual point updates via Admin UI
 
     const { error } = await supabase.from('profiles').update(updates).eq('id', id);
     if (error) {
@@ -299,7 +300,7 @@ export default function Admin({ user, userProfile, language }) {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1">Points</label>
-                    <input type="number" name="points" value={editingUser.points || 0} onChange={handleChange} placeholder="Points" className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                    <input type="number" name="points" value={editingUser.points || 0} onChange={handleChange} placeholder="Points" className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 cursor-not-allowed" readOnly />
                   </div>
                 </div>
 
