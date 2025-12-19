@@ -369,30 +369,30 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 {activeTab === 'protocols' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Highlighted Safety Rule Carousel - Refined */}
-                        <div className={`md:col-span-2 bg-gradient-to-br ${SAFETY_RULES[currentRuleIndex].color} rounded-3xl p-8 sm:p-10 text-white relative overflow-hidden shadow-xl transition-all duration-700 ease-in-out border border-white/10 min-h-[280px] flex flex-col justify-center`}>
-                            <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl translate-x-1/4 -translate-y-1/4"></div>
+                        <div className={`md:col-span-2 bg-gradient-to-br ${SAFETY_RULES[currentRuleIndex].color} rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden shadow-lg transition-all duration-700 ease-in-out border border-white/10 min-h-[200px] flex flex-col justify-center`}>
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl translate-x-1/4 -translate-y-1/4"></div>
 
                             {/* Navigation Arrows - Absolute Positioned */}
                             <button
                                 onClick={prevRule}
-                                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all active:scale-90 z-20"
+                                className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all active:scale-90 z-20"
                                 aria-label="Previous rule"
                             >
-                                <span className="text-xl">←</span>
+                                <span className="text-lg">←</span>
                             </button>
 
                             <button
                                 onClick={nextRule}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all active:scale-90 z-20"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all active:scale-90 z-20"
                                 aria-label="Next rule"
                             >
-                                <span className="text-xl">→</span>
+                                <span className="text-lg">→</span>
                             </button>
 
-                            <div className="relative z-10 flex flex-col items-center justify-center h-full px-8">
+                            <div className="relative z-10 flex flex-col items-center justify-center h-full px-6">
                                 {/* Rule Text */}
-                                <div key={currentRuleIndex} className="max-w-2xl text-center mb-8 animate-slide-in-left">
-                                    <p className="text-white text-xl sm:text-3xl font-bold leading-relaxed tracking-tight">
+                                <div key={currentRuleIndex} className="max-w-2xl text-center mb-6 animate-slide-in-left">
+                                    <p className="text-white text-lg sm:text-2xl font-bold leading-relaxed tracking-tight">
                                         {SAFETY_RULES[currentRuleIndex].rule}
                                     </p>
                                 </div>
@@ -400,7 +400,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                 {/* Indicators */}
                                 <div className="flex gap-2">
                                     {SAFETY_RULES.map((_, i) => (
-                                        <div key={i} className={`h-1.5 rounded-full transition-all duration-500 ${i === currentRuleIndex ? 'bg-white w-8' : 'bg-white/30 w-2'}`}></div>
+                                        <div key={i} className={`h-1 rounded-full transition-all duration-500 ${i === currentRuleIndex ? 'bg-white w-6' : 'bg-white/30 w-1.5'}`}></div>
                                     ))}
                                 </div>
                             </div>
