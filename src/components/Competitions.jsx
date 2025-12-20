@@ -418,114 +418,106 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             </div>
 
             {/* Hourly Quiz Card - Redesigned for Impact */}
-            <div className="max-w-md mx-auto mb-16">
+            <div className="max-w-md mx-auto mb-12">
                 {loading ? (
                     <SkeletonCard />
                 ) : (
                     hourlyQuiz && (
-                        <div className="relative group animate-scale-up">
-                            {/* Decorative Background Glow */}
-                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-[2rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-
-                            <div className="material-card p-6 text-center relative overflow-hidden">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 dark:bg-blue-900/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-
-                                <div className="relative z-10 mb-6">
-                                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 mb-6 tracking-tight">
-                                        5 {language === 'en' ? 'Quizzes Every Hour!' : 'কুইজ প্রতি ঘন্টায়!'}
-                                    </h2>
-                                    <div className="flex items-center justify-center gap-6 text-xs text-slate-500 dark:text-slate-400">
-                                        <div className="flex flex-col items-center">
-                                            <span className="text-xl mb-1">📝</span>
-                                            <span className="font-bold">5 {t.questions}</span>
-                                        </div>
-                                        <div className="w-px h-8 bg-slate-100 dark:bg-slate-700"></div>
-                                        <div className="flex flex-col items-center">
-                                            <span className="text-xl mb-1">💎</span>
-                                            <span className="font-bold">50 {t.points}</span>
-                                        </div>
+                        <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-blue-200 dark:border-blue-800 shadow-sm text-center">
+                            <div className="mb-6">
+                                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 tracking-tight">
+                                    5 {language === 'en' ? 'Quizzes Every Hour!' : 'কুইজ প্রতি ঘন্টায়!'}
+                                </h2>
+                                <div className="flex items-center justify-center gap-6 text-xs text-slate-500 dark:text-slate-400">
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-xl mb-1">📝</span>
+                                        <span className="font-bold">5 {t.questions}</span>
+                                    </div>
+                                    <div className="w-px h-8 bg-slate-100 dark:bg-slate-700"></div>
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-xl mb-1">💎</span>
+                                        <span className="font-bold">50 {t.points}</span>
                                     </div>
                                 </div>
+                            </div>
 
-                                {/* Action Button */}
-                                {/* Action Area */}
-                                {(() => {
-                                    if (!lastAttemptTime) {
-                                        return (
-                                            <button
-                                                onClick={() => startQuiz(hourlyQuiz)}
-                                                className="w-full material-button-primary"
-                                            >
-                                                <span>{t.play}</span>
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                                            </button>
-                                        );
-                                    }
+                            {/* Action Area */}
+                            {(() => {
+                                if (!lastAttemptTime) {
+                                    return (
+                                        <button
+                                            onClick={() => startQuiz(hourlyQuiz)}
+                                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <span>{t.play}</span>
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                                        </button>
+                                    );
+                                }
 
-                                    const last = new Date(lastAttemptTime);
-                                    const now = getSyncedTime();
-                                    const isLocked =
-                                        last.getFullYear() === now.getFullYear() &&
-                                        last.getMonth() === now.getMonth() &&
-                                        last.getDate() === now.getDate() &&
-                                        last.getHours() === now.getHours();
+                                const last = new Date(lastAttemptTime);
+                                const now = getSyncedTime();
+                                const isLocked =
+                                    last.getFullYear() === now.getFullYear() &&
+                                    last.getMonth() === now.getMonth() &&
+                                    last.getDate() === now.getDate() &&
+                                    last.getHours() === now.getHours();
 
-                                    if (isLocked) {
-                                        const minutesLeft = 59 - now.getMinutes();
-                                        const secondsLeft = 59 - now.getSeconds();
-                                        const timeString = `${minutesLeft}:${secondsLeft < 10 ? '0' : ''}${secondsLeft}`;
-
-                                        return (
-                                            <div className="space-y-4 animate-fade-in">
-                                                {/* Locked Status Card */}
-                                                <div className="bg-slate-100 dark:bg-slate-700/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-600">
-                                                    <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Next Quiz In</div>
-                                                    <div className="text-2xl font-mono font-black text-slate-700 dark:text-slate-300">
-                                                        {timeString}
-                                                    </div>
-                                                </div>
-
-                                                <button
-                                                    onClick={startReview}
-                                                    className="w-full py-3 rounded-xl font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all text-sm flex items-center justify-center gap-2"
-                                                >
-                                                    <span>Review Last Attempt</span>
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                                </button>
-                                            </div>
-                                        );
-                                    }
+                                if (isLocked) {
+                                    const minutesLeft = 59 - now.getMinutes();
+                                    const secondsLeft = 59 - now.getSeconds();
+                                    const timeString = `${minutesLeft}:${secondsLeft < 10 ? '0' : ''}${secondsLeft}`;
 
                                     return (
-                                        <div className="space-y-3">
-                                            <button
-                                                onClick={() => startQuiz(hourlyQuiz)}
-                                                className="w-full material-button-primary"
-                                            >
-                                                <span>{t.play}</span>
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                                            </button>
+                                        <div className="space-y-4">
+                                            {/* Locked Status Card */}
+                                            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                                                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Next Quiz In</div>
+                                                <div className="text-2xl font-mono font-bold text-slate-700 dark:text-slate-300">
+                                                    {timeString}
+                                                </div>
+                                            </div>
+
                                             <button
                                                 onClick={startReview}
-                                                className="w-full py-3 rounded-xl font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all text-sm"
+                                                className="w-full py-3 rounded-lg font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all text-sm flex items-center justify-center gap-2"
                                             >
-                                                Review Last Attempt
+                                                <span>Review Last Attempt</span>
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                             </button>
                                         </div>
                                     );
-                                })()}
-                            </div>
+                                }
+
+                                return (
+                                    <div className="space-y-3">
+                                        <button
+                                            onClick={() => startQuiz(hourlyQuiz)}
+                                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <span>{t.play}</span>
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                                        </button>
+                                        <button
+                                            onClick={startReview}
+                                            className="w-full py-2 rounded-lg font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all text-xs"
+                                        >
+                                            Review Last Attempt
+                                        </button>
+                                    </div>
+                                );
+                            })()}
                         </div>
                     )
                 )}
             </div>
 
             {/* Leaderboard - Minimal List */}
-            <div className="max-w-3xl mx-auto animate-fade-in" style={{ animationDelay: '200ms' }}>
+            <div className="max-w-3xl mx-auto">
                 <h3 className="text-center font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center justify-center gap-2 text-sm">
                     <span>🏅</span> {t.leaderboard}
                 </h3>
-                <div className="material-card overflow-hidden divide-y divide-slate-50 dark:divide-slate-700/50">
+                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden divide-y divide-slate-100 dark:divide-slate-700">
                     {loading ? (
                         <>
                             <SkeletonRow />
@@ -537,15 +529,15 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                     ) : (
                         <>
                             {leaderboard.map((item, index) => (
-                                <div key={index} className="flex items-center p-3 sm:p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                    <div className="font-bold text-slate-300 w-6 text-base">#{index + 1}</div>
+                                <div key={index} className="flex items-center p-3 sm:p-4 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+                                    <div className="font-bold text-slate-300 w-6 text-sm">#{index + 1}</div>
                                     <div className="flex-shrink-0 mr-3">
-                                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-100 flex items-center justify-center text-base font-bold text-slate-600 dark:text-slate-400 overflow-hidden">
+                                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-600 dark:text-slate-400 overflow-hidden">
                                             {item.avatar_url ? <img src={item.avatar_url} alt="" className="w-full h-full object-cover" /> : (item.full_name?.[0] || 'U')}
                                         </div>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-xs sm:text-base font-bold text-slate-900 dark:text-slate-100 truncate">
+                                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
                                             {item.full_name || 'Anonymous'}
                                         </p>
                                         <p className="text-[10px] sm:text-xs text-slate-500 truncate">
@@ -553,10 +545,10 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                         </p>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-sm sm:text-lg font-bold text-blue-600">
+                                        <div className="text-sm sm:text-base font-bold text-blue-600 dark:text-blue-400">
                                             {item.points}
                                         </div>
-                                        <div className="text-xs text-slate-400">{t.points}</div>
+                                        <div className="text-[10px] text-slate-400 uppercase tracking-wider">{t.points}</div>
                                     </div>
                                 </div>
                             ))}
@@ -566,10 +558,10 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
                             {/* View All Button */}
                             {leaderboard.length > 0 && (
-                                <div className="p-4 text-center border-t border-slate-50">
+                                <div className="p-3 text-center bg-slate-50 dark:bg-slate-900/30">
                                     <button
                                         onClick={fetchFullLeaderboard}
-                                        className="text-blue-600 font-bold hover:text-blue-700 text-sm"
+                                        className="text-blue-600 dark:text-blue-400 font-bold hover:underline text-sm"
                                     >
                                         View Full Leaderboard
                                     </button>
@@ -598,11 +590,11 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
             {/* Full Leaderboard Modal */}
             {showFullLeaderboard && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white dark:bg-slate-800 w-full h-full sm:h-auto sm:max-w-2xl sm:rounded-3xl sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-                        <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-800 z-10">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
+                    <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-xl max-h-[85vh] flex flex-col shadow-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                        <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
                             <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">Leaderboard</h3>
-                            <button onClick={() => setShowFullLeaderboard(false)} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">✕</button>
+                            <button onClick={() => setShowFullLeaderboard(false)} className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">✕</button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-4">
                             {loadingFull ? (
@@ -610,21 +602,21 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                             ) : (
                                 <div className="space-y-2">
                                     {fullLeaderboard.map((item, index) => (
-                                        <div key={index} className={`flex items-center p-3 rounded-xl ${item.user_id === user?.id
-                                            ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800'
-                                            : 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700'
+                                        <div key={index} className={`flex items-center p-3 rounded-lg border transition-all ${item.user_id === user?.id
+                                            ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                                            : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'
                                             }`}>
-                                            <div className={`font-bold w-10 text-lg ${index < 3 ? 'text-yellow-500' : 'text-slate-400'}`}>#{index + 1}</div>
+                                            <div className={`font-bold w-10 text-base ${index < 3 ? 'text-yellow-500' : 'text-slate-400'}`}>#{index + 1}</div>
                                             <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 mr-3 overflow-hidden flex-shrink-0">
                                                 {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className={`font-bold truncate ${item.user_id === user?.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                                                <div className={`font-bold truncate text-sm ${item.user_id === user?.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>
                                                     {item.user_id === user?.id ? 'You' : item.full_name}
                                                 </div>
-                                                <div className="text-xs text-slate-500">{item.district}</div>
+                                                <div className="text-[10px] text-slate-500">{item.district}</div>
                                             </div>
-                                            <div className={`font-bold ${item.user_id === user?.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>{item.points}</div>
+                                            <div className={`font-bold text-sm ${item.user_id === user?.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>{item.points}</div>
                                         </div>
                                     ))}
                                 </div>
@@ -636,36 +628,36 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
             {/* Quiz Modal */}
             {activeQuiz && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl p-6 sm:p-10 animate-scale-up max-h-[90vh] overflow-y-auto">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700">
                         {!quizSubmitted ? (
                             <>
-                                <div className="flex justify-between items-center mb-8">
+                                <div className="flex justify-between items-center mb-6">
                                     <div>
-                                        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">{activeQuiz.title}</h3>
-                                        <p className="text-sm text-slate-500">{t.questions} {currentQuestionIndex + 1} / {quizQuestions.length}</p>
+                                        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{activeQuiz.title}</h3>
+                                        <p className="text-xs text-slate-500">{t.questions} {currentQuestionIndex + 1} / {quizQuestions.length}</p>
                                     </div>
-                                    <button onClick={() => setActiveQuiz(null)} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200">✕</button>
+                                    <button onClick={() => setActiveQuiz(null)} className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">✕</button>
                                 </div>
 
                                 <div className="mb-8">
-                                    <div className="w-full bg-slate-100 h-2 rounded-full mb-6">
-                                        <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}></div>
+                                    <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full mb-6">
+                                        <div className="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}></div>
                                     </div>
-                                    <h2 className="text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-200 leading-relaxed mb-6">
+                                    <h2 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-200 leading-relaxed mb-6">
                                         {quizQuestions[currentQuestionIndex]?.question_text}
                                     </h2>
-                                    <div className="space-y-3">
+                                    <div className="space-y-2.5">
                                         {quizQuestions[currentQuestionIndex]?.options.map((option, idx) => {
                                             const isSelected = userAnswers[quizQuestions[currentQuestionIndex].id] === idx;
                                             const isCorrect = idx === quizQuestions[currentQuestionIndex].correct_option_index;
 
-                                            let buttonClass = 'border-slate-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-600 dark:text-slate-400';
+                                            let buttonClass = 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 text-slate-600 dark:text-slate-400';
 
                                             if (reviewMode) {
                                                 if (isCorrect) buttonClass = 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-bold';
                                                 else if (isSelected && !isCorrect) buttonClass = 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400';
-                                                else buttonClass = 'border-slate-100 dark:border-slate-700 opacity-60';
+                                                else buttonClass = 'border-slate-100 dark:border-slate-800 opacity-60';
                                             } else if (isSelected) {
                                                 buttonClass = 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-bold';
                                             }
@@ -675,9 +667,9 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                                     key={idx}
                                                     onClick={() => !reviewMode && handleAnswerSelect(quizQuestions[currentQuestionIndex].id, idx)}
                                                     disabled={reviewMode}
-                                                    className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${buttonClass}`}
+                                                    className={`w-full text-left p-3.5 rounded-lg border transition-all duration-200 text-sm ${buttonClass}`}
                                                 >
-                                                    <span className="mr-3 text-slate-400">{String.fromCharCode(65 + idx)}.</span> {option}
+                                                    <span className="mr-3 text-slate-400 font-mono">{String.fromCharCode(65 + idx)}.</span> {option}
                                                     {reviewMode && isCorrect && <span className="float-right text-green-600">✓</span>}
                                                     {reviewMode && isSelected && !isCorrect && <span className="float-right text-red-600">✗</span>}
                                                 </button>
@@ -690,29 +682,29 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                     <button
                                         disabled={currentQuestionIndex === 0}
                                         onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
-                                        className="text-slate-500 hover:text-slate-800 dark:text-slate-200 font-semibold disabled:opacity-30 px-4"
+                                        className="text-slate-500 hover:text-slate-800 dark:text-slate-200 font-bold text-sm disabled:opacity-30 px-4"
                                     >
                                         ← Prev
                                     </button>
                                     {currentQuestionIndex === quizQuestions.length - 1 ? (
-                                        <button onClick={reviewMode ? () => setActiveQuiz(null) : submitQuiz} className={`px-8 py-3 rounded-xl font-bold shadow-md ${reviewMode ? 'bg-slate-800 text-white hover:bg-slate-900' : 'bg-green-600 text-white hover:bg-green-700'}`}>
+                                        <button onClick={reviewMode ? () => setActiveQuiz(null) : submitQuiz} className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-colors ${reviewMode ? 'bg-slate-800 dark:bg-slate-700 text-white hover:bg-slate-900 dark:hover:bg-slate-600' : 'bg-green-600 text-white hover:bg-green-700'}`}>
                                             {reviewMode ? 'Close Review' : 'Finish Quiz'}
                                         </button>
                                     ) : (
-                                        <button onClick={() => setCurrentQuestionIndex(prev => prev + 1)} className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-md">
+                                        <button onClick={() => setCurrentQuestionIndex(prev => prev + 1)} className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors">
                                             Next →
                                         </button>
                                     )}
                                 </div>
                             </>
                         ) : (
-                            <div className="text-center py-8">
-                                <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 animate-scale-up">🎉</div>
-                                <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.completed}</h2>
-                                <p className="text-slate-500 mb-8">{t.score}</p>
-                                <div className="text-6xl font-bold text-blue-600 mb-2">{score}</div>
-                                <div className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-10">Total Points Earned</div>
-                                <button onClick={() => { setActiveQuiz(null); setQuizSubmitted(false); }} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 shadow-xl shadow-slate-200">
+                            <div className="text-center py-6">
+                                <div className="w-20 h-20 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">🎉</div>
+                                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.completed}</h2>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">{t.score}</p>
+                                <div className="text-5xl font-bold text-blue-600 dark:text-blue-400 mb-2">{score}</div>
+                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10">Total Points Earned</div>
+                                <button onClick={() => { setActiveQuiz(null); setQuizSubmitted(false); }} className="w-full py-3 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-lg font-bold hover:bg-slate-800 dark:hover:bg-white transition-colors">
                                     {t.close}
                                 </button>
                             </div>
@@ -725,30 +717,28 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 }
 
 const SkeletonCard = () => (
-    <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
-        <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-xl shimmer"></div>
-            <div className="h-6 w-32 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
+    <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
+        <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-lg shimmer"></div>
+            <div className="h-6 w-32 bg-slate-100 dark:bg-slate-700 rounded shimmer"></div>
         </div>
-        <div className="h-8 w-3/4 bg-slate-200 dark:bg-slate-700 rounded mb-4 shimmer"></div>
-        <div className="h-4 w-full bg-slate-200 dark:bg-slate-700 rounded mb-2 shimmer"></div>
-        <div className="h-4 w-2/3 bg-slate-200 dark:bg-slate-700 rounded mb-6 shimmer"></div>
-        <div className="flex gap-4 mb-8">
-            <div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
-            <div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
+        <div className="h-8 w-3/4 bg-slate-100 dark:bg-slate-700 rounded mb-6 shimmer"></div>
+        <div className="flex justify-center gap-8 mb-8">
+            <div className="h-4 w-16 bg-slate-100 dark:bg-slate-700 rounded shimmer"></div>
+            <div className="h-4 w-16 bg-slate-100 dark:bg-slate-700 rounded shimmer"></div>
         </div>
-        <div className="h-12 w-full bg-slate-200 dark:bg-slate-700 rounded-xl shimmer"></div>
+        <div className="h-12 w-full bg-slate-100 dark:bg-slate-700 rounded-lg shimmer"></div>
     </div>
 );
 
 const SkeletonRow = () => (
-    <div className="flex items-center p-4 sm:p-6 border-b border-slate-50 dark:border-slate-700 last:border-0">
-        <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded shimmer mr-4"></div>
-        <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full shimmer mr-4"></div>
+    <div className="flex items-center p-4 border-b border-slate-50 dark:border-slate-700 last:border-0">
+        <div className="w-6 h-4 bg-slate-100 dark:bg-slate-700 rounded shimmer mr-4"></div>
+        <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-full shimmer mr-4"></div>
         <div className="flex-1 space-y-2">
-            <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
-            <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
+            <div className="h-4 w-32 bg-slate-100 dark:bg-slate-700 rounded shimmer"></div>
+            <div className="h-3 w-20 bg-slate-100 dark:bg-slate-700 rounded shimmer"></div>
         </div>
-        <div className="h-6 w-12 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
+        <div className="h-6 w-12 bg-slate-100 dark:bg-slate-700 rounded shimmer"></div>
     </div>
 );
