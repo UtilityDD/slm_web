@@ -21,6 +21,61 @@ const ServiceTableSkeleton = () => (
     </div>
 );
 
+const ServiceItem = React.memo(({ service, serviceTypes, onEdit, onDelete }) => {
+    const typeConfig = serviceTypes[service.type] || serviceTypes.hospitals;
+    return (
+        <div className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+            <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xl">{typeConfig.icon}</span>
+                        <h3 className="font-bold text-slate-900 dark:text-slate-100">{service.name}</h3>
+                        <span className={`px-2 py-0.5 rounded text-xs font-semibold bg-${typeConfig.color}-100 text-${typeConfig.color}-700 dark:bg-${typeConfig.color}-900/30 dark:text-${typeConfig.color}-400`}>
+                            {typeConfig.label}
+                        </span>
+                    </div>
+                    <div className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
+                        <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>{service.location || 'No location'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            <a href={`tel:${service.phone}`} className="text-blue-600 dark:text-blue-400 hover:underline">
+                                {service.phone}
+                            </a>
+                        </div>
+                        {service.address && (
+                            <div className="text-xs text-slate-500 dark:text-slate-500 mt-2">
+                                {service.address}
+                            </div>
+                        )}
+                    </div>
+                </div>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => onEdit(service)}
+                        className="px-3 py-1.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+                    >
+                        Edit
+                    </button>
+                    <button
+                        onClick={() => onDelete(service.id)}
+                        className="px-3 py-1.5 text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+});
+
 export default function AdminServices({ language = 'en' }) {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -203,8 +258,8 @@ export default function AdminServices({ language = 'en' }) {
                     <button
                         onClick={() => setServiceFilter('all')}
                         className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${serviceFilter === 'all'
-                                ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900'
-                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
+                            ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900'
+                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
                             }`}
                     >
                         All ({services.length})
@@ -216,8 +271,8 @@ export default function AdminServices({ language = 'en' }) {
                                 key={type}
                                 onClick={() => setServiceFilter(type)}
                                 className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${serviceFilter === type
-                                        ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900'
-                                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
+                                    ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900'
+                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
                                     }`}
                             >
                                 {config.icon} {config.label} ({count})
@@ -240,60 +295,15 @@ export default function AdminServices({ language = 'en' }) {
                 ) : (
                     <div className="bg-white dark:bg-slate-800 rounded-lg shadow overflow-hidden">
                         <div className="divide-y divide-slate-200 dark:divide-slate-700">
-                            {filteredServices.map((service) => {
-                                const typeConfig = serviceTypes[service.type] || serviceTypes.hospitals;
-                                return (
-                                    <div key={service.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-xl">{typeConfig.icon}</span>
-                                                    <h3 className="font-bold text-slate-900 dark:text-slate-100">{service.name}</h3>
-                                                    <span className={`px-2 py-0.5 rounded text-xs font-semibold bg-${typeConfig.color}-100 text-${typeConfig.color}-700 dark:bg-${typeConfig.color}-900/30 dark:text-${typeConfig.color}-400`}>
-                                                        {typeConfig.label}
-                                                    </span>
-                                                </div>
-                                                <div className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
-                                                    <div className="flex items-center gap-2">
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                        </svg>
-                                                        <span>{service.location || 'No location'}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                                        </svg>
-                                                        <a href={`tel:${service.phone}`} className="text-blue-600 dark:text-blue-400 hover:underline">
-                                                            {service.phone}
-                                                        </a>
-                                                    </div>
-                                                    {service.address && (
-                                                        <div className="text-xs text-slate-500 dark:text-slate-500 mt-2">
-                                                            {service.address}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => handleEditService(service)}
-                                                    className="px-3 py-1.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteService(service.id)}
-                                                    className="px-3 py-1.5 text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                                >
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                            {filteredServices.map((service) => (
+                                <ServiceItem
+                                    key={service.id}
+                                    service={service}
+                                    serviceTypes={serviceTypes}
+                                    onEdit={handleEditService}
+                                    onDelete={handleDeleteService}
+                                />
+                            ))}
                         </div>
                     </div>
                 )}

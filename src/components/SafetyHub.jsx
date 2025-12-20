@@ -23,6 +23,66 @@ const PPESkeleton = () => (
     </div>
 );
 
+const ProtocolCard = React.memo(({ level, index, onClick }) => (
+    <div
+        onClick={() => onClick(level)}
+        className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md transition-all cursor-pointer group"
+    >
+        <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 rounded-full bg-orange-600 text-white flex items-center justify-center text-lg font-bold shadow-md shadow-orange-500/20 group-hover:scale-110 transition-transform">
+                {index + 1}
+            </div>
+            <span className="text-slate-400 dark:text-slate-500">→</span>
+        </div>
+        <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 mb-0.5">{level.level_name}</h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400">{level.focus}</p>
+    </div>
+));
+
+const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, onClick }) => {
+    const completedCount = completedLessons.filter(id => id && id.toString().startsWith(`${chapter.number}.`)).length;
+    const progress = chapter.count > 0 ? Math.min(100, Math.round((completedCount / chapter.count) * 100)) : 0;
+
+    return (
+        <div
+            onClick={() => onClick(chapter)}
+            className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-md transition-all cursor-pointer group relative overflow-hidden"
+        >
+            <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 flex items-center justify-center text-lg font-bold border border-orange-100 dark:border-orange-900/50">
+                        {chapter.number}
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-slate-900 dark:text-slate-100 leading-tight group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                            {chapter.title}
+                        </h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            {chapter.count} {language === 'en' ? 'Lessons' : 'পাঠ'}
+                        </p>
+                    </div>
+                </div>
+                {progress === 100 && (
+                    <div className="text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
+                        {language === 'en' ? 'Done' : 'সম্পন্ন'}
+                    </div>
+                )}
+            </div>
+
+            {/* Progress Bar */}
+            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mt-2">
+                <div
+                    className={`h-full rounded-full transition-all duration-500 ${progress === 100 ? 'bg-emerald-500' : 'bg-orange-500'}`}
+                    style={{ width: `${progress}%` }}
+                ></div>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-1.5 text-right">
+                {progress}% {language === 'en' ? 'Complete' : 'সম্পন্ন'}
+            </p>
+        </div>
+    );
+});
+
 export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     const [activeTab, setActiveTab] = useState('protocols');
     const [ppeList, setPpeList] = useState([]);
@@ -160,6 +220,31 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
         fetchCarousel();
         fetchTrainingChapters();
     }, [language]);
+
+    const handleChapterClick = async (chapter) => {
+        setTrainingLoading(true);
+        // Lazy load subchapters
+        try {
+            const promises = [];
+            for (let s = 1; s <= chapter.count; s++) {
+                promises.push(
+                    fetch(`/quizzes/chapter_${chapter.number}_${s}.json`)
+                        .then(r => r.ok ? r.json() : null)
+                        .catch(() => null)
+                );
+            }
+            const results = await Promise.all(promises);
+            const subchapters = results
+                .map((data, idx) => data ? { ...data, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
+                .filter(Boolean);
+
+            setSelectedChapter({ ...chapter, subchapters });
+        } catch (err) {
+            console.error("Error loading chapter:", err);
+        } finally {
+            setTrainingLoading(false);
+        }
+    };
 
     const nextRule = () => {
         setCurrentRuleIndex((prev) => (prev + 1) % activeRules.length);
@@ -526,21 +611,14 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                         </div>
 
                         {/* Protocol Categories - Dynamic from JSON */}
+                        {/* Protocol Categories - Dynamic from JSON */}
                         {protocolsData?.levels.map((level, index) => (
-                            <div
+                            <ProtocolCard
                                 key={index}
-                                onClick={() => setSelectedLevel(level)}
-                                className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md transition-all cursor-pointer group"
-                            >
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="w-10 h-10 rounded-full bg-orange-600 text-white flex items-center justify-center text-lg font-bold shadow-md shadow-orange-500/20 group-hover:scale-110 transition-transform">
-                                        {index + 1}
-                                    </div>
-                                    <span className="text-slate-400 dark:text-slate-500">→</span>
-                                </div>
-                                <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 mb-0.5">{level.level_name}</h3>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">{level.focus}</p>
-                            </div>
+                                level={level}
+                                index={index}
+                                onClick={setSelectedLevel}
+                            />
                         ))}
                     </div>
                 )}
@@ -555,73 +633,15 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                         ) : !selectedChapter && !trainingContent ? (
                             /* Chapter List View */
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {trainingChapters.map((chapter) => {
-                                    const completedCount = completedLessons.filter(id => id && id.toString().startsWith(`${chapter.number}.`)).length;
-                                    const progress = chapter.count > 0 ? Math.min(100, Math.round((completedCount / chapter.count) * 100)) : 0;
-
-                                    return (
-                                        <div
-                                            key={chapter.number}
-                                            onClick={async () => {
-                                                setTrainingLoading(true);
-                                                // Lazy load subchapters
-                                                try {
-                                                    const promises = [];
-                                                    for (let s = 1; s <= chapter.count; s++) {
-                                                        promises.push(
-                                                            fetch(`/quizzes/chapter_${chapter.number}_${s}.json`)
-                                                                .then(r => r.ok ? r.json() : null)
-                                                                .catch(() => null)
-                                                        );
-                                                    }
-                                                    const results = await Promise.all(promises);
-                                                    const subchapters = results
-                                                        .map((data, idx) => data ? { ...data, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
-                                                        .filter(Boolean);
-
-                                                    setSelectedChapter({ ...chapter, subchapters });
-                                                } catch (err) {
-                                                    console.error("Error loading chapter:", err);
-                                                } finally {
-                                                    setTrainingLoading(false);
-                                                }
-                                            }}
-                                            className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-md transition-all cursor-pointer group relative overflow-hidden"
-                                        >
-                                            <div className="flex items-start justify-between mb-3">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 flex items-center justify-center text-lg font-bold border border-orange-100 dark:border-orange-900/50">
-                                                        {chapter.number}
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="font-bold text-slate-900 dark:text-slate-100 leading-tight group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                                                            {chapter.title}
-                                                        </h3>
-                                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                                            {chapter.count} {language === 'en' ? 'Lessons' : 'পাঠ'}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                {progress === 100 && (
-                                                    <div className="text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
-                                                        {language === 'en' ? 'Done' : 'সম্পন্ন'}
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Progress Bar */}
-                                            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mt-2">
-                                                <div
-                                                    className={`h-full rounded-full transition-all duration-500 ${progress === 100 ? 'bg-emerald-500' : 'bg-orange-500'}`}
-                                                    style={{ width: `${progress}%` }}
-                                                ></div>
-                                            </div>
-                                            <p className="text-[10px] text-slate-400 mt-1.5 text-right">
-                                                {progress}% {language === 'en' ? 'Complete' : 'সম্পন্ন'}
-                                            </p>
-                                        </div>
-                                    );
-                                })}
+                                {trainingChapters.map((chapter) => (
+                                    <TrainingChapterCard
+                                        key={chapter.number}
+                                        chapter={chapter}
+                                        completedLessons={completedLessons}
+                                        language={language}
+                                        onClick={handleChapterClick}
+                                    />
+                                ))}
                             </div>
                         ) : selectedChapter && !trainingContent ? (
                             /* Subchapter List View */
