@@ -120,7 +120,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                 if (!chapters[c]) {
                                     chapters[c] = {
                                         number: c,
-                                        title: `Chapter ${c}`, // Will be enhanced with actual titles
+                                        title: data.badge_name || `Chapter ${c}`, // Use badge_name from first subchapter
                                         subchapters: []
                                     };
                                 }
