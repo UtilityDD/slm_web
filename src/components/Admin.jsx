@@ -35,6 +35,7 @@ export default function Admin({ user, userProfile, language }) {
   const [editingUser, setEditingUser] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -160,7 +161,7 @@ export default function Admin({ user, userProfile, language }) {
       setAvatarFile(null);
       setAvatarPreview(null);
       fetchUsers(); // Refresh users list
-      alert('User updated successfully!');
+      setShowSuccessModal(true);
     }
   };
 
@@ -339,6 +340,47 @@ export default function Admin({ user, userProfile, language }) {
           </div>
         </div>
       )}
+
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        language={language}
+      />
     </div>
   );
 }
+
+const SuccessModal = ({ isOpen, onClose, language }) => {
+  if (!isOpen) return null;
+
+  const t = {
+    en: {
+      title: 'Success!',
+      message: 'User profile has been updated successfully.',
+      close: 'Close'
+    },
+    bn: {
+      title: 'সফল!',
+      message: 'ব্যবহারকারীর প্রোফাইল সফলভাবে আপডেট করা হয়েছে।',
+      close: 'বন্ধ করুন'
+    }
+  }[language || 'en'];
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center border border-slate-100 dark:border-slate-700 animate-scale-in">
+        <div className="w-16 h-16 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
+          ✓
+        </div>
+        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.title}</h3>
+        <p className="text-slate-500 dark:text-slate-400 mb-6">{t.message}</p>
+        <button
+          onClick={onClose}
+          className="w-full py-3 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-white transition-colors"
+        >
+          {t.close}
+        </button>
+      </div>
+    </div>
+  );
+};
