@@ -9,33 +9,68 @@ export default function Campaign({ language = 'en', setCurrentView }) {
     // Placeholder URL - User can update this later
     const APP_URL = "https://smartlineman.app";
 
-    const handleDownload = async () => {
-        if (!posterRef.current) return;
-        setIsDownloading(true);
-
+    const generatePosterBlob = async () => {
+        if (!posterRef.current) return null;
         try {
             const canvas = await html2canvas(posterRef.current, {
-                scale: 3, // High resolution for print
+                scale: 3,
                 useCORS: true,
                 backgroundColor: null
             });
-
-            const link = document.createElement('a');
-            link.download = `smartlineman-campaign.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
         } catch (error) {
-            console.error("Download failed:", error);
-            alert("Failed to generate image. Please try again.");
-        } finally {
-            setIsDownloading(false);
+            console.error("Image generation failed:", error);
+            return null;
         }
     };
 
-    const handleWhatsAppShare = () => {
+    const handleDownload = async () => {
+        setIsDownloading(true);
+        const blob = await generatePosterBlob();
+        if (blob) {
+            const link = document.createElement('a');
+            link.download = `smartlineman-campaign.png`;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+            URL.revokeObjectURL(link.href);
+        } else {
+            alert("Failed to generate image. Please try again.");
+        }
+        setIsDownloading(false);
+    };
+
+    const handleWhatsAppShare = async () => {
         const text = language === 'en'
             ? "⚡ Check out SmartLineman - The ultimate safety and community app for West Bengal Linemen! Download here: " + APP_URL
             : "⚡ স্মার্ট লাইনম্যান অ্যাপটি দেখুন - পশ্চিমবঙ্গের লাইনম্যানদের জন্য সেরা নিরাপত্তা এবং কমিউনিটি অ্যাপ! ডাউনলোড করুন: " + APP_URL;
+
+        if (navigator.share && navigator.canShare) {
+            setIsDownloading(true); // Show loading state while generating
+            const blob = await generatePosterBlob();
+            setIsDownloading(false);
+
+            if (blob) {
+                const file = new File([blob], "smartlineman-campaign.png", { type: "image/png" });
+                const shareData = {
+                    files: [file],
+                    title: 'SmartLineman',
+                    text: text
+                };
+
+                if (navigator.canShare(shareData)) {
+                    try {
+                        await navigator.share(shareData);
+                        return;
+                    } catch (error) {
+                        if (error.name !== 'AbortError') {
+                            console.error("Share failed:", error);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fallback for desktop or unsupported browsers
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     };
 
