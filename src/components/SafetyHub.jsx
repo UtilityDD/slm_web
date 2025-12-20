@@ -41,6 +41,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     const [currentRuleIndex, setCurrentRuleIndex] = useState(0);
     const [protocolsData, setProtocolsData] = useState(null);
     const [selectedLevel, setSelectedLevel] = useState(null);
+    const [carouselData, setCarouselData] = useState(null);
 
     const SAFETY_RULES = [
         {
@@ -65,12 +66,14 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
         }
     ];
 
+    const activeRules = carouselData?.rules || SAFETY_RULES.map(r => r.rule);
+
     useEffect(() => {
         const timer = setInterval(() => {
-            setCurrentRuleIndex((prev) => (prev + 1) % SAFETY_RULES.length);
+            setCurrentRuleIndex((prev) => (prev + 1) % activeRules.length);
         }, 5000);
         return () => clearInterval(timer);
-    }, [SAFETY_RULES.length]);
+    }, [activeRules.length]);
 
     useEffect(() => {
         const fetchProtocols = async () => {
@@ -83,15 +86,28 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 console.error('Error fetching protocols:', error);
             }
         };
+
+        const fetchCarousel = async () => {
+            try {
+                const fileName = language === 'en' ? 'carousol_en.json' : 'carousol.json';
+                const response = await fetch(`/quizzes/${fileName}`);
+                const data = await response.json();
+                setCarouselData(data);
+            } catch (error) {
+                console.error('Error fetching carousel data:', error);
+            }
+        };
+
         fetchProtocols();
+        fetchCarousel();
     }, [language]);
 
     const nextRule = () => {
-        setCurrentRuleIndex((prev) => (prev + 1) % SAFETY_RULES.length);
+        setCurrentRuleIndex((prev) => (prev + 1) % activeRules.length);
     };
 
     const prevRule = () => {
-        setCurrentRuleIndex((prev) => (prev - 1 + SAFETY_RULES.length) % SAFETY_RULES.length);
+        setCurrentRuleIndex((prev) => (prev - 1 + activeRules.length) % activeRules.length);
     };
 
     const PPE_ITEMS = [
@@ -404,16 +420,23 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                             </button>
 
                             <div className="relative z-10 flex flex-col items-center justify-center h-full px-6">
+                                {/* Carousel Title if available */}
+                                {carouselData?.title && (
+                                    <span className="text-[10px] uppercase tracking-widest font-bold text-orange-500/60 dark:text-orange-400/40 mb-2">
+                                        {carouselData.title}
+                                    </span>
+                                )}
+
                                 {/* Rule Text */}
                                 <div key={currentRuleIndex} className="max-w-2xl text-center mb-6">
                                     <p className="text-orange-900 dark:text-orange-100 text-lg sm:text-2xl font-bold leading-relaxed">
-                                        {SAFETY_RULES[currentRuleIndex].rule}
+                                        {activeRules[currentRuleIndex]}
                                     </p>
                                 </div>
 
                                 {/* Indicators */}
                                 <div className="flex gap-2">
-                                    {SAFETY_RULES.map((_, i) => (
+                                    {activeRules.map((_, i) => (
                                         <div key={i} className={`h-1 rounded-full transition-all duration-500 ${i === currentRuleIndex ? 'bg-orange-600 dark:bg-orange-400 w-6' : 'bg-orange-300 dark:bg-orange-700 w-1.5'}`}></div>
                                     ))}
                                 </div>
