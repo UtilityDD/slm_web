@@ -652,7 +652,7 @@ const ProtocolDetailModal = ({ level, onClose, language }) => {
                 <div className="p-4 sm:p-6 space-y-6">
                     {/* Summary */}
                     <div className="bg-orange-50 dark:bg-orange-900/10 p-4 rounded-xl border border-orange-100 dark:border-orange-900/30">
-                        <p className="text-sm text-orange-900 dark:text-orange-100 font-medium leading-relaxed">
+                        <p className={`reading-content font-medium ${language === 'bn' ? 'font-bengali' : ''}`}>
                             {level.content.summary}
                         </p>
                     </div>
@@ -666,7 +666,7 @@ const ProtocolDetailModal = ({ level, onClose, language }) => {
                             {level.content.practical_tips.map((tip, i) => (
                                 <div key={i} className="flex gap-3 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-100 dark:border-slate-700">
                                     <span className="text-orange-500 font-bold">•</span>
-                                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{tip}</p>
+                                    <p className={`reading-content text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>{tip}</p>
                                 </div>
                             ))}
                         </div>
@@ -683,11 +683,11 @@ const ProtocolDetailModal = ({ level, onClose, language }) => {
                                     <div key={i} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div className="p-3 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-900/20">
                                             <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider block mb-1">Myth</span>
-                                            <p className="text-xs text-red-900 dark:text-red-200">{item.myth}</p>
+                                            <p className={`reading-content text-xs ${language === 'bn' ? 'font-bengali' : ''}`}>{item.myth}</p>
                                         </div>
                                         <div className="p-3 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-100 dark:border-green-900/20">
                                             <span className="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase tracking-wider block mb-1">Fact</span>
-                                            <p className="text-xs text-green-900 dark:text-green-200">{item.fact}</p>
+                                            <p className={`reading-content text-xs font-medium ${language === 'bn' ? 'font-bengali' : ''}`}>{item.fact}</p>
                                         </div>
                                     </div>
                                 ))}

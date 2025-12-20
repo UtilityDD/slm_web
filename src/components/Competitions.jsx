@@ -644,7 +644,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                     <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full mb-6">
                                         <div className="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}></div>
                                     </div>
-                                    <h2 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-200 leading-relaxed mb-6">
+                                    <h2 className={`reading-content text-lg sm:text-xl font-bold mb-6 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {quizQuestions[currentQuestionIndex]?.question_text}
                                     </h2>
                                     <div className="space-y-2.5">
@@ -667,9 +667,12 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                                     key={idx}
                                                     onClick={() => !reviewMode && handleAnswerSelect(quizQuestions[currentQuestionIndex].id, idx)}
                                                     disabled={reviewMode}
-                                                    className={`w-full text-left p-3.5 rounded-lg border transition-all duration-200 text-sm ${buttonClass}`}
+                                                    className={`w-full text-left p-3.5 rounded-lg border transition-all duration-200 ${buttonClass}`}
                                                 >
-                                                    <span className="mr-3 text-slate-400 font-mono">{String.fromCharCode(65 + idx)}.</span> {option}
+                                                    <span className="mr-3 text-slate-400 font-mono">{String.fromCharCode(65 + idx)}.</span>
+                                                    <span className={`reading-content text-sm sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                        {option}
+                                                    </span>
                                                     {reviewMode && isCorrect && <span className="float-right text-green-600">✓</span>}
                                                     {reviewMode && isSelected && !isCorrect && <span className="float-right text-red-600">✗</span>}
                                                 </button>
