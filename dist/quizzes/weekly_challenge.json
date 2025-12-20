@@ -1,0 +1,222 @@
+[
+    {
+        "id": "q1",
+        "question_text": "What is the primary purpose of a lightning arrester?",
+        "options": [
+            "To measure voltage",
+            "To protect equipment from high voltage surges",
+            "To increase line current",
+            "To support the utility pole"
+        ],
+        "correct_option_index": 1
+    },
+    {
+        "id": "q2",
+        "question_text": "Which class of fire extinguisher is used for electrical fires?",
+        "options": [
+            "Class A",
+            "Class B",
+            "Class C",
+            "Class D"
+        ],
+        "correct_option_index": 2
+    },
+    {
+        "id": "q3",
+        "question_text": "What is the minimum safe approach distance for 11kV lines?",
+        "options": [
+            "0.5 meters",
+            "1.2 meters",
+            "2.0 meters",
+            "5.0 meters"
+        ],
+        "correct_option_index": 1
+    },
+    {
+        "id": "q4",
+        "question_text": "In case of electric shock, what is the FIRST thing you should do?",
+        "options": [
+            "Pull the person away with your hands",
+            "Pour water on the person",
+            "Switch off the power source",
+            "Call the police"
+        ],
+        "correct_option_index": 2
+    },
+    {
+        "id": "q5",
+        "question_text": "What does 'PPE' stand for?",
+        "options": [
+            "Personal Protective Equipment",
+            "Power Plant Engineering",
+            "Public Power Enterprise",
+            "Protective Power Equipment"
+        ],
+        "correct_option_index": 0
+    },
+    {
+        "id": "q6",
+        "question_text": "Which color wire represents the 'Live' or 'Phase' connection in standard single-phase wiring?",
+        "options": [
+            "Green",
+            "Black",
+            "Red",
+            "Blue"
+        ],
+        "correct_option_index": 2
+    },
+    {
+        "id": "q7",
+        "question_text": "What is the unit of electrical resistance?",
+        "options": [
+            "Ampere",
+            "Volt",
+            "Ohm",
+            "Watt"
+        ],
+        "correct_option_index": 2
+    },
+    {
+        "id": "q8",
+        "question_text": "Before climbing a pole, what must you check first?",
+        "options": [
+            "The weather forecast",
+            "The condition of the pole base",
+            "Your lunch box",
+            "The time of day"
+        ],
+        "correct_option_index": 1
+    },
+    {
+        "id": "q9",
+        "question_text": "What is the purpose of a transformer?",
+        "options": [
+            "To convert AC to DC",
+            "To store electricity",
+            "To step up or step down voltage",
+            "To measure power consumption"
+        ],
+        "correct_option_index": 2
+    },
+    {
+        "id": "q10",
+        "question_text": "Which tool is used to measure current without breaking the circuit?",
+        "options": [
+            "Multimeter",
+            "Clamp Meter",
+            "Megger",
+            "Tester"
+        ],
+        "correct_option_index": 1
+    },
+    {
+        "id": "q11",
+        "question_text": "What does a 'Megger' measure?",
+        "options": [
+            "Voltage",
+            "Current",
+            "Insulation Resistance",
+            "Frequency"
+        ],
+        "correct_option_index": 2
+    },
+    {
+        "id": "q12",
+        "question_text": "Why is earthing important?",
+        "options": [
+            "To save electricity",
+            "To provide a path for fault current to ground",
+            "To increase voltage",
+            "To reduce noise"
+        ],
+        "correct_option_index": 1
+    },
+    {
+        "id": "q13",
+        "question_text": "What is the standard frequency of AC supply in India?",
+        "options": [
+            "60 Hz",
+            "50 Hz",
+            "100 Hz",
+            "25 Hz"
+        ],
+        "correct_option_index": 1
+    },
+    {
+        "id": "q14",
+        "question_text": "Which material is a good conductor of electricity?",
+        "options": [
+            "Rubber",
+            "Copper",
+            "Glass",
+            "Plastic"
+        ],
+        "correct_option_index": 1
+    },
+    {
+        "id": "q15",
+        "question_text": "What should be worn to protect eyes from sparks?",
+        "options": [
+            "Sunglasses",
+            "Safety Goggles",
+            "Reading Glasses",
+            "Contact Lenses"
+        ],
+        "correct_option_index": 1
+    },
+    {
+        "id": "q16",
+        "question_text": "What is the full form of MCB?",
+        "options": [
+            "Miniature Circuit Breaker",
+            "Main Circuit Board",
+            "Maximum Current Breaker",
+            "Miniature Current Board"
+        ],
+        "correct_option_index": 0
+    },
+    {
+        "id": "q17",
+        "question_text": "Which gas is used in SF6 circuit breakers?",
+        "options": [
+            "Oxygen",
+            "Nitrogen",
+            "Sulfur Hexafluoride",
+            "Hydrogen"
+        ],
+        "correct_option_index": 2
+    },
+    {
+        "id": "q18",
+        "question_text": "What is the danger of a 'Flashover'?",
+        "options": [
+            "It causes a loud noise",
+            "It can cause severe burns and eye damage",
+            "It trips the meter",
+            "It drains the battery"
+        ],
+        "correct_option_index": 1
+    },
+    {
+        "id": "q19",
+        "question_text": "When working on a line, what is the purpose of 'Shorting and Grounding'?",
+        "options": [
+            "To test the line",
+            "To protect against accidental energization",
+            "To clean the wire",
+            "To measure resistance"
+        ],
+        "correct_option_index": 1
+    },
+    {
+        "id": "q20",
+        "question_text": "What does the 'L' on a switch stand for?",
+        "options": [
+            "Low",
+            "Light",
+            "Line (Live)",
+            "Level"
+        ],
+        "correct_option_index": 2
+    }
+]

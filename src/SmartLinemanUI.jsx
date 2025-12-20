@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from "react";
-import Competitions from "./components/Competitions";
-import Community from "./components/Community";
-import Emergency from "./components/Emergency";
-import SafetyHub from "./components/SafetyHub";
-import Login from "./components/Login";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { supabase } from "./supabaseClient";
 import LogoutConfirmationModal from "./components/LogoutConfirmationModal";
-import Admin from "./components/Admin";
-import AdminServices from "./components/AdminServices";
-import Home from "./components/Home";
-import Campaign from "./components/Campaign";
+
+// Lazy load heavy components for code splitting
+const Competitions = lazy(() => import("./components/Competitions"));
+const Community = lazy(() => import("./components/Community"));
+const Emergency = lazy(() => import("./components/Emergency"));
+const SafetyHub = lazy(() => import("./components/SafetyHub"));
+const Login = lazy(() => import("./components/Login"));
+const Admin = lazy(() => import("./components/Admin"));
+const AdminServices = lazy(() => import("./components/AdminServices"));
+const Home = lazy(() => import("./components/Home"));
+const Campaign = lazy(() => import("./components/Campaign"));
 
 export default function SmartLinemanUI() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -250,48 +252,72 @@ export default function SmartLinemanUI() {
 
   const t = translations[language];
 
-  const renderContent = () => {
-    if (currentView === 'login') {
-      return <Login
-        onLogin={(u) => {
-          setGlobalLoading(true);
-          setUser(u);
-          showNotification(language === 'en' ? 'Welcome back!' : 'আপনাকে স্বাগতম!');
-          setTimeout(() => {
-            setCurrentView('home');
-            setGlobalLoading(false);
-          }, 800);
-        }}
-        showNotification={showNotification}
-      />;
-    }
+  // Loading component for Suspense fallback
+  const PageLoader = () => (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="text-center">
+        <div className="relative mx-auto mb-6">
+          <div className="w-16 h-16 border-4 border-blue-100 dark:border-slate-700 rounded-full"></div>
+          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <p className="text-sm font-semibold text-slate-600 dark:text-slate-300 animate-pulse">
+          {language === 'en' ? 'Loading...' : 'লোড হচ্ছে...'}
+        </p>
+      </div>
+    </div>
+  );
 
-    switch (currentView) {
-      case 'competitions':
-        return <Competitions language={language} user={user} setCurrentView={setCurrentView} />;
-      case 'community':
-        return <Community language={language} user={user} />;
-      case 'emergency':
-        return <Emergency language={language} user={user} setCurrentView={setCurrentView} />;
-      case 'safety':
-        return <SafetyHub language={language} user={user} setCurrentView={setCurrentView} />;
-      case 'admin':
-        return <Admin language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;
-      case 'admin-services':
-        return <AdminServices language={language} />;
-      case 'campaign':
-        return <Campaign language={language} setCurrentView={setCurrentView} />;
-      case 'home':
-      default:
-        if (appLoading) return <Home setCurrentView={setCurrentView} language={language} t={t} user={user} userProfile={userProfile} />;
-        return <Home
-          setCurrentView={setCurrentView}
-          language={language}
-          t={t}
-          user={user}
-          userProfile={userProfile}
+  const renderContent = () => {
+    const content = (() => {
+      if (currentView === 'login') {
+        return <Login
+          onLogin={(u) => {
+            setGlobalLoading(true);
+            setUser(u);
+            showNotification(language === 'en' ? 'Welcome back!' : 'আপনাকে স্বাগতম!');
+            setTimeout(() => {
+              setCurrentView('home');
+              setGlobalLoading(false);
+            }, 800);
+          }}
+          showNotification={showNotification}
         />;
-    }
+      }
+
+      switch (currentView) {
+        case 'competitions':
+          return <Competitions language={language} user={user} setCurrentView={setCurrentView} />;
+        case 'community':
+          return <Community language={language} user={user} />;
+        case 'emergency':
+          return <Emergency language={language} user={user} setCurrentView={setCurrentView} />;
+        case 'safety':
+          return <SafetyHub language={language} user={user} setCurrentView={setCurrentView} />;
+        case 'admin':
+          return <Admin language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;
+        case 'admin-services':
+          return <AdminServices language={language} />;
+        case 'campaign':
+          return <Campaign language={language} setCurrentView={setCurrentView} />;
+        case 'home':
+        default:
+          if (appLoading) return <Home setCurrentView={setCurrentView} language={language} t={t} user={user} userProfile={userProfile} />;
+          return <Home
+            setCurrentView={setCurrentView}
+            language={language}
+            t={t}
+            user={user}
+            userProfile={userProfile}
+          />;
+      }
+    })();
+
+    // Wrap in Suspense for code splitting
+    return (
+      <Suspense fallback={<PageLoader />}>
+        {content}
+      </Suspense>
+    );
   };
 
   return (

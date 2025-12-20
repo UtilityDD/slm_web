@@ -1,0 +1,62 @@
+[
+    {
+        "number": 1,
+        "title": "সুরক্ষা কবচ",
+        "badge": "সুরক্ষা কবচ",
+        "count": 10
+    },
+    {
+        "number": 2,
+        "title": "হাতিয়ারের ওস্তাদ",
+        "badge": "হাতিয়ারের ওস্তাদ",
+        "count": 10
+    },
+    {
+        "number": 3,
+        "title": "লাইন চেনার জাদুকর",
+        "badge": "লাইন চেনার জাদুকর",
+        "count": 10
+    },
+    {
+        "number": 4,
+        "title": "কাজের কারিগর",
+        "badge": "কাজের কারিগর",
+        "count": 10
+    },
+    {
+        "number": 5,
+        "title": "ফল্ট ফাইন্ডার",
+        "badge": "ফল্ট ফাইন্ডার",
+        "count": 10
+    },
+    {
+        "number": 6,
+        "title": "যন্ত্র গুরু",
+        "badge": "যন্ত্র গুরু",
+        "count": 11
+    },
+    {
+        "number": 7,
+        "title": "আইন কি বলে?",
+        "badge": "আইন কি বলে?",
+        "count": 10
+    },
+    {
+        "number": 8,
+        "title": "জরুরী রেগুলেশন (WBERC ফোকাস)",
+        "badge": "জরুরী রেগুলেশন",
+        "count": 10
+    },
+    {
+        "number": 9,
+        "title": "Chapter 9",
+        "badge": "Chapter 9",
+        "count": 10
+    },
+    {
+        "number": 10,
+        "title": "Chapter 10",
+        "badge": "Chapter 10",
+        "count": 10
+    }
+]
