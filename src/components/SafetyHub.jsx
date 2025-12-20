@@ -49,6 +49,38 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     const [selectedSubchapter, setSelectedSubchapter] = useState(null);
     const [trainingContent, setTrainingContent] = useState(null);
     const [trainingLoading, setTrainingLoading] = useState(false);
+    const [completedLessons, setCompletedLessons] = useState([]);
+
+    // Load completed lessons from localStorage
+    useEffect(() => {
+        if (user) {
+            const saved = localStorage.getItem(`training_progress_${user.id}`);
+            if (saved) {
+                setCompletedLessons(JSON.parse(saved));
+            }
+        }
+    }, [user]);
+
+    // Helper function to check if a lesson is unlocked
+    const isLessonUnlocked = (chapterNum, subchapterNum) => {
+        // First lesson of each chapter is always unlocked
+        if (subchapterNum === 1) return true;
+
+        // Check if previous lesson is completed
+        const previousLessonId = `${chapterNum}.${subchapterNum - 1}`;
+        return completedLessons.includes(previousLessonId);
+    };
+
+    // Mark lesson as complete
+    const markLessonComplete = (lessonId) => {
+        if (!completedLessons.includes(lessonId)) {
+            const updated = [...completedLessons, lessonId];
+            setCompletedLessons(updated);
+            if (user) {
+                localStorage.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
+            }
+        }
+    };
 
     const SAFETY_RULES = [
         {
@@ -535,27 +567,56 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                     ← {language === 'en' ? 'Back to Chapters' : 'অধ্যায়ে ফিরে যান'}
                                 </button>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {selectedChapter.subchapters.map((subchapter, index) => (
-                                        <div
-                                            key={subchapter.level_id}
-                                            onClick={() => setTrainingContent(subchapter)}
-                                            className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md transition-all cursor-pointer group"
-                                        >
-                                            <div className="flex items-start gap-4">
-                                                <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center text-sm font-bold flex-shrink-0">
-                                                    {subchapter.level_id}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="inline-block px-2 py-0.5 rounded text-xs font-bold bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 mb-2">
-                                                        {subchapter.badge_name}
+                                    {selectedChapter.subchapters.map((subchapter, index) => {
+                                        const isUnlocked = isLessonUnlocked(subchapter.chapterNum, subchapter.subchapterNum);
+                                        const isCompleted = completedLessons.includes(subchapter.level_id);
+
+                                        return (
+                                            <div
+                                                key={subchapter.level_id}
+                                                onClick={() => isUnlocked && setTrainingContent(subchapter)}
+                                                className={`bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border transition-all ${isUnlocked
+                                                    ? 'border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md cursor-pointer'
+                                                    : 'border-slate-100 dark:border-slate-800 opacity-60 cursor-not-allowed'
+                                                    } ${isCompleted ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : ''} group`}
+                                            >
+                                                <div className="flex items-start gap-4">
+                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 ${isCompleted
+                                                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                                                        : isUnlocked
+                                                            ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
+                                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                                                        }`}>
+                                                        {isCompleted ? '✓' : isUnlocked ? subchapter.level_id : '🔒'}
                                                     </div>
-                                                    <h4 className="font-bold text-base text-slate-900 dark:text-slate-100 reading-content">
-                                                        {subchapter.level_title}
-                                                    </h4>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <div className={`inline-block px-2 py-0.5 rounded text-xs font-bold ${isCompleted
+                                                                ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
+                                                                : 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400'
+                                                                }`}>
+                                                                {subchapter.badge_name}
+                                                            </div>
+                                                            {isCompleted && (
+                                                                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+                                                                    {language === 'en' ? 'Completed' : 'সম্পন্ন'}
+                                                                </span>
+                                                            )}
+                                                            {!isUnlocked && (
+                                                                <span className="text-xs text-slate-400 font-bold">
+                                                                    {language === 'en' ? 'Locked' : 'লক করা'}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <h4 className={`font-bold text-base reading-content ${isUnlocked ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'
+                                                            }`}>
+                                                            {subchapter.level_title}
+                                                        </h4>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         ) : trainingContent ? (
@@ -720,32 +781,61 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                     </div>
                                 )}
 
-                                {/* Navigation Buttons */}
-                                <div className="flex justify-between items-center mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
-                                    <button
-                                        onClick={() => {
-                                            const currentIdx = selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id);
-                                            if (currentIdx > 0) {
-                                                setTrainingContent(selectedChapter.subchapters[currentIdx - 1]);
+                                {/* Mark as Complete & Navigation Buttons */}
+                                <div className="space-y-4 mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
+                                    {/* Mark as Complete Button */}
+                                    {!completedLessons.includes(trainingContent.level_id) ? (
+                                        <button
+                                            onClick={() => markLessonComplete(trainingContent.level_id)}
+                                            className="w-full px-5 py-3 rounded-lg font-bold transition-all bg-emerald-600 text-white hover:bg-emerald-700 flex items-center justify-center gap-2"
+                                        >
+                                            <span>✓</span>
+                                            {language === 'en' ? 'Mark as Complete' : 'সম্পন্ন হিসাবে চিহ্নিত করুন'}
+                                        </button>
+                                    ) : (
+                                        <div className="w-full px-5 py-3 rounded-lg font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 flex items-center justify-center gap-2">
+                                            <span>✓</span>
+                                            {language === 'en' ? 'Lesson Completed!' : 'পাঠ সম্পন্ন!'}
+                                        </div>
+                                    )}
+
+                                    {/* Navigation Buttons */}
+                                    <div className="flex justify-between items-center">
+                                        <button
+                                            onClick={() => {
+                                                const currentIdx = selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id);
+                                                if (currentIdx > 0) {
+                                                    setTrainingContent(selectedChapter.subchapters[currentIdx - 1]);
+                                                }
+                                            }}
+                                            disabled={selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id) === 0}
+                                            className="px-5 py-2.5 rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700"
+                                        >
+                                            ← {language === 'en' ? 'Previous' : 'পূর্ববর্তী'}
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                const currentIdx = selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id);
+                                                if (currentIdx < selectedChapter.subchapters.length - 1) {
+                                                    const nextLesson = selectedChapter.subchapters[currentIdx + 1];
+                                                    // Check if next lesson is unlocked
+                                                    if (isLessonUnlocked(nextLesson.chapterNum, nextLesson.subchapterNum)) {
+                                                        setTrainingContent(nextLesson);
+                                                    }
+                                                }
+                                            }}
+                                            disabled={
+                                                selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id) === selectedChapter.subchapters.length - 1 ||
+                                                !isLessonUnlocked(
+                                                    selectedChapter.subchapters[selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id) + 1]?.chapterNum,
+                                                    selectedChapter.subchapters[selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id) + 1]?.subchapterNum
+                                                )
                                             }
-                                        }}
-                                        disabled={selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id) === 0}
-                                        className="px-5 py-2.5 rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700"
-                                    >
-                                        ← {language === 'en' ? 'Previous' : 'পূর্ববর্তী'}
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            const currentIdx = selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id);
-                                            if (currentIdx < selectedChapter.subchapters.length - 1) {
-                                                setTrainingContent(selectedChapter.subchapters[currentIdx + 1]);
-                                            }
-                                        }}
-                                        disabled={selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id) === selectedChapter.subchapters.length - 1}
-                                        className="px-5 py-2.5 rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-orange-600 text-white hover:bg-orange-700"
-                                    >
-                                        {language === 'en' ? 'Next' : 'পরবর্তী'} →
-                                    </button>
+                                            className="px-5 py-2.5 rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-orange-600 text-white hover:bg-orange-700"
+                                        >
+                                            {language === 'en' ? 'Next' : 'পরবর্তী'} →
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ) : null}
