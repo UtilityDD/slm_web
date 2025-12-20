@@ -43,6 +43,13 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     const [selectedLevel, setSelectedLevel] = useState(null);
     const [carouselData, setCarouselData] = useState(null);
 
+    // Training Zone States
+    const [trainingChapters, setTrainingChapters] = useState([]);
+    const [selectedChapter, setSelectedChapter] = useState(null);
+    const [selectedSubchapter, setSelectedSubchapter] = useState(null);
+    const [trainingContent, setTrainingContent] = useState(null);
+    const [trainingLoading, setTrainingLoading] = useState(false);
+
     const SAFETY_RULES = [
         {
             rule: language === 'en' ? "Min. Ground Clearance for LT line is 15 ft./ 4.6 meter." : "এলটি লাইনের জন্য ন্যূনতম গ্রাউন্ড ক্লিয়ারেন্স হল ১৫ ফুট/ ৪.৬ মিটার।",
@@ -98,8 +105,48 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
             }
         };
 
+        const fetchTrainingChapters = async () => {
+            try {
+                setTrainingLoading(true);
+                // Fetch all chapter files (assuming chapters 1-10 with 1-10 subchapters each)
+                const chapters = {};
+
+                for (let c = 1; c <= 10; c++) {
+                    for (let s = 1; s <= 10; s++) {
+                        try {
+                            const response = await fetch(`/quizzes/chapter_${c}_${s}.json`);
+                            if (response.ok) {
+                                const data = await response.json();
+                                if (!chapters[c]) {
+                                    chapters[c] = {
+                                        number: c,
+                                        title: `Chapter ${c}`, // Will be enhanced with actual titles
+                                        subchapters: []
+                                    };
+                                }
+                                chapters[c].subchapters.push({
+                                    ...data,
+                                    chapterNum: c,
+                                    subchapterNum: s
+                                });
+                            }
+                        } catch (err) {
+                            // Skip if chapter doesn't exist
+                        }
+                    }
+                }
+
+                setTrainingChapters(Object.values(chapters));
+                setTrainingLoading(false);
+            } catch (error) {
+                console.error('Error fetching training chapters:', error);
+                setTrainingLoading(false);
+            }
+        };
+
         fetchProtocols();
         fetchCarousel();
+        fetchTrainingChapters();
     }, [language]);
 
     const nextRule = () => {
@@ -448,33 +495,260 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 )}
 
                 {activeTab === 'training' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[1, 2, 3].map((item) => (
-                            <div key={item} className="material-card elevation-2 overflow-hidden group ripple-dark">
-                                <div className="relative h-48 bg-slate-200">
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="w-12 h-12 bg-white dark:bg-slate-800/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-xl cursor-pointer hover:scale-110 transition-transform">
-                                            ▶
+                    <div>
+                        {trainingLoading ? (
+                            <div className="text-center py-12">
+                                <div className="inline-block w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+                                <p className="mt-4 text-slate-500">Loading training content...</p>
+                            </div>
+                        ) : !selectedChapter && !trainingContent ? (
+                            /* Chapter List View */
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {trainingChapters.map((chapter) => (
+                                    <div
+                                        key={chapter.number}
+                                        onClick={() => setSelectedChapter(chapter)}
+                                        className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md transition-all cursor-pointer group"
+                                    >
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center text-xl font-bold shadow-lg shadow-orange-500/30">
+                                                {chapter.number}
+                                            </div>
+                                            <span className="text-2xl group-hover:translate-x-1 transition-transform">📚</span>
+                                        </div>
+                                        <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100 mb-2">
+                                            {chapter.title}
+                                        </h3>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                                            {chapter.subchapters.length} {language === 'en' ? 'lessons' : 'পাঠ'}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : selectedChapter && !trainingContent ? (
+                            /* Subchapter List View */
+                            <div>
+                                <button
+                                    onClick={() => setSelectedChapter(null)}
+                                    className="mb-6 flex items-center gap-2 text-orange-600 hover:text-orange-700 font-bold"
+                                >
+                                    ← {language === 'en' ? 'Back to Chapters' : 'অধ্যায়ে ফিরে যান'}
+                                </button>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {selectedChapter.subchapters.map((subchapter, index) => (
+                                        <div
+                                            key={subchapter.level_id}
+                                            onClick={() => setTrainingContent(subchapter)}
+                                            className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md transition-all cursor-pointer group"
+                                        >
+                                            <div className="flex items-start gap-4">
+                                                <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                                                    {subchapter.level_id}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="inline-block px-2 py-0.5 rounded text-xs font-bold bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 mb-2">
+                                                        {subchapter.badge_name}
+                                                    </div>
+                                                    <h4 className="font-bold text-base text-slate-900 dark:text-slate-100 reading-content">
+                                                        {subchapter.level_title}
+                                                    </h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : trainingContent ? (
+                            /* Content View */
+                            <div className="max-w-4xl mx-auto">
+                                <button
+                                    onClick={() => {
+                                        setTrainingContent(null);
+                                    }}
+                                    className="mb-6 flex items-center gap-2 text-orange-600 hover:text-orange-700 font-bold"
+                                >
+                                    ← {language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}
+                                </button>
+
+                                {/* Header */}
+                                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white mb-6 shadow-lg">
+                                    <div className="inline-block px-3 py-1 rounded-lg bg-white/20 backdrop-blur-sm text-sm font-bold mb-3">
+                                        {trainingContent.badge_name}
+                                    </div>
+                                    <h2 className="text-2xl font-bold mb-2 reading-content">{trainingContent.level_title}</h2>
+                                    <p className="text-sm opacity-90">Level {trainingContent.level_id}</p>
+                                </div>
+
+                                {/* Mission Briefing */}
+                                <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-5 rounded-r-xl mb-6">
+                                    <div className="flex items-start gap-3">
+                                        <span className="text-2xl">🎯</span>
+                                        <div>
+                                            <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2">
+                                                {language === 'en' ? 'Mission Briefing' : 'মিশন ব্রিফিং'}
+                                            </h3>
+                                            <p className="text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
+                                                {trainingContent.mission_briefing}
+                                            </p>
                                         </div>
                                     </div>
-                                    <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                                        12:45
-                                    </div>
                                 </div>
-                                <div className="p-5">
-                                    <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-md">Safety</span>
-                                    <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100 mt-2 mb-1 group-hover:text-orange-600 transition-colors">
-                                        {language === 'en' ? "Proper Use of Safety Harness" : "সেফটি হারনেস এর সঠিক ব্যবহার"}
-                                    </h3>
-                                    <p className="text-sm text-slate-500 mb-4">
-                                        Learn how to inspect and wear your safety harness correctly before climbing.
-                                    </p>
-                                    <button className="text-sm font-bold text-orange-600 hover:text-orange-700">
-                                        {t.training.watch} →
+
+                                {/* Sections */}
+                                {trainingContent.sections?.map((section, sIdx) => (
+                                    <div key={sIdx} className="bg-white dark:bg-slate-800 rounded-xl p-6 mb-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                                        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4 reading-content">
+                                            {section.title}
+                                        </h3>
+                                        <div className="space-y-6">
+                                            {section.points?.map((point, pIdx) => (
+                                                <div key={pIdx} className="border-l-2 border-orange-200 dark:border-orange-800 pl-4">
+                                                    <h4 className="font-bold text-orange-600 dark:text-orange-400 mb-2 reading-content">
+                                                        {point.item_name}
+                                                    </h4>
+                                                    {point.specifications && (
+                                                        <div className="mb-3">
+                                                            <p className="text-xs font-bold text-slate-500 uppercase mb-1">
+                                                                {language === 'en' ? 'Specifications' : 'স্পেসিফিকেশন'}
+                                                            </p>
+                                                            <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed">
+                                                                {point.specifications}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                    {point.importance && (
+                                                        <div className="mb-3">
+                                                            <p className="text-xs font-bold text-slate-500 uppercase mb-1">
+                                                                {language === 'en' ? 'Importance' : 'গুরুত্ব'}
+                                                            </p>
+                                                            <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed">
+                                                                {point.importance}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                    {point.daily_check && (
+                                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg">
+                                                            <p className="text-xs font-bold text-slate-500 uppercase mb-1">
+                                                                {language === 'en' ? 'Daily Check' : 'দৈনিক পরীক্ষা'}
+                                                            </p>
+                                                            <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed">
+                                                                {point.daily_check}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {/* Pro Tips */}
+                                {trainingContent.pro_tip && (
+                                    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl p-6 mb-6 border border-emerald-200 dark:border-emerald-800">
+                                        <div className="flex items-start gap-3 mb-4">
+                                            <span className="text-2xl">💡</span>
+                                            <h3 className="text-lg font-bold text-emerald-700 dark:text-emerald-400 reading-content">
+                                                {trainingContent.pro_tip.title}
+                                            </h3>
+                                        </div>
+                                        <ul className="space-y-2">
+                                            {trainingContent.pro_tip.content?.map((tip, idx) => (
+                                                <li key={idx} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
+                                                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">✓</span>
+                                                    {tip}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {/* Myth Buster */}
+                                {trainingContent.myth_buster && (
+                                    <div className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-xl p-6 mb-6 border border-red-200 dark:border-red-800">
+                                        <div className="flex items-start gap-3 mb-4">
+                                            <span className="text-2xl">⚠️</span>
+                                            <h3 className="text-lg font-bold text-red-700 dark:text-red-400 reading-content">
+                                                {trainingContent.myth_buster.title}
+                                            </h3>
+                                        </div>
+                                        <div className="space-y-4">
+                                            {trainingContent.myth_buster.myths?.map((item, idx) => (
+                                                <div key={idx} className="bg-white/50 dark:bg-slate-800/50 rounded-lg p-4">
+                                                    <div className="mb-3">
+                                                        <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase mb-1">
+                                                            {language === 'en' ? 'Myth' : 'মিথ'}
+                                                        </p>
+                                                        <p className="text-sm text-slate-700 dark:text-slate-300 italic reading-content leading-relaxed">
+                                                            "{item.myth}"
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase mb-1">
+                                                            {language === 'en' ? 'Reality' : 'বাস্তবতা'}
+                                                        </p>
+                                                        <p className="text-sm text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
+                                                            {item.reality || item.fact}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Advanced Section */}
+                                {trainingContent.advanced_section && (
+                                    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-6 mb-6 border border-indigo-200 dark:border-indigo-800">
+                                        <div className="flex items-start gap-3 mb-4">
+                                            <span className="text-2xl">🔬</span>
+                                            <h3 className="text-lg font-bold text-indigo-700 dark:text-indigo-400 reading-content">
+                                                {trainingContent.advanced_section.title}
+                                            </h3>
+                                        </div>
+                                        <div className="space-y-4">
+                                            {trainingContent.advanced_section.facts?.map((fact, idx) => (
+                                                <div key={idx} className="bg-white/50 dark:bg-slate-800/50 rounded-lg p-4">
+                                                    <h4 className="font-bold text-indigo-600 dark:text-indigo-400 mb-2 reading-content">
+                                                        {fact.title}
+                                                    </h4>
+                                                    <p className="text-sm text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
+                                                        {fact.content}
+                                                    </p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Navigation Buttons */}
+                                <div className="flex justify-between items-center mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
+                                    <button
+                                        onClick={() => {
+                                            const currentIdx = selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id);
+                                            if (currentIdx > 0) {
+                                                setTrainingContent(selectedChapter.subchapters[currentIdx - 1]);
+                                            }
+                                        }}
+                                        disabled={selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id) === 0}
+                                        className="px-5 py-2.5 rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700"
+                                    >
+                                        ← {language === 'en' ? 'Previous' : 'পূর্ববর্তী'}
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const currentIdx = selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id);
+                                            if (currentIdx < selectedChapter.subchapters.length - 1) {
+                                                setTrainingContent(selectedChapter.subchapters[currentIdx + 1]);
+                                            }
+                                        }}
+                                        disabled={selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id) === selectedChapter.subchapters.length - 1}
+                                        className="px-5 py-2.5 rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-orange-600 text-white hover:bg-orange-700"
+                                    >
+                                        {language === 'en' ? 'Next' : 'পরবর্তী'} →
                                     </button>
                                 </div>
                             </div>
-                        ))}
+                        ) : null}
                     </div>
                 )}
 
