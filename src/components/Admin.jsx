@@ -37,32 +37,58 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+  /* Pagination State */
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [usersPerPage] = useState(20);
+
+
+
   /* PPE Management State */
   const [editingPPEUser, setEditingPPEUser] = useState(null);
   const [ppeChecklist, setPpeChecklist] = useState([]);
   const [isSavingPPE, setIsSavingPPE] = useState(false);
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    fetchUsers(currentPage);
+  }, [currentPage]);
 
-  const fetchUsers = async () => {
-    const cachedUsers = cacheHelper.get('admin_user_list');
-    if (cachedUsers) {
-      setUsers(cachedUsers);
+  const fetchUsers = async (page = 1) => {
+    // Check cache for this specific page
+    const cacheKey = `admin_users_page_${page}`;
+    const cachedData = cacheHelper.get(cacheKey);
+    if (cachedData) {
+      setUsers(cachedData.users);
+      setTotalUsers(cachedData.total);
       setLoading(false);
       return;
     }
 
     setLoading(true);
-    const { data, error } = await supabase.from('profiles').select('*');
-    if (error) {
+    try {
+      const start = (page - 1) * usersPerPage;
+      const end = start + usersPerPage - 1;
+
+      // Fetch paginated users with total count
+      const { data, error, count } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, role, district, avatar_url, created_at', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(start, end);
+
+      if (error) throw error;
+
+      setUsers(data || []);
+      setTotalUsers(count || 0);
+
+      // Cache this page
+      cacheHelper.set(cacheKey, { users: data || [], total: count || 0 }, 5); // 5 min cache
+    } catch (error) {
       console.error('Error fetching users:', error);
-    } else {
-      setUsers(data);
-      cacheHelper.set('admin_user_list', data, 10); // Cache for 10 mins
+      setUsers([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   /* PPE Logic */
@@ -356,6 +382,66 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {!loading && totalUsers > usersPerPage && (
+        <div className="mt-4 flex items-center justify-between bg-white dark:bg-slate-800 px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700">
+          <div className="flex-1 flex justify-between sm:hidden">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="relative inline-flex items-center px-4 py-2 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setCurrentPage(p => Math.min(Math.ceil(totalUsers / usersPerPage), p + 1))}
+              disabled={currentPage >= Math.ceil(totalUsers / usersPerPage)}
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-slate-700 dark:text-slate-300">
+                Showing <span className="font-medium">{(currentPage - 1) * usersPerPage + 1}</span> to{' '}
+                <span className="font-medium">{Math.min(currentPage * usersPerPage, totalUsers)}</span> of{' '}
+                <span className="font-medium">{totalUsers}</span> users
+              </p>
+            </div>
+            <div>
+              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="sr-only">Previous</span>
+                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </button>
+
+                <span className="relative inline-flex items-center px-4 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Page {currentPage} of {Math.ceil(totalUsers / usersPerPage)}
+                </span>
+
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(Math.ceil(totalUsers / usersPerPage), p + 1))}
+                  disabled={currentPage >= Math.ceil(totalUsers / usersPerPage)}
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="sr-only">Next</span>
+                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </nav>
+            </div>
+          </div>
         </div>
       )}
 
