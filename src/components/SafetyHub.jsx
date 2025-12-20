@@ -424,12 +424,6 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                     </p>
                                 </div>
 
-                                {/* Indicators */}
-                                <div className="flex gap-2">
-                                    {activeRules.map((_, i) => (
-                                        <div key={i} className={`h-1 rounded-full transition-all duration-500 ${i === currentRuleIndex ? 'bg-orange-600 dark:bg-orange-400 w-6' : 'bg-orange-300 dark:bg-orange-700 w-1.5'}`}></div>
-                                    ))}
-                                </div>
                             </div>
                         </div>
 
