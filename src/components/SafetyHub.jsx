@@ -50,6 +50,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     const [trainingContent, setTrainingContent] = useState(null);
     const [trainingLoading, setTrainingLoading] = useState(false);
     const [completedLessons, setCompletedLessons] = useState([]);
+    const [showLoginModal, setShowLoginModal] = useState(false);
 
     // Load completed lessons from localStorage
     useEffect(() => {
@@ -600,7 +601,15 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                         return (
                                             <div
                                                 key={subchapter.level_id}
-                                                onClick={() => isUnlocked && setTrainingContent(subchapter)}
+                                                onClick={() => {
+                                                    if (!user) {
+                                                        setShowLoginModal(true);
+                                                        return;
+                                                    }
+                                                    if (isUnlocked) {
+                                                        setTrainingContent(subchapter);
+                                                    }
+                                                }}
                                                 className={`bg-white dark:bg-slate-800 p-3 rounded-lg border transition-all flex items-center gap-3 ${isUnlocked
                                                     ? 'border-slate-200 dark:border-slate-700 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-sm cursor-pointer'
                                                     : 'border-slate-100 dark:border-slate-800 opacity-60 cursor-not-allowed'
@@ -995,9 +1004,53 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 onClose={() => setSelectedLevel(null)}
                 language={language}
             />
+
+            {/* Login Required Modal */}
+            <LoginRequiredModal
+                isOpen={showLoginModal}
+                onClose={() => setShowLoginModal(false)}
+                language={language}
+            />
         </div>
     );
 }
+
+const LoginRequiredModal = ({ isOpen, onClose, language }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center animate-scale-in border border-slate-100 dark:border-slate-700">
+                <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                    🔒
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+                    {language === 'en' ? 'Login Required' : 'লগইন প্রয়োজন'}
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 mb-6">
+                    {language === 'en'
+                        ? 'Please log in to access the training materials and track your progress.'
+                        : 'প্রশিক্ষণ উপকরণ অ্যাক্সেস এবং আপনার অগ্রগতি ট্র্যাক করতে অনুগ্রহ করে লগ ইন করুন।'}
+                </p>
+                <div className="flex gap-3">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                    >
+                        {language === 'en' ? 'Close' : 'বন্ধ করুন'}
+                    </button>
+                    {/* Ideally this button would redirect to login, but for now we just show the message */}
+                    <button
+                        onClick={onClose}
+                        className="flex-1 py-2.5 rounded-xl font-bold bg-orange-600 text-white hover:bg-orange-700 transition-colors shadow-lg shadow-orange-500/30"
+                    >
+                        {language === 'en' ? 'Got it' : 'বুঝেছি'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const ProtocolDetailModal = ({ level, onClose, language }) => {
     if (!level) return null;
