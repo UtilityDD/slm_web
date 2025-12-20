@@ -795,49 +795,19 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                             {language === 'en' ? 'Mark as Complete' : 'সম্পন্ন হিসাবে চিহ্নিত করুন'}
                                         </button>
                                     ) : (
-                                        <div className="w-full px-5 py-3 rounded-lg font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 flex items-center justify-center gap-2">
-                                            <span>✓</span>
-                                            {language === 'en' ? 'Lesson Completed!' : 'পাঠ সম্পন্ন!'}
+                                        <div className="space-y-4">
+                                            <div className="w-full px-5 py-3 rounded-lg font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 flex items-center justify-center gap-2">
+                                                <span>✓</span>
+                                                {language === 'en' ? 'Lesson Completed!' : 'পাঠ সম্পন্ন!'}
+                                            </div>
+                                            <button
+                                                onClick={() => setTrainingContent(null)}
+                                                className="w-full px-5 py-3 rounded-lg font-bold transition-all bg-orange-600 text-white hover:bg-orange-700 flex items-center justify-center gap-2"
+                                            >
+                                                ← {language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}
+                                            </button>
                                         </div>
                                     )}
-
-                                    {/* Navigation Buttons */}
-                                    <div className="flex justify-between items-center">
-                                        <button
-                                            onClick={() => {
-                                                const currentIdx = selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id);
-                                                if (currentIdx > 0) {
-                                                    setTrainingContent(selectedChapter.subchapters[currentIdx - 1]);
-                                                }
-                                            }}
-                                            disabled={selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id) === 0}
-                                            className="px-5 py-2.5 rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700"
-                                        >
-                                            ← {language === 'en' ? 'Previous' : 'পূর্ববর্তী'}
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                const currentIdx = selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id);
-                                                if (currentIdx < selectedChapter.subchapters.length - 1) {
-                                                    const nextLesson = selectedChapter.subchapters[currentIdx + 1];
-                                                    // Check if next lesson is unlocked
-                                                    if (isLessonUnlocked(nextLesson.chapterNum, nextLesson.subchapterNum)) {
-                                                        setTrainingContent(nextLesson);
-                                                    }
-                                                }
-                                            }}
-                                            disabled={
-                                                selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id) === selectedChapter.subchapters.length - 1 ||
-                                                !isLessonUnlocked(
-                                                    selectedChapter.subchapters[selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id) + 1]?.chapterNum,
-                                                    selectedChapter.subchapters[selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id) + 1]?.subchapterNum
-                                                )
-                                            }
-                                            className="px-5 py-2.5 rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-orange-600 text-white hover:bg-orange-700"
-                                        >
-                                            {language === 'en' ? 'Next' : 'পরবর্তী'} →
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
                         ) : null}
