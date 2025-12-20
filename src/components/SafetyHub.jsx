@@ -457,32 +457,71 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 {activeTab === 'protocols' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Highlighted Safety Rule Carousel - Refined */}
-                        <div className="md:col-span-2 bg-orange-50 dark:bg-orange-900/10 rounded-xl p-6 border border-orange-200 dark:border-orange-800 shadow-sm min-h-[200px] flex flex-col justify-center relative">
-                            {/* Navigation Arrows */}
+                        {/* Highlighted Safety Rule Carousel - Refined */}
+                        <div
+                            className="md:col-span-2 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/10 dark:to-orange-900/5 rounded-2xl p-6 border border-orange-100 dark:border-orange-800/50 shadow-sm min-h-[220px] flex flex-col justify-center relative overflow-hidden group touch-pan-y"
+                            onTouchStart={(e) => {
+                                const touch = e.touches[0];
+                                e.currentTarget.dataset.touchStartX = touch.clientX;
+                            }}
+                            onTouchEnd={(e) => {
+                                const touch = e.changedTouches[0];
+                                const startX = parseFloat(e.currentTarget.dataset.touchStartX);
+                                const endX = touch.clientX;
+                                if (startX - endX > 50) nextRule(); // Swipe Left
+                                if (endX - startX > 50) prevRule(); // Swipe Right
+                            }}
+                        >
+                            {/* Decorative Background Elements */}
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-200/20 dark:bg-orange-600/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                            <div className="absolute bottom-0 left-0 w-24 h-24 bg-orange-200/20 dark:bg-orange-600/10 rounded-full blur-xl -ml-8 -mb-8 pointer-events-none"></div>
+
+                            {/* Navigation Arrows - Desktop (Hover only) & Mobile (Side taps) */}
                             <button
                                 onClick={prevRule}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 flex items-center justify-center border border-orange-200 dark:border-orange-800 transition-all active:scale-90 z-20"
+                                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 flex items-center justify-center border border-white/50 dark:border-slate-700 shadow-sm backdrop-blur-sm transition-all active:scale-95 z-20 opacity-60 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                                 aria-label="Previous rule"
                             >
-                                <span className="text-lg text-orange-600 dark:text-orange-400">←</span>
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                                </svg>
                             </button>
 
                             <button
                                 onClick={nextRule}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 flex items-center justify-center border border-orange-200 dark:border-orange-800 transition-all active:scale-90 z-20"
+                                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 flex items-center justify-center border border-white/50 dark:border-slate-700 shadow-sm backdrop-blur-sm transition-all active:scale-95 z-20 opacity-60 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                                 aria-label="Next rule"
                             >
-                                <span className="text-lg text-orange-600 dark:text-orange-400">→</span>
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                                </svg>
                             </button>
 
-                            <div className="relative z-10 flex flex-col items-center justify-center h-full px-6">
-                                {/* Rule Text */}
-                                <div key={currentRuleIndex} className="max-w-2xl text-center mb-6">
-                                    <p className="text-orange-900 dark:text-orange-100 text-lg sm:text-2xl font-bold leading-relaxed">
+                            <div className="relative z-10 flex flex-col items-center justify-center h-full px-8 sm:px-12 py-2">
+                                {/* Rule Text with Animation Key */}
+                                <div key={currentRuleIndex} className="max-w-xl text-center animate-fade-in-up">
+                                    <div className="mb-4 inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 text-2xl shadow-inner">
+                                        💡
+                                    </div>
+                                    <p className="text-slate-800 dark:text-slate-100 text-base sm:text-xl font-bold leading-relaxed tracking-tight">
                                         {activeRules[currentRuleIndex]}
                                     </p>
                                 </div>
+                            </div>
 
+                            {/* Dot Indicators */}
+                            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-20">
+                                {activeRules.map((_, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setCurrentRuleIndex(idx)}
+                                        className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentRuleIndex
+                                            ? 'w-6 bg-orange-500 shadow-sm'
+                                            : 'w-1.5 bg-orange-200 dark:bg-orange-800/50 hover:bg-orange-300'
+                                            }`}
+                                        aria-label={`Go to rule ${idx + 1}`}
+                                    />
+                                ))}
                             </div>
                         </div>
 
