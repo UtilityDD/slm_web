@@ -39,6 +39,8 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     const [ppeChecklist, setPpeChecklist] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
     const [currentRuleIndex, setCurrentRuleIndex] = useState(0);
+    const [protocolsData, setProtocolsData] = useState(null);
+    const [selectedLevel, setSelectedLevel] = useState(null);
 
     const SAFETY_RULES = [
         {
@@ -69,6 +71,19 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
         }, 5000);
         return () => clearInterval(timer);
     }, [SAFETY_RULES.length]);
+
+    useEffect(() => {
+        const fetchProtocols = async () => {
+            try {
+                const response = await fetch('/quizzes/protocol.json');
+                const data = await response.json();
+                setProtocolsData(data);
+            } catch (error) {
+                console.error('Error fetching protocols:', error);
+            }
+        };
+        fetchProtocols();
+    }, []);
 
     const nextRule = () => {
         setCurrentRuleIndex((prev) => (prev + 1) % SAFETY_RULES.length);
@@ -404,17 +419,21 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                             </div>
                         </div>
 
-                        {/* Protocol Categories - Compact */}
-                        {t.protocols.categories.map((category, index) => (
-                            <div key={index} className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md transition-all cursor-pointer group">
+                        {/* Protocol Categories - Dynamic from JSON */}
+                        {protocolsData?.levels.map((level, index) => (
+                            <div
+                                key={index}
+                                onClick={() => setSelectedLevel(level)}
+                                className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md transition-all cursor-pointer group"
+                            >
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
-                                        {index === 0 ? '⚡' : index === 1 ? '🔧' : index === 2 ? '⛈️' : '🩹'}
+                                        {index === 0 ? '🧠' : index === 1 ? '🔧' : index === 2 ? '🧗' : index === 3 ? '🚧' : '🆘'}
                                     </div>
                                     <span className="text-slate-400 dark:text-slate-500">→</span>
                                 </div>
-                                <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 mb-0.5">{category}</h3>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">12 Guidelines</p>
+                                <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 mb-0.5">{level.level_name}</h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">{level.focus}</p>
                             </div>
                         ))}
                     </div>
@@ -596,6 +615,97 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                     </div>
                 )}
             </div>
+
+            {/* Protocol Detail Modal */}
+            <ProtocolDetailModal
+                level={selectedLevel}
+                onClose={() => setSelectedLevel(null)}
+                language={language}
+            />
         </div>
     );
 }
+
+const ProtocolDetailModal = ({ level, onClose, language }) => {
+    if (!level) return null;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-slate-100 dark:border-slate-700 animate-scale-in">
+                {/* Modal Header */}
+                <div className="sticky top-0 bg-white dark:bg-slate-800 p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center z-10">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xl font-bold">
+                            {level.level_number}
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 leading-tight">{level.level_name}</h2>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{level.focus}</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+                        <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                {/* Modal Content */}
+                <div className="p-4 sm:p-6 space-y-6">
+                    {/* Summary */}
+                    <div className="bg-orange-50 dark:bg-orange-900/10 p-4 rounded-xl border border-orange-100 dark:border-orange-900/30">
+                        <p className="text-sm text-orange-900 dark:text-orange-100 font-medium leading-relaxed">
+                            {level.content.summary}
+                        </p>
+                    </div>
+
+                    {/* Practical Tips */}
+                    <div>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+                            <span>💡</span> {language === 'en' ? 'Practical Tips' : 'ব্যবহারিক টিপস'}
+                        </h3>
+                        <div className="space-y-3">
+                            {level.content.practical_tips.map((tip, i) => (
+                                <div key={i} className="flex gap-3 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-100 dark:border-slate-700">
+                                    <span className="text-orange-500 font-bold">•</span>
+                                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{tip}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Myths vs Facts */}
+                    {level.content.myths_vs_facts && level.content.myths_vs_facts.length > 0 && (
+                        <div>
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+                                <span>⚖️</span> {language === 'en' ? 'Myths vs Facts' : 'ভুল ধারণা বনাম বাস্তবতা'}
+                            </h3>
+                            <div className="space-y-4">
+                                {level.content.myths_vs_facts.map((item, i) => (
+                                    <div key={i} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div className="p-3 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-900/20">
+                                            <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider block mb-1">Myth</span>
+                                            <p className="text-xs text-red-900 dark:text-red-200">{item.myth}</p>
+                                        </div>
+                                        <div className="p-3 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-100 dark:border-green-900/20">
+                                            <span className="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase tracking-wider block mb-1">Fact</span>
+                                            <p className="text-xs text-green-900 dark:text-green-200">{item.fact}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Modal Footer */}
+                <div className="p-4 sm:p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                    <button
+                        onClick={onClose}
+                        className="w-full py-3 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-white transition-colors"
+                    >
+                        {language === 'en' ? 'Got it' : 'বুঝেছি'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
