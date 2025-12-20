@@ -45,7 +45,6 @@ self.addEventListener('fetch', (event) => {
         request.method !== 'GET' ||
         url.hostname.includes('supabase') ||
         url.protocol === 'chrome-extension:' ||
-        url.pathname.includes('/quizzes/') ||
         url.pathname.includes('auth') ||
         url.pathname.includes('signOut')
     ) {
