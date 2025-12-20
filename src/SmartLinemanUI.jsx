@@ -7,6 +7,7 @@ import Login from "./components/Login";
 import { supabase } from "./supabaseClient";
 import LogoutConfirmationModal from "./components/LogoutConfirmationModal";
 import Admin from "./components/Admin";
+import AdminServices from "./components/AdminServices";
 import Home from "./components/Home";
 import Campaign from "./components/Campaign";
 
@@ -275,7 +276,9 @@ export default function SmartLinemanUI() {
       case 'safety':
         return <SafetyHub language={language} user={user} setCurrentView={setCurrentView} />;
       case 'admin':
-        return <Admin language={language} user={user} userProfile={userProfile} />;
+        return <Admin language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;
+      case 'admin-services':
+        return <AdminServices language={language} />;
       case 'campaign':
         return <Campaign language={language} setCurrentView={setCurrentView} />;
       case 'home':
