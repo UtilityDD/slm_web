@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Serif+Bengali:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -18,7 +18,7 @@
   }
 
   .font-bengali {
-    font-family: 'Hind Siliguri', sans-serif;
+    font-family: 'Noto Serif Bengali', serif;
   }
 
   .reading-content {
@@ -28,8 +28,9 @@
   }
 
   .reading-content.font-bengali {
-    line-height: 1.85;
-    letter-spacing: 0;
+    line-height: 1.9;
+    letter-spacing: 0.01em;
+    font-size: 1.05em;
   }
 }
 
