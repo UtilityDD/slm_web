@@ -292,7 +292,6 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                     name: "Item Name",
                     count: "Quantity",
                     age: "Age (Months)",
-                    age: "Age (Months)",
                     condition: "Condition",
                     details: "Details / Specs"
                 },
@@ -362,8 +361,6 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
         }
     }[language];
 
-
-
     return (
         <div className="compact-container py-6 sm:py-10 mb-20">
             {/* Header Section */}
@@ -401,7 +398,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 {activeTab === 'protocols' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Highlighted Safety Rule Carousel - Refined */}
-                        <div className="md:col-span-2 bg-orange-50 dark:bg-orange-900/10 rounded-xl p-6 border border-orange-200 dark:border-orange-800 shadow-sm min-h-[200px] flex flex-col justify-center">
+                        <div className="md:col-span-2 bg-orange-50 dark:bg-orange-900/10 rounded-xl p-6 border border-orange-200 dark:border-orange-800 shadow-sm min-h-[200px] flex flex-col justify-center relative">
                             {/* Navigation Arrows */}
                             <button
                                 onClick={prevRule}
@@ -420,13 +417,6 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                             </button>
 
                             <div className="relative z-10 flex flex-col items-center justify-center h-full px-6">
-                                {/* Carousel Title if available */}
-                                {carouselData?.title && (
-                                    <span className="text-[10px] uppercase tracking-widest font-bold text-orange-500/60 dark:text-orange-400/40 mb-2">
-                                        {carouselData.title}
-                                    </span>
-                                )}
-
                                 {/* Rule Text */}
                                 <div key={currentRuleIndex} className="max-w-2xl text-center mb-6">
                                     <p className="text-orange-900 dark:text-orange-100 text-lg sm:text-2xl font-bold leading-relaxed">
@@ -593,6 +583,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                         </div>
                     </div>
                 )}
+
                 {activeTab === 'report' && (
                     <div className="max-w-2xl mx-auto bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-600 p-8">
                         <div className="text-center mb-8">
