@@ -75,7 +75,8 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     useEffect(() => {
         const fetchProtocols = async () => {
             try {
-                const response = await fetch('/quizzes/protocol.json');
+                const fileName = language === 'en' ? 'protocol_en.json' : 'protocol.json';
+                const response = await fetch(`/quizzes/${fileName}`);
                 const data = await response.json();
                 setProtocolsData(data);
             } catch (error) {
@@ -83,7 +84,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
             }
         };
         fetchProtocols();
-    }, []);
+    }, [language]);
 
     const nextRule = () => {
         setCurrentRuleIndex((prev) => (prev + 1) % SAFETY_RULES.length);

@@ -72,7 +72,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             }
         };
         loadData();
-    }, []); // Run once on mount
+    }, [language]); // Re-run when language changes
 
     useEffect(() => {
         // Timer Logic
@@ -119,14 +119,16 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     };
 
     const fetchHourlyQuiz = async () => {
-        const cachedQuiz = cacheHelper.get('hourly_quiz_v2');
+        const cacheKey = `hourly_quiz_v2_${language}`;
+        const cachedQuiz = cacheHelper.get(cacheKey);
         if (cachedQuiz) {
             setHourlyQuiz(cachedQuiz);
             return;
         }
 
         try {
-            const response = await fetch('/quizzes/hourly_challenge.json');
+            const fileName = language === 'en' ? 'hourly_challenge_en.json' : 'hourly_challenge.json';
+            const response = await fetch(`/quizzes/${fileName}`);
             if (response.ok) {
                 const data = await response.json();
 
@@ -152,7 +154,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                 }
 
                 setHourlyQuiz(quizData);
-                cacheHelper.set('hourly_quiz_v2', quizData, 10); // Cache for 10 mins
+                cacheHelper.set(cacheKey, quizData, 10); // Cache for 10 mins
             } else {
                 console.error('Failed to fetch hourly quiz:', response.status);
             }

@@ -1,0 +1,102 @@
+{
+    "course_title": "Lineman Operational Protocol: Field Safety & Technical Guide",
+    "trainer_intro": "This guide has been developed based on years of experience in the power distribution system. A professional lineman's job is not just technical skill, but depends on following correct protocols and subtle safety rules. This curriculum will help you learn real field challenges and the correct methods to tackle them.",
+    "levels": [
+        {
+            "level_number": 1,
+            "level_name": "Mental Alertness & Personal Protection (PPE)",
+            "focus": "Professionalism and Risk Assessment",
+            "content": {
+                "summary": "Mentally preparing before going to the work site and ensuring your safety gear is the first step.",
+                "practical_tips": [
+                    "Verify the feeder or sub-station name and time yourself in the 'Permit to Work' (PTW) document before work.",
+                    "Do not keep any metallic ornaments (rings, watches, or chains) on your body; these act as conductors and can cause serious accidents.",
+                    "Refrain from working at heights if you have physical illness or excessive mental stress and inform your supervisor."
+                ],
+                "myths_vs_facts": [
+                    {
+                        "myth": "Experienced linemen don't always need safety gear.",
+                        "fact": "Accidents don't check experience. Use of PPE (helmet, gloves, safety shoes) is mandatory in 100% of cases."
+                    }
+                ]
+            }
+        },
+        {
+            "level_number": 2,
+            "level_name": "Equipment Quality & Maintenance",
+            "focus": "Professional Methods of Tool Usage",
+            "content": {
+                "summary": "Regularly checking the effectiveness of used equipment is the sign of a skilled worker.",
+                "practical_tips": [
+                    "Perform an 'air test' before using hand gloves. Even a tiny hole can take your life at high voltage.",
+                    "Change insulated pliers or cutters immediately if there is any crack in the handle. Covering cracks with ordinary electrical tape is unsafe.",
+                    "Check if the earthing clamp of the discharge rod is firmly connected to the ground before use."
+                ],
+                "myths_vs_facts": [
+                    {
+                        "myth": "Any ladder is safe for work if it's strong.",
+                        "fact": "Use only certified fiberglass or dry wooden ladders. Using aluminum ladders on power lines is strictly prohibited."
+                    }
+                ]
+            }
+        },
+        {
+            "level_number": 3,
+            "level_name": "Pole Operation & Grounding Protocol",
+            "focus": "Field Technical Protection",
+            "content": {
+                "summary": "It is essential to take some very important steps after disconnecting the line and before starting work.",
+                "practical_tips": [
+                    "Check the stability of the ground at the base and the structural condition (decay or cracks) of the pole before climbing.",
+                    "To avoid 'back-feed' (electricity coming from consumer's generator or inverter) even after turning off the line, short and earth the lines on both sides of the work area.",
+                    "Lock the safety belt at the correct height after climbing the pole and ensure it can take your weight."
+                ],
+                "myths_vs_facts": [
+                    {
+                        "myth": "There is no chance of current in the line if the main switch is off.",
+                        "fact": "Current from induction charge or another source may be present in the line. Therefore, touching the wire without 'discharging' is prohibited."
+                    }
+                ]
+            }
+        },
+        {
+            "level_number": 4,
+            "level_name": "Workplace Environment & Public Safety",
+            "focus": "Managing Public and Environmental Challenges",
+            "content": {
+                "summary": "It is essential to control the surrounding environment when working on the roadside or in populated areas.",
+                "practical_tips": [
+                    "Mark the work area with danger tape or traffic cones so that pedestrians or vehicles do not interfere with your work.",
+                    "Explain the situation professionally without getting into arguments with the agitated public. Take help from local administration if necessary.",
+                    "Working on poles during rain or strong winds is extremely risky. Wait until the weather is normal."
+                ],
+                "myths_vs_facts": [
+                    {
+                        "myth": "Some small safety rules can be avoided to finish work quickly.",
+                        "fact": "Hurry or shortcut methods are the main cause of most major accidents. Always follow Standard Operating Procedures (SOP)."
+                    }
+                ]
+            }
+        },
+        {
+            "level_number": 5,
+            "level_name": "Emergency Protocol & Life Saving",
+            "focus": "Crisis Management",
+            "content": {
+                "summary": "Taking action following correct protocols without getting panicked if an accident occurs.",
+                "practical_tips": [
+                    "Do not touch a colleague directly if they are electrocuted. Disconnect them from the source using an insulated rod or dry wood.",
+                    "Master the method of giving CPR (artificial respiration) as first aid. It can save lives before the doctor arrives.",
+                    "Keep emergency numbers handy to inform the control room and nearest hospital immediately after an accident."
+                ],
+                "myths_vs_facts": [
+                    {
+                        "myth": "Laying an electrocuted person on the ground drains the body's electricity into the soil.",
+                        "fact": "This is a non-scientific and dangerous superstition. The victim should be provided with medical help and oxygen quickly."
+                    }
+                ]
+            }
+        }
+    ],
+    "conclusion": "The success of a skilled lineman lies in their work and their safety. Remember, your safety is most important for your family. Follow protocols, stay safe."
+}
