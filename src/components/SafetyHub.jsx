@@ -435,8 +435,8 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                 className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md transition-all cursor-pointer group"
                             >
                                 <div className="flex items-center justify-between mb-3">
-                                    <div className="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
-                                        {index === 0 ? '🧠' : index === 1 ? '🔧' : index === 2 ? '🧗' : index === 3 ? '🚧' : '🆘'}
+                                    <div className="w-10 h-10 rounded-full bg-orange-600 text-white flex items-center justify-center text-lg font-bold shadow-md shadow-orange-500/20 group-hover:scale-110 transition-transform">
+                                        {index + 1}
                                     </div>
                                     <span className="text-slate-400 dark:text-slate-500">→</span>
                                 </div>
