@@ -140,38 +140,17 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
         const fetchTrainingChapters = async () => {
             try {
                 setTrainingLoading(true);
-                // Fetch all chapter files (assuming chapters 1-10 with 1-10 subchapters each)
-                const chapters = {};
-
-                for (let c = 1; c <= 10; c++) {
-                    for (let s = 1; s <= 10; s++) {
-                        try {
-                            const response = await fetch(`/quizzes/chapter_${c}_${s}.json`);
-                            if (response.ok) {
-                                const data = await response.json();
-                                if (!chapters[c]) {
-                                    chapters[c] = {
-                                        number: c,
-                                        title: data.badge_name || `Chapter ${c}`, // Use badge_name from first subchapter
-                                        subchapters: []
-                                    };
-                                }
-                                chapters[c].subchapters.push({
-                                    ...data,
-                                    chapterNum: c,
-                                    subchapterNum: s
-                                });
-                            }
-                        } catch (err) {
-                            // Skip if chapter doesn't exist
-                        }
-                    }
+                const response = await fetch('/quizzes/training_manifest.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    setTrainingChapters(data);
+                } else {
+                    console.error('Manifest not found');
+                    setTrainingChapters([]);
                 }
-
-                setTrainingChapters(Object.values(chapters));
-                setTrainingLoading(false);
             } catch (error) {
                 console.error('Error fetching training chapters:', error);
+            } finally {
                 setTrainingLoading(false);
             }
         };
@@ -539,7 +518,30 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                 {trainingChapters.map((chapter) => (
                                     <div
                                         key={chapter.number}
-                                        onClick={() => setSelectedChapter(chapter)}
+                                        onClick={async () => {
+                                            setTrainingLoading(true);
+                                            // Lazy load subchapters
+                                            try {
+                                                const promises = [];
+                                                for (let s = 1; s <= chapter.count; s++) {
+                                                    promises.push(
+                                                        fetch(`/quizzes/chapter_${chapter.number}_${s}.json`)
+                                                            .then(r => r.ok ? r.json() : null)
+                                                            .catch(() => null)
+                                                    );
+                                                }
+                                                const results = await Promise.all(promises);
+                                                const subchapters = results
+                                                    .map((data, idx) => data ? { ...data, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
+                                                    .filter(Boolean);
+
+                                                setSelectedChapter({ ...chapter, subchapters });
+                                            } catch (err) {
+                                                console.error("Error loading chapter:", err);
+                                            } finally {
+                                                setTrainingLoading(false);
+                                            }
+                                        }}
                                         className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md transition-all cursor-pointer group"
                                     >
                                         <div className="flex items-center justify-between mb-4">
@@ -552,7 +554,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                             {chapter.title}
                                         </h3>
                                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                                            {chapter.subchapters.length} {language === 'en' ? 'lessons' : 'পাঠ'}
+                                            {chapter.count} {language === 'en' ? 'lessons' : 'পাঠ'}
                                         </p>
                                     </div>
                                 ))}
