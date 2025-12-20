@@ -601,45 +601,45 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                             <div
                                                 key={subchapter.level_id}
                                                 onClick={() => isUnlocked && setTrainingContent(subchapter)}
-                                                className={`bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border transition-all ${isUnlocked
-                                                    ? 'border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md cursor-pointer'
+                                                className={`bg-white dark:bg-slate-800 p-3 rounded-lg border transition-all flex items-center gap-3 ${isUnlocked
+                                                    ? 'border-slate-200 dark:border-slate-700 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-sm cursor-pointer'
                                                     : 'border-slate-100 dark:border-slate-800 opacity-60 cursor-not-allowed'
-                                                    } ${isCompleted ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : ''} group`}
+                                                    } ${isCompleted ? 'bg-emerald-50/30 dark:bg-emerald-900/10' : ''} group`}
                                             >
-                                                <div className="flex items-start gap-4">
-                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 ${isCompleted
-                                                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
-                                                        : isUnlocked
-                                                            ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
-                                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
-                                                        }`}>
-                                                        {isCompleted ? '✓' : isUnlocked ? subchapter.level_id : '🔒'}
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <div className={`inline-block px-2 py-0.5 rounded text-xs font-bold ${isCompleted
-                                                                ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
-                                                                : 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400'
-                                                                }`}>
-                                                                {subchapter.badge_name}
-                                                            </div>
-                                                            {isCompleted && (
-                                                                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
-                                                                    {language === 'en' ? 'Completed' : 'সম্পন্ন'}
-                                                                </span>
-                                                            )}
-                                                            {!isUnlocked && (
-                                                                <span className="text-xs text-slate-400 font-bold">
-                                                                    {language === 'en' ? 'Locked' : 'লক করা'}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <h4 className={`font-bold text-base reading-content ${isUnlocked ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'
-                                                            }`}>
-                                                            {subchapter.level_title}
-                                                        </h4>
-                                                    </div>
+                                                {/* ID Box - Always Visible */}
+                                                <div className={`w-10 h-10 rounded-md flex items-center justify-center text-sm font-bold flex-shrink-0 border ${isCompleted
+                                                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                                                    : isUnlocked
+                                                        ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-900/30'
+                                                        : 'bg-slate-50 dark:bg-slate-800/50 text-slate-400 border-slate-100 dark:border-slate-700'
+                                                    }`}>
+                                                    {subchapter.level_id}
                                                 </div>
+
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-0.5">
+                                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                                                            {subchapter.badge_name}
+                                                        </span>
+                                                        {isCompleted && (
+                                                            <span className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px]">✓</span>
+                                                        )}
+                                                        {!isUnlocked && (
+                                                            <span className="text-[10px] text-slate-400">🔒</span>
+                                                        )}
+                                                    </div>
+                                                    <h4 className={`font-bold text-sm truncate ${isUnlocked ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'
+                                                        }`}>
+                                                        {subchapter.level_title}
+                                                    </h4>
+                                                </div>
+
+                                                {/* Arrow Icon */}
+                                                {isUnlocked && (
+                                                    <div className="text-slate-300 dark:text-slate-600 group-hover:text-orange-500 transition-colors">
+                                                        →
+                                                    </div>
+                                                )}
                                             </div>
                                         );
                                     })}
