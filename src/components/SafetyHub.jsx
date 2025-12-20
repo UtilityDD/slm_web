@@ -330,7 +330,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
             title: "Safety Hub",
             tabs: {
                 protocols: "Protocols",
-                training: "Training Zone",
+                training: "90 Days Training",
                 my_ppe: "My PPE",
                 report: "Report Incident"
             },
@@ -339,7 +339,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 categories: ["High Voltage", "Maintenance", "Storm Safety", "First Aid"]
             },
             training: {
-                title: "Video Training Library",
+                title: "90 Days Training Program",
                 watch: "Watch Now"
             },
             my_ppe: {
@@ -376,7 +376,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
             title: "সেফটি হাব",
             tabs: {
                 protocols: "প্রোটোকল",
-                training: "প্রশিক্ষণ জোন",
+                training: "৯০ দিনের প্রশিক্ষণ",
                 my_ppe: "আমার পিপিই",
                 report: "রিপোর্ট করুন"
             },
@@ -385,7 +385,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 categories: ["উচ্চ ভোল্টেজ", "রক্ষণাবেক্ষণ", "ঝড় নিরাপত্তা", "প্রাথমিক চিকিৎসা"]
             },
             training: {
-                title: "ভিডিও প্রশিক্ষণ লাইব্রেরি",
+                title: "৯০ দিনের প্রশিক্ষণ কর্মসূচি",
                 watch: "এখন দেখুন"
             },
             my_ppe: {
@@ -744,30 +744,45 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                                     </h4>
                                                     {point.specifications && (
                                                         <div className="mb-3">
-                                                            <p className="text-xs font-bold text-slate-500 uppercase mb-1">
-                                                                {language === 'en' ? 'Specifications' : 'স্পেসিফিকেশন'}
-                                                            </p>
-                                                            <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <div className="w-6 h-6 rounded-md bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-sm">
+                                                                    📋
+                                                                </div>
+                                                                <p className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                                                    {language === 'en' ? 'Details' : 'বিস্তারিত'}
+                                                                </p>
+                                                            </div>
+                                                            <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed pl-8">
                                                                 {point.specifications}
                                                             </p>
                                                         </div>
                                                     )}
                                                     {point.importance && (
                                                         <div className="mb-3">
-                                                            <p className="text-xs font-bold text-slate-500 uppercase mb-1">
-                                                                {language === 'en' ? 'Importance' : 'গুরুত্ব'}
-                                                            </p>
-                                                            <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <div className="w-6 h-6 rounded-md bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-sm">
+                                                                    💡
+                                                                </div>
+                                                                <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                                                                    {language === 'en' ? 'Key Point' : 'মূল বিষয়'}
+                                                                </p>
+                                                            </div>
+                                                            <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed pl-8">
                                                                 {point.importance}
                                                             </p>
                                                         </div>
                                                     )}
                                                     {point.daily_check && (
-                                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg">
-                                                            <p className="text-xs font-bold text-slate-500 uppercase mb-1">
-                                                                {language === 'en' ? 'Daily Check' : 'দৈনিক পরীক্ষা'}
-                                                            </p>
-                                                            <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed">
+                                                        <div className="bg-emerald-50 dark:bg-emerald-900/10 p-3 rounded-lg border border-emerald-100 dark:border-emerald-900/20">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <div className="w-6 h-6 rounded-md bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-sm">
+                                                                    ✓
+                                                                </div>
+                                                                <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                                                                    {language === 'en' ? 'Quick Tip' : 'পরামর্শ'}
+                                                                </p>
+                                                            </div>
+                                                            <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed pl-8">
                                                                 {point.daily_check}
                                                             </p>
                                                         </div>
