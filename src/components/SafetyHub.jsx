@@ -329,6 +329,10 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
         setIsSaving(true);
 
         try {
+            // Prepare data for batch operations
+            const upsertItems = [];
+            const deleteIds = [];
+
             for (const item of ppeChecklist) {
                 const ageMonths = item.age === '<6m' ? 3 :
                     item.age === '6-12m' ? 9 :
@@ -337,30 +341,49 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 const details = `Usage: ${item.usage}`;
 
                 if (item.available) {
-                    if (item.id) {
-                        // Update
-                        await supabase.from('user_ppe').update({
-                            count: parseInt(item.count),
-                            condition: item.condition,
-                            age_months: ageMonths,
-                            details: details
-                        }).eq('id', item.id);
-                    } else {
-                        // Insert
-                        await supabase.from('user_ppe').insert([{
-                            user_id: user.id,
-                            name: item.name,
-                            count: parseInt(item.count),
-                            condition: item.condition,
-                            age_months: ageMonths,
-                            details: details
-                        }]);
-                    }
+                    // Prepare for upsert (handles both insert and update)
+                    upsertItems.push({
+                        id: item.id || undefined, // Include ID for updates, undefined for inserts
+                        user_id: user.id,
+                        name: item.name,
+                        count: parseInt(item.count),
+                        condition: item.condition,
+                        age_months: ageMonths,
+                        details: details
+                    });
                 } else if (item.id) {
-                    // Delete if it was available but now unchecked
-                    await supabase.from('user_ppe').delete().eq('id', item.id);
+                    // Collect IDs for deletion
+                    deleteIds.push(item.id);
                 }
             }
+
+            // Execute batch operations
+            const operations = [];
+
+            // Batch upsert (insert/update)
+            if (upsertItems.length > 0) {
+                operations.push(
+                    supabase
+                        .from('user_ppe')
+                        .upsert(upsertItems, {
+                            onConflict: 'id',
+                            ignoreDuplicates: false
+                        })
+                );
+            }
+
+            // Batch delete
+            if (deleteIds.length > 0) {
+                operations.push(
+                    supabase
+                        .from('user_ppe')
+                        .delete()
+                        .in('id', deleteIds)
+                );
+            }
+
+            // Execute all operations concurrently
+            await Promise.all(operations);
 
             cacheHelper.clear(`user_ppe_${user.id}`);
             await fetchPPE();
@@ -891,7 +914,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                     </div>
                                 )}
 
-                                {/* Mark as Complete & Navigation Buttons */}
+                                {/* Mark as Complete & Open Next Section */}
                                 <div className="space-y-4 mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
                                     {/* Mark as Complete Button */}
                                     {!completedLessons.includes(trainingContent.level_id) ? (
@@ -919,6 +942,38 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                             </button>
                                         </div>
                                     )}
+<<<<<<< HEAD
+=======
+
+                                    {/* Open Next Section Button */}
+                                    <button
+                                        onClick={() => {
+                                            const currentIdx = selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id);
+                                            if (currentIdx < selectedChapter.subchapters.length - 1) {
+                                                // Next lesson is in the same chapter
+                                                const nextLesson = selectedChapter.subchapters[currentIdx + 1];
+                                                setTrainingContent(nextLesson);
+                                            } else {
+                                                // Moving to next chapter - redirect to chapter index
+                                                const currentChapterNum = trainingContent.chapterNum;
+                                                const nextChapter = trainingChapters.find(ch => ch.number === currentChapterNum + 1);
+                                                if (nextChapter) {
+                                                    setTrainingContent(null);
+                                                    setSelectedChapter(nextChapter);
+                                                }
+                                            }
+                                        }}
+                                        disabled={
+                                            !completedLessons.includes(trainingContent.level_id) ||
+                                            (selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id) === selectedChapter.subchapters.length - 1 &&
+                                                !trainingChapters.find(ch => ch.number === trainingContent.chapterNum + 1))
+                                        }
+                                        className="w-full px-5 py-3 rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-orange-600 text-white hover:bg-orange-700 flex items-center justify-center gap-2"
+                                    >
+                                        {language === 'en' ? 'Open Next Section' : 'পরবর্তী বিভাগ খুলুন'}
+                                        <span>→</span>
+                                    </button>
+>>>>>>> 3979798 (implemented batch PPE updates)
                                 </div>
                             </div>
                         ) : null}
