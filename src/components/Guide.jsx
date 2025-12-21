@@ -10,22 +10,29 @@ const Guide = () => {
         // Save original styles
         const originalWidth = element.style.width;
         const originalMargin = element.style.margin;
+        const originalPadding = element.style.padding;
 
-        // Force mobile width to capture mobile layout
+        // Force mobile width and remove extra spacing to capture mobile layout
         element.style.width = '375px';
-        element.style.margin = '0 auto'; // Center it
+        element.style.margin = '0';
+        element.style.padding = '0';
 
         const opt = {
-            margin: [10, 10, 10, 10],
+            margin: 0, // No margin for full screen effect
             filename: 'SmartLineman_Volunteer_Handbook.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: {
                 scale: 2,
                 useCORS: true,
                 logging: false,
-                windowWidth: 375
+                windowWidth: 375,
+                scrollY: 0
             },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            jsPDF: {
+                unit: 'px',
+                format: [375, 812], // Standard mobile viewport (e.g., iPhone X)
+                orientation: 'portrait'
+            },
             pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
         };
 
@@ -37,6 +44,7 @@ const Guide = () => {
             element.classList.remove('pdf-mode');
             element.style.width = originalWidth;
             element.style.margin = originalMargin;
+            element.style.padding = originalPadding;
         });
     };
 
