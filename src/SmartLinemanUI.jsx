@@ -408,8 +408,8 @@ export default function SmartLinemanUI() {
 
       {/* Real-time Push Notification Alert */}
       {pushNotification && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[110] w-full max-w-md px-4 animate-bounce-in">
-          <div className={`relative p-5 rounded-2xl shadow-2xl border-2 flex gap-4 items-start ${pushNotification.type === 'alert' ? 'bg-red-50 border-red-500 dark:bg-red-900/20' :
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[110] w-[calc(100%-2rem)] max-w-md animate-bounce-in">
+          <div className={`relative p-4 sm:p-5 rounded-2xl shadow-2xl border-2 flex gap-3 sm:gap-4 items-start ${pushNotification.type === 'alert' ? 'bg-red-50 border-red-500 dark:bg-red-900/20' :
             pushNotification.type === 'warning' ? 'bg-orange-50 border-orange-500 dark:bg-orange-900/20' :
               pushNotification.type === 'update' ? 'bg-green-50 border-green-500 dark:bg-green-900/20' :
                 'bg-blue-50 border-blue-500 dark:bg-blue-900/20'
@@ -534,8 +534,8 @@ export default function SmartLinemanUI() {
                 {/* Notifications Dropdown */}
                 {showHistory && (
                   <>
-                    <div className="fixed inset-0 z-40" onClick={() => setShowHistory(false)}></div>
-                    <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 z-50 overflow-hidden animate-scale-in origin-top-right">
+                    <div className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-[2px] sm:bg-transparent sm:backdrop-blur-none" onClick={() => setShowHistory(false)}></div>
+                    <div className="fixed inset-x-4 top-20 sm:absolute sm:inset-auto sm:right-0 sm:mt-2 w-auto sm:w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 z-50 overflow-hidden animate-scale-in sm:origin-top-right">
                       <div className="p-4 border-b dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
                         <h3 className="font-bold text-slate-900 dark:text-slate-100">Notifications</h3>
                         <span className="text-xs font-medium text-slate-500 bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-full">
