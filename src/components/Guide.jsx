@@ -6,11 +6,25 @@ const Guide = () => {
 
     const downloadPDF = () => {
         const element = contentRef.current;
+
+        // Save original styles
+        const originalWidth = element.style.width;
+        const originalMargin = element.style.margin;
+
+        // Force mobile width to capture mobile layout
+        element.style.width = '375px';
+        element.style.margin = '0 auto'; // Center it
+
         const opt = {
             margin: [10, 10, 10, 10],
             filename: 'SmartLineman_Volunteer_Handbook.pdf',
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
+            html2canvas: {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                windowWidth: 375
+            },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
         };
@@ -19,7 +33,10 @@ const Guide = () => {
         element.classList.add('pdf-mode');
 
         html2pdf().set(opt).from(element).save().then(() => {
+            // Restore original styles
             element.classList.remove('pdf-mode');
+            element.style.width = originalWidth;
+            element.style.margin = originalMargin;
         });
     };
 
