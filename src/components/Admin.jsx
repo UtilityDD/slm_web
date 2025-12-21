@@ -49,6 +49,15 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [ppeChecklist, setPpeChecklist] = useState([]);
   const [isSavingPPE, setIsSavingPPE] = useState(false);
 
+  /* Notification State */
+  const [notificationForm, setNotificationForm] = useState({
+    title: '',
+    message: '',
+    type: 'info'
+  });
+  const [isSendingNotification, setIsSendingNotification] = useState(false);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+
   useEffect(() => {
     fetchUsers(currentPage);
   }, [currentPage]);
@@ -202,6 +211,37 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     }
   };
 
+  const handleSendNotification = async (e) => {
+    e.preventDefault();
+    if (!notificationForm.title || !notificationForm.message) {
+      alert('Please fill in both title and message.');
+      return;
+    }
+
+    setIsSendingNotification(true);
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .insert([{
+          title: notificationForm.title,
+          message: notificationForm.message,
+          type: notificationForm.type,
+          admin_id: user.id
+        }]);
+
+      if (error) throw error;
+
+      alert('Notification sent successfully!');
+      setNotificationForm({ title: '', message: '', type: 'info' });
+      setShowNotificationModal(false);
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      alert(`Failed to send notification: ${error.message}`);
+    } finally {
+      setIsSendingNotification(false);
+    }
+  };
+
 
   const handleEdit = (targetUser) => {
     // Safety Mitra Restriction: Cannot edit Admins
@@ -324,15 +364,26 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
           {userProfile?.role === 'safety mitra' ? 'Safety Mitra Dashboard' : 'Admin - User Management'}
         </h1>
         {setCurrentView && (
-          <button
-            onClick={() => setCurrentView('admin-services')}
-            className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg shadow-red-500/20 transition-all flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            Manage Emergency Services
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => setShowNotificationModal(true)}
+              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              Send Notification
+            </button>
+            <button
+              onClick={() => setCurrentView('admin-services')}
+              className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg shadow-red-500/20 transition-all flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              Manage Emergency Services
+            </button>
+          </div>
         )}
       </div>
       {loading ? (
@@ -684,6 +735,81 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
         onClose={() => setShowSuccessModal(false)}
         language={language}
       />
+
+      {/* Send Notification Modal */}
+      {showNotificationModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-2xl w-full max-w-md border border-slate-100 dark:border-slate-700 animate-scale-in">
+            <div className="flex justify-between items-center mb-6 pb-4 border-b dark:border-slate-700">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                Send Push Notification
+              </h2>
+              <button onClick={() => setShowNotificationModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleSendNotification} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Notification Title</label>
+                <input
+                  type="text"
+                  value={notificationForm.title}
+                  onChange={(e) => setNotificationForm({ ...notificationForm, title: e.target.value })}
+                  placeholder="e.g., System Update"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Message Content</label>
+                <textarea
+                  value={notificationForm.message}
+                  onChange={(e) => setNotificationForm({ ...notificationForm, message: e.target.value })}
+                  placeholder="Enter the notification message..."
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 h-32 resize-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Notification Type</label>
+                <select
+                  value={notificationForm.type}
+                  onChange={(e) => setNotificationForm({ ...notificationForm, type: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                >
+                  <option value="info">Information (Blue)</option>
+                  <option value="update">Update (Green)</option>
+                  <option value="warning">Warning (Orange)</option>
+                  <option value="alert">Alert (Red)</option>
+                </select>
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowNotificationModal(false)}
+                  className="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSendingNotification}
+                  className="flex-1 px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all disabled:opacity-50"
+                >
+                  {isSendingNotification ? 'Sending...' : 'Send Now'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

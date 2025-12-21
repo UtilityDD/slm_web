@@ -31,6 +31,10 @@ export default function SmartLinemanUI() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [globalLoading, setGlobalLoading] = useState(false);
   const [appLoading, setAppLoading] = useState(true);
+  const [pushNotification, setPushNotification] = useState(null);
+  const [notificationsHistory, setNotificationsHistory] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [lastSeenNotificationId, setLastSeenNotificationId] = useState(() => localStorage.getItem('lastSeenNotificationId'));
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
@@ -83,6 +87,49 @@ export default function SmartLinemanUI() {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch Notifications History
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(20);
+
+        if (error) throw error;
+        setNotificationsHistory(data || []);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
+  // Real-time Notification Listener
+  useEffect(() => {
+    const channel = supabase
+      .channel('public:notifications')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications'
+      }, (payload) => {
+        console.log('New notification received:', payload);
+        setPushNotification(payload.new);
+        setNotificationsHistory(prev => [payload.new, ...prev].slice(0, 20));
+        // Automatically clear after 10 seconds
+        setTimeout(() => setPushNotification(null), 10000);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Scroll to top when view changes and sync with URL hash
@@ -358,6 +405,39 @@ export default function SmartLinemanUI() {
           </div>
         </div>
       )}
+
+      {/* Real-time Push Notification Alert */}
+      {pushNotification && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[110] w-full max-w-md px-4 animate-bounce-in">
+          <div className={`relative p-5 rounded-2xl shadow-2xl border-2 flex gap-4 items-start ${pushNotification.type === 'alert' ? 'bg-red-50 border-red-500 dark:bg-red-900/20' :
+            pushNotification.type === 'warning' ? 'bg-orange-50 border-orange-500 dark:bg-orange-900/20' :
+              pushNotification.type === 'update' ? 'bg-green-50 border-green-500 dark:bg-green-900/20' :
+                'bg-blue-50 border-blue-500 dark:bg-blue-900/20'
+            }`}>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0 ${pushNotification.type === 'alert' ? 'bg-red-100 text-red-600' :
+              pushNotification.type === 'warning' ? 'bg-orange-100 text-orange-600' :
+                pushNotification.type === 'update' ? 'bg-green-100 text-green-600' :
+                  'bg-blue-100 text-blue-600'
+              }`}>
+              {pushNotification.type === 'alert' ? '🚨' :
+                pushNotification.type === 'warning' ? '⚠️' :
+                  pushNotification.type === 'update' ? '✅' : '📢'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-1">{pushNotification.title}</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{pushNotification.message}</p>
+            </div>
+            <button
+              onClick={() => setPushNotification(null)}
+              className="absolute top-2 right-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
       {/* Background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-[50vw] h-[50vw] bg-blue-100/40 dark:bg-blue-900/20 rounded-full blur-3xl translate-x-1/4 -translate-y-1/4"></div>
@@ -429,6 +509,75 @@ export default function SmartLinemanUI() {
             </nav>
 
             <div className="flex items-center gap-2 sm:gap-3">
+              {/* Notification Bell */}
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setShowHistory(!showHistory);
+                    if (notificationsHistory.length > 0) {
+                      const latestId = notificationsHistory[0].id;
+                      setLastSeenNotificationId(latestId);
+                      localStorage.setItem('lastSeenNotificationId', latestId);
+                    }
+                  }}
+                  className="flex items-center justify-center p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-all touch-target relative"
+                  title="Notifications"
+                >
+                  <svg className="w-5 h-5 text-slate-700 dark:text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                  {notificationsHistory.length > 0 && notificationsHistory[0].id !== lastSeenNotificationId && (
+                    <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-800 rounded-full"></span>
+                  )}
+                </button>
+
+                {/* Notifications Dropdown */}
+                {showHistory && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowHistory(false)}></div>
+                    <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 z-50 overflow-hidden animate-scale-in origin-top-right">
+                      <div className="p-4 border-b dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
+                        <h3 className="font-bold text-slate-900 dark:text-slate-100">Notifications</h3>
+                        <span className="text-xs font-medium text-slate-500 bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-full">
+                          {notificationsHistory.length}
+                        </span>
+                      </div>
+                      <div className="max-h-[400px] overflow-y-auto">
+                        {notificationsHistory.length > 0 ? (
+                          notificationsHistory.map((notif) => (
+                            <div key={notif.id} className="p-4 border-b last:border-0 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-default">
+                              <div className="flex gap-3">
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 ${notif.type === 'alert' ? 'bg-red-100 text-red-600' :
+                                  notif.type === 'warning' ? 'bg-orange-100 text-orange-600' :
+                                    notif.type === 'update' ? 'bg-green-100 text-green-600' :
+                                      'bg-blue-100 text-blue-600'
+                                  }`}>
+                                  {notif.type === 'alert' ? '🚨' :
+                                    notif.type === 'warning' ? '⚠️' :
+                                      notif.type === 'update' ? '✅' : '📢'}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{notif.title}</h4>
+                                  <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 mt-0.5">{notif.message}</p>
+                                  <span className="text-[10px] text-slate-400 mt-1 block">
+                                    {new Date(notif.created_at).toLocaleDateString()} • {new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-8 text-center">
+                            <div className="text-4xl mb-2 opacity-20">🔔</div>
+                            <p className="text-sm text-slate-500">No notifications yet</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
               {/* Theme Toggle Button */}
               <button
                 onClick={handleThemeToggle}
