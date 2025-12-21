@@ -942,8 +942,6 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                             </button>
                                         </div>
                                     )}
-<<<<<<< HEAD
-=======
 
                                     {/* Open Next Section Button */}
                                     <button
@@ -973,7 +971,6 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                         {language === 'en' ? 'Open Next Section' : 'পরবর্তী বিভাগ খুলুন'}
                                         <span>→</span>
                                     </button>
->>>>>>> 3979798 (implemented batch PPE updates)
                                 </div>
                             </div>
                         ) : null}

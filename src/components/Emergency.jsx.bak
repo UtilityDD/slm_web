@@ -413,114 +413,6 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
         }
     }[language];
 
-    const renderServices = () => {
-        const searchLower = serviceSearch.toLowerCase();
-        const filteredServices = services.filter(s => {
-            const matchesSearch = !serviceSearch ||
-                s.name?.toLowerCase().includes(searchLower) ||
-                s.location?.toLowerCase().includes(searchLower);
-            const matchesCategory = activeCategory === 'all' || s.type === activeCategory;
-            return matchesSearch && matchesCategory;
-        });
-
-        if (filteredServices.length === 0) {
-            return (
-                <div className="col-span-full">
-                    <EmptyState
-                        icon="🔍"
-                        title={language === 'en' ? 'No Results' : 'কোন ফলাফল নেই'}
-                        message={language === 'en' ? `No services found` : `কোন পরিষেবা পাওয়া যায়নি`}
-                    />
-                </div>
-            );
-        }
-
-        // If specific category selected, show flat list
-        if (activeCategory !== 'all') {
-            const type = activeCategory;
-            const typeConfig = {
-                hospitals: { label: t.services.hospitals, icon: 'hospital', color: 'blue' },
-                ambulance: { label: t.services.ambulance, icon: 'ambulance', color: 'red' },
-                fire: { label: t.services.fire, icon: 'fire', color: 'orange' },
-                police: { label: t.services.police, icon: 'police', color: 'slate' },
-                power: { label: t.services.power, icon: 'power', color: 'yellow' }
-            };
-            const config = typeConfig[type] || { label: type, icon: 'other', color: 'slate' };
-
-            return (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredServices.map((service) => (
-                        <ServiceCard
-                            key={service.id}
-                            service={service}
-                            config={config}
-                            isExpanded={expandedServiceId === service.id}
-                            onToggle={() => setExpandedServiceId(expandedServiceId === service.id ? null : service.id)}
-                        />
-                    ))}
-                </div>
-            );
-        }
-
-        // Grouped view (activeCategory === 'all')
-        const groupedServices = filteredServices.reduce((acc, service) => {
-            const type = service.type || 'other';
-            if (!acc[type]) acc[type] = [];
-            acc[type].push(service);
-            return acc;
-        }, {});
-
-        const typeConfig = {
-            hospitals: { label: t.services.hospitals, icon: 'hospital', color: 'blue' },
-            ambulance: { label: t.services.ambulance, icon: 'ambulance', color: 'red' },
-            fire: { label: t.services.fire, icon: 'fire', color: 'orange' },
-            police: { label: t.services.police, icon: 'police', color: 'slate' },
-            power: { label: t.services.power, icon: 'power', color: 'yellow' }
-        };
-
-        const typeOrder = ['hospitals', 'ambulance', 'fire', 'police', 'power'];
-
-        return (
-            <div className="space-y-8">
-                {typeOrder.map(type => {
-                    const servicesOfType = groupedServices[type];
-                    if (!servicesOfType?.length) return null;
-                    const config = typeConfig[type];
-
-                    return (
-                        <div key={type} className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
-                            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-100 dark:border-slate-700">
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl bg-${config.color}-100 text-${config.color}-600 dark:bg-${config.color}-900/30 dark:text-${config.color}-400`}>
-                                    {config.icon === 'hospital' ? '🏥' :
-                                        config.icon === 'ambulance' ? '🚑' :
-                                            config.icon === 'fire' ? '🚒' :
-                                                config.icon === 'police' ? '👮' :
-                                                    config.icon === 'power' ? '⚡' : '🏢'}
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-slate-900 dark:text-slate-100">{config.label}</h3>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">{servicesOfType.length} {language === 'en' ? 'services available' : 'টি পরিষেবা উপলব্ধ'}</p>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {servicesOfType.map((service) => (
-                                    <ServiceCard
-                                        key={service.id}
-                                        service={service}
-                                        config={config}
-                                        isExpanded={expandedServiceId === service.id}
-                                        onToggle={() => setExpandedServiceId(expandedServiceId === service.id ? null : service.id)}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    };
-
     return (
         <div className="compact-container py-6 sm:py-10 mb-20">
             <Toast message={toast.message} type={toast.type} show={toast.show} onDismiss={() => setToast(t => ({ ...t, show: false }))} />
@@ -738,128 +630,232 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
 
                             {/* Services Display */}
                             <div className={activeCategory === 'all' ? "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start" : "space-y-4"}>
-                                {renderServices()}
+                                {(() => {
+                                    const searchLower = serviceSearch.toLowerCase();
+                                    const filteredServices = services.filter(s => {
+                                        const matchesSearch = !serviceSearch ||
+                                            s.name?.toLowerCase().includes(searchLower) ||
+                                            s.location?.toLowerCase().includes(searchLower);
+                                        const matchesCategory = activeCategory === 'all' || s.type === activeCategory;
+                                        return matchesSearch && matchesCategory;
+                                    });
+
+                                    if (filteredServices.length === 0) {
+                                        return (
+                                            <div className="col-span-full">
+                                                <EmptyState
+                                                    icon="🔍"
+                                                    title={language === 'en' ? 'No Results' : 'কোন ফলাফল নেই'}
+                                                    message={language === 'en' ? `No services found` : `কোন পরিষেবা পাওয়া যায়নি`}
+                                                />
+                                            </div>
+                                        );
+                                    }
+
+                                    // If specific category selected, show flat list
+                                    if (activeCategory !== 'all') {
+                                        const type = activeCategory;
+                                        const typeConfig = {
+                                            hospitals: { label: t.services.hospitals, icon: 'hospital', color: 'blue' },
+                                            ambulance: { label: t.services.ambulance, icon: 'ambulance', color: 'red' },
+                                            fire: { label: t.services.fire, icon: 'fire', color: 'orange' },
+                                            police: { label: t.services.police, icon: 'police', color: 'slate' },
+                                            power: { label: t.services.power, icon: 'power', color: 'yellow' }
+                                        };
+                                        const config = typeConfig[type] || { label: type, icon: 'other', color: 'slate' };
+
+                                        return (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                {filteredServices.map((service) => (
+                                                    <ServiceCard
+                                                        key={service.id}
+                                                        service={service}
+                                                        config={config}
+                                                        isExpanded={expandedServiceId === service.id}
+                                                        onToggle={() => setExpandedServiceId(expandedServiceId === service.id ? null : service.id)}
+                                                    />
+                                                ))}
+                                            </div>
+                                        );
+                                    }
+
+                                    // Grouped view (activeCategory === 'all')
+                                    const groupedServices = filteredServices.reduce((acc, service) => {
+                                        const type = service.type || 'other';
+                                        if (!acc[type]) acc[type] = [];
+                                        acc[type].push(service);
+                                        return acc;
+                                    }, {});
+
+                                    const typeConfig = {
+                                        hospitals: { label: t.services.hospitals, icon: 'hospital', color: 'blue' },
+                                        ambulance: { label: t.services.ambulance, icon: 'ambulance', color: 'red' },
+                                        fire: { label: t.services.fire, icon: 'fire', color: 'orange' },
+                                        police: { label: t.services.police, icon: 'police', color: 'slate' },
+                                        power: { label: t.services.power, icon: 'power', color: 'yellow' }
+                                    };
+
+                                    const typeOrder = ['hospitals', 'ambulance', 'fire', 'police', 'power'];
+
+                                    return (
+                                        <div className="space-y-8">
+                                            {typeOrder.map(type => {
+                                                const servicesOfType = groupedServices[type];
+                                                if (!servicesOfType?.length) return null;
+                                                const config = typeConfig[type];
+
+                                                return (
+                                                    <div key={type} className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+                                                        <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-100 dark:border-slate-700">
+                                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl bg-${config.color}-100 text-${config.color}-600 dark:bg-${config.color}-900/30 dark:text-${config.color}-400`}>
+                                                                {config.icon === 'hospital' ? '🏥' :
+                                                                    config.icon === 'ambulance' ? '🚑' :
+                                                                        config.icon === 'fire' ? '🚒' :
+                                                                            config.icon === 'police' ? '👮' :
+                                                                                config.icon === 'power' ? '⚡' : '🏢'}
+                                                            </div>
+                                                            <div>
+                                                                <h3 className="font-bold text-slate-900 dark:text-slate-100">{config.label}</h3>
+                                                                <p className="text-xs text-slate-500 dark:text-slate-400">{servicesOfType.length} {language === 'en' ? 'services available' : 'টি পরিষেবা উপলব্ধ'}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            {servicesOfType.map((service) => (
+                                                                <ServiceCard
+                                                                    key={service.id}
+                                                                    service={service}
+                                                                    config={config}
+                                                                    isExpanded={expandedServiceId === service.id}
+                                                                    onToggle={() => setExpandedServiceId(expandedServiceId === service.id ? null : service.id)}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Registration Modal */}
+                    {showRegisterModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+                            <div className="material-card elevation-5 w-full max-w-md p-6 sm:p-8 animate-scale-up">
+                                <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100 dark:border-slate-700">
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                                        {isDonor ? (language === 'en' ? 'Update Donor Profile' : 'রক্তদাতা প্রোফাইল আপডেট') : (language === 'en' ? 'Register as Blood Donor' : 'রক্তদাতা হিসেবে নিবন্ধন')}
+                                    </h3>
+                                    <button
+                                        onClick={() => setShowRegisterModal(false)}
+                                        className="text-slate-400 hover:text-slate-600 dark:text-slate-400 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <form onSubmit={handleRegister} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-2">Full Name</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={regForm.fullName}
+                                            onChange={(e) => setRegForm({ ...regForm, fullName: e.target.value })}
+                                            className="material-input"
+                                            placeholder="Enter your name"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-slate-700 mb-2">Blood Group</label>
+                                            <select
+                                                required
+                                                value={regForm.bloodGroup}
+                                                onChange={(e) => setRegForm({ ...regForm, bloodGroup: e.target.value })}
+                                                className="material-input"
+                                            >
+                                                <option value="">Select</option>
+                                                <option value="A+">A+</option>
+                                                <option value="A-">A-</option>
+                                                <option value="B+">B+</option>
+                                                <option value="B-">B-</option>
+                                                <option value="O+">O+</option>
+                                                <option value="O-">O-</option>
+                                                <option value="AB+">AB+</option>
+                                                <option value="AB-">AB-</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-slate-700 mb-2">Last Donated</label>
+                                            <input
+                                                type="date"
+                                                value={regForm.lastDonated}
+                                                onChange={(e) => setRegForm({ ...regForm, lastDonated: e.target.value })}
+                                                className="material-input"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-2">District</label>
+                                        <select
+                                            required
+                                            value={regForm.district}
+                                            onChange={(e) => setRegForm({ ...regForm, district: e.target.value })}
+                                            className="material-input"
+                                        >
+                                            <option value="">Select District</option>
+                                            <option value="Kolkata">Kolkata</option>
+                                            <option value="Howrah">Howrah</option>
+                                            <option value="Hooghly">Hooghly</option>
+                                            <option value="North 24 Parganas">North 24 Parganas</option>
+                                            <option value="South 24 Parganas">South 24 Parganas</option>
+                                            <option value="Siliguri">Siliguri</option>
+                                            <option value="Durgapur">Durgapur</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-2">Phone Number</label>
+                                        <input
+                                            type="tel"
+                                            required
+                                            value={regForm.phone}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                                setRegForm({ ...regForm, phone: val });
+                                            }}
+                                            pattern="[0-9]{10}"
+                                            title="Please enter a valid 10-digit phone number"
+                                            className="material-input"
+                                            placeholder="10-digit mobile number"
+                                        />
+                                    </div>
+
+                                    <div className="pt-4 flex gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowRegisterModal(false)}
+                                            className="material-button-outlined ripple-dark flex-1"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={isRegistering}
+                                            className="material-button-primary ripple flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {isRegistering ? 'Processing...' : (isDonor ? 'Update' : 'Register')}
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     )}
                 </div>
-            )}
-
-            {/* Registration Modal */}
-            {showRegisterModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-                    <div className="material-card elevation-5 w-full max-w-md p-6 sm:p-8 animate-scale-up">
-                        <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100 dark:border-slate-700">
-                            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-                                {isDonor ? (language === 'en' ? 'Update Donor Profile' : 'রক্তদাতা প্রোফাইল আপডেট') : (language === 'en' ? 'Register as Blood Donor' : 'রক্তদাতা হিসেবে নিবন্ধন')}
-                            </h3>
-                            <button
-                                onClick={() => setShowRegisterModal(false)}
-                                className="text-slate-400 hover:text-slate-600 dark:text-slate-400 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleRegister} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">Full Name</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={regForm.fullName}
-                                    onChange={(e) => setRegForm({ ...regForm, fullName: e.target.value })}
-                                    className="material-input"
-                                    placeholder="Enter your name"
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-2">Blood Group</label>
-                                    <select
-                                        required
-                                        value={regForm.bloodGroup}
-                                        onChange={(e) => setRegForm({ ...regForm, bloodGroup: e.target.value })}
-                                        className="material-input"
-                                    >
-                                        <option value="">Select</option>
-                                        <option value="A+">A+</option>
-                                        <option value="A-">A-</option>
-                                        <option value="B+">B+</option>
-                                        <option value="B-">B-</option>
-                                        <option value="O+">O+</option>
-                                        <option value="O-">O-</option>
-                                        <option value="AB+">AB+</option>
-                                        <option value="AB-">AB-</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-2">Last Donated</label>
-                                    <input
-                                        type="date"
-                                        value={regForm.lastDonated}
-                                        onChange={(e) => setRegForm({ ...regForm, lastDonated: e.target.value })}
-                                        className="material-input"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">District</label>
-                                <select
-                                    required
-                                    value={regForm.district}
-                                    onChange={(e) => setRegForm({ ...regForm, district: e.target.value })}
-                                    className="material-input"
-                                >
-                                    <option value="">Select District</option>
-                                    <option value="Kolkata">Kolkata</option>
-                                    <option value="Howrah">Howrah</option>
-                                    <option value="Hooghly">Hooghly</option>
-                                    <option value="North 24 Parganas">North 24 Parganas</option>
-                                    <option value="South 24 Parganas">South 24 Parganas</option>
-                                    <option value="Siliguri">Siliguri</option>
-                                    <option value="Durgapur">Durgapur</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">Phone Number</label>
-                                <input
-                                    type="tel"
-                                    required
-                                    value={regForm.phone}
-                                    onChange={(e) => {
-                                        const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-                                        setRegForm({ ...regForm, phone: val });
-                                    }}
-                                    pattern="[0-9]{10}"
-                                    title="Please enter a valid 10-digit phone number"
-                                    className="material-input"
-                                    placeholder="10-digit mobile number"
-                                />
-                            </div>
-
-                            <div className="pt-4 flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowRegisterModal(false)}
-                                    className="material-button-outlined ripple-dark flex-1"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isRegistering}
-                                    className="material-button-primary ripple flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isRegistering ? 'Processing...' : (isDonor ? 'Update' : 'Register')}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+            );
 }
