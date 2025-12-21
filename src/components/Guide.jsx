@@ -1,8 +1,25 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import html2pdf from 'html2pdf.js';
 
 const Guide = () => {
+    const contentRef = useRef(null);
+
     const downloadPDF = () => {
-        window.print();
+        const element = contentRef.current;
+        const opt = {
+            margin: [10, 10, 10, 10],
+            filename: 'SmartLineman_Volunteer_Handbook.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // Add a temporary class for PDF styling if needed
+        element.classList.add('pdf-mode');
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            element.classList.remove('pdf-mode');
+        });
     };
 
     return (
@@ -20,7 +37,7 @@ const Guide = () => {
                 </div>
 
                 {/* Handbook Container */}
-                <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700">
+                <div ref={contentRef} className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700">
                     {/* Header */}
                     <div className="bg-gradient-to-br from-blue-700 to-indigo-800 p-8 sm:p-12 text-center text-white relative overflow-hidden">
                         <div className="absolute inset-0 opacity-10">
