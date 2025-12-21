@@ -11,7 +11,8 @@ const Guide = () => {
             filename: 'SmartLineman_Volunteer_Handbook.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true, logging: false },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
         };
 
         // Add a temporary class for PDF styling if needed
@@ -54,7 +55,7 @@ const Guide = () => {
                     {/* Content */}
                     <div className="p-6 sm:p-10 space-y-10">
                         {/* Section 1: Purpose */}
-                        <section>
+                        <section className="html2pdf__page-break">
                             <h2 className="text-xl sm:text-2xl font-bold mb-6 flex items-center gap-3 text-slate-900 dark:text-slate-100">
                                 <span className="w-10 h-10 bg-pink-100 dark:bg-pink-900/30 text-pink-600 rounded-xl flex items-center justify-center">🎯</span>
                                 মূল উদ্দেশ্য
@@ -75,7 +76,7 @@ const Guide = () => {
                         </section>
 
                         {/* Section 2: Why */}
-                        <section>
+                        <section className="html2pdf__page-break">
                             <h2 className="text-xl sm:text-2xl font-bold mb-6 flex items-center gap-3 text-slate-900 dark:text-slate-100">
                                 <span className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-xl flex items-center justify-center">💡</span>
                                 কেন এই উদ্যোগ
@@ -103,7 +104,7 @@ const Guide = () => {
                         </section>
 
                         {/* Section 3: Philosophy */}
-                        <section>
+                        <section className="html2pdf__page-break">
                             <h2 className="text-xl sm:text-2xl font-bold mb-6 flex items-center gap-3 text-slate-900 dark:text-slate-100">
                                 <span className="w-10 h-10 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-xl flex items-center justify-center">🏗️</span>
                                 আমাদের দর্শন
@@ -121,7 +122,7 @@ const Guide = () => {
                         </section>
 
                         {/* Section 4: Roles */}
-                        <section>
+                        <section className="html2pdf__page-break">
                             <h2 className="text-xl sm:text-2xl font-bold mb-6 flex items-center gap-3 text-slate-900 dark:text-slate-100">
                                 <span className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-xl flex items-center justify-center">👥</span>
                                 ভলান্টিয়ার (সেফটি মিত্র) কারা?
@@ -149,7 +150,7 @@ const Guide = () => {
                         </section>
 
                         {/* Section 5: Responsibilities */}
-                        <section>
+                        <section className="html2pdf__page-break">
                             <h2 className="text-xl sm:text-2xl font-bold mb-6 flex items-center gap-3 text-slate-900 dark:text-slate-100">
                                 <span className="w-10 h-10 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 rounded-xl flex items-center justify-center">🛠️</span>
                                 ভলান্টিয়ারের প্রধান ভূমিকা
@@ -174,7 +175,7 @@ const Guide = () => {
                         </section>
 
                         {/* Section 6: Pledge */}
-                        <section className="print:break-inside-avoid">
+                        <section className="print:break-inside-avoid html2pdf__page-break">
                             <div className="p-8 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-dashed border-blue-400 dark:border-blue-600 rounded-3xl text-center">
                                 <h3 className="text-xl font-bold text-blue-800 dark:text-blue-200 mb-4">🔐 গোপনীয়তার শপথ</h3>
                                 <p className="text-lg leading-relaxed text-slate-700 dark:text-slate-300 font-medium">
