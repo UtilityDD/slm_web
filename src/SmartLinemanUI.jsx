@@ -110,6 +110,28 @@ export default function SmartLinemanUI() {
     fetchNotifications();
   }, []);
 
+  const handleDeleteNotification = async (id) => {
+    try {
+      const { error, count } = await supabase
+        .from('notifications')
+        .delete({ count: 'exact' })
+        .eq('id', id);
+
+      if (error) throw error;
+      console.log('Delete result:', { id, count });
+
+      if (count === 0) {
+        console.warn('No rows were deleted. This might be an RLS issue.');
+      }
+
+      setNotificationsHistory(prev => prev.filter(n => n.id !== id));
+      showNotification('Notification deleted', 'success');
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      showNotification('Failed to delete notification', 'error');
+    }
+  };
+
   // Real-time Notification Listener
   useEffect(() => {
     const channel = supabase
@@ -124,6 +146,14 @@ export default function SmartLinemanUI() {
         setNotificationsHistory(prev => [payload.new, ...prev].slice(0, 20));
         // Automatically clear after 10 seconds
         setTimeout(() => setPushNotification(null), 10000);
+      })
+      .on('postgres_changes', {
+        event: 'DELETE',
+        schema: 'public',
+        table: 'notifications'
+      }, (payload) => {
+        console.log('Notification deleted:', payload);
+        setNotificationsHistory(prev => prev.filter(n => n.id !== payload.old.id));
       })
       .subscribe();
 
@@ -563,6 +593,22 @@ export default function SmartLinemanUI() {
                                     {new Date(notif.created_at).toLocaleDateString()} • {new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                   </span>
                                 </div>
+                                {userProfile?.role === 'admin' && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (window.confirm('Delete this notification?')) {
+                                        handleDeleteNotification(notif.id);
+                                      }
+                                    }}
+                                    className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                                    title="Delete notification"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                  </button>
+                                )}
                               </div>
                             </div>
                           ))

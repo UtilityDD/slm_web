@@ -353,9 +353,6 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     setEditingUser(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
-  if (loading) {
-    return <div>Loading users...</div>;
-  }
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
