@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import html2pdf from 'html2pdf.js';
+import { QRCodeCanvas } from 'qrcode.react';
 
 const Guide = () => {
     const contentRef = useRef(null);
@@ -209,6 +210,19 @@ const Guide = () => {
                                     এই তথ্য শুধুই একে অপরকে বাঁচানোর জন্য।"
                                 </p>
                             </div>
+                        </section>
+
+                        {/* Share / QR Code Section */}
+                        <section className="html2pdf__page-break flex flex-col items-center justify-center text-center py-8">
+                            <h3 className="text-lg font-bold mb-4 text-slate-700 dark:text-slate-300">আমাদের সাথে যুক্ত হোন</h3>
+                            <div className="p-3 bg-white rounded-xl shadow-sm border border-slate-200 mb-3">
+                                <QRCodeCanvas value="https://slm-web-eight.vercel.app/" size={120} />
+                            </div>
+                            <p className="text-sm text-slate-500 mb-1">ভিজিট করুন:</p>
+                            <a href="https://slm-web-eight.vercel.app/" className="text-blue-600 font-bold text-sm hover:underline">
+                                https://slm-web-eight.vercel.app/
+                            </a>
+                            <p className="text-xs text-slate-400 mt-2">v1.1</p>
                         </section>
                     </div>
 
