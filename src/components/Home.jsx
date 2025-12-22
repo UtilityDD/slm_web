@@ -6,6 +6,7 @@ export default function Home({ setCurrentView, language, user, t }) {
     const [score, setScore] = useState(0);
     const [fullName, setFullName] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [fetchError, setFetchError] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -13,6 +14,7 @@ export default function Home({ setCurrentView, language, user, t }) {
                 setLoading(false);
                 return;
             }
+            setFetchError(false);
             try {
                 const { data, error } = await supabase
                     .from('profiles')
@@ -26,6 +28,7 @@ export default function Home({ setCurrentView, language, user, t }) {
                 }
             } catch (error) {
                 console.error('Error fetching profile:', error);
+                setFetchError(true);
             } finally {
                 setLoading(false);
             }
@@ -82,7 +85,18 @@ export default function Home({ setCurrentView, language, user, t }) {
             <div className="mb-8 sm:mb-10">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
-                        <span className="text-slate-400 dark:text-slate-400 font-medium block text-base sm:text-lg mb-0.5">{getGreeting()},</span>
+                        <div className="flex items-center gap-2 mb-0.5">
+                            <span className="text-slate-400 dark:text-slate-400 font-medium block text-base sm:text-lg">{getGreeting()},</span>
+                            {fetchError && (
+                                <button
+                                    onClick={() => { setLoading(true); fetchProfile(); }}
+                                    className="text-[10px] bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full border border-red-100 dark:border-red-800 flex items-center gap-1 hover:bg-red-100 transition-colors"
+                                >
+                                    <span>📡</span>
+                                    {language === 'en' ? 'Retry' : 'আবার চেষ্টা করুন'}
+                                </button>
+                            )}
+                        </div>
                         <div className="flex items-baseline gap-3">
                             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                                 {fullName || (user?.email ? user.email.split('@')[0] : (language === 'en' ? 'Lineman' : 'লাইনম্যান'))}

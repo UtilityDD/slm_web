@@ -32,6 +32,7 @@ const UserTableSkeleton = () => (
 export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -74,6 +75,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     }
 
     setLoading(true);
+    setFetchError(false);
     try {
       const start = (page - 1) * usersPerPage;
       const end = start + usersPerPage - 1;
@@ -95,6 +97,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     } catch (error) {
       console.error('Error fetching users:', error);
       setUsers([]);
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
@@ -385,6 +388,24 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       </div>
       {loading ? (
         <UserTableSkeleton />
+      ) : fetchError ? (
+        <div className="bg-white dark:bg-slate-800 shadow rounded-lg p-12 text-center border border-red-100 dark:border-red-900/30">
+          <div className="text-4xl mb-4">📡</div>
+          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">
+            {language === 'en' ? 'Connection Error' : 'কানেকশন এরর'}
+          </h3>
+          <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-xs mx-auto">
+            {language === 'en'
+              ? 'Unable to load user data. Please check your internet connection.'
+              : 'ইউজার ডাটা লোড করা সম্ভব হয়নি। আপনার ইন্টারনেট কানেকশন চেক করুন।'}
+          </p>
+          <button
+            onClick={() => fetchUsers(currentPage)}
+            className="px-8 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all"
+          >
+            {language === 'en' ? 'Retry' : 'আবার চেষ্টা করুন'}
+          </button>
+        </div>
       ) : (
         <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">

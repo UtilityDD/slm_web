@@ -33,6 +33,7 @@ export default function SmartLinemanUI() {
   const [appLoading, setAppLoading] = useState(true);
   const [pushNotification, setPushNotification] = useState(null);
   const [notificationsHistory, setNotificationsHistory] = useState([]);
+  const [notifFetchError, setNotifFetchError] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [lastSeenNotificationId, setLastSeenNotificationId] = useState(() => localStorage.getItem('lastSeenNotificationId'));
   const [showHandbookModal, setShowHandbookModal] = useState(false);
@@ -99,6 +100,7 @@ export default function SmartLinemanUI() {
   // Fetch Notifications History
   useEffect(() => {
     const fetchNotifications = async () => {
+      setNotifFetchError(false);
       try {
         const { data, error } = await supabase
           .from('notifications')
@@ -111,6 +113,7 @@ export default function SmartLinemanUI() {
         setNotificationsHistory(data || []);
       } catch (error) {
         console.error('Error fetching notifications:', error);
+        setNotifFetchError(true);
       }
     };
 
@@ -629,6 +632,36 @@ export default function SmartLinemanUI() {
                               </div>
                             </div>
                           ))
+                        ) : notifFetchError ? (
+                          <div className="p-8 text-center">
+                            <div className="text-2xl mb-2">📡</div>
+                            <p className="text-sm text-slate-500 mb-4">
+                              {language === 'en' ? 'Failed to load notifications.' : 'নোটিফিকেশন লোড করা সম্ভব হয়নি।'}
+                            </p>
+                            <button
+                              onClick={() => {
+                                const retryFetch = async () => {
+                                  setNotifFetchError(false);
+                                  try {
+                                    const { data, error } = await supabase
+                                      .from('notifications')
+                                      .select('*')
+                                      .eq('is_active', true)
+                                      .order('created_at', { ascending: false })
+                                      .limit(20);
+                                    if (error) throw error;
+                                    setNotificationsHistory(data || []);
+                                  } catch (error) {
+                                    setNotifFetchError(true);
+                                  }
+                                };
+                                retryFetch();
+                              }}
+                              className="text-xs font-bold text-blue-600 hover:underline"
+                            >
+                              {language === 'en' ? 'Try Again' : 'আবার চেষ্টা করুন'}
+                            </button>
+                          </div>
                         ) : (
                           <div className="p-8 text-center">
                             <div className="text-4xl mb-2 opacity-20">🔔</div>

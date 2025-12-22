@@ -102,6 +102,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     const [protocolsData, setProtocolsData] = useState(null);
     const [selectedLevel, setSelectedLevel] = useState(null);
     const [carouselData, setCarouselData] = useState(null);
+    const [fetchError, setFetchError] = useState(false);
 
     // Training Zone States
     const [trainingChapters, setTrainingChapters] = useState([]);
@@ -177,13 +178,16 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
 
     useEffect(() => {
         const fetchProtocols = async () => {
+            setFetchError(false);
             try {
                 const fileName = language === 'en' ? 'protocol_en.json' : 'protocol.json';
                 const response = await fetch(`/quizzes/${fileName}`);
+                if (!response.ok) throw new Error('Failed to fetch protocols');
                 const data = await response.json();
                 setProtocolsData(data);
             } catch (error) {
                 console.error('Error fetching protocols:', error);
+                setFetchError(true);
             }
         };
 
@@ -191,6 +195,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
             try {
                 const fileName = language === 'en' ? 'carousol_en.json' : 'carousol.json';
                 const response = await fetch(`/quizzes/${fileName}`);
+                if (!response.ok) throw new Error('Failed to fetch carousel');
                 const data = await response.json();
                 setCarouselData(data);
             } catch (error) {
@@ -206,11 +211,11 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                     const data = await response.json();
                     setTrainingChapters(data);
                 } else {
-                    console.error('Manifest not found');
-                    setTrainingChapters([]);
+                    throw new Error('Manifest not found');
                 }
             } catch (error) {
                 console.error('Error fetching training chapters:', error);
+                setFetchError(true);
             } finally {
                 setTrainingLoading(false);
             }
@@ -559,6 +564,27 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                     </button>
                 ))}
             </div>
+
+            {/* Network Error UI */}
+            {fetchError && (
+                <div className="max-w-md mx-auto mb-8 p-6 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-800 rounded-2xl text-center animate-fade-in">
+                    <div className="text-3xl mb-3">📡</div>
+                    <h3 className="text-red-800 dark:text-red-400 font-bold mb-2">
+                        {language === 'en' ? 'Connection Error' : 'কানেকশন এরর'}
+                    </h3>
+                    <p className="text-sm text-red-600 dark:text-red-500 mb-4">
+                        {language === 'en'
+                            ? 'Unable to load safety data. Please check your internet connection.'
+                            : 'সেফটি ডাটা লোড করা সম্ভব হয়নি। আপনার ইন্টারনেট কানেকশন চেক করুন।'}
+                    </p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="px-6 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
+                    >
+                        {language === 'en' ? 'Retry' : 'আবার চেষ্টা করুন'}
+                    </button>
+                </div>
+            )}
 
             {/* Content Area */}
             <div className="animate-slide-down">
