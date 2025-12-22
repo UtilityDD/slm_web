@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { cacheHelper } from '../utils/cacheHelper';
+import wbLocations from '../data/wb_locations.json';
 
 const UserTableSkeleton = () => (
   <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
@@ -84,7 +85,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       // Fetch paginated users with total count
       const { data, error, count } = await supabase
         .from('profiles')
-        .select('id, full_name, email, role, district, avatar_url, created_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage', { count: 'exact' })
+        .select('id, full_name, email, role, district, block, avatar_url, created_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage, is_donor, last_donation_date, blood_group, phone', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(start, end);
 
@@ -336,26 +337,49 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     updates.avatar_url = avatar_url;
     delete updates.email; // Do not update email
     delete updates.points; // Do not allow manual point updates via Admin UI
+    delete updates.created_at; // Do not update created_at timestamp
 
-    const { error } = await supabase.from('profiles').update(updates).eq('id', id);
+    console.log('Saving user updates:', updates); // Debug log
+    console.log('User ID:', id); // Debug log
+
+    if (!id) {
+      alert('Error: User ID is missing');
+      return;
+    }
+
+    const { data, error } = await supabase.from('profiles').update(updates).eq('id', id);
+
     if (error) {
       console.error('Error updating user:', error);
-      alert('Failed to update user.');
+      alert(`Failed to update user: ${error.message}`);
     } else {
-      // Clear admin cache
-      cacheHelper.clear('admin_user_list');
+      console.log('User updated successfully', data); // Debug log
 
+      // Clear ALL admin user cache (all pages)
+      for (let i = 1; i <= 10; i++) {
+        cacheHelper.clear(`admin_users_page_${i}`);
+      }
+
+      // Wait for users list to refresh before closing modal
+      await fetchUsers();
+
+      // Now close the modal
       setEditingUser(null);
       setAvatarFile(null);
       setAvatarPreview(null);
-      fetchUsers(); // Refresh users list
       setShowSuccessModal(true);
     }
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setEditingUser(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+
+    // If district changes, reset block
+    if (name === 'district') {
+      setEditingUser(prev => ({ ...prev, district: value, block: '' }));
+    } else {
+      setEditingUser(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    }
   };
 
 
@@ -593,24 +617,39 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                         <input type="text" name="phone" value={editingUser.phone || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">District</label>
-                        <input type="text" name="district" value={editingUser.district || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Blood Group</label>
+                        <input type="text" name="blood_group" value={editingUser.blood_group || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Blood Group</label>
-                        <input type="text" name="blood_group" value={editingUser.blood_group || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Role</label>
-                        <select name="role" value={editingUser.role || 'lineman'} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" disabled={userProfile?.role === 'safety mitra' && editingUser.role === 'admin'}>
-                          <option value="lineman">Lineman</option>
-                          <option value="safety mitra">Safety Mitra</option>
-                          {userProfile?.role === 'admin' && <option value="admin">Admin</option>}
+                        <label className="block text-xs font-medium text-slate-500 mb-1">District</label>
+                        <select name="district" value={editingUser.district || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                          <option value="">Select District</option>
+                          {Object.keys(wbLocations).map(district => (
+                            <option key={district} value={district}>{district}</option>
+                          ))}
                         </select>
                       </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Block</label>
+                        <select name="block" value={editingUser.block || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" disabled={!editingUser.district}>
+                          <option value="">Select Block</option>
+                          {editingUser.district && wbLocations[editingUser.district]?.map(block => (
+                            <option key={block} value={block}>{block}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Role</label>
+                      <select name="role" value={editingUser.role || 'lineman'} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" disabled={userProfile?.role === 'safety mitra' && editingUser.role === 'admin'}>
+                        <option value="lineman">Lineman</option>
+                        <option value="safety mitra">Safety Mitra</option>
+                        {userProfile?.role === 'admin' && <option value="admin">Admin</option>}
+                      </select>
                     </div>
 
                     <div className="flex items-center p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-100 dark:border-slate-700">
