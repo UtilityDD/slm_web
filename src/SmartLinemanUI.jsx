@@ -36,6 +36,7 @@ export default function SmartLinemanUI() {
   const [notificationsHistory, setNotificationsHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [lastSeenNotificationId, setLastSeenNotificationId] = useState(() => localStorage.getItem('lastSeenNotificationId'));
+  const [showHandbookModal, setShowHandbookModal] = useState(false);
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
@@ -82,8 +83,14 @@ export default function SmartLinemanUI() {
       }
       if (session) {
         fetchProfile(session.user);
+        // Show handbook modal on login if not seen in this session
+        if (event === 'SIGNED_IN' && !sessionStorage.getItem('hasSeenHandbook')) {
+          setShowHandbookModal(true);
+          sessionStorage.setItem('hasSeenHandbook', 'true');
+        }
       } else {
         setUserProfile(null);
+        sessionStorage.removeItem('hasSeenHandbook');
       }
     });
 
@@ -863,6 +870,42 @@ export default function SmartLinemanUI() {
           </div>
         )
       }
+      {/* Handbook Modal */}
+      {showHandbookModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col relative animate-in zoom-in-95 duration-300">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowHandbookModal(false)}
+              className="absolute top-4 right-4 z-50 p-2 bg-white/80 dark:bg-slate-700/80 hover:bg-white dark:hover:bg-slate-600 rounded-full shadow-lg transition-all text-slate-600 dark:text-slate-200"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+              <Suspense fallback={
+                <div className="p-12 text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-slate-500">Loading Handbook...</p>
+                </div>
+              }>
+                <Guide hideHeader={true} />
+              </Suspense>
+            </div>
+
+            <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 text-center">
+              <button
+                onClick={() => setShowHandbookModal(false)}
+                className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95"
+              >
+                বুঝেছি
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div >
   );
 }

@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import html2pdf from 'html2pdf.js';
 import { QRCodeCanvas } from 'qrcode.react';
 
-const Guide = () => {
+const Guide = ({ hideHeader = false }) => {
     const contentRef = useRef(null);
 
     const downloadPDF = () => {
@@ -52,31 +52,35 @@ const Guide = () => {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8 px-4 sm:px-6 lg:px-8 font-bengali">
             <div className="max-w-4xl mx-auto">
-                {/* Print Button - Hidden during print */}
-                <div className="mb-6 text-center print:hidden">
-                    <button
-                        onClick={downloadPDF}
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full shadow-lg transition-all transform hover:scale-105 active:scale-95"
-                    >
-                        <span>📥</span>
-                        <span>PDF ডাউনলোড করুন</span>
-                    </button>
-                </div>
+                {/* Print Button - Hidden during print and if hideHeader is true */}
+                {!hideHeader && (
+                    <div className="mb-6 text-center print:hidden">
+                        <button
+                            onClick={downloadPDF}
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full shadow-lg transition-all transform hover:scale-105 active:scale-95"
+                        >
+                            <span>📥</span>
+                            <span>PDF ডাউনলোড করুন</span>
+                        </button>
+                    </div>
+                )}
 
                 {/* Handbook Container */}
                 <div ref={contentRef} className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700">
                     {/* Header */}
-                    <div className="bg-gradient-to-br from-blue-700 to-indigo-800 p-8 sm:p-12 text-center text-white relative overflow-hidden">
-                        <div className="absolute inset-0 opacity-10">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -mr-32 -mt-32 blur-3xl"></div>
-                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-white rounded-full -ml-32 -mb-32 blur-3xl"></div>
+                    {!hideHeader && (
+                        <div className="bg-gradient-to-br from-blue-700 to-indigo-800 p-8 sm:p-12 text-center text-white relative overflow-hidden">
+                            <div className="absolute inset-0 opacity-10">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                                <div className="absolute bottom-0 left-0 w-64 h-64 bg-white rounded-full -ml-32 -mb-32 blur-3xl"></div>
+                            </div>
+                            <div className="relative z-10">
+                                <h1 className="text-3xl sm:text-4xl font-bold mb-4">📘 ভলান্টিয়ারদের হ্যান্ডবুক</h1>
+                                <p className="text-xl font-medium opacity-90 mb-2 text-blue-100">SMARTLINEMAN কমিউনিটি</p>
+                                <p className="text-sm italic opacity-75">(লাইনম্যানদের জন্য, লাইনম্যানদের দ্বারা)</p>
+                            </div>
                         </div>
-                        <div className="relative z-10">
-                            <h1 className="text-3xl sm:text-4xl font-bold mb-4">📘 ভলান্টিয়ারদের হ্যান্ডবুক</h1>
-                            <p className="text-xl font-medium opacity-90 mb-2 text-blue-100">SMARTLINEMAN কমিউনিটি</p>
-                            <p className="text-sm italic opacity-75">(লাইনম্যানদের জন্য, লাইনম্যানদের দ্বারা)</p>
-                        </div>
-                    </div>
+                    )}
 
                     {/* Content */}
                     <div className="p-6 sm:p-10 space-y-10">
