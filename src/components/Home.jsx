@@ -39,6 +39,31 @@ export default function Home({ setCurrentView, language, user, t }) {
         return () => clearTimeout(timer);
     }, [user]);
 
+    const handleShare = async () => {
+        const shareUrl = "https://slm-web-eight.vercel.app/";
+        const shareText = language === 'en'
+            ? "⚡ Join SmartLineman - The ultimate safety and community app for West Bengal Linemen! " + shareUrl
+            : "⚡ স্মার্ট লাইনম্যান অ্যাপে যোগ দিন - পশ্চিমবঙ্গের লাইনম্যানদের জন্য সেরা নিরাপত্তা এবং কমিউনিটি অ্যাপ! " + shareUrl;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'SmartLineman',
+                    text: shareText,
+                    url: shareUrl,
+                });
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Error sharing:', error);
+                }
+            }
+        } else {
+            // Fallback: Copy to clipboard or open WhatsApp
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+    };
+
     // Helper to get greeting based on time
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -134,10 +159,10 @@ export default function Home({ setCurrentView, language, user, t }) {
                 </div>
             </div>
 
-            {/* Campaign / Share App Button */}
+            {/* Share App Button */}
             <div className="flex justify-center mb-8">
                 <button
-                    onClick={() => setCurrentView('campaign')}
+                    onClick={handleShare}
                     className="w-full sm:w-auto px-8 py-3 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
                 >
                     <span className="text-[#25D366]">

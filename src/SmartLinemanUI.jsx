@@ -11,7 +11,6 @@ const Login = lazy(() => import("./components/Login"));
 const Admin = lazy(() => import("./components/Admin"));
 const AdminServices = lazy(() => import("./components/AdminServices"));
 const Home = lazy(() => import("./components/Home"));
-const Campaign = lazy(() => import("./components/Campaign"));
 const Guide = lazy(() => import("./components/Guide"));
 
 export default function SmartLinemanUI() {
@@ -382,8 +381,6 @@ export default function SmartLinemanUI() {
           return <Admin language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;
         case 'admin-services':
           return <AdminServices language={language} />;
-        case 'campaign':
-          return <Campaign language={language} setCurrentView={setCurrentView} />;
         case 'guide':
           return <Guide />;
         case 'home':
