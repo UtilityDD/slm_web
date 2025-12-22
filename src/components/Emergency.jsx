@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { cacheHelper } from '../utils/cacheHelper';
+import wbLocations from '../data/wb_locations.json';
 
 // Skeleton Loaders
 const DonorCardSkeleton = () => (
@@ -86,7 +87,7 @@ const DonorCard = React.memo(({ donor, isExpanded, onToggle, t }) => (
                 </div>
                 <div className="min-w-0">
                     <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">{donor.full_name || 'Unknown'}</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{donor.district}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{donor.block ? `${donor.block}, ` : ''}{donor.district}</p>
                 </div>
             </div>
             <div className="flex items-center gap-2">
@@ -181,6 +182,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [selectedBloodGroup, setSelectedBloodGroup] = useState('All');
     const [selectedDistrict, setSelectedDistrict] = useState('All');
+    const [selectedBlock, setSelectedBlock] = useState('All');
     const [donors, setDonors] = useState([]);
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState({ message: '', type: 'info', show: false });
@@ -202,6 +204,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
         bloodGroup: '',
         lastDonated: '',
         district: '',
+        block: '',
         phone: ''
     });
     const [isRegistering, setIsRegistering] = useState(false);
@@ -232,6 +235,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                     bloodGroup: data.blood_group || '',
                     lastDonated: data.last_donation_date || '',
                     district: data.district || '',
+                    block: data.block || '',
                     phone: data.phone || ''
                 });
             }
@@ -249,7 +253,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
         } else if (activeTab === 'services') {
             fetchServices();
         }
-    }, [activeTab, selectedBloodGroup, selectedDistrict]);
+    }, [activeTab, selectedBloodGroup, selectedDistrict, selectedBlock]);
 
     const fetchServices = async () => {
         const cachedServices = cacheHelper.get('emergency_services');
@@ -275,7 +279,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
     };
 
     const fetchDonors = async () => {
-        const cacheKey = `donors_${selectedBloodGroup}_${selectedDistrict}`;
+        const cacheKey = `donors_${selectedBloodGroup}_${selectedDistrict}_${selectedBlock}`;
         const cachedDonors = cacheHelper.get(cacheKey);
         if (cachedDonors) {
             setDonors(cachedDonors);
@@ -294,6 +298,9 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
             }
             if (selectedDistrict !== 'All') {
                 query = query.eq('district', selectedDistrict);
+            }
+            if (selectedBlock !== 'All') {
+                query = query.eq('block', selectedBlock);
             }
 
             const { data, error } = await query;
@@ -325,6 +332,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                 id: user.id,
                 blood_group: regForm.bloodGroup,
                 district: regForm.district,
+                block: regForm.block,
                 phone: regForm.phone,
                 last_donation_date: regForm.lastDonated || null,
                 is_donor: true,
@@ -608,17 +616,27 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                 </select>
                                 <select
                                     value={selectedDistrict}
-                                    onChange={(e) => setSelectedDistrict(e.target.value)}
+                                    onChange={(e) => {
+                                        setSelectedDistrict(e.target.value);
+                                        setSelectedBlock('All');
+                                    }}
                                     className="px-3 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                                 >
                                     <option value="All">All Districts</option>
-                                    <option value="Kolkata">Kolkata</option>
-                                    <option value="Howrah">Howrah</option>
-                                    <option value="Hooghly">Hooghly</option>
-                                    <option value="North 24 Parganas">North 24 Parganas</option>
-                                    <option value="South 24 Parganas">South 24 Parganas</option>
-                                    <option value="Siliguri">Siliguri</option>
-                                    <option value="Durgapur">Durgapur</option>
+                                    {Object.keys(wbLocations).sort().map(dist => (
+                                        <option key={dist} value={dist}>{dist}</option>
+                                    ))}
+                                </select>
+                                <select
+                                    value={selectedBlock}
+                                    onChange={(e) => setSelectedBlock(e.target.value)}
+                                    disabled={selectedDistrict === 'All'}
+                                    className="px-3 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all disabled:opacity-50"
+                                >
+                                    <option value="All">All Blocks</option>
+                                    {selectedDistrict !== 'All' && wbLocations[selectedDistrict]?.map(block => (
+                                        <option key={block} value={block}>{block}</option>
+                                    ))}
                                 </select>
                             </div>
                             <button
@@ -810,17 +828,28 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                 <select
                                     required
                                     value={regForm.district}
-                                    onChange={(e) => setRegForm({ ...regForm, district: e.target.value })}
+                                    onChange={(e) => setRegForm({ ...regForm, district: e.target.value, block: '' })}
                                     className="material-input"
                                 >
                                     <option value="">Select District</option>
-                                    <option value="Kolkata">Kolkata</option>
-                                    <option value="Howrah">Howrah</option>
-                                    <option value="Hooghly">Hooghly</option>
-                                    <option value="North 24 Parganas">North 24 Parganas</option>
-                                    <option value="South 24 Parganas">South 24 Parganas</option>
-                                    <option value="Siliguri">Siliguri</option>
-                                    <option value="Durgapur">Durgapur</option>
+                                    {Object.keys(wbLocations).sort().map(dist => (
+                                        <option key={dist} value={dist}>{dist}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Block Name</label>
+                                <select
+                                    required
+                                    value={regForm.block}
+                                    onChange={(e) => setRegForm({ ...regForm, block: e.target.value })}
+                                    disabled={!regForm.district}
+                                    className="material-input disabled:opacity-50"
+                                >
+                                    <option value="">Select Block</option>
+                                    {regForm.district && wbLocations[regForm.district]?.map(block => (
+                                        <option key={block} value={block}>{block}</option>
+                                    ))}
                                 </select>
                             </div>
                             <div>
