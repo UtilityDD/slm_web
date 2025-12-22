@@ -21,7 +21,12 @@ export default function SmartLinemanUI() {
     return hash || 'home';
   });
   const [language, setLanguage] = useState('bn');
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('appTheme');
+    if (savedTheme) return savedTheme;
+    const hour = new Date().getHours();
+    return (hour >= 6 && hour < 18) ? 'light' : 'dark';
+  });
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
@@ -207,18 +212,22 @@ export default function SmartLinemanUI() {
     }
   }, []);
 
-  // Check LocalStorage for Theme on mount
+  // Check LocalStorage or Time for Theme on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem('appTheme');
+    let currentTheme = theme;
+
     if (savedTheme) {
-      setTheme(savedTheme);
-      if (savedTheme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
+      currentTheme = savedTheme;
     } else {
-      // Default to light mode if no saved preference
+      const hour = new Date().getHours();
+      currentTheme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
+    }
+
+    setTheme(currentTheme);
+    if (currentTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
       document.documentElement.classList.remove('dark');
     }
   }, []);
