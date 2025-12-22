@@ -22,6 +22,13 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     const [serverTimeOffset, setServerTimeOffset] = useState(0);
     const [fetchError, setFetchError] = useState(false);
 
+    // Offline sync state
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [syncStatus, setSyncStatus] = useState(null); // 'syncing', 'waiting', 'success', 'failed'
+    const [pendingSubmission, setPendingSubmission] = useState(null);
+    const [retryCount, setRetryCount] = useState(0);
+
     const getSyncedTime = () => {
         return new Date(Date.now() + serverTimeOffset);
     };
@@ -39,7 +46,14 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             completed: "Quiz Completed!",
             score: "Your Score",
             close: "Close",
-            loginReq: "Please login to participate"
+            loginReq: "Please login to participate",
+            syncing: "Syncing your score...",
+            waitingNetwork: "Waiting for network connection...",
+            autoRetry: "Auto-retry enabled",
+            previousPending: "Previous attempt pending sync",
+            retryNow: "Retry Now",
+            syncSuccess: "Score synced successfully!",
+            syncFailed: "Sync failed. Please retry."
         },
         bn: {
             title: "প্রতিযোগিতা",
@@ -53,7 +67,14 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             completed: "কুইজ সম্পন্ন!",
             score: "আপনার স্কোর",
             close: "বন্ধ করুন",
-            loginReq: "অংশগ্রহণ করতে লগইন করুন"
+            loginReq: "অংশগ্রহণ করতে লগইন করুন",
+            syncing: "আপনার স্কোর সিঙ্ক হচ্ছে...",
+            waitingNetwork: "নেটওয়ার্ক সংযোগের জন্য অপেক্ষা করা হচ্ছে...",
+            autoRetry: "স্বয়ংক্রিয় পুনঃচেষ্টা সক্রিয়",
+            previousPending: "পূর্ববর্তী প্রচেষ্টা সিঙ্কের জন্য অপেক্ষমাণ",
+            retryNow: "এখনই পুনঃচেষ্টা করুন",
+            syncSuccess: "স্কোর সফলভাবে সিঙ্ক হয়েছে!",
+            syncFailed: "সিঙ্ক ব্যর্থ হয়েছে। অনুগ্রহ করে পুনঃচেষ্টা করুন।"
         }
     }[language];
 
@@ -88,6 +109,158 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         const interval = setInterval(updateTimer, 1000);
         return () => clearInterval(interval);
     }, [serverTimeOffset]); // Update timer when offset is calculated
+
+    // Network monitoring and pending submission queue
+    useEffect(() => {
+        // Network status event listeners
+        const handleOnline = () => {
+            setIsOnline(true);
+            console.log('Network restored, checking pending submissions...');
+            processPendingQueue();
+        };
+
+        const handleOffline = () => {
+            setIsOnline(false);
+            console.log('Network offline');
+        };
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
+        // Check for pending submissions on mount
+        checkPendingSubmissions();
+
+        return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
+        };
+    }, []);
+
+    // Check for pending submissions in LocalStorage
+    const checkPendingSubmissions = () => {
+        try {
+            const pending = localStorage.getItem('pending_quiz_submissions');
+            if (pending) {
+                const submissions = JSON.parse(pending);
+                if (submissions && submissions.length > 0) {
+                    setPendingSubmission(submissions[0]); // Show first pending
+                    // Auto-process if online
+                    if (navigator.onLine) {
+                        processPendingQueue();
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error checking pending submissions:', error);
+        }
+    };
+
+    // Save failed submission to queue
+    const savePendingSubmission = (quizData) => {
+        try {
+            const existing = localStorage.getItem('pending_quiz_submissions');
+            const queue = existing ? JSON.parse(existing) : [];
+
+            // Avoid duplicates
+            const isDuplicate = queue.some(item =>
+                item.quiz_id === quizData.quiz_id &&
+                item.timestamp === quizData.timestamp
+            );
+
+            if (!isDuplicate) {
+                queue.push(quizData);
+                localStorage.setItem('pending_quiz_submissions', JSON.stringify(queue));
+                setPendingSubmission(quizData);
+                console.log('Saved pending submission:', quizData);
+            }
+        } catch (error) {
+            console.error('Error saving pending submission:', error);
+        }
+    };
+
+    // Process all pending submissions
+    const processPendingQueue = async () => {
+        try {
+            const pending = localStorage.getItem('pending_quiz_submissions');
+            if (!pending) return;
+
+            const queue = JSON.parse(pending);
+            if (queue.length === 0) return;
+
+            setIsSyncing(true);
+            setSyncStatus('syncing');
+
+            for (let i = 0; i < queue.length; i++) {
+                const submission = queue[i];
+                await retrySubmission(submission, i);
+            }
+        } catch (error) {
+            console.error('Error processing pending queue:', error);
+            setSyncStatus('failed');
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    // Retry a single submission
+    const retrySubmission = async (submission, index = 0) => {
+        try {
+            console.log(`Retrying submission ${index + 1}:`, submission);
+            setSyncStatus('syncing');
+
+            const { error } = await supabase.rpc('submit_quiz_result', {
+                p_quiz_id: submission.quiz_id,
+                p_score: submission.score
+            });
+
+            if (error) throw error;
+
+            // Success - remove from queue
+            await clearPendingSubmission(submission);
+            setSyncStatus('success');
+
+            // Refresh data
+            await fetchLeaderboard(true);
+            if (submission.quiz_id === hourlyQuiz?.id) {
+                // Update local state immediately to lock the UI
+                setLastAttemptTime(submission.timestamp);
+
+                // Update cache directly with known timestamp to prevent stale reads
+                const cacheKey = `last_attempt_${user.id}_${submission.quiz_id}`;
+                cacheHelper.set(cacheKey, submission.timestamp, 5); // Cache for 5 mins
+            }
+
+            console.log('Successfully synced submission:', submission);
+        } catch (error) {
+            console.error('Retry failed:', error);
+            setSyncStatus('failed');
+            setRetryCount(prev => prev + 1);
+            throw error;
+        }
+    };
+
+    // Clear pending submission after success
+    const clearPendingSubmission = async (submission) => {
+        try {
+            const pending = localStorage.getItem('pending_quiz_submissions');
+            if (!pending) return;
+
+            const queue = JSON.parse(pending);
+            const filtered = queue.filter(item =>
+                !(item.quiz_id === submission.quiz_id && item.timestamp === submission.timestamp)
+            );
+
+            if (filtered.length > 0) {
+                localStorage.setItem('pending_quiz_submissions', JSON.stringify(filtered));
+                setPendingSubmission(filtered[0] || null);
+            } else {
+                localStorage.removeItem('pending_quiz_submissions');
+                setPendingSubmission(null);
+            }
+        } catch (error) {
+            console.error('Error clearing pending submission:', error);
+        }
+    };
 
     const fetchServerTime = async () => {
         const cachedOffset = cacheHelper.get('server_time_offset');
@@ -307,6 +480,13 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             setCurrentView('login');
             return;
         }
+
+        // Check if there's a pending submission for this quiz
+        if (pendingSubmission && pendingSubmission.quiz_id === quiz.id) {
+            alert(t.previousPending + '. ' + (isOnline ? t.retryNow : t.waitingNetwork));
+            return;
+        }
+
         setActiveQuiz(quiz);
 
         // Randomly select 5 questions and shuffle their options
@@ -372,15 +552,39 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         setScore(calculatedScore);
         setQuizSubmitted(true);
 
-        // Always attempt to save result, regardless of quiz source
+        // Save for Review (Local Storage) - do this first
+        const attemptData = {
+            timestamp: new Date().toISOString(),
+            questions: quizQuestions,
+            answers: userAnswers,
+            score: calculatedScore
+        };
+        localStorage.setItem(`review_${activeQuiz.id}`, JSON.stringify(attemptData));
+
+        // IMMEDIATE LOCK: Update local state to show countdown timer instantly
+        // This ensures "Play Now" is disabled regardless of network status
+        if (activeQuiz && activeQuiz.id === hourlyQuiz?.id) {
+            setLastAttemptTime(attemptData.timestamp);
+            const cacheKey = `last_attempt_${user.id}_${activeQuiz.id}`;
+            cacheHelper.set(cacheKey, attemptData.timestamp, 5);
+        }
+
+        // Attempt to save to Supabase
+        setIsSyncing(true);
+        setSyncStatus('syncing');
+
         try {
             // Use the RPC function for atomic transaction
             const { error } = await supabase.rpc('submit_quiz_result', {
-                p_quiz_id: activeQuiz.id || 'unknown_quiz', // Fallback ID if missing
+                p_quiz_id: activeQuiz.id || 'unknown_quiz',
                 p_score: calculatedScore
             });
 
             if (error) throw error;
+
+            // Success!
+            setSyncStatus('success');
+            setIsSyncing(false);
 
             // Refresh leaderboard to show updated score immediately (bypass cache)
             await fetchLeaderboard(true);
@@ -393,18 +597,30 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                 fetchLastAttempt(activeQuiz.id);
             }
 
-            // Save for Review (Local Storage)
-            const attemptData = {
-                timestamp: new Date().toISOString(),
-                questions: quizQuestions,
-                answers: userAnswers,
-                score: calculatedScore
-            };
-            localStorage.setItem(`review_${activeQuiz.id}`, JSON.stringify(attemptData));
-
         } catch (error) {
             console.error('Error saving result:', error);
-            alert(`Error saving score: ${error.message || 'Unknown error'}`);
+            setIsSyncing(false);
+
+            // Save to pending queue for retry
+            const pendingData = {
+                quiz_id: activeQuiz.id || 'unknown_quiz',
+                user_id: user.id,
+                score: calculatedScore,
+                timestamp: attemptData.timestamp,
+                questions: quizQuestions,
+                answers: userAnswers,
+                retry_count: 0
+            };
+
+            savePendingSubmission(pendingData);
+
+            if (!navigator.onLine) {
+                setSyncStatus('waiting');
+                alert(t.waitingNetwork + ' ' + t.autoRetry);
+            } else {
+                setSyncStatus('failed');
+                alert(t.syncFailed + ' ' + error.message);
+            }
         }
     };
 
@@ -447,12 +663,62 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                             </div>
 
                             {/* Action Area */}
+                            {/* Sync Status Indicator */}
+                            {(isSyncing || pendingSubmission) && (
+                                <div className={`mb-3 p-3 rounded-lg border ${syncStatus === 'success' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' :
+                                    syncStatus === 'failed' ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' :
+                                        syncStatus === 'waiting' ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800' :
+                                            'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                                    }`}>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            {isSyncing && (
+                                                <svg className="animate-spin h-4 w-4 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                            )}
+                                            <div>
+                                                <div className={`text-xs font-medium ${syncStatus === 'success' ? 'text-green-700 dark:text-green-300' :
+                                                    syncStatus === 'failed' ? 'text-red-700 dark:text-red-300' :
+                                                        syncStatus === 'waiting' ? 'text-yellow-700 dark:text-yellow-300' :
+                                                            'text-blue-700 dark:text-blue-300'
+                                                    }`}>
+                                                    {syncStatus === 'syncing' ? t.syncing :
+                                                        syncStatus === 'waiting' ? t.waitingNetwork :
+                                                            syncStatus === 'success' ? t.syncSuccess :
+                                                                syncStatus === 'failed' ? t.syncFailed :
+                                                                    t.syncing}
+                                                </div>
+                                                {syncStatus === 'waiting' && (
+                                                    <div className="text-[10px] text-yellow-600 dark:text-yellow-400 mt-0.5">
+                                                        {t.autoRetry}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {syncStatus === 'failed' && !isSyncing && (
+                                            <button
+                                                onClick={processPendingQueue}
+                                                className="px-3 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 rounded transition-colors"
+                                            >
+                                                {t.retryNow}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                             {(() => {
                                 if (!lastAttemptTime) {
                                     return (
                                         <button
                                             onClick={() => startQuiz(hourlyQuiz)}
-                                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                                            disabled={pendingSubmission && pendingSubmission.quiz_id === hourlyQuiz.id}
+                                            className={`w-full py-3 ${(pendingSubmission && pendingSubmission.quiz_id === hourlyQuiz.id)
+                                                ? 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed text-slate-500 dark:text-slate-400'
+                                                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                                } font-bold rounded-lg transition-colors flex items-center justify-center gap-2`}
                                         >
                                             <span>{t.play}</span>
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
