@@ -83,7 +83,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       // Fetch paginated users with total count
       const { data, error, count } = await supabase
         .from('profiles')
-        .select('id, full_name, email, role, district, avatar_url, created_at', { count: 'exact' })
+        .select('id, full_name, email, role, district, avatar_url, created_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(start, end);
 
@@ -626,6 +626,89 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                     <input type="date" name="last_donation_date" value={editingUser.last_donation_date || ''} onChange={handleChange} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* New Personal & Family Details Section */}
+            <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-700">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+                <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Personal & Family Details
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Date of Birth</label>
+                  <input type="date" name="dob" value={editingUser.dob || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Age</label>
+                  <input type="number" name="age" value={editingUser.age || ''} onChange={handleChange} placeholder="Age" className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Education</label>
+                  <input type="text" name="education" value={editingUser.education || ''} onChange={handleChange} placeholder="Education" className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Children Count</label>
+                    <input type="number" name="children_count" value={editingUser.children_count || ''} onChange={handleChange} placeholder="Count" className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Children Ages</label>
+                    <input type="text" name="children_ages" value={editingUser.children_ages || ''} onChange={handleChange} placeholder="e.g. 5, 8" className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center p-2 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-100 dark:border-slate-700 flex-1">
+                    <input type="checkbox" id="parents_stay" name="parents_stay" checked={editingUser.parents_stay || false} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
+                    <label htmlFor="parents_stay" className="ml-2 text-xs text-slate-700 dark:text-slate-200 font-medium cursor-pointer">Parents stay with them</label>
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Parents' Occupation</label>
+                    <input type="text" name="parents_occupation" value={editingUser.parents_occupation || ''} onChange={handleChange} placeholder="Occupation" className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Major Diseases</label>
+                  <textarea name="major_diseases" value={editingUser.major_diseases || ''} onChange={handleChange} placeholder="Any major diseases..." className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-20 resize-none"></textarea>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Regular Medicines</label>
+                  <textarea name="regular_medicines" value={editingUser.regular_medicines || ''} onChange={handleChange} placeholder="Medicines taken regularly..." className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-20 resize-none"></textarea>
+                </div>
+              </div>
+
+              <div className="mt-4 p-4 bg-red-50/50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-900/30">
+                <h4 className="text-xs font-bold text-red-600 dark:text-red-400 mb-3 uppercase tracking-wider">Accident History</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Accident Count</label>
+                    <input type="number" name="accident_count" value={editingUser.accident_count || 0} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Voltage Level (LT/11kV/33kV)</label>
+                    <select name="accident_voltage" value={editingUser.accident_voltage || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                      <option value="">Select Voltage</option>
+                      <option value="LT">LT (Low Tension)</option>
+                      <option value="11kV">11kV</option>
+                      <option value="33kV">33kV</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Accident Details (When, How, Suffering)</label>
+                  <textarea name="accidents_details" value={editingUser.accidents_details || ''} onChange={handleChange} placeholder="Details of accidents faced..." className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-24 resize-none"></textarea>
+                </div>
               </div>
             </div>
             <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
