@@ -20,7 +20,7 @@ export default function SmartLinemanUI() {
     if (hash.includes('access_token=') || hash.includes('type=recovery')) return 'login';
     return hash || 'home';
   });
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState('bn');
   const [theme, setTheme] = useState('light');
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [user, setUser] = useState(null);
@@ -204,8 +204,6 @@ export default function SmartLinemanUI() {
     const savedLang = localStorage.getItem('appLanguage');
     if (savedLang) {
       setLanguage(savedLang);
-    } else {
-      setShowLanguageModal(true);
     }
   }, []);
 
