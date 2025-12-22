@@ -20,6 +20,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     const [fullLeaderboard, setFullLeaderboard] = useState([]);
     const [loadingFull, setLoadingFull] = useState(false);
     const [serverTimeOffset, setServerTimeOffset] = useState(0);
+    const [fetchError, setFetchError] = useState(false);
 
     const getSyncedTime = () => {
         return new Date(Date.now() + serverTimeOffset);
@@ -59,6 +60,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     useEffect(() => {
         const loadData = async () => {
             setLoading(true);
+            setFetchError(false);
             try {
                 await fetchServerTime();
                 await Promise.all([
@@ -263,6 +265,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
         } catch (error) {
             console.error('Error fetching leaderboard:', error);
+            setFetchError(true);
         }
     };
 
@@ -555,7 +558,26 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                 </div>
                             ))}
                             {leaderboard.length === 0 && (
-                                <div className="p-8 text-center text-slate-400">No participants yet. Be the first!</div>
+                                <div className="p-8 text-center text-slate-400">
+                                    {fetchError ? (
+                                        <div className="flex flex-col items-center gap-2">
+                                            <span className="text-2xl">📡</span>
+                                            <p className="text-sm font-medium">
+                                                {language === 'en'
+                                                    ? "Unable to load leaderboard. Please check your connection."
+                                                    : "লিডারবোর্ড লোড করা সম্ভব হয়নি। আপনার ইন্টারনেট কানেকশন চেক করুন।"}
+                                            </p>
+                                            <button
+                                                onClick={() => fetchLeaderboard(true)}
+                                                className="mt-2 text-xs text-blue-600 font-bold hover:underline"
+                                            >
+                                                {language === 'en' ? "Try Again" : "আবার চেষ্টা করুন"}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        language === 'en' ? "No participants yet. Be the first!" : "এখনও কেউ অংশগ্রহণ করেনি। আপনিই প্রথম হোন!"
+                                    )}
+                                </div>
                             )}
 
                             {/* View All Button */}
