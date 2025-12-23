@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { getBadgeByLevel } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
 
 export default function Competitions({ language = 'en', user, setCurrentView }) {
@@ -409,7 +410,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
     const fetchLeaderboard = async (forceRefresh = false) => {
         if (!forceRefresh) {
-            const cachedLeaderboard = cacheHelper.get('leaderboard_top_10');
+            const cachedLeaderboard = cacheHelper.get('leaderboard_top_10_v2');
             if (cachedLeaderboard) {
                 setLeaderboard(cachedLeaderboard);
                 if (user) fetchUserRank();
@@ -432,7 +433,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             }));
 
             setLeaderboard(formattedData || []);
-            cacheHelper.set('leaderboard_top_10', formattedData || [], 5); // Cache for 5 mins
+            cacheHelper.set('leaderboard_top_10_v2', formattedData || [], 5); // Cache for 5 mins
 
             if (user) fetchUserRank(forceRefresh);
 
@@ -446,7 +447,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         setLoadingFull(true);
         setShowFullLeaderboard(true);
 
-        const cachedFull = cacheHelper.get('leaderboard_full');
+        const cachedFull = cacheHelper.get('leaderboard_full_v2');
         if (cachedFull) {
             setFullLeaderboard(cachedFull);
             setLoadingFull(false);
@@ -467,7 +468,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                 points: item.score
             }));
             setFullLeaderboard(formattedData || []);
-            cacheHelper.set('leaderboard_full', formattedData || [], 5); // Cache for 5 mins
+            cacheHelper.set('leaderboard_full_v2', formattedData || [], 5); // Cache for 5 mins
         } catch (error) {
             console.error('Error fetching full leaderboard:', error);
         } finally {
@@ -808,9 +809,16 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                         </div>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
-                                            {item.full_name || 'Anonymous'}
-                                        </p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                                                {item.full_name || 'Anonymous'}
+                                            </p>
+                                            {getBadgeByLevel(item.training_level) && (
+                                                <div className={`px-1.5 py-0.5 rounded-full text-[8px] font-bold border uppercase tracking-tight ${getBadgeByLevel(item.training_level).color}`}>
+                                                    {language === 'en' ? getBadgeByLevel(item.training_level).en : getBadgeByLevel(item.training_level).bn}
+                                                </div>
+                                            )}
+                                        </div>
                                         <p className="text-[10px] sm:text-xs text-slate-500 truncate">
                                             {item.district || 'West Bengal'}
                                         </p>
@@ -901,8 +909,15 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                                 {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className={`font-bold truncate text-sm ${item.user_id === user?.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>
-                                                    {item.user_id === user?.id ? 'You' : item.full_name}
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`font-bold truncate text-sm ${item.user_id === user?.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                                                        {item.user_id === user?.id ? 'You' : item.full_name}
+                                                    </div>
+                                                    {getBadgeByLevel(item.training_level) && (
+                                                        <div className={`px-1.5 py-0.5 rounded-full text-[8px] font-bold border uppercase tracking-tight ${getBadgeByLevel(item.training_level).color}`}>
+                                                            {language === 'en' ? getBadgeByLevel(item.training_level).en : getBadgeByLevel(item.training_level).bn}
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div className="text-[10px] text-slate-500">{item.district}</div>
                                             </div>

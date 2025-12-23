@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { calculateLevelFromProgress } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
 import ChapterQuizModal from './ChapterQuizModal';
 
@@ -145,6 +146,15 @@ export default function SafetyHub({ language = 'en', user, setCurrentView, onPro
             setCompletedLessons(updated);
             if (user) {
                 localStorage.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
+
+                // Sync to Supabase
+                const newLevel = calculateLevelFromProgress(updated);
+                supabase.from('profiles')
+                    .update({ training_level: newLevel })
+                    .eq('id', user.id)
+                    .then(({ error }) => {
+                        if (error) console.error('Error syncing training level:', error);
+                    });
             }
             if (onProgressUpdate) {
                 onProgressUpdate(updated);
