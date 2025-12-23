@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smartlineman-v2';
+const CACHE_NAME = 'smartlineman-v3';
 const RUNTIME_CACHE = 'smartlineman-runtime';
 
 // Assets to cache on install
