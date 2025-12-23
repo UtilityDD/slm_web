@@ -1190,6 +1190,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 onClose={() => setShowQuizModal(false)}
                 onComplete={handleQuizComplete}
                 questions={currentQuizQuestions}
+                language={language}
             />
         </div >
     );

@@ -1,10 +1,43 @@
 import React, { useState, useEffect } from 'react';
 
-const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [] }) => {
+const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], language = 'en' }) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [userAnswers, setUserAnswers] = useState({});
     const [showResult, setShowResult] = useState(false);
     const [score, setScore] = useState(0);
+
+    const t = {
+        en: {
+            title: 'Chapter Quiz',
+            question: 'Question',
+            result: 'Quiz Result',
+            completed: 'Quiz Completed!',
+            failed: 'Pass Mark Not Reached',
+            score: 'You scored',
+            outOf: 'out of',
+            required: '90% correct answers required to pass.',
+            continue: 'Continue to Next Lesson',
+            tryAgain: 'Try Again',
+            readAgain: 'Read Again',
+            submit: 'Submit Quiz',
+            next: 'Next Question'
+        },
+        bn: {
+            title: 'অধ্যায় কুইজ',
+            question: 'প্রশ্ন',
+            result: 'কুইজ ফলাফল',
+            completed: 'কুইজ সম্পন্ন!',
+            failed: 'পাস মার্ক অর্জিত হয়নি',
+            score: 'আপনার স্কোর',
+            outOf: 'এর মধ্যে',
+            required: 'পাস করার জন্য ৯০% সঠিক উত্তর প্রয়োজন।',
+            continue: 'পরবর্তী পাঠে যান',
+            tryAgain: 'আবার চেষ্টা করুন',
+            readAgain: 'আবার পড়ুন',
+            submit: 'কুইজ জমা দিন',
+            next: 'পরবর্তী প্রশ্ন'
+        }
+    }[language] || { en: {} };
 
     useEffect(() => {
         if (isOpen) {
@@ -20,6 +53,8 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [] }) => {
 
     const currentQuestion = questions[currentQuestionIndex];
     const totalQuestions = questions.length;
+    const passThreshold = Math.ceil(totalQuestions * 0.9);
+    const isPassed = score >= passThreshold;
 
     const handleOptionSelect = (optionIndex) => {
         setUserAnswers(prev => ({
@@ -48,7 +83,16 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [] }) => {
     };
 
     const handleFinish = () => {
-        onComplete(score);
+        if (isPassed) {
+            onComplete(score);
+        }
+    };
+
+    const handleTryAgain = () => {
+        setCurrentQuestionIndex(0);
+        setUserAnswers({});
+        setShowResult(false);
+        setScore(0);
     };
 
     return (
@@ -58,7 +102,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [] }) => {
                 {/* Header */}
                 <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
                     <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">
-                        {showResult ? 'Quiz Result' : `Question ${currentQuestionIndex + 1}/${totalQuestions}`}
+                        {showResult ? t.result : `${t.question} ${currentQuestionIndex + 1}/${totalQuestions}`}
                     </h3>
                     {!showResult && (
                         <button
@@ -74,21 +118,46 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [] }) => {
                 <div className="p-6 overflow-y-auto flex-1">
                     {showResult ? (
                         <div className="text-center py-8">
-                            <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
-                                🏆
+                            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl ${isPassed ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600'}`}>
+                                {isPassed ? '🏆' : '⚠️'}
                             </div>
                             <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-                                Quiz Completed!
+                                {isPassed ? t.completed : t.failed}
                             </h2>
-                            <p className="text-slate-600 dark:text-slate-400 mb-6">
-                                You scored <span className="font-bold text-blue-600 dark:text-blue-400 text-xl">{score}</span> out of {totalQuestions}
+                            <p className="text-slate-600 dark:text-slate-400 mb-2">
+                                {t.score} <span className={`font-bold text-xl ${isPassed ? 'text-green-600' : 'text-amber-600'}`}>{score}</span> {t.outOf} {totalQuestions}
                             </p>
-                            <button
-                                onClick={handleFinish}
-                                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20"
-                            >
-                                Continue to Next Lesson
-                            </button>
+                            {!isPassed && (
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                                    {t.required}
+                                </p>
+                            )}
+
+                            <div className="space-y-3 mt-6">
+                                {isPassed ? (
+                                    <button
+                                        onClick={handleFinish}
+                                        className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-green-600/20"
+                                    >
+                                        {t.continue}
+                                    </button>
+                                ) : (
+                                    <>
+                                        <button
+                                            onClick={handleTryAgain}
+                                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20"
+                                        >
+                                            {t.tryAgain}
+                                        </button>
+                                        <button
+                                            onClick={onClose}
+                                            className="w-full py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all hover:bg-slate-200 dark:hover:bg-slate-600"
+                                        >
+                                            {t.readAgain}
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     ) : (
                         <div className="space-y-6">
@@ -102,14 +171,14 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [] }) => {
                                         key={idx}
                                         onClick={() => handleOptionSelect(idx)}
                                         className={`w-full p-4 rounded-xl text-left transition-all border-2 ${userAnswers[currentQuestionIndex] === idx
-                                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                                                : 'border-slate-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400'
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                                            : 'border-slate-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400'
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${userAnswers[currentQuestionIndex] === idx
-                                                    ? 'border-blue-500 bg-blue-500 text-white'
-                                                    : 'border-slate-300 dark:border-slate-600'
+                                                ? 'border-blue-500 bg-blue-500 text-white'
+                                                : 'border-slate-300 dark:border-slate-600'
                                                 }`}>
                                                 {userAnswers[currentQuestionIndex] === idx && (
                                                     <div className="w-2 h-2 bg-white rounded-full" />
@@ -131,11 +200,11 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [] }) => {
                             onClick={handleNext}
                             disabled={userAnswers[currentQuestionIndex] === undefined}
                             className={`w-full py-3 rounded-xl font-bold transition-all ${userAnswers[currentQuestionIndex] !== undefined
-                                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20'
-                                    : 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20'
+                                : 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
                                 }`}
                         >
-                            {currentQuestionIndex === totalQuestions - 1 ? 'Submit Quiz' : 'Next Question'}
+                            {currentQuestionIndex === totalQuestions - 1 ? t.submit : t.next}
                         </button>
                     </div>
                 )}
