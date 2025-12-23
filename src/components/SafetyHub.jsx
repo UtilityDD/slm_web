@@ -42,45 +42,70 @@ const ProtocolCard = React.memo(({ level, index, onClick }) => (
 ));
 
 const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, onClick }) => {
+    const isFAQ = chapter.number === 10;
     const completedCount = completedLessons.filter(id => id && id.toString().startsWith(`${chapter.number}.`)).length;
     const progress = chapter.count > 0 ? Math.min(100, Math.round((completedCount / chapter.count) * 100)) : 0;
 
     return (
         <div
             onClick={() => onClick(chapter)}
-            className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-md transition-all cursor-pointer group relative overflow-hidden"
+            className={`p-5 rounded-xl border transition-all cursor-pointer group relative overflow-hidden ${isFAQ
+                ? 'bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-900/20 dark:to-fuchsia-900/20 border-violet-200 dark:border-violet-700 hover:border-violet-400 dark:hover:border-violet-500 shadow-sm hover:shadow-md'
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-md'
+                }`}
         >
             <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 flex items-center justify-center text-lg font-bold border border-orange-100 dark:border-orange-900/50">
-                        {chapter.number}
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg font-bold border ${isFAQ
+                        ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 border-violet-200 dark:border-violet-800'
+                        : 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-900/50'
+                        }`}>
+                        {isFAQ ? '?' : chapter.number}
                     </div>
                     <div>
-                        <h3 className="font-bold text-slate-900 dark:text-slate-100 leading-tight group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                        <h3 className={`font-bold leading-tight transition-colors ${isFAQ
+                            ? 'text-violet-900 dark:text-violet-100 group-hover:text-violet-700 dark:group-hover:text-violet-300'
+                            : 'text-slate-900 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400'
+                            }`}>
                             {chapter.title}
                         </h3>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                            {chapter.count} {language === 'en' ? 'Lessons' : 'পাঠ'}
+                            {isFAQ ? (language === 'en' ? 'Always Unlocked' : 'সবার জন্য উন্মুক্ত') : `${chapter.count} ${language === 'en' ? 'Lessons' : 'পাঠ'}`}
                         </p>
                     </div>
                 </div>
-                {progress === 100 && (
+                {!isFAQ && progress === 100 && (
                     <div className="text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
                         {language === 'en' ? 'Done' : 'সম্পন্ন'}
                     </div>
                 )}
+                {isFAQ && (
+                    <div className="text-violet-500 bg-violet-50 dark:bg-violet-900/20 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
+                        FAQ
+                    </div>
+                )}
             </div>
 
-            {/* Progress Bar */}
-            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mt-2">
-                <div
-                    className={`h-full rounded-full transition-all duration-500 ${progress === 100 ? 'bg-emerald-500' : 'bg-orange-500'}`}
-                    style={{ width: `${progress}%` }}
-                ></div>
-            </div>
-            <p className="text-[10px] text-slate-400 mt-1.5 text-right">
-                {progress}% {language === 'en' ? 'Complete' : 'সম্পন্ন'}
-            </p>
+            {/* Progress Bar - Hide for FAQ */}
+            {!isFAQ && (
+                <>
+                    <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mt-2">
+                        <div
+                            className={`h-full rounded-full transition-all duration-500 ${progress === 100 ? 'bg-emerald-500' : 'bg-orange-500'}`}
+                            style={{ width: `${progress}%` }}
+                        ></div>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1.5 text-right">
+                        {progress}% {language === 'en' ? 'Complete' : 'সম্পন্ন'}
+                    </p>
+                </>
+            )}
+
+            {isFAQ && (
+                <p className="text-[10px] text-violet-400 dark:text-violet-500 mt-2 italic">
+                    {language === 'en' ? 'Reference Guide' : 'রেফারেন্স গাইড'}
+                </p>
+            )}
         </div>
     );
 });
@@ -314,6 +339,23 @@ export default function SafetyHub({ language = 'en', user, setCurrentView, onPro
 
     const handleChapterClick = async (chapter) => {
         setTrainingLoading(true);
+
+        // Special handling for FAQ Chapter 10
+        if (chapter.number === 10) {
+            try {
+                const response = await fetch('/quizzes/chapter_10_qa.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    setSelectedChapter({ ...chapter, isFAQ: true, content: data });
+                }
+            } catch (err) {
+                console.error("Error loading FAQ chapter:", err);
+            } finally {
+                setTrainingLoading(false);
+            }
+            return;
+        }
+
         // Lazy load subchapters
         try {
             const promises = [];
@@ -779,7 +821,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView, onPro
                                 ))}
                             </div>
                         ) : selectedChapter && !trainingContent ? (
-                            /* Subchapter List View */
+                            /* Subchapter List View or FAQ View */
                             <div>
                                 <button
                                     onClick={() => setSelectedChapter(null)}
@@ -787,66 +829,108 @@ export default function SafetyHub({ language = 'en', user, setCurrentView, onPro
                                 >
                                     ← {language === 'en' ? 'Back to Chapters' : 'অধ্যায়ে ফিরে যান'}
                                 </button>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {selectedChapter.subchapters.map((subchapter, index) => {
-                                        const isUnlocked = isLessonUnlocked(subchapter.chapterNum, subchapter.subchapterNum);
-                                        const isCompleted = completedLessons.includes(subchapter.level_id);
 
-                                        return (
-                                            <div
-                                                key={subchapter.level_id}
-                                                onClick={() => {
-                                                    if (!user) {
-                                                        setCurrentView('login');
-                                                        return;
-                                                    }
-                                                    if (isUnlocked) {
-                                                        setTrainingContent(subchapter);
-                                                    }
-                                                }}
-                                                className={`bg-white dark:bg-slate-800 p-3 rounded-lg border transition-all flex items-center gap-3 ${isUnlocked
-                                                    ? 'border-slate-200 dark:border-slate-700 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-sm cursor-pointer'
-                                                    : 'border-slate-100 dark:border-slate-800 opacity-60 cursor-not-allowed'
-                                                    } ${isCompleted ? 'bg-emerald-50/30 dark:bg-emerald-900/10' : ''} group`}
-                                            >
-                                                {/* ID Box - Always Visible */}
-                                                <div className={`w-10 h-10 rounded-md flex items-center justify-center text-sm font-bold flex-shrink-0 border ${isCompleted
-                                                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
-                                                    : isUnlocked
-                                                        ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-900/30'
-                                                        : 'bg-slate-50 dark:bg-slate-800/50 text-slate-400 border-slate-100 dark:border-slate-700'
-                                                    }`}>
-                                                    {subchapter.level_id}
-                                                </div>
+                                {selectedChapter.isFAQ ? (
+                                    /* FAQ View */
+                                    <div className="space-y-4">
+                                        <div className="bg-gradient-to-r from-violet-100 to-fuchsia-100 dark:from-violet-900/30 dark:to-fuchsia-900/30 p-6 rounded-2xl mb-6 border border-violet-200 dark:border-violet-700">
+                                            <h2 className="text-2xl font-bold text-violet-900 dark:text-violet-100 mb-2">{selectedChapter.content.title}</h2>
+                                            <p className="text-violet-700 dark:text-violet-300">{selectedChapter.content.subtitle}</p>
+                                        </div>
 
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2 mb-0.5">
-                                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                                                            {subchapter.badge_name}
+                                        {selectedChapter.content.questions.map((q, idx) => (
+                                            <div key={q.id} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-all">
+                                                <details className="group">
+                                                    <summary className="flex items-center justify-between p-4 cursor-pointer list-none">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold text-sm shrink-0">
+                                                                {idx + 1}
+                                                            </div>
+                                                            <span className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                                                                {q.question}
+                                                            </span>
+                                                        </div>
+                                                        <span className="transition group-open:rotate-180">
+                                                            <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
                                                         </span>
-                                                        {isCompleted && (
-                                                            <span className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px]">✓</span>
-                                                        )}
-                                                        {!isUnlocked && (
-                                                            <span className="text-[10px] text-slate-400">🔒</span>
-                                                        )}
+                                                    </summary>
+                                                    <div className="px-4 pb-4 pl-[3.25rem] text-slate-600 dark:text-slate-400 text-sm leading-relaxed border-t border-slate-100 dark:border-slate-700 pt-4 bg-slate-50/50 dark:bg-slate-900/30">
+                                                        {q.answer}
+                                                        <div className="mt-3 flex flex-wrap gap-2">
+                                                            {q.tags.map(tag => (
+                                                                <span key={tag} className="px-2 py-1 rounded-md bg-slate-200 dark:bg-slate-700 text-xs text-slate-600 dark:text-slate-400 font-medium">
+                                                                    #{tag}
+                                                                </span>
+                                                            ))}
+                                                        </div>
                                                     </div>
-                                                    <h4 className={`font-bold text-sm truncate ${isUnlocked ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'
-                                                        }`}>
-                                                        {subchapter.level_title}
-                                                    </h4>
-                                                </div>
-
-                                                {/* Arrow Icon */}
-                                                {isUnlocked && (
-                                                    <div className="text-slate-300 dark:text-slate-600 group-hover:text-orange-500 transition-colors">
-                                                        →
-                                                    </div>
-                                                )}
+                                                </details>
                                             </div>
-                                        );
-                                    })}
-                                </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    /* Regular Subchapter List */
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {selectedChapter.subchapters.map((subchapter, index) => {
+                                            const isUnlocked = isLessonUnlocked(subchapter.chapterNum, subchapter.subchapterNum);
+                                            const isCompleted = completedLessons.includes(subchapter.level_id);
+
+                                            return (
+                                                <div
+                                                    key={subchapter.level_id}
+                                                    onClick={() => {
+                                                        if (!user) {
+                                                            setCurrentView('login');
+                                                            return;
+                                                        }
+                                                        if (isUnlocked) {
+                                                            setTrainingContent(subchapter);
+                                                        }
+                                                    }}
+                                                    className={`bg-white dark:bg-slate-800 p-3 rounded-lg border transition-all flex items-center gap-3 ${isUnlocked
+                                                        ? 'border-slate-200 dark:border-slate-700 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-sm cursor-pointer'
+                                                        : 'border-slate-100 dark:border-slate-800 opacity-60 cursor-not-allowed'
+                                                        } ${isCompleted ? 'bg-emerald-50/30 dark:bg-emerald-900/10' : ''} group`}
+                                                >
+                                                    {/* ID Box - Always Visible */}
+                                                    <div className={`w-10 h-10 rounded-md flex items-center justify-center text-sm font-bold flex-shrink-0 border ${isCompleted
+                                                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                                                        : isUnlocked
+                                                            ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-900/30'
+                                                            : 'bg-slate-50 dark:bg-slate-800/50 text-slate-400 border-slate-100 dark:border-slate-700'
+                                                        }`}>
+                                                        {subchapter.level_id}
+                                                    </div>
+
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 mb-0.5">
+                                                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                                                                {subchapter.badge_name}
+                                                            </span>
+                                                            {isCompleted && (
+                                                                <span className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px]">✓</span>
+                                                            )}
+                                                            {!isUnlocked && (
+                                                                <span className="text-[10px] text-slate-400">🔒</span>
+                                                            )}
+                                                        </div>
+                                                        <h4 className={`font-bold text-sm truncate ${isUnlocked ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'
+                                                            }`}>
+                                                            {subchapter.level_title}
+                                                        </h4>
+                                                    </div>
+
+                                                    {/* Arrow Icon */}
+                                                    {isUnlocked && (
+                                                        <div className="text-slate-300 dark:text-slate-600 group-hover:text-orange-500 transition-colors">
+                                                            →
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         ) : trainingContent ? (
                             /* Content View */
