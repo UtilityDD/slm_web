@@ -109,6 +109,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     const [showQuizModal, setShowQuizModal] = useState(false);
     const [currentQuizQuestions, setCurrentQuizQuestions] = useState([]);
     const [pendingLessonId, setPendingLessonId] = useState(null);
+    const [previousQuizQuestions, setPreviousQuizQuestions] = useState({});
 
     // Training Zone States
     const [trainingChapters, setTrainingChapters] = useState([]);
@@ -169,9 +170,31 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
             const allQuestions = await response.json();
 
             if (allQuestions && allQuestions.length > 0) {
-                // Randomly select 10 questions
-                const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
-                const selected = shuffled.slice(0, 10);
+                // Advanced Randomization: Limit repeats to max 2
+                const previousQuestions = previousQuizQuestions[lessonId] || [];
+                const newQuestions = allQuestions.filter(q => !previousQuestions.includes(q.questionText));
+                const oldQuestions = allQuestions.filter(q => previousQuestions.includes(q.questionText));
+
+                let selected = [];
+                if (newQuestions.length >= 8) {
+                    // Pick 8 new and 2 old
+                    const shuffledNew = [...newQuestions].sort(() => 0.5 - Math.random());
+                    const shuffledOld = [...oldQuestions].sort(() => 0.5 - Math.random());
+                    selected = [...shuffledNew.slice(0, 8), ...shuffledOld.slice(0, 2)];
+                } else {
+                    // Pick all new and fill the rest from old
+                    const shuffledOld = [...oldQuestions].sort(() => 0.5 - Math.random());
+                    selected = [...newQuestions, ...shuffledOld.slice(0, Math.max(0, 10 - newQuestions.length))];
+                }
+
+                // Final shuffle of the selected questions (up to 10)
+                selected = selected.sort(() => 0.5 - Math.random()).slice(0, 10);
+
+                // Update previous questions for next attempt
+                setPreviousQuizQuestions(prev => ({
+                    ...prev,
+                    [lessonId]: selected.map(q => q.questionText)
+                }));
 
                 setCurrentQuizQuestions(selected);
                 setPendingLessonId(lessonId);

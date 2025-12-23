@@ -39,20 +39,41 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
         }
     }[language] || { en: {} };
 
+    const [shuffledQuestions, setShuffledQuestions] = useState([]);
+
     useEffect(() => {
-        if (isOpen) {
-            // Reset state when modal opens
+        if (isOpen && questions.length > 0) {
+            const shuffled = questions.map(q => {
+                // Create an array of options with their original index to track the correct one
+                const optionsWithMetadata = q.options.map((text, index) => ({
+                    text,
+                    isCorrect: index === q.correctAnswerIndex
+                }));
+
+                // Shuffle the options
+                const shuffledOptions = [...optionsWithMetadata].sort(() => 0.5 - Math.random());
+
+                // Find the new index of the correct answer
+                const newCorrectAnswerIndex = shuffledOptions.findIndex(opt => opt.isCorrect);
+
+                return {
+                    ...q,
+                    options: shuffledOptions.map(opt => opt.text),
+                    correctAnswerIndex: newCorrectAnswerIndex
+                };
+            });
+            setShuffledQuestions(shuffled);
             setCurrentQuestionIndex(0);
             setUserAnswers({});
             setShowResult(false);
             setScore(0);
         }
-    }, [isOpen]);
+    }, [isOpen, questions]);
 
-    if (!isOpen) return null;
+    if (!isOpen || shuffledQuestions.length === 0) return null;
 
-    const currentQuestion = questions[currentQuestionIndex];
-    const totalQuestions = questions.length;
+    const currentQuestion = shuffledQuestions[currentQuestionIndex];
+    const totalQuestions = shuffledQuestions.length;
     const passThreshold = Math.ceil(totalQuestions * 0.9);
     const isPassed = score >= passThreshold;
 
@@ -73,7 +94,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
 
     const handleSubmit = () => {
         let calculatedScore = 0;
-        questions.forEach((q, index) => {
+        shuffledQuestions.forEach((q, index) => {
             if (userAnswers[index] === q.correctAnswerIndex) {
                 calculatedScore++;
             }
@@ -89,6 +110,21 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
     };
 
     const handleTryAgain = () => {
+        // Re-shuffle options for the next attempt
+        const reshuffled = shuffledQuestions.map(q => {
+            const optionsWithMetadata = q.options.map((text, index) => ({
+                text,
+                isCorrect: index === q.correctAnswerIndex
+            }));
+            const shuffledOptions = [...optionsWithMetadata].sort(() => 0.5 - Math.random());
+            const newCorrectAnswerIndex = shuffledOptions.findIndex(opt => opt.isCorrect);
+            return {
+                ...q,
+                options: shuffledOptions.map(opt => opt.text),
+                correctAnswerIndex: newCorrectAnswerIndex
+            };
+        });
+        setShuffledQuestions(reshuffled);
         setCurrentQuestionIndex(0);
         setUserAnswers({});
         setShowResult(false);
