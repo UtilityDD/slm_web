@@ -991,9 +991,8 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                     </div>
                                 )}
 
-                                {/* Mark as Complete & Open Next Section */}
+                                {/* Mark as Complete Button */}
                                 <div className="space-y-4 mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
-                                    {/* Mark as Complete Button */}
                                     {!completedLessons.includes(trainingContent.level_id) ? (
                                         <button
                                             onClick={() => initiateLessonCompletion(trainingContent.level_id)}
@@ -1019,35 +1018,6 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                             </button>
                                         </div>
                                     )}
-
-                                    {/* Open Next Section Button */}
-                                    <button
-                                        onClick={() => {
-                                            const currentIdx = selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id);
-                                            if (currentIdx < selectedChapter.subchapters.length - 1) {
-                                                // Next lesson is in the same chapter
-                                                const nextLesson = selectedChapter.subchapters[currentIdx + 1];
-                                                setTrainingContent(nextLesson);
-                                            } else {
-                                                // Moving to next chapter - redirect to chapter index
-                                                const currentChapterNum = trainingContent.chapterNum;
-                                                const nextChapter = trainingChapters.find(ch => ch.number === currentChapterNum + 1);
-                                                if (nextChapter) {
-                                                    setTrainingContent(null);
-                                                    setSelectedChapter(nextChapter);
-                                                }
-                                            }
-                                        }}
-                                        disabled={
-                                            !completedLessons.includes(trainingContent.level_id) ||
-                                            (selectedChapter.subchapters.findIndex(s => s.level_id === trainingContent.level_id) === selectedChapter.subchapters.length - 1 &&
-                                                !trainingChapters.find(ch => ch.number === trainingContent.chapterNum + 1))
-                                        }
-                                        className="w-full px-5 py-3 rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-orange-600 text-white hover:bg-orange-700 flex items-center justify-center gap-2"
-                                    >
-                                        {language === 'en' ? 'Open Next Section' : 'পরবর্তী বিভাগ খুলুন'}
-                                        <span>→</span>
-                                    </button>
                                 </div>
                             </div>
                         ) : null}
@@ -1221,7 +1191,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 onComplete={handleQuizComplete}
                 questions={currentQuizQuestions}
             />
-        </div>
+        </div >
     );
 }
 
