@@ -42,6 +42,30 @@ export default function SmartLinemanUI() {
   const [showHistory, setShowHistory] = useState(false);
   const [lastSeenNotificationId, setLastSeenNotificationId] = useState(() => localStorage.getItem('lastSeenNotificationId'));
   const [showHandbookModal, setShowHandbookModal] = useState(false);
+  const [completedLessons, setCompletedLessons] = useState([]);
+
+  const badgeLevels = [
+    { level: 1, en: "Safety Trainee", bn: "সেফটি ট্রেইনি", color: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700" },
+    { level: 2, en: "Helper Lineman", bn: "হেল্পার লাইনম্যান", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800" },
+    { level: 3, en: "Junior Lineman", bn: "জুনিয়র লাইনম্যান", color: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800" },
+    { level: 4, en: "Skilled Lineman", bn: "স্কিলড লাইনম্যান", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" },
+    { level: 5, en: "Safety Champion", bn: "সেফটি চ্যাম্পিয়ন", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800" },
+    { level: 6, en: "Senior Lineman", bn: "সিনিয়র লাইনম্যান", color: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-800" },
+    { level: 7, en: "Line Supervisor", bn: "লাইন সুপারভাইজার", color: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 border-rose-200 dark:border-rose-800" },
+    { level: 8, en: "Master Lineman", bn: "মাস্টার লাইনম্যান", color: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800" },
+    { level: 9, en: "Safety Expert", bn: "সেফটি এক্সপার্ট", color: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 border-violet-200 dark:border-violet-800" },
+    { level: 10, en: "Chief Safety Officer", bn: "চিফ সেফটি অফিসার", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800 shadow-sm shadow-yellow-500/20" }
+  ];
+
+  const getChapterBadge = () => {
+    if (!completedLessons || completedLessons.length === 0) return null;
+
+    // Find the highest chapter number completed
+    const completedChapters = completedLessons.map(id => parseInt(id.split('.')[0]));
+    const maxChapter = Math.max(...completedChapters);
+
+    return badgeLevels.find(b => b.level === maxChapter) || badgeLevels[0];
+  };
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
@@ -101,6 +125,31 @@ export default function SmartLinemanUI() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Load completed lessons from localStorage
+  useEffect(() => {
+    if (user) {
+      const saved = localStorage.getItem(`training_progress_${user.id}`);
+      if (saved) {
+        setCompletedLessons(JSON.parse(saved));
+      } else {
+        setCompletedLessons([]);
+      }
+    } else {
+      setCompletedLessons([]);
+    }
+  }, [user]);
+
+  // Listen for storage changes to sync progress across tabs or components
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (user && e.key === `training_progress_${user.id}`) {
+        setCompletedLessons(JSON.parse(e.newValue || '[]'));
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [user]);
 
   // Fetch Notifications History
   useEffect(() => {
@@ -386,7 +435,12 @@ export default function SmartLinemanUI() {
         case 'emergency':
           return <Emergency language={language} user={user} setCurrentView={setCurrentView} />;
         case 'safety':
-          return <SafetyHub language={language} user={user} setCurrentView={setCurrentView} />;
+          return <SafetyHub
+            language={language}
+            user={user}
+            setCurrentView={setCurrentView}
+            onProgressUpdate={(updated) => setCompletedLessons(updated)}
+          />;
         case 'admin':
           return <Admin language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;
         case 'admin-services':
@@ -712,6 +766,12 @@ export default function SmartLinemanUI() {
               {/* User menu - Desktop only */}
               {user ? (
                 <div className="hidden md:flex items-center gap-3">
+                  {/* Chapter Badge */}
+                  {getChapterBadge() && (
+                    <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${getChapterBadge().color}`}>
+                      {language === 'en' ? getChapterBadge().en : getChapterBadge().bn}
+                    </div>
+                  )}
                   <div className="w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-xs elevation-1 overflow-hidden">
                     {userProfile?.avatar_url && !imageError ? (
                       <img
@@ -741,7 +801,12 @@ export default function SmartLinemanUI() {
               )}
 
               {/* Mobile User Icon */}
-              <div className="md:hidden">
+              <div className="md:hidden flex items-center gap-2">
+                {user && getChapterBadge() && (
+                  <div className={`px-2 py-0.5 rounded-full text-[8px] font-bold border uppercase tracking-tight ${getChapterBadge().color}`}>
+                    {language === 'en' ? getChapterBadge().en : getChapterBadge().bn}
+                  </div>
+                )}
                 {user ? (
                   <button
                     onClick={handleLogout}

@@ -84,7 +84,7 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
     );
 });
 
-export default function SafetyHub({ language = 'en', user, setCurrentView }) {
+export default function SafetyHub({ language = 'en', user, setCurrentView, onProgressUpdate }) {
     const [activeTab, setActiveTab] = useState('protocols');
     const [ppeList, setPpeList] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -145,6 +145,9 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
             setCompletedLessons(updated);
             if (user) {
                 localStorage.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
+            }
+            if (onProgressUpdate) {
+                onProgressUpdate(updated);
             }
         }
         setShowQuizModal(false);
