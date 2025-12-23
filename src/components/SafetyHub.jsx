@@ -144,6 +144,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView, onPro
     const [trainingContent, setTrainingContent] = useState(null);
     const [trainingLoading, setTrainingLoading] = useState(false);
     const [completedLessons, setCompletedLessons] = useState([]);
+    const [faqSearchQuery, setFaqSearchQuery] = useState('');
 
     // Load completed lessons from localStorage
     useEffect(() => {
@@ -835,38 +836,79 @@ export default function SafetyHub({ language = 'en', user, setCurrentView, onPro
                                     <div className="space-y-4">
                                         <div className="bg-gradient-to-r from-violet-100 to-fuchsia-100 dark:from-violet-900/30 dark:to-fuchsia-900/30 p-6 rounded-2xl mb-6 border border-violet-200 dark:border-violet-700">
                                             <h2 className="text-2xl font-bold text-violet-900 dark:text-violet-100 mb-2">{selectedChapter.content.title}</h2>
-                                            <p className="text-violet-700 dark:text-violet-300">{selectedChapter.content.subtitle}</p>
+                                            <p className="text-violet-700 dark:text-violet-300 mb-4">{selectedChapter.content.subtitle}</p>
+
+                                            {/* Search Input */}
+                                            <div className="relative">
+                                                <input
+                                                    type="text"
+                                                    placeholder={language === 'en' ? 'Search questions, answers, or tags...' : 'প্রশ্ন, উত্তর বা ট্যাগ খুঁজুন...'}
+                                                    value={faqSearchQuery}
+                                                    onChange={(e) => setFaqSearchQuery(e.target.value)}
+                                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-violet-200 dark:border-violet-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none shadow-sm"
+                                                />
+                                                <div className="absolute left-3 top-3.5 text-violet-400">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                                    </svg>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                        {selectedChapter.content.questions.map((q, idx) => (
-                                            <div key={q.id} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-all">
-                                                <details className="group">
-                                                    <summary className="flex items-center justify-between p-4 cursor-pointer list-none">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold text-sm shrink-0">
-                                                                {idx + 1}
-                                                            </div>
-                                                            <span className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
-                                                                {q.question}
-                                                            </span>
-                                                        </div>
-                                                        <span className="transition group-open:rotate-180">
-                                                            <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                                                        </span>
-                                                    </summary>
-                                                    <div className="px-4 pb-4 pl-[3.25rem] text-slate-600 dark:text-slate-400 text-sm leading-relaxed border-t border-slate-100 dark:border-slate-700 pt-4 bg-slate-50/50 dark:bg-slate-900/30">
-                                                        {q.answer}
-                                                        <div className="mt-3 flex flex-wrap gap-2">
-                                                            {q.tags.map(tag => (
-                                                                <span key={tag} className="px-2 py-1 rounded-md bg-slate-200 dark:bg-slate-700 text-xs text-slate-600 dark:text-slate-400 font-medium">
-                                                                    #{tag}
+                                        {selectedChapter.content.questions
+                                            .filter(q => {
+                                                if (!faqSearchQuery) return true;
+                                                const query = faqSearchQuery.toLowerCase();
+                                                return (
+                                                    q.question.toLowerCase().includes(query) ||
+                                                    q.answer.toLowerCase().includes(query) ||
+                                                    q.tags.some(tag => tag.toLowerCase().includes(query))
+                                                );
+                                            })
+                                            .map((q, idx) => (
+                                                <div key={q.id} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-all">
+                                                    <details className="group">
+                                                        <summary className="flex items-center justify-between p-4 cursor-pointer list-none">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold text-sm shrink-0">
+                                                                    {idx + 1}
+                                                                </div>
+                                                                <span className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                                                                    {q.question}
                                                                 </span>
-                                                            ))}
+                                                            </div>
+                                                            <span className="transition group-open:rotate-180">
+                                                                <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                                                            </span>
+                                                        </summary>
+                                                        <div className="px-4 pb-4 pl-[3.25rem] text-slate-600 dark:text-slate-400 text-sm leading-relaxed border-t border-slate-100 dark:border-slate-700 pt-4 bg-slate-50/50 dark:bg-slate-900/30">
+                                                            {q.answer}
+                                                            <div className="mt-3 flex flex-wrap gap-2">
+                                                                {q.tags.map(tag => (
+                                                                    <span key={tag} className="px-2 py-1 rounded-md bg-slate-200 dark:bg-slate-700 text-xs text-slate-600 dark:text-slate-400 font-medium">
+                                                                        #{tag}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </details>
-                                            </div>
-                                        ))}
+                                                    </details>
+                                                </div>
+                                            ))}
+
+                                        {selectedChapter.content.questions.filter(q => {
+                                            if (!faqSearchQuery) return true;
+                                            const query = faqSearchQuery.toLowerCase();
+                                            return (
+                                                q.question.toLowerCase().includes(query) ||
+                                                q.answer.toLowerCase().includes(query) ||
+                                                q.tags.some(tag => tag.toLowerCase().includes(query))
+                                            );
+                                        }).length === 0 && (
+                                                <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+                                                    <div className="text-4xl mb-3">🔍</div>
+                                                    <p>{language === 'en' ? 'No results found' : 'কোন ফলাফল পাওয়া যায়নি'}</p>
+                                                </div>
+                                            )}
                                     </div>
                                 ) : (
                                     /* Regular Subchapter List */
@@ -931,7 +973,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView, onPro
                                         })}
                                     </div>
                                 )}
-                            </div>
+                            </div >
                         ) : trainingContent ? (
                             /* Content View */
                             <div className="max-w-4xl mx-auto">
@@ -1140,158 +1182,162 @@ export default function SafetyHub({ language = 'en', user, setCurrentView, onPro
                                 </div>
                             </div>
                         ) : null}
-                    </div>
+                    </div >
                 )}
 
-                {activeTab === 'my_ppe' && (
-                    <div className="max-w-4xl mx-auto">
-                        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                            <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
-                                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.my_ppe.title}</h2>
-                            </div>
+                {
+                    activeTab === 'my_ppe' && (
+                        <div className="max-w-4xl mx-auto">
+                            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
+                                    <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.my_ppe.title}</h2>
+                                </div>
 
-                            <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                                {loading ? (
-                                    <div className="p-8 text-center text-slate-400">Loading PPE list...</div>
-                                ) : (
-                                    ppeChecklist.map((item, idx) => (
-                                        <div key={item.name} className={`p-3 sm:p-4 transition-colors ${item.available ? 'bg-orange-50/30 dark:bg-orange-900/10' : ''}`}>
-                                            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-                                                {/* Availability Checkbox */}
-                                                <div className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={item.available}
-                                                        onChange={(e) => handleChecklistChange(idx, 'available', e.target.checked)}
-                                                        className="w-5 h-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
-                                                    />
-                                                </div>
-
-                                                {/* Icon & Name */}
-                                                <div className="flex items-center gap-2 min-w-[140px] flex-1">
-                                                    <span className="text-xl">{item.icon}</span>
-                                                    <span className={`text-sm font-bold ${item.available ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'}`}>
-                                                        {item.name}
-                                                    </span>
-                                                </div>
-
-                                                {/* Compact Fields - Only show if available */}
-                                                {item.available && (
-                                                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 ml-8 sm:ml-0">
-                                                        {/* Qty */}
-                                                        <div className="flex items-center gap-1">
-                                                            <span className="text-[10px] uppercase font-bold text-slate-400">Qty</span>
-                                                            <input
-                                                                type="number"
-                                                                min="1"
-                                                                value={item.count}
-                                                                onChange={(e) => handleChecklistChange(idx, 'count', e.target.value)}
-                                                                className="w-12 px-1 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                            />
-                                                        </div>
-
-                                                        {/* Quality */}
-                                                        <select
-                                                            value={item.condition}
-                                                            onChange={(e) => handleChecklistChange(idx, 'condition', e.target.value)}
-                                                            className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                        >
-                                                            <option value="Good">Good</option>
-                                                            <option value="Fair">Fair</option>
-                                                            <option value="Damaged">Damaged</option>
-                                                        </select>
-
-                                                        {/* Age */}
-                                                        <select
-                                                            value={item.age}
-                                                            onChange={(e) => handleChecklistChange(idx, 'age', e.target.value)}
-                                                            className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                        >
-                                                            <option value="<6m">&lt;6m</option>
-                                                            <option value="6-12m">6-12m</option>
-                                                            <option value="1-2y">1-2y</option>
-                                                            <option value=">2y">&gt;2y</option>
-                                                        </select>
-
-                                                        {/* Usage */}
-                                                        <select
-                                                            value={item.usage}
-                                                            onChange={(e) => handleChecklistChange(idx, 'usage', e.target.value)}
-                                                            className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                        >
-                                                            <option value="Personal">Personal</option>
-                                                            <option value="Shared">Shared</option>
-                                                        </select>
+                                <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                                    {loading ? (
+                                        <div className="p-8 text-center text-slate-400">Loading PPE list...</div>
+                                    ) : (
+                                        ppeChecklist.map((item, idx) => (
+                                            <div key={item.name} className={`p-3 sm:p-4 transition-colors ${item.available ? 'bg-orange-50/30 dark:bg-orange-900/10' : ''}`}>
+                                                <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                                                    {/* Availability Checkbox */}
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={item.available}
+                                                            onChange={(e) => handleChecklistChange(idx, 'available', e.target.checked)}
+                                                            className="w-5 h-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                                                        />
                                                     </div>
-                                                )}
+
+                                                    {/* Icon & Name */}
+                                                    <div className="flex items-center gap-2 min-w-[140px] flex-1">
+                                                        <span className="text-xl">{item.icon}</span>
+                                                        <span className={`text-sm font-bold ${item.available ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'}`}>
+                                                            {item.name}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Compact Fields - Only show if available */}
+                                                    {item.available && (
+                                                        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 ml-8 sm:ml-0">
+                                                            {/* Qty */}
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="text-[10px] uppercase font-bold text-slate-400">Qty</span>
+                                                                <input
+                                                                    type="number"
+                                                                    min="1"
+                                                                    value={item.count}
+                                                                    onChange={(e) => handleChecklistChange(idx, 'count', e.target.value)}
+                                                                    className="w-12 px-1 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                />
+                                                            </div>
+
+                                                            {/* Quality */}
+                                                            <select
+                                                                value={item.condition}
+                                                                onChange={(e) => handleChecklistChange(idx, 'condition', e.target.value)}
+                                                                className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                            >
+                                                                <option value="Good">Good</option>
+                                                                <option value="Fair">Fair</option>
+                                                                <option value="Damaged">Damaged</option>
+                                                            </select>
+
+                                                            {/* Age */}
+                                                            <select
+                                                                value={item.age}
+                                                                onChange={(e) => handleChecklistChange(idx, 'age', e.target.value)}
+                                                                className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                            >
+                                                                <option value="<6m">&lt;6m</option>
+                                                                <option value="6-12m">6-12m</option>
+                                                                <option value="1-2y">1-2y</option>
+                                                                <option value=">2y">&gt;2y</option>
+                                                            </select>
+
+                                                            {/* Usage */}
+                                                            <select
+                                                                value={item.usage}
+                                                                onChange={(e) => handleChecklistChange(idx, 'usage', e.target.value)}
+                                                                className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                            >
+                                                                <option value="Personal">Personal</option>
+                                                                <option value="Shared">Shared</option>
+                                                            </select>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))
-                                )}
+                                        ))
+                                    )}
+                                </div>
+
+                                <div className="p-4 sm:p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-center">
+                                    <button
+                                        onClick={handleSavePPE}
+                                        disabled={isSaving}
+                                        className={`px-10 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 ${isSaving ? 'bg-slate-400 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 shadow-orange-200 dark:shadow-none'}`}
+                                    >
+                                        {isSaving ? 'Saving...' : 'Update PPE Status'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                }
+
+                {
+                    activeTab === 'report' && (
+                        <div className="max-w-2xl mx-auto bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-600 p-8">
+                            <div className="text-center mb-8">
+                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
+                                    ⚠️
+                                </div>
+                                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.report.title}</h2>
                             </div>
 
-                            <div className="p-4 sm:p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-center">
-                                <button
-                                    onClick={handleSavePPE}
-                                    disabled={isSaving}
-                                    className={`px-10 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 ${isSaving ? 'bg-slate-400 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 shadow-orange-200 dark:shadow-none'}`}
-                                >
-                                    {isSaving ? 'Saving...' : 'Update PPE Status'}
+                            <form className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">{t.report.form.location}</label>
+                                        <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 focus:outline-none focus:border-orange-500" placeholder="e.g. Sector 5, Pole 24" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">{t.report.form.type}</label>
+                                        <select className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 focus:outline-none focus:border-orange-500 bg-white dark:bg-slate-800">
+                                            <option>Damaged Pole</option>
+                                            <option>Loose Wire</option>
+                                            <option>Sparking</option>
+                                            <option>Tree Branch</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">{t.report.form.desc}</label>
+                                    <textarea rows="4" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 focus:outline-none focus:border-orange-500" placeholder="Describe the issue..."></textarea>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">{t.report.form.photo}</label>
+                                    <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:bg-slate-50 transition-all cursor-pointer">
+                                        <span className="text-2xl block mb-2">📷</span>
+                                        <span className="text-sm text-slate-500">Click to upload or take photo</span>
+                                    </div>
+                                </div>
+
+                                <button type="button" className="w-full py-4 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-md">
+                                    {t.report.form.submit}
                                 </button>
-                            </div>
+                            </form>
                         </div>
-                    </div>
-                )}
-
-                {activeTab === 'report' && (
-                    <div className="max-w-2xl mx-auto bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-600 p-8">
-                        <div className="text-center mb-8">
-                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
-                                ⚠️
-                            </div>
-                            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.report.title}</h2>
-                        </div>
-
-                        <form className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">{t.report.form.location}</label>
-                                    <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 focus:outline-none focus:border-orange-500" placeholder="e.g. Sector 5, Pole 24" />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">{t.report.form.type}</label>
-                                    <select className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 focus:outline-none focus:border-orange-500 bg-white dark:bg-slate-800">
-                                        <option>Damaged Pole</option>
-                                        <option>Loose Wire</option>
-                                        <option>Sparking</option>
-                                        <option>Tree Branch</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">{t.report.form.desc}</label>
-                                <textarea rows="4" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 focus:outline-none focus:border-orange-500" placeholder="Describe the issue..."></textarea>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">{t.report.form.photo}</label>
-                                <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:bg-slate-50 transition-all cursor-pointer">
-                                    <span className="text-2xl block mb-2">📷</span>
-                                    <span className="text-sm text-slate-500">Click to upload or take photo</span>
-                                </div>
-                            </div>
-
-                            <button type="button" className="w-full py-4 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-md">
-                                {t.report.form.submit}
-                            </button>
-                        </form>
-                    </div>
-                )}
-            </div>
+                    )
+                }
+            </div >
 
             {/* Protocol Detail Modal */}
-            <ProtocolDetailModal
+            < ProtocolDetailModal
                 level={selectedLevel}
                 onClose={() => setSelectedLevel(null)}
                 language={language}
@@ -1299,7 +1345,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView, onPro
 
 
             {/* Chapter Quiz Modal */}
-            <ChapterQuizModal
+            < ChapterQuizModal
                 isOpen={showQuizModal}
                 onClose={() => setShowQuizModal(false)}
                 onComplete={handleQuizComplete}
