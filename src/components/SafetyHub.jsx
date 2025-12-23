@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { cacheHelper } from '../utils/cacheHelper';
+import ChapterQuizModal from './ChapterQuizModal';
 
 const PPESkeleton = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -104,6 +105,11 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
     const [carouselData, setCarouselData] = useState(null);
     const [fetchError, setFetchError] = useState(false);
 
+    // Quiz Modal State
+    const [showQuizModal, setShowQuizModal] = useState(false);
+    const [currentQuizQuestions, setCurrentQuizQuestions] = useState([]);
+    const [pendingLessonId, setPendingLessonId] = useState(null);
+
     // Training Zone States
     const [trainingChapters, setTrainingChapters] = useState([]);
     const [selectedChapter, setSelectedChapter] = useState(null);
@@ -122,7 +128,6 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
             }
         }
     }, [user]);
-
     // Helper function to check if a lesson is unlocked
     const isLessonUnlocked = (chapterNum, subchapterNum) => {
         // First lesson of each chapter is always unlocked
@@ -133,14 +138,60 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
         return completedLessons.includes(previousLessonId);
     };
 
-    // Mark lesson as complete
-    const markLessonComplete = (lessonId) => {
+    // Finalize lesson completion after quiz (or if no quiz exists)
+    const finalizeLessonCompletion = (lessonId) => {
         if (!completedLessons.includes(lessonId)) {
             const updated = [...completedLessons, lessonId];
             setCompletedLessons(updated);
             if (user) {
                 localStorage.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
             }
+        }
+        setShowQuizModal(false);
+        setPendingLessonId(null);
+    };
+
+    // Initiate lesson completion - check for quiz first
+    const initiateLessonCompletion = async (lessonId) => {
+        if (completedLessons.includes(lessonId)) return;
+
+        // Construct quiz filename based on lesson ID (e.g., "1.1" -> "questions_1_1.json")
+        const filename = `questions_${lessonId.replace('.', '_')}.json`;
+
+        try {
+            const response = await fetch(`/quizzes/${filename}`);
+            if (!response.ok) {
+                // If no quiz file exists, just complete the lesson
+                finalizeLessonCompletion(lessonId);
+                return;
+            }
+
+            const allQuestions = await response.json();
+
+            if (allQuestions && allQuestions.length > 0) {
+                // Randomly select 10 questions
+                const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+                const selected = shuffled.slice(0, 10);
+
+                setCurrentQuizQuestions(selected);
+                setPendingLessonId(lessonId);
+                setShowQuizModal(true);
+            } else {
+                // Empty quiz file
+                finalizeLessonCompletion(lessonId);
+            }
+        } catch (error) {
+            console.error("Error loading quiz:", error);
+            // On error (e.g., 404), just complete the lesson
+            finalizeLessonCompletion(lessonId);
+        }
+    };
+
+    const handleQuizComplete = (score) => {
+        // Here you could add logic to require a minimum score
+        // For now, we just accept completion
+        if (pendingLessonId) {
+            finalizeLessonCompletion(pendingLessonId);
         }
     };
 
@@ -945,7 +996,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                                     {/* Mark as Complete Button */}
                                     {!completedLessons.includes(trainingContent.level_id) ? (
                                         <button
-                                            onClick={() => markLessonComplete(trainingContent.level_id)}
+                                            onClick={() => initiateLessonCompletion(trainingContent.level_id)}
                                             className="w-full px-5 py-3 rounded-lg font-bold transition-all bg-emerald-600 text-white hover:bg-emerald-700 flex items-center justify-center gap-2"
                                         >
                                             <span>✓</span>
@@ -1163,6 +1214,13 @@ export default function SafetyHub({ language = 'en', user, setCurrentView }) {
                 onClose={() => setShowLoginModal(false)}
                 language={language}
             />
+            {/* Chapter Quiz Modal */}
+            <ChapterQuizModal
+                isOpen={showQuizModal}
+                onClose={() => setShowQuizModal(false)}
+                onComplete={handleQuizComplete}
+                questions={currentQuizQuestions}
+            />
         </div>
     );
 }
@@ -1285,5 +1343,6 @@ const ProtocolDetailModal = ({ level, onClose, language }) => {
                 </div>
             </div>
         </div>
+
     );
 };
