@@ -15,8 +15,35 @@ export const getBadgeByLevel = (level) => {
     return badgeLevels.find(b => b.level === level) || badgeLevels[0];
 };
 
-export const calculateLevelFromProgress = (completedLessons) => {
-    if (!completedLessons || completedLessons.length === 0) return 0;
-    const completedChapters = completedLessons.map(id => parseInt(id.split('.')[0]));
-    return Math.max(...completedChapters);
+export const calculateLevelFromProgress = (completedLessons, trainingChapters) => {
+    if (!completedLessons || completedLessons.length === 0 || !trainingChapters) return 0;
+
+    // Sort chapters by number to ensure sequential checking
+    const sortedChapters = [...trainingChapters]
+        .filter(c => c.number < 10) // Exclude Chapter 10 (FAQ)
+        .sort((a, b) => a.number - b.number);
+
+    let currentLevel = 0;
+
+    for (const chapter of sortedChapters) {
+        // Check if all lessons in this chapter are completed
+        let allLessonsCompleted = true;
+        for (let i = 1; i <= chapter.count; i++) {
+            const lessonId = `${chapter.number}.${i}`;
+            if (!completedLessons.includes(lessonId)) {
+                allLessonsCompleted = false;
+                break;
+            }
+        }
+
+        if (allLessonsCompleted) {
+            currentLevel = chapter.number;
+        } else {
+            // If a chapter is not fully completed, stop checking further
+            // The user's level is the last fully completed chapter
+            break;
+        }
+    }
+
+    return currentLevel;
 };

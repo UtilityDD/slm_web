@@ -174,7 +174,7 @@ export default function SafetyHub({ language = 'en', user, setCurrentView, onPro
                 localStorage.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
 
                 // Sync to Supabase
-                const newLevel = calculateLevelFromProgress(updated);
+                const newLevel = calculateLevelFromProgress(updated, trainingChapters);
                 supabase.from('profiles')
                     .update({ training_level: newLevel })
                     .eq('id', user.id)
