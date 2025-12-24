@@ -1,3 +1,4 @@
+// Force re-compile
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { calculateLevelFromProgress } from '../utils/badgeUtils';
@@ -112,17 +113,25 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
     );
 });
 
-export default function SafetyHub({ language = 'en', user, setCurrentView, onProgressUpdate }) {
+export default function SafetyHub({ language = 'en', user, userProfile: initialUserProfile, setCurrentView, onProgressUpdate }) {
     const [activeTab, setActiveTab] = useState('protocols');
     const [ppeList, setPpeList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [editingId, setEditingId] = useState(null);
-    const [userProfile, setUserProfile] = useState(null);
+    const [userProfile, setUserProfile] = useState(initialUserProfile);
 
+    // Sync userProfile state if prop changes
+    useEffect(() => {
+        if (initialUserProfile) {
+            setUserProfile(initialUserProfile);
+        }
+    }, [initialUserProfile]);
+
+    // Fallback fetch if userProfile is missing but user exists
     useEffect(() => {
         const fetchUserProfile = async () => {
-            if (!user) return;
+            if (!user || userProfile?.full_name) return;
             try {
                 const { data, error } = await supabase
                     .from('profiles')
@@ -131,14 +140,13 @@ export default function SafetyHub({ language = 'en', user, setCurrentView, onPro
                     .single();
 
                 if (error) throw error;
-                if (data) setUserProfile(data);
+                if (data) setUserProfile(prev => ({ ...prev, ...data }));
             } catch (error) {
-                console.error('Error fetching user profile:', error);
+                console.error('Error fetching user profile in SafetyHub:', error);
             }
         };
         fetchUserProfile();
-    }, [user]);
-
+    }, [user, userProfile]);
 
     const [newItem, setNewItem] = useState({
         name: '',
@@ -1399,12 +1407,13 @@ export default function SafetyHub({ language = 'en', user, setCurrentView, onPro
                 language={language}
             />
 
+
             <CertificateModal
                 isOpen={showCertificateModal}
                 onClose={() => setShowCertificateModal(false)}
-                userName={user?.user_metadata?.full_name || user?.email?.split('@')[0]}
-                level={user?.training_level || 1}
-                badgeName={getBadgeByLevel(user?.training_level || 1)?.[language === 'en' ? 'en' : 'bn']}
+                userName={userProfile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+                level={userProfile?.training_level || 1}
+                badgeName={getBadgeByLevel(userProfile?.training_level || 1)?.[language === 'en' ? 'en' : 'bn']}
                 date={new Date().toLocaleDateString()}
             />
         </div >
@@ -1494,15 +1503,7 @@ const ProtocolDetailModal = ({ level, onClose, language }) => {
                 </div>
             </div>
 
-            {/* Certificate Modal */}
-            <CertificateModal
-                isOpen={showCertificateModal}
-                onClose={() => setShowCertificateModal(false)}
-                userName={userProfile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0]}
-                level={user?.training_level || 1}
-                badgeName={getBadgeByLevel(user?.training_level || 1)?.[language === 'en' ? 'en' : 'bn']}
-                date={new Date().toLocaleDateString()}
-            />
+
 
         </div>
     );
