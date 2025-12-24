@@ -181,6 +181,18 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
 
 
+    // Body scroll locking when full-page training is open
+    useEffect(() => {
+        if (trainingContent) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [trainingContent]);
+
     // Load completed lessons from localStorage
     useEffect(() => {
         if (user) {
@@ -1029,210 +1041,252 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                 )}
                             </div >
                         ) : trainingContent ? (
-                            /* Content View */
-                            <div className="max-w-4xl mx-auto">
-                                <button
-                                    onClick={() => {
-                                        setTrainingContent(null);
-                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                    }}
-                                    className="mb-6 flex items-center gap-2 text-orange-600 hover:text-orange-700 font-bold"
-                                >
-                                    ← {language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}
-                                </button>
-
-                                {/* Header */}
-                                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white mb-6 shadow-lg">
-                                    <div className="inline-block px-3 py-1 rounded-lg bg-white/20 backdrop-blur-sm text-sm font-bold mb-3">
-                                        {trainingContent.badge_name}
+                            /* Full Page Content View */
+                            <div className="fixed inset-0 z-[100] bg-slate-50 dark:bg-slate-900 overflow-y-auto animate-slide-up">
+                                {/* Sticky Header */}
+                                <div className="sticky top-0 z-50 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between shadow-sm">
+                                    <button
+                                        onClick={() => {
+                                            setTrainingContent(null);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                        className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 font-bold transition-colors"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                        <span className="inline">{language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}</span>
+                                    </button>
+                                    <div className="flex-1 text-center px-4">
+                                        <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                                            {trainingContent.level_title}
+                                        </h2>
                                     </div>
-                                    <h2 className="text-2xl font-bold mb-2 reading-content">{trainingContent.level_title}</h2>
-                                    <p className="text-sm opacity-90">Level {trainingContent.level_id}</p>
+                                    <div className="w-10"></div> {/* Spacer for centering */}
                                 </div>
 
-                                {/* Mission Briefing */}
-                                <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-5 rounded-r-xl mb-6">
-                                    <div className="flex items-start gap-3">
-                                        <span className="text-2xl">🎯</span>
-                                        <div>
-                                            <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2">
-                                                {language === 'en' ? 'Mission Briefing' : 'মিশন ব্রিফিং'}
-                                            </h3>
-                                            <p className="text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
-                                                {trainingContent.mission_briefing}
-                                            </p>
+                                <div className="max-w-3xl mx-auto px-4 py-8 pb-24">
+                                    {/* Hero Header */}
+                                    <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 sm:p-8 text-white mb-8 shadow-xl shadow-orange-500/20">
+                                        <div className="inline-block px-3 py-1 rounded-lg bg-white/20 backdrop-blur-sm text-[10px] uppercase tracking-widest font-bold mb-4">
+                                            {trainingContent.badge_name}
+                                        </div>
+                                        <h2 className="text-2xl sm:text-3xl font-bold mb-2 reading-content leading-tight">{trainingContent.level_title}</h2>
+                                        <div className="flex items-center gap-2 text-orange-100 text-sm font-medium">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-orange-200"></span>
+                                            Level {trainingContent.level_id}
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Sections */}
-                                {trainingContent.sections?.map((section, sIdx) => (
-                                    <div key={sIdx} className="bg-white dark:bg-slate-800 rounded-xl p-6 mb-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                                        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4 reading-content">
-                                            {section.title}
-                                        </h3>
-                                        <div className="space-y-6">
-                                            {section.points?.map((point, pIdx) => (
-                                                <div key={pIdx} className="border-l-2 border-orange-200 dark:border-orange-800 pl-4">
-                                                    <h4 className="font-bold text-orange-600 dark:text-orange-400 mb-2 reading-content">
-                                                        {point.item_name}
-                                                    </h4>
-                                                    {point.specifications && (
-                                                        <div className="mb-3">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <div className="w-6 h-6 rounded-md bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-sm">
-                                                                    📋
-                                                                </div>
-                                                                <p className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-                                                                    {language === 'en' ? 'Details' : 'বিস্তারিত'}
-                                                                </p>
-                                                            </div>
-                                                            <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed pl-8">
-                                                                {point.specifications}
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                    {point.importance && (
-                                                        <div className="mb-3">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <div className="w-6 h-6 rounded-md bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-sm">
-                                                                    💡
-                                                                </div>
-                                                                <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
-                                                                    {language === 'en' ? 'Key Point' : 'মূল বিষয়'}
-                                                                </p>
-                                                            </div>
-                                                            <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed pl-8">
-                                                                {point.importance}
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                    {point.daily_check && (
-                                                        <div className="bg-emerald-50 dark:bg-emerald-900/10 p-3 rounded-lg border border-emerald-100 dark:border-emerald-900/20">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <div className="w-6 h-6 rounded-md bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-sm">
-                                                                    ✓
-                                                                </div>
-                                                                <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                                                                    {language === 'en' ? 'Quick Tip' : 'পরামর্শ'}
-                                                                </p>
-                                                            </div>
-                                                            <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed pl-8">
-                                                                {point.daily_check}
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-
-                                {/* Pro Tips */}
-                                {trainingContent.pro_tip && (
-                                    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl p-6 mb-6 border border-emerald-200 dark:border-emerald-800">
-                                        <div className="flex items-start gap-3 mb-4">
-                                            <span className="text-2xl">💡</span>
-                                            <h3 className="text-lg font-bold text-emerald-700 dark:text-emerald-400 reading-content">
-                                                {trainingContent.pro_tip.title}
-                                            </h3>
-                                        </div>
-                                        <ul className="space-y-2">
-                                            {trainingContent.pro_tip.content?.map((tip, idx) => (
-                                                <li key={idx} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
-                                                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">✓</span>
-                                                    {tip}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-
-                                {/* Myth Buster */}
-                                {trainingContent.myth_buster && (
-                                    <div className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-xl p-6 mb-6 border border-red-200 dark:border-red-800">
-                                        <div className="flex items-start gap-3 mb-4">
-                                            <span className="text-2xl">⚠️</span>
-                                            <h3 className="text-lg font-bold text-red-700 dark:text-red-400 reading-content">
-                                                {trainingContent.myth_buster.title}
-                                            </h3>
-                                        </div>
-                                        <div className="space-y-4">
-                                            {trainingContent.myth_buster.myths?.map((item, idx) => (
-                                                <div key={idx} className="bg-white/50 dark:bg-slate-800/50 rounded-lg p-4">
-                                                    <div className="mb-3">
-                                                        <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase mb-1">
-                                                            {language === 'en' ? 'Myth' : 'মিথ'}
-                                                        </p>
-                                                        <p className="text-sm text-slate-700 dark:text-slate-300 italic reading-content leading-relaxed">
-                                                            "{item.myth}"
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase mb-1">
-                                                            {language === 'en' ? 'Reality' : 'বাস্তবতা'}
-                                                        </p>
-                                                        <p className="text-sm text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
-                                                            {item.reality || item.fact}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Advanced Section */}
-                                {trainingContent.advanced_section && (
-                                    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-6 mb-6 border border-indigo-200 dark:border-indigo-800">
-                                        <div className="flex items-start gap-3 mb-4">
-                                            <span className="text-2xl">🔬</span>
-                                            <h3 className="text-lg font-bold text-indigo-700 dark:text-indigo-400 reading-content">
-                                                {trainingContent.advanced_section.title}
-                                            </h3>
-                                        </div>
-                                        <div className="space-y-4">
-                                            {trainingContent.advanced_section.facts?.map((fact, idx) => (
-                                                <div key={idx} className="bg-white/50 dark:bg-slate-800/50 rounded-lg p-4">
-                                                    <h4 className="font-bold text-indigo-600 dark:text-indigo-400 mb-2 reading-content">
-                                                        {fact.title}
-                                                    </h4>
-                                                    <p className="text-sm text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
-                                                        {fact.content}
-                                                    </p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Mark as Complete Button */}
-                                <div className="space-y-4 mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
-                                    {!completedLessons.includes(trainingContent.level_id) ? (
-                                        <button
-                                            onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                            className="w-full px-5 py-3 rounded-lg font-bold transition-all bg-emerald-600 text-white hover:bg-emerald-700 flex items-center justify-center gap-2"
-                                        >
-                                            <span>✓</span>
-                                            {language === 'en' ? 'Mark as Complete' : 'সম্পন্ন হিসাবে চিহ্নিত করুন'}
-                                        </button>
-                                    ) : (
-                                        <div className="space-y-4">
-                                            <div className="w-full px-5 py-3 rounded-lg font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 flex items-center justify-center gap-2">
-                                                <span>✓</span>
-                                                {language === 'en' ? 'Lesson Completed!' : 'পাঠ সম্পন্ন!'}
+                                    {/* Mission Briefing */}
+                                    <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-6 rounded-r-2xl mb-8 shadow-sm">
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-800 flex items-center justify-center text-xl flex-shrink-0">
+                                                🎯
                                             </div>
-                                            <button
-                                                onClick={() => {
-                                                    setTrainingContent(null);
-                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                }}
-                                                className="w-full px-5 py-3 rounded-lg font-bold transition-all bg-orange-600 text-white hover:bg-orange-700 flex items-center justify-center gap-2"
-                                            >
-                                                ← {language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}
-                                            </button>
+                                            <div>
+                                                <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2 uppercase tracking-wider text-xs">
+                                                    {language === 'en' ? 'Mission Briefing' : 'মিশন ব্রিফিং'}
+                                                </h3>
+                                                <p className="text-slate-700 dark:text-slate-300 reading-content leading-relaxed text-base">
+                                                    {trainingContent.mission_briefing}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Sections */}
+                                    <div className="space-y-8">
+                                        {trainingContent.sections?.map((section, sIdx) => (
+                                            <div key={sIdx} className="bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 dark:border-slate-700">
+                                                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6 reading-content flex items-center gap-3">
+                                                    <span className="w-1.5 h-6 bg-orange-500 rounded-full"></span>
+                                                    {section.title}
+                                                </h3>
+                                                <div className="space-y-8">
+                                                    {section.points?.map((point, pIdx) => (
+                                                        <div key={pIdx} className="relative pl-6 border-l border-slate-100 dark:border-slate-700">
+                                                            <div className="absolute left-[-5px] top-2 w-2.5 h-2.5 rounded-full bg-orange-500 border-2 border-white dark:border-slate-800"></div>
+                                                            <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-3 reading-content text-lg">
+                                                                {point.item_name}
+                                                            </h4>
+                                                            <div className="space-y-4">
+                                                                {point.specifications && (
+                                                                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl">
+                                                                        <div className="flex items-center gap-2 mb-2">
+                                                                            <span className="text-blue-500 text-sm">📋</span>
+                                                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                                                {language === 'en' ? 'Details' : 'বিস্তারিত'}
+                                                                            </p>
+                                                                        </div>
+                                                                        <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed">
+                                                                            {point.specifications}
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                                {point.importance && (
+                                                                    <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-xl border border-amber-100/50 dark:border-amber-900/20">
+                                                                        <div className="flex items-center gap-2 mb-2">
+                                                                            <span className="text-amber-500 text-sm">💡</span>
+                                                                            <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
+                                                                                {language === 'en' ? 'Key Point' : 'মূল বিষয়'}
+                                                                            </p>
+                                                                        </div>
+                                                                        <p className="text-sm text-slate-700 dark:text-slate-300 reading-content leading-relaxed font-medium">
+                                                                            {point.importance}
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                                {point.daily_check && (
+                                                                    <div className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-xl border border-emerald-100 dark:border-emerald-900/20">
+                                                                        <div className="flex items-center gap-2 mb-2">
+                                                                            <span className="text-emerald-500 text-sm">✓</span>
+                                                                            <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
+                                                                                {language === 'en' ? 'Quick Tip' : 'পরামর্শ'}
+                                                                            </p>
+                                                                        </div>
+                                                                        <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed">
+                                                                            {point.daily_check}
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Pro Tips */}
+                                    {trainingContent.pro_tip && (
+                                        <div className="mt-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-8 text-white shadow-lg shadow-emerald-500/20">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl">
+                                                    💡
+                                                </div>
+                                                <h3 className="text-xl font-bold reading-content">
+                                                    {trainingContent.pro_tip.title}
+                                                </h3>
+                                            </div>
+                                            <ul className="space-y-4">
+                                                {trainingContent.pro_tip.content?.map((tip, idx) => (
+                                                    <li key={idx} className="flex items-start gap-3 text-emerald-50 reading-content leading-relaxed">
+                                                        <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">✓</span>
+                                                        {tip}
+                                                    </li>
+                                                ))}
+                                            </ul>
                                         </div>
                                     )}
+
+                                    {/* Myth Buster */}
+                                    {trainingContent.myth_buster && (
+                                        <div className="mt-8 bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 border-2 border-red-100 dark:border-red-900/30 shadow-sm">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-xl">
+                                                    ⚠️
+                                                </div>
+                                                <h3 className="text-xl font-bold text-red-700 dark:text-red-400 reading-content">
+                                                    {trainingContent.myth_buster.title}
+                                                </h3>
+                                            </div>
+                                            <div className="grid grid-cols-1 gap-4">
+                                                {trainingContent.myth_buster.myths?.map((item, idx) => (
+                                                    <div key={idx} className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-5 border border-slate-100 dark:border-slate-800">
+                                                        <div className="mb-4">
+                                                            <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1">
+                                                                {language === 'en' ? 'Myth' : 'মিথ'}
+                                                            </p>
+                                                            <p className="text-base text-slate-700 dark:text-slate-300 italic reading-content leading-relaxed font-medium">
+                                                                "{item.myth}"
+                                                            </p>
+                                                        </div>
+                                                        <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                                                            <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">
+                                                                {language === 'en' ? 'Reality' : 'বাস্তবতা'}
+                                                            </p>
+                                                            <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
+                                                                {item.reality || item.fact}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Advanced Section */}
+                                    {trainingContent.advanced_section && (
+                                        <div className="mt-8 bg-slate-900 rounded-2xl p-8 text-white shadow-xl">
+                                            <div className="flex items-center gap-3 mb-8">
+                                                <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center text-xl">
+                                                    🔬
+                                                </div>
+                                                <h3 className="text-xl font-bold reading-content">
+                                                    {trainingContent.advanced_section.title}
+                                                </h3>
+                                            </div>
+                                            <div className="grid grid-cols-1 gap-6">
+                                                {trainingContent.advanced_section.facts?.map((fact, idx) => (
+                                                    <div key={idx} className="bg-white/5 rounded-xl p-6 border border-white/10">
+                                                        <h4 className="font-bold text-indigo-400 mb-3 reading-content text-lg">
+                                                            {fact.title}
+                                                        </h4>
+                                                        <p className="text-slate-300 reading-content leading-relaxed text-sm">
+                                                            {fact.content}
+                                                        </p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Mark as Complete Button */}
+                                    <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
+                                        {!completedLessons.includes(trainingContent.level_id) ? (
+                                            <>
+                                                <button
+                                                    onClick={() => initiateLessonCompletion(trainingContent.level_id)}
+                                                    className="w-full px-8 py-4 rounded-2xl font-bold transition-all bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-3 text-lg active:scale-95"
+                                                >
+                                                    <span className="text-xl">✓</span>
+                                                    {language === 'en' ? 'Mark as Complete' : 'সম্পন্ন হিসাবে চিহ্নিত করুন'}
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setTrainingContent(null);
+                                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                    }}
+                                                    className="w-full mt-4 px-8 py-4 rounded-2xl font-bold transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center gap-3 text-lg active:scale-95"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                                                    </svg>
+                                                    {language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                <div className="w-full px-8 py-4 rounded-2xl font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 flex items-center justify-center gap-3 text-lg border border-emerald-200 dark:border-emerald-800">
+                                                    <span className="text-xl">✓</span>
+                                                    {language === 'en' ? 'Lesson Completed!' : 'পাঠ সম্পন্ন!'}
+                                                </div>
+                                                <button
+                                                    onClick={() => {
+                                                        setTrainingContent(null);
+                                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                    }}
+                                                    className="w-full px-8 py-4 rounded-2xl font-bold transition-all bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:opacity-90 flex items-center justify-center gap-3 text-lg active:scale-95"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                                                    </svg>
+                                                    {language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ) : null}

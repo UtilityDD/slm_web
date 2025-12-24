@@ -386,3 +386,17 @@
 .refresh-spinner {
   @apply w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin;
 }
+.animate-slide-up {
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
