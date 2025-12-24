@@ -3,6 +3,8 @@ import { supabase } from '../supabaseClient';
 import { calculateLevelFromProgress } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
 import ChapterQuizModal from './ChapterQuizModal';
+import CertificateModal from './CertificateModal';
+import { getBadgeByLevel } from '../utils/badgeUtils';
 
 const PPESkeleton = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -116,6 +118,28 @@ export default function SafetyHub({ language = 'en', user, setCurrentView, onPro
     const [loading, setLoading] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [editingId, setEditingId] = useState(null);
+    const [userProfile, setUserProfile] = useState(null);
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            if (!user) return;
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('full_name')
+                    .eq('id', user.id)
+                    .single();
+
+                if (error) throw error;
+                if (data) setUserProfile(data);
+            } catch (error) {
+                console.error('Error fetching user profile:', error);
+            }
+        };
+        fetchUserProfile();
+    }, [user]);
+
+
     const [newItem, setNewItem] = useState({
         name: '',
         age_months: '',
@@ -145,6 +169,9 @@ export default function SafetyHub({ language = 'en', user, setCurrentView, onPro
     const [trainingLoading, setTrainingLoading] = useState(false);
     const [completedLessons, setCompletedLessons] = useState([]);
     const [faqSearchQuery, setFaqSearchQuery] = useState('');
+    const [showCertificateModal, setShowCertificateModal] = useState(false);
+
+
 
     // Load completed lessons from localStorage
     useEffect(() => {
@@ -810,17 +837,36 @@ export default function SafetyHub({ language = 'en', user, setCurrentView, onPro
                             </div>
                         ) : !selectedChapter && !trainingContent ? (
                             /* Chapter List View */
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {trainingChapters.map((chapter) => (
-                                    <TrainingChapterCard
-                                        key={chapter.number}
-                                        chapter={chapter}
-                                        completedLessons={completedLessons}
-                                        language={language}
-                                        onClick={handleChapterClick}
-                                    />
-                                ))}
-                            </div>
+                            <>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {trainingChapters.map((chapter) => (
+                                        <TrainingChapterCard
+                                            key={chapter.number}
+                                            chapter={chapter}
+                                            completedLessons={completedLessons}
+                                            language={language}
+                                            onClick={handleChapterClick}
+                                        />
+                                    ))}
+                                </div>
+
+                                {/* Certificate Button */}
+                                {user && (
+                                    <div className="mt-12 flex justify-center pb-8">
+                                        <button
+                                            onClick={() => setShowCertificateModal(true)}
+                                            className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-200 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                                        >
+                                            <span className="absolute inset-0 w-full h-full -mt-1 rounded-full opacity-30 bg-gradient-to-b from-transparent via-transparent to-black"></span>
+                                            <span className="relative flex items-center gap-3">
+                                                <span className="text-2xl animate-bounce">🎓</span>
+                                                <span className="text-lg">My Certificate</span>
+                                            </span>
+                                            <div className="absolute inset-0 rounded-full animate-pulse bg-blue-400 opacity-20 group-hover:opacity-40"></div>
+                                        </button>
+                                    </div>
+                                )}
+                            </>
                         ) : selectedChapter && !trainingContent ? (
                             /* Subchapter List View or FAQ View */
                             <div>
@@ -1352,6 +1398,15 @@ export default function SafetyHub({ language = 'en', user, setCurrentView, onPro
                 questions={currentQuizQuestions}
                 language={language}
             />
+
+            <CertificateModal
+                isOpen={showCertificateModal}
+                onClose={() => setShowCertificateModal(false)}
+                userName={user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+                level={user?.training_level || 1}
+                badgeName={getBadgeByLevel(user?.training_level || 1)?.[language === 'en' ? 'en' : 'bn']}
+                date={new Date().toLocaleDateString()}
+            />
         </div >
     );
 }
@@ -1438,7 +1493,17 @@ const ProtocolDetailModal = ({ level, onClose, language }) => {
                     </button>
                 </div>
             </div>
-        </div>
 
+            {/* Certificate Modal */}
+            <CertificateModal
+                isOpen={showCertificateModal}
+                onClose={() => setShowCertificateModal(false)}
+                userName={userProfile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+                level={user?.training_level || 1}
+                badgeName={getBadgeByLevel(user?.training_level || 1)?.[language === 'en' ? 'en' : 'bn']}
+                date={new Date().toLocaleDateString()}
+            />
+
+        </div>
     );
 };
