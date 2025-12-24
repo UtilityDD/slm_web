@@ -738,7 +738,7 @@ export default function SmartLinemanUI() {
                       className="fixed inset-0 z-40"
                       onClick={() => setShowHistory(false)}
                     ></div>
-                    <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-50 overflow-hidden animate-slide-down">
+                    <div className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-16 sm:top-full sm:mt-2 w-auto sm:w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-50 overflow-hidden animate-slide-down">
                       <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
                         <h3 className="font-bold text-slate-900 dark:text-slate-100">
                           {language === 'en' ? 'Notifications' : 'বিজ্ঞপ্তি'}
