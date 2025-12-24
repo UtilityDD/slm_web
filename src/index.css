@@ -15,6 +15,7 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior-y: contain;
   }
 
   .font-bengali {
@@ -352,11 +353,36 @@
     }
   }
 }
+
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out forwards;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* Custom Pull-to-Refresh Indicator */
+.refresh-indicator {
+  @apply fixed top-0 left-0 right-0 flex justify-center items-center z-[100] pointer-events-none transition-all duration-300;
+  height: 60px;
+  transform: translateY(-100%);
+}
+
+.refresh-indicator.visible {
+  transform: translateY(0);
+}
+
+.refresh-indicator-content {
+  @apply bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 p-2 flex items-center gap-2 animate-bounce-in;
+}
+
+.refresh-spinner {
+  @apply w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin;
 }
