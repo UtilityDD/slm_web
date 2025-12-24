@@ -1,16 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-const VerificationView = ({ language }) => {
+const VerificationView = ({ language, certificateId }) => {
     const [status, setStatus] = useState('loading'); // loading, verified, invalid, error
     const [certData, setCertData] = useState(null);
     const [error, setError] = useState(null);
 
-    const certificateId = window.location.hash.split('/').pop();
-
     useEffect(() => {
         const verifyCertificate = async () => {
-            if (!certificateId) {
+            console.log('Verifying Certificate ID:', certificateId);
+
+            if (!certificateId || certificateId === 'verify' || certificateId === '#') {
+                console.warn('Invalid or missing Certificate ID');
+                setStatus('invalid');
+                return;
+            }
+
+            // Basic UUID format check (8-4-4-4-12 hex chars)
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            if (!uuidRegex.test(certificateId)) {
+                console.warn('Certificate ID is not a valid UUID format');
                 setStatus('invalid');
                 return;
             }
@@ -18,19 +27,21 @@ const VerificationView = ({ language }) => {
             try {
                 setStatus('loading');
                 // Fetch profile data for the given ID
-                const { data, error } = await supabase
+                const { data, error: supabaseError } = await supabase
                     .from('profiles')
                     .select('full_name, training_level, created_at')
                     .eq('id', certificateId)
                     .single();
 
-                if (error) {
-                    console.error('Verification error:', error);
+                if (supabaseError) {
+                    console.error('Supabase verification error:', supabaseError);
                     setStatus('invalid');
                 } else if (data) {
+                    console.log('Certificate verified successfully:', data);
                     setCertData(data);
                     setStatus('verified');
                 } else {
+                    console.warn('No data found for this Certificate ID');
                     setStatus('invalid');
                 }
             } catch (err) {
@@ -83,8 +94,8 @@ const VerificationView = ({ language }) => {
             <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700 animate-fade-in">
                 {/* Header */}
                 <div className={`p-8 text-center ${status === 'verified' ? 'bg-emerald-600' :
-                        status === 'invalid' ? 'bg-red-600' :
-                            status === 'error' ? 'bg-orange-600' : 'bg-blue-600'
+                    status === 'invalid' ? 'bg-red-600' :
+                        status === 'error' ? 'bg-orange-600' : 'bg-blue-600'
                     }`}>
                     <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-md">
                         {status === 'loading' && <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>}

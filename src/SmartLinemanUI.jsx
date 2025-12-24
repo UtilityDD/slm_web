@@ -448,8 +448,10 @@ export default function SmartLinemanUI() {
           return <AdminServices language={language} />;
         case 'guide':
           return <Guide />;
-        case 'verify':
-          return <VerificationView language={language} />;
+        case 'verify': {
+          const certId = window.location.hash.split('/').pop();
+          return <VerificationView language={language} certificateId={certId} />;
+        }
         case 'home':
         default:
           return <Home
