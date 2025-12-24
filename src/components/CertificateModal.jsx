@@ -1,9 +1,37 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
+import html2canvas from 'html2canvas';
 
 const CertificateModal = ({ isOpen, onClose, userName, level, badgeName, date }) => {
     const certificateRef = useRef(null);
+    const [isDownloading, setIsDownloading] = useState(false);
 
     if (!isOpen) return null;
+
+    const handleDownloadPNG = async () => {
+        if (!certificateRef.current) return;
+
+        try {
+            setIsDownloading(true);
+            const canvas = await html2canvas(certificateRef.current, {
+                scale: 2, // High quality
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                width: 1123,
+                height: 794
+            });
+
+            const image = canvas.toDataURL('image/png', 1.0);
+            const link = document.createElement('a');
+            link.download = `Certificate_${userName?.replace(/\s+/g, '_') || 'Learner'}.png`;
+            link.href = image;
+            link.click();
+        } catch (error) {
+            console.error('Error generating PNG:', error);
+            alert('Failed to generate PNG. Please try again.');
+        } finally {
+            setIsDownloading(false);
+        }
+    };
 
     const handlePrint = () => {
         const printWindow = window.open('', '_blank');
@@ -21,23 +49,26 @@ const CertificateModal = ({ isOpen, onClose, userName, level, badgeName, date })
                             padding: 0; 
                             -webkit-print-color-adjust: exact; 
                             background: white;
+                            overflow: hidden;
                         }
                         .certificate-container {
-                            width: 297mm;
-                            height: 210mm;
-                            padding: 15mm;
+                            width: 296mm;
+                            height: 209mm;
+                            padding: 10mm;
                             box-sizing: border-box;
                             display: flex;
                             justify-content: center;
                             align-items: center;
                             font-family: 'Times New Roman', serif;
                             background: white;
+                            page-break-inside: avoid;
+                            overflow: hidden;
                         }
                         .certificate-border {
                             width: 100%;
                             height: 100%;
-                            padding: 10mm;
-                            border: 12px double #1e293b;
+                            padding: 8mm;
+                            border: 10px double #1e293b;
                             box-sizing: border-box;
                             position: relative;
                             display: flex;
@@ -48,131 +79,131 @@ const CertificateModal = ({ isOpen, onClose, userName, level, badgeName, date })
                         }
                         .corner {
                             position: absolute;
-                            width: 20mm;
-                            height: 20mm;
+                            width: 15mm;
+                            height: 15mm;
                             border-color: #1e293b;
                             border-style: solid;
                         }
-                        .top-left { top: 5mm; left: 5mm; border-width: 2mm 0 0 2mm; }
-                        .top-right { top: 5mm; right: 5mm; border-width: 2mm 2mm 0 0; }
-                        .bottom-left { bottom: 5mm; left: 5mm; border-width: 0 0 2mm 2mm; }
-                        .bottom-right { bottom: 5mm; right: 5mm; border-width: 0 2mm 2mm 0; }
+                        .top-left { top: 4mm; left: 4mm; border-width: 1.5mm 0 0 1.5mm; }
+                        .top-right { top: 4mm; right: 4mm; border-width: 1.5mm 1.5mm 0 0; }
+                        .bottom-left { bottom: 4mm; left: 4mm; border-width: 0 0 1.5mm 1.5mm; }
+                        .bottom-right { bottom: 4mm; right: 4mm; border-width: 0 1.5mm 1.5mm 0; }
 
                         .header {
-                            font-size: 64pt;
+                            font-size: 52pt;
                             font-weight: bold;
                             color: #1e293b;
-                            margin-bottom: 5mm;
+                            margin-bottom: 4mm;
                             text-transform: uppercase;
-                            letter-spacing: 8pt;
+                            letter-spacing: 6pt;
                         }
                         .sub-header {
-                            font-size: 28pt;
+                            font-size: 24pt;
                             color: #64748b;
-                            margin-bottom: 15mm;
+                            margin-bottom: 12mm;
                             font-style: italic;
                         }
                         .certify-text {
-                            font-size: 22pt;
+                            font-size: 18pt;
                             color: #64748b;
-                            margin-bottom: 8mm;
+                            margin-bottom: 6mm;
                         }
                         .recipient-name {
-                            font-size: 68pt;
+                            font-size: 56pt;
                             font-weight: bold;
                             color: #0f172a;
-                            margin-bottom: 12mm;
-                            border-bottom: 3pt solid #e2e8f0;
-                            padding: 0 20mm 5mm 20mm;
+                            margin-bottom: 10mm;
+                            border-bottom: 2pt solid #e2e8f0;
+                            padding: 0 15mm 4mm 15mm;
                             font-style: italic;
                         }
                         .description {
-                            font-size: 20pt;
+                            font-size: 18pt;
                             color: #475569;
-                            max-width: 80%;
-                            line-height: 1.5;
-                            margin-bottom: 15mm;
+                            max-width: 85%;
+                            line-height: 1.4;
+                            margin-bottom: 12mm;
                         }
                         .badge-level {
-                            font-size: 42pt;
+                            font-size: 36pt;
                             font-weight: bold;
                             color: #1e40af;
-                            margin-bottom: 3mm;
+                            margin-bottom: 2mm;
                             text-transform: uppercase;
-                            letter-spacing: 4pt;
+                            letter-spacing: 3pt;
                         }
                         .level-text {
-                            font-size: 22pt;
+                            font-size: 18pt;
                             color: #64748b;
-                            margin-bottom: 20mm;
+                            margin-bottom: 15mm;
                         }
                         .footer {
-                            width: 85%;
+                            width: 90%;
                             display: flex;
                             justify-content: space-between;
                             align-items: flex-end;
                             margin-top: auto;
-                            padding-bottom: 10mm;
+                            padding-bottom: 5mm;
                         }
                         .signature-block {
                             text-align: center;
-                            border-top: 2pt solid #94a3b8;
-                            padding-top: 4mm;
-                            width: 60mm;
+                            border-top: 1.5pt solid #94a3b8;
+                            padding-top: 3mm;
+                            width: 50mm;
                         }
                         .signature-text {
-                            font-size: 18pt;
+                            font-size: 16pt;
                             color: #1e293b;
                             font-weight: bold;
                         }
                         .signature-label {
-                            font-size: 14pt;
+                            font-size: 12pt;
                             color: #64748b;
-                            margin-top: 2mm;
+                            margin-top: 1mm;
                             text-transform: uppercase;
                             letter-spacing: 1pt;
                         }
                         .seal-container {
                             position: relative;
-                            width: 40mm;
-                            height: 40mm;
+                            width: 35mm;
+                            height: 35mm;
                         }
                         .seal {
-                            width: 40mm;
-                            height: 40mm;
+                            width: 35mm;
+                            height: 35mm;
                             border-radius: 50%;
                             background: linear-gradient(135deg, #fde047, #eab308, #ca8a04);
                             display: flex;
                             align-items: center;
                             justify-content: center;
-                            border: 4pt solid #a16207;
-                            box-shadow: 0 4pt 8pt rgba(0,0,0,0.2);
+                            border: 3pt solid #a16207;
+                            box-shadow: 0 3pt 6pt rgba(0,0,0,0.2);
                             transform: rotate(-12deg);
                         }
                         .seal-inner {
-                            width: 34mm;
-                            height: 34mm;
-                            border: 2pt dashed rgba(161, 98, 7, 0.4);
+                            width: 30mm;
+                            height: 30mm;
+                            border: 1.5pt dashed rgba(161, 98, 7, 0.4);
                             border-radius: 50%;
                             display: flex;
                             align-items: center;
                             justify-content: center;
                             text-align: center;
-                            font-size: 10pt;
+                            font-size: 8pt;
                             font-weight: bold;
                             color: #713f12;
                         }
                         .ribbon {
                             position: absolute;
-                            bottom: -10mm;
+                            bottom: -8mm;
                             left: 50%;
                             transform: translateX(-50%);
                             display: flex;
-                            gap: 2mm;
+                            gap: 1.5mm;
                         }
                         .ribbon-tail {
-                            width: 6mm;
-                            height: 15mm;
+                            width: 5mm;
+                            height: 12mm;
                             background: #dc2626;
                             clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 85%, 0% 100%);
                         }
@@ -336,21 +367,37 @@ const CertificateModal = ({ isOpen, onClose, userName, level, badgeName, date })
                 </div>
 
                 {/* Footer Actions */}
-                <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex justify-end gap-3">
+                <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex flex-wrap justify-end gap-3">
                     <button
                         onClick={onClose}
                         className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
                     >
                         Close
                     </button>
+
+                    <button
+                        onClick={handleDownloadPNG}
+                        disabled={isDownloading}
+                        className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white rounded-lg shadow-lg shadow-emerald-500/30 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                    >
+                        {isDownloading ? (
+                            <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        )}
+                        {isDownloading ? 'Generating...' : 'Download PNG'}
+                    </button>
+
                     <button
                         onClick={handlePrint}
                         className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-lg shadow-blue-500/30 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                         </svg>
-                        Download / Print
+                        Print / PDF
                     </button>
                 </div>
             </div>
