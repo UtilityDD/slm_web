@@ -52,6 +52,7 @@ export default function SmartLinemanUI() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [startY, setStartY] = useState(0);
   const [pullDistance, setPullDistance] = useState(0);
+  const [lastRefreshTime, setLastRefreshTime] = useState(0);
 
   const getChapterBadge = () => {
     const level = calculateLevelFromProgress(completedLessons);
@@ -88,7 +89,17 @@ export default function SmartLinemanUI() {
 
   const refreshData = async () => {
     if (!user || isRefreshing) return;
+
+    // Cooldown check: prevent refresh if called within last 3 seconds
+    const now = Date.now();
+    if (now - lastRefreshTime < 3000) {
+      console.log('Refresh cooldown active, skipping...');
+      return;
+    }
+
     setIsRefreshing(true);
+    setLastRefreshTime(now);
+
     try {
       await fetchProfile(user);
       // Also refresh notifications
