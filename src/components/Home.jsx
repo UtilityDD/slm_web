@@ -13,7 +13,9 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
             setScore(userProfile.points || 0);
             setFullName(userProfile.full_name);
             setLoading(false);
-        } else if (!user) {
+        } else if (user) {
+            fetchProfile();
+        } else {
             setLoading(false);
         }
     }, [userProfile, user]);
