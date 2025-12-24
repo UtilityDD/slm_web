@@ -21,13 +21,8 @@ const CommunitySkeleton = () => (
 );
 
 export default function Community({ language = 'en' }) {
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [showToast, setShowToast] = useState(false);
-
-    useEffect(() => {
-        const timer = setTimeout(() => setLoading(false), 600);
-        return () => clearTimeout(timer);
-    }, []);
 
     const t = {
         en: {
