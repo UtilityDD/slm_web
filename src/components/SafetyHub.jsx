@@ -1415,6 +1415,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                 level={userProfile?.training_level || 1}
                 badgeName={getBadgeByLevel(userProfile?.training_level || 1)?.[language === 'en' ? 'en' : 'bn']}
                 date={new Date().toLocaleDateString()}
+                certificateId={user?.id}
             />
         </div >
     );

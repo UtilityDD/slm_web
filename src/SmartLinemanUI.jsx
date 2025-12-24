@@ -14,12 +14,14 @@ const Admin = lazy(() => import("./components/Admin"));
 const AdminServices = lazy(() => import("./components/AdminServices"));
 const Home = lazy(() => import("./components/Home"));
 const Guide = lazy(() => import("./components/Guide"));
+const VerificationView = lazy(() => import("./components/VerificationView"));
 
 export default function SmartLinemanUI() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentView, setCurrentView] = useState(() => {
     const hash = window.location.hash.replace('#/', '');
     if (hash.includes('access_token=') || hash.includes('type=recovery')) return 'login';
+    if (hash.startsWith('verify/')) return 'verify';
     return hash || 'home';
   });
   const [language, setLanguage] = useState('bn');
@@ -247,6 +249,8 @@ export default function SmartLinemanUI() {
       const hash = window.location.hash.replace('#/', '');
       if (hash.includes('access_token=') || hash.includes('type=recovery')) {
         setCurrentView('login');
+      } else if (hash.startsWith('verify/')) {
+        setCurrentView('verify');
       } else if (hash && hash !== currentView) {
         setCurrentView(hash);
       } else if (!hash && currentView !== 'home') {
@@ -444,6 +448,8 @@ export default function SmartLinemanUI() {
           return <AdminServices language={language} />;
         case 'guide':
           return <Guide />;
+        case 'verify':
+          return <VerificationView language={language} />;
         case 'home':
         default:
           return <Home

@@ -1,11 +1,14 @@
 import React, { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
+import { QRCodeSVG } from 'qrcode.react';
 
-const CertificateModal = ({ isOpen, onClose, userName, level, badgeName, date }) => {
+const CertificateModal = ({ isOpen, onClose, userName, level, badgeName, date, certificateId }) => {
     const certificateRef = useRef(null);
     const [isDownloading, setIsDownloading] = useState(false);
 
     if (!isOpen) return null;
+
+    const verificationUrl = `${window.location.origin}/#/verify/${certificateId}`;
 
     const handleDownloadPNG = async () => {
         if (!certificateRef.current) return;
@@ -207,6 +210,27 @@ const CertificateModal = ({ isOpen, onClose, userName, level, badgeName, date })
                             background: #dc2626;
                             clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 85%, 0% 100%);
                         }
+                        .verification-block {
+                            position: absolute;
+                            bottom: 8mm;
+                            left: 8mm;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: flex-start;
+                            gap: 2mm;
+                        }
+                        .qr-code {
+                            width: 25mm;
+                            height: 25mm;
+                            background: white;
+                            padding: 1mm;
+                            border: 1pt solid #e2e8f0;
+                        }
+                        .cert-id {
+                            font-size: 10pt;
+                            color: #94a3b8;
+                            font-family: monospace;
+                        }
                     </style>
                 </head>
                 <body>
@@ -230,6 +254,13 @@ const CertificateModal = ({ isOpen, onClose, userName, level, badgeName, date })
                             <div class="badge-level">${badgeName || 'Safety Trainee'}</div>
                             <div class="level-text">Training Level ${level || 1}</div>
                             
+                            <div class="verification-block">
+                                <div class="qr-code">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verificationUrl)}" style="width: 100%; height: 100%;" />
+                                </div>
+                                <div class="cert-id">ID: ${certificateId}</div>
+                            </div>
+
                             <div class="footer">
                                 <div class="signature-block">
                                     <div class="signature-text">${date}</div>
@@ -300,6 +331,16 @@ const CertificateModal = ({ isOpen, onClose, userName, level, badgeName, date })
                         <div className="absolute top-6 right-6 w-24 h-24 border-t-8 border-r-8 border-slate-800"></div>
                         <div className="absolute bottom-6 left-6 w-24 h-24 border-b-8 border-l-8 border-slate-800"></div>
                         <div className="absolute bottom-6 right-6 w-24 h-24 border-b-8 border-r-8 border-slate-800"></div>
+
+                        {/* Verification Block */}
+                        <div className="absolute bottom-10 left-10 flex flex-col items-start gap-2">
+                            <div className="bg-white p-2 border border-slate-200 shadow-sm rounded-lg">
+                                <QRCodeSVG value={verificationUrl} size={100} />
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-mono tracking-tighter">
+                                VERIFY ID: {certificateId}
+                            </div>
+                        </div>
 
                         {/* Content */}
                         <div className="mb-8">
