@@ -1,4 +1,4 @@
-// Force re-compile
+// Force re-compile to clear stale Vite cache
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { calculateLevelFromProgress } from '../utils/badgeUtils';
