@@ -84,8 +84,11 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             setLoading(true);
             setFetchError(false);
             try {
-                await fetchServerTime();
-                const promises = [fetchHourlyQuiz()];
+                // Run fetches in parallel to avoid blocking
+                const promises = [
+                    fetchServerTime(),
+                    fetchHourlyQuiz()
+                ];
 
                 // Only fetch leaderboard if user is logged in
                 if (user) {
@@ -647,144 +650,158 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             <div className="max-w-md mx-auto mb-12">
                 {loading ? (
                     <SkeletonCard />
-                ) : (
-                    hourlyQuiz && (
-                        <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-blue-200 dark:border-blue-800 shadow-sm text-center">
-                            <div className="mb-6">
-                                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 tracking-tight">
-                                    5 {language === 'en' ? 'Quizzes Every Hour!' : 'কুইজ প্রতি ঘন্টায়!'}
-                                </h2>
-                                <div className="flex items-center justify-center gap-6 text-xs text-slate-500 dark:text-slate-400">
-                                    <div className="flex flex-col items-center">
-                                        <span className="text-xl mb-1">📝</span>
-                                        <span className="font-bold">5 {t.questions}</span>
-                                    </div>
-                                    <div className="w-px h-8 bg-slate-100 dark:bg-slate-700"></div>
-                                    <div className="flex flex-col items-center">
-                                        <span className="text-xl mb-1">💎</span>
-                                        <span className="font-bold">50 {t.points}</span>
-                                    </div>
+                ) : hourlyQuiz ? (
+                    <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-blue-200 dark:border-blue-800 shadow-sm text-center">
+                        <div className="mb-6">
+                            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 tracking-tight">
+                                5 {language === 'en' ? 'Quizzes Every Hour!' : 'কুইজ প্রতি ঘন্টায়!'}
+                            </h2>
+                            <div className="flex items-center justify-center gap-6 text-xs text-slate-500 dark:text-slate-400">
+                                <div className="flex flex-col items-center">
+                                    <span className="text-xl mb-1">📝</span>
+                                    <span className="font-bold">5 {t.questions}</span>
+                                </div>
+                                <div className="w-px h-8 bg-slate-100 dark:bg-slate-700"></div>
+                                <div className="flex flex-col items-center">
+                                    <span className="text-xl mb-1">💎</span>
+                                    <span className="font-bold">50 {t.points}</span>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Action Area */}
-                            {/* Sync Status Indicator */}
-                            {(isSyncing || pendingSubmission) && (
-                                <div className={`mb-3 p-3 rounded-lg border ${syncStatus === 'success' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' :
-                                    syncStatus === 'failed' ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' :
-                                        syncStatus === 'waiting' ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800' :
-                                            'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-                                    }`}>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            {isSyncing && (
-                                                <svg className="animate-spin h-4 w-4 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                            )}
-                                            <div>
-                                                <div className={`text-xs font-medium ${syncStatus === 'success' ? 'text-green-700 dark:text-green-300' :
-                                                    syncStatus === 'failed' ? 'text-red-700 dark:text-red-300' :
-                                                        syncStatus === 'waiting' ? 'text-yellow-700 dark:text-yellow-300' :
-                                                            'text-blue-700 dark:text-blue-300'
-                                                    }`}>
-                                                    {syncStatus === 'syncing' ? t.syncing :
-                                                        syncStatus === 'waiting' ? t.waitingNetwork :
-                                                            syncStatus === 'success' ? t.syncSuccess :
-                                                                syncStatus === 'failed' ? t.syncFailed :
-                                                                    t.syncing}
-                                                </div>
-                                                {syncStatus === 'waiting' && (
-                                                    <div className="text-[10px] text-yellow-600 dark:text-yellow-400 mt-0.5">
-                                                        {t.autoRetry}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        {syncStatus === 'failed' && !isSyncing && (
-                                            <button
-                                                onClick={processPendingQueue}
-                                                className="px-3 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 rounded transition-colors"
-                                            >
-                                                {t.retryNow}
-                                            </button>
+                        {/* Action Area */}
+                        {/* Sync Status Indicator */}
+                        {(isSyncing || pendingSubmission) && (
+                            <div className={`mb-3 p-3 rounded-lg border ${syncStatus === 'success' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' :
+                                syncStatus === 'failed' ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' :
+                                    syncStatus === 'waiting' ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800' :
+                                        'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                                }`}>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        {isSyncing && (
+                                            <svg className="animate-spin h-4 w-4 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
                                         )}
-                                    </div>
-                                </div>
-                            )}
-
-                            {(() => {
-                                if (!lastAttemptTime) {
-                                    return (
-                                        <button
-                                            onClick={() => startQuiz(hourlyQuiz)}
-                                            disabled={pendingSubmission && pendingSubmission.quiz_id === hourlyQuiz.id}
-                                            className={`w-full py-3 ${(pendingSubmission && pendingSubmission.quiz_id === hourlyQuiz.id)
-                                                ? 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed text-slate-500 dark:text-slate-400'
-                                                : 'bg-blue-600 hover:bg-blue-700 text-white'
-                                                } font-bold rounded-lg transition-colors flex items-center justify-center gap-2`}
-                                        >
-                                            <span>{t.play}</span>
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                                        </button>
-                                    );
-                                }
-
-                                const last = new Date(lastAttemptTime);
-                                const now = getSyncedTime();
-                                const isLocked =
-                                    last.getFullYear() === now.getFullYear() &&
-                                    last.getMonth() === now.getMonth() &&
-                                    last.getDate() === now.getDate() &&
-                                    last.getHours() === now.getHours();
-
-                                if (isLocked) {
-                                    const minutesLeft = 59 - now.getMinutes();
-                                    const secondsLeft = 59 - now.getSeconds();
-                                    const timeString = `${minutesLeft}:${secondsLeft < 10 ? '0' : ''}${secondsLeft}`;
-
-                                    return (
-                                        <div className="space-y-4">
-                                            {/* Locked Status Card */}
-                                            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                                                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Next Quiz In</div>
-                                                <div className="text-2xl font-mono font-bold text-slate-700 dark:text-slate-300">
-                                                    {timeString}
-                                                </div>
+                                        <div>
+                                            <div className={`text-xs font-medium ${syncStatus === 'success' ? 'text-green-700 dark:text-green-300' :
+                                                syncStatus === 'failed' ? 'text-red-700 dark:text-red-300' :
+                                                    syncStatus === 'waiting' ? 'text-yellow-700 dark:text-yellow-300' :
+                                                        'text-blue-700 dark:text-blue-300'
+                                                }`}>
+                                                {syncStatus === 'syncing' ? t.syncing :
+                                                    syncStatus === 'waiting' ? t.waitingNetwork :
+                                                        syncStatus === 'success' ? t.syncSuccess :
+                                                            syncStatus === 'failed' ? t.syncFailed :
+                                                                t.syncing}
                                             </div>
-
-                                            <button
-                                                onClick={startReview}
-                                                className="w-full py-3 rounded-lg font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all text-sm flex items-center justify-center gap-2"
-                                            >
-                                                <span>Review Last Attempt</span>
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                            </button>
+                                            {syncStatus === 'waiting' && (
+                                                <div className="text-[10px] text-yellow-600 dark:text-yellow-400 mt-0.5">
+                                                    {t.autoRetry}
+                                                </div>
+                                            )}
                                         </div>
-                                    );
-                                }
+                                    </div>
+                                    {syncStatus === 'failed' && !isSyncing && (
+                                        <button
+                                            onClick={processPendingQueue}
+                                            className="px-3 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 rounded transition-colors"
+                                        >
+                                            {t.retryNow}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {(() => {
+                            if (!lastAttemptTime) {
+                                return (
+                                    <button
+                                        onClick={() => startQuiz(hourlyQuiz)}
+                                        disabled={pendingSubmission && pendingSubmission.quiz_id === hourlyQuiz.id}
+                                        className={`w-full py-3 ${(pendingSubmission && pendingSubmission.quiz_id === hourlyQuiz.id)
+                                            ? 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed text-slate-500 dark:text-slate-400'
+                                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                            } font-bold rounded-lg transition-colors flex items-center justify-center gap-2`}
+                                    >
+                                        <span>{t.play}</span>
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                                    </button>
+                                );
+                            }
+
+                            const last = new Date(lastAttemptTime);
+                            const now = getSyncedTime();
+                            const isLocked =
+                                last.getFullYear() === now.getFullYear() &&
+                                last.getMonth() === now.getMonth() &&
+                                last.getDate() === now.getDate() &&
+                                last.getHours() === now.getHours();
+
+                            if (isLocked) {
+                                const minutesLeft = 59 - now.getMinutes();
+                                const secondsLeft = 59 - now.getSeconds();
+                                const timeString = `${minutesLeft}:${secondsLeft < 10 ? '0' : ''}${secondsLeft}`;
 
                                 return (
-                                    <div className="space-y-3">
-                                        <button
-                                            onClick={() => startQuiz(hourlyQuiz)}
-                                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <span>{t.play}</span>
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                                        </button>
+                                    <div className="space-y-4">
+                                        {/* Locked Status Card */}
+                                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                                            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Next Quiz In</div>
+                                            <div className="text-2xl font-mono font-bold text-slate-700 dark:text-slate-300">
+                                                {timeString}
+                                            </div>
+                                        </div>
+
                                         <button
                                             onClick={startReview}
-                                            className="w-full py-2 rounded-lg font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all text-xs"
+                                            className="w-full py-3 rounded-lg font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all text-sm flex items-center justify-center gap-2"
                                         >
-                                            Review Last Attempt
+                                            <span>Review Last Attempt</span>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                         </button>
                                     </div>
                                 );
-                            })()}
-                        </div>
-                    )
+                            }
+
+                            return (
+                                <div className="space-y-3">
+                                    <button
+                                        onClick={() => startQuiz(hourlyQuiz)}
+                                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <span>{t.play}</span>
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                                    </button>
+                                    <button
+                                        onClick={startReview}
+                                        className="w-full py-2 rounded-lg font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all text-xs"
+                                    >
+                                        Review Last Attempt
+                                    </button>
+                                </div>
+                            );
+                        })()}
+                    </div>
+                ) : (
+                    <div className="bg-white dark:bg-slate-800 rounded-xl p-8 border border-red-100 dark:border-red-900/30 text-center shadow-sm">
+                        <div className="text-4xl mb-3">⚠️</div>
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">
+                            {language === 'en' ? 'Unable to load quiz' : 'কুইজ লোড করা যাচ্ছে না'}
+                        </h3>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">
+                            {language === 'en' ? 'Please check your connection and try again.' : 'অনুগ্রহ করে আপনার সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন।'}
+                        </p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="px-6 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg font-medium transition-colors"
+                        >
+                            {language === 'en' ? 'Retry' : 'পুনঃচেষ্টা'}
+                        </button>
+                    </div>
                 )}
             </div>
 

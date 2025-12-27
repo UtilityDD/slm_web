@@ -2019,16 +2019,7 @@
             "components"
         ]
     }
-]
-Model
-ThinkingThoughts
-Expand to view model thoughts
-
-chevron_right
-অবশ্যই, ভারতীয় লাইনম্যানদের বাস্তব অভিজ্ঞতার আলোকে ১১ কেভি এবং ৩৩ কেভি লাইনের ব্রেকডাউন ও মেইনটিনেন্স (Breakdown Maintenance) সংক্রান্ত পরবর্তী ২০টি প্রশ্ন ও উত্তর নিচে দেওয়া হলো। আইডি q33 থেকে শুরু করা হয়েছে।
-code
-JSON
-[
+,
     {
         "id": "q33",
         "question": "শাটডাউন নেওয়ার পরেও লাইনে ওঠার আগে ডিসচার্জ রড (Discharge Rod) মারা কেন বাধ্যতামূলক?",
