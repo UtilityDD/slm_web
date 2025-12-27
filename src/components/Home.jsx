@@ -7,6 +7,12 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
     const [fullName, setFullName] = useState(userProfile?.full_name || null);
     const [loading, setLoading] = useState(!userProfile && !!user);
     const [fetchError, setFetchError] = useState(false);
+    const [visitorName, setVisitorName] = useState('');
+
+    const visitorNames = {
+        en: ['Lineman', 'Hero', 'Superhero', 'Friend', 'Champion', 'Safety Star'],
+        bn: ['লাইনম্যান', 'বীর', 'সুপারহিরো', 'বন্ধু', 'চ্যাম্পিয়ন', 'সুরক্ষা তারকা']
+    };
 
     useEffect(() => {
         if (userProfile) {
@@ -17,8 +23,12 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
             fetchProfile();
         } else {
             setLoading(false);
+            // Randomize name for visitor
+            const names = visitorNames[language] || visitorNames.en;
+            const randomName = names[Math.floor(Math.random() * names.length)];
+            setVisitorName(randomName);
         }
-    }, [userProfile, user]);
+    }, [userProfile, user, language]);
 
     const fetchProfile = async () => {
         if (!user) return;
@@ -100,7 +110,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                                 </div>
                                 <div className="flex items-baseline gap-3">
                                     <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                                        {fullName || (user?.email ? user.email.split('@')[0] : (language === 'en' ? 'Lineman' : 'লাইনম্যান'))}
+                                        {fullName || (user?.email ? user.email.split('@')[0] : visitorName)}
                                     </h1>
                                     {user && (
                                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md">
