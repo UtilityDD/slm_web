@@ -22,6 +22,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     const [loadingFull, setLoadingFull] = useState(false);
     const [serverTimeOffset, setServerTimeOffset] = useState(0);
     const [fetchError, setFetchError] = useState(false);
+    const [showCompactView, setShowCompactView] = useState(true); // New state for compact view
 
     // Offline sync state
     const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -832,8 +833,8 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                 onClick={() => loadData()}
                                 disabled={loading}
                                 className={`w-full py-3 px-6 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${loading
-                                        ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
-                                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 active:scale-95'
+                                    ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 active:scale-95'
                                     }`}
                             >
                                 {loading ? (
@@ -904,37 +905,78 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                         </div>
                     ) : (
                         <>
-                            {leaderboard.map((item, index) => (
-                                <div key={index} className="flex items-center p-3 sm:p-4 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
-                                    <div className="font-bold text-slate-300 w-6 text-sm">#{index + 1}</div>
-                                    <div className="flex-shrink-0 mr-3">
-                                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-600 dark:text-slate-400 overflow-hidden">
-                                            {item.avatar_url ? <img src={item.avatar_url} alt="" className="w-full h-full object-cover" /> : (item.full_name?.[0] || 'U')}
-                                        </div>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
-                                                {item.full_name || 'Anonymous'}
-                                            </p>
-                                            {getBadgeByLevel(item.training_level) && (
-                                                <div className={`px-1.5 py-0.5 rounded-full text-[8px] font-bold border uppercase tracking-tight ${getBadgeByLevel(item.training_level).color}`}>
-                                                    {language === 'en' ? getBadgeByLevel(item.training_level).en : getBadgeByLevel(item.training_level).bn}
+                            {(() => {
+                                // Determine which entries to show
+                                const displayEntries = showCompactView
+                                    ? (() => {
+                                        const top3 = leaderboard.slice(0, 3);
+                                        const userIndex = leaderboard.findIndex(item => item.user_id === user?.id);
+
+                                        // If user is in top 3 or not found, just show top 3
+                                        if (userIndex === -1 || userIndex < 3) {
+                                            return top3;
+                                        }
+
+                                        // Otherwise, show top 3 + user's position
+                                        const userEntry = { ...leaderboard[userIndex], actualIndex: userIndex };
+                                        return [...top3, userEntry];
+                                    })()
+                                    : leaderboard;
+
+                                return displayEntries.map((item, displayIndex) => {
+                                    const isUserRow = item.user_id === user?.id;
+                                    const actualIndex = item.actualIndex !== undefined ? item.actualIndex : displayIndex;
+                                    const showDivider = showCompactView && displayIndex === 3;
+
+                                    return (
+                                        <React.Fragment key={item.user_id || displayIndex}>
+                                            {showDivider && (
+                                                <div className="px-4 py-2 bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+                                                    <div className="flex items-center gap-2 justify-center">
+                                                        <div className="h-px flex-1 bg-slate-300 dark:bg-slate-600"></div>
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Your Position</span>
+                                                        <div className="h-px flex-1 bg-slate-300 dark:bg-slate-600"></div>
+                                                    </div>
                                                 </div>
                                             )}
-                                        </div>
-                                        <p className="text-[10px] sm:text-xs text-slate-500 truncate">
-                                            {item.district || 'West Bengal'}
-                                        </p>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-sm sm:text-base font-bold text-blue-600 dark:text-blue-400">
-                                            {item.points}
-                                        </div>
-                                        <div className="text-[10px] text-slate-400 uppercase tracking-wider">{t.points}</div>
-                                    </div>
-                                </div>
-                            ))}
+                                            <div className={`flex items-center p-3 sm:p-4 transition-colors ${isUserRow
+                                                    ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
+                                                    : 'hover:bg-slate-50 dark:hover:bg-slate-900/50'
+                                                }`}>
+                                                <div className={`font-bold w-6 text-sm ${actualIndex < 3 ? 'text-yellow-500' : 'text-slate-300'
+                                                    }`}>#{actualIndex + 1}</div>
+                                                <div className="flex-shrink-0 mr-3">
+                                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-600 dark:text-slate-400 overflow-hidden">
+                                                        {item.avatar_url ? <img src={item.avatar_url} alt="" className="w-full h-full object-cover" /> : (item.full_name?.[0] || 'U')}
+                                                    </div>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                                                            {item.full_name || 'Anonymous'} {isUserRow && '(You)'}
+                                                        </p>
+                                                        {getBadgeByLevel(item.training_level) && (
+                                                            <div className={`px-1.5 py-0.5 rounded-full text-[8px] font-bold border uppercase tracking-tight ${getBadgeByLevel(item.training_level).color}`}>
+                                                                {language === 'en' ? getBadgeByLevel(item.training_level).en : getBadgeByLevel(item.training_level).bn}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-[10px] sm:text-xs text-slate-500 truncate">
+                                                        {item.district || 'West Bengal'}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className={`text-sm sm:text-base font-bold ${isUserRow ? 'text-blue-600 dark:text-blue-400' : 'text-blue-600 dark:text-blue-400'
+                                                        }`}>
+                                                        {item.points}
+                                                    </div>
+                                                    <div className="text-[10px] text-slate-400 uppercase tracking-wider">{t.points}</div>
+                                                </div>
+                                            </div>
+                                        </React.Fragment>
+                                    );
+                                });
+                            })()}
                             {leaderboard.length === 0 && (
                                 <div className="p-8 text-center text-slate-400">
                                     {fetchError ? (
@@ -958,14 +1000,17 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                 </div>
                             )}
 
-                            {/* View All Button */}
-                            {leaderboard.length > 0 && (
+                            {/* View All/Collapse Button */}
+                            {leaderboard.length > 3 && (
                                 <div className="p-3 text-center bg-slate-50 dark:bg-slate-900/30">
                                     <button
                                         onClick={fetchFullLeaderboard}
-                                        className="text-blue-600 dark:text-blue-400 font-bold hover:underline text-sm"
+                                        className="text-blue-600 dark:text-blue-400 font-bold hover:underline text-sm flex items-center gap-2 mx-auto"
                                     >
-                                        View Full Leaderboard
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                        {language === 'en' ? 'View Full Leaderboard' : 'সম্পূর্ণ লিডারবোর্ড দেখুন'}
                                     </button>
                                 </div>
                             )}
