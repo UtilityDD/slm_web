@@ -302,47 +302,53 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     };
 
     const fetchHourlyQuiz = async () => {
-        const cacheKey = `hourly_quiz_v2_${language}`;
+        // Cache key includes language to separate EN/BN quizzes
+        const cacheKey = `hourly_quiz_db_${language}`;
         const cachedQuiz = cacheHelper.get(cacheKey);
+
         if (cachedQuiz) {
             setHourlyQuiz(cachedQuiz);
             return;
         }
 
         try {
-            const fileName = language === 'en' ? 'hourly_challenge_en.json' : 'hourly_challenge.json';
-            const response = await fetch(`/quizzes/${fileName}`);
-            if (response.ok) {
-                const data = await response.json();
+            // Fetch 5 random questions from Supabase
+            const { data, error } = await supabase.rpc('get_random_hourly_questions', {
+                lang: language,
+                limit_count: 5
+            });
 
-                // Transform new format (array) to old format (object) if necessary
-                let quizData;
-                if (Array.isArray(data)) {
-                    quizData = {
-                        id: 'hourly-challenge',
-                        title: language === 'en' ? 'Hourly Safety Challenge' : 'প্রতি ঘন্টায় সুরক্ষা চ্যালেঞ্জ',
-                        description: language === 'en' ? 'Test your safety knowledge! New questions every hour.' : 'আপনার সুরক্ষা জ্ঞান পরীক্ষা করুন! প্রতি ঘন্টায় নতুন প্রশ্ন।',
-                        duration_minutes: 5,
-                        points_reward: 50,
-                        questions: data.map((q, index) => ({
-                            id: `q-${index}`,
-                            question_text: q.questionText,
-                            options: q.options,
-                            correct_option_index: q.correctAnswerIndex
-                        })),
-                        isLocal: true
-                    };
-                } else {
-                    quizData = { ...data, isLocal: true };
-                }
+            if (error) {
+                console.error('Error fetching hourly quiz from DB:', error);
+                return;
+            }
+
+            if (data && data.length > 0) {
+                const quizData = {
+                    id: 'hourly-challenge',
+                    title: language === 'en' ? 'Hourly Safety Challenge' : 'প্রতি ঘন্টায় সুরক্ষা চ্যালেঞ্জ',
+                    description: language === 'en' ? 'Test your safety knowledge! New questions every hour.' : 'আপনার সুরক্ষা জ্ঞান পরীক্ষা করুন! প্রতি ঘন্টায় নতুন প্রশ্ন।',
+                    duration_minutes: 5,
+                    points_reward: 50,
+                    questions: data.map((q, index) => ({
+                        id: q.id, // Use DB ID
+                        question_text: q.question_text,
+                        options: q.options,
+                        correct_option_index: q.correct_answer_index,
+                        category: q.category,
+                        tags: q.tags
+                    })),
+                    isLocal: false // It's now remote
+                };
 
                 setHourlyQuiz(quizData);
-                cacheHelper.set(cacheKey, quizData, 10); // Cache for 10 mins
+                // Cache for 1 hour (60 mins) so user sees same quiz for an hour
+                cacheHelper.set(cacheKey, quizData, 60);
             } else {
-                console.error('Failed to fetch hourly quiz:', response.status);
+                console.warn('No questions returned from DB');
             }
         } catch (error) {
-            console.error('Error fetching hourly quiz:', error);
+            console.error('Unexpected error fetching hourly quiz:', error);
         }
     };
 
@@ -996,7 +1002,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                         {quizQuestions[currentQuestionIndex]?.question_text}
                                     </h2>
                                     <div className="space-y-2.5">
-                                        {quizQuestions[currentQuestionIndex]?.options.map((option, idx) => {
+                                        {quizQuestions[currentQuestionIndex]?.options?.map((option, idx) => {
                                             const isSelected = userAnswers[quizQuestions[currentQuestionIndex].id] === idx;
                                             const isCorrect = idx === quizQuestions[currentQuestionIndex].correct_option_index;
 
