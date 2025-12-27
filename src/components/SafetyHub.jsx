@@ -113,8 +113,134 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
     );
 });
 
+const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedLessons, t, setCurrentView }) => {
+    // Calculate overall training progress
+    const totalChapters = 9; // Excluding FAQ
+    const completedChaptersCount = [1, 2, 3, 4, 5, 6, 7, 8, 9].filter(num => {
+        // Simplified check - in real app would check lesson counts
+        const chapterLessons = completedLessons.filter(id => id && id.toString().startsWith(`${num}.`));
+        return chapterLessons.length > 0; // Just checking if started for now, ideally check full count
+    }).length;
+
+    // Get daily tip based on day of year
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+    const tips = {
+        en: [
+            "Always inspect your PPE before use.",
+            "Treat every wire as live until proven otherwise.",
+            "Communication is key during maintenance work.",
+            "Stay hydrated and take breaks in hot weather.",
+            "Never compromise on safety for speed."
+        ],
+        bn: [
+            "ব্যবহারের আগে সর্বদা আপনার পিপিই পরীক্ষা করুন।",
+            "প্রমাণিত না হওয়া পর্যন্ত প্রতিটি তারকে জীবন্ত মনে করুন।",
+            "রক্ষণাবেক্ষণ কাজের সময় যোগাযোগ অত্যন্ত গুরুত্বপূর্ণ।",
+            "গরম আবহাওয়ায় জল পান করুন এবং বিরতি নিন।",
+            "গতির জন্য সুরক্ষার সাথে আপস করবেন না।"
+        ]
+    };
+    const dailyTip = tips[language][dayOfYear % tips[language].length];
+
+    return (
+        <div className="space-y-6 animate-fade-in">
+            {/* Hero Section */}
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+                <div className="relative z-10">
+                    <h2 className="text-2xl font-bold mb-2">
+                        {language === 'en' ? `Safety First, ${userProfile?.full_name?.split(' ')[0] || 'Hero'}!` : `সুরক্ষা প্রথম, ${userProfile?.full_name?.split(' ')[0] || 'হিরো'}!`}
+                    </h2>
+                    <p className="text-slate-300 text-sm mb-4 max-w-lg leading-relaxed">
+                        "{dailyTip}"
+                    </p>
+                    <div className="flex items-center gap-2 text-xs font-medium text-orange-400 bg-orange-400/10 px-3 py-1.5 rounded-full w-fit border border-orange-400/20">
+                        <span className="animate-pulse">💡</span> {language === 'en' ? 'Daily Safety Tip' : 'দৈনিক সুরক্ষা টিপ'}
+                    </div>
+                </div>
+            </div>
+
+            {/* Quick Actions Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button
+                    onClick={() => setCurrentView('training')}
+                    className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-600 transition-all group text-left"
+                >
+                    <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
+                        🎓
+                    </div>
+                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{language === 'en' ? 'Training' : 'প্রশিক্ষণ'}</h3>
+                    <p className="text-[10px] text-slate-500 mt-1">{language === 'en' ? 'Continue learning' : 'শেখা চালিয়ে যান'}</p>
+                </button>
+
+                <button
+                    onClick={() => setActiveTab('protocols')}
+                    className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-orange-400 dark:hover:border-orange-600 transition-all group text-left"
+                >
+                    <div className="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
+                        📋
+                    </div>
+                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{t.tabs.protocols}</h3>
+                    <p className="text-[10px] text-slate-500 mt-1">{language === 'en' ? 'View SOPs' : 'SOP দেখুন'}</p>
+                </button>
+
+                <button
+                    onClick={() => setActiveTab('my_ppe')}
+                    className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-emerald-400 dark:hover:border-emerald-600 transition-all group text-left"
+                >
+                    <div className="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
+                        🦺
+                    </div>
+                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{t.tabs.my_ppe}</h3>
+                    <p className="text-[10px] text-slate-500 mt-1">{language === 'en' ? 'Manage Gear' : 'সরঞ্জাম দেখুন'}</p>
+                </button>
+
+                <button
+                    onClick={() => setActiveTab('report')}
+                    className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-red-400 dark:hover:border-red-600 transition-all group text-left"
+                >
+                    <div className="w-10 h-10 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
+                        ⚠️
+                    </div>
+                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{t.tabs.report}</h3>
+                    <p className="text-[10px] text-slate-500 mt-1">{language === 'en' ? 'Report Issue' : 'রিপোর্ট করুন'}</p>
+                </button>
+            </div>
+
+            {/* Recent Activity / Training Teaser */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-bold text-slate-900 dark:text-slate-100">
+                        {language === 'en' ? 'Your Progress' : 'আপনার অগ্রগতি'}
+                    </h3>
+                    <button
+                        onClick={() => setCurrentView('training')}
+                        className="text-xs font-bold text-blue-600 hover:underline"
+                    >
+                        {language === 'en' ? 'View All' : 'সব দেখুন'}
+                    </button>
+                </div>
+                <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                        <div className="flex justify-between text-xs mb-1.5">
+                            <span className="text-slate-500">{language === 'en' ? 'Overall Completion' : 'মোট সম্পন্ন'}</span>
+                            <span className="font-bold text-slate-700 dark:text-slate-300">{Math.round((completedLessons.length / 45) * 100)}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000"
+                                style={{ width: `${Math.min(100, (completedLessons.length / 45) * 100)}%` }}
+                            ></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export default function SafetyHub({ language = 'en', user, userProfile: initialUserProfile, setCurrentView, onProgressUpdate, mode = 'safety' }) {
-    const [activeTab, setActiveTab] = useState(mode === 'training' ? 'training' : 'protocols');
+    const [activeTab, setActiveTab] = useState(mode === 'training' ? 'training' : 'dashboard');
     const [ppeList, setPpeList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -781,21 +907,19 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                 </h1>
             </div>
 
-            {/* Navigation Tabs - Compact */}
-            {mode !== 'training' && (
-                <div className="flex flex-wrap justify-center gap-2 mb-8">
-                    {getVisibleTabs().map((tab) => (
-                        <button
-                            key={tab}
-                            onClick={() => setActiveTab(tab)}
-                            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === tab
-                                ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20'
-                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 border border-slate-200 dark:border-slate-700'
-                                }`}
-                        >
-                            {t.tabs[tab]}
-                        </button>
-                    ))}
+            {/* Navigation Tabs - Removed in favor of Dashboard, but kept for internal state if needed */}
+            {/* Back Button for non-dashboard views */}
+            {mode !== 'training' && activeTab !== 'dashboard' && (
+                <div className="mb-6">
+                    <button
+                        onClick={() => setActiveTab('dashboard')}
+                        className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        {language === 'en' ? 'Back to Dashboard' : 'ড্যাশবোর্ডে ফিরে যান'}
+                    </button>
                 </div>
             )}
 
@@ -822,6 +946,19 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
             {/* Content Area */}
             <div className="animate-slide-down">
+                {mode !== 'training' && activeTab === 'dashboard' && (
+                    <SafetyDashboard
+                        user={user}
+                        userProfile={userProfile}
+                        language={language}
+                        setActiveTab={setActiveTab}
+                        completedLessons={completedLessons}
+                        t={t}
+                        setCurrentView={setCurrentView}
+                    />
+                )}
+
+
                 {activeTab === 'protocols' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Highlighted Safety Rule Carousel - Refined */}
