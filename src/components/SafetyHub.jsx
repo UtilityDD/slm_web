@@ -995,7 +995,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                         <summary className="flex items-center justify-between p-4 cursor-pointer list-none">
                                                             <div className="flex items-center gap-3">
                                                                 <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold text-sm shrink-0">
-                                                                    {idx + 1}
+                                                                    {q.id.replace('q', '')}
                                                                 </div>
                                                                 <span className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
                                                                     {q.question}
