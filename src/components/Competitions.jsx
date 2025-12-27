@@ -79,29 +79,30 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         }
     }[language];
 
-    useEffect(() => {
-        const loadData = async () => {
-            setLoading(true);
-            setFetchError(false);
-            try {
-                // Run fetches in parallel to avoid blocking
-                const promises = [
-                    fetchServerTime(),
-                    fetchHourlyQuiz()
-                ];
+    const loadData = async () => {
+        setLoading(true);
+        setFetchError(false);
+        try {
+            // Run fetches in parallel to avoid blocking
+            const promises = [
+                fetchServerTime(),
+                fetchHourlyQuiz()
+            ];
 
-                // Only fetch leaderboard if user is logged in
-                if (user) {
-                    promises.push(fetchLeaderboard());
-                }
-
-                await Promise.all(promises);
-            } catch (error) {
-                console.error("Error loading competition data:", error);
-            } finally {
-                setLoading(false);
+            // Only fetch leaderboard if user is logged in
+            if (user) {
+                promises.push(fetchLeaderboard());
             }
-        };
+
+            await Promise.all(promises);
+        } catch (error) {
+            console.error("Error loading competition data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         loadData();
     }, [language, user]); // Re-run when language or user changes
 
@@ -119,30 +120,43 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     }, [serverTimeOffset]); // Update timer when offset is calculated
 
     // Network monitoring and pending submission queue
+    const handleOnline = () => {
+        setIsOnline(true);
+        console.log('Network restored');
+        // Auto-refresh data when network returns
+        if (!hourlyQuiz || fetchError) {
+            loadData();
+        }
+        processPendingQueue();
+    };
+
+    const handleOffline = () => {
+        setIsOnline(false);
+        console.log('Network offline');
+    };
+
     useEffect(() => {
-        // Network status event listeners
-        const handleOnline = () => {
-            setIsOnline(true);
-            console.log('Network restored, checking pending submissions...');
-            processPendingQueue();
-        };
-
-        const handleOffline = () => {
-            setIsOnline(false);
-            console.log('Network offline');
-        };
-
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
 
         // Check for pending submissions on mount
         checkPendingSubmissions();
 
+        // Subtle polling fallback for connectivity check (every 30s)
+        const pollInterval = setInterval(() => {
+            if (!navigator.onLine && isOnline) {
+                handleOffline();
+            } else if (navigator.onLine && !isOnline) {
+                handleOnline();
+            }
+        }, 30000);
+
         return () => {
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('offline', handleOffline);
+            clearInterval(pollInterval);
         };
-    }, []);
+    }, [isOnline, hourlyQuiz, fetchError]);
 
     // Check for pending submissions in LocalStorage
     const checkPendingSubmissions = () => {
@@ -320,6 +334,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
             if (error) {
                 console.error('Error fetching hourly quiz from DB:', error);
+                setFetchError(true);
                 return;
             }
 
@@ -349,6 +364,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             }
         } catch (error) {
             console.error('Unexpected error fetching hourly quiz:', error);
+            setFetchError(true);
         }
     };
 
@@ -638,8 +654,6 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         }
     };
 
-
-
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
             {/* Minimal Header */}
@@ -793,20 +807,61 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                         })()}
                     </div>
                 ) : (
-                    <div className="bg-white dark:bg-slate-800 rounded-xl p-8 border border-red-100 dark:border-red-900/30 text-center shadow-sm">
-                        <div className="text-4xl mb-3">⚠️</div>
-                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">
-                            {language === 'en' ? 'Unable to load quiz' : 'কুইজ লোড করা যাচ্ছে না'}
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border-2 border-dashed border-slate-200 dark:border-slate-700 text-center shadow-sm animate-fade-in">
+                        <div className="w-20 h-20 mx-auto mb-6 bg-slate-50 dark:bg-slate-900/50 rounded-full flex items-center justify-center relative">
+                            <span className="text-4xl">📡</span>
+                            {!isOnline && (
+                                <div className="absolute top-0 right-0 w-6 h-6 bg-red-500 rounded-full border-4 border-white dark:border-slate-800 flex items-center justify-center">
+                                    <span className="text-[10px] text-white font-bold">!</span>
+                                </div>
+                            )}
+                        </div>
+
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-3">
+                            {language === 'en' ? 'Connection Lost' : 'সংযোগ বিচ্ছিন্ন হয়েছে'}
                         </h3>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">
-                            {language === 'en' ? 'Please check your connection and try again.' : 'অনুগ্রহ করে আপনার সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন।'}
+
+                        <p className="text-slate-500 dark:text-slate-400 text-sm mb-8 max-w-xs mx-auto leading-relaxed">
+                            {language === 'en'
+                                ? "We can't reach the safety servers right now. Don't worry, we'll automatically reconnect when you're back online."
+                                : "আমরা এই মুহূর্তে সার্ভারের সাথে সংযোগ করতে পারছি না। চিন্তা করবেন না, ইন্টারনেট ফিরে এলে আমরা স্বয়ংক্রিয়ভাবে আবার চেষ্টা করব।"}
                         </p>
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="px-6 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg font-medium transition-colors"
-                        >
-                            {language === 'en' ? 'Retry' : 'পুনঃচেষ্টা'}
-                        </button>
+
+                        <div className="space-y-3">
+                            <button
+                                onClick={() => loadData()}
+                                disabled={loading}
+                                className={`w-full py-3 px-6 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${loading
+                                        ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 active:scale-95'
+                                    }`}
+                            >
+                                {loading ? (
+                                    <>
+                                        <svg className="animate-spin h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span>{language === 'en' ? 'Checking...' : 'পরীক্ষা করা হচ্ছে...'}</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                        <span>{language === 'en' ? 'Try Again Now' : 'এখনই আবার চেষ্টা করুন'}</span>
+                                    </>
+                                )}
+                            </button>
+
+                            <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                </span>
+                                {language === 'en' ? 'Auto-refresh active' : 'স্বয়ংক্রিয় রিফ্রেশ সক্রিয়'}
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
