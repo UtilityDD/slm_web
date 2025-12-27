@@ -530,21 +530,39 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
     };
 
     return (
-        <div className="compact-container py-6 sm:py-10 mb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 mb-20 transition-all duration-500">
             <Toast message={toast.message} type={toast.type} show={toast.show} onDismiss={() => setToast(t => ({ ...t, show: false }))} />
 
             {/* Modern Header - Compact */}
-            <div className="mb-8 text-center">
-                <div className="inline-block p-2.5 rounded-full bg-red-100 text-red-600 text-2xl mb-3">
-                    🚨
+            <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => setCurrentView('home')}
+                        className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 group"
+                        title={language === 'en' ? 'Back to Home' : 'হোমে ফিরে যান'}
+                    >
+                        <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </button>
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                            {language === 'en' ? (
+                                <>Emergency <span className="text-red-600">Hub</span></>
+                            ) : (
+                                <>{t.title}</>
+                            )}
+                        </h1>
+                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                            {language === 'en' ? 'Critical Support' : 'জরুরি সহায়তা'} • {activeTab === 'blood' ? t.tabs.blood : t.tabs.services}
+                        </p>
+                    </div>
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-0.5">
-                    {language === 'en' ? (
-                        <>Emergency <span className="text-red-600">Hub</span></>
-                    ) : (
-                        <>{t.title}</>
-                    )}
-                </h1>
+
+                <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-red-50 text-red-700 border border-red-100 font-bold text-sm`}>
+                    <span className="text-lg">🚨</span>
+                    {language === 'en' ? 'Emergency Mode' : 'জরুরি মোড'}
+                </div>
             </div>
 
             {/* Refined Tabs - Compact */}
@@ -575,6 +593,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
             {activeTab === 'blood' ? (
                 <div className="space-y-4">
                     {/* Clean Hero Card - Compact */}
+                    {/* Clean Hero Card - Compact */}
                     <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
                         <div className="flex items-center justify-between gap-4">
                             <div className="flex-1">
@@ -595,6 +614,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                         </div>
                     </div>
 
+                    {/* Compact Filters */}
                     {/* Compact Filters */}
                     <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
                         <div className="flex flex-col sm:flex-row gap-3">
@@ -653,7 +673,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
 
                     {/* Results */}
                     {loading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                             <DonorCardSkeleton />
                             <DonorCardSkeleton />
                             <DonorCardSkeleton />
@@ -665,7 +685,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                             message="No donors match your search criteria. Try adjusting filters."
                         />
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                             {donors.map((donor) => (
                                 <DonorCard
                                     key={donor.id}
@@ -681,7 +701,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
             ) : (
                 <div>
                     {loading ? (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             <ServiceCardSkeleton />
                             <ServiceCardSkeleton />
                             <ServiceCardSkeleton />
@@ -698,7 +718,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                     ) : (
                         <div className="space-y-6">
                             {/* Search Bar */}
-                            <div className="material-card elevation-1 p-4">
+                            <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
                                 <div className="relative">
                                     <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -755,7 +775,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                             </div>
 
                             {/* Services Display */}
-                            <div className={activeCategory === 'all' ? "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start" : "space-y-4"}>
+                            <div className={activeCategory === 'all' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start" : "space-y-4"}>
                                 {renderServices()}
                             </div>
                         </div>

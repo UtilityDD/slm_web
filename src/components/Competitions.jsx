@@ -671,13 +671,31 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
             {/* Minimal Header */}
-            <div className="mb-8 text-center">
-                <div className="inline-block p-2.5 rounded-full bg-blue-100 text-blue-600 text-2xl mb-3">
-                    🏆
+            <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => setCurrentView('home')}
+                        className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 group"
+                        title={language === 'en' ? 'Back to Home' : 'হোমে ফিরে যান'}
+                    >
+                        <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </button>
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                            {t.title}
+                        </h1>
+                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                            {language === 'en' ? 'Compete & Win' : 'প্রতিযোগিতা ও জয়'} • {language === 'en' ? 'Leaderboard' : 'লিডারবোর্ড'}
+                        </p>
+                    </div>
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-0.5">
-                    {t.title}
-                </h1>
+
+                <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-blue-50 text-blue-700 border border-blue-100 font-bold text-sm`}>
+                    <span className="text-lg">🏆</span>
+                    {language === 'en' ? 'Competition Mode' : 'প্রতিযোগিতা মোড'}
+                </div>
             </div>
 
             {/* Hourly Quiz Card - Redesigned for Impact */}
@@ -881,7 +899,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             </div>
 
             {/* Leaderboard - Minimal List */}
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-5xl mx-auto">
                 <h3 className="text-center font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center justify-center gap-2 text-sm">
                     <span>🏅</span> {t.leaderboard}
                 </h3>

@@ -1051,37 +1051,55 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
     }[language];
 
     return (
-        <div className="compact-container py-6 sm:py-10 mb-20">
+        <div className={`${activeTab === 'dashboard' ? 'compact-container' : 'max-w-7xl mx-auto px-4 sm:px-6'} py-6 sm:py-10 mb-20 transition-all duration-500`}>
             {/* Header Section */}
             {/* Header Section */}
-            <div className="mb-8 text-center">
-                <div className={`inline-block p-2.5 rounded-full ${mode === 'training' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'} text-2xl mb-3`}>
-                    {mode === 'training' ? '🎓' : '🦺'}
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-0.5">
-                    {language === 'en' ? (
-                        mode === 'training' ? '90 Days Training' : <>Safety <span className="text-orange-600">Hub</span></>
-                    ) : (
-                        mode === 'training' ? '৯০ দিনের প্রশিক্ষণ' : t.title
+            <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    {activeTab !== 'dashboard' && (
+                        <button
+                            onClick={() => {
+                                if (mode === 'training') {
+                                    setCurrentView('home');
+                                } else {
+                                    setActiveTab('dashboard');
+                                }
+                            }}
+                            className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 group"
+                            title={language === 'en' ? 'Back' : 'ফিরে যান'}
+                        >
+                            <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                        </button>
                     )}
-                </h1>
-            </div>
-
-            {/* Navigation Tabs - Removed in favor of Dashboard, but kept for internal state if needed */}
-            {/* Back Button for non-dashboard views */}
-            {mode !== 'training' && activeTab !== 'dashboard' && (
-                <div className="mb-6">
-                    <button
-                        onClick={() => setActiveTab('dashboard')}
-                        className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        {language === 'en' ? 'Back to Dashboard' : 'ড্যাশবোর্ডে ফিরে যান'}
-                    </button>
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                            {activeTab === 'dashboard' ? (
+                                language === 'en' ? (
+                                    mode === 'training' ? '90 Days Training' : <>Safety <span className="text-orange-600">Hub</span></>
+                                ) : (
+                                    mode === 'training' ? '৯০ দিনের প্রশিক্ষণ' : t.title
+                                )
+                            ) : (
+                                t[activeTab]?.title || (activeTab === 'training' ? (language === 'en' ? 'Training Program' : 'প্রশিক্ষণ কর্মসূচি') : '')
+                            )}
+                        </h1>
+                        {activeTab !== 'dashboard' && (
+                            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                                {language === 'en' ? 'Safety Hub' : 'সেফটি হাব'} • {t[activeTab]?.title || activeTab}
+                            </p>
+                        )}
+                    </div>
                 </div>
-            )}
+
+                {activeTab === 'dashboard' && (
+                    <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl ${mode === 'training' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-orange-50 text-orange-700 border-orange-100'} border font-bold text-sm`}>
+                        <span className="text-lg">{mode === 'training' ? '🎓' : '🦺'}</span>
+                        {mode === 'training' ? (language === 'en' ? 'Training Mode' : 'প্রশিক্ষণ মোড') : (language === 'en' ? 'Safety Mode' : 'সুরক্ষা মোড')}
+                    </div>
+                )}
+            </div>
 
             {/* Network Error UI */}
             {fetchError && (
@@ -1120,7 +1138,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
 
                 {activeTab === 'protocols' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {/* Highlighted Safety Rule Carousel - Refined */}
                         {/* Highlighted Safety Rule Carousel - Refined */}
                         <div
@@ -1213,7 +1231,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                         ) : !selectedChapter && !trainingContent ? (
                             /* Chapter List View */
                             <>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                     {trainingChapters.map((chapter) => (
                                         <TrainingChapterCard
                                             key={chapter.number}
@@ -1430,7 +1448,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                     <div className="w-10"></div> {/* Spacer for centering */}
                                 </div>
 
-                                <div className="max-w-3xl mx-auto px-4 py-8 pb-24">
+                                <div className="max-w-5xl mx-auto px-4 py-8 pb-24">
                                     {/* Hero Header */}
                                     <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 sm:p-8 text-white mb-8 shadow-xl shadow-orange-500/20">
                                         <div className="inline-block px-3 py-1 rounded-lg bg-white/20 backdrop-blur-sm text-[10px] uppercase tracking-widest font-bold mb-4">
@@ -1660,7 +1678,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
                 {
                     activeTab === 'my_ppe' && (
-                        <div className="max-w-4xl mx-auto">
+                        <div className="w-full">
                             <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
                                 <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
                                     <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.my_ppe.title}</h2>
@@ -1762,7 +1780,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
                 {
                     activeTab === 'my_tools' && (
-                        <div className="max-w-4xl mx-auto">
+                        <div className="w-full">
                             <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
                                 <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
                                     <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.my_tools.title}</h2>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 const CommunitySkeleton = () => (
-    <div className="compact-container py-6 sm:py-10 animate-pulse">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 animate-pulse">
         {/* Header Skeleton */}
         <div className="mb-6">
             <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded mb-2 shimmer"></div>
@@ -20,7 +20,7 @@ const CommunitySkeleton = () => (
     </div>
 );
 
-export default function Community({ language = 'en' }) {
+export default function Community({ language = 'en', setCurrentView }) {
     const [loading, setLoading] = useState(false);
     const [showToast, setShowToast] = useState(false);
 
@@ -117,15 +117,33 @@ export default function Community({ language = 'en' }) {
     if (loading) return <CommunitySkeleton />;
 
     return (
-        <div className="compact-container py-6 sm:py-10 mb-20 animate-fade-in">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 mb-20 animate-fade-in transition-all duration-500">
             {/* Minimal Header */}
-            <div className="mb-8">
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                    {t.title}
-                </h1>
-                <p className="text-slate-500 dark:text-slate-400 text-sm sm:text-base">
-                    {t.subtitle}
-                </p>
+            <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => setCurrentView('home')}
+                        className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 group"
+                        title={language === 'en' ? 'Back to Home' : 'হোমে ফিরে যান'}
+                    >
+                        <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </button>
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                            {t.title}
+                        </h1>
+                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                            {language === 'en' ? 'Connect & Grow' : 'যুক্ত হন ও এগিয়ে চলুন'} • {t.subtitle}
+                        </p>
+                    </div>
+                </div>
+
+                <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-blue-50 text-blue-700 border border-blue-100 font-bold text-sm`}>
+                    <span className="text-lg">🤝</span>
+                    {language === 'en' ? 'Community Mode' : 'কমিউনিটি মোড'}
+                </div>
             </div>
 
             {/* Subdued Banner */}
@@ -142,7 +160,7 @@ export default function Community({ language = 'en' }) {
             </div>
 
             {/* List of Channels */}
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {cards.map((card) => (
                     <div
                         key={card.id}
