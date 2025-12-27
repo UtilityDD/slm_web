@@ -149,7 +149,7 @@ const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedL
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
                 <div className="relative z-10">
                     <h2 className="text-2xl font-bold mb-2">
-                        {language === 'en' ? `Safety First, ${userProfile?.full_name?.split(' ')[0] || 'Hero'}!` : `সুরক্ষা প্রথম, ${userProfile?.full_name?.split(' ')[0] || 'হিরো'}!`}
+                        {language === 'en' ? `Safety First, ${userProfile?.full_name?.split(' ')[0] || 'Hero'}!` : `সুরক্ষাই প্রথম, ${userProfile?.full_name?.split(' ')[0] || 'হিরো'}!`}
                     </h2>
                     <p className="text-slate-300 text-sm mb-4 max-w-lg leading-relaxed">
                         "{dailyTip}"
@@ -206,16 +206,7 @@ const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedL
                     <p className="text-[10px] text-slate-500 mt-1">{language === 'en' ? 'Manage Tools' : 'টুলস দেখুন'}</p>
                 </button>
 
-                <button
-                    onClick={() => setActiveTab('report')}
-                    className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-red-400 dark:hover:border-red-600 transition-all group text-left"
-                >
-                    <div className="w-10 h-10 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
-                        ⚠️
-                    </div>
-                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{t.tabs.report}</h3>
-                    <p className="text-[10px] text-slate-500 mt-1">{language === 'en' ? 'Report Issue' : 'রিপোর্ট করুন'}</p>
-                </button>
+
             </div>
 
             {/* Recent Activity / Training Teaser */}
@@ -279,7 +270,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         if (mode === 'training') {
             return ['training'];
         }
-        return ['protocols', 'my_ppe', 'my_tools', 'report'];
+        return ['protocols', 'my_ppe', 'my_tools'];
     };
 
     // Fallback fetch if userProfile is missing but user exists
@@ -1871,53 +1862,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                     )
                 }
 
-                {
-                    activeTab === 'report' && (
-                        <div className="max-w-2xl mx-auto bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-600 p-8">
-                            <div className="text-center mb-8">
-                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
-                                    ⚠️
-                                </div>
-                                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.report.title}</h2>
-                            </div>
 
-                            <form className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">{t.report.form.location}</label>
-                                        <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 focus:outline-none focus:border-orange-500" placeholder="e.g. Sector 5, Pole 24" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">{t.report.form.type}</label>
-                                        <select className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 focus:outline-none focus:border-orange-500 bg-white dark:bg-slate-800">
-                                            <option>Damaged Pole</option>
-                                            <option>Loose Wire</option>
-                                            <option>Sparking</option>
-                                            <option>Tree Branch</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">{t.report.form.desc}</label>
-                                    <textarea rows="4" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 focus:outline-none focus:border-orange-500" placeholder="Describe the issue..."></textarea>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">{t.report.form.photo}</label>
-                                    <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:bg-slate-50 transition-all cursor-pointer">
-                                        <span className="text-2xl block mb-2">📷</span>
-                                        <span className="text-sm text-slate-500">Click to upload or take photo</span>
-                                    </div>
-                                </div>
-
-                                <button type="button" className="w-full py-4 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-md">
-                                    {t.report.form.submit}
-                                </button>
-                            </form>
-                        </div>
-                    )
-                }
             </div >
 
             {/* Protocol Detail Modal */}
