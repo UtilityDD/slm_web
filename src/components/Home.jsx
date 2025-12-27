@@ -19,7 +19,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
 
     const visitorNames = {
         en: ['Lineman', 'Hero', 'Superhero', 'Friend', 'Champion', 'Safety Star'],
-        bn: ['লাইনম্যান', 'বীর', 'সুপারহিরো', 'বন্ধু', 'চ্যাম্পিয়ন', 'সুরক্ষা তারকা']
+        bn: ['লাইনম্যান', 'হিরো', 'সুপারহিরো', 'বন্ধু', 'চ্যাম্পিয়ন', 'সুরক্ষা তারকা']
     };
 
     useEffect(() => {
