@@ -1,0 +1,3 @@
+question_text,options,correct_answer_index,category,tags,language
+"What is the voltage of a single phase line?","[""110V"", ""230V"", ""440V"", ""11kV""]",1,"Basic Electrical","{voltage,basic}","en"
+"বাসা বাড়িতে সাধারণত কত ভোল্টেজ থাকে?","[""১১০ ভোল্ট"", ""২৩০ ভোল্ট"", ""৪৪০ ভোল্ট"", ""১১ কেভি""]",1,"Basic Electrical","{voltage,basic}","bn"
