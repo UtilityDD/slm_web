@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import HomeSkeleton from './loaders/HomeSkeleton';
+import {
+    CompetitionIcon,
+    TrainingIcon,
+    SafetyIcon,
+    CommunityIcon,
+    EmergencyIcon,
+    AdminIcon
+} from './icons';
 
 export default function Home({ setCurrentView, language, user, userProfile, t }) {
     const [score, setScore] = useState(userProfile?.points || 0);
@@ -148,7 +156,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                                 </span>
                             </div>
                             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center p-3 mb-4 group-hover:scale-110 transition-transform duration-300">
-                                <img src="/icons/competition.png" alt="Competition" className="w-full h-full object-contain drop-shadow-sm" />
+                                <CompetitionIcon className="w-full h-full text-blue-600 dark:text-blue-400" />
                             </div>
                             <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 leading-tight">{t.nav.competitions}</h3>
                         </div>
@@ -159,7 +167,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                             className="group bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-green-100 dark:border-green-900/30 shadow-sm cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-green-500/10 hover:-translate-y-1 active:scale-95 flex flex-col items-center justify-center text-center aspect-[4/3] sm:aspect-square"
                         >
                             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-50 dark:bg-green-900/20 rounded-2xl flex items-center justify-center p-3 mb-4 group-hover:scale-110 transition-transform duration-300">
-                                <img src="/icons/training.png" alt="Training" className="w-full h-full object-contain drop-shadow-sm" />
+                                <TrainingIcon className="w-full h-full text-green-600 dark:text-green-400" />
                             </div>
                             <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 leading-tight">{t.nav.training}</h3>
                         </div>
@@ -170,7 +178,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                             className="group bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-orange-100 dark:border-orange-900/30 shadow-sm cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-1 active:scale-95 flex flex-col items-center justify-center text-center aspect-[4/3] sm:aspect-square"
                         >
                             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-50 dark:bg-orange-900/20 rounded-2xl flex items-center justify-center p-3 mb-4 group-hover:scale-110 transition-transform duration-300">
-                                <img src="/icons/safety.png" alt="Safety" className="w-full h-full object-contain drop-shadow-sm" />
+                                <SafetyIcon className="w-full h-full text-orange-600 dark:text-orange-400" />
                             </div>
                             <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 leading-tight">{t.nav.safety}</h3>
                         </div>
@@ -181,7 +189,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                             className="group bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-indigo-100 dark:border-indigo-900/30 shadow-sm cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 active:scale-95 flex flex-col items-center justify-center text-center aspect-[4/3] sm:aspect-square"
                         >
                             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl flex items-center justify-center p-3 mb-4 group-hover:scale-110 transition-transform duration-300">
-                                <img src="/icons/community.png" alt="Community" className="w-full h-full object-contain drop-shadow-sm" />
+                                <CommunityIcon className="w-full h-full text-indigo-600 dark:text-indigo-400" />
                             </div>
                             <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 leading-tight">{t.nav.community}</h3>
                         </div>
@@ -192,7 +200,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                             className="group bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-red-100 dark:border-red-900/30 shadow-sm cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-red-500/10 hover:-translate-y-1 active:scale-95 flex flex-col items-center justify-center text-center aspect-[4/3] sm:aspect-square"
                         >
                             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center p-3 mb-4 group-hover:scale-110 transition-transform duration-300">
-                                <img src="/icons/emergency.png" alt="Emergency" className="w-full h-full object-contain drop-shadow-sm" />
+                                <EmergencyIcon className="w-full h-full text-red-600 dark:text-red-400" />
                             </div>
                             <h3 className="text-sm sm:text-base font-bold text-red-700 dark:text-red-400 leading-tight">{t.nav.emergency}</h3>
                         </div>
@@ -204,7 +212,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                                 className="group bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 active:scale-95 flex flex-col items-center justify-center text-center aspect-[4/3] sm:aspect-square"
                             >
                                 <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-50 dark:bg-slate-900/30 rounded-2xl flex items-center justify-center p-3 mb-4 group-hover:scale-110 transition-transform duration-300">
-                                    <img src="/icons/admin.png" alt="Admin" className="w-full h-full object-contain drop-shadow-sm" />
+                                    <AdminIcon className="w-full h-full text-slate-600 dark:text-slate-400" />
                                 </div>
                                 <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 leading-tight">
                                     {userProfile?.role === 'safety mitra' ? t.nav.safetyMitra : t.nav.admin}
