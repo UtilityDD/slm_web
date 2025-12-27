@@ -125,7 +125,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                     </div>
 
                     {/* Quick Access Grid (Bento Style) */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-12">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 mb-12">
                         {/* Competitions - Featured Card */}
                         <div
                             onClick={() => setCurrentView('competitions')}
@@ -165,13 +165,28 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                         {/* Emergency */}
                         <div
                             onClick={() => setCurrentView('emergency')}
-                            className="group bg-white dark:bg-slate-800 rounded-xl p-5 border border-red-200 dark:border-red-800 shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-red-300 dark:hover:border-red-700 hover:-translate-y-1 col-span-1 sm:col-span-2 lg:col-span-1"
+                            className="group bg-white dark:bg-slate-800 rounded-xl p-5 border border-red-200 dark:border-red-800 shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-red-300 dark:hover:border-red-700 hover:-translate-y-1"
                         >
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🚨</div>
                                 <h3 className="text-lg font-bold text-red-700 dark:text-red-400">{t.nav.emergency}</h3>
                             </div>
                         </div>
+
+                        {/* Admin Panel (Conditional) */}
+                        {['admin', 'safety mitra'].includes(userProfile?.role) && (
+                            <div
+                                onClick={() => setCurrentView('admin')}
+                                className="group bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 hover:-translate-y-1"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-slate-50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400 rounded-lg flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🛡️</div>
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                                        {userProfile?.role === 'safety mitra' ? t.nav.safetyMitra : t.nav.admin}
+                                    </h3>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Share App Button */}
