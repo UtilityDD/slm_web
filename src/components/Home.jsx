@@ -132,7 +132,9 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                             className="group bg-white dark:bg-slate-800 rounded-xl p-5 border border-blue-200 dark:border-blue-800 shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 hover:-translate-y-1"
                         >
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🏆</div>
+                                <div className="w-14 h-14 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center p-2 group-hover:scale-110 transition-transform">
+                                    <img src="/icons/competition.png" alt="Competition" className="w-full h-full object-contain" />
+                                </div>
                                 <div className="flex items-center gap-3">
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.nav.competitions}</h3>
                                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
@@ -146,7 +148,9 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                             className="group bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-orange-200 dark:hover:border-orange-800 hover:-translate-y-1"
                         >
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-lg flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🦺</div>
+                                <div className="w-14 h-14 bg-orange-50 dark:bg-orange-900/30 rounded-xl flex items-center justify-center p-2 group-hover:scale-110 transition-transform">
+                                    <img src="/icons/safety.png" alt="Safety" className="w-full h-full object-contain" />
+                                </div>
                                 <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.nav.safety}</h3>
                             </div>
                         </div>
@@ -157,7 +161,9 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                             className="group bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800 hover:-translate-y-1"
                         >
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">💬</div>
+                                <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center p-2 group-hover:scale-110 transition-transform">
+                                    <img src="/icons/community.png" alt="Community" className="w-full h-full object-contain" />
+                                </div>
                                 <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.nav.community}</h3>
                             </div>
                         </div>
@@ -168,7 +174,9 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                             className="group bg-white dark:bg-slate-800 rounded-xl p-5 border border-red-200 dark:border-red-800 shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-red-300 dark:hover:border-red-700 hover:-translate-y-1"
                         >
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🚨</div>
+                                <div className="w-14 h-14 bg-red-50 dark:bg-red-900/30 rounded-xl flex items-center justify-center p-2 group-hover:scale-110 transition-transform">
+                                    <img src="/icons/emergency.png" alt="Emergency" className="w-full h-full object-contain" />
+                                </div>
                                 <h3 className="text-lg font-bold text-red-700 dark:text-red-400">{t.nav.emergency}</h3>
                             </div>
                         </div>
@@ -180,7 +188,9 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                                 className="group bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 hover:-translate-y-1"
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-slate-50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400 rounded-lg flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🛡️</div>
+                                    <div className="w-14 h-14 bg-slate-50 dark:bg-slate-900/30 rounded-xl flex items-center justify-center p-2 group-hover:scale-110 transition-transform">
+                                        <img src="/icons/admin.png" alt="Admin" className="w-full h-full object-contain" />
+                                    </div>
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                                         {userProfile?.role === 'safety mitra' ? t.nav.safetyMitra : t.nav.admin}
                                     </h3>
