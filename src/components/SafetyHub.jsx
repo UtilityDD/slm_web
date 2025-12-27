@@ -194,13 +194,48 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
     }, [trainingContent]);
 
     // Load completed lessons from localStorage
+    // Load completed lessons from localStorage AND Supabase (Cloud Sync)
     useEffect(() => {
-        if (user) {
+        const loadProgress = async () => {
+            if (!user) return;
+
+            // 1. Load Local
+            let localProgress = [];
             const saved = localStorage.getItem(`training_progress_${user.id}`);
             if (saved) {
-                setCompletedLessons(JSON.parse(saved));
+                localProgress = JSON.parse(saved);
             }
-        }
+
+            // 2. Load Remote
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('completed_lessons')
+                    .eq('id', user.id)
+                    .single();
+
+                if (data && data.completed_lessons) {
+                    // 3. Merge (Union)
+                    const remoteProgress = Array.isArray(data.completed_lessons) ? data.completed_lessons : [];
+                    const merged = [...new Set([...localProgress, ...remoteProgress])];
+
+                    setCompletedLessons(merged);
+
+                    // Update local storage if different
+                    if (merged.length !== localProgress.length) {
+                        localStorage.setItem(`training_progress_${user.id}`, JSON.stringify(merged));
+                    }
+                } else {
+                    // If no remote data, just set local
+                    setCompletedLessons(localProgress);
+                }
+            } catch (err) {
+                console.error("Error syncing progress:", err);
+                setCompletedLessons(localProgress);
+            }
+        };
+
+        loadProgress();
     }, [user]);
     // Helper function to check if a lesson is unlocked
     const isLessonUnlocked = (chapterNum, subchapterNum) => {
@@ -220,13 +255,16 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
             if (user) {
                 localStorage.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
 
-                // Sync to Supabase
+                // Sync to Supabase (Level + Detailed Progress)
                 const newLevel = calculateLevelFromProgress(updated, trainingChapters);
                 supabase.from('profiles')
-                    .update({ training_level: newLevel })
+                    .update({
+                        training_level: newLevel,
+                        completed_lessons: updated
+                    })
                     .eq('id', user.id)
                     .then(({ error }) => {
-                        if (error) console.error('Error syncing training level:', error);
+                        if (error) console.error('Error syncing training progress:', error);
                     });
             }
             if (onProgressUpdate) {
