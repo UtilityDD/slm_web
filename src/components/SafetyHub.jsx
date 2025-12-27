@@ -196,6 +196,17 @@ const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedL
                 </button>
 
                 <button
+                    onClick={() => setActiveTab('my_tools')}
+                    className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-600 transition-all group text-left"
+                >
+                    <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
+                        🛠️
+                    </div>
+                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{t.tabs.my_tools}</h3>
+                    <p className="text-[10px] text-slate-500 mt-1">{language === 'en' ? 'Manage Tools' : 'টুলস দেখুন'}</p>
+                </button>
+
+                <button
                     onClick={() => setActiveTab('report')}
                     className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-red-400 dark:hover:border-red-600 transition-all group text-left"
                 >
@@ -268,7 +279,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         if (mode === 'training') {
             return ['training'];
         }
-        return ['protocols', 'my_ppe', 'report'];
+        return ['protocols', 'my_ppe', 'my_tools', 'report'];
     };
 
     // Fallback fetch if userProfile is missing but user exists
@@ -299,6 +310,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         count: 1
     });
     const [ppeChecklist, setPpeChecklist] = useState([]);
+    const [toolsChecklist, setToolsChecklist] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
     const [currentRuleIndex, setCurrentRuleIndex] = useState(0);
     const [protocolsData, setProtocolsData] = useState(null);
@@ -630,9 +642,28 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         { name: "Torch/Emergency Light", icon: "🔦" }
     ];
 
+    const TOOLS_ITEMS = [
+        { name: "Pliers", icon: "🔧" },
+        { name: "Screwdriver Set", icon: "🪛" },
+        { name: "Wrench", icon: "🔧" },
+        { name: "Hammer", icon: "🔨" },
+        { name: "Tester", icon: "⚡" },
+        { name: "Multimeter", icon: "📟" },
+        { name: "Wire Stripper", icon: "✂️" },
+        { name: "Drill Machine", icon: "🔫" },
+        { name: "Ladder", icon: "🪜" },
+        { name: "Rope", icon: "🪢" }
+    ];
+
     useEffect(() => {
         if (activeTab === 'my_ppe' && user) {
             fetchPPE();
+        }
+    }, [activeTab, user]);
+
+    useEffect(() => {
+        if (activeTab === 'my_tools' && user) {
+            fetchTools();
         }
     }, [activeTab, user]);
 
@@ -681,6 +712,51 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
             };
         });
         setPpeChecklist(checklist);
+    };
+
+    const fetchTools = async () => {
+        if (!user) return;
+        const cacheKey = `user_tools_${user.id}`;
+        const cachedTools = cacheHelper.get(cacheKey);
+
+        let data = cachedTools;
+        if (!data) {
+            setLoading(true);
+            try {
+                const { data: fetchedData, error } = await supabase
+                    .from('user_tools')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                data = fetchedData || [];
+                cacheHelper.set(cacheKey, data, 10);
+            } catch (error) {
+                console.error('Error fetching Tools:', error);
+                data = [];
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Initialize checklist based on fetched data
+        const checklist = TOOLS_ITEMS.map(item => {
+            const existing = data.find(p => p.name === item.name);
+            return {
+                ...item,
+                available: !!existing,
+                id: existing?.id || null,
+                count: existing?.count || 1,
+                condition: existing?.condition || 'Good',
+                age: existing?.age_months ?
+                    (existing.age_months <= 6 ? '<6m' :
+                        existing.age_months <= 12 ? '6-12m' :
+                            existing.age_months <= 24 ? '1-2y' : '>2y') : '<6m',
+                usage: existing?.details?.includes('Usage:') ?
+                    existing.details.split('Usage:')[1].trim() : 'Personal'
+            };
+        });
+        setToolsChecklist(checklist);
     };
 
     const handleSavePPE = async () => {
@@ -758,10 +834,91 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         }
     };
 
+    const handleSaveTools = async () => {
+        if (!user) {
+            setCurrentView('login');
+            return;
+        }
+        setIsSaving(true);
+
+        try {
+            // Prepare data for batch operations
+            const upsertItems = [];
+            const deleteIds = [];
+
+            for (const item of toolsChecklist) {
+                const ageMonths = item.age === '<6m' ? 3 :
+                    item.age === '6-12m' ? 9 :
+                        item.age === '1-2y' ? 18 : 36;
+
+                const details = `Usage: ${item.usage}`;
+
+                if (item.available) {
+                    // Prepare for upsert (handles both insert and update)
+                    upsertItems.push({
+                        id: item.id || undefined, // Include ID for updates, undefined for inserts
+                        user_id: user.id,
+                        name: item.name,
+                        count: parseInt(item.count),
+                        condition: item.condition,
+                        age_months: ageMonths,
+                        details: details
+                    });
+                } else if (item.id) {
+                    // Collect IDs for deletion
+                    deleteIds.push(item.id);
+                }
+            }
+
+            // Execute batch operations
+            const operations = [];
+
+            // Batch upsert (insert/update)
+            if (upsertItems.length > 0) {
+                operations.push(
+                    supabase
+                        .from('user_tools')
+                        .upsert(upsertItems, {
+                            onConflict: 'id',
+                            ignoreDuplicates: false
+                        })
+                );
+            }
+
+            // Batch delete
+            if (deleteIds.length > 0) {
+                operations.push(
+                    supabase
+                        .from('user_tools')
+                        .delete()
+                        .in('id', deleteIds)
+                );
+            }
+
+            // Execute all operations concurrently
+            await Promise.all(operations);
+
+            cacheHelper.clear(`user_tools_${user.id}`);
+            await fetchTools();
+            alert('Tools Status updated successfully!');
+        } catch (error) {
+            console.error('Error saving Tools:', error);
+            alert('Failed to save Tools status');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     const handleChecklistChange = (index, field, value) => {
         const updated = [...ppeChecklist];
         updated[index] = { ...updated[index], [field]: value };
         setPpeChecklist(updated);
+    };
+
+    const handleToolsChecklistChange = (index, field, value) => {
+        const updated = [...toolsChecklist];
+        updated[index] = { ...updated[index], [field]: value };
+        setToolsChecklist(updated);
     };
 
     const handleEditPPE = (item) => {
@@ -802,6 +959,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                 protocols: "Protocols",
                 training: "90 Days Training",
                 my_ppe: "My PPE",
+                my_tools: "My Tools",
                 report: "Report Incident"
             },
             protocols: {
@@ -831,6 +989,19 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                     Expired: "Expired"
                 }
             },
+            my_tools: {
+                title: "My Tools Checklist",
+                addBtn: "Add New Tool",
+                editBtn: "Edit Tool",
+                empty: "No tools added yet.",
+                fields: {
+                    name: "Tool Name",
+                    count: "Quantity",
+                    age: "Age (Months)",
+                    condition: "Condition",
+                    details: "Details / Specs"
+                }
+            },
             report: {
                 title: "Report a Hazard",
                 form: {
@@ -848,6 +1019,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                 protocols: "প্রোটোকল",
                 training: "৯০ দিনের প্রশিক্ষণ",
                 my_ppe: "আমার পিপিই",
+                my_tools: "আমার টুলস",
                 report: "রিপোর্ট করুন"
             },
             protocols: {
@@ -1593,6 +1765,108 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                         className={`px-10 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 ${isSaving ? 'bg-slate-400 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 shadow-orange-200 dark:shadow-none'}`}
                                     >
                                         {isSaving ? 'Saving...' : 'Update PPE Status'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                }
+
+                {
+                    activeTab === 'my_tools' && (
+                        <div className="max-w-4xl mx-auto">
+                            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
+                                    <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.my_tools.title}</h2>
+                                </div>
+
+                                <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                                    {loading ? (
+                                        <div className="p-8 text-center text-slate-400">Loading Tools list...</div>
+                                    ) : (
+                                        toolsChecklist.map((item, idx) => (
+                                            <div key={item.name} className={`p-3 sm:p-4 transition-colors ${item.available ? 'bg-indigo-50/30 dark:bg-indigo-900/10' : ''}`}>
+                                                <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                                                    {/* Availability Checkbox */}
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={item.available}
+                                                            onChange={(e) => handleToolsChecklistChange(idx, 'available', e.target.checked)}
+                                                            className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                                        />
+                                                    </div>
+
+                                                    {/* Icon & Name */}
+                                                    <div className="flex items-center gap-2 min-w-[140px] flex-1">
+                                                        <span className="text-xl">{item.icon}</span>
+                                                        <span className={`text-sm font-bold ${item.available ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'}`}>
+                                                            {item.name}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Compact Fields - Only show if available */}
+                                                    {item.available && (
+                                                        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 ml-8 sm:ml-0">
+                                                            {/* Qty */}
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="text-[10px] uppercase font-bold text-slate-400">Qty</span>
+                                                                <input
+                                                                    type="number"
+                                                                    min="1"
+                                                                    value={item.count}
+                                                                    onChange={(e) => handleToolsChecklistChange(idx, 'count', e.target.value)}
+                                                                    className="w-12 px-1 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                />
+                                                            </div>
+
+                                                            {/* Quality */}
+                                                            <select
+                                                                value={item.condition}
+                                                                onChange={(e) => handleToolsChecklistChange(idx, 'condition', e.target.value)}
+                                                                className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                            >
+                                                                <option value="Good">Good</option>
+                                                                <option value="Fair">Fair</option>
+                                                                <option value="Damaged">Damaged</option>
+                                                            </select>
+
+                                                            {/* Age */}
+                                                            <select
+                                                                value={item.age}
+                                                                onChange={(e) => handleToolsChecklistChange(idx, 'age', e.target.value)}
+                                                                className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                            >
+                                                                <option value="<6m">&lt;6m</option>
+                                                                <option value="6-12m">6-12m</option>
+                                                                <option value="1-2y">1-2y</option>
+                                                                <option value=">2y">&gt;2y</option>
+                                                            </select>
+
+                                                            {/* Usage */}
+                                                            <select
+                                                                value={item.usage}
+                                                                onChange={(e) => handleToolsChecklistChange(idx, 'usage', e.target.value)}
+                                                                className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                            >
+                                                                <option value="Personal">Personal</option>
+                                                                <option value="Shared">Shared</option>
+                                                            </select>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+
+                                <div className="p-4 sm:p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-center">
+                                    <button
+                                        onClick={handleSaveTools}
+                                        disabled={isSaving}
+                                        className={`px-10 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 ${isSaving ? 'bg-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200 dark:shadow-none'}`}
+                                    >
+                                        {isSaving ? 'Saving...' : 'Update Tools Status'}
                                     </button>
                                 </div>
                             </div>
