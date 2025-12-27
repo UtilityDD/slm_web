@@ -159,6 +159,19 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         };
     }, [isOnline, hourlyQuiz, fetchError]);
 
+    // Prevent body scroll when full leaderboard modal is open
+    useEffect(() => {
+        if (showFullLeaderboard) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [showFullLeaderboard]);
+
     // Check for pending submissions in LocalStorage
     const checkPendingSubmissions = () => {
         try {
@@ -940,8 +953,8 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                                 </div>
                                             )}
                                             <div className={`flex items-center p-3 sm:p-4 transition-colors ${isUserRow
-                                                    ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
-                                                    : 'hover:bg-slate-50 dark:hover:bg-slate-900/50'
+                                                ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
+                                                : 'hover:bg-slate-50 dark:hover:bg-slate-900/50'
                                                 }`}>
                                                 <div className={`font-bold w-6 text-sm ${actualIndex < 3 ? 'text-yellow-500' : 'text-slate-300'
                                                     }`}>#{actualIndex + 1}</div>
