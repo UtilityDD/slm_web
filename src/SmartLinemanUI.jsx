@@ -3,7 +3,7 @@ import { supabase } from "./supabaseClient";
 import { getBadgeByLevel, calculateLevelFromProgress } from './utils/badgeUtils';
 import { cacheHelper } from './utils/cacheHelper';
 import LogoutConfirmationModal from "./components/LogoutConfirmationModal";
-import { APP_VERSION_CODE } from "./config"; // Import App Version
+import { APP_NAME } from "./config";
 
 // Lazy load heavy components for code splitting
 const Competitions = lazy(() => import("./components/Competitions"));
@@ -51,32 +51,47 @@ export default function SmartLinemanUI() {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [updateInfo, setUpdateInfo] = useState(null);
 
-  // Version Check Logic
+  // Service Worker Update Listener
   useEffect(() => {
-    const checkVersion = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('app_versions')
-          .select('*')
-          .order('version_code', { ascending: false })
-          .limit(1)
-          .single();
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(registration => {
+        // Check for updates periodically
+        const checkForUpdate = () => {
+          registration.update();
+        };
+        const interval = setInterval(checkForUpdate, 60 * 60 * 1000); // Check every hour
 
-        if (error) {
-          console.error('Error checking app version:', error);
-          return;
-        }
+        // Listen for new worker installing
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
+            // Has a new worker been installed and is waiting?
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              setUpdateInfo({
+                version_name: 'Latest', // Generic since we don't have DB version
+                update_url: '#'
+              });
+              setShowUpdateModal(true);
+            }
+          });
+        });
 
-        if (data && data.version_code > APP_VERSION_CODE && data.force_update) {
-          setUpdateInfo(data);
+        return () => clearInterval(interval);
+      });
+
+      // Also listen for controller change (if skipWaiting happened automatically)
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          setUpdateInfo({
+            version_name: 'Latest',
+            update_url: '#'
+          });
           setShowUpdateModal(true);
         }
-      } catch (err) {
-        console.error('Unexpected error checking version:', err);
-      }
-    };
-
-    checkVersion();
+      });
+    }
   }, []);
 
   // Pull to refresh state
@@ -604,22 +619,33 @@ export default function SmartLinemanUI() {
               <span className="text-4xl">🚀</span>
             </div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-              {language === 'en' ? 'Update Required' : 'আপডেট প্রয়োজন'}
+              {language === 'en' ? 'Update Available' : 'নতুন সংস্করণ উপলব্ধ'}
             </h2>
             <p className="text-slate-600 dark:text-slate-300 mb-6">
               {language === 'en'
-                ? `A new version (${updateInfo.version_name}) is available. Please update to continue using the app.`
-                : `একটি নতুন সংস্করণ (${updateInfo.version_name}) উপলব্ধ। অ্যাপটি ব্যবহার চালিয়ে যেতে অনুগ্রহ করে আপডেট করুন।`
+                ? `A new version is available. Please refresh to apply the latest updates.`
+                : `একটি নতুন সংস্করণ এসেছে। সর্বশেষ আপডেটগুলি পেতে দয়া করে রিফ্রেশ করুন।`
               }
             </p>
-            <a
-              href={updateInfo.update_url}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => {
+                // Clear service worker cache to ensure new version is fetched
+                if ('serviceWorker' in navigator) {
+                  navigator.serviceWorker.getRegistrations().then((registrations) => {
+                    for (let registration of registrations) {
+                      registration.unregister();
+                    }
+                    window.localStorage.clear(); // Optional: Clear local storage if needed, but might be too aggressive if user data is there. Kept it safe by ONLY unregistering SW.
+                    window.location.reload(true);
+                  });
+                } else {
+                  window.location.reload(true);
+                }
+              }}
               className="block w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all transform hover:scale-[1.02] shadow-lg shadow-blue-600/20"
             >
-              {language === 'en' ? 'Update Now' : 'এখনই আপডেট করুন'}
-            </a>
+              {language === 'en' ? 'Refresh Now' : 'এখনই রিফ্রেশ করুন'}
+            </button>
           </div>
         </div>
       )}

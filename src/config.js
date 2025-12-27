@@ -1,3 +1,3 @@
 // App Configuration
-export const APP_VERSION_CODE = 1; // Increment this for every release
-export const APP_VERSION_NAME = "1.0.0";
+export const APP_NAME = "SmartLineman";
+export const API_URL = import.meta.env.VITE_SUPABASE_URL;
