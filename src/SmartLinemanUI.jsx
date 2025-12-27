@@ -437,6 +437,7 @@ export default function SmartLinemanUI() {
     en: {
       nav: {
         safety: "Safety Hub",
+        training: "90 Days Training",
         community: "Community",
         competitions: "Competitions",
         leaderboard: "Leaderboard",
@@ -465,6 +466,7 @@ export default function SmartLinemanUI() {
     bn: {
       nav: {
         safety: "সেফটি হাব",
+        training: "৯০ দিনের প্রশিক্ষণ",
         community: "কমিউনিটি",
         competitions: "প্রতিযোগিতা",
         leaderboard: "লিডারবোর্ড",
@@ -536,6 +538,15 @@ export default function SmartLinemanUI() {
             userProfile={userProfile}
             setCurrentView={setCurrentView}
             onProgressUpdate={(updated) => setCompletedLessons(updated)}
+          />;
+        case 'training':
+          return <SafetyHub
+            language={language}
+            user={user}
+            userProfile={userProfile}
+            setCurrentView={setCurrentView}
+            onProgressUpdate={(updated) => setCompletedLessons(updated)}
+            mode="training"
           />;
         case 'admin':
           return <Admin language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;

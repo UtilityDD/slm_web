@@ -113,8 +113,8 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
     );
 });
 
-export default function SafetyHub({ language = 'en', user, userProfile: initialUserProfile, setCurrentView, onProgressUpdate }) {
-    const [activeTab, setActiveTab] = useState('protocols');
+export default function SafetyHub({ language = 'en', user, userProfile: initialUserProfile, setCurrentView, onProgressUpdate, mode = 'safety' }) {
+    const [activeTab, setActiveTab] = useState(mode === 'training' ? 'training' : 'protocols');
     const [ppeList, setPpeList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -127,6 +127,23 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
             setUserProfile(initialUserProfile);
         }
     }, [initialUserProfile]);
+
+    // Update active tab if mode changes
+    useEffect(() => {
+        if (mode === 'training') {
+            setActiveTab('training');
+        } else if (mode === 'safety' && activeTab === 'training') {
+            setActiveTab('protocols');
+        }
+    }, [mode]);
+
+    // Filter tabs based on mode
+    const getVisibleTabs = () => {
+        if (mode === 'training') {
+            return ['training'];
+        }
+        return ['protocols', 'my_ppe', 'report'];
+    };
 
     // Fallback fetch if userProfile is missing but user exists
     useEffect(() => {
@@ -750,34 +767,37 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
     return (
         <div className="compact-container py-6 sm:py-10 mb-20">
             {/* Header Section */}
+            {/* Header Section */}
             <div className="mb-8 text-center">
-                <div className="inline-block p-2.5 rounded-full bg-orange-100 text-orange-600 text-2xl mb-3">
-                    🦺
+                <div className={`inline-block p-2.5 rounded-full ${mode === 'training' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'} text-2xl mb-3`}>
+                    {mode === 'training' ? '🎓' : '🦺'}
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-0.5">
                     {language === 'en' ? (
-                        <>Safety <span className="text-orange-600">Hub</span></>
+                        mode === 'training' ? 'Training Program' : <>Safety <span className="text-orange-600">Hub</span></>
                     ) : (
-                        <>{t.title}</>
+                        mode === 'training' ? 'প্রশিক্ষণ কর্মসূচি' : t.title
                     )}
                 </h1>
             </div>
 
             {/* Navigation Tabs - Compact */}
-            <div className="flex flex-wrap justify-center gap-2 mb-8">
-                {['protocols', 'training', 'my_ppe', 'report'].map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === tab
-                            ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20'
-                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 border border-slate-200 dark:border-slate-700'
-                            }`}
-                    >
-                        {t.tabs[tab]}
-                    </button>
-                ))}
-            </div>
+            {mode !== 'training' && (
+                <div className="flex flex-wrap justify-center gap-2 mb-8">
+                    {getVisibleTabs().map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === tab
+                                ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20'
+                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 border border-slate-200 dark:border-slate-700'
+                                }`}
+                        >
+                            {t.tabs[tab]}
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {/* Network Error UI */}
             {fetchError && (

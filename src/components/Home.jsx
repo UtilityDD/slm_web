@@ -142,6 +142,19 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                             </div>
                         </div>
 
+                        {/* 90 Days Training - New Button */}
+                        <div
+                            onClick={() => setCurrentView('training')}
+                            className="group bg-white dark:bg-slate-800 rounded-xl p-5 border border-green-200 dark:border-green-800 shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-green-300 dark:hover:border-green-700 hover:-translate-y-1"
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 bg-green-50 dark:bg-green-900/30 rounded-xl flex items-center justify-center p-2 group-hover:scale-110 transition-transform">
+                                    <img src="/icons/training.png" alt="Training" className="w-full h-full object-contain" />
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.nav.training}</h3>
+                            </div>
+                        </div>
+
                         {/* Safety Hub */}
                         <div
                             onClick={() => setCurrentView('safety')}
