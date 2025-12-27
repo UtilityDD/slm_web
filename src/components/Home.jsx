@@ -206,7 +206,8 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                         </div>
 
                         {/* Admin Panel (Conditional) */}
-                        {['admin', 'safety mitra'].includes(userProfile?.role) && (
+                        {/* Admin Panel / Safety Mitra (Active for Admin/Safety Mitra, Disabled for others) */}
+                        {['admin', 'safety mitra'].includes(userProfile?.role) ? (
                             <div
                                 onClick={() => setCurrentView('admin')}
                                 className="group bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 active:scale-95 flex flex-col items-center justify-center text-center aspect-[4/3] sm:aspect-square"
@@ -216,6 +217,17 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                                 </div>
                                 <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 leading-tight">
                                     {userProfile?.role === 'safety mitra' ? t.nav.safetyMitra : t.nav.admin}
+                                </h3>
+                            </div>
+                        ) : (
+                            <div
+                                className="group bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center justify-center text-center aspect-[4/3] sm:aspect-square opacity-60 cursor-not-allowed"
+                            >
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center p-3 mb-4 grayscale">
+                                    <AdminIcon className="w-full h-full text-slate-400 dark:text-slate-500" />
+                                </div>
+                                <h3 className="text-sm sm:text-base font-bold text-slate-400 dark:text-slate-500 leading-tight">
+                                    {t.nav.safetyMitra || (language === 'en' ? 'Safety Mitra' : 'সেফটি মিত্র')}
                                 </h3>
                             </div>
                         )}
