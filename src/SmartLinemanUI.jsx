@@ -740,11 +740,11 @@ export default function SmartLinemanUI() {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
               <a
-                className={`hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'safety' ? 'text-blue-700 dark:text-blue-400 font-semibold' : ''}`}
-                onClick={() => setCurrentView('safety')}
+                className={`hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'training' ? 'text-blue-700 dark:text-blue-400 font-semibold' : ''}`}
+                onClick={() => setCurrentView('training')}
               >
-                {t.nav.safety}
-                <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${currentView === 'safety' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
+                {t.nav.training}
+                <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${currentView === 'training' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
               </a>
               <a
                 className={`hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'community' ? 'text-blue-700 dark:text-blue-400 font-semibold' : ''}`}

@@ -774,9 +774,9 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-0.5">
                     {language === 'en' ? (
-                        mode === 'training' ? 'Training Program' : <>Safety <span className="text-orange-600">Hub</span></>
+                        mode === 'training' ? '90 Days Training' : <>Safety <span className="text-orange-600">Hub</span></>
                     ) : (
-                        mode === 'training' ? 'প্রশিক্ষণ কর্মসূচি' : t.title
+                        mode === 'training' ? '৯০ দিনের প্রশিক্ষণ' : t.title
                     )}
                 </h1>
             </div>
