@@ -1006,7 +1006,17 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                             </span>
                                                         </summary>
                                                         <div className="px-4 pb-4 pl-[3.25rem] text-slate-600 dark:text-slate-400 text-sm leading-relaxed border-t border-slate-100 dark:border-slate-700 pt-4 bg-slate-50/50 dark:bg-slate-900/30">
-                                                            {q.answer}
+                                                            <p>{q.answer}</p>
+                                                            {q.image && (
+                                                                <div className="mt-4 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm max-w-md">
+                                                                    <img
+                                                                        src={`/quizzes/faq_images/${q.image}`}
+                                                                        alt={q.question}
+                                                                        className="w-full h-auto object-cover"
+                                                                        loading="lazy"
+                                                                    />
+                                                                </div>
+                                                            )}
                                                             <div className="mt-3 flex flex-wrap gap-2">
                                                                 {q.tags.map(tag => (
                                                                     <span key={tag} className="px-2 py-1 rounded-md bg-slate-200 dark:bg-slate-700 text-xs text-slate-600 dark:text-slate-400 font-medium">
