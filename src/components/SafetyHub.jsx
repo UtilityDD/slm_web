@@ -1033,6 +1033,19 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                     Expired: "মেয়াদোত্তীর্ণ"
                 }
             },
+            my_tools: {
+                title: "আমার টুলস চেকলিস্ট",
+                addBtn: "নতুন টুল যোগ করুন",
+                editBtn: "টুল সম্পাদনা করুন",
+                empty: "এখনও কোন টুল যোগ করা হয়নি।",
+                fields: {
+                    name: "টুলের নাম",
+                    count: "পরিমাণ",
+                    age: "বয়স (মাস)",
+                    condition: "অবস্থা",
+                    details: "বিবরণ"
+                }
+            },
             report: {
                 title: "বিপদ রিপোর্ট করুন",
                 form: {
