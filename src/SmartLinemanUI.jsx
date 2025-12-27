@@ -3,6 +3,7 @@ import { supabase } from "./supabaseClient";
 import { getBadgeByLevel, calculateLevelFromProgress } from './utils/badgeUtils';
 import { cacheHelper } from './utils/cacheHelper';
 import LogoutConfirmationModal from "./components/LogoutConfirmationModal";
+import { APP_VERSION_CODE } from "./config"; // Import App Version
 
 // Lazy load heavy components for code splitting
 const Competitions = lazy(() => import("./components/Competitions"));
@@ -47,6 +48,36 @@ export default function SmartLinemanUI() {
   const [lastSeenNotificationId, setLastSeenNotificationId] = useState(() => localStorage.getItem('lastSeenNotificationId'));
   const [showHandbookModal, setShowHandbookModal] = useState(false);
   const [completedLessons, setCompletedLessons] = useState([]);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState(null);
+
+  // Version Check Logic
+  useEffect(() => {
+    const checkVersion = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('app_versions')
+          .select('*')
+          .order('version_code', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (error) {
+          console.error('Error checking app version:', error);
+          return;
+        }
+
+        if (data && data.version_code > APP_VERSION_CODE && data.force_update) {
+          setUpdateInfo(data);
+          setShowUpdateModal(true);
+        }
+      } catch (err) {
+        console.error('Unexpected error checking version:', err);
+      }
+    };
+
+    checkVersion();
+  }, []);
 
   // Pull to refresh state
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -552,6 +583,34 @@ export default function SmartLinemanUI() {
           language={language}
           loading={isLoggingOut}
         />
+      )}
+
+      {/* Forced Update Modal */}
+      {showUpdateModal && updateInfo && (
+        <div className="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 text-center border border-slate-200 dark:border-slate-700">
+            <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="text-4xl">🚀</span>
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+              {language === 'en' ? 'Update Required' : 'আপডেট প্রয়োজন'}
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300 mb-6">
+              {language === 'en'
+                ? `A new version (${updateInfo.version_name}) is available. Please update to continue using the app.`
+                : `একটি নতুন সংস্করণ (${updateInfo.version_name}) উপলব্ধ। অ্যাপটি ব্যবহার চালিয়ে যেতে অনুগ্রহ করে আপডেট করুন।`
+              }
+            </p>
+            <a
+              href={updateInfo.update_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all transform hover:scale-[1.02] shadow-lg shadow-blue-600/20"
+            >
+              {language === 'en' ? 'Update Now' : 'এখনই আপডেট করুন'}
+            </a>
+          </div>
+        </div>
       )}
 
       {/* Custom Refresh Indicator */}
