@@ -513,7 +513,7 @@ export default function SmartLinemanUI() {
 
   // Loading component for Suspense fallback with smooth transitions
   const PageLoader = () => (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 relative z-0 pb-16 animate-fade-in">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 relative z-0 pb-16 animate-slide-up-fade">
       <div className="text-center">
         <div className="relative mx-auto mb-6">
           <div className="w-16 h-16 border-4 border-blue-100 dark:border-slate-700 rounded-full"></div>
@@ -585,10 +585,12 @@ export default function SmartLinemanUI() {
       }
     })();
 
-    // Wrap in Suspense for code splitting
+    // Wrap in Suspense for code splitting with smooth transition
     return (
       <Suspense fallback={<PageLoader />}>
-        {content}
+        <div key={currentView} className="animate-slide-up-fade w-full">
+          {content}
+        </div>
       </Suspense>
     );
   };
