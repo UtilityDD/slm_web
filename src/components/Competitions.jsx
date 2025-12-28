@@ -1023,7 +1023,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
                             {/* View All/Collapse Button */}
                             {leaderboard.length > 3 && (
-                                <div className="p-3 text-center bg-slate-50 dark:bg-slate-900/30">
+                                <div className="p-3 text-center bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700">
                                     <button
                                         onClick={fetchFullLeaderboard}
                                         className="text-blue-600 dark:text-blue-400 font-bold hover:underline text-sm flex items-center gap-2 mx-auto"
@@ -1058,7 +1058,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
 
             {/* Full Leaderboard Modal */}
             {showFullLeaderboard && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
                     <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-xl max-h-[85vh] flex flex-col shadow-xl overflow-hidden border border-slate-200 dark:border-slate-700">
                         <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
                             <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">Leaderboard</h3>
