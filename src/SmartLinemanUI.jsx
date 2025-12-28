@@ -1031,7 +1031,7 @@ export default function SmartLinemanUI() {
         >
           <span className="text-xl mb-0.5">💬</span>
           <span className="text-[10px] uppercase tracking-tighter font-bold">
-            {language === 'en' ? 'Chat' : 'চ্যাট'}
+            {language === 'en' ? 'Community' : 'কমিউনিটি'}
           </span>
         </div>
         <div
