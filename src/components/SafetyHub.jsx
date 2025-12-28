@@ -244,7 +244,13 @@ const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedL
                 </button>
 
                 <button
-                    onClick={() => setActiveTab('my_ppe')}
+                    onClick={() => {
+                        if (!user) {
+                            setCurrentView('login');
+                        } else {
+                            setActiveTab('my_ppe');
+                        }
+                    }}
                     className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-emerald-400 dark:hover:border-emerald-600 transition-all group text-left"
                 >
                     <div className="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
@@ -254,7 +260,13 @@ const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedL
                 </button>
 
                 <button
-                    onClick={() => setActiveTab('my_tools')}
+                    onClick={() => {
+                        if (!user) {
+                            setCurrentView('login');
+                        } else {
+                            setActiveTab('my_tools');
+                        }
+                    }}
                     className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-600 transition-all group text-left"
                 >
                     <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
