@@ -172,7 +172,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                             <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 leading-tight">{t.nav.training}</h3>
                         </div>
 
-                        {/* Safety Hub */}
+                        {/* Safety */}
                         <div
                             onClick={() => setCurrentView('safety')}
                             className="group bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-orange-100 dark:border-orange-900/30 shadow-sm cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-1 active:scale-95 flex flex-col items-center justify-center text-center aspect-[4/3] sm:aspect-square"

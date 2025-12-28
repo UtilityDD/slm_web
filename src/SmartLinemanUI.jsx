@@ -480,7 +480,7 @@ export default function SmartLinemanUI() {
     },
     bn: {
       nav: {
-        safety: "সেফটি হাব",
+        safety: "সেফটি",
         training: "৯০ দিনের প্রশিক্ষণ",
         community: "কমিউনিটি",
         competitions: "প্রতিযোগিতা",
