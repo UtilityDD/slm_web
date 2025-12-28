@@ -1823,27 +1823,27 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                         <div className="w-9 flex-shrink-0"></div> {/* Spacer for centering */}
                     </div>
 
-                    <div className="max-w-6xl mx-auto px-4 py-8 pb-24">
+                    <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8 pb-24">
                         {/* Hero Header */}
-                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 sm:p-8 text-white mb-8 shadow-xl shadow-orange-500/20">
-                            <div className="inline-block px-3 py-1 rounded-lg bg-white/20 backdrop-blur-sm text-[10px] uppercase tracking-widest font-bold mb-4">
+                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-6 sm:p-10 text-white mb-10 shadow-xl shadow-orange-500/20">
+                            <div className="inline-block px-4 py-1.5 rounded-full bg-white/25 backdrop-blur-sm text-[11px] uppercase tracking-wider font-bold mb-5 border border-white/30">
                                 {trainingContent.badge_name}
                             </div>
-                            <h2 className="text-2xl sm:text-3xl font-bold mb-2 reading-content leading-tight">{trainingContent.level_title}</h2>
-                            <div className="flex items-center gap-2 text-orange-100 text-sm font-medium">
-                                <span className="w-1.5 h-1.5 rounded-full bg-orange-200"></span>
+                            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 reading-content leading-snug">{trainingContent.level_title}</h2>
+                            <p className="text-orange-100 text-sm sm:text-base font-medium flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-orange-200"></span>
                                 Level {trainingContent.level_id}
-                            </div>
+                            </p>
                         </div>
 
                         {/* Mission Briefing */}
-                        <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-6 rounded-r-2xl mb-8 shadow-sm">
+                        <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-900/20 border-l-4 border-blue-500 p-6 sm:p-8 rounded-r-2xl mb-10 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-start gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-800 flex items-center justify-center text-xl flex-shrink-0">
+                                <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-800 flex items-center justify-center text-2xl flex-shrink-0">
                                     🎯
                                 </div>
-                                <div>
-                                    <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2 uppercase tracking-wider text-xs">
+                                <div className="flex-1">
+                                    <h3 className="font-bold text-blue-900 dark:text-blue-100 mb-3 uppercase tracking-wider text-xs">
                                         {language === 'en' ? 'Mission Briefing' : 'মিশন ব্রিফিং'}
                                     </h3>
                                     <p className="text-slate-700 dark:text-slate-300 reading-content leading-relaxed text-base">
@@ -1854,56 +1854,56 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                         </div>
 
                         {/* Sections */}
-                        <div className="space-y-8">
+                        <div className="space-y-10">
                             {trainingContent.sections?.map((section, sIdx) => (
-                                <div key={sIdx} className="bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 dark:border-slate-700">
-                                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6 reading-content flex items-center gap-3">
-                                        <span className="w-1.5 h-6 bg-orange-500 rounded-full"></span>
+                                <div key={sIdx} className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-10 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-shadow">
+                                    <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-8 reading-content flex items-center gap-4">
+                                        <span className="w-2 h-8 bg-gradient-to-b from-orange-500 to-orange-400 rounded-full flex-shrink-0"></span>
                                         {section.title}
                                     </h3>
-                                    <div className="space-y-8">
+                                    <div className="space-y-10">
                                         {section.points?.map((point, pIdx) => (
-                                            <div key={pIdx} className="relative pl-6 border-l border-slate-100 dark:border-slate-700">
-                                                <div className="absolute left-[-5px] top-2 w-2.5 h-2.5 rounded-full bg-orange-500 border-2 border-white dark:border-slate-800"></div>
-                                                <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-3 reading-content text-lg">
+                                            <div key={pIdx} className="relative pl-7 border-l-2 border-orange-200 dark:border-orange-900/30">
+                                                <div className="absolute left-[-7px] top-1 w-3.5 h-3.5 rounded-full bg-orange-500 border-2 border-white dark:border-slate-800 shadow-sm"></div>
+                                                <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-4 reading-content text-lg sm:text-xl">
                                                     {point.item_name}
                                                 </h4>
-                                                <div className="space-y-4">
+                                                <div className="space-y-5">
                                                     {point.specifications && (
-                                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <span className="text-blue-500 text-sm">📋</span>
-                                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                        <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/20 dark:to-blue-900/10 p-5 rounded-2xl border border-blue-100 dark:border-blue-900/30 hover:border-blue-200 dark:hover:border-blue-800 transition-colors">
+                                                            <div className="flex items-center gap-2 mb-3">
+                                                                <span className="text-blue-500 text-lg">📋</span>
+                                                                <p className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
                                                                     {language === 'en' ? 'Details' : 'বিস্তারিত'}
                                                                 </p>
                                                             </div>
-                                                            <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed">
+                                                            <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
                                                                 {point.specifications}
                                                             </p>
                                                         </div>
                                                     )}
                                                     {point.importance && (
-                                                        <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-xl border border-amber-100/50 dark:border-amber-900/20">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <span className="text-amber-500 text-sm">💡</span>
-                                                                <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
+                                                        <div className="bg-gradient-to-br from-amber-50 to-amber-50/50 dark:from-amber-950/20 dark:to-amber-900/10 p-5 rounded-2xl border-2 border-amber-200 dark:border-amber-900/30 hover:border-amber-300 dark:hover:border-amber-800 transition-colors">
+                                                            <div className="flex items-center gap-2 mb-3">
+                                                                <span className="text-amber-500 text-lg">💡</span>
+                                                                <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
                                                                     {language === 'en' ? 'Key Point' : 'মূল বিষয়'}
                                                                 </p>
                                                             </div>
-                                                            <p className="text-sm text-slate-700 dark:text-slate-300 reading-content leading-relaxed font-medium">
+                                                            <p className="text-base text-slate-800 dark:text-slate-200 reading-content leading-relaxed font-semibold">
                                                                 {point.importance}
                                                             </p>
                                                         </div>
                                                     )}
                                                     {point.daily_check && (
-                                                        <div className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-xl border border-emerald-100 dark:border-emerald-900/20">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <span className="text-emerald-500 text-sm">✓</span>
-                                                                <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
+                                                        <div className="bg-gradient-to-br from-emerald-50 to-emerald-50/50 dark:from-emerald-950/20 dark:to-emerald-900/10 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/30 hover:border-emerald-200 dark:hover:border-emerald-800 transition-colors">
+                                                            <div className="flex items-center gap-2 mb-3">
+                                                                <span className="text-emerald-500 text-lg">✓</span>
+                                                                <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
                                                                     {language === 'en' ? 'Quick Tip' : 'পরামর্শ'}
                                                                 </p>
                                                             </div>
-                                                            <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed">
+                                                            <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
                                                                 {point.daily_check}
                                                             </p>
                                                         </div>
@@ -1918,20 +1918,20 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
                         {/* Pro Tips */}
                         {trainingContent.pro_tip && (
-                            <div className="mt-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-8 text-white shadow-lg shadow-emerald-500/20">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl">
+                            <div className="mt-12 bg-gradient-to-br from-emerald-500 via-emerald-500 to-teal-600 rounded-3xl p-8 sm:p-10 text-white shadow-lg shadow-emerald-500/25">
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="w-12 h-12 rounded-xl bg-white/25 backdrop-blur-sm flex items-center justify-center text-2xl">
                                         💡
                                     </div>
-                                    <h3 className="text-xl font-bold reading-content">
+                                    <h3 className="text-2xl sm:text-3xl font-bold reading-content">
                                         {trainingContent.pro_tip.title}
                                     </h3>
                                 </div>
-                                <ul className="space-y-4">
+                                <ul className="space-y-5">
                                     {trainingContent.pro_tip.content?.map((tip, idx) => (
-                                        <li key={idx} className="flex items-start gap-3 text-emerald-50 reading-content leading-relaxed">
-                                            <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">✓</span>
-                                            {tip}
+                                        <li key={idx} className="flex items-start gap-4 text-emerald-50 reading-content leading-relaxed text-base">
+                                            <span className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">✓</span>
+                                            <span>{tip}</span>
                                         </li>
                                     ))}
                                 </ul>
@@ -1940,28 +1940,28 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
                         {/* Myth Buster */}
                         {trainingContent.myth_buster && (
-                            <div className="mt-8 bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 border-2 border-red-100 dark:border-red-900/30 shadow-sm">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-xl">
+                            <div className="mt-12 bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-10 border-2 border-red-100 dark:border-red-900/30 shadow-sm hover:shadow-md transition-shadow">
+                                <div className="flex items-center gap-3 mb-8">
+                                    <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-2xl">
                                         ⚠️
                                     </div>
-                                    <h3 className="text-xl font-bold text-red-700 dark:text-red-400 reading-content">
+                                    <h3 className="text-2xl sm:text-3xl font-bold text-red-700 dark:text-red-400 reading-content">
                                         {trainingContent.myth_buster.title}
                                     </h3>
                                 </div>
-                                <div className="grid grid-cols-1 gap-4">
+                                <div className="grid grid-cols-1 gap-5">
                                     {trainingContent.myth_buster.myths?.map((item, idx) => (
-                                        <div key={idx} className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-5 border border-slate-100 dark:border-slate-800">
-                                            <div className="mb-4">
-                                                <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1">
+                                        <div key={idx} className="bg-gradient-to-br from-slate-50 to-slate-50/50 dark:from-slate-900/50 dark:to-slate-900/30 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-800 transition-colors">
+                                            <div className="mb-5">
+                                                <p className="text-[11px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-2">
                                                     {language === 'en' ? 'Myth' : 'মিথ'}
                                                 </p>
                                                 <p className="text-base text-slate-700 dark:text-slate-300 italic reading-content leading-relaxed font-medium">
                                                     "{item.myth}"
                                                 </p>
                                             </div>
-                                            <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                                                <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">
+                                            <div className="pt-5 border-t border-slate-200 dark:border-slate-700">
+                                                <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-2">
                                                     {language === 'en' ? 'Reality' : 'বাস্তবতা'}
                                                 </p>
                                                 <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
@@ -1976,22 +1976,22 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
                         {/* Advanced Section */}
                         {trainingContent.advanced_section && (
-                            <div className="mt-8 bg-slate-900 rounded-2xl p-8 text-white shadow-xl">
-                                <div className="flex items-center gap-3 mb-8">
-                                    <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center text-xl">
+                            <div className="mt-12 bg-slate-900 rounded-3xl p-8 sm:p-10 text-white shadow-xl hover:shadow-2xl transition-shadow">
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="w-12 h-12 rounded-xl bg-indigo-500 flex items-center justify-center text-2xl">
                                         🔬
                                     </div>
-                                    <h3 className="text-xl font-bold reading-content">
+                                    <h3 className="text-2xl sm:text-3xl font-bold reading-content">
                                         {trainingContent.advanced_section.title}
                                     </h3>
                                 </div>
                                 <div className="grid grid-cols-1 gap-6">
                                     {trainingContent.advanced_section.facts?.map((fact, idx) => (
-                                        <div key={idx} className="bg-white/5 rounded-xl p-6 border border-white/10">
-                                            <h4 className="font-bold text-indigo-400 mb-3 reading-content text-lg">
+                                        <div key={idx} className="bg-white/5 rounded-2xl p-6 sm:p-8 border border-white/10 hover:border-white/20 hover:bg-white/8 transition-all">
+                                            <h4 className="font-bold text-indigo-300 mb-4 reading-content text-lg sm:text-xl">
                                                 {fact.title}
                                             </h4>
-                                            <p className="text-slate-300 reading-content leading-relaxed text-sm">
+                                            <p className="text-slate-200 reading-content leading-relaxed text-base">
                                                 {fact.content}
                                             </p>
                                         </div>
