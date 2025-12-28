@@ -256,6 +256,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
     const [showAddModal, setShowAddModal] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [userProfile, setUserProfile] = useState(initialUserProfile);
+    const [isEditMode, setIsEditMode] = useState(false);
 
     // Sync userProfile state if prop changes
     useEffect(() => {
@@ -1690,8 +1691,17 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                     activeTab === 'my_ppe' && (
                         <div className="w-full">
                             <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
+                                <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
                                     <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.my_ppe.title}</h2>
+                                    <button
+                                        onClick={() => setIsEditMode(!isEditMode)}
+                                        className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${isEditMode
+                                            ? 'bg-orange-100 text-orange-700 border border-orange-200'
+                                            : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:border-orange-300'
+                                            }`}
+                                    >
+                                        {isEditMode ? (language === 'en' ? 'Done' : 'সম্পন্ন') : (language === 'en' ? 'Manage' : 'ম্যানেজ')}
+                                    </button>
                                 </div>
 
                                 <div className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -1701,15 +1711,17 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                         ppeChecklist.map((item, idx) => (
                                             <div key={item.name} className={`p-3 sm:p-4 transition-colors ${item.available ? 'bg-orange-50/30 dark:bg-orange-900/10' : ''}`}>
                                                 <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-                                                    {/* Availability Checkbox */}
-                                                    <div className="flex items-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={item.available}
-                                                            onChange={(e) => handleChecklistChange(idx, 'available', e.target.checked)}
-                                                            className="w-5 h-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
-                                                        />
-                                                    </div>
+                                                    {/* Availability Checkbox - Only in Edit Mode */}
+                                                    {isEditMode && (
+                                                        <div className="flex items-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={item.available}
+                                                                onChange={(e) => handleChecklistChange(idx, 'available', e.target.checked)}
+                                                                className="w-5 h-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                                                            />
+                                                        </div>
+                                                    )}
 
                                                     {/* Icon & Name */}
                                                     <div className="flex items-center gap-2 min-w-[140px] flex-1">
@@ -1722,50 +1734,73 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                     {/* Compact Fields - Only show if available */}
                                                     {item.available && (
                                                         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 ml-8 sm:ml-0">
-                                                            {/* Qty */}
-                                                            <div className="flex items-center gap-1">
-                                                                <span className="text-[10px] uppercase font-bold text-slate-400">Qty</span>
-                                                                <input
-                                                                    type="number"
-                                                                    min="1"
-                                                                    value={item.count}
-                                                                    onChange={(e) => handleChecklistChange(idx, 'count', e.target.value)}
-                                                                    className="w-12 px-1 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                                />
-                                                            </div>
+                                                            {isEditMode ? (
+                                                                <>
+                                                                    {/* Qty */}
+                                                                    <div className="flex items-center gap-1">
+                                                                        <span className="text-[10px] uppercase font-bold text-slate-400">Qty</span>
+                                                                        <input
+                                                                            type="number"
+                                                                            min="1"
+                                                                            value={item.count}
+                                                                            onChange={(e) => handleChecklistChange(idx, 'count', e.target.value)}
+                                                                            className="w-12 px-1 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                        />
+                                                                    </div>
 
-                                                            {/* Quality */}
-                                                            <select
-                                                                value={item.condition}
-                                                                onChange={(e) => handleChecklistChange(idx, 'condition', e.target.value)}
-                                                                className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                            >
-                                                                <option value="Good">Good</option>
-                                                                <option value="Fair">Fair</option>
-                                                                <option value="Damaged">Damaged</option>
-                                                            </select>
+                                                                    {/* Quality */}
+                                                                    <select
+                                                                        value={item.condition}
+                                                                        onChange={(e) => handleChecklistChange(idx, 'condition', e.target.value)}
+                                                                        className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                    >
+                                                                        <option value="Good">Good</option>
+                                                                        <option value="Fair">Fair</option>
+                                                                        <option value="Damaged">Damaged</option>
+                                                                    </select>
 
-                                                            {/* Age */}
-                                                            <select
-                                                                value={item.age}
-                                                                onChange={(e) => handleChecklistChange(idx, 'age', e.target.value)}
-                                                                className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                            >
-                                                                <option value="<6m">&lt;6m</option>
-                                                                <option value="6-12m">6-12m</option>
-                                                                <option value="1-2y">1-2y</option>
-                                                                <option value=">2y">&gt;2y</option>
-                                                            </select>
+                                                                    {/* Age */}
+                                                                    <select
+                                                                        value={item.age}
+                                                                        onChange={(e) => handleChecklistChange(idx, 'age', e.target.value)}
+                                                                        className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                    >
+                                                                        <option value="<6m">&lt;6m</option>
+                                                                        <option value="6-12m">6-12m</option>
+                                                                        <option value="1-2y">1-2y</option>
+                                                                        <option value=">2y">&gt;2y</option>
+                                                                    </select>
 
-                                                            {/* Usage */}
-                                                            <select
-                                                                value={item.usage}
-                                                                onChange={(e) => handleChecklistChange(idx, 'usage', e.target.value)}
-                                                                className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                            >
-                                                                <option value="Personal">Personal</option>
-                                                                <option value="Shared">Shared</option>
-                                                            </select>
+                                                                    {/* Usage */}
+                                                                    <select
+                                                                        value={item.usage}
+                                                                        onChange={(e) => handleChecklistChange(idx, 'usage', e.target.value)}
+                                                                        className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                    >
+                                                                        <option value="Personal">Personal</option>
+                                                                        <option value="Shared">Shared</option>
+                                                                    </select>
+                                                                </>
+                                                            ) : (
+                                                                <div className="flex items-center gap-3 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100/50 dark:bg-slate-700/50 px-3 py-1 rounded-full">
+                                                                    <span className="flex items-center gap-1">
+                                                                        <span className="text-[10px] uppercase text-slate-400">Qty:</span>
+                                                                        <span className="text-slate-700 dark:text-slate-200">{item.count}</span>
+                                                                    </span>
+                                                                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                                                    <span className="flex items-center gap-1">
+                                                                        <span className="text-[10px] uppercase text-slate-400">Cond:</span>
+                                                                        <span className={`${item.condition === 'Good' ? 'text-emerald-600' : item.condition === 'Fair' ? 'text-amber-600' : 'text-red-600'}`}>
+                                                                            {item.condition}
+                                                                        </span>
+                                                                    </span>
+                                                                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                                                    <span className="flex items-center gap-1">
+                                                                        <span className="text-[10px] uppercase text-slate-400">Age:</span>
+                                                                        <span className="text-slate-700 dark:text-slate-200">{item.age}</span>
+                                                                    </span>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>
@@ -1774,15 +1809,17 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                     )}
                                 </div>
 
-                                <div className="p-4 sm:p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-center">
-                                    <button
-                                        onClick={handleSavePPE}
-                                        disabled={isSaving}
-                                        className={`px-10 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 ${isSaving ? 'bg-slate-400 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 shadow-orange-200 dark:shadow-none'}`}
-                                    >
-                                        {isSaving ? 'Saving...' : 'Update PPE Status'}
-                                    </button>
-                                </div>
+                                {isEditMode && (
+                                    <div className="p-4 sm:p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-center">
+                                        <button
+                                            onClick={handleSavePPE}
+                                            disabled={isSaving}
+                                            className={`px-10 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 ${isSaving ? 'bg-slate-400 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 shadow-orange-200 dark:shadow-none'}`}
+                                        >
+                                            {isSaving ? 'Saving...' : 'Update PPE Status'}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )
@@ -1792,8 +1829,17 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                     activeTab === 'my_tools' && (
                         <div className="w-full">
                             <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
+                                <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
                                     <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.my_tools.title}</h2>
+                                    <button
+                                        onClick={() => setIsEditMode(!isEditMode)}
+                                        className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${isEditMode
+                                            ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+                                            : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:border-indigo-300'
+                                            }`}
+                                    >
+                                        {isEditMode ? (language === 'en' ? 'Done' : 'সম্পন্ন') : (language === 'en' ? 'Manage' : 'ম্যানেজ')}
+                                    </button>
                                 </div>
 
                                 <div className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -1803,15 +1849,17 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                         toolsChecklist.map((item, idx) => (
                                             <div key={item.name} className={`p-3 sm:p-4 transition-colors ${item.available ? 'bg-indigo-50/30 dark:bg-indigo-900/10' : ''}`}>
                                                 <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-                                                    {/* Availability Checkbox */}
-                                                    <div className="flex items-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={item.available}
-                                                            onChange={(e) => handleToolsChecklistChange(idx, 'available', e.target.checked)}
-                                                            className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                                                        />
-                                                    </div>
+                                                    {/* Availability Checkbox - Only in Edit Mode */}
+                                                    {isEditMode && (
+                                                        <div className="flex items-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={item.available}
+                                                                onChange={(e) => handleToolsChecklistChange(idx, 'available', e.target.checked)}
+                                                                className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                                            />
+                                                        </div>
+                                                    )}
 
                                                     {/* Icon & Name */}
                                                     <div className="flex items-center gap-2 min-w-[140px] flex-1">
@@ -1824,50 +1872,73 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                     {/* Compact Fields - Only show if available */}
                                                     {item.available && (
                                                         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 ml-8 sm:ml-0">
-                                                            {/* Qty */}
-                                                            <div className="flex items-center gap-1">
-                                                                <span className="text-[10px] uppercase font-bold text-slate-400">Qty</span>
-                                                                <input
-                                                                    type="number"
-                                                                    min="1"
-                                                                    value={item.count}
-                                                                    onChange={(e) => handleToolsChecklistChange(idx, 'count', e.target.value)}
-                                                                    className="w-12 px-1 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                                />
-                                                            </div>
+                                                            {isEditMode ? (
+                                                                <>
+                                                                    {/* Qty */}
+                                                                    <div className="flex items-center gap-1">
+                                                                        <span className="text-[10px] uppercase font-bold text-slate-400">Qty</span>
+                                                                        <input
+                                                                            type="number"
+                                                                            min="1"
+                                                                            value={item.count}
+                                                                            onChange={(e) => handleToolsChecklistChange(idx, 'count', e.target.value)}
+                                                                            className="w-12 px-1 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                        />
+                                                                    </div>
 
-                                                            {/* Quality */}
-                                                            <select
-                                                                value={item.condition}
-                                                                onChange={(e) => handleToolsChecklistChange(idx, 'condition', e.target.value)}
-                                                                className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                            >
-                                                                <option value="Good">Good</option>
-                                                                <option value="Fair">Fair</option>
-                                                                <option value="Damaged">Damaged</option>
-                                                            </select>
+                                                                    {/* Quality */}
+                                                                    <select
+                                                                        value={item.condition}
+                                                                        onChange={(e) => handleToolsChecklistChange(idx, 'condition', e.target.value)}
+                                                                        className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                    >
+                                                                        <option value="Good">Good</option>
+                                                                        <option value="Fair">Fair</option>
+                                                                        <option value="Damaged">Damaged</option>
+                                                                    </select>
 
-                                                            {/* Age */}
-                                                            <select
-                                                                value={item.age}
-                                                                onChange={(e) => handleToolsChecklistChange(idx, 'age', e.target.value)}
-                                                                className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                            >
-                                                                <option value="<6m">&lt;6m</option>
-                                                                <option value="6-12m">6-12m</option>
-                                                                <option value="1-2y">1-2y</option>
-                                                                <option value=">2y">&gt;2y</option>
-                                                            </select>
+                                                                    {/* Age */}
+                                                                    <select
+                                                                        value={item.age}
+                                                                        onChange={(e) => handleToolsChecklistChange(idx, 'age', e.target.value)}
+                                                                        className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                    >
+                                                                        <option value="<6m">&lt;6m</option>
+                                                                        <option value="6-12m">6-12m</option>
+                                                                        <option value="1-2y">1-2y</option>
+                                                                        <option value=">2y">&gt;2y</option>
+                                                                    </select>
 
-                                                            {/* Usage */}
-                                                            <select
-                                                                value={item.usage}
-                                                                onChange={(e) => handleToolsChecklistChange(idx, 'usage', e.target.value)}
-                                                                className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                            >
-                                                                <option value="Personal">Personal</option>
-                                                                <option value="Shared">Shared</option>
-                                                            </select>
+                                                                    {/* Usage */}
+                                                                    <select
+                                                                        value={item.usage}
+                                                                        onChange={(e) => handleToolsChecklistChange(idx, 'usage', e.target.value)}
+                                                                        className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                    >
+                                                                        <option value="Personal">Personal</option>
+                                                                        <option value="Shared">Shared</option>
+                                                                    </select>
+                                                                </>
+                                                            ) : (
+                                                                <div className="flex items-center gap-3 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100/50 dark:bg-slate-700/50 px-3 py-1 rounded-full">
+                                                                    <span className="flex items-center gap-1">
+                                                                        <span className="text-[10px] uppercase text-slate-400">Qty:</span>
+                                                                        <span className="text-slate-700 dark:text-slate-200">{item.count}</span>
+                                                                    </span>
+                                                                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                                                    <span className="flex items-center gap-1">
+                                                                        <span className="text-[10px] uppercase text-slate-400">Cond:</span>
+                                                                        <span className={`${item.condition === 'Good' ? 'text-emerald-600' : item.condition === 'Fair' ? 'text-amber-600' : 'text-red-600'}`}>
+                                                                            {item.condition}
+                                                                        </span>
+                                                                    </span>
+                                                                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                                                    <span className="flex items-center gap-1">
+                                                                        <span className="text-[10px] uppercase text-slate-400">Age:</span>
+                                                                        <span className="text-slate-700 dark:text-slate-200">{item.age}</span>
+                                                                    </span>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>
@@ -1876,15 +1947,17 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                     )}
                                 </div>
 
-                                <div className="p-4 sm:p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-center">
-                                    <button
-                                        onClick={handleSaveTools}
-                                        disabled={isSaving}
-                                        className={`px-10 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 ${isSaving ? 'bg-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200 dark:shadow-none'}`}
-                                    >
-                                        {isSaving ? 'Saving...' : 'Update Tools Status'}
-                                    </button>
-                                </div>
+                                {isEditMode && (
+                                    <div className="p-4 sm:p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-center">
+                                        <button
+                                            onClick={handleSaveTools}
+                                            disabled={isSaving}
+                                            className={`px-10 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 ${isSaving ? 'bg-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200 dark:shadow-none'}`}
+                                        >
+                                            {isSaving ? 'Saving...' : 'Update Tools Status'}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )
