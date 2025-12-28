@@ -1800,7 +1800,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
             {/* Full Page Content View - Using Portal to bypass parent layout constraints */}
             {trainingContent && createPortal(
-                <div className="fixed inset-0 z-[9999] bg-slate-50 dark:bg-slate-900 overflow-y-auto animate-slide-up w-full h-full">
+                <div className="fixed inset-0 top-14 bottom-14 md:bottom-0 z-[75] bg-slate-50 dark:bg-slate-900 overflow-y-auto animate-slide-up w-full">
                     {/* Sticky Header */}
                     <div className="sticky top-0 z-50 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between shadow-sm">
                         <button

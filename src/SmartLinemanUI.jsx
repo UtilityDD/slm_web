@@ -755,7 +755,7 @@ export default function SmartLinemanUI() {
       </div>
 
       {/* Header - Material Design */}
-      <header className="bg-white dark:bg-slate-800 elevation-2 sticky top-0 z-50 border-b border-slate-200 dark:border-slate-700">
+      <header className="bg-white dark:bg-slate-800 elevation-2 sticky top-0 z-[80] border-b border-slate-200 dark:border-slate-700">
         <div className="max-w-7xl mx-auto mobile-container">
           <div className="flex justify-between items-center h-14 md:h-16">
             <div
