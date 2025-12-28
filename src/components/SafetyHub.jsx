@@ -1868,6 +1868,23 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                 <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-4 reading-content text-lg sm:text-xl">
                                                     {point.item_name}
                                                 </h4>
+                                                {point.image_name && (
+                                                    <div className="mb-6 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+                                                        <img
+                                                            src={`/quizzes/${point.image_name}`}
+                                                            alt={point.item_name}
+                                                            className="w-full h-auto object-cover max-h-80"
+                                                            loading="lazy"
+                                                        />
+                                                        {point.image_caption && (
+                                                            <div className="bg-slate-50 dark:bg-slate-900/50 px-4 sm:px-5 py-3 border-t border-slate-100 dark:border-slate-700">
+                                                                <p className="text-sm text-slate-600 dark:text-slate-400 italic text-center font-medium">
+                                                                    {point.image_caption}
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
                                                 <div className="space-y-5">
                                                     {point.specifications && (
                                                         <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/20 dark:to-blue-900/10 p-5 rounded-2xl border border-blue-100 dark:border-blue-900/30 hover:border-blue-200 dark:hover:border-blue-800 transition-colors">
