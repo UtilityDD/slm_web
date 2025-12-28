@@ -809,6 +809,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
             cacheHelper.clear(`user_ppe_${user.id}`);
             await fetchPPE();
+            setIsEditMode(false);
             alert('PPE Status updated successfully!');
         } catch (error) {
             console.error('Error saving PPE:', error);
@@ -884,6 +885,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
             cacheHelper.clear(`user_tools_${user.id}`);
             await fetchTools();
+            setIsEditMode(false);
             alert('Tools Status updated successfully!');
         } catch (error) {
             console.error('Error saving Tools:', error);
@@ -1694,7 +1696,13 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                 <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
                                     <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.my_ppe.title}</h2>
                                     <button
-                                        onClick={() => setIsEditMode(!isEditMode)}
+                                        onClick={() => {
+                                            if (isEditMode) {
+                                                handleSavePPE();
+                                            } else {
+                                                setIsEditMode(true);
+                                            }
+                                        }}
                                         className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${isEditMode
                                             ? 'bg-orange-100 text-orange-700 border border-orange-200'
                                             : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:border-orange-300'
@@ -1809,17 +1817,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                     )}
                                 </div>
 
-                                {isEditMode && (
-                                    <div className="p-4 sm:p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-center">
-                                        <button
-                                            onClick={handleSavePPE}
-                                            disabled={isSaving}
-                                            className={`px-10 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 ${isSaving ? 'bg-slate-400 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 shadow-orange-200 dark:shadow-none'}`}
-                                        >
-                                            {isSaving ? 'Saving...' : 'Update PPE Status'}
-                                        </button>
-                                    </div>
-                                )}
+                                {/* Redundant Update button removed - Save is now handled by "Done" button */}
                             </div>
                         </div>
                     )
@@ -1832,7 +1830,13 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                 <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
                                     <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.my_tools.title}</h2>
                                     <button
-                                        onClick={() => setIsEditMode(!isEditMode)}
+                                        onClick={() => {
+                                            if (isEditMode) {
+                                                handleSaveTools();
+                                            } else {
+                                                setIsEditMode(true);
+                                            }
+                                        }}
                                         className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${isEditMode
                                             ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
                                             : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:border-indigo-300'
@@ -1947,17 +1951,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                     )}
                                 </div>
 
-                                {isEditMode && (
-                                    <div className="p-4 sm:p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-center">
-                                        <button
-                                            onClick={handleSaveTools}
-                                            disabled={isSaving}
-                                            className={`px-10 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 ${isSaving ? 'bg-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200 dark:shadow-none'}`}
-                                        >
-                                            {isSaving ? 'Saving...' : 'Update Tools Status'}
-                                        </button>
-                                    </div>
-                                )}
+                                {/* Redundant Update button removed - Save is now handled by "Done" button */}
                             </div>
                         </div>
                     )
