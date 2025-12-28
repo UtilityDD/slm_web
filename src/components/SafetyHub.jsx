@@ -1,5 +1,6 @@
 // Force re-compile to clear stale Vite cache
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { calculateLevelFromProgress } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
@@ -1123,276 +1124,326 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
     }[language];
 
     return (
-        <div className={`${activeTab === 'dashboard' ? 'compact-container' : 'max-w-7xl mx-auto px-4 sm:px-6'} py-6 sm:py-10 md:mb-6 transition-all duration-500`}>
-            {/* Header Section */}
-            {/* Header Section */}
-            <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={() => {
-                            if (activeTab === 'dashboard' || mode === 'training') {
-                                setCurrentView('home');
-                            } else {
-                                setActiveTab('dashboard');
-                            }
-                        }}
-                        className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 group"
-                        title={language === 'en' ? 'Back' : 'ফিরে যান'}
-                    >
-                        <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                    </button>
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                            {activeTab === 'dashboard' ? (
-                                language === 'en' ? (
-                                    mode === 'training' ? '90 Days Training' : 'Safety'
-                                ) : (
-                                    mode === 'training' ? '৯০ দিনের প্রশিক্ষণ' : t.title
-                                )
-                            ) : (
-                                t[activeTab]?.title || (activeTab === 'training' ? (language === 'en' ? 'Training Program' : 'প্রশিক্ষণ কর্মসূচি') : '')
-                            )}
-                        </h1>
-                        {activeTab !== 'dashboard' && (
-                            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                                {mode === 'training' && activeTab === 'training' ? (
-                                    language === 'en' ? '90 Days - 90 Lessons' : '৯০ দিন - ৯০ পাঠ'
-                                ) : activeTab === 'sops' && language === 'bn' ? (
-                                    'পদ্ধতি মেনে কাজই হল নিরাপদ থাকার একমাত্র উপায়'
-                                ) : (
-                                    <>{language === 'en' ? 'Safety' : 'সেফটি'} • {t[activeTab]?.title || activeTab}</>
-                                )}
-                            </p>
-                        )}
-                    </div>
-                </div>
-
-                {activeTab === 'dashboard' && (
-                    <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl ${mode === 'training' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-orange-50 text-orange-700 border-orange-100'} border font-bold text-sm`}>
-                        <span className="text-lg">{mode === 'training' ? '🎓' : '🦺'}</span>
-                        {mode === 'training' ? (language === 'en' ? 'Training Mode' : 'প্রশিক্ষণ মোড') : (language === 'en' ? 'Safety Mode' : 'সুরক্ষা মোড')}
-                    </div>
-                )}
-            </div>
-
-            {/* Network Error UI */}
-            {fetchError && (
-                <div className="max-w-md mx-auto mb-8 p-6 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-800 rounded-2xl text-center animate-fade-in">
-                    <div className="text-3xl mb-3">📡</div>
-                    <h3 className="text-red-800 dark:text-red-400 font-bold mb-2">
-                        {language === 'en' ? 'Connection Error' : 'কানেকশন এরর'}
-                    </h3>
-                    <p className="text-sm text-red-600 dark:text-red-500 mb-4">
-                        {language === 'en'
-                            ? 'Unable to load safety data. Please check your internet connection.'
-                            : 'সেফটি ডাটা লোড করা সম্ভব হয়নি। আপনার ইন্টারনেট কানেকশন চেক করুন।'}
-                    </p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="px-6 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
-                    >
-                        {language === 'en' ? 'Retry' : 'আবার চেষ্টা করুন'}
-                    </button>
-                </div>
-            )}
-
-            {/* Content Area */}
-            <div className="animate-slide-down">
-                {mode !== 'training' && activeTab === 'dashboard' && (
-                    <SafetyDashboard
-                        user={user}
-                        userProfile={userProfile}
-                        language={language}
-                        setActiveTab={setActiveTab}
-                        completedLessons={completedLessons}
-                        t={t}
-                        setCurrentView={setCurrentView}
-                    />
-                )}
-
-
-                {activeTab === 'sops' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {/* Highlighted Safety Rule Carousel - Refined */}
-                        {/* Highlighted Safety Rule Carousel - Refined */}
-                        <div
-                            className="md:col-span-2 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/10 dark:to-orange-900/5 rounded-2xl p-6 border border-orange-100 dark:border-orange-800/50 shadow-sm min-h-[220px] flex flex-col justify-center relative overflow-hidden group touch-pan-y"
-                            onTouchStart={(e) => {
-                                const touch = e.touches[0];
-                                e.currentTarget.dataset.touchStartX = touch.clientX;
+        <>
+            <div className={`${activeTab === 'dashboard' ? 'compact-container' : 'max-w-7xl mx-auto px-4 sm:px-6'} py-6 sm:py-10 md:mb-6 transition-all duration-500`}>
+                {/* Header Section */}
+                {/* Header Section */}
+                <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => {
+                                if (activeTab === 'dashboard' || mode === 'training') {
+                                    setCurrentView('home');
+                                } else {
+                                    setActiveTab('dashboard');
+                                }
                             }}
-                            onTouchEnd={(e) => {
-                                const touch = e.changedTouches[0];
-                                const startX = parseFloat(e.currentTarget.dataset.touchStartX);
-                                const endX = touch.clientX;
-                                if (startX - endX > 50) nextRule(); // Swipe Left
-                                if (endX - startX > 50) prevRule(); // Swipe Right
-                            }}
+                            className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 group"
+                            title={language === 'en' ? 'Back' : 'ফিরে যান'}
                         >
-                            {/* Decorative Background Elements */}
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-200/20 dark:bg-orange-600/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
-                            <div className="absolute bottom-0 left-0 w-24 h-24 bg-orange-200/20 dark:bg-orange-600/10 rounded-full blur-xl -ml-8 -mb-8 pointer-events-none"></div>
-
-                            {/* Navigation Arrows - Desktop (Hover only) & Mobile (Side taps) */}
-                            <button
-                                onClick={prevRule}
-                                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 flex items-center justify-center border border-white/50 dark:border-slate-700 shadow-sm backdrop-blur-sm transition-all active:scale-95 z-20 opacity-60 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-                                aria-label="Previous rule"
-                            >
-                                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-
-                            <button
-                                onClick={nextRule}
-                                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 flex items-center justify-center border border-white/50 dark:border-slate-700 shadow-sm backdrop-blur-sm transition-all active:scale-95 z-20 opacity-60 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-                                aria-label="Next rule"
-                            >
-                                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
-
-                            <div className="relative z-10 flex flex-col items-center justify-center h-full px-8 sm:px-12 py-2">
-                                {/* Rule Text with Animation Key */}
-                                <div key={currentRuleIndex} className="max-w-xl text-center animate-fade-in-up">
-                                    <div className="mb-4 inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 text-2xl shadow-inner">
-                                        💡
-                                    </div>
-                                    <p className="text-slate-800 dark:text-slate-100 text-base sm:text-xl font-bold leading-relaxed tracking-tight">
-                                        {activeRules[currentRuleIndex]}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Dot Indicators */}
-                            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-20">
-                                {activeRules.map((_, idx) => (
-                                    <button
-                                        key={idx}
-                                        onClick={() => setCurrentRuleIndex(idx)}
-                                        className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentRuleIndex
-                                            ? 'w-6 bg-orange-500 shadow-sm'
-                                            : 'w-1.5 bg-orange-200 dark:bg-orange-800/50 hover:bg-orange-300'
-                                            }`}
-                                        aria-label={`Go to rule ${idx + 1}`}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* SOP Categories - Dynamic from JSON */}
-                        {sopData?.levels && (
-                            <>
-                                {sopData.levels.length >= 5 ? (
-                                    <>
-                                        <GroupedSOPCard
-                                            levels={sopData.levels.slice(0, 5)}
-                                            onClick={setSelectedLevel}
-                                            language={language}
-                                        />
-                                        {sopData.levels.slice(5).map((level, index) => (
-                                            <SOPCard
-                                                key={index + 5}
-                                                level={level}
-                                                index={index + 5}
-                                                onClick={setSelectedLevel}
-                                            />
-                                        ))}
-                                    </>
+                            <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                        </button>
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                                {activeTab === 'dashboard' ? (
+                                    language === 'en' ? (
+                                        mode === 'training' ? '90 Days Training' : 'Safety'
+                                    ) : (
+                                        mode === 'training' ? '৯০ দিনের প্রশিক্ষণ' : t.title
+                                    )
                                 ) : (
-                                    sopData.levels.map((level, index) => (
-                                        <SOPCard
-                                            key={index}
-                                            level={level}
-                                            index={index}
-                                            onClick={setSelectedLevel}
-                                        />
-                                    ))
+                                    t[activeTab]?.title || (activeTab === 'training' ? (language === 'en' ? 'Training Program' : 'প্রশিক্ষণ কর্মসূচি') : '')
                                 )}
-                            </>
-                        )}
+                            </h1>
+                            {activeTab !== 'dashboard' && (
+                                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                                    {mode === 'training' && activeTab === 'training' ? (
+                                        language === 'en' ? '90 Days - 90 Lessons' : '৯০ দিন - ৯০ পাঠ'
+                                    ) : activeTab === 'sops' && language === 'bn' ? (
+                                        'পদ্ধতি মেনে কাজই হল নিরাপদ থাকার একমাত্র উপায়'
+                                    ) : (
+                                        <>{language === 'en' ? 'Safety' : 'সেফটি'} • {t[activeTab]?.title || activeTab}</>
+                                    )}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {activeTab === 'dashboard' && (
+                        <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl ${mode === 'training' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-orange-50 text-orange-700 border-orange-100'} border font-bold text-sm`}>
+                            <span className="text-lg">{mode === 'training' ? '🎓' : '🦺'}</span>
+                            {mode === 'training' ? (language === 'en' ? 'Training Mode' : 'প্রশিক্ষণ মোড') : (language === 'en' ? 'Safety Mode' : 'সুরক্ষা মোড')}
+                        </div>
+                    )}
+                </div>
+
+                {/* Network Error UI */}
+                {fetchError && (
+                    <div className="max-w-md mx-auto mb-8 p-6 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-800 rounded-2xl text-center animate-fade-in">
+                        <div className="text-3xl mb-3">📡</div>
+                        <h3 className="text-red-800 dark:text-red-400 font-bold mb-2">
+                            {language === 'en' ? 'Connection Error' : 'কানেকশন এরর'}
+                        </h3>
+                        <p className="text-sm text-red-600 dark:text-red-500 mb-4">
+                            {language === 'en'
+                                ? 'Unable to load safety data. Please check your internet connection.'
+                                : 'সেফটি ডাটা লোড করা সম্ভব হয়নি। আপনার ইন্টারনেট কানেকশন চেক করুন।'}
+                        </p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="px-6 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
+                        >
+                            {language === 'en' ? 'Retry' : 'আবার চেষ্টা করুন'}
+                        </button>
                     </div>
                 )}
 
-                {activeTab === 'training' && (
-                    <div>
-                        {trainingLoading ? (
-                            <div className="text-center py-12">
-                                <div className="inline-block w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
-                                <p className="mt-4 text-slate-500">Loading training content...</p>
-                            </div>
-                        ) : !selectedChapter && !trainingContent ? (
-                            /* Chapter List View */
-                            <>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                    {trainingChapters.map((chapter) => (
-                                        <TrainingChapterCard
-                                            key={chapter.number}
-                                            chapter={chapter}
-                                            completedLessons={completedLessons}
-                                            language={language}
-                                            onClick={handleChapterClick}
+                {/* Content Area */}
+                <div className="animate-slide-down">
+                    {mode !== 'training' && activeTab === 'dashboard' && (
+                        <SafetyDashboard
+                            user={user}
+                            userProfile={userProfile}
+                            language={language}
+                            setActiveTab={setActiveTab}
+                            completedLessons={completedLessons}
+                            t={t}
+                            setCurrentView={setCurrentView}
+                        />
+                    )}
+
+
+                    {activeTab === 'sops' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {/* Highlighted Safety Rule Carousel - Refined */}
+                            {/* Highlighted Safety Rule Carousel - Refined */}
+                            <div
+                                className="md:col-span-2 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/10 dark:to-orange-900/5 rounded-2xl p-6 border border-orange-100 dark:border-orange-800/50 shadow-sm min-h-[220px] flex flex-col justify-center relative overflow-hidden group touch-pan-y"
+                                onTouchStart={(e) => {
+                                    const touch = e.touches[0];
+                                    e.currentTarget.dataset.touchStartX = touch.clientX;
+                                }}
+                                onTouchEnd={(e) => {
+                                    const touch = e.changedTouches[0];
+                                    const startX = parseFloat(e.currentTarget.dataset.touchStartX);
+                                    const endX = touch.clientX;
+                                    if (startX - endX > 50) nextRule(); // Swipe Left
+                                    if (endX - startX > 50) prevRule(); // Swipe Right
+                                }}
+                            >
+                                {/* Decorative Background Elements */}
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-200/20 dark:bg-orange-600/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                                <div className="absolute bottom-0 left-0 w-24 h-24 bg-orange-200/20 dark:bg-orange-600/10 rounded-full blur-xl -ml-8 -mb-8 pointer-events-none"></div>
+
+                                {/* Navigation Arrows - Desktop (Hover only) & Mobile (Side taps) */}
+                                <button
+                                    onClick={prevRule}
+                                    className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 flex items-center justify-center border border-white/50 dark:border-slate-700 shadow-sm backdrop-blur-sm transition-all active:scale-95 z-20 opacity-60 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                                    aria-label="Previous rule"
+                                >
+                                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+
+                                <button
+                                    onClick={nextRule}
+                                    className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 flex items-center justify-center border border-white/50 dark:border-slate-700 shadow-sm backdrop-blur-sm transition-all active:scale-95 z-20 opacity-60 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                                    aria-label="Next rule"
+                                >
+                                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+
+                                <div className="relative z-10 flex flex-col items-center justify-center h-full px-8 sm:px-12 py-2">
+                                    {/* Rule Text with Animation Key */}
+                                    <div key={currentRuleIndex} className="max-w-xl text-center animate-fade-in-up">
+                                        <div className="mb-4 inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 text-2xl shadow-inner">
+                                            💡
+                                        </div>
+                                        <p className="text-slate-800 dark:text-slate-100 text-base sm:text-xl font-bold leading-relaxed tracking-tight">
+                                            {activeRules[currentRuleIndex]}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Dot Indicators */}
+                                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-20">
+                                    {activeRules.map((_, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => setCurrentRuleIndex(idx)}
+                                            className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentRuleIndex
+                                                ? 'w-6 bg-orange-500 shadow-sm'
+                                                : 'w-1.5 bg-orange-200 dark:bg-orange-800/50 hover:bg-orange-300'
+                                                }`}
+                                            aria-label={`Go to rule ${idx + 1}`}
                                         />
                                     ))}
                                 </div>
+                            </div>
 
-                                {/* Certificate Button */}
-                                {user && (
-                                    <div className="mt-12 flex justify-center pb-8">
-                                        <button
-                                            onClick={() => setShowCertificateModal(true)}
-                                            className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-200 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                                        >
-                                            <span className="absolute inset-0 w-full h-full -mt-1 rounded-full opacity-30 bg-gradient-to-b from-transparent via-transparent to-black"></span>
-                                            <span className="relative flex items-center gap-3">
-                                                <span className="text-2xl animate-bounce">🎓</span>
-                                                <span className="text-lg">My Certificate</span>
-                                            </span>
-                                            <div className="absolute inset-0 rounded-full animate-pulse bg-blue-400 opacity-20 group-hover:opacity-40"></div>
-                                        </button>
-                                    </div>
-                                )}
-                            </>
-                        ) : selectedChapter && !trainingContent ? (
-                            /* Subchapter List View or FAQ View */
-                            <div>
-                                <button
-                                    onClick={() => setSelectedChapter(null)}
-                                    className="mb-6 flex items-center gap-2 text-orange-600 hover:text-orange-700 font-bold"
-                                >
-                                    ← {language === 'en' ? 'Back to Chapters' : 'অধ্যায়ে ফিরে যান'}
-                                </button>
-
-                                {selectedChapter.isFAQ ? (
-                                    /* FAQ View */
-                                    <div className="space-y-4">
-                                        <div className="bg-gradient-to-r from-violet-100 to-fuchsia-100 dark:from-violet-900/30 dark:to-fuchsia-900/30 p-6 rounded-2xl mb-6 border border-violet-200 dark:border-violet-700">
-                                            <h2 className="text-2xl font-bold text-violet-900 dark:text-violet-100 mb-2">{selectedChapter.content.title}</h2>
-                                            <p className="text-violet-700 dark:text-violet-300 mb-4">{selectedChapter.content.subtitle}</p>
-
-                                            {/* Search Input */}
-                                            <div className="relative">
-                                                <input
-                                                    type="text"
-                                                    placeholder={language === 'en' ? 'Search questions, answers, or tags...' : 'প্রশ্ন, উত্তর বা ট্যাগ খুঁজুন...'}
-                                                    value={faqSearchQuery}
-                                                    onChange={(e) => setFaqSearchQuery(e.target.value)}
-                                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-violet-200 dark:border-violet-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none shadow-sm"
+                            {/* SOP Categories - Dynamic from JSON */}
+                            {sopData?.levels && (
+                                <>
+                                    {sopData.levels.length >= 5 ? (
+                                        <>
+                                            <GroupedSOPCard
+                                                levels={sopData.levels.slice(0, 5)}
+                                                onClick={setSelectedLevel}
+                                                language={language}
+                                            />
+                                            {sopData.levels.slice(5).map((level, index) => (
+                                                <SOPCard
+                                                    key={index + 5}
+                                                    level={level}
+                                                    index={index + 5}
+                                                    onClick={setSelectedLevel}
                                                 />
-                                                <div className="absolute left-3 top-3.5 text-violet-400">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                                    </svg>
+                                            ))}
+                                        </>
+                                    ) : (
+                                        sopData.levels.map((level, index) => (
+                                            <SOPCard
+                                                key={index}
+                                                level={level}
+                                                index={index}
+                                                onClick={setSelectedLevel}
+                                            />
+                                        ))
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'training' && (
+                        <div>
+                            {trainingLoading ? (
+                                <div className="text-center py-12">
+                                    <div className="inline-block w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+                                    <p className="mt-4 text-slate-500">Loading training content...</p>
+                                </div>
+                            ) : !selectedChapter && !trainingContent ? (
+                                /* Chapter List View */
+                                <>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                        {trainingChapters.map((chapter) => (
+                                            <TrainingChapterCard
+                                                key={chapter.number}
+                                                chapter={chapter}
+                                                completedLessons={completedLessons}
+                                                language={language}
+                                                onClick={handleChapterClick}
+                                            />
+                                        ))}
+                                    </div>
+
+                                    {/* Certificate Button */}
+                                    {user && (
+                                        <div className="mt-12 flex justify-center pb-8">
+                                            <button
+                                                onClick={() => setShowCertificateModal(true)}
+                                                className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-200 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                                            >
+                                                <span className="absolute inset-0 w-full h-full -mt-1 rounded-full opacity-30 bg-gradient-to-b from-transparent via-transparent to-black"></span>
+                                                <span className="relative flex items-center gap-3">
+                                                    <span className="text-2xl animate-bounce">🎓</span>
+                                                    <span className="text-lg">My Certificate</span>
+                                                </span>
+                                                <div className="absolute inset-0 rounded-full animate-pulse bg-blue-400 opacity-20 group-hover:opacity-40"></div>
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
+                            ) : selectedChapter && !trainingContent ? (
+                                /* Subchapter List View or FAQ View */
+                                <div>
+                                    <button
+                                        onClick={() => setSelectedChapter(null)}
+                                        className="mb-6 flex items-center gap-2 text-orange-600 hover:text-orange-700 font-bold"
+                                    >
+                                        ← {language === 'en' ? 'Back to Chapters' : 'অধ্যায়ে ফিরে যান'}
+                                    </button>
+
+                                    {selectedChapter.isFAQ ? (
+                                        /* FAQ View */
+                                        <div className="space-y-4">
+                                            <div className="bg-gradient-to-r from-violet-100 to-fuchsia-100 dark:from-violet-900/30 dark:to-fuchsia-900/30 p-6 rounded-2xl mb-6 border border-violet-200 dark:border-violet-700">
+                                                <h2 className="text-2xl font-bold text-violet-900 dark:text-violet-100 mb-2">{selectedChapter.content.title}</h2>
+                                                <p className="text-violet-700 dark:text-violet-300 mb-4">{selectedChapter.content.subtitle}</p>
+
+                                                {/* Search Input */}
+                                                <div className="relative">
+                                                    <input
+                                                        type="text"
+                                                        placeholder={language === 'en' ? 'Search questions, answers, or tags...' : 'প্রশ্ন, উত্তর বা ট্যাগ খুঁজুন...'}
+                                                        value={faqSearchQuery}
+                                                        onChange={(e) => setFaqSearchQuery(e.target.value)}
+                                                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-violet-200 dark:border-violet-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none shadow-sm"
+                                                    />
+                                                    <div className="absolute left-3 top-3.5 text-violet-400">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                                        </svg>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {selectedChapter.content.questions
-                                            .filter(q => {
+                                            {selectedChapter.content.questions
+                                                .filter(q => {
+                                                    if (!faqSearchQuery) return true;
+                                                    const query = faqSearchQuery.toLowerCase();
+                                                    return (
+                                                        q.question.toLowerCase().includes(query) ||
+                                                        q.answer.toLowerCase().includes(query) ||
+                                                        q.tags.some(tag => tag.toLowerCase().includes(query))
+                                                    );
+                                                })
+                                                .map((q, idx) => (
+                                                    <div key={q.id} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-all">
+                                                        <details className="group">
+                                                            <summary className="flex items-center justify-between p-4 cursor-pointer list-none">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold text-sm shrink-0">
+                                                                        {q.id.replace('q', '')}
+                                                                    </div>
+                                                                    <span className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                                                                        {q.question}
+                                                                    </span>
+                                                                </div>
+                                                                <span className="transition group-open:rotate-180">
+                                                                    <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                                                                </span>
+                                                            </summary>
+                                                            <div className="px-4 pb-4 pl-[3.25rem] text-slate-600 dark:text-slate-400 text-sm leading-relaxed border-t border-slate-100 dark:border-slate-700 pt-4 bg-slate-50/50 dark:bg-slate-900/30">
+                                                                <p>{q.answer}</p>
+                                                                {q.image && (
+                                                                    <div className="mt-4 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm max-w-md">
+                                                                        <img
+                                                                            src={`/quizzes/faq_images/${q.image}`}
+                                                                            alt={q.question}
+                                                                            className="w-full h-auto object-cover"
+                                                                            loading="lazy"
+                                                                        />
+                                                                    </div>
+                                                                )}
+                                                                <div className="mt-3 flex flex-wrap gap-2">
+                                                                    {q.tags.map(tag => (
+                                                                        <span key={tag} className="px-2 py-1 rounded-md bg-slate-200 dark:bg-slate-700 text-xs text-slate-600 dark:text-slate-400 font-medium">
+                                                                            #{tag}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </details>
+                                                    </div>
+                                                ))}
+
+                                            {selectedChapter.content.questions.filter(q => {
                                                 if (!faqSearchQuery) return true;
                                                 const query = faqSearchQuery.toLowerCase();
                                                 return (
@@ -1400,678 +1451,634 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                     q.answer.toLowerCase().includes(query) ||
                                                     q.tags.some(tag => tag.toLowerCase().includes(query))
                                                 );
-                                            })
-                                            .map((q, idx) => (
-                                                <div key={q.id} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-all">
-                                                    <details className="group">
-                                                        <summary className="flex items-center justify-between p-4 cursor-pointer list-none">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold text-sm shrink-0">
-                                                                    {q.id.replace('q', '')}
-                                                                </div>
-                                                                <span className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
-                                                                    {q.question}
-                                                                </span>
-                                                            </div>
-                                                            <span className="transition group-open:rotate-180">
-                                                                <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                                                            </span>
-                                                        </summary>
-                                                        <div className="px-4 pb-4 pl-[3.25rem] text-slate-600 dark:text-slate-400 text-sm leading-relaxed border-t border-slate-100 dark:border-slate-700 pt-4 bg-slate-50/50 dark:bg-slate-900/30">
-                                                            <p>{q.answer}</p>
-                                                            {q.image && (
-                                                                <div className="mt-4 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm max-w-md">
-                                                                    <img
-                                                                        src={`/quizzes/faq_images/${q.image}`}
-                                                                        alt={q.question}
-                                                                        className="w-full h-auto object-cover"
-                                                                        loading="lazy"
-                                                                    />
-                                                                </div>
-                                                            )}
-                                                            <div className="mt-3 flex flex-wrap gap-2">
-                                                                {q.tags.map(tag => (
-                                                                    <span key={tag} className="px-2 py-1 rounded-md bg-slate-200 dark:bg-slate-700 text-xs text-slate-600 dark:text-slate-400 font-medium">
-                                                                        #{tag}
-                                                                    </span>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    </details>
-                                                </div>
-                                            ))}
-
-                                        {selectedChapter.content.questions.filter(q => {
-                                            if (!faqSearchQuery) return true;
-                                            const query = faqSearchQuery.toLowerCase();
-                                            return (
-                                                q.question.toLowerCase().includes(query) ||
-                                                q.answer.toLowerCase().includes(query) ||
-                                                q.tags.some(tag => tag.toLowerCase().includes(query))
-                                            );
-                                        }).length === 0 && (
-                                                <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-                                                    <div className="text-4xl mb-3">🔍</div>
-                                                    <p>{language === 'en' ? 'No results found' : 'কোন ফলাফল পাওয়া যায়নি'}</p>
-                                                </div>
-                                            )}
-                                    </div>
-                                ) : (
-                                    /* Regular Subchapter List */
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {selectedChapter.subchapters.map((subchapter, index) => {
-                                            const isUnlocked = isLessonUnlocked(subchapter.chapterNum, subchapter.subchapterNum);
-                                            const isCompleted = completedLessons.includes(subchapter.level_id);
-
-                                            return (
-                                                <div
-                                                    key={subchapter.level_id}
-                                                    onClick={() => {
-                                                        if (!user) {
-                                                            setCurrentView('login');
-                                                            return;
-                                                        }
-                                                        if (isUnlocked) {
-                                                            setTrainingContent(subchapter);
-                                                        }
-                                                    }}
-                                                    className={`bg-white dark:bg-slate-800 p-3 rounded-lg border transition-all flex items-center gap-3 ${isUnlocked
-                                                        ? 'border-slate-200 dark:border-slate-700 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-sm cursor-pointer'
-                                                        : 'border-slate-100 dark:border-slate-800 opacity-60 cursor-not-allowed'
-                                                        } ${isCompleted ? 'bg-emerald-50/30 dark:bg-emerald-900/10' : ''} group`}
-                                                >
-                                                    {/* ID Box - Always Visible */}
-                                                    <div className={`w-10 h-10 rounded-md flex items-center justify-center text-sm font-bold flex-shrink-0 border ${isCompleted
-                                                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
-                                                        : isUnlocked
-                                                            ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-900/30'
-                                                            : 'bg-slate-50 dark:bg-slate-800/50 text-slate-400 border-slate-100 dark:border-slate-700'
-                                                        }`}>
-                                                        {subchapter.level_id}
+                                            }).length === 0 && (
+                                                    <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+                                                        <div className="text-4xl mb-3">🔍</div>
+                                                        <p>{language === 'en' ? 'No results found' : 'কোন ফলাফল পাওয়া যায়নি'}</p>
                                                     </div>
+                                                )}
+                                        </div>
+                                    ) : (
+                                        /* Regular Subchapter List */
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {selectedChapter.subchapters.map((subchapter, index) => {
+                                                const isUnlocked = isLessonUnlocked(subchapter.chapterNum, subchapter.subchapterNum);
+                                                const isCompleted = completedLessons.includes(subchapter.level_id);
 
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 mb-0.5">
-                                                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                                                                {subchapter.badge_name}
-                                                            </span>
-                                                            {isCompleted && (
-                                                                <span className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px]">✓</span>
-                                                            )}
-                                                            {!isUnlocked && (
-                                                                <span className="text-[10px] text-slate-400">🔒</span>
-                                                            )}
-                                                        </div>
-                                                        <h4 className={`font-bold text-sm truncate ${isUnlocked ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'
+                                                return (
+                                                    <div
+                                                        key={subchapter.level_id}
+                                                        onClick={() => {
+                                                            if (!user) {
+                                                                setCurrentView('login');
+                                                                return;
+                                                            }
+                                                            if (isUnlocked) {
+                                                                setTrainingContent(subchapter);
+                                                            }
+                                                        }}
+                                                        className={`bg-white dark:bg-slate-800 p-3 rounded-lg border transition-all flex items-center gap-3 ${isUnlocked
+                                                            ? 'border-slate-200 dark:border-slate-700 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-sm cursor-pointer'
+                                                            : 'border-slate-100 dark:border-slate-800 opacity-60 cursor-not-allowed'
+                                                            } ${isCompleted ? 'bg-emerald-50/30 dark:bg-emerald-900/10' : ''} group`}
+                                                    >
+                                                        {/* ID Box - Always Visible */}
+                                                        <div className={`w-10 h-10 rounded-md flex items-center justify-center text-sm font-bold flex-shrink-0 border ${isCompleted
+                                                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                                                            : isUnlocked
+                                                                ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-900/30'
+                                                                : 'bg-slate-50 dark:bg-slate-800/50 text-slate-400 border-slate-100 dark:border-slate-700'
                                                             }`}>
-                                                            {subchapter.level_title}
-                                                        </h4>
-                                                    </div>
+                                                            {subchapter.level_id}
+                                                        </div>
 
-                                                    {/* Arrow Icon */}
-                                                    {isUnlocked && (
-                                                        <div className="text-slate-300 dark:text-slate-600 group-hover:text-orange-500 transition-colors">
-                                                            →
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2 mb-0.5">
+                                                                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                                                                    {subchapter.badge_name}
+                                                                </span>
+                                                                {isCompleted && (
+                                                                    <span className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px]">✓</span>
+                                                                )}
+                                                                {!isUnlocked && (
+                                                                    <span className="text-[10px] text-slate-400">🔒</span>
+                                                                )}
+                                                            </div>
+                                                            <h4 className={`font-bold text-sm truncate ${isUnlocked ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'
+                                                                }`}>
+                                                                {subchapter.level_title}
+                                                            </h4>
+                                                        </div>
+
+                                                        {/* Arrow Icon */}
+                                                        {isUnlocked && (
+                                                            <div className="text-slate-300 dark:text-slate-600 group-hover:text-orange-500 transition-colors">
+                                                                →
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div >
+                            ) : null}
+                        </div>
+                    )}
+
+                    {
+                        activeTab === 'my_ppe' && (
+                            <div className="w-full">
+                                <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                    <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
+                                        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.my_ppe.title}</h2>
+                                        <button
+                                            onClick={() => {
+                                                if (isEditMode) {
+                                                    handleSavePPE();
+                                                } else {
+                                                    setIsEditMode(true);
+                                                }
+                                            }}
+                                            className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${isEditMode
+                                                ? 'bg-orange-100 text-orange-700 border border-orange-200'
+                                                : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:border-orange-300'
+                                                }`}
+                                        >
+                                            {isEditMode ? (language === 'en' ? 'Done' : 'সম্পন্ন') : (language === 'en' ? 'Manage' : 'ম্যানেজ')}
+                                        </button>
+                                    </div>
+
+                                    <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                                        {loading ? (
+                                            <div className="p-8 text-center text-slate-400">Loading PPE list...</div>
+                                        ) : (
+                                            ppeChecklist.map((item, idx) => (
+                                                <div key={item.name} className={`p-3 sm:p-4 transition-colors ${item.available ? 'bg-orange-50/30 dark:bg-orange-900/10' : ''}`}>
+                                                    <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                                                        {/* Availability Checkbox - Only in Edit Mode */}
+                                                        {isEditMode && (
+                                                            <div className="flex items-center">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={item.available}
+                                                                    onChange={(e) => handleChecklistChange(idx, 'available', e.target.checked)}
+                                                                    className="w-5 h-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                                                                />
+                                                            </div>
+                                                        )}
+
+                                                        {/* Icon & Name */}
+                                                        <div className="flex items-center gap-2 min-w-[140px] flex-1">
+                                                            <span className="text-xl">{item.icon}</span>
+                                                            <span className={`text-sm font-bold ${item.available ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'}`}>
+                                                                {item.name}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Compact Fields - Only show if available */}
+                                                        {item.available && (
+                                                            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 ml-8 sm:ml-0">
+                                                                {isEditMode ? (
+                                                                    <>
+                                                                        {/* Qty */}
+                                                                        <div className="flex items-center gap-1">
+                                                                            <span className="text-[10px] uppercase font-bold text-slate-400">Qty</span>
+                                                                            <input
+                                                                                type="number"
+                                                                                min="1"
+                                                                                value={item.count}
+                                                                                onChange={(e) => handleChecklistChange(idx, 'count', e.target.value)}
+                                                                                className="w-12 px-1 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                            />
+                                                                        </div>
+
+                                                                        {/* Quality */}
+                                                                        <select
+                                                                            value={item.condition}
+                                                                            onChange={(e) => handleChecklistChange(idx, 'condition', e.target.value)}
+                                                                            className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                        >
+                                                                            <option value="Good">Good</option>
+                                                                            <option value="Fair">Fair</option>
+                                                                            <option value="Damaged">Damaged</option>
+                                                                        </select>
+
+                                                                        {/* Age */}
+                                                                        <select
+                                                                            value={item.age}
+                                                                            onChange={(e) => handleChecklistChange(idx, 'age', e.target.value)}
+                                                                            className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                        >
+                                                                            <option value="<6m">&lt;6m</option>
+                                                                            <option value="6-12m">6-12m</option>
+                                                                            <option value="1-2y">1-2y</option>
+                                                                            <option value=">2y">&gt;2y</option>
+                                                                        </select>
+
+                                                                        {/* Usage */}
+                                                                        <select
+                                                                            value={item.usage}
+                                                                            onChange={(e) => handleChecklistChange(idx, 'usage', e.target.value)}
+                                                                            className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                        >
+                                                                            <option value="Personal">Personal</option>
+                                                                            <option value="Shared">Shared</option>
+                                                                        </select>
+                                                                    </>
+                                                                ) : (
+                                                                    <div className="flex items-center gap-3 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100/50 dark:bg-slate-700/50 px-3 py-1 rounded-full">
+                                                                        <span className="flex items-center gap-1">
+                                                                            <span className="text-[10px] uppercase text-slate-400">Qty:</span>
+                                                                            <span className="text-slate-700 dark:text-slate-200">{item.count}</span>
+                                                                        </span>
+                                                                        <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                                                        <span className="flex items-center gap-1">
+                                                                            <span className="text-[10px] uppercase text-slate-400">Cond:</span>
+                                                                            <span className={`${item.condition === 'Good' ? 'text-emerald-600' : item.condition === 'Fair' ? 'text-amber-600' : 'text-red-600'}`}>
+                                                                                {item.condition}
+                                                                            </span>
+                                                                        </span>
+                                                                        <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                                                        <span className="flex items-center gap-1">
+                                                                            <span className="text-[10px] uppercase text-slate-400">Age:</span>
+                                                                            <span className="text-slate-700 dark:text-slate-200">{item.age}</span>
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+
+                                    {/* Redundant Update button removed - Save is now handled by "Done" button */}
+                                </div>
+                            </div>
+                        )
+                    }
+
+                    {
+                        activeTab === 'my_tools' && (
+                            <div className="w-full">
+                                <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                    <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
+                                        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.my_tools.title}</h2>
+                                        <button
+                                            onClick={() => {
+                                                if (isEditMode) {
+                                                    handleSaveTools();
+                                                } else {
+                                                    setIsEditMode(true);
+                                                }
+                                            }}
+                                            className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${isEditMode
+                                                ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+                                                : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:border-indigo-300'
+                                                }`}
+                                        >
+                                            {isEditMode ? (language === 'en' ? 'Done' : 'সম্পন্ন') : (language === 'en' ? 'Manage' : 'ম্যানেজ')}
+                                        </button>
+                                    </div>
+
+                                    <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                                        {loading ? (
+                                            <div className="p-8 text-center text-slate-400">Loading Tools list...</div>
+                                        ) : (
+                                            toolsChecklist.map((item, idx) => (
+                                                <div key={item.name} className={`p-3 sm:p-4 transition-colors ${item.available ? 'bg-indigo-50/30 dark:bg-indigo-900/10' : ''}`}>
+                                                    <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                                                        {/* Availability Checkbox - Only in Edit Mode */}
+                                                        {isEditMode && (
+                                                            <div className="flex items-center">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={item.available}
+                                                                    onChange={(e) => handleToolsChecklistChange(idx, 'available', e.target.checked)}
+                                                                    className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                                                />
+                                                            </div>
+                                                        )}
+
+                                                        {/* Icon & Name */}
+                                                        <div className="flex items-center gap-2 min-w-[140px] flex-1">
+                                                            <span className="text-xl">{item.icon}</span>
+                                                            <span className={`text-sm font-bold ${item.available ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'}`}>
+                                                                {item.name}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Compact Fields - Only show if available */}
+                                                        {item.available && (
+                                                            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 ml-8 sm:ml-0">
+                                                                {isEditMode ? (
+                                                                    <>
+                                                                        {/* Qty */}
+                                                                        <div className="flex items-center gap-1">
+                                                                            <span className="text-[10px] uppercase font-bold text-slate-400">Qty</span>
+                                                                            <input
+                                                                                type="number"
+                                                                                min="1"
+                                                                                value={item.count}
+                                                                                onChange={(e) => handleToolsChecklistChange(idx, 'count', e.target.value)}
+                                                                                className="w-12 px-1 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                            />
+                                                                        </div>
+
+                                                                        {/* Quality */}
+                                                                        <select
+                                                                            value={item.condition}
+                                                                            onChange={(e) => handleToolsChecklistChange(idx, 'condition', e.target.value)}
+                                                                            className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                        >
+                                                                            <option value="Good">Good</option>
+                                                                            <option value="Fair">Fair</option>
+                                                                            <option value="Damaged">Damaged</option>
+                                                                        </select>
+
+                                                                        {/* Age */}
+                                                                        <select
+                                                                            value={item.age}
+                                                                            onChange={(e) => handleToolsChecklistChange(idx, 'age', e.target.value)}
+                                                                            className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                        >
+                                                                            <option value="<6m">&lt;6m</option>
+                                                                            <option value="6-12m">6-12m</option>
+                                                                            <option value="1-2y">1-2y</option>
+                                                                            <option value=">2y">&gt;2y</option>
+                                                                        </select>
+
+                                                                        {/* Usage */}
+                                                                        <select
+                                                                            value={item.usage}
+                                                                            onChange={(e) => handleToolsChecklistChange(idx, 'usage', e.target.value)}
+                                                                            className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
+                                                                        >
+                                                                            <option value="Personal">Personal</option>
+                                                                            <option value="Shared">Shared</option>
+                                                                        </select>
+                                                                    </>
+                                                                ) : (
+                                                                    <div className="flex items-center gap-3 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100/50 dark:bg-slate-700/50 px-3 py-1 rounded-full">
+                                                                        <span className="flex items-center gap-1">
+                                                                            <span className="text-[10px] uppercase text-slate-400">Qty:</span>
+                                                                            <span className="text-slate-700 dark:text-slate-200">{item.count}</span>
+                                                                        </span>
+                                                                        <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                                                        <span className="flex items-center gap-1">
+                                                                            <span className="text-[10px] uppercase text-slate-400">Cond:</span>
+                                                                            <span className={`${item.condition === 'Good' ? 'text-emerald-600' : item.condition === 'Fair' ? 'text-amber-600' : 'text-red-600'}`}>
+                                                                                {item.condition}
+                                                                            </span>
+                                                                        </span>
+                                                                        <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                                                        <span className="flex items-center gap-1">
+                                                                            <span className="text-[10px] uppercase text-slate-400">Age:</span>
+                                                                            <span className="text-slate-700 dark:text-slate-200">{item.age}</span>
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+
+                                    {/* Redundant Update button removed - Save is now handled by "Done" button */}
+                                </div>
+                            </div>
+                        )
+                    }
+
+
+                </div > {/* animate-slide-down */}
+            </div > {/* Root Container */}
+
+            {/* Full Page Content View - Using Portal to bypass parent layout constraints */}
+            {trainingContent && createPortal(
+                <div className="fixed inset-0 z-[9999] bg-slate-50 dark:bg-slate-900 overflow-y-auto animate-slide-up w-full h-full">
+                    {/* Sticky Header */}
+                    <div className="sticky top-0 z-50 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between shadow-sm">
+                        <button
+                            onClick={() => {
+                                setTrainingContent(null);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 font-bold transition-colors"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                            </svg>
+                            <span className="inline">{language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}</span>
+                        </button>
+                        <div className="flex-1 text-center px-4">
+                            <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                                {trainingContent.level_title}
+                            </h2>
+                        </div>
+                        <div className="w-10"></div> {/* Spacer for centering */}
+                    </div>
+
+                    <div className="max-w-6xl mx-auto px-4 py-8 pb-24">
+                        {/* Hero Header */}
+                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 sm:p-8 text-white mb-8 shadow-xl shadow-orange-500/20">
+                            <div className="inline-block px-3 py-1 rounded-lg bg-white/20 backdrop-blur-sm text-[10px] uppercase tracking-widest font-bold mb-4">
+                                {trainingContent.badge_name}
+                            </div>
+                            <h2 className="text-2xl sm:text-3xl font-bold mb-2 reading-content leading-tight">{trainingContent.level_title}</h2>
+                            <div className="flex items-center gap-2 text-orange-100 text-sm font-medium">
+                                <span className="w-1.5 h-1.5 rounded-full bg-orange-200"></span>
+                                Level {trainingContent.level_id}
+                            </div>
+                        </div>
+
+                        {/* Mission Briefing */}
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-6 rounded-r-2xl mb-8 shadow-sm">
+                            <div className="flex items-start gap-4">
+                                <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-800 flex items-center justify-center text-xl flex-shrink-0">
+                                    🎯
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2 uppercase tracking-wider text-xs">
+                                        {language === 'en' ? 'Mission Briefing' : 'মিশন ব্রিফিং'}
+                                    </h3>
+                                    <p className="text-slate-700 dark:text-slate-300 reading-content leading-relaxed text-base">
+                                        {trainingContent.mission_briefing}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Sections */}
+                        <div className="space-y-8">
+                            {trainingContent.sections?.map((section, sIdx) => (
+                                <div key={sIdx} className="bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 dark:border-slate-700">
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6 reading-content flex items-center gap-3">
+                                        <span className="w-1.5 h-6 bg-orange-500 rounded-full"></span>
+                                        {section.title}
+                                    </h3>
+                                    <div className="space-y-8">
+                                        {section.points?.map((point, pIdx) => (
+                                            <div key={pIdx} className="relative pl-6 border-l border-slate-100 dark:border-slate-700">
+                                                <div className="absolute left-[-5px] top-2 w-2.5 h-2.5 rounded-full bg-orange-500 border-2 border-white dark:border-slate-800"></div>
+                                                <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-3 reading-content text-lg">
+                                                    {point.item_name}
+                                                </h4>
+                                                <div className="space-y-4">
+                                                    {point.specifications && (
+                                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <span className="text-blue-500 text-sm">📋</span>
+                                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                                    {language === 'en' ? 'Details' : 'বিস্তারিত'}
+                                                                </p>
+                                                            </div>
+                                                            <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed">
+                                                                {point.specifications}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                    {point.importance && (
+                                                        <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-xl border border-amber-100/50 dark:border-amber-900/20">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <span className="text-amber-500 text-sm">💡</span>
+                                                                <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
+                                                                    {language === 'en' ? 'Key Point' : 'মূল বিষয়'}
+                                                                </p>
+                                                            </div>
+                                                            <p className="text-sm text-slate-700 dark:text-slate-300 reading-content leading-relaxed font-medium">
+                                                                {point.importance}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                    {point.daily_check && (
+                                                        <div className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-xl border border-emerald-100 dark:border-emerald-900/20">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <span className="text-emerald-500 text-sm">✓</span>
+                                                                <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
+                                                                    {language === 'en' ? 'Quick Tip' : 'পরামর্শ'}
+                                                                </p>
+                                                            </div>
+                                                            <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed">
+                                                                {point.daily_check}
+                                                            </p>
                                                         </div>
                                                     )}
                                                 </div>
-                                            );
-                                        })}
+                                            </div>
+                                        ))}
                                     </div>
-                                )}
-                            </div >
-                        ) : trainingContent ? (
-                            /* Full Page Content View */
-                            <div className="fixed inset-0 z-[100] bg-slate-50 dark:bg-slate-900 overflow-y-auto animate-slide-up">
-                                {/* Sticky Header */}
-                                <div className="sticky top-0 z-50 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between shadow-sm">
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Pro Tips */}
+                        {trainingContent.pro_tip && (
+                            <div className="mt-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-8 text-white shadow-lg shadow-emerald-500/20">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl">
+                                        💡
+                                    </div>
+                                    <h3 className="text-xl font-bold reading-content">
+                                        {trainingContent.pro_tip.title}
+                                    </h3>
+                                </div>
+                                <ul className="space-y-4">
+                                    {trainingContent.pro_tip.content?.map((tip, idx) => (
+                                        <li key={idx} className="flex items-start gap-3 text-emerald-50 reading-content leading-relaxed">
+                                            <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">✓</span>
+                                            {tip}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        {/* Myth Buster */}
+                        {trainingContent.myth_buster && (
+                            <div className="mt-8 bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 border-2 border-red-100 dark:border-red-900/30 shadow-sm">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-xl">
+                                        ⚠️
+                                    </div>
+                                    <h3 className="text-xl font-bold text-red-700 dark:text-red-400 reading-content">
+                                        {trainingContent.myth_buster.title}
+                                    </h3>
+                                </div>
+                                <div className="grid grid-cols-1 gap-4">
+                                    {trainingContent.myth_buster.myths?.map((item, idx) => (
+                                        <div key={idx} className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-5 border border-slate-100 dark:border-slate-800">
+                                            <div className="mb-4">
+                                                <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1">
+                                                    {language === 'en' ? 'Myth' : 'মিথ'}
+                                                </p>
+                                                <p className="text-base text-slate-700 dark:text-slate-300 italic reading-content leading-relaxed font-medium">
+                                                    "{item.myth}"
+                                                </p>
+                                            </div>
+                                            <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                                                <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">
+                                                    {language === 'en' ? 'Reality' : 'বাস্তবতা'}
+                                                </p>
+                                                <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
+                                                    {item.reality || item.fact}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Advanced Section */}
+                        {trainingContent.advanced_section && (
+                            <div className="mt-8 bg-slate-900 rounded-2xl p-8 text-white shadow-xl">
+                                <div className="flex items-center gap-3 mb-8">
+                                    <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center text-xl">
+                                        🔬
+                                    </div>
+                                    <h3 className="text-xl font-bold reading-content">
+                                        {trainingContent.advanced_section.title}
+                                    </h3>
+                                </div>
+                                <div className="grid grid-cols-1 gap-6">
+                                    {trainingContent.advanced_section.facts?.map((fact, idx) => (
+                                        <div key={idx} className="bg-white/5 rounded-xl p-6 border border-white/10">
+                                            <h4 className="font-bold text-indigo-400 mb-3 reading-content text-lg">
+                                                {fact.title}
+                                            </h4>
+                                            <p className="text-slate-300 reading-content leading-relaxed text-sm">
+                                                {fact.content}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Mark as Complete Button */}
+                        <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
+                            {!completedLessons.includes(trainingContent.level_id) ? (
+                                <>
+                                    <button
+                                        onClick={() => initiateLessonCompletion(trainingContent.level_id)}
+                                        className="w-full px-8 py-4 rounded-2xl font-bold transition-all bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-3 text-lg active:scale-95"
+                                    >
+                                        <span className="text-xl">✓</span>
+                                        {language === 'en' ? 'Mark as Complete' : 'সম্পন্ন হিসাবে চিহ্নিত করুন'}
+                                    </button>
                                     <button
                                         onClick={() => {
                                             setTrainingContent(null);
                                             window.scrollTo({ top: 0, behavior: 'smooth' });
                                         }}
-                                        className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 font-bold transition-colors"
+                                        className="w-full mt-4 px-8 py-4 rounded-2xl font-bold transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center gap-3 text-lg active:scale-95"
                                     >
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
                                         </svg>
-                                        <span className="inline">{language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}</span>
+                                        {language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}
                                     </button>
-                                    <div className="flex-1 text-center px-4">
-                                        <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
-                                            {trainingContent.level_title}
-                                        </h2>
+                                </>
+                            ) : (
+                                <div className="space-y-4">
+                                    <div className="w-full px-8 py-4 rounded-2xl font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 flex items-center justify-center gap-3 text-lg border border-emerald-200 dark:border-emerald-800">
+                                        <span className="text-xl">✓</span>
+                                        {language === 'en' ? 'Lesson Completed!' : 'পাঠ সম্পন্ন!'}
                                     </div>
-                                    <div className="w-10"></div> {/* Spacer for centering */}
-                                </div>
-
-                                <div className="max-w-5xl mx-auto px-4 py-8 pb-24">
-                                    {/* Hero Header */}
-                                    <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 sm:p-8 text-white mb-8 shadow-xl shadow-orange-500/20">
-                                        <div className="inline-block px-3 py-1 rounded-lg bg-white/20 backdrop-blur-sm text-[10px] uppercase tracking-widest font-bold mb-4">
-                                            {trainingContent.badge_name}
-                                        </div>
-                                        <h2 className="text-2xl sm:text-3xl font-bold mb-2 reading-content leading-tight">{trainingContent.level_title}</h2>
-                                        <div className="flex items-center gap-2 text-orange-100 text-sm font-medium">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-orange-200"></span>
-                                            Level {trainingContent.level_id}
-                                        </div>
-                                    </div>
-
-                                    {/* Mission Briefing */}
-                                    <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-6 rounded-r-2xl mb-8 shadow-sm">
-                                        <div className="flex items-start gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-800 flex items-center justify-center text-xl flex-shrink-0">
-                                                🎯
-                                            </div>
-                                            <div>
-                                                <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2 uppercase tracking-wider text-xs">
-                                                    {language === 'en' ? 'Mission Briefing' : 'মিশন ব্রিফিং'}
-                                                </h3>
-                                                <p className="text-slate-700 dark:text-slate-300 reading-content leading-relaxed text-base">
-                                                    {trainingContent.mission_briefing}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Sections */}
-                                    <div className="space-y-8">
-                                        {trainingContent.sections?.map((section, sIdx) => (
-                                            <div key={sIdx} className="bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 dark:border-slate-700">
-                                                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6 reading-content flex items-center gap-3">
-                                                    <span className="w-1.5 h-6 bg-orange-500 rounded-full"></span>
-                                                    {section.title}
-                                                </h3>
-                                                <div className="space-y-8">
-                                                    {section.points?.map((point, pIdx) => (
-                                                        <div key={pIdx} className="relative pl-6 border-l border-slate-100 dark:border-slate-700">
-                                                            <div className="absolute left-[-5px] top-2 w-2.5 h-2.5 rounded-full bg-orange-500 border-2 border-white dark:border-slate-800"></div>
-                                                            <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-3 reading-content text-lg">
-                                                                {point.item_name}
-                                                            </h4>
-                                                            <div className="space-y-4">
-                                                                {point.specifications && (
-                                                                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl">
-                                                                        <div className="flex items-center gap-2 mb-2">
-                                                                            <span className="text-blue-500 text-sm">📋</span>
-                                                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                                                                {language === 'en' ? 'Details' : 'বিস্তারিত'}
-                                                                            </p>
-                                                                        </div>
-                                                                        <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed">
-                                                                            {point.specifications}
-                                                                        </p>
-                                                                    </div>
-                                                                )}
-                                                                {point.importance && (
-                                                                    <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-xl border border-amber-100/50 dark:border-amber-900/20">
-                                                                        <div className="flex items-center gap-2 mb-2">
-                                                                            <span className="text-amber-500 text-sm">💡</span>
-                                                                            <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
-                                                                                {language === 'en' ? 'Key Point' : 'মূল বিষয়'}
-                                                                            </p>
-                                                                        </div>
-                                                                        <p className="text-sm text-slate-700 dark:text-slate-300 reading-content leading-relaxed font-medium">
-                                                                            {point.importance}
-                                                                        </p>
-                                                                    </div>
-                                                                )}
-                                                                {point.daily_check && (
-                                                                    <div className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-xl border border-emerald-100 dark:border-emerald-900/20">
-                                                                        <div className="flex items-center gap-2 mb-2">
-                                                                            <span className="text-emerald-500 text-sm">✓</span>
-                                                                            <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
-                                                                                {language === 'en' ? 'Quick Tip' : 'পরামর্শ'}
-                                                                            </p>
-                                                                        </div>
-                                                                        <p className="text-sm text-slate-600 dark:text-slate-300 reading-content leading-relaxed">
-                                                                            {point.daily_check}
-                                                                        </p>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Pro Tips */}
-                                    {trainingContent.pro_tip && (
-                                        <div className="mt-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-8 text-white shadow-lg shadow-emerald-500/20">
-                                            <div className="flex items-center gap-3 mb-6">
-                                                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl">
-                                                    💡
-                                                </div>
-                                                <h3 className="text-xl font-bold reading-content">
-                                                    {trainingContent.pro_tip.title}
-                                                </h3>
-                                            </div>
-                                            <ul className="space-y-4">
-                                                {trainingContent.pro_tip.content?.map((tip, idx) => (
-                                                    <li key={idx} className="flex items-start gap-3 text-emerald-50 reading-content leading-relaxed">
-                                                        <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">✓</span>
-                                                        {tip}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-
-                                    {/* Myth Buster */}
-                                    {trainingContent.myth_buster && (
-                                        <div className="mt-8 bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 border-2 border-red-100 dark:border-red-900/30 shadow-sm">
-                                            <div className="flex items-center gap-3 mb-6">
-                                                <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-xl">
-                                                    ⚠️
-                                                </div>
-                                                <h3 className="text-xl font-bold text-red-700 dark:text-red-400 reading-content">
-                                                    {trainingContent.myth_buster.title}
-                                                </h3>
-                                            </div>
-                                            <div className="grid grid-cols-1 gap-4">
-                                                {trainingContent.myth_buster.myths?.map((item, idx) => (
-                                                    <div key={idx} className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-5 border border-slate-100 dark:border-slate-800">
-                                                        <div className="mb-4">
-                                                            <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1">
-                                                                {language === 'en' ? 'Myth' : 'মিথ'}
-                                                            </p>
-                                                            <p className="text-base text-slate-700 dark:text-slate-300 italic reading-content leading-relaxed font-medium">
-                                                                "{item.myth}"
-                                                            </p>
-                                                        </div>
-                                                        <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                                                            <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">
-                                                                {language === 'en' ? 'Reality' : 'বাস্তবতা'}
-                                                            </p>
-                                                            <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
-                                                                {item.reality || item.fact}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Advanced Section */}
-                                    {trainingContent.advanced_section && (
-                                        <div className="mt-8 bg-slate-900 rounded-2xl p-8 text-white shadow-xl">
-                                            <div className="flex items-center gap-3 mb-8">
-                                                <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center text-xl">
-                                                    🔬
-                                                </div>
-                                                <h3 className="text-xl font-bold reading-content">
-                                                    {trainingContent.advanced_section.title}
-                                                </h3>
-                                            </div>
-                                            <div className="grid grid-cols-1 gap-6">
-                                                {trainingContent.advanced_section.facts?.map((fact, idx) => (
-                                                    <div key={idx} className="bg-white/5 rounded-xl p-6 border border-white/10">
-                                                        <h4 className="font-bold text-indigo-400 mb-3 reading-content text-lg">
-                                                            {fact.title}
-                                                        </h4>
-                                                        <p className="text-slate-300 reading-content leading-relaxed text-sm">
-                                                            {fact.content}
-                                                        </p>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Mark as Complete Button */}
-                                    <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
-                                        {!completedLessons.includes(trainingContent.level_id) ? (
-                                            <>
-                                                <button
-                                                    onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                                    className="w-full px-8 py-4 rounded-2xl font-bold transition-all bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-3 text-lg active:scale-95"
-                                                >
-                                                    <span className="text-xl">✓</span>
-                                                    {language === 'en' ? 'Mark as Complete' : 'সম্পন্ন হিসাবে চিহ্নিত করুন'}
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        setTrainingContent(null);
-                                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                    }}
-                                                    className="w-full mt-4 px-8 py-4 rounded-2xl font-bold transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center gap-3 text-lg active:scale-95"
-                                                >
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                                                    </svg>
-                                                    {language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <div className="space-y-4">
-                                                <div className="w-full px-8 py-4 rounded-2xl font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 flex items-center justify-center gap-3 text-lg border border-emerald-200 dark:border-emerald-800">
-                                                    <span className="text-xl">✓</span>
-                                                    {language === 'en' ? 'Lesson Completed!' : 'পাঠ সম্পন্ন!'}
-                                                </div>
-                                                <button
-                                                    onClick={() => {
-                                                        setTrainingContent(null);
-                                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                    }}
-                                                    className="w-full px-8 py-4 rounded-2xl font-bold transition-all bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:opacity-90 flex items-center justify-center gap-3 text-lg active:scale-95"
-                                                >
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                                                    </svg>
-                                                    {language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ) : null}
-                    </div >
-                )}
-
-                {
-                    activeTab === 'my_ppe' && (
-                        <div className="w-full">
-                            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
-                                    <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.my_ppe.title}</h2>
                                     <button
                                         onClick={() => {
-                                            if (isEditMode) {
-                                                handleSavePPE();
-                                            } else {
-                                                setIsEditMode(true);
-                                            }
+                                            setTrainingContent(null);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
                                         }}
-                                        className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${isEditMode
-                                            ? 'bg-orange-100 text-orange-700 border border-orange-200'
-                                            : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:border-orange-300'
-                                            }`}
+                                        className="w-full px-8 py-4 rounded-2xl font-bold transition-all bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:opacity-90 flex items-center justify-center gap-3 text-lg active:scale-95"
                                     >
-                                        {isEditMode ? (language === 'en' ? 'Done' : 'সম্পন্ন') : (language === 'en' ? 'Manage' : 'ম্যানেজ')}
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                        {language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}
                                     </button>
                                 </div>
-
-                                <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                                    {loading ? (
-                                        <div className="p-8 text-center text-slate-400">Loading PPE list...</div>
-                                    ) : (
-                                        ppeChecklist.map((item, idx) => (
-                                            <div key={item.name} className={`p-3 sm:p-4 transition-colors ${item.available ? 'bg-orange-50/30 dark:bg-orange-900/10' : ''}`}>
-                                                <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-                                                    {/* Availability Checkbox - Only in Edit Mode */}
-                                                    {isEditMode && (
-                                                        <div className="flex items-center">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={item.available}
-                                                                onChange={(e) => handleChecklistChange(idx, 'available', e.target.checked)}
-                                                                className="w-5 h-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
-                                                            />
-                                                        </div>
-                                                    )}
-
-                                                    {/* Icon & Name */}
-                                                    <div className="flex items-center gap-2 min-w-[140px] flex-1">
-                                                        <span className="text-xl">{item.icon}</span>
-                                                        <span className={`text-sm font-bold ${item.available ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'}`}>
-                                                            {item.name}
-                                                        </span>
-                                                    </div>
-
-                                                    {/* Compact Fields - Only show if available */}
-                                                    {item.available && (
-                                                        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 ml-8 sm:ml-0">
-                                                            {isEditMode ? (
-                                                                <>
-                                                                    {/* Qty */}
-                                                                    <div className="flex items-center gap-1">
-                                                                        <span className="text-[10px] uppercase font-bold text-slate-400">Qty</span>
-                                                                        <input
-                                                                            type="number"
-                                                                            min="1"
-                                                                            value={item.count}
-                                                                            onChange={(e) => handleChecklistChange(idx, 'count', e.target.value)}
-                                                                            className="w-12 px-1 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                                        />
-                                                                    </div>
-
-                                                                    {/* Quality */}
-                                                                    <select
-                                                                        value={item.condition}
-                                                                        onChange={(e) => handleChecklistChange(idx, 'condition', e.target.value)}
-                                                                        className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                                    >
-                                                                        <option value="Good">Good</option>
-                                                                        <option value="Fair">Fair</option>
-                                                                        <option value="Damaged">Damaged</option>
-                                                                    </select>
-
-                                                                    {/* Age */}
-                                                                    <select
-                                                                        value={item.age}
-                                                                        onChange={(e) => handleChecklistChange(idx, 'age', e.target.value)}
-                                                                        className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                                    >
-                                                                        <option value="<6m">&lt;6m</option>
-                                                                        <option value="6-12m">6-12m</option>
-                                                                        <option value="1-2y">1-2y</option>
-                                                                        <option value=">2y">&gt;2y</option>
-                                                                    </select>
-
-                                                                    {/* Usage */}
-                                                                    <select
-                                                                        value={item.usage}
-                                                                        onChange={(e) => handleChecklistChange(idx, 'usage', e.target.value)}
-                                                                        className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                                    >
-                                                                        <option value="Personal">Personal</option>
-                                                                        <option value="Shared">Shared</option>
-                                                                    </select>
-                                                                </>
-                                                            ) : (
-                                                                <div className="flex items-center gap-3 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100/50 dark:bg-slate-700/50 px-3 py-1 rounded-full">
-                                                                    <span className="flex items-center gap-1">
-                                                                        <span className="text-[10px] uppercase text-slate-400">Qty:</span>
-                                                                        <span className="text-slate-700 dark:text-slate-200">{item.count}</span>
-                                                                    </span>
-                                                                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                                                                    <span className="flex items-center gap-1">
-                                                                        <span className="text-[10px] uppercase text-slate-400">Cond:</span>
-                                                                        <span className={`${item.condition === 'Good' ? 'text-emerald-600' : item.condition === 'Fair' ? 'text-amber-600' : 'text-red-600'}`}>
-                                                                            {item.condition}
-                                                                        </span>
-                                                                    </span>
-                                                                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                                                                    <span className="flex items-center gap-1">
-                                                                        <span className="text-[10px] uppercase text-slate-400">Age:</span>
-                                                                        <span className="text-slate-700 dark:text-slate-200">{item.age}</span>
-                                                                    </span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-
-                                {/* Redundant Update button removed - Save is now handled by "Done" button */}
-                            </div>
+                            )}
                         </div>
-                    )
-                }
+                    </div>
+                </div>,
+                document.body
+            )}
 
-                {
-                    activeTab === 'my_tools' && (
-                        <div className="w-full">
-                            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
-                                    <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.my_tools.title}</h2>
-                                    <button
-                                        onClick={() => {
-                                            if (isEditMode) {
-                                                handleSaveTools();
-                                            } else {
-                                                setIsEditMode(true);
-                                            }
-                                        }}
-                                        className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${isEditMode
-                                            ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
-                                            : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:border-indigo-300'
-                                            }`}
-                                    >
-                                        {isEditMode ? (language === 'en' ? 'Done' : 'সম্পন্ন') : (language === 'en' ? 'Manage' : 'ম্যানেজ')}
-                                    </button>
-                                </div>
+            {createPortal(
+                <>
+                    <SOPDetailModal
+                        level={selectedLevel}
+                        onClose={() => setSelectedLevel(null)}
+                        language={language}
+                    />
 
-                                <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                                    {loading ? (
-                                        <div className="p-8 text-center text-slate-400">Loading Tools list...</div>
-                                    ) : (
-                                        toolsChecklist.map((item, idx) => (
-                                            <div key={item.name} className={`p-3 sm:p-4 transition-colors ${item.available ? 'bg-indigo-50/30 dark:bg-indigo-900/10' : ''}`}>
-                                                <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-                                                    {/* Availability Checkbox - Only in Edit Mode */}
-                                                    {isEditMode && (
-                                                        <div className="flex items-center">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={item.available}
-                                                                onChange={(e) => handleToolsChecklistChange(idx, 'available', e.target.checked)}
-                                                                className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                                                            />
-                                                        </div>
-                                                    )}
+                    <ChapterQuizModal
+                        isOpen={showQuizModal}
+                        onClose={() => setShowQuizModal(false)}
+                        onComplete={handleQuizComplete}
+                        questions={currentQuizQuestions}
+                        language={language}
+                    />
 
-                                                    {/* Icon & Name */}
-                                                    <div className="flex items-center gap-2 min-w-[140px] flex-1">
-                                                        <span className="text-xl">{item.icon}</span>
-                                                        <span className={`text-sm font-bold ${item.available ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'}`}>
-                                                            {item.name}
-                                                        </span>
-                                                    </div>
-
-                                                    {/* Compact Fields - Only show if available */}
-                                                    {item.available && (
-                                                        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 ml-8 sm:ml-0">
-                                                            {isEditMode ? (
-                                                                <>
-                                                                    {/* Qty */}
-                                                                    <div className="flex items-center gap-1">
-                                                                        <span className="text-[10px] uppercase font-bold text-slate-400">Qty</span>
-                                                                        <input
-                                                                            type="number"
-                                                                            min="1"
-                                                                            value={item.count}
-                                                                            onChange={(e) => handleToolsChecklistChange(idx, 'count', e.target.value)}
-                                                                            className="w-12 px-1 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                                        />
-                                                                    </div>
-
-                                                                    {/* Quality */}
-                                                                    <select
-                                                                        value={item.condition}
-                                                                        onChange={(e) => handleToolsChecklistChange(idx, 'condition', e.target.value)}
-                                                                        className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                                    >
-                                                                        <option value="Good">Good</option>
-                                                                        <option value="Fair">Fair</option>
-                                                                        <option value="Damaged">Damaged</option>
-                                                                    </select>
-
-                                                                    {/* Age */}
-                                                                    <select
-                                                                        value={item.age}
-                                                                        onChange={(e) => handleToolsChecklistChange(idx, 'age', e.target.value)}
-                                                                        className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                                    >
-                                                                        <option value="<6m">&lt;6m</option>
-                                                                        <option value="6-12m">6-12m</option>
-                                                                        <option value="1-2y">1-2y</option>
-                                                                        <option value=">2y">&gt;2y</option>
-                                                                    </select>
-
-                                                                    {/* Usage */}
-                                                                    <select
-                                                                        value={item.usage}
-                                                                        onChange={(e) => handleToolsChecklistChange(idx, 'usage', e.target.value)}
-                                                                        className="text-xs px-1 py-1 border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
-                                                                    >
-                                                                        <option value="Personal">Personal</option>
-                                                                        <option value="Shared">Shared</option>
-                                                                    </select>
-                                                                </>
-                                                            ) : (
-                                                                <div className="flex items-center gap-3 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100/50 dark:bg-slate-700/50 px-3 py-1 rounded-full">
-                                                                    <span className="flex items-center gap-1">
-                                                                        <span className="text-[10px] uppercase text-slate-400">Qty:</span>
-                                                                        <span className="text-slate-700 dark:text-slate-200">{item.count}</span>
-                                                                    </span>
-                                                                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                                                                    <span className="flex items-center gap-1">
-                                                                        <span className="text-[10px] uppercase text-slate-400">Cond:</span>
-                                                                        <span className={`${item.condition === 'Good' ? 'text-emerald-600' : item.condition === 'Fair' ? 'text-amber-600' : 'text-red-600'}`}>
-                                                                            {item.condition}
-                                                                        </span>
-                                                                    </span>
-                                                                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                                                                    <span className="flex items-center gap-1">
-                                                                        <span className="text-[10px] uppercase text-slate-400">Age:</span>
-                                                                        <span className="text-slate-700 dark:text-slate-200">{item.age}</span>
-                                                                    </span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-
-                                {/* Redundant Update button removed - Save is now handled by "Done" button */}
-                            </div>
-                        </div>
-                    )
-                }
-
-
-            </div >
-
-            {/* SOP Detail Modal */}
-            < SOPDetailModal
-                level={selectedLevel}
-                onClose={() => setSelectedLevel(null)}
-                language={language}
-            />
-
-
-            {/* Chapter Quiz Modal */}
-            < ChapterQuizModal
-                isOpen={showQuizModal}
-                onClose={() => setShowQuizModal(false)}
-                onComplete={handleQuizComplete}
-                questions={currentQuizQuestions}
-                language={language}
-            />
-
-
-            <CertificateModal
-                isOpen={showCertificateModal}
-                onClose={() => setShowCertificateModal(false)}
-                userName={userProfile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0]}
-                level={userProfile?.training_level || 1}
-                badgeName={getBadgeByLevel(userProfile?.training_level || 1)?.[language === 'en' ? 'en' : 'bn']}
-                date={new Date().toLocaleDateString()}
-                certificateId={user?.id}
-            />
-        </div >
+                    <CertificateModal
+                        isOpen={showCertificateModal}
+                        onClose={() => setShowCertificateModal(false)}
+                        userName={userProfile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+                        level={userProfile?.training_level || 1}
+                        badgeName={getBadgeByLevel(userProfile?.training_level || 1)?.[language === 'en' ? 'en' : 'bn']}
+                        date={new Date().toLocaleDateString()}
+                        certificateId={user?.id}
+                    />
+                </>,
+                document.body
+            )}
+        </>
     );
 }
 
