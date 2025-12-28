@@ -203,7 +203,7 @@ export default function SmartLinemanUI() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       if (event === 'PASSWORD_RECOVERY') {
-        setCurrentView('login');
+        setCurrentView('update-password');
       }
       if (session) {
         fetchProfile(session.user);
@@ -533,6 +533,18 @@ export default function SmartLinemanUI() {
           onLogin={(u) => {
             setUser(u);
             showNotification(language === 'en' ? 'Welcome back!' : 'আপনাকে স্বাগতম!');
+            setCurrentView('home');
+          }}
+          showNotification={showNotification}
+        />;
+      }
+
+      if (currentView === 'update-password') {
+        return <Login
+          initialView="update"
+          onLogin={(u) => {
+            setUser(u);
+            showNotification(language === 'en' ? 'Password updated!' : 'পাসওয়ার্ড আপডেট হয়েছে!');
             setCurrentView('home');
           }}
           showNotification={showNotification}

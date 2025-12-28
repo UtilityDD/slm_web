@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-export default function Login({ onLogin, showNotification }) {
+export default function Login({ onLogin, showNotification, initialView }) {
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [view, setView] = useState('login'); // login, signup, forgot, update
+    const [view, setView] = useState(initialView || 'login'); // login, signup, forgot, update
     const [error, setError] = useState(null);
 
     useEffect(() => {
