@@ -718,6 +718,16 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                       </select>
                     </div>
 
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Job Type</label>
+                      <select name="job" value={editingUser.job || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                        <option value="">Select Job Type</option>
+                        <option value="HT-Mobile Van">HT-Mobile Van</option>
+                        <option value="LT-Mobile Van">LT-Mobile Van</option>
+                        <option value="HT-LT Others">HT-LT Others</option>
+                      </select>
+                    </div>
+
                     {userProfile?.role === 'admin' && (
                       <div>
                         <label className="block text-xs font-medium text-slate-500 mb-1">Supervisor (Safety Mitra / Admin)</label>
