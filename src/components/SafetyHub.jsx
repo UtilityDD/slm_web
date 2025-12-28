@@ -1802,25 +1802,25 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
             {trainingContent && createPortal(
                 <div className="fixed inset-0 top-14 bottom-14 md:bottom-0 z-[75] bg-slate-50 dark:bg-slate-900 overflow-y-auto animate-slide-up w-full">
                     {/* Sticky Header */}
-                    <div className="sticky top-0 z-50 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between shadow-sm">
+                    <div className="sticky top-0 z-50 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between shadow-sm gap-3">
                         <button
                             onClick={() => {
                                 setTrainingContent(null);
                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                             }}
-                            className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 font-bold transition-colors"
+                            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-500 flex-shrink-0"
+                            title={language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
                             </svg>
-                            <span className="inline">{language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}</span>
                         </button>
-                        <div className="flex-1 text-center px-4">
+                        <div className="flex-1 text-center min-w-0">
                             <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
                                 {trainingContent.level_title}
                             </h2>
                         </div>
-                        <div className="w-10"></div> {/* Spacer for centering */}
+                        <div className="w-9 flex-shrink-0"></div> {/* Spacer for centering */}
                     </div>
 
                     <div className="max-w-6xl mx-auto px-4 py-8 pb-24">
