@@ -913,23 +913,13 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                             <SkeletonRow />
                         </>
                     ) : !user ? (
-                        <div className="p-12 text-center">
-                            <div className="w-16 h-16 mx-auto mb-4 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
-                                <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                            </div>
-                            <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-2">
-                                {language === 'en' ? 'Login Required' : 'লগইন প্রয়োজন'}
+                        <div className="p-8 text-center">
+                            <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-4 text-sm">
+                                {language === 'en' ? 'Login to view Leaderboard' : 'লিডারবোর্ড দেখতে লগইন করুন'}
                             </h4>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-                                {language === 'en'
-                                    ? 'Please login to view the leaderboard and compete with others.'
-                                    : 'লিডারবোর্ড দেখতে এবং অন্যদের সাথে প্রতিযোগিতা করতে লগইন করুন।'}
-                            </p>
                             <button
                                 onClick={() => setCurrentView('login')}
-                                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors text-sm"
+                                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors text-xs"
                             >
                                 {language === 'en' ? 'Login Now' : 'এখনই লগইন করুন'}
                             </button>
