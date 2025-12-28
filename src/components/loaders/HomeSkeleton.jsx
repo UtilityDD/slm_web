@@ -3,7 +3,7 @@ import Skeleton from './Skeleton';
 
 const HomeSkeleton = () => {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 mb-20 animate-pulse">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:mb-6 animate-pulse">
       {/* Skeleton for Hero Section */}
       <div className="mb-10 sm:mb-12">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

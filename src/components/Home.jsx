@@ -95,7 +95,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
     };
 
     return (
-        <main className="compact-container py-6 sm:py-10 mb-20">
+        <main className="compact-container py-6 sm:py-10 md:mb-6">
             {loading ? (
                 <HomeSkeleton />
             ) : (

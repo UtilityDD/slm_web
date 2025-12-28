@@ -117,7 +117,7 @@ export default function Community({ language = 'en', setCurrentView }) {
     if (loading) return <CommunitySkeleton />;
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 mb-20 animate-fade-in transition-all duration-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 md:mb-6 animate-fade-in transition-all duration-500">
             {/* Minimal Header */}
             <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">

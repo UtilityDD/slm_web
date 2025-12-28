@@ -530,7 +530,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
     };
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 mb-20 transition-all duration-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 md:mb-6 transition-all duration-500">
             <Toast message={toast.message} type={toast.type} show={toast.show} onDismiss={() => setToast(t => ({ ...t, show: false }))} />
 
             {/* Modern Header - Compact */}
