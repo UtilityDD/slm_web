@@ -687,7 +687,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                             {t.title}
                         </h1>
                         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                            {language === 'en' ? 'Compete & Win' : 'প্রতিযোগিতা ও জয়'} • {language === 'en' ? 'Leaderboard' : 'লিডারবোর্ড'}
+                            {language === 'en' ? 'Learn, Know & Win Prizes!' : 'শিখুন, জানুন, পুরস্কার জিতুন!'}
                         </p>
                     </div>
                 </div>
