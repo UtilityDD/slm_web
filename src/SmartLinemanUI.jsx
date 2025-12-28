@@ -451,7 +451,7 @@ export default function SmartLinemanUI() {
   const translations = {
     en: {
       nav: {
-        safety: "Safety Hub",
+        safety: "Safety",
         training: "90 Days Training",
         community: "Community",
         competitions: "Competitions",

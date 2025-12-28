@@ -364,7 +364,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
 
     const t = {
         en: {
-            title: "Emergency Hub",
+            title: "Emergency",
             tabs: {
                 blood: "Blood Network",
                 services: "Emergency Services"
@@ -392,7 +392,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
             }
         },
         bn: {
-            title: "জরুরি হাব",
+            title: "জরুরি",
             tabs: {
                 blood: "রক্তের নেটওয়ার্ক",
                 services: "জরুরি পরিষেবা"
@@ -548,7 +548,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                             {language === 'en' ? (
-                                <>Emergency <span className="text-red-600">Hub</span></>
+                                'Emergency'
                             ) : (
                                 <>{t.title}</>
                             )}

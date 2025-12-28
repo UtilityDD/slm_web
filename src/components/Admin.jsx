@@ -404,7 +404,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
           </button>
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-              {userProfile?.role === 'safety mitra' ? 'Safety Mitra' : 'Admin'} <span className="text-indigo-600">Hub</span>
+              {userProfile?.role === 'safety mitra' ? 'Safety Mitra' : 'Admin'}
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
               {language === 'en' ? 'Management Console' : 'ম্যানেজমেন্ট কনসোল'} • {language === 'en' ? 'User Management' : 'ইউজার ম্যানেজমেন্ট'}
