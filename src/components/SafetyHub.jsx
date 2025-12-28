@@ -1056,23 +1056,21 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
             {/* Header Section */}
             <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                    {activeTab !== 'dashboard' && (
-                        <button
-                            onClick={() => {
-                                if (mode === 'training') {
-                                    setCurrentView('home');
-                                } else {
-                                    setActiveTab('dashboard');
-                                }
-                            }}
-                            className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 group"
-                            title={language === 'en' ? 'Back' : 'ফিরে যান'}
-                        >
-                            <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                            </svg>
-                        </button>
-                    )}
+                    <button
+                        onClick={() => {
+                            if (activeTab === 'dashboard' || mode === 'training') {
+                                setCurrentView('home');
+                            } else {
+                                setActiveTab('dashboard');
+                            }
+                        }}
+                        className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 group"
+                        title={language === 'en' ? 'Back' : 'ফিরে যান'}
+                    >
+                        <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </button>
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                             {activeTab === 'dashboard' ? (
