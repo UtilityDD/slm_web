@@ -248,7 +248,7 @@ const CertificateModal = ({ isOpen, onClose, userName, level, badgeName, date, c
                             <div class="recipient-name">${userName || 'Valued Learner'}</div>
                             
                             <div class="description">
-                                Has successfully demonstrated exceptional dedication to safety protocols and professional development by achieving the distinguished level of
+                                Has successfully demonstrated exceptional dedication to safety SOPs and professional development by achieving the distinguished level of
                             </div>
                             
                             <div class="badge-level">${badgeName || 'Safety Trainee'}</div>
@@ -358,7 +358,7 @@ const CertificateModal = ({ isOpen, onClose, userName, level, badgeName, date, c
 
                         <div className="max-w-3xl mb-12">
                             <p className="text-2xl text-slate-600 leading-relaxed">
-                                Has successfully demonstrated exceptional dedication to safety protocols and professional development by achieving the distinguished level of
+                                Has successfully demonstrated exceptional dedication to safety SOPs and professional development by achieving the distinguished level of
                             </p>
                         </div>
 

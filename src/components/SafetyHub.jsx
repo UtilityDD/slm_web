@@ -28,7 +28,7 @@ const PPESkeleton = () => (
     </div>
 );
 
-const ProtocolCard = React.memo(({ level, index, onClick }) => (
+const SOPCard = React.memo(({ level, index, onClick }) => (
     <div
         onClick={() => onClick(level)}
         className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md transition-all cursor-pointer group"
@@ -181,13 +181,13 @@ const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedL
                 </button>
 
                 <button
-                    onClick={() => setActiveTab('protocols')}
+                    onClick={() => setActiveTab('sops')}
                     className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-orange-400 dark:hover:border-orange-600 transition-all group text-left"
                 >
                     <div className="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
                         📋
                     </div>
-                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{t.tabs.protocols}</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{t.tabs.sops}</h3>
                 </button>
 
                 <button
@@ -266,7 +266,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         if (mode === 'training') {
             setActiveTab('training');
         } else if (mode === 'safety' && activeTab === 'training') {
-            setActiveTab('protocols');
+            setActiveTab('sops');
         }
     }, [mode]);
 
@@ -275,7 +275,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         if (mode === 'training') {
             return ['training'];
         }
-        return ['protocols', 'my_ppe', 'my_tools'];
+        return ['sops', 'my_ppe', 'my_tools'];
     };
 
     // Fallback fetch if userProfile is missing but user exists
@@ -309,7 +309,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
     const [toolsChecklist, setToolsChecklist] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
     const [currentRuleIndex, setCurrentRuleIndex] = useState(0);
-    const [protocolsData, setProtocolsData] = useState(null);
+    const [sopData, setSopData] = useState(null);
     const [selectedLevel, setSelectedLevel] = useState(null);
     const [carouselData, setCarouselData] = useState(null);
     const [fetchError, setFetchError] = useState(false);
@@ -509,16 +509,16 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
     }, [activeRules.length]);
 
     useEffect(() => {
-        const fetchProtocols = async () => {
+        const fetchSOP = async () => {
             setFetchError(false);
             try {
                 const fileName = language === 'en' ? 'protocol_en.json' : 'protocol.json';
                 const response = await fetch(`/quizzes/${fileName}`);
-                if (!response.ok) throw new Error('Failed to fetch protocols');
+                if (!response.ok) throw new Error('Failed to fetch SOP');
                 const data = await response.json();
-                setProtocolsData(data);
+                setSopData(data);
             } catch (error) {
-                console.error('Error fetching protocols:', error);
+                console.error('Error fetching SOP:', error);
                 setFetchError(true);
             }
         };
@@ -553,7 +553,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
             }
         };
 
-        fetchProtocols();
+        fetchSOP();
         fetchCarousel();
         fetchTrainingChapters();
     }, [language]);
@@ -938,13 +938,13 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         en: {
             title: "Safety",
             tabs: {
-                protocols: "Protocols",
+                sops: "SOP",
                 training: "90 Days Training",
                 my_ppe: "My PPE",
                 my_tools: "My Tools",
                 report: "Report Incident"
             },
-            protocols: {
+            sops: {
                 title: "Standard Operating Procedures",
                 categories: ["High Voltage", "Maintenance", "Storm Safety", "First Aid"]
             },
@@ -998,13 +998,13 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         bn: {
             title: "সেফটি",
             tabs: {
-                protocols: "প্রোটোকল",
+                sops: "SOP",
                 training: "৯০ দিনের প্রশিক্ষণ",
                 my_ppe: "আমার পিপিই",
                 my_tools: "আমার টুলস",
                 report: "রিপোর্ট করুন"
             },
-            protocols: {
+            sops: {
                 title: "স্ট্যান্ডার্ড অপারেটিং প্রসিডিউর (SOP)",
                 categories: ["উচ্চ ভোল্টেজ", "রক্ষণাবেক্ষণ", "ঝড় নিরাপত্তা", "প্রাথমিক চিকিৎসা"]
             },
@@ -1094,6 +1094,8 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
                                 {mode === 'training' && activeTab === 'training' ? (
                                     language === 'en' ? '90 Days - 90 Lessons' : '৯০ দিন - ৯০ পাঠ'
+                                ) : activeTab === 'sops' && language === 'bn' ? (
+                                    'পদ্ধতি মেনে কাজই হল নিরাপদ থাকার একমাত্র উপায়'
                                 ) : (
                                     <>{language === 'en' ? 'Safety' : 'সেফটি'} • {t[activeTab]?.title || activeTab}</>
                                 )}
@@ -1146,7 +1148,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                 )}
 
 
-                {activeTab === 'protocols' && (
+                {activeTab === 'sops' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {/* Highlighted Safety Rule Carousel - Refined */}
                         {/* Highlighted Safety Rule Carousel - Refined */}
@@ -1217,10 +1219,9 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                             </div>
                         </div>
 
-                        {/* Protocol Categories - Dynamic from JSON */}
-                        {/* Protocol Categories - Dynamic from JSON */}
-                        {protocolsData?.levels.map((level, index) => (
-                            <ProtocolCard
+                        {/* SOP Categories - Dynamic from JSON */}
+                        {sopData?.levels.map((level, index) => (
+                            <SOPCard
                                 key={index}
                                 level={level}
                                 index={index}
@@ -1956,8 +1957,8 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
             </div >
 
-            {/* Protocol Detail Modal */}
-            < ProtocolDetailModal
+            {/* SOP Detail Modal */}
+            < SOPDetailModal
                 level={selectedLevel}
                 onClose={() => setSelectedLevel(null)}
                 language={language}
@@ -1989,7 +1990,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
 
 
-const ProtocolDetailModal = ({ level, onClose, language }) => {
+const SOPDetailModal = ({ level, onClose, language }) => {
     if (!level) return null;
 
     return (
