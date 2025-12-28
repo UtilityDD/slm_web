@@ -44,6 +44,59 @@ const SOPCard = React.memo(({ level, index, onClick }) => (
     </div>
 ));
 
+const GroupedSOPCard = React.memo(({ levels, onClick, language }) => {
+    const [isCollapsed, setIsCollapsed] = useState(true);
+
+    return (
+        <div
+            className="md:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all"
+        >
+            <div
+                className="flex items-center justify-between cursor-pointer"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+            >
+                <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-orange-600 text-white flex items-center justify-center text-2xl shadow-lg shadow-orange-500/20">
+                        📋
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-xl text-slate-900 dark:text-slate-100">
+                            {language === 'bn' ? 'সব কাজের সাধারণ নিয়ম' : 'General Rules for All Work'}
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                            {language === 'bn' ? 'ধাপ ১ থেকে ৫' : 'Steps 1 to 5'}
+                        </p>
+                    </div>
+                </div>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center bg-slate-50 dark:bg-slate-900/50 text-slate-400 transition-transform duration-300 ${isCollapsed ? '' : 'rotate-180'}`}>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+            </div>
+
+            {!isCollapsed && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6 animate-fade-in">
+                    {levels.map((level, index) => (
+                        <div
+                            key={index}
+                            onClick={() => onClick(level)}
+                            className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 cursor-pointer group transition-all"
+                        >
+                            <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center text-sm font-bold group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                                {index + 1}
+                            </div>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors line-clamp-1">
+                                {level.level_name}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+});
+
 const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, onClick }) => {
     const isFAQ = chapter.number === 10;
     const completedCount = completedLessons.filter(id => id && id.toString().startsWith(`${chapter.number}.`)).length;
@@ -1220,14 +1273,36 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                         </div>
 
                         {/* SOP Categories - Dynamic from JSON */}
-                        {sopData?.levels.map((level, index) => (
-                            <SOPCard
-                                key={index}
-                                level={level}
-                                index={index}
-                                onClick={setSelectedLevel}
-                            />
-                        ))}
+                        {sopData?.levels && (
+                            <>
+                                {sopData.levels.length >= 5 ? (
+                                    <>
+                                        <GroupedSOPCard
+                                            levels={sopData.levels.slice(0, 5)}
+                                            onClick={setSelectedLevel}
+                                            language={language}
+                                        />
+                                        {sopData.levels.slice(5).map((level, index) => (
+                                            <SOPCard
+                                                key={index + 5}
+                                                level={level}
+                                                index={index + 5}
+                                                onClick={setSelectedLevel}
+                                            />
+                                        ))}
+                                    </>
+                                ) : (
+                                    sopData.levels.map((level, index) => (
+                                        <SOPCard
+                                            key={index}
+                                            level={level}
+                                            index={index}
+                                            onClick={setSelectedLevel}
+                                        />
+                                    ))
+                                )}
+                            </>
+                        )}
                     </div>
                 )}
 
