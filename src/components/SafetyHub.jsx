@@ -178,7 +178,6 @@ const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedL
                         🎓
                     </div>
                     <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{language === 'en' ? 'Training' : 'প্রশিক্ষণ'}</h3>
-                    <p className="text-[10px] text-slate-500 mt-1">{language === 'en' ? 'Continue learning' : 'শেখা চালিয়ে যান'}</p>
                 </button>
 
                 <button
@@ -189,7 +188,6 @@ const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedL
                         📋
                     </div>
                     <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{t.tabs.protocols}</h3>
-                    <p className="text-[10px] text-slate-500 mt-1">{language === 'en' ? 'View SOPs' : 'SOP দেখুন'}</p>
                 </button>
 
                 <button
@@ -200,7 +198,6 @@ const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedL
                         🦺
                     </div>
                     <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{t.tabs.my_ppe}</h3>
-                    <p className="text-[10px] text-slate-500 mt-1">{language === 'en' ? 'Manage Gear' : 'সরঞ্জাম দেখুন'}</p>
                 </button>
 
                 <button
@@ -211,7 +208,6 @@ const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedL
                         🛠️
                     </div>
                     <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{t.tabs.my_tools}</h3>
-                    <p className="text-[10px] text-slate-500 mt-1">{language === 'en' ? 'Manage Tools' : 'টুলস দেখুন'}</p>
                 </button>
 
 
