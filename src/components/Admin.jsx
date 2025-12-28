@@ -85,8 +85,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   }, [userProfile?.role]);
 
   const fetchUsers = async (page = 1) => {
-    // Check cache for this specific page
-    const cacheKey = `admin_users_page_${page}`;
+    // Check cache for this specific page and role
+    const cacheKey = `admin_users_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_page_${page}`;
     const cachedData = cacheHelper.get(cacheKey);
     if (cachedData) {
       setUsers(cachedData.users);
@@ -387,9 +387,12 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     } else {
       console.log('User updated successfully', data); // Debug log
 
-      // Clear ALL admin user cache (all pages)
+      // Clear ALL admin user cache (all pages and roles)
+      // We'll clear a broad range to be safe
       for (let i = 1; i <= 10; i++) {
         cacheHelper.clear(`admin_users_page_${i}`);
+        cacheHelper.clear(`admin_users_admin_all_page_${i}`);
+        cacheHelper.clear(`admin_users_safety mitra_${user.id}_page_${i}`);
       }
 
       // Wait for users list to refresh before closing modal
