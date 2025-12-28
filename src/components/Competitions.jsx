@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
@@ -1057,7 +1058,7 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             </div>
 
             {/* Full Leaderboard Modal */}
-            {showFullLeaderboard && (
+            {showFullLeaderboard && createPortal(
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
                     <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-xl max-h-[85vh] flex flex-col shadow-xl overflow-hidden border border-slate-200 dark:border-slate-700">
                         <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
@@ -1098,7 +1099,8 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                             )}
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Quiz Modal */}
