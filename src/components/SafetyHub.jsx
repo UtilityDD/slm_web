@@ -72,8 +72,16 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
                             }`}>
                             {chapter.title}
                         </h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                            {isFAQ ? (language === 'en' ? 'Always Unlocked' : 'সবার জন্য উন্মুক্ত') : `${chapter.count} ${language === 'en' ? 'Lessons' : 'পাঠ'}`}
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1.5">
+                            {isFAQ ? (
+                                language === 'en' ? 'Always Unlocked' : 'সবার জন্য উন্মুক্ত'
+                            ) : (
+                                language === 'en' ? (
+                                    `${chapter.count} Days • ${chapter.count} Lessons`
+                                ) : (
+                                    `${chapter.count === 10 ? '১০' : chapter.count} দিন - ${chapter.count === 10 ? '১০' : chapter.count} পাঠ`
+                                )
+                            )}
                         </p>
                     </div>
                 </div>
@@ -1085,7 +1093,11 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                         </h1>
                         {activeTab !== 'dashboard' && (
                             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                                {language === 'en' ? 'Safety' : 'সেফটি'} • {t[activeTab]?.title || activeTab}
+                                {mode === 'training' && activeTab === 'training' ? (
+                                    language === 'en' ? '90 Days - 90 Lessons' : '৯০ দিন - ৯০ পাঠ'
+                                ) : (
+                                    <>{language === 'en' ? 'Safety' : 'সেফটি'} • {t[activeTab]?.title || activeTab}</>
+                                )}
                             </p>
                         )}
                     </div>
