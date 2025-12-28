@@ -598,8 +598,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
       {/* Edit User Modal */}
       {editingUser && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl shadow-2xl w-full max-w-xl border border-slate-100 dark:border-slate-700 animate-scale-in">
+        <div className="fixed top-0 left-0 right-0 bottom-0 bg-slate-900/60 backdrop-blur-sm z-[120] p-4 pb-20 flex items-center justify-center">
+          <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl shadow-2xl w-full max-w-xl border border-slate-100 dark:border-slate-700 animate-scale-in my-auto flex flex-col max-h-[85vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-700">
               <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Edit User Profile</h2>
               <button onClick={handleCancelEdit} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
@@ -629,7 +629,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               </button>
             </div>
 
-            <div className="max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar flex-1">
               {activeEditTab === 'basic' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
                   {/* Left Column - Avatar & Basic Info */}
@@ -844,8 +844,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
       {/* Admin PPE Modal - NEW */}
       {editingPPEUser && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm overflow-hidden h-full w-full flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl border border-slate-100 dark:border-slate-700 animate-scale-in flex flex-col max-h-[90vh]">
+        <div className="fixed top-0 left-0 right-0 bottom-0 bg-slate-900/60 backdrop-blur-sm z-[120] p-4 pb-20 flex items-center justify-center">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl border border-slate-100 dark:border-slate-700 animate-scale-in flex flex-col max-h-[85vh] my-auto overflow-y-auto">
             <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Manage PPE for User</h2>
@@ -856,7 +856,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 max-h-[65vh]">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {ppeChecklist.map((item, index) => (
                   <div key={item.name} className={`relative p-4 rounded-xl border-2 transition-all ${item.available ? 'border-indigo-500 bg-indigo-50/10 dark:bg-indigo-900/10 shadow-sm' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 opacity-80'}`}>
@@ -962,9 +962,9 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
       {/* Send Notification Modal */}
       {showNotificationModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-2xl w-full max-w-md border border-slate-100 dark:border-slate-700 animate-scale-in">
-            <div className="flex justify-between items-center mb-6 pb-4 border-b dark:border-slate-700">
+        <div className="fixed top-0 left-0 right-0 bottom-0 bg-slate-900/60 backdrop-blur-sm z-[120] p-4 pb-20 flex items-center justify-center">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md border border-slate-100 dark:border-slate-700 animate-scale-in flex flex-col max-h-[85vh] my-auto overflow-y-auto">
+            <div className="flex justify-between items-center p-6 pb-4 border-b dark:border-slate-700 shrink-0">
               <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                 <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -976,7 +976,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               </button>
             </div>
 
-            <form onSubmit={handleSendNotification} className="space-y-4">
+            <form onSubmit={handleSendNotification} className="space-y-4 flex-1 overflow-y-auto p-6 max-h-[65vh]">
               <div>
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Notification Title</label>
                 <input
@@ -1014,23 +1014,24 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 </select>
               </div>
 
-              <div className="pt-4 flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowNotificationModal(false)}
-                  className="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl hover:bg-slate-200 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSendingNotification}
-                  className="flex-1 px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all disabled:opacity-50"
-                >
-                  {isSendingNotification ? 'Sending...' : 'Send Now'}
-                </button>
-              </div>
             </form>
+            <div className="flex justify-end gap-3 p-6 border-t dark:border-slate-700 shrink-0 bg-gray-50 dark:bg-slate-800/50">
+              <button
+                type="button"
+                onClick={() => setShowNotificationModal(false)}
+                className="px-5 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                onClick={handleSendNotification}
+                disabled={isSendingNotification}
+                className="px-5 py-2.5 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all disabled:opacity-50"
+              >
+                {isSendingNotification ? 'Sending...' : 'Send Now'}
+              </button>
+            </div>
           </div>
         </div>
       )}

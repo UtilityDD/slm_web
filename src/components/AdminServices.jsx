@@ -310,15 +310,15 @@ export default function AdminServices({ language = 'en' }) {
 
                 {/* Add/Edit Service Modal */}
                 {showServiceModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-slate-100 dark:border-slate-700">
+                    <div className="fixed top-0 left-0 right-0 bottom-0 z-[120] p-4 pb-20 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm">
+                        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col border border-slate-100 dark:border-slate-700 overflow-y-auto">
                             <div className="p-6 border-b border-slate-200 dark:border-slate-700">
                                 <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
                                     {editingService ? 'Edit Service' : 'Add New Service'}
                                 </h2>
                             </div>
 
-                            <div className="p-6 space-y-4">
+                            <div className="p-6 space-y-4 max-h-[65vh] overflow-y-auto flex-1">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
