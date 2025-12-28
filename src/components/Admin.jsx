@@ -58,12 +58,31 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     message: '',
     type: 'info'
   });
+  const [supervisors, setSupervisors] = useState([]);
   const [isSendingNotification, setIsSendingNotification] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
 
   useEffect(() => {
     fetchUsers(currentPage);
-  }, [currentPage]);
+  }, [currentPage, userProfile?.role]);
+
+  useEffect(() => {
+    const fetchSupervisors = async () => {
+      if (userProfile?.role !== 'admin') return;
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, full_name, role')
+          .in('role', ['admin', 'safety mitra'])
+          .order('full_name');
+        if (error) throw error;
+        setSupervisors(data || []);
+      } catch (err) {
+        console.error('Error fetching supervisors:', err);
+      }
+    };
+    fetchSupervisors();
+  }, [userProfile?.role]);
 
   const fetchUsers = async (page = 1) => {
     // Check cache for this specific page
@@ -83,9 +102,16 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       const end = start + usersPerPage - 1;
 
       // Fetch paginated users with total count
-      const { data, error, count } = await supabase
+      let query = supabase
         .from('profiles')
-        .select('id, full_name, email, role, district, block, avatar_url, created_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage, is_donor, last_donation_date, blood_group, phone', { count: 'exact' })
+        .select('id, full_name, email, role, district, block, avatar_url, created_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage, is_donor, last_donation_date, blood_group, phone, supervisor_id', { count: 'exact' });
+
+      // If Safety Mitra, only show their team
+      if (userProfile?.role === 'safety mitra') {
+        query = query.eq('supervisor_id', user.id);
+      }
+
+      const { data, error, count } = await query
         .order('created_at', { ascending: false })
         .range(start, end);
 
@@ -407,7 +433,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               {userProfile?.role === 'safety mitra' ? 'Safety Mitra' : 'Admin'}
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-              {language === 'en' ? 'Management Console' : 'ম্যানেজমেন্ট কনসোল'} • {language === 'en' ? 'User Management' : 'ইউজার ম্যানেজমেন্ট'}
+              {language === 'en' ? 'Management Console' : 'ম্যানেজমেন্ট কনসোল'} • {userProfile?.role === 'safety mitra' ? (language === 'en' ? 'My Team' : 'আমার টিম') : (language === 'en' ? 'User Management' : 'ইউজার ম্যানেজমেন্ট')}
             </p>
           </div>
         </div>
@@ -425,15 +451,17 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 Send Notification
               </button>
             )}
-            <button
-              onClick={() => setCurrentView('admin-services')}
-              className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg shadow-red-500/20 transition-all flex items-center gap-2 text-sm"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              Services
-            </button>
+            {userProfile?.role === 'admin' && (
+              <button
+                onClick={() => setCurrentView('admin-services')}
+                className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg shadow-red-500/20 transition-all flex items-center gap-2 text-sm"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                Services
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -686,6 +714,23 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                         {userProfile?.role === 'admin' && <option value="admin">Admin</option>}
                       </select>
                     </div>
+
+                    {userProfile?.role === 'admin' && (
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Supervisor (Safety Mitra / Admin)</label>
+                        <select
+                          name="supervisor_id"
+                          value={editingUser.supervisor_id || ''}
+                          onChange={handleChange}
+                          className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                        >
+                          <option value="">No Supervisor</option>
+                          {supervisors.map(s => (
+                            <option key={s.id} value={s.id}>{s.full_name} ({s.role})</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
 
                     <div className="flex items-center p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-100 dark:border-slate-700">
                       <input type="checkbox" id="is_donor" name="is_donor" checked={editingUser.is_donor || false} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
