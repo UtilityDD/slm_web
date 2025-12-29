@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
+// UUID v4 generator - works in all browsers
+const generateUUID = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  // Fallback for older browsers
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
 export default function Login({ onLogin, showNotification, initialView }) {
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
@@ -72,7 +85,7 @@ export default function Login({ onLogin, showNotification, initialView }) {
             if (error) throw error;
 
             if (data.user) {
-                const sessionId = crypto.randomUUID();
+                const sessionId = generateUUID();
                 const { error: profileError } = await supabase
                     .from('profiles')
                     .update({ current_session_id: sessionId })
@@ -110,7 +123,7 @@ export default function Login({ onLogin, showNotification, initialView }) {
                 });
                 if (error) throw error;
                 if (data.user) {
-                    const sessionId = crypto.randomUUID();
+                    const sessionId = generateUUID();
                     const { error: profileError } = await supabase
                         .from('profiles')
                         .update({ current_session_id: sessionId })
