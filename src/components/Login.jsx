@@ -3,15 +3,15 @@ import { supabase } from '../supabaseClient';
 
 // UUID v4 generator - works in all browsers
 const generateUUID = () => {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  // Fallback for older browsers
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    // Fallback for older browsers
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
 };
 
 export default function Login({ onLogin, showNotification, initialView }) {
@@ -29,6 +29,11 @@ export default function Login({ onLogin, showNotification, initialView }) {
         // Check if we're in a password recovery flow
         if (window.location.hash.includes('type=recovery') || window.location.href.includes('type=recovery')) {
             setView('update');
+        }
+        // Check if we're in an invitation flow
+        if (window.location.hash.includes('type=invite') || window.location.href.includes('type=invite')) {
+            setView('update');
+            showNotification('Welcome! Please set your password to complete your account setup.');
         }
     }, []);
 
@@ -171,6 +176,21 @@ export default function Login({ onLogin, showNotification, initialView }) {
                                             view === 'otp_verify' ? 'Verify Code' : 'Sign In'}
                         </h1>
                     </div>
+
+                    {/* Invitation-Only Notice for Signup */}
+                    {view === 'signup' && (
+                        <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200 text-sm rounded-lg border border-amber-200 dark:border-amber-800">
+                            <div className="flex items-start gap-2">
+                                <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                </svg>
+                                <div>
+                                    <p className="font-semibold mb-1">Signup is by invitation only</p>
+                                    <p className="text-xs">New accounts can only be created through an invitation link. Please contact your administrator to receive an invitation email.</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Error Message */}
                     {error && (
