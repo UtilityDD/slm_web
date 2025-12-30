@@ -360,15 +360,21 @@ export default function SmartLinemanUI() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#/', '').split('?')[0];
-      if (hash.includes('access_token=') || hash.includes('type=recovery')) {
-        setCurrentView('login');
-      } else if (hash.startsWith('verify/')) {
-        setCurrentView('verify');
-      } else if (hash && hash !== currentView) {
-        setCurrentView(hash);
-      } else if (!hash && currentView !== 'home') {
-        setCurrentView('home');
-      }
+      setCurrentView(prevView => {
+        if (hash.includes('access_token=') || hash.includes('type=recovery')) {
+          return 'login';
+        }
+        if (hash.startsWith('verify/')) {
+          return 'verify';
+        }
+        if (hash && hash !== prevView) {
+          return hash;
+        }
+        if (!hash && prevView !== 'home') {
+          return 'home';
+        }
+        return prevView;
+      });
     };
 
     window.addEventListener('hashchange', handleHashChange);
