@@ -1063,6 +1063,19 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                     Fair: "Fair",
                     Damaged: "Damaged",
                     Expired: "Expired"
+                },
+                items: {
+                    "Safety Helmet": "Safety Helmet",
+                    "Safety Shoes/Boots": "Safety Shoes/Boots",
+                    "Insulated Gloves": "Insulated Gloves",
+                    "Reflective Jacket": "Reflective Jacket",
+                    "Safety Belt": "Safety Belt",
+                    "Full Body Harness": "Full Body Harness",
+                    "Voltage Detector": "Voltage Detector",
+                    "Discharge Rod": "Discharge Rod",
+                    "Safety Goggles": "Safety Goggles",
+                    "Raincoat": "Raincoat",
+                    "Torch/Emergency Light": "Torch/Emergency Light"
                 }
             },
             my_tools: {
@@ -1076,6 +1089,18 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                     age: "Age (Months)",
                     condition: "Condition",
                     details: "Details / Specs"
+                },
+                items: {
+                    "Pliers": "Pliers",
+                    "Screwdriver Set": "Screwdriver Set",
+                    "Wrench": "Wrench",
+                    "Hammer": "Hammer",
+                    "Tester": "Tester",
+                    "Multimeter": "Multimeter",
+                    "Wire Stripper": "Wire Stripper",
+                    "Drill Machine": "Drill Machine",
+                    "Ladder": "Ladder",
+                    "Rope": "Rope"
                 }
             },
             report: {
@@ -1123,6 +1148,19 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                     Fair: "মোটামুটি",
                     Damaged: "ক্ষতিগ্রস্ত",
                     Expired: "মেয়াদোত্তীর্ণ"
+                },
+                items: {
+                    "Safety Helmet": "সেফটি হেলমেট",
+                    "Safety Shoes/Boots": "সেফটি জুতো/বুট",
+                    "Insulated Gloves": "ইনসুলেটেড গ্লাভস",
+                    "Reflective Jacket": "রিফ্লেক্টিভ জ্যাকেট",
+                    "Safety Belt": "সেফটি বেল্ট",
+                    "Full Body Harness": "ফুল বডি হারনেস",
+                    "Voltage Detector": "ভোল্টেজ ডিটেক্টর",
+                    "Discharge Rod": "ডিসচার্জ রড",
+                    "Safety Goggles": "সেফটি গগলস",
+                    "Raincoat": "রেইনকোট",
+                    "Torch/Emergency Light": "টর্চ/জরুরী আলো"
                 }
             },
             my_tools: {
@@ -1136,6 +1174,18 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                     age: "বয়স (মাস)",
                     condition: "অবস্থা",
                     details: "বিবরণ"
+                },
+                items: {
+                    "Pliers": "প্লায়ার্স",
+                    "Screwdriver Set": "স্ক্রু ড্রাইভার সেট",
+                    "Wrench": "রেঞ্চ",
+                    "Hammer": "হাতুড়ি",
+                    "Tester": "টেস্টার",
+                    "Multimeter": "মাল্টিমিটার",
+                    "Wire Stripper": "ওয়্যার স্ট্রিপার",
+                    "Drill Machine": "ড্রিল মেশিন",
+                    "Ladder": "মই",
+                    "Rope": "দড়ি"
                 }
             },
             report: {
@@ -1565,7 +1615,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                         <div className="flex items-center gap-2 min-w-[140px] flex-1">
                                                             <span className="text-xl">{item.icon}</span>
                                                             <span className={`text-sm font-bold ${item.available ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'}`}>
-                                                                {item.name}
+                                                                {language === 'bn' ? t.my_ppe.items[item.name] : item.name}
                                                             </span>
                                                         </div>
 
@@ -1699,7 +1749,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                         <div className="flex items-center gap-2 min-w-[140px] flex-1">
                                                             <span className="text-xl">{item.icon}</span>
                                                             <span className={`text-sm font-bold ${item.available ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'}`}>
-                                                                {item.name}
+                                                                {language === 'bn' ? t.my_tools.items[item.name] : item.name}
                                                             </span>
                                                         </div>
 
