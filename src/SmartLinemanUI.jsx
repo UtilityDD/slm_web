@@ -807,7 +807,7 @@ export default function SmartLinemanUI() {
                 </div>
                 <div className="hidden sm:block">
                   <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                    {language === 'en' ? 'SmartLineman' : 'স্মার্ট'}
+                    {language === 'en' ? 'SmartLineman' : 'স্মার্ট লাইনম্যান'}
                   </div>
                 </div>
               </div>
