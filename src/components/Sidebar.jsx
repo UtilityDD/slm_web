@@ -62,30 +62,12 @@ export default function Sidebar({
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:static left-0 top-0 h-screen md:h-auto w-64 md:w-20 lg:w-64 bg-white dark:bg-slate-800 shadow-xl md:shadow-none z-40 transform transition-transform duration-300 md:translate-x-0 pt-16 md:pt-0 ${
+        className={`fixed md:static left-0 top-0 h-screen md:h-auto w-64 md:w-20 lg:w-64 bg-white dark:bg-slate-800 shadow-xl md:shadow-none z-[100] transform transition-transform duration-300 md:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         } hover:w-64 group`}
       >
         {/* Sidebar Header */}
-        <div className="h-auto px-4 py-3 border-b border-slate-100 dark:border-slate-700">
-          {/* Mobile Header */}
-          <div className="flex items-center justify-between md:hidden mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-gradient-to-br from-blue-700 to-blue-600 rounded-lg flex items-center justify-center font-bold text-xs text-white">
-                SL
-              </div>
-              <span className="font-bold text-slate-900 dark:text-slate-100 text-xs">SmartLineman</span>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
+        <div className="h-auto px-4 py-3 border-b border-slate-100 dark:border-slate-700 md:border-none">
           {/* User Profile Section */}
           <div className="flex items-center gap-2 md:gap-1.5 lg:gap-2">
             <div className="w-9 h-9 md:w-8 md:h-8 lg:w-9 lg:h-9 bg-gradient-to-br from-slate-300 to-slate-400 dark:from-slate-700 dark:to-slate-600 rounded-full flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-100 shrink-0">
