@@ -534,29 +534,15 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
             <Toast message={toast.message} type={toast.type} show={toast.show} onDismiss={() => setToast(t => ({ ...t, show: false }))} />
 
             {/* Modern Header - Compact */}
-            <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={() => setCurrentView('home')}
-                        className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 group"
-                        title={language === 'en' ? 'Back to Home' : 'হোমে ফিরে যান'}
-                    >
-                        <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                    </button>
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                            {language === 'en' ? (
-                                'Emergency'
-                            ) : (
-                                <>{t.title}</>
-                            )}
-                        </h1>
-                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                            {language === 'en' ? 'Critical Support' : 'জরুরি সহায়তা'} • {activeTab === 'blood' ? t.tabs.blood : t.tabs.services}
-                        </p>
-                    </div>
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                        {language === 'en' ? (
+                            'Emergency'
+                        ) : (
+                            <>{t.title}</>
+                        )}
+                    </h1>
                 </div>
 
                 <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-red-50 text-red-700 border border-red-100 font-bold text-sm`}>
