@@ -62,7 +62,7 @@ export default function Sidebar({
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:static left-0 top-0 h-screen md:h-auto w-64 md:w-20 lg:w-64 bg-white dark:bg-slate-800 shadow-xl md:shadow-none z-40 transform transition-transform duration-300 md:translate-x-0 ${
+        className={`fixed md:static left-0 top-0 h-screen md:h-auto w-64 md:w-20 lg:w-64 bg-white dark:bg-slate-800 shadow-xl md:shadow-none z-40 transform transition-transform duration-300 md:translate-x-0 pt-16 md:pt-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         } hover:w-64 group`}
       >
