@@ -1793,7 +1793,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
             {/* Full Page Content View - Using Portal to bypass parent layout constraints */}
             {trainingContent && createPortal(
-                <div className="fixed inset-0 top-14 bottom-14 md:bottom-0 z-[75] bg-slate-50 dark:bg-slate-900 overflow-y-auto animate-slide-up w-full">
+                <div className="fixed inset-0 top-14 md:bottom-0 z-[75] bg-slate-50 dark:bg-slate-900 overflow-y-auto animate-slide-up w-full">
                     {/* Sticky Header */}
                     <div className="sticky top-0 z-50 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between shadow-sm gap-3">
                         <button
@@ -1816,7 +1816,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                         <div className="w-9 flex-shrink-0"></div> {/* Spacer for centering */}
                     </div>
 
-                    <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8 pb-24">
+                    <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8 pb-16">
                         {/* Hero Header */}
                         <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-6 sm:p-10 text-white mb-10 shadow-xl shadow-orange-500/20">
                             <div className="inline-block px-4 py-1.5 rounded-full bg-white/25 backdrop-blur-sm text-[11px] uppercase tracking-wider font-bold mb-5 border border-white/30">
