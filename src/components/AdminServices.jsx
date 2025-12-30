@@ -76,7 +76,15 @@ const ServiceItem = React.memo(({ service, serviceTypes, onEdit, onDelete }) => 
     );
 });
 
-export default function AdminServices({ language = 'en' }) {
+export default function AdminServices({ language = 'en', userProfile }) {
+    if (!userProfile || !['admin', 'safety mitra'].includes(userProfile.role)) {
+        return (
+            <div className="p-8 text-center text-slate-600 dark:text-slate-400">
+                <h2 className="text-xl font-bold mb-4">Access Denied</h2>
+                <p>You do not have permission to view this page.</p>
+            </div>
+        );
+    }
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showServiceModal, setShowServiceModal] = useState(false);

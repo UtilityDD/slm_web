@@ -37,6 +37,7 @@ export default function Sidebar({
     { id: 'emergency', label: language === 'en' ? 'Emergency' : 'জরুরি', icon: '🚨', show: true, color: 'text-red-600' },
     { id: 'admin', label: userProfile?.role === 'safety mitra' ? (language === 'en' ? 'Safety Mitra' : 'সেফটি মিত্র') : (language === 'en' ? 'Admin' : 'অ্যাডমিন'), icon: '⚙️', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
     { id: 'guide', label: language === 'en' ? 'Handbook' : 'হ্যান্ডবুক', icon: '📖', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
+    { id: 'admin-services', label: language === 'en' ? 'Services Update' : 'সার্ভিস আপডেট', icon: '🔄', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
   ];
 
   const handleNavClick = (item) => {

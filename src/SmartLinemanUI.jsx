@@ -587,7 +587,7 @@ export default function SmartLinemanUI() {
         case 'admin':
           return <Admin language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;
         case 'admin-services':
-          return <AdminServices language={language} />;
+          return <AdminServices language={language} userProfile={userProfile} />;
         case 'guide':
           return <Guide />;
         case 'verify': {
