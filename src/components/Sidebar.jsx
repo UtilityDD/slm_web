@@ -70,8 +70,12 @@ export default function Sidebar({
         <div className="h-auto px-4 py-3 border-b border-slate-100 dark:border-slate-700 md:border-none">
           {/* User Profile Section */}
           <div className="flex items-center gap-2 md:gap-1.5 lg:gap-2">
-            <div className="w-9 h-9 md:w-8 md:h-8 lg:w-9 lg:h-9 bg-gradient-to-br from-slate-300 to-slate-400 dark:from-slate-700 dark:to-slate-600 rounded-full flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-100 shrink-0">
-              {userProfile?.full_name?.charAt(0).toUpperCase() || 'U'}
+            <div className="w-9 h-9 md:w-8 md:h-8 lg:w-9 lg:h-9 bg-gradient-to-br from-slate-300 to-slate-400 dark:from-slate-700 dark:to-slate-600 rounded-full flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-100 shrink-0 overflow-hidden">
+              {userProfile?.avatar_url ? (
+                <img src={userProfile.avatar_url} alt={userProfile.full_name} className="w-full h-full object-cover" />
+              ) : (
+                userProfile?.full_name?.charAt(0).toUpperCase() || 'U'
+              )}
             </div>
             <div className="flex-1 min-w-0 md:hidden lg:block">
               <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
