@@ -312,7 +312,18 @@ const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedL
 };
 
 export default function SafetyHub({ language = 'en', user, userProfile: initialUserProfile, setCurrentView, onProgressUpdate, mode = 'safety' }) {
-    const [activeTab, setActiveTab] = useState(mode === 'training' ? 'training' : 'dashboard');
+    // Check for tab query parameter in URL
+    const getTabFromUrl = () => {
+        const hash = window.location.hash;
+        const tabMatch = hash.match(/[?&]tab=([^&]*)/);
+        if (tabMatch && tabMatch[1]) {
+            return decodeURIComponent(tabMatch[1]);
+        }
+        return null;
+    };
+
+    const initialTab = getTabFromUrl() || (mode === 'training' ? 'training' : 'dashboard');
+    const [activeTab, setActiveTab] = useState(initialTab);
     const [ppeList, setPpeList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -335,6 +346,23 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
             setActiveTab('sops');
         }
     }, [mode]);
+
+    // Check for tab parameter in URL hash on mount and when hash changes
+    useEffect(() => {
+        const handleHashChange = () => {
+            const tabFromUrl = getTabFromUrl();
+            if (tabFromUrl) {
+                setActiveTab(tabFromUrl);
+            }
+        };
+
+        // Check on initial mount
+        handleHashChange();
+
+        // Listen for hash changes
+        window.addEventListener('hashchange', handleHashChange);
+        return () => window.removeEventListener('hashchange', handleHashChange);
+    }, []);
 
     // Filter tabs based on mode
     const getVisibleTabs = () => {

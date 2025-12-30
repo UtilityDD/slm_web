@@ -3,6 +3,7 @@ import { supabase } from "./supabaseClient";
 import { getBadgeByLevel, calculateLevelFromProgress } from './utils/badgeUtils';
 import { cacheHelper } from './utils/cacheHelper';
 import LogoutConfirmationModal from "./components/LogoutConfirmationModal";
+import Sidebar from "./components/Sidebar";
 import { APP_NAME } from "./config";
 
 // Lazy load heavy components for code splitting
@@ -19,6 +20,8 @@ const VerificationView = lazy(() => import("./components/VerificationView"));
 
 export default function SmartLinemanUI() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [currentView, setCurrentView] = useState(() => {
     const hash = window.location.hash.replace('#/', '');
     if (hash.includes('access_token=') || hash.includes('type=recovery')) return 'login';
@@ -611,19 +614,36 @@ export default function SmartLinemanUI() {
 
   return (
     <div
-      className={`min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 font-sans ${language === 'bn' ? 'font-bengali' : ''}`}
+      className={`min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 font-sans flex flex-col md:flex-row ${language === 'bn' ? 'font-bengali' : ''}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {showLogoutModal && (
-        <LogoutConfirmationModal
-          onConfirm={() => confirmLogout(false)}
-          onCancel={cancelLogout}
+      {/* Sidebar Navigation */}
+      {user && (
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          currentView={currentView}
+          setCurrentView={setCurrentView}
+          userProfile={userProfile}
           language={language}
-          loading={isLoggingOut}
+          t={translations[language]}
+          onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+          onToggleLanguageModal={() => setShowLanguageModal(true)}
         />
       )}
+
+      {/* Main Content Wrapper */}
+      <div className="flex-1 flex flex-col">
+        {showLogoutModal && (
+          <LogoutConfirmationModal
+            onConfirm={() => confirmLogout(false)}
+            onCancel={cancelLogout}
+            language={language}
+            loading={isLoggingOut}
+          />
+        )}
 
       {/* Forced Update Modal */}
       {showUpdateModal && updateInfo && (
@@ -758,89 +778,40 @@ export default function SmartLinemanUI() {
       <header className="bg-white dark:bg-slate-800 elevation-2 sticky top-0 z-[80] border-b border-slate-200 dark:border-slate-700">
         <div className="max-w-7xl mx-auto mobile-container">
           <div className="flex justify-between items-center h-14 md:h-16">
-            <div
-              className="flex items-center gap-2 sm:gap-3 group cursor-pointer ripple-dark rounded-lg px-2 py-1 -ml-2"
-              onClick={() => setCurrentView('home')}
-            >
-              <div className="relative">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-700 to-blue-600 dark:from-blue-600 dark:to-blue-500 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm text-white elevation-2 transition-all duration-300 group-hover:scale-105">
+            {/* Mobile Menu & Logo */}
+            <div className="flex items-center gap-2">
+              {user && (
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="md:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-700 dark:text-slate-200"
+                  title="Menu"
+                  aria-label="Open menu"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+              )}
+              <div
+                className="flex items-center gap-2 group cursor-pointer ripple-dark rounded-lg px-2 py-1 -ml-1"
+                onClick={() => setCurrentView('home')}
+              >
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-700 to-blue-600 dark:from-blue-600 dark:to-blue-500 rounded-lg flex items-center justify-center font-bold text-xs text-white elevation-2">
                   SL
                 </div>
-              </div>
-              <div className="hidden sm:block">
-                <div className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                  {language === 'en' ? 'SmartLineman' : 'স্মার্ট লাইনম্যান'}
-                </div>
-                <div className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  {language === 'en' ? 'West Bengal' : 'পশ্চিমবঙ্গ'}
+                <div className="hidden sm:block">
+                  <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                    {language === 'en' ? 'SmartLineman' : 'স্মার্ট'}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
-              <a
-                className={`hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'training' ? 'text-blue-700 dark:text-blue-400 font-semibold' : ''}`}
-                onClick={() => setCurrentView('training')}
-              >
-                {t.nav.training}
-                <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${currentView === 'training' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
-              </a>
-              <a
-                className={`hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'community' ? 'text-blue-700 dark:text-blue-400 font-semibold' : ''}`}
-                onClick={() => setCurrentView('community')}
-              >
-                {t.nav.community}
-                <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${currentView === 'community' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
-              </a>
-              <a
-                className={`hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'competitions' ? 'text-blue-700 dark:text-blue-400 font-semibold' : ''}`}
-                onClick={() => setCurrentView('competitions')}
-              >
-                {t.nav.competitions}
-                <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${currentView === 'competitions' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
-              </a>
-              <a
-                className={`hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'emergency' ? 'text-blue-700 dark:text-blue-400 font-semibold' : ''}`}
-                onClick={() => setCurrentView('emergency')}
-              >
-                <span className="text-red-600 hover:text-red-700 dark:hover:text-red-400 font-bold">{t.nav.emergency}</span>
-                <span className={`absolute bottom-0 left-0 h-0.5 bg-red-600 transition-all duration-300 ${currentView === 'emergency' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
-              </a>
-              {['admin', 'safety mitra'].includes(userProfile?.role) && (
-                <a
-                  className={`hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer relative group py-2 ${currentView === 'admin' ? 'text-blue-700 dark:text-blue-400 font-semibold' : ''}`}
-                  onClick={() => setCurrentView('admin')}
-                >
-                  {userProfile?.role === 'safety mitra' ? t.nav.safetyMitra : t.nav.admin}
-                  <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${currentView === 'admin' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
-                </a>
-              )}
-            </nav>
+            {/* Spacer */}
+            <div className="flex-grow"></div>
 
-            <div className="flex items-center gap-2 sm:gap-3">
-              {['admin', 'safety mitra'].includes(userProfile?.role) && (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setCurrentView('guide')}
-                    className={`flex items-center justify-center p-2 rounded-lg transition-all touch-target ${currentView === 'guide' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600' : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200'}`}
-                    title="Volunteer Handbook"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => setCurrentView('admin')}
-                    className={`flex items-center justify-center p-2 rounded-lg transition-all touch-target ${currentView === 'admin' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600' : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200'}`}
-                    title={userProfile?.role === 'safety mitra' ? t.nav.safetyMitra : t.nav.admin}
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                  </button>
-                </div>
-              )}
+            {/* Right Side Actions */}
+            <div className="flex items-center gap-1 sm:gap-2">
               {/* Notification Bell */}
               <div className="relative">
                 <button
@@ -1019,55 +990,6 @@ export default function SmartLinemanUI() {
         {renderContent()}
       </div>
 
-      {/* Bottom Navigation - Mobile Only */}
-      <nav className="md:hidden bottom-nav flex items-center justify-around px-2">
-        <div
-          className={`bottom-nav-item ${currentView === 'home' ? 'active' : ''}`}
-          onClick={() => setCurrentView('home')}
-        >
-          <span className="text-xl mb-0.5">🏠</span>
-          <span className="text-[10px] uppercase tracking-tighter font-bold">
-            {language === 'en' ? 'Home' : 'হোম'}
-          </span>
-        </div>
-        <div
-          className={`bottom-nav-item ${currentView === 'safety' ? 'active' : ''}`}
-          onClick={() => setCurrentView('safety')}
-        >
-          <span className="text-xl mb-0.5">🦺</span>
-          <span className="text-[10px] uppercase tracking-tighter font-bold">
-            {language === 'en' ? 'Safety' : 'সুরক্ষা'}
-          </span>
-        </div>
-        <div
-          className={`bottom-nav-item ${currentView === 'community' ? 'active' : ''}`}
-          onClick={() => setCurrentView('community')}
-        >
-          <span className="text-xl mb-0.5">💬</span>
-          <span className="text-[10px] uppercase tracking-tighter font-bold">
-            {language === 'en' ? 'Community' : 'কমিউনিটি'}
-          </span>
-        </div>
-        <div
-          className={`bottom-nav-item ${currentView === 'competitions' ? 'active' : ''}`}
-          onClick={() => setCurrentView('competitions')}
-        >
-          <span className="text-xl mb-0.5">🏆</span>
-          <span className="text-[10px] uppercase tracking-tighter font-bold">
-            {language === 'en' ? 'Win' : 'জিতুন'}
-          </span>
-        </div>
-        <div
-          className={`bottom-nav-item ${currentView === 'emergency' ? 'active' : ''}`}
-          onClick={() => setCurrentView('emergency')}
-        >
-          <span className="text-xl mb-0.5">🚨</span>
-          <span className="text-[10px] uppercase tracking-tighter font-bold text-red-600">
-            {language === 'en' ? 'SOS' : 'জরুরি'}
-          </span>
-        </div>
-      </nav>
-
       {/* Language Selection Modal */}
       {showLanguageModal && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
@@ -1116,6 +1038,7 @@ export default function SmartLinemanUI() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
