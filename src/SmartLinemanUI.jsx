@@ -359,7 +359,7 @@ export default function SmartLinemanUI() {
   // Listen for hash changes (back/forward buttons)
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash.replace('#/', '');
+      const hash = window.location.hash.replace('#/', '').split('?')[0];
       if (hash.includes('access_token=') || hash.includes('type=recovery')) {
         setCurrentView('login');
       } else if (hash.startsWith('verify/')) {
@@ -373,7 +373,7 @@ export default function SmartLinemanUI() {
 
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [currentView]);
+  }, []);
 
   // Check LocalStorage for Language on mount
   useEffect(() => {

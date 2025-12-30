@@ -40,12 +40,10 @@ export default function Sidebar({
   ];
 
   const handleNavClick = (item) => {
-    // If item has a redirect, go to that view and pass tab info via query param
     if (item.redirectTo && item.tab) {
-      window.location.hash = `${item.redirectTo}?tab=${item.tab}`;
-      setCurrentView(item.redirectTo);
+      window.location.hash = `/${item.redirectTo}?tab=${item.tab}`;
     } else {
-      setCurrentView(item.id);
+      window.location.hash = `/${item.id}`;
     }
     onClose();
   };
