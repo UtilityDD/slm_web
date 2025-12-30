@@ -1156,55 +1156,20 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
             <div className={`${activeTab === 'dashboard' ? 'compact-container' : 'max-w-7xl mx-auto px-4 sm:px-6'} py-6 sm:py-10 md:mb-6 transition-all duration-500`}>
                 {/* Header Section */}
                 {/* Header Section */}
-                <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => {
-                                if (activeTab === 'dashboard' || mode === 'training') {
-                                    setCurrentView('home');
-                                } else {
-                                    setActiveTab('dashboard');
-                                }
-                            }}
-                            className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 group"
-                            title={language === 'en' ? 'Back' : 'ফিরে যান'}
-                        >
-                            <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                            </svg>
-                        </button>
-                        <div>
-                            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                                {activeTab === 'dashboard' ? (
-                                    language === 'en' ? (
-                                        mode === 'training' ? '90 Days Training' : 'Safety'
-                                    ) : (
-                                        mode === 'training' ? '৯০ দিনের প্রশিক্ষণ' : t.title
-                                    )
+                <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                            {activeTab === 'dashboard' ? (
+                                language === 'en' ? (
+                                    mode === 'training' ? '90 Days Training' : 'Safety'
                                 ) : (
-                                    t[activeTab]?.title || (activeTab === 'training' ? (language === 'en' ? 'Training Program' : 'প্রশিক্ষণ কর্মসূচি') : '')
-                                )}
-                            </h1>
-                            {activeTab !== 'dashboard' && (
-                                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                                    {mode === 'training' && activeTab === 'training' ? (
-                                        language === 'en' ? '90 Days - 90 Lessons' : '৯০ দিন - ৯০ পাঠ'
-                                    ) : activeTab === 'sops' && language === 'bn' ? (
-                                        'পদ্ধতি মেনে কাজই হল নিরাপদ থাকার একমাত্র উপায়'
-                                    ) : (
-                                        <>{language === 'en' ? 'Safety' : 'সেফটি'} • {t[activeTab]?.title || activeTab}</>
-                                    )}
-                                </p>
+                                    mode === 'training' ? '৯০ দিনের প্রশিক্ষণ' : t.title
+                                )
+                            ) : (
+                                t[activeTab]?.title || (activeTab === 'training' ? (language === 'en' ? 'Training Program' : 'প্রশিক্ষণ কর্মসূচি') : '')
                             )}
-                        </div>
+                        </h1>
                     </div>
-
-                    {activeTab === 'dashboard' && (
-                        <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl ${mode === 'training' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-orange-50 text-orange-700 border-orange-100'} border font-bold text-sm`}>
-                            <span className="text-lg">{mode === 'training' ? '🎓' : '🦺'}</span>
-                            {mode === 'training' ? (language === 'en' ? 'Training Mode' : 'প্রশিক্ষণ মোড') : (language === 'en' ? 'Safety Mode' : 'সুরক্ষা মোড')}
-                        </div>
-                    )}
                 </div>
 
                 {/* Network Error UI */}
