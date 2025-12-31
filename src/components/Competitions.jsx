@@ -1048,7 +1048,12 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
                     <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-xl max-h-[85vh] flex flex-col shadow-xl overflow-hidden border border-slate-200 dark:border-slate-700">
                         <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                            <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">Leaderboard</h3>
+                            <div>
+                                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">Leaderboard</h3>
+                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                                    {language === 'en' ? 'Updates every 5 minutes' : 'প্রতি ৫ মিনিটে আপডেট হয়'}
+                                </p>
+                            </div>
                             <button onClick={() => setShowFullLeaderboard(false)} className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">✕</button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-4">
