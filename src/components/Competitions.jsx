@@ -22,6 +22,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [serverTimeOffset, setServerTimeOffset] = useState(0);
     const [fetchError, setFetchError] = useState(false);
     const [showCompactView, setShowCompactView] = useState(!isFullLeaderboard);
+    const [expandedRows, setExpandedRows] = useState(new Set()); // Track expanded user rows
 
     // Offline sync state
     const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -745,9 +746,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                                             {language === 'en' ? 'Player' : 'খেলোয়াড়'}
                                         </th>
-                                        <th className="hidden md:table-cell px-4 sm:px-6 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                                            {language === 'en' ? 'District' : 'জেলা'}
-                                        </th>
                                         <th className="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                                             {language === 'en' ? 'Level' : 'স্তর'}
                                         </th>
@@ -773,61 +771,99 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 if (rank === 3) return '🥉';
                                                 return null;
                                             };
+                                            const isExpanded = expandedRows.has(item.user_id);
+                                            const toggleExpand = () => {
+                                                setExpandedRows(prev => {
+                                                    const newSet = new Set(prev);
+                                                    if (newSet.has(item.user_id)) {
+                                                        newSet.delete(item.user_id);
+                                                    } else {
+                                                        newSet.add(item.user_id);
+                                                    }
+                                                    return newSet;
+                                                });
+                                            };
                                             return (
-                                                <tr key={index} className={`transition-colors ${isMe ? 'bg-blue-50/70 dark:bg-blue-900/10' : 'hover:bg-slate-50/50 dark:hover:bg-slate-700/20'}`}>
-                                                    <td className="px-4 sm:px-6 py-3">
-                                                        <div className="flex items-center gap-2">
-                                                            {getMedalIcon(index + 1) && (
-                                                                <span className="text-lg">{getMedalIcon(index + 1)}</span>
-                                                            )}
-                                                            <span className={`text-sm font-bold ${index < 3 ? 'text-orange-600' : 'text-slate-500 dark:text-slate-400'}`}>
-                                                                #{index + 1}
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 sm:px-6 py-3">
-                                                        <div className="flex items-center gap-2 min-w-0">
-                                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex-shrink-0 overflow-hidden border border-slate-300 dark:border-slate-600">
-                                                                {item.avatar_url ? (
-                                                                    <img src={item.avatar_url} alt="" className="w-full h-full object-cover" />
-                                                                ) : (
-                                                                    <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xs uppercase">{item.full_name?.[0] || '?'}</div>
+                                                <React.Fragment key={index}>
+                                                    <tr className={`transition-colors ${isMe ? 'bg-blue-50/70 dark:bg-blue-900/10' : 'hover:bg-slate-50/50 dark:hover:bg-slate-700/20'}`}>
+                                                        <td className="px-4 sm:px-6 py-3">
+                                                            <div className="flex items-center gap-2">
+                                                                {getMedalIcon(index + 1) && (
+                                                                    <span className="text-lg">{getMedalIcon(index + 1)}</span>
                                                                 )}
+                                                                <span className={`text-sm font-bold ${index < 3 ? 'text-orange-600' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                                    #{index + 1}
+                                                                </span>
                                                             </div>
-                                                            <div className="min-w-0 flex-1">
-                                                                <div className="flex items-center gap-2 flex-wrap">
-                                                                    <p className={`text-sm font-semibold truncate ${isMe ? 'text-blue-700 dark:text-blue-400' : 'text-slate-900 dark:text-slate-100'}`}>
-                                                                        {isMe ? (language === 'en' ? 'You' : 'আপনি') : (item.full_name || 'Anonymous')}
-                                                                    </p>
-                                                                    {/* Badge visible on mobile - inline with name */}
-                                                                    {badge && (
-                                                                        <span className={`sm:hidden inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border shrink-0 ${badge.color}`}>
-                                                                            {language === 'en' ? badge.en : badge.bn}
-                                                                        </span>
+                                                        </td>
+                                                        <td className="px-4 sm:px-6 py-3">
+                                                            <div className="flex items-center gap-2 min-w-0">
+                                                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex-shrink-0 overflow-hidden border border-slate-300 dark:border-slate-600">
+                                                                    {item.avatar_url ? (
+                                                                        <img src={item.avatar_url} alt="" className="w-full h-full object-cover" />
+                                                                    ) : (
+                                                                        <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xs uppercase">{item.full_name?.[0] || '?'}</div>
                                                                     )}
                                                                 </div>
-                                                                <p className="text-xs text-slate-500 dark:text-slate-400 md:hidden truncate">
-                                                                    {item.district || (language === 'en' ? 'West Bengal' : 'পশ্চিমবঙ্গ')}
-                                                                </p>
+                                                                <div className="min-w-0 flex-1">
+                                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                                        <button
+                                                                            onClick={toggleExpand}
+                                                                            className="text-left hover:underline focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+                                                                        >
+                                                                            <p className={`text-sm font-semibold truncate ${isMe ? 'text-blue-700 dark:text-blue-400' : 'text-slate-900 dark:text-slate-100'}`}>
+                                                                                {isMe ? (language === 'en' ? 'You' : 'আপনি') : (item.full_name || 'Anonymous')}
+                                                                            </p>
+                                                                        </button>
+                                                                        {/* Expand/Collapse Icon */}
+                                                                        <button
+                                                                            onClick={toggleExpand}
+                                                                            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-transform duration-200"
+                                                                            style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                                                                        >
+                                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                                                            </svg>
+                                                                        </button>
+                                                                        {/* Badge visible on mobile - inline with name */}
+                                                                        {badge && (
+                                                                            <span className={`sm:hidden inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border shrink-0 ${badge.color}`}>
+                                                                                {language === 'en' ? badge.en : badge.bn}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="hidden md:table-cell px-4 sm:px-6 py-3">
-                                                        <span className="text-sm text-slate-600 dark:text-slate-400">{item.district || (language === 'en' ? 'West Bengal' : 'পশ্চিমবঙ্গ')}</span>
-                                                    </td>
-                                                    <td className="hidden sm:table-cell px-4 sm:px-6 py-3">
-                                                        {badge && (
-                                                            <span className={`inline-flex px-2 py-1 rounded-full text-[11px] font-bold border ${badge.color}`}>
-                                                                {language === 'en' ? badge.en : badge.bn}
+                                                        </td>
+                                                        <td className="hidden sm:table-cell px-4 sm:px-6 py-3">
+                                                            {badge && (
+                                                                <span className={`inline-flex px-2 py-1 rounded-full text-[11px] font-bold border ${badge.color}`}>
+                                                                    {language === 'en' ? badge.en : badge.bn}
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-4 sm:px-6 py-3 text-right">
+                                                            <span className={`text-sm font-bold tabular-nums ${isMe ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-slate-200'}`}>
+                                                                {item.points.toLocaleString()}
                                                             </span>
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 sm:px-6 py-3 text-right">
-                                                        <span className={`text-sm font-bold tabular-nums ${isMe ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-slate-200'}`}>
-                                                            {item.points.toLocaleString()}
-                                                        </span>
-                                                    </td>
-                                                </tr>
+                                                        </td>
+                                                    </tr>
+                                                    {/* Expanded District Row */}
+                                                    {isExpanded && (
+                                                        <tr className={`${isMe ? 'bg-blue-50/50 dark:bg-blue-900/5' : 'bg-slate-50/50 dark:bg-slate-700/10'}`}>
+                                                            <td colSpan="4" className="px-4 sm:px-6 py-2">
+                                                                <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 animate-fade-in">
+                                                                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                    </svg>
+                                                                    <span className="font-medium">{language === 'en' ? 'District:' : 'জেলা:'}</span>
+                                                                    <span>{item.district || (language === 'en' ? 'West Bengal' : 'পশ্চিমবঙ্গ')}</span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                </React.Fragment>
                                             );
                                         })
                                     ) : (
