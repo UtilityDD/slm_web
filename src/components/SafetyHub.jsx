@@ -2096,7 +2096,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                         className="w-full px-8 py-4 rounded-2xl font-bold transition-all bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-3 text-lg active:scale-95"
                                     >
                                         <span className="text-xl">📝</span>
-                                        {language === 'en' ? 'Practice Quiz' : 'অনুশীলন কুইজ'}
+                                        {language === 'en' ? 'Practice Quiz' : 'প্র্যাকটিস কুইজ'}
                                     </button>
                                     <button
                                         onClick={() => {
