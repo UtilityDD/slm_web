@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
@@ -18,7 +17,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [lastAttemptTime, setLastAttemptTime] = useState(null);
     const [reviewMode, setReviewMode] = useState(false);
     const [userRank, setUserRank] = useState(null);
-    const [showFullLeaderboard, setShowFullLeaderboard] = useState(false);
     const [fullLeaderboard, setFullLeaderboard] = useState([]);
     const [loadingFull, setLoadingFull] = useState(isFullLeaderboard);
     const [serverTimeOffset, setServerTimeOffset] = useState(0);
@@ -168,19 +166,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             clearInterval(pollInterval);
         };
     }, [isOnline, hourlyQuiz, fetchError]);
-
-    // Prevent body scroll when full leaderboard modal is open
-    useEffect(() => {
-        if (showFullLeaderboard) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
-    }, [showFullLeaderboard]);
 
     // Check for pending submissions in LocalStorage
     const checkPendingSubmissions = () => {
@@ -498,8 +483,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
     const fetchFullLeaderboard = async () => {
         setLoadingFull(true);
-        setShowFullLeaderboard(true);
-
         const cachedFull = cacheHelper.get('leaderboard_full_v2');
         if (cachedFull) {
             setFullLeaderboard(cachedFull);
@@ -526,6 +509,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             console.error('Error fetching full leaderboard:', error);
         } finally {
             setLoadingFull(false);
+        }
+    };
+
+    const goToGlobalLeaderboard = () => {
+        if (typeof setCurrentView === 'function') {
+            setCurrentView('leaderboard');
         }
     };
 
@@ -1187,7 +1176,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             {leaderboard.length > 3 && (
                                 <div className="p-3 text-center bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700">
                                     <button
-                                        onClick={fetchFullLeaderboard}
+                                        onClick={goToGlobalLeaderboard}
                                         className="text-blue-600 dark:text-blue-400 font-bold hover:underline text-sm flex items-center gap-2 mx-auto"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1212,62 +1201,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     <div className="text-slate-500 text-xs">{userRank.score} pts</div>
                                 </div>
                             </div>
-                            <button onClick={fetchFullLeaderboard} className="text-blue-600 text-sm font-bold">View All</button>
+                            <button onClick={goToGlobalLeaderboard} className="text-blue-600 text-sm font-bold">View All</button>
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Full Leaderboard Modal */}
-            {showFullLeaderboard && createPortal(
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-xl max-h-[85vh] flex flex-col shadow-xl overflow-hidden border border-slate-200 dark:border-slate-700">
-                        <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                            <div>
-                                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">Leaderboard</h3>
-                                <p className="text-xs text-amber-600 dark:text-amber-400 font-bold mt-0.5 flex items-center gap-1">
-                                    <span>⚡</span> {language === 'en' ? 'Updates every 5 minutes' : 'প্রতি ৫ মিনিটে আপডেট হয়'}
-                                </p>
-                            </div>
-                            <button onClick={() => setShowFullLeaderboard(false)} className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">✕</button>
-                        </div>
-                        <div className="flex-1 overflow-y-auto p-4">
-                            {loadingFull ? (
-                                <div className="text-center py-10 text-slate-400">Loading...</div>
-                            ) : (
-                                <div className="space-y-2">
-                                    {fullLeaderboard.map((item, index) => (
-                                        <div key={index} className={`flex items-center p-3 rounded-lg border transition-all ${item.user_id === user?.id
-                                            ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-                                            : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'
-                                            }`}>
-                                            <div className={`font-bold w-10 text-base ${index < 3 ? 'text-yellow-500' : 'text-slate-400'}`}>#{index + 1}</div>
-                                            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 mr-3 overflow-hidden flex-shrink-0">
-                                                {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2">
-                                                    <div className={`font-bold truncate text-sm ${item.user_id === user?.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>
-                                                        {item.user_id === user?.id ? 'You' : item.full_name}
-                                                    </div>
-                                                    {getBadgeByLevel(item.training_level) && (
-                                                        <div className={`px-1.5 py-0.5 rounded-full text-[8px] font-bold border uppercase tracking-tight ${getBadgeByLevel(item.training_level).color}`}>
-                                                            {language === 'en' ? getBadgeByLevel(item.training_level).en : getBadgeByLevel(item.training_level).bn}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="text-[10px] text-slate-500">{item.district}</div>
-                                            </div>
-                                            <div className={`font-bold text-sm ${item.user_id === user?.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>{item.points}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>,
-                document.body
-            )}
 
             {/* Quiz Modal */}
             {activeQuiz && (
