@@ -493,10 +493,32 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
     };
 
     // Finalize lesson completion after quiz (or if no quiz exists)
-    const finalizeLessonCompletion = (lessonId) => {
-        if (!completedLessons.includes(lessonId)) {
+    const [recentReward, setRecentReward] = useState(null);
+
+    const finalizeLessonCompletion = async (lessonId) => {
+        const alreadyCompleted = completedLessons.includes(lessonId);
+
+        if (!alreadyCompleted) {
+            // First time completion bonus
+            const bonusPoints = 20;
+
+            if (user) {
+                try {
+                    await supabase.rpc('submit_quiz_result', {
+                        p_quiz_id: `lesson_bonus_${lessonId}`,
+                        p_score: bonusPoints
+                    });
+                    setRecentReward(bonusPoints);
+                    // Clear reward message after 5 seconds
+                    setTimeout(() => setRecentReward(null), 5000);
+                } catch (err) {
+                    console.error('Error awarding lesson bonus:', err);
+                }
+            }
+
             const updated = [...completedLessons, lessonId];
             setCompletedLessons(updated);
+
             if (user) {
                 localStorage.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
 
@@ -2091,6 +2113,22 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                         <span className="text-xl">✓</span>
                                         {language === 'en' ? 'Lesson Completed!' : 'পাঠ সম্পন্ন!'}
                                     </div>
+
+                                    {/* Reward Feedback */}
+                                    {recentReward && (
+                                        <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-800 rounded-2xl flex items-center justify-center gap-3 animate-bounce shadow-lg shadow-yellow-500/10">
+                                            <span className="text-2xl">🏆</span>
+                                            <div className="text-left">
+                                                <p className="text-sm font-black text-yellow-800 dark:text-yellow-400 leading-tight">
+                                                    {language === 'en' ? `+${recentReward} Competition Points Earned!` : `+${recentReward} কম্পিটিশন পয়েন্ট অর্জিত হয়েছে!`}
+                                                </p>
+                                                <p className="text-[10px] font-bold text-yellow-600/70 dark:text-yellow-500/50 uppercase tracking-wider">
+                                                    {language === 'en' ? 'First Completion Bonus' : 'প্রথম সমাপ্তি বোনাস'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <button
                                         onClick={() => initiateLessonCompletion(trainingContent.level_id)}
                                         className="w-full px-8 py-4 rounded-2xl font-bold transition-all bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-3 text-lg active:scale-95"
