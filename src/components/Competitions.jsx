@@ -4,7 +4,7 @@ import { supabase } from '../supabaseClient';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
 
-export default function Competitions({ language = 'en', user, setCurrentView }) {
+export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile }) {
     const [loading, setLoading] = useState(true);
     const [activeQuiz, setActiveQuiz] = useState(null);
     const [quizQuestions, setQuizQuestions] = useState([]);
@@ -20,10 +20,10 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     const [userRank, setUserRank] = useState(null);
     const [showFullLeaderboard, setShowFullLeaderboard] = useState(false);
     const [fullLeaderboard, setFullLeaderboard] = useState([]);
-    const [loadingFull, setLoadingFull] = useState(false);
+    const [loadingFull, setLoadingFull] = useState(isFullLeaderboard);
     const [serverTimeOffset, setServerTimeOffset] = useState(0);
     const [fetchError, setFetchError] = useState(false);
-    const [showCompactView, setShowCompactView] = useState(true); // New state for compact view
+    const [showCompactView, setShowCompactView] = useState(!isFullLeaderboard);
 
     // Offline sync state
     const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -50,6 +50,8 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             score: "Your Score",
             close: "Close",
             loginReq: "Please login to participate",
+            highStakes: "High Stakes Mode Active",
+            highStakesDesc: "Wrong answers deduct 5 points",
             syncing: "Syncing your score...",
             waitingNetwork: "Waiting for network connection...",
             autoRetry: "Auto-retry enabled",
@@ -71,6 +73,8 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             score: "আপনার স্কোর",
             close: "বন্ধ করুন",
             loginReq: "অংশগ্রহণ করতে লগইন করুন",
+            highStakes: "হাই স্টেক মোড সক্রিয়",
+            highStakesDesc: "ভুল উত্তরের জন্য ৫ পয়েন্ট কাটা হবে",
             syncing: "আপনার স্কোর সিঙ্ক হচ্ছে...",
             waitingNetwork: "নেটওয়ার্ক সংযোগের জন্য অপেক্ষা করা হচ্ছে...",
             autoRetry: "স্বয়ংক্রিয় পুনঃচেষ্টা সক্রিয়",
@@ -87,9 +91,14 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
         try {
             // Run fetches in parallel to avoid blocking
             const promises = [
-                fetchServerTime(),
-                fetchHourlyQuiz()
+                fetchServerTime()
             ];
+
+            if (isFullLeaderboard) {
+                promises.push(fetchFullLeaderboard());
+            } else {
+                promises.push(fetchHourlyQuiz());
+            }
 
             // Only fetch leaderboard if user is logged in
             if (user) {
@@ -588,11 +597,23 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
     const submitQuiz = async () => {
         let calculatedScore = 0;
         let correctCount = 0;
+        let wrongCount = 0;
+
         quizQuestions.forEach(q => {
-            if (userAnswers[q.id] === q.correct_option_index) correctCount++;
+            if (userAnswers[q.id] === q.correct_option_index) {
+                correctCount++;
+            } else {
+                wrongCount++;
+            }
         });
+
+        const isHighStakes = userRank && userRank.score > 1000;
+
         if (quizQuestions.length > 0) {
             calculatedScore = correctCount * 10;
+            if (isHighStakes) {
+                calculatedScore -= (wrongCount * 5);
+            }
         }
         setScore(calculatedScore);
         setQuizSubmitted(true);
@@ -668,6 +689,123 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
             }
         }
     };
+
+    if (isFullLeaderboard) {
+        return (
+            <main className="max-w-5xl mx-auto px-4 py-6 sm:py-10 min-h-screen flex flex-col">
+                <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                            {language === 'en' ? 'Global Leaderboard' : 'গ্লোবাল লিডারবোর্ড'}
+                        </h2>
+                        <p className="text-sm text-yellow-600 dark:text-yellow-400 font-bold mt-1.5 flex items-center gap-1.5">
+                            <span className="text-base">⚡</span>
+                            {language === 'en' ? 'Updates every 5 minutes' : 'প্রতি ৫ মিনিটে আপডেট হয়'}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700">
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-16">Rank</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Player</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">District</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Points</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50 dark:divide-slate-700/50">
+                                {loadingFull ? (
+                                    Array(10).fill(0).map((_, i) => (
+                                        <tr key={i} className="h-16">
+                                            <td colSpan="4" className="px-6 py-1"><SkeletonRow /></td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    fullLeaderboard.map((item, index) => {
+                                        const isMe = item.user_id === user?.id;
+                                        const badge = getBadgeByLevel(item.training_level);
+                                        return (
+                                            <tr key={index} className={`transition-colors h-16 ${isMe ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-slate-50/50 dark:hover:bg-slate-700/30'}`}>
+                                                <td className="px-6 py-1 text-center">
+                                                    <div className={`inline-flex items-center justify-center w-8 h-8 rounded-lg font-black text-sm
+                                                        ${index === 0 ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
+                                                            index === 1 ? 'bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600' :
+                                                                index === 2 ? 'bg-orange-100 text-orange-700 border border-orange-200' :
+                                                                    'text-slate-400'}`}>
+                                                        {index + 1}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-1">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex-shrink-0 overflow-hidden ring-2 ring-white dark:ring-slate-800">
+                                                            {item.avatar_url ? (
+                                                                <img src={item.avatar_url} alt="" className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold uppercase">{item.full_name?.[0] || '?'}</div>
+                                                            )}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`font-bold text-sm truncate ${isMe ? 'text-blue-700 dark:text-blue-400' : 'text-slate-900 dark:text-slate-100'}`}>
+                                                                    {isMe ? (language === 'en' ? 'You' : 'আপনি') : (item.full_name || 'Anonymous')}
+                                                                </span>
+                                                                {badge && (
+                                                                    <span className={`px-1.5 py-0.5 rounded-full text-[8px] font-black border uppercase tracking-tighter ${badge.color}`}>
+                                                                        {language === 'en' ? badge.en : badge.bn}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div className="text-[10px] text-slate-500 sm:hidden">{item.district}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-1 hidden sm:table-cell">
+                                                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{item.district || 'West Bengal'}</span>
+                                                </td>
+                                                <td className="px-6 py-1 text-right">
+                                                    <span className={`text-sm font-black ${isMe ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                                                        {item.points.toLocaleString()}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                    {!loadingFull && fullLeaderboard.length === 0 && (
+                        <div className="py-20 text-center">
+                            <div className="text-4xl mb-4">🏆</div>
+                            <p className="text-slate-500 font-medium">{language === 'en' ? 'No rankings yet' : 'এখনও কোনো র‍্যাঙ্কিং নেই'}</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* My Rank Sticky Bar */}
+                {user && userRank && !loadingFull && (
+                    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 pointer-events-none">
+                        <div className="max-w-md mx-auto bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-3xl shadow-2xl p-5 flex items-center justify-between animate-slide-up pointer-events-auto border border-slate-800 dark:border-slate-200">
+                            <div className="flex items-center gap-5">
+                                <div className="text-3xl font-black text-blue-400 tracking-tighter">#{userRank.rank}</div>
+                                <div className="w-px h-10 bg-slate-800 dark:bg-slate-200"></div>
+                                <div>
+                                    <div className="font-black text-xs uppercase tracking-widest text-slate-400">Your Standing</div>
+                                    <div className="text-lg font-black">{userRank.score.toLocaleString()} <span className="text-[10px] text-slate-500">POINTS</span></div>
+                                </div>
+                            </div>
+                            <div className="w-12 h-12 rounded-2xl bg-slate-800 dark:bg-slate-100 flex items-center justify-center font-black text-blue-400 border border-slate-700 dark:border-slate-200 overflow-hidden shadow-inner">
+                                {userProfile?.avatar_url ? <img src={userProfile.avatar_url} className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </main>
+        );
+    }
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
@@ -1048,7 +1186,12 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
                     <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-xl max-h-[85vh] flex flex-col shadow-xl overflow-hidden border border-slate-200 dark:border-slate-700">
                         <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                            <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">Leaderboard</h3>
+                            <div>
+                                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">Leaderboard</h3>
+                                <p className="text-xs text-amber-600 dark:text-amber-400 font-bold mt-0.5 flex items-center gap-1">
+                                    <span>⚡</span> {language === 'en' ? 'Updates every 5 minutes' : 'প্রতি ৫ মিনিটে আপডেট হয়'}
+                                </p>
+                            </div>
                             <button onClick={() => setShowFullLeaderboard(false)} className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">✕</button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-4">
@@ -1098,7 +1241,15 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                                 <div className="flex justify-between items-center mb-6">
                                     <div>
                                         <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{activeQuiz.title}</h3>
-                                        <p className="text-xs text-slate-500">{t.questions} {currentQuestionIndex + 1} / {quizQuestions.length}</p>
+                                        <div className="flex items-center gap-3">
+                                            <p className="text-xs text-slate-500">{t.questions} {currentQuestionIndex + 1} / {quizQuestions.length}</p>
+                                            {userRank && userRank.score > 1000 && (
+                                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 animate-pulse">
+                                                    <span className="text-[10px]">🔥</span>
+                                                    <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">{t.highStakes}</span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                     <button onClick={() => setActiveQuiz(null)} className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">✕</button>
                                 </div>
@@ -1167,8 +1318,13 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                             <div className="text-center py-6">
                                 <div className="w-20 h-20 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">🎉</div>
                                 <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.completed}</h2>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">{t.score}</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">{t.score}</p>
                                 <div className="text-5xl font-bold text-blue-600 dark:text-blue-400 mb-2">{score}</div>
+                                {userRank && userRank.score > 1000 && (
+                                    <div className="mb-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 text-[10px] font-bold border border-red-100 dark:border-red-900/30">
+                                        <span>⚠️</span> {t.highStakesDesc}
+                                    </div>
+                                )}
                                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10">Total Points Earned</div>
                                 <button onClick={() => { setActiveQuiz(null); setQuizSubmitted(false); }} className="w-full py-3 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-lg font-bold hover:bg-slate-800 dark:hover:bg-white transition-colors">
                                     {t.close}

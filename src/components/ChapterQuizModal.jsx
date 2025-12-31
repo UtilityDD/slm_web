@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
-const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], language = 'en' }) => {
+const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], language = 'en', isPractice = false }) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [userAnswers, setUserAnswers] = useState({});
     const [showResult, setShowResult] = useState(false);
     const [score, setScore] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [isReviewMode, setIsReviewMode] = useState(false);
 
     const t = {
         en: {
@@ -25,6 +26,10 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
             loadingText: 'Preparing Quiz...',
             noQuestions: 'No quiz questions available.',
             close: 'Close',
+            review: 'Review Answers',
+            reviewTitle: 'Review Your Answers',
+            correct: 'Correct Answer',
+            yourAns: 'Your Answer'
         },
         bn: {
             title: 'অধ্যায় কুইজ',
@@ -43,6 +48,10 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
             loadingText: 'কুইজ প্রস্তুত করা হচ্ছে...',
             noQuestions: 'কোন কুইজ প্রশ্ন পাওয়া যায়নি।',
             close: 'বন্ধ করুন',
+            review: 'উত্তরগুলো দেখুন',
+            reviewTitle: 'আপনার উত্তরগুলো দেখুন',
+            correct: 'সঠিক উত্তর',
+            yourAns: 'আপনার উত্তর'
         }
     }[language] || { en: {} };
 
@@ -56,6 +65,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
             setCurrentQuestionIndex(0);
             setUserAnswers({});
             setScore(0);
+            setIsReviewMode(false);
 
             // Using a timeout to ensure the loading animation is visible and to mimic processing time.
             const timer = setTimeout(() => {
@@ -124,12 +134,12 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
             onComplete(score);
         }
     };
-    
+
     const handleTryAgain = () => {
         setLoading(true);
         setTimeout(() => {
             const reshuffled = shuffledQuestions.map(q => {
-                 const optionsWithMetadata = q.options.map((text, index) => ({
+                const optionsWithMetadata = q.options.map((text, index) => ({
                     text,
                     isCorrect: index === q.correctAnswerIndex
                 }));
@@ -147,6 +157,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
             setShowResult(false);
             setScore(0);
             setLoading(false);
+            setIsReviewMode(false);
         }, 500);
     };
 
@@ -175,9 +186,9 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
                         {/* Header */}
                         <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
                             <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">
-                                {showResult ? t.result : `${t.question} ${currentQuestionIndex + 1}/${totalQuestions}`}
+                                {isReviewMode ? t.reviewTitle : showResult ? t.result : `${t.question} ${currentQuestionIndex + 1}/${totalQuestions}`}
                             </h3>
-                            {!showResult && (
+                            {(!showResult || isReviewMode) && (
                                 <button
                                     onClick={onClose}
                                     className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
@@ -189,7 +200,49 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
 
                         {/* Content */}
                         <div className="p-6 overflow-y-auto flex-1">
-                            {showResult ? (
+                            {isReviewMode ? (
+                                /* Review Mode View */
+                                <div className="space-y-8">
+                                    {shuffledQuestions.map((q, idx) => {
+                                        const userAnswer = userAnswers[idx];
+                                        const isCorrect = userAnswer === q.correctAnswerIndex;
+                                        return (
+                                            <div key={idx} className={`p-4 rounded-xl border-2 ${isCorrect ? 'border-green-100 bg-green-50/50 dark:border-green-900 dark:bg-green-900/10' : 'border-red-100 bg-red-50/50 dark:border-red-900 dark:bg-red-900/10'}`}>
+                                                <div className="flex gap-3 mb-3">
+                                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                        {idx + 1}
+                                                    </span>
+                                                    <p className="font-medium text-slate-800 dark:text-slate-200">{q.questionText}</p>
+                                                </div>
+                                                <div className="space-y-2 pl-9">
+                                                    {q.options.map((opt, optIdx) => {
+                                                        const isSelected = userAnswer === optIdx;
+                                                        const isTheCorrectAnswer = q.correctAnswerIndex === optIdx;
+                                                        let optionClass = "text-slate-500 dark:text-slate-400";
+                                                        if (isTheCorrectAnswer) optionClass = "text-green-600 dark:text-green-400 font-bold";
+                                                        else if (isSelected && !isCorrect) optionClass = "text-red-500 dark:text-red-400 line-through";
+
+                                                        return (
+                                                            <div key={optIdx} className="flex items-start gap-2 text-sm">
+                                                                <span className="mt-1">
+                                                                    {isTheCorrectAnswer ? '✅' : isSelected ? '❌' : '⚪'}
+                                                                </span>
+                                                                <span className={optionClass}>{opt}</span>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                    <button
+                                        onClick={onClose}
+                                        className="w-full py-3 bg-slate-800 text-white font-bold rounded-xl transition-all hover:bg-slate-700"
+                                    >
+                                        {t.close}
+                                    </button>
+                                </div>
+                            ) : showResult ? (
                                 <div className="text-center py-8">
                                     <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl ${isPassed ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600'}`}>
                                         {isPassed ? '🏆' : '⚠️'}
@@ -207,7 +260,30 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
                                     )}
 
                                     <div className="space-y-3 mt-6">
-                                        {isPassed ? (
+                                        {isPractice ? (
+                                            /* Practice Mode Options */
+                                            <>
+                                                <button
+                                                    onClick={() => setIsReviewMode(true)}
+                                                    className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-600/20"
+                                                >
+                                                    {t.review}
+                                                </button>
+                                                <button
+                                                    onClick={handleTryAgain}
+                                                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20"
+                                                >
+                                                    {t.tryAgain}
+                                                </button>
+                                                <button
+                                                    onClick={onClose}
+                                                    className="w-full py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all hover:bg-slate-200 dark:hover:bg-slate-600"
+                                                >
+                                                    {t.close}
+                                                </button>
+                                            </>
+                                        ) : isPassed ? (
+                                            /* Normal Completion */
                                             <button
                                                 onClick={handleFinish}
                                                 className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-green-600/20"
@@ -215,6 +291,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
                                                 {t.continue}
                                             </button>
                                         ) : (
+                                            /* Normal Failure */
                                             <>
                                                 <button
                                                     onClick={handleTryAgain}
@@ -267,7 +344,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
                         </div>
 
                         {/* Footer */}
-                        {!showResult && (
+                        {(!showResult && !isReviewMode) && (
                             <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
                                 <button
                                     onClick={handleNext}

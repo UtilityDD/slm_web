@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Sidebar({ 
-  isOpen, 
-  onClose, 
-  currentView, 
-  setCurrentView, 
-  userProfile, 
-  language, 
+export default function Sidebar({
+  isOpen,
+  onClose,
+  currentView,
+  setCurrentView,
+  userProfile,
+  language,
   t,
   onToggleSidebar,
   onToggleLanguageModal
@@ -30,7 +30,8 @@ export default function Sidebar({
   const menuItems = [
     { id: 'training', label: language === 'en' ? '90 Days Training' : '৯০ দিনের প্রশিক্ষণ', icon: '📚', show: true },
     { id: 'community', label: language === 'en' ? 'Community' : 'কমিউনিটি', icon: '👥', show: true },
-    { id: 'competitions', label: language === 'en' ? 'Competitions' : 'প্রতিযোগিতা', icon: '🏆', show: true },
+    { id: 'leaderboard', label: language === 'en' ? 'Leaderboard' : 'লিডারবোর্ড', icon: '🏆', show: true },
+    { id: 'competitions', label: language === 'en' ? 'Competitions' : 'প্রতিযোগিতা', icon: '🎯', show: true },
     { id: 'sop', label: language === 'en' ? 'SOP' : 'এসওপি', icon: '📋', show: true, redirectTo: 'safety', tab: 'sops' },
     { id: 'ppe', label: language === 'en' ? 'My PPE' : 'আমার পিপিই', icon: '👷', show: true, redirectTo: 'safety', tab: 'my_ppe' },
     { id: 'tools', label: language === 'en' ? 'My Tools' : 'আমার সরঞ্জাম', icon: '🔧', show: true, redirectTo: 'safety', tab: 'my_tools' },
@@ -61,9 +62,8 @@ export default function Sidebar({
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:static left-0 top-0 h-screen md:h-auto w-64 md:w-20 lg:w-64 bg-white dark:bg-slate-800 shadow-xl md:shadow-none z-[100] transform transition-transform duration-300 md:translate-x-0 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-        } hover:w-64 group`}
+        className={`fixed md:static left-0 top-0 h-screen md:h-auto w-64 md:w-20 lg:w-64 bg-white dark:bg-slate-800 shadow-xl md:shadow-none z-[100] transform transition-transform duration-300 md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+          } hover:w-64 group`}
       >
         {/* Sidebar Header */}
         <div className="h-auto px-4 py-3 border-b border-slate-100 dark:border-slate-700 md:border-none">
@@ -106,23 +106,22 @@ export default function Sidebar({
         <nav className="flex-1 overflow-y-auto py-2 px-2 md:px-1 space-y-1">
           {menuItems.map((item) => {
             if (!item.show) return null;
-            
+
             let isActive = currentView === item.id;
-            
+
             // For items that redirect, check if we're on safety view and the tab matches
             if (item.redirectTo && item.tab) {
               isActive = currentView === item.redirectTo && currentTab === item.tab;
             }
-            
+
             return (
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item)}
-                className={`w-full flex items-center gap-2 px-3 md:px-1.5 py-2 rounded-lg transition-all duration-200 text-left ${
-                  isActive
+                className={`w-full flex items-center gap-2 px-3 md:px-1.5 py-2 rounded-lg transition-all duration-200 text-left ${isActive
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold'
                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
-                }`}
+                  }`}
                 title={item.label}
               >
                 <span className="text-lg shrink-0 md:text-base">{item.icon}</span>
