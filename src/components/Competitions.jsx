@@ -341,7 +341,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
     const fetchHourlyQuiz = async () => {
         // Cache key includes language to separate EN/BN quizzes
-        const cacheKey = `hourly_quiz_db_${language}`;
+        const cacheKey = `hourly_quiz_db_bn`;
         const cachedQuiz = cacheHelper.get(cacheKey);
 
         if (cachedQuiz) {
@@ -352,7 +352,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         try {
             // Fetch 5 random questions from Supabase
             const { data, error } = await supabase.rpc('get_random_hourly_questions', {
-                lang: language,
+                lang: 'bn',
                 limit_count: 5
             });
 
