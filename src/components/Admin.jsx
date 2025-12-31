@@ -935,22 +935,31 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
       {/* Edit PPE Modal */}
       {editingPPEUser && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-hidden sm:overflow-y-auto">
           <div className="bg-white dark:bg-slate-800 rounded-none sm:rounded-2xl shadow-2xl w-full max-w-5xl border-0 sm:border border-slate-100 dark:border-slate-700 animate-scale-in flex flex-col h-full sm:h-auto sm:max-h-[90vh]">
             <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
-              <div>
-                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Manage PPE</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{editingPPEUser.full_name}</p>
+              <div className="flex items-center gap-3">
+                {/* Mobile Back Button */}
+                <button
+                  onClick={() => setEditingPPEUser(null)}
+                  className="sm:hidden p-2 -ml-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Manage PPE</h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{editingPPEUser.full_name}</p>
+                </div>
               </div>
               <button
                 onClick={() => setEditingPPEUser(null)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                className="hidden sm:block text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 pb-24 sm:pb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {ppeChecklist.map((item, index) => (
                   <div key={item.name} className={`relative p-4 rounded-xl border-2 transition-all ${item.available ? 'border-indigo-500 bg-indigo-50/10 dark:bg-indigo-900/10 shadow-sm' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 opacity-80'}`}>
@@ -1029,19 +1038,19 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 p-6 border-t dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 rounded-b-2xl">
+            <div className="border-t border-slate-200 dark:border-slate-700 p-4 sm:p-6 flex justify-end gap-3 bg-white dark:bg-slate-800 shrink-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] sm:shadow-none">
               <button
                 onClick={() => setEditingPPEUser(null)}
-                className="px-5 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveUserPPE}
                 disabled={isSavingPPE}
-                className="px-5 py-2.5 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2"
+                className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-2"
               >
-                {isSavingPPE ? 'Saving...' : 'Save PPE Changes'}
+                {isSavingPPE ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </div>
