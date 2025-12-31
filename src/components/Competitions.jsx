@@ -1050,8 +1050,8 @@ export default function Competitions({ language = 'en', user, setCurrentView }) 
                         <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
                             <div>
                                 <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">Leaderboard</h3>
-                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                                    {language === 'en' ? 'Updates every 5 minutes' : 'প্রতি ৫ মিনিটে আপডেট হয়'}
+                                <p className="text-xs text-amber-600 dark:text-amber-400 font-bold mt-0.5 flex items-center gap-1">
+                                    <span>⚡</span> {language === 'en' ? 'Updates every 5 minutes' : 'প্রতি ৫ মিনিটে আপডেট হয়'}
                                 </p>
                             </div>
                             <button onClick={() => setShowFullLeaderboard(false)} className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">✕</button>
