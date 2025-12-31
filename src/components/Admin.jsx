@@ -234,6 +234,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
       alert('PPE Status updated successfully!');
       setEditingPPEUser(null);
+      setEditingPPEUser(null);
     } catch (error) {
       console.error('Error saving user PPE:', error);
       alert('Failed to save PPE status');
@@ -419,7 +420,9 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 md:mb-6 transition-all duration-500">
+    <div className="mx-auto px-4 sm:px-6 py-6 sm:py-10 md:mb-6 transition-all duration-500">
+      {/* LIST VIEW */}
+
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
@@ -498,10 +501,10 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Role:</span>
                     <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${targetUser.role === 'admin'
-                        ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                        : targetUser.role === 'safety mitra'
-                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                          : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                      ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                      : targetUser.role === 'safety mitra'
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                        : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
                       }`}>
                       {targetUser.role}
                     </span>
@@ -527,8 +530,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                       onClick={() => handleEdit(targetUser)}
                       disabled={userProfile?.role === 'safety mitra' && targetUser.role === 'admin'}
                       className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all border ${userProfile?.role === 'safety mitra' && targetUser.role === 'admin'
-                          ? 'opacity-50 cursor-not-allowed grayscale bg-slate-50 dark:bg-slate-900 text-slate-400 border-slate-200 dark:border-slate-700'
-                          : 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800'
+                        ? 'opacity-50 cursor-not-allowed grayscale bg-slate-50 dark:bg-slate-900 text-slate-400 border-slate-200 dark:border-slate-700'
+                        : 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800'
                         }`}
                     >
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -565,10 +568,10 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${targetUser.role === 'admin'
-                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                          : targetUser.role === 'safety mitra'
-                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                            : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                        ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                        : targetUser.role === 'safety mitra'
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                          : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
                         }`}>
                         {targetUser.role}
                       </span>
@@ -589,8 +592,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                             onClick={() => handleEdit(targetUser)}
                             disabled={userProfile?.role === 'safety mitra' && targetUser.role === 'admin'}
                             className={`border px-3 py-1.5 rounded-lg transition-all font-medium text-xs ${userProfile?.role === 'safety mitra' && targetUser.role === 'admin'
-                                ? 'opacity-50 cursor-not-allowed grayscale border-slate-200 dark:border-slate-700 text-slate-400'
-                                : 'text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
+                              ? 'opacity-50 cursor-not-allowed grayscale border-slate-200 dark:border-slate-700 text-slate-400'
+                              : 'text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
                               }`}
                           >
                             ✏️ Edit
@@ -666,277 +669,288 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
         </div>
       )}
 
+
+      {/* EDIT USER FULL-PAGE VIEW */}
       {/* Edit User Modal */}
       {editingUser && (
-        <div className="fixed top-0 left-0 right-0 bottom-0 bg-slate-900/60 backdrop-blur-sm z-[120] p-4 pb-20 flex items-center justify-center">
-          <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl shadow-2xl w-full max-w-xl border border-slate-100 dark:border-slate-700 animate-scale-in my-auto flex flex-col max-h-[85vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-700">
-              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Edit User Profile</h2>
-              <button onClick={handleCancelEdit} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
-
-            {/* Tab Navigation */}
-            <div className="flex border-b dark:border-slate-700 mb-6 overflow-x-auto no-scrollbar">
-              <button
-                onClick={() => setActiveEditTab('basic')}
-                className={`px-4 py-2 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${activeEditTab === 'basic' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-              >
-                Basic Info
-              </button>
-              <button
-                onClick={() => setActiveEditTab('family')}
-                className={`px-4 py-2 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${activeEditTab === 'family' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-              >
-                Family Details
-              </button>
-              <button
-                onClick={() => setActiveEditTab('health')}
-                className={`px-4 py-2 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${activeEditTab === 'health' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-              >
-                Health & Safety
-              </button>
-            </div>
-
-            <div className="max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar flex-1">
-              {activeEditTab === 'basic' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
-                  {/* Left Column - Avatar & Basic Info */}
-                  <div className="flex flex-col items-center">
-                    <div className="relative group mb-4">
-                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-slate-100 dark:border-slate-700 shadow-md">
-                        {avatarPreview ? (
-                          <img src={avatarPreview} alt="Avatar Preview" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-300 text-3xl font-bold">
-                            {editingUser.full_name ? editingUser.full_name.charAt(0).toUpperCase() : 'U'}
-                          </div>
-                        )}
-                      </div>
-                      <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full cursor-pointer shadow-lg transition-transform hover:scale-105">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                      </label>
-                      <input id="avatar-upload" type="file" onChange={handleFileChange} accept="image/*" className="hidden" />
-                    </div>
-
-                    <div className="w-full space-y-3">
-                      <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Full Name</label>
-                        <input type="text" name="full_name" value={editingUser.full_name || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Email</label>
-                        <input type="email" name="email" value={editingUser.email || ''} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 cursor-not-allowed" readOnly />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Column - Details */}
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Phone</label>
-                        <input type="text" name="phone" value={editingUser.phone || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Blood Group</label>
-                        <select name="blood_group" value={editingUser.blood_group || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
-                          <option value="">Select Blood Group</option>
-                          <option value="A+">A+</option>
-                          <option value="A-">A-</option>
-                          <option value="B+">B+</option>
-                          <option value="B-">B-</option>
-                          <option value="O+">O+</option>
-                          <option value="O-">O-</option>
-                          <option value="AB+">AB+</option>
-                          <option value="AB-">AB-</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">District</label>
-                        <select name="district" value={editingUser.district || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
-                          <option value="">Select District</option>
-                          {Object.keys(wbLocations).map(district => (
-                            <option key={district} value={district}>{district}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Block</label>
-                        <select name="block" value={editingUser.block || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" disabled={!editingUser.district}>
-                          <option value="">Select Block</option>
-                          {editingUser.district && wbLocations[editingUser.district]?.map(block => (
-                            <option key={block} value={block}>{block}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Role</label>
-                      <select name="role" value={editingUser.role || 'lineman'} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" disabled={userProfile?.role === 'safety mitra' && editingUser.role === 'admin'}>
-                        <option value="lineman">Lineman</option>
-                        <option value="safety mitra">Safety Mitra</option>
-                        {userProfile?.role === 'admin' && <option value="admin">Admin</option>}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Job Type</label>
-                      <select name="job" value={editingUser.job || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
-                        <option value="">Select Job Type</option>
-                        <option value="HT-Mobile Van">HT-Mobile Van</option>
-                        <option value="LT-Mobile Van">LT-Mobile Van</option>
-                        <option value="HT-LT Others">HT-LT Others</option>
-                      </select>
-                    </div>
-
-                    {userProfile?.role === 'admin' && (
-                      <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Supervisor (Safety Mitra / Admin)</label>
-                        <select
-                          name="supervisor_id"
-                          value={editingUser.supervisor_id || ''}
-                          onChange={handleChange}
-                          className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
-                        >
-                          <option value="">No Supervisor</option>
-                          {supervisors.map(s => (
-                            <option key={s.id} value={s.id}>{s.full_name} ({s.role})</option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-
-                    <div className="flex items-center p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-100 dark:border-slate-700">
-                      <input type="checkbox" id="is_donor" name="is_donor" checked={editingUser.is_donor || false} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
-                      <label htmlFor="is_donor" className="ml-2 text-xs text-slate-700 dark:text-slate-200 font-medium cursor-pointer">Register as Blood Donor</label>
-                    </div>
-
-                    {editingUser.is_donor && (
-                      <div className="animate-fade-in">
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Last Donation Date</label>
-                        <input type="date" name="last_donation_date" value={editingUser.last_donation_date || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {activeEditTab === 'family' && (
-                <div className="space-y-4 animate-fade-in">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Date of Birth</label>
-                      <input type="date" name="dob" value={editingUser.dob || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Age</label>
-                      <input type="number" name="age" value={editingUser.age || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Education</label>
-                      <input type="text" name="education" value={editingUser.education || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Children Count</label>
-                        <input type="number" name="children_count" value={editingUser.children_count || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Children Ages</label>
-                        <input type="text" name="children_ages" value={editingUser.children_ages || ''} onChange={handleChange} placeholder="e.g. 5, 8" className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex items-center p-2.5 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-100 dark:border-slate-700">
-                        <input type="checkbox" id="parents_stay" name="parents_stay" checked={editingUser.parents_stay || false} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
-                        <label htmlFor="parents_stay" className="ml-2 text-xs text-slate-700 dark:text-slate-200 font-medium cursor-pointer">Parents stay with them</label>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Parents' Occupation</label>
-                        <input type="text" name="parents_occupation" value={editingUser.parents_occupation || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeEditTab === 'health' && (
-                <div className="space-y-4 animate-fade-in">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Major Diseases</label>
-                      <textarea name="major_diseases" value={editingUser.major_diseases || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-20 resize-none"></textarea>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Regular Medicines</label>
-                      <textarea name="regular_medicines" value={editingUser.regular_medicines || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-20 resize-none"></textarea>
-                    </div>
-                  </div>
-
-                  <div className="p-4 bg-red-50/50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-900/30">
-                    <h4 className="text-xs font-bold text-red-600 dark:text-red-400 mb-3 uppercase tracking-wider flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                      Accident History
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-3">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Count</label>
-                        <input type="number" name="accident_count" value={editingUser.accident_count || 0} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
-                      </div>
-                      <div className="sm:col-span-2">
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Voltage Level</label>
-                        <select name="accident_voltage" value={editingUser.accident_voltage || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
-                          <option value="">Select Voltage</option>
-                          <option value="LT">LT (Low Tension)</option>
-                          <option value="11kV">11kV</option>
-                          <option value="33kV">33kV</option>
-                          <option value="Other">Other</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Details (When, How, Suffering)</label>
-                      <textarea name="accidents_details" value={editingUser.accidents_details || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-24 resize-none"></textarea>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
-              <button onClick={handleCancelEdit} className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">Cancel</button>
-              <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all">Save Changes</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Admin PPE Modal - NEW */}
-      {editingPPEUser && (
-        <div className="fixed top-0 left-0 right-0 bottom-0 bg-slate-900/60 backdrop-blur-sm z-[120] p-4 pb-20 flex items-center justify-center">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl border border-slate-100 dark:border-slate-700 animate-scale-in flex flex-col max-h-[85vh] my-auto overflow-y-auto">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-none sm:rounded-2xl shadow-2xl w-full max-w-2xl border-0 sm:border border-slate-100 dark:border-slate-700 animate-scale-in flex flex-col h-full sm:h-auto sm:max-h-[90vh]">
             <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
               <div>
-                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Manage PPE for User</h2>
-                <p className="text-sm text-slate-500">{editingPPEUser.full_name}</p>
+                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Edit User Profile</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{editingUser.full_name}</p>
               </div>
-              <button onClick={() => setEditingPPEUser(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+              <button onClick={handleCancelEdit} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 max-h-[65vh]">
+            <div className="p-6 overflow-y-auto custom-scrollbar">
+              {/* Tab Navigation */}
+              <div className="flex border-b dark:border-slate-700 mb-6 overflow-x-auto no-scrollbar">
+                <button
+                  onClick={() => setActiveEditTab('basic')}
+                  className={`px-4 py-2 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${activeEditTab === 'basic' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                >
+                  Basic Info
+                </button>
+                <button
+                  onClick={() => setActiveEditTab('family')}
+                  className={`px-4 py-2 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${activeEditTab === 'family' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                >
+                  Family Details
+                </button>
+                <button
+                  onClick={() => setActiveEditTab('health')}
+                  className={`px-4 py-2 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${activeEditTab === 'health' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                >
+                  Health & Safety
+                </button>
+              </div>
+
+              <div className="max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar flex-1">
+                {activeEditTab === 'basic' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+                    {/* Left Column - Avatar & Basic Info */}
+                    <div className="flex flex-col items-center">
+                      <div className="relative group mb-4">
+                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-slate-100 dark:border-slate-700 shadow-md">
+                          {avatarPreview ? (
+                            <img src={avatarPreview} alt="Avatar Preview" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-300 text-3xl font-bold">
+                              {editingUser.full_name ? editingUser.full_name.charAt(0).toUpperCase() : 'U'}
+                            </div>
+                          )}
+                        </div>
+                        <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full cursor-pointer shadow-lg transition-transform hover:scale-105">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                        </label>
+                        <input id="avatar-upload" type="file" onChange={handleFileChange} accept="image/*" className="hidden" />
+                      </div>
+
+                      <div className="w-full space-y-3">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-500 mb-1">Full Name</label>
+                          <input type="text" name="full_name" value={editingUser.full_name || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-500 mb-1">Email</label>
+                          <input type="email" name="email" value={editingUser.email || ''} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 cursor-not-allowed" readOnly />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Column - Details */}
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-500 mb-1">Phone</label>
+                          <input type="text" name="phone" value={editingUser.phone || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-500 mb-1">Blood Group</label>
+                          <select name="blood_group" value={editingUser.blood_group || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                            <option value="">Select Blood Group</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-500 mb-1">District</label>
+                          <select name="district" value={editingUser.district || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                            <option value="">Select District</option>
+                            {Object.keys(wbLocations).map(district => (
+                              <option key={district} value={district}>{district}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-500 mb-1">Block</label>
+                          <select name="block" value={editingUser.block || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" disabled={!editingUser.district}>
+                            <option value="">Select Block</option>
+                            {editingUser.district && wbLocations[editingUser.district]?.map(block => (
+                              <option key={block} value={block}>{block}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Role</label>
+                        <select name="role" value={editingUser.role || 'lineman'} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" disabled={userProfile?.role === 'safety mitra' && editingUser.role === 'admin'}>
+                          <option value="lineman">Lineman</option>
+                          <option value="safety mitra">Safety Mitra</option>
+                          {userProfile?.role === 'admin' && <option value="admin">Admin</option>}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Job Type</label>
+                        <select name="job" value={editingUser.job || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                          <option value="">Select Job Type</option>
+                          <option value="HT-Mobile Van">HT-Mobile Van</option>
+                          <option value="LT-Mobile Van">LT-Mobile Van</option>
+                          <option value="HT-LT Others">HT-LT Others</option>
+                        </select>
+                      </div>
+
+                      {userProfile?.role === 'admin' && (
+                        <div>
+                          <label className="block text-xs font-medium text-slate-500 mb-1">Supervisor (Safety Mitra / Admin)</label>
+                          <select
+                            name="supervisor_id"
+                            value={editingUser.supervisor_id || ''}
+                            onChange={handleChange}
+                            className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                          >
+                            <option value="">No Supervisor</option>
+                            {supervisors.map(s => (
+                              <option key={s.id} value={s.id}>{s.full_name} ({s.role})</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      <div className="flex items-center p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-100 dark:border-slate-700">
+                        <input type="checkbox" id="is_donor" name="is_donor" checked={editingUser.is_donor || false} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
+                        <label htmlFor="is_donor" className="ml-2 text-xs text-slate-700 dark:text-slate-200 font-medium cursor-pointer">Register as Blood Donor</label>
+                      </div>
+
+                      {editingUser.is_donor && (
+                        <div className="animate-fade-in">
+                          <label className="block text-xs font-medium text-slate-500 mb-1">Last Donation Date</label>
+                          <input type="date" name="last_donation_date" value={editingUser.last_donation_date || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {activeEditTab === 'family' && (
+                  <div className="space-y-4 animate-fade-in">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Date of Birth</label>
+                        <input type="date" name="dob" value={editingUser.dob || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Age</label>
+                        <input type="number" name="age" value={editingUser.age || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Education</label>
+                        <input type="text" name="education" value={editingUser.education || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-500 mb-1">Children Count</label>
+                          <input type="number" name="children_count" value={editingUser.children_count || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-500 mb-1">Children Ages</label>
+                          <input type="text" name="children_ages" value={editingUser.children_ages || ''} onChange={handleChange} placeholder="e.g. 5, 8" className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex items-center p-2.5 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-100 dark:border-slate-700">
+                          <input type="checkbox" id="parents_stay" name="parents_stay" checked={editingUser.parents_stay || false} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
+                          <label htmlFor="parents_stay" className="ml-2 text-xs text-slate-700 dark:text-slate-200 font-medium cursor-pointer">Parents stay with them</label>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-500 mb-1">Parents' Occupation</label>
+                          <input type="text" name="parents_occupation" value={editingUser.parents_occupation || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeEditTab === 'health' && (
+                  <div className="space-y-4 animate-fade-in">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Major Diseases</label>
+                        <textarea name="major_diseases" value={editingUser.major_diseases || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-20 resize-none"></textarea>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Regular Medicines</label>
+                        <textarea name="regular_medicines" value={editingUser.regular_medicines || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-20 resize-none"></textarea>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-red-50/50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-900/30">
+                      <h4 className="text-xs font-bold text-red-600 dark:text-red-400 mb-3 uppercase tracking-wider flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        Accident History
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-3">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Count</label>
+                          <input type="number" name="accident_count" value={editingUser.accident_count || 0} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Voltage Level</label>
+                          <select name="accident_voltage" value={editingUser.accident_voltage || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                            <option value="">Select Voltage</option>
+                            <option value="LT">LT (Low Tension)</option>
+                            <option value="11kV">11kV</option>
+                            <option value="33kV">33kV</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Details (When, How, Suffering)</label>
+                        <textarea name="accidents_details" value={editingUser.accidents_details || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-24 resize-none"></textarea>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
+                <button onClick={handleCancelEdit} className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">Cancel</button>
+                <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all">Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+      }
+
+      {/* Edit PPE Modal */}
+      {editingPPEUser && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-none sm:rounded-2xl shadow-2xl w-full max-w-5xl border-0 sm:border border-slate-100 dark:border-slate-700 animate-scale-in flex flex-col h-full sm:h-auto sm:max-h-[90vh]">
+            <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
+              <div>
+                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Manage PPE</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{editingPPEUser.full_name}</p>
+              </div>
+              <button
+                onClick={() => setEditingPPEUser(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {ppeChecklist.map((item, index) => (
                   <div key={item.name} className={`relative p-4 rounded-xl border-2 transition-all ${item.available ? 'border-indigo-500 bg-indigo-50/10 dark:bg-indigo-900/10 shadow-sm' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 opacity-80'}`}>
@@ -1015,7 +1029,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 p-4 sm:p-6 border-t dark:border-slate-700 shrink-0 bg-gray-50 dark:bg-slate-800/50">
+            <div className="flex justify-end gap-3 p-6 border-t dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 rounded-b-2xl">
               <button
                 onClick={() => setEditingPPEUser(null)}
                 className="px-5 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
