@@ -522,7 +522,8 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
     // Initiate lesson completion - check for quiz first
     const initiateLessonCompletion = async (lessonId) => {
-        if (completedLessons.includes(lessonId)) return;
+        // Check if we have a quiz for this lesson
+        // Note: We allow re-taking the quiz for practice even if lesson is completed
 
         // Construct quiz filename based on lesson ID (e.g., "1.1" -> "questions_1_1.json")
         const filename = `questions_${lessonId.replace('.', '_')}.json`;
@@ -2090,6 +2091,13 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                         <span className="text-xl">✓</span>
                                         {language === 'en' ? 'Lesson Completed!' : 'পাঠ সম্পন্ন!'}
                                     </div>
+                                    <button
+                                        onClick={() => initiateLessonCompletion(trainingContent.level_id)}
+                                        className="w-full px-8 py-4 rounded-2xl font-bold transition-all bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-3 text-lg active:scale-95"
+                                    >
+                                        <span className="text-xl">📝</span>
+                                        {language === 'en' ? 'Practice Quiz' : 'অনুশীলন কুইজ'}
+                                    </button>
                                     <button
                                         onClick={() => {
                                             setTrainingContent(null);
