@@ -602,7 +602,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         if (quizQuestions.length > 0) {
             calculatedScore = correctCount * 10;
             if (isHighStakes) {
-                calculatedScore -= (wrongCount * 5);
+                calculatedScore -= (wrongCount * 15); // -15 per wrong answer for scores > 1000
             }
         }
         setScore(calculatedScore);
