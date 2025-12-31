@@ -508,6 +508,13 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                         p_quiz_id: `lesson_bonus_${lessonId}`,
                         p_score: bonusPoints
                     });
+
+                    // Force leaderboard and rank to refresh immediately 
+                    // when the user next visits the Competitions tab
+                    cacheHelper.clear('leaderboard_top_10_v2');
+                    cacheHelper.clear('leaderboard_full_v2');
+                    cacheHelper.clear(`user_rank_${user.id}`);
+
                     setRecentReward(bonusPoints);
                     // Clear reward message after 5 seconds
                     setTimeout(() => setRecentReward(null), 5000);
