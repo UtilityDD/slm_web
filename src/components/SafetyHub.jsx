@@ -2132,6 +2132,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                         onComplete={handleQuizComplete}
                         questions={currentQuizQuestions}
                         language={language}
+                        isPractice={pendingLessonId && completedLessons.includes(pendingLessonId)}
                     />
 
                     <CertificateModal
