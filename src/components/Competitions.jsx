@@ -782,10 +782,18 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 )}
                                                             </div>
                                                             <div className="min-w-0 flex-1">
-                                                                <p className={`text-sm font-semibold truncate ${isMe ? 'text-blue-700 dark:text-blue-400' : 'text-slate-900 dark:text-slate-100'}`}>
-                                                                    {isMe ? (language === 'en' ? 'You' : 'আপনি') : (item.full_name || 'Anonymous')}
-                                                                </p>
-                                                                <p className="text-xs text-slate-500 dark:text-slate-400 md:hidden">
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <p className={`text-sm font-semibold truncate ${isMe ? 'text-blue-700 dark:text-blue-400' : 'text-slate-900 dark:text-slate-100'}`}>
+                                                                        {isMe ? (language === 'en' ? 'You' : 'আপনি') : (item.full_name || 'Anonymous')}
+                                                                    </p>
+                                                                    {/* Badge visible on mobile - inline with name */}
+                                                                    {badge && (
+                                                                        <span className={`sm:hidden inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border shrink-0 ${badge.color}`}>
+                                                                            {language === 'en' ? badge.en : badge.bn}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <p className="text-xs text-slate-500 dark:text-slate-400 md:hidden truncate">
                                                                     {item.district || (language === 'en' ? 'West Bengal' : 'পশ্চিমবঙ্গ')}
                                                                 </p>
                                                             </div>
@@ -1123,17 +1131,18 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     </div>
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2 flex-wrap">
                                                         <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
                                                             {item.full_name || 'Anonymous'} {isUserRow && '(You)'}
                                                         </p>
+                                                        {/* Badge - Enhanced for mobile visibility */}
                                                         {getBadgeByLevel(item.training_level) && (
-                                                            <div className={`px-1.5 py-0.5 rounded-full text-[8px] font-bold border uppercase tracking-tight ${getBadgeByLevel(item.training_level).color}`}>
+                                                            <div className={`px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold border uppercase tracking-tight shrink-0 shadow-sm ${getBadgeByLevel(item.training_level).color}`}>
                                                                 {language === 'en' ? getBadgeByLevel(item.training_level).en : getBadgeByLevel(item.training_level).bn}
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <p className="text-[10px] sm:text-xs text-slate-500 truncate">
+                                                    <p className="text-[10px] sm:text-xs text-slate-500 truncate mt-0.5">
                                                         {item.district || 'West Bengal'}
                                                     </p>
                                                 </div>
