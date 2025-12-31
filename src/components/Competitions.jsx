@@ -692,117 +692,154 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
     if (isFullLeaderboard) {
         return (
-            <main className="max-w-5xl mx-auto px-4 py-6 sm:py-10 min-h-screen flex flex-col">
-                <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                            {language === 'en' ? 'Global Leaderboard' : 'গ্লোবাল লিডারবোর্ড'}
-                        </h2>
-                        <p className="text-sm text-yellow-600 dark:text-yellow-400 font-bold mt-1.5 flex items-center gap-1.5">
-                            <span className="text-base">⚡</span>
-                            {language === 'en' ? 'Updates every 5 minutes' : 'প্রতি ৫ মিনিটে আপডেট হয়'}
-                        </p>
-                    </div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700">
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-16">Rank</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Player</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">District</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Points</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50 dark:divide-slate-700/50">
-                                {loadingFull ? (
-                                    Array(10).fill(0).map((_, i) => (
-                                        <tr key={i} className="h-16">
-                                            <td colSpan="4" className="px-6 py-1"><SkeletonRow /></td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    fullLeaderboard.map((item, index) => {
-                                        const isMe = item.user_id === user?.id;
-                                        const badge = getBadgeByLevel(item.training_level);
-                                        return (
-                                            <tr key={index} className={`transition-colors h-16 ${isMe ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-slate-50/50 dark:hover:bg-slate-700/30'}`}>
-                                                <td className="px-6 py-1 text-center">
-                                                    <div className={`inline-flex items-center justify-center w-8 h-8 rounded-lg font-black text-sm
-                                                        ${index === 0 ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
-                                                            index === 1 ? 'bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600' :
-                                                                index === 2 ? 'bg-orange-100 text-orange-700 border border-orange-200' :
-                                                                    'text-slate-400'}`}>
-                                                        {index + 1}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-1">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex-shrink-0 overflow-hidden ring-2 ring-white dark:ring-slate-800">
-                                                            {item.avatar_url ? (
-                                                                <img src={item.avatar_url} alt="" className="w-full h-full object-cover" />
-                                                            ) : (
-                                                                <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold uppercase">{item.full_name?.[0] || '?'}</div>
-                                                            )}
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className={`font-bold text-sm truncate ${isMe ? 'text-blue-700 dark:text-blue-400' : 'text-slate-900 dark:text-slate-100'}`}>
-                                                                    {isMe ? (language === 'en' ? 'You' : 'আপনি') : (item.full_name || 'Anonymous')}
-                                                                </span>
-                                                                {badge && (
-                                                                    <span className={`px-1.5 py-0.5 rounded-full text-[8px] font-black border uppercase tracking-tighter ${badge.color}`}>
-                                                                        {language === 'en' ? badge.en : badge.bn}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <div className="text-[10px] text-slate-500 sm:hidden">{item.district}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-1 hidden sm:table-cell">
-                                                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{item.district || 'West Bengal'}</span>
-                                                </td>
-                                                <td className="px-6 py-1 text-right">
-                                                    <span className={`text-sm font-black ${isMe ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>
-                                                        {item.points.toLocaleString()}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                    {!loadingFull && fullLeaderboard.length === 0 && (
-                        <div className="py-20 text-center">
-                            <div className="text-4xl mb-4">🏆</div>
-                            <p className="text-slate-500 font-medium">{language === 'en' ? 'No rankings yet' : 'এখনও কোনো র‍্যাঙ্কিং নেই'}</p>
-                        </div>
-                    )}
-                </div>
-
-                {/* My Rank Sticky Bar */}
-                {user && userRank && !loadingFull && (
-                    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 pointer-events-none">
-                        <div className="max-w-md mx-auto bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-3xl shadow-2xl p-5 flex items-center justify-between animate-slide-up pointer-events-auto border border-slate-800 dark:border-slate-200">
-                            <div className="flex items-center gap-5">
-                                <div className="text-3xl font-black text-blue-400 tracking-tighter">#{userRank.rank}</div>
-                                <div className="w-px h-10 bg-slate-800 dark:bg-slate-200"></div>
-                                <div>
-                                    <div className="font-black text-xs uppercase tracking-widest text-slate-400">Your Standing</div>
-                                    <div className="text-lg font-black">{userRank.score.toLocaleString()} <span className="text-[10px] text-slate-500">POINTS</span></div>
-                                </div>
+            <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+                {/* Header Section */}
+                <div className="sticky top-0 z-40 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50">
+                    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-50">
+                                    🏆 {language === 'en' ? 'Global Leaderboard' : 'গ্লোবাল লিডারবোর্ড'}
+                                </h1>
+                                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+                                    {language === 'en' ? 'Top performers across all regions' : 'সকল অঞ্চলে শীর্ষ পারফরমাররা'}
+                                </p>
                             </div>
-                            <div className="w-12 h-12 rounded-2xl bg-slate-800 dark:bg-slate-100 flex items-center justify-center font-black text-blue-400 border border-slate-700 dark:border-slate-200 overflow-hidden shadow-inner">
+                            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800/50">
+                                <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
+                                <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                                    {language === 'en' ? 'Live' : 'লাইভ'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Leaderboard Content */}
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-4">
+                    {user && userRank && !loadingFull && (
+                        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg shadow-slate-200/30 dark:shadow-none p-4 flex items-center justify-between">
+                            <div>
+                                <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">
+                                    {language === 'en' ? 'Your Standing' : 'আপনার অবস্থান'}
+                                </p>
+                                <p className="text-2xl font-black text-slate-900 dark:text-white">#{userRank.rank}</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-300">{userRank.score.toLocaleString()} pts</p>
+                            </div>
+                            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-blue-600 dark:text-blue-300 border border-slate-200 dark:border-slate-600 overflow-hidden">
                                 {userProfile?.avatar_url ? <img src={userProfile.avatar_url} className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
                             </div>
                         </div>
+                    )}
+
+                    <div className="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden shadow-lg shadow-slate-200/20 dark:shadow-none">
+                        <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+                            <table className="w-full">
+                                <thead className="sticky top-0 bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
+                                    <tr>
+                                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider w-12">
+                                            {language === 'en' ? 'Rank' : 'র‍্যাঙ্ক'}
+                                        </th>
+                                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                                            {language === 'en' ? 'Player' : 'খেলোয়াড়'}
+                                        </th>
+                                        <th className="hidden md:table-cell px-4 sm:px-6 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                                            {language === 'en' ? 'District' : 'জেলা'}
+                                        </th>
+                                        <th className="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                                            {language === 'en' ? 'Level' : 'স্তর'}
+                                        </th>
+                                        <th className="px-4 sm:px-6 py-3 text-right text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                                            {language === 'en' ? 'Points' : 'পয়েন্ট'}
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700/30">
+                                    {loadingFull ? (
+                                        Array(12).fill(0).map((_, i) => (
+                                            <tr key={i} className="h-14">
+                                                <td colSpan="5" className="px-4 sm:px-6 py-3"><SkeletonRow /></td>
+                                            </tr>
+                                        ))
+                                    ) : fullLeaderboard.length > 0 ? (
+                                        fullLeaderboard.map((item, index) => {
+                                            const isMe = item.user_id === user?.id;
+                                            const badge = getBadgeByLevel(item.training_level);
+                                            const getMedalIcon = (rank) => {
+                                                if (rank === 1) return '🥇';
+                                                if (rank === 2) return '🥈';
+                                                if (rank === 3) return '🥉';
+                                                return null;
+                                            };
+                                            return (
+                                                <tr key={index} className={`transition-colors ${isMe ? 'bg-blue-50/70 dark:bg-blue-900/10' : 'hover:bg-slate-50/50 dark:hover:bg-slate-700/20'}`}>
+                                                    <td className="px-4 sm:px-6 py-3">
+                                                        <div className="flex items-center gap-2">
+                                                            {getMedalIcon(index + 1) && (
+                                                                <span className="text-lg">{getMedalIcon(index + 1)}</span>
+                                                            )}
+                                                            <span className={`text-sm font-bold ${index < 3 ? 'text-orange-600' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                                #{index + 1}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 sm:px-6 py-3">
+                                                        <div className="flex items-center gap-2 min-w-0">
+                                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex-shrink-0 overflow-hidden border border-slate-300 dark:border-slate-600">
+                                                                {item.avatar_url ? (
+                                                                    <img src={item.avatar_url} alt="" className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xs uppercase">{item.full_name?.[0] || '?'}</div>
+                                                                )}
+                                                            </div>
+                                                            <div className="min-w-0 flex-1">
+                                                                <p className={`text-sm font-semibold truncate ${isMe ? 'text-blue-700 dark:text-blue-400' : 'text-slate-900 dark:text-slate-100'}`}>
+                                                                    {isMe ? (language === 'en' ? 'You' : 'আপনি') : (item.full_name || 'Anonymous')}
+                                                                </p>
+                                                                <p className="text-xs text-slate-500 dark:text-slate-400 md:hidden">
+                                                                    {item.district || (language === 'en' ? 'West Bengal' : 'পশ্চিমবঙ্গ')}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="hidden md:table-cell px-4 sm:px-6 py-3">
+                                                        <span className="text-sm text-slate-600 dark:text-slate-400">{item.district || (language === 'en' ? 'West Bengal' : 'পশ্চিমবঙ্গ')}</span>
+                                                    </td>
+                                                    <td className="hidden sm:table-cell px-4 sm:px-6 py-3">
+                                                        {badge && (
+                                                            <span className={`inline-flex px-2 py-1 rounded-full text-[11px] font-bold border ${badge.color}`}>
+                                                                {language === 'en' ? badge.en : badge.bn}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 sm:px-6 py-3 text-right">
+                                                        <span className={`text-sm font-bold tabular-nums ${isMe ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-slate-200'}`}>
+                                                            {item.points.toLocaleString()}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="5" className="px-4 sm:px-6 py-12 text-center">
+                                                <div className="text-slate-400">
+                                                    <div className="text-4xl mb-3">🏆</div>
+                                                    <p className="font-medium">{language === 'en' ? 'No rankings yet' : 'এখনও কোনো র‍্যাঙ্কিং নেই'}</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                )}
+
+                    {/* breathing room below list */}
+                    <div className="h-12 sm:h-16"></div>
+                </div>
+
+                {/* Previously sticky Your Rank card removed in favor of inline placement */}
             </main>
         );
     }
