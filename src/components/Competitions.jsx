@@ -706,20 +706,33 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                 {/* Leaderboard Content */}
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-4">
-                    {user && userRank && !loadingFull && (
-                        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg shadow-slate-200/30 dark:shadow-none p-4 flex items-center justify-between">
-                            <div>
-                                <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">
-                                    {language === 'en' ? 'Your Standing' : 'আপনার অবস্থান'}
-                                </p>
-                                <p className="text-2xl font-black text-slate-900 dark:text-white">#{userRank.rank}</p>
-                                <p className="text-sm text-slate-500 dark:text-slate-300">{userRank.score.toLocaleString()} pts</p>
+                    {user && userRank && !loadingFull && (() => {
+                        const userBadge = getBadgeByLevel(userProfile?.training_level || 0);
+                        return (
+                            <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg shadow-slate-200/30 dark:shadow-none p-4 sm:p-5">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-2">
+                                            {language === 'en' ? 'Your Standing' : 'আপনার অবস্থান'}
+                                        </p>
+                                        <div className="flex items-center gap-3 flex-wrap">
+                                            <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">#{userRank.rank}</p>
+                                            {userBadge && (
+                                                <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold border shadow-sm ${userBadge.color}`}>
+                                                    {language === 'en' ? userBadge.en : userBadge.bn}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-sm text-slate-500 dark:text-slate-300 mt-1">{userRank.score.toLocaleString()} pts</p>
+                                    </div>
+                                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-blue-600 dark:text-blue-300 border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
+                                        {userProfile?.avatar_url ? <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
+                                    </div>
+                                </div>
                             </div>
-                            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-blue-600 dark:text-blue-300 border border-slate-200 dark:border-slate-600 overflow-hidden">
-                                {userProfile?.avatar_url ? <img src={userProfile.avatar_url} className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
-                            </div>
-                        </div>
-                    )}
+                        );
+                    })()}
+
 
                     <div className="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden shadow-lg shadow-slate-200/20 dark:shadow-none">
                         <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
