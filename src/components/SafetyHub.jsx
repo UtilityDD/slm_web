@@ -1903,7 +1903,6 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                 {trainingContent.badge_name}
                             </div>
                             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 reading-content leading-snug">
-                                {trainingContent.level_id && <span className="text-orange-200 font-mono mr-3">{trainingContent.level_id}.</span>}
                                 {trainingContent.level_title}
                             </h2>
                             <p className="text-orange-100 text-sm sm:text-base font-medium flex items-center gap-2">
