@@ -9,7 +9,8 @@ select
   district,
   avatar_url,
   training_level,
-  completed_lessons
+  completed_lessons,
+  total_penalties
 from profiles
 where points > 0;
 

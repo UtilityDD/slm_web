@@ -598,11 +598,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         });
 
         const isHighStakes = userRank && userRank.score > 1000;
+        let totalPenalty = 0;
 
         if (quizQuestions.length > 0) {
             calculatedScore = correctCount * 10;
             if (isHighStakes) {
-                calculatedScore -= (wrongCount * 15); // -15 per wrong answer for scores > 1000
+                totalPenalty = wrongCount * 15;
+                calculatedScore -= totalPenalty; // -15 per wrong answer for scores > 1000
             }
         }
         setScore(calculatedScore);
@@ -613,7 +615,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             timestamp: new Date().toISOString(),
             questions: quizQuestions,
             answers: userAnswers,
-            score: calculatedScore
+            score: calculatedScore,
+            penalty: totalPenalty
         };
         localStorage.setItem(`review_${activeQuiz.id}`, JSON.stringify(attemptData));
 
@@ -633,7 +636,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             // Use the RPC function for atomic transaction
             const { error } = await supabase.rpc('submit_quiz_result', {
                 p_quiz_id: activeQuiz.id || 'unknown_quiz',
-                p_score: calculatedScore
+                p_score: calculatedScore,
+                p_penalty: totalPenalty
             });
 
             if (error) throw error;
@@ -847,13 +851,22 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     {isExpanded && (
                                                         <tr className={`${isMe ? 'bg-blue-50/50 dark:bg-blue-900/5' : 'bg-slate-50/50 dark:bg-slate-700/10'}`}>
                                                             <td colSpan="4" className="px-4 sm:px-6 py-2">
-                                                                <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 animate-fade-in">
-                                                                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                    </svg>
-                                                                    <span className="font-medium">{language === 'en' ? 'District:' : 'জেলা:'}</span>
-                                                                    <span>{item.district || (language === 'en' ? 'West Bengal' : 'পশ্চিমবঙ্গ')}</span>
+                                                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-[10px] text-slate-600 dark:text-slate-400 animate-fade-in py-1">
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                        </svg>
+                                                                        <span className="font-bold">{language === 'en' ? 'District:' : 'জেলা:'}</span>
+                                                                        <span>{item.district || (language === 'en' ? 'West Bengal' : 'পশ্চিমবঙ্গ')}</span>
+                                                                    </div>
+                                                                    {(item.total_penalties > 0) && (
+                                                                        <div className="flex items-center gap-1.5 text-red-500 dark:text-red-400 font-bold">
+                                                                            <span className="text-xs">🔥</span>
+                                                                            <span>{language === 'en' ? 'Total Points Lost:' : 'মোট পয়েন্ট হারানো:'}</span>
+                                                                            <span>{item.total_penalties.toLocaleString()}</span>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             </td>
                                                         </tr>

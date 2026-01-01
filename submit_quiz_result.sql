@@ -1,8 +1,14 @@
 -- Run this script in your Supabase SQL Editor
+-- This version adds Penalty Tracking
 
+-- 1. Ensure the column exists
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS total_penalties int DEFAULT 0;
+
+-- 2. Update the function
 create or replace function submit_quiz_result(
   p_quiz_id text, 
-  p_score int
+  p_score int,
+  p_penalty int default 0 -- New parameter for penalty
 )
 returns void
 language plpgsql
@@ -25,7 +31,8 @@ begin
 
   -- 2. Update the profile score (Total for User)
   update profiles
-  set points = coalesce(points, 0) + p_score
+  set points = coalesce(points, 0) + p_score,
+      total_penalties = coalesce(total_penalties, 0) + p_penalty -- Track penalty
   where id = current_user_id;
   
 end;
