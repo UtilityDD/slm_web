@@ -210,7 +210,9 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                             <div className="w-20 h-20 sm:w-24 sm:h-24 bg-green-50 dark:bg-green-900/10 rounded-3xl flex items-center justify-center p-4 mb-4 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500 shadow-inner">
                                 <TrainingIcon className="w-full h-full text-green-600 dark:text-green-400" />
                             </div>
-                            <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white leading-tight tracking-tighter">{t.nav.training}</h3>
+                            <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white leading-tight tracking-tighter">
+                                {language === 'en' ? 'Training' : 'প্রশিক্ষণ'}
+                            </h3>
                         </div>
 
                         {/* Community */}
