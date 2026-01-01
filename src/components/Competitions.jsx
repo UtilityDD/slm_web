@@ -11,6 +11,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [userAnswers, setUserAnswers] = useState({});
     const [quizSubmitted, setQuizSubmitted] = useState(false);
     const [score, setScore] = useState(0);
+    const [quizResults, setQuizResults] = useState(null);
     const [leaderboard, setLeaderboard] = useState([]);
     const [hourlyQuiz, setHourlyQuiz] = useState(null);
     const [timeLeft, setTimeLeft] = useState('');
@@ -404,7 +405,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
             if (data && data.length > 0) {
                 const now = getSyncedTime();
-                const hourId = `${now.getFullYear()}${now.getMonth() + 1}${now.getDate()}${now.getHours()}`;
+                // Enforce local hours explicitly
+                const hourId = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}`;
                 const quizData = {
                     id: `hourly-challenge-${hourId}`,
                     title: language === 'en' ? 'Hourly Safety Challenge' : 'প্রতি ঘন্টায় সুরক্ষা চ্যালেঞ্জ',
@@ -673,15 +675,34 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         const currentPoints = userProfile?.points || userRank?.score || 0;
         const isHighStakes = currentPoints > 1000;
         let totalPenalty = 0;
+        let pointsPerQuestion = 10;
+
+        if (activeQuiz && activeQuiz.points_reward && quizQuestions.length > 0) {
+            pointsPerQuestion = Math.floor(activeQuiz.points_reward / quizQuestions.length);
+        }
 
         if (quizQuestions.length > 0) {
-            calculatedScore = correctCount * 10;
+            calculatedScore = correctCount * pointsPerQuestion;
             if (isHighStakes) {
-                totalPenalty = wrongCount * 15;
-                calculatedScore -= totalPenalty; // -15 per wrong answer for scores > 1000
+                // Determine ACTUAL wrong choices (not skipped)
+                const actualWrongCount = quizQuestions.filter(q =>
+                    userAnswers[q.id] !== undefined && userAnswers[q.id] !== q.correct_option_index
+                ).length;
+
+                totalPenalty = actualWrongCount * 5; // Deduct 5 points per WRONG choice
+                calculatedScore -= totalPenalty;
             }
         }
         setScore(calculatedScore);
+        // Store individual counts for the results screen
+        setQuizResults({
+            correct: correctCount,
+            wrong: quizQuestions.filter(q => userAnswers[q.id] !== undefined && userAnswers[q.id] !== q.correct_option_index).length,
+            skipped: quizQuestions.filter(q => userAnswers[q.id] === undefined).length,
+            penalty: totalPenalty,
+            score: calculatedScore,
+            pointsEarned: correctCount * pointsPerQuestion
+        });
         setQuizSubmitted(true);
 
         // Save for Review (Local Storage) - do this first
@@ -1489,14 +1510,32 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             <div className="text-center py-6">
                                 <div className="w-20 h-20 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">🎉</div>
                                 <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.completed}</h2>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">{t.score}</p>
-                                <div className="text-5xl font-bold text-blue-600 dark:text-blue-400 mb-2">{score}</div>
-                                {userRank && userRank.score > 1000 && (
-                                    <div className="mb-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 text-[10px] font-bold border border-red-100 dark:border-red-900/30">
+
+                                <div className="grid grid-cols-4 gap-2 mb-8 mt-4">
+                                    <div className="bg-green-50 dark:bg-green-900/10 p-3 rounded-xl border border-green-100 dark:border-green-900/30">
+                                        <div className="text-[10px] font-bold text-green-600 uppercase tracking-tighter mb-1">Right</div>
+                                        <div className="text-xl font-bold text-green-700 dark:text-green-400">+{quizResults?.pointsEarned || 0}</div>
+                                    </div>
+                                    <div className="bg-red-50 dark:bg-red-900/10 p-3 rounded-xl border border-red-100 dark:border-red-900/30">
+                                        <div className="text-[10px] font-bold text-red-600 uppercase tracking-tighter mb-1">Wrong</div>
+                                        <div className="text-xl font-bold text-red-700 dark:text-red-400">-{quizResults?.penalty || 0}</div>
+                                    </div>
+                                    <div className="bg-slate-50 dark:bg-slate-900/10 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">Skipped</div>
+                                        <div className="text-xl font-bold text-slate-600 dark:text-slate-400">{quizResults?.skipped || 0}</div>
+                                    </div>
+                                    <div className="bg-blue-50 dark:bg-blue-900/10 p-3 rounded-xl border border-blue-100 dark:border-blue-900/30">
+                                        <div className="text-[10px] font-bold text-blue-600 uppercase tracking-tighter mb-1">Net</div>
+                                        <div className="text-xl font-bold text-blue-700 dark:text-blue-400">{quizResults?.score || 0}</div>
+                                    </div>
+                                </div>
+
+                                {userRank && (userProfile?.points || userRank?.score) > 1000 && (
+                                    <div className="mb-6 inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-50 dark:bg-amber-900/10 text-amber-600 dark:text-amber-400 text-[10px] font-bold border border-amber-100 dark:border-amber-900/30">
                                         <span>⚠️</span> {t.highStakesDesc}
                                     </div>
                                 )}
-                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10">Total Points Earned</div>
+
                                 <button onClick={() => { setActiveQuiz(null); setQuizSubmitted(false); }} className="w-full py-3 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-lg font-bold hover:bg-slate-800 dark:hover:bg-white transition-colors">
                                     {t.close}
                                 </button>
