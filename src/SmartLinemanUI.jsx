@@ -56,7 +56,7 @@ export default function SmartLinemanUI() {
 
   // Service Worker Update Listener
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && !window.Capacitor) {
       navigator.serviceWorker.ready.then(registration => {
         // Check for updates periodically
         const checkForUpdate = () => {
