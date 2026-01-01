@@ -12,6 +12,7 @@
   "dependencies": {
     "@capacitor/android": "^8.0.0",
     "@capacitor/splash-screen": "^8.0.0",
+    "@capacitor/status-bar": "^8.0.0",
     "@supabase/supabase-js": "^2.87.1",
     "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.12.1",
