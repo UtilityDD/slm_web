@@ -449,7 +449,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
     const fetchLeaderboard = async (forceRefresh = false) => {
         if (!forceRefresh) {
-            const cachedLeaderboard = cacheHelper.get('leaderboard_top_10_v2');
+            const cachedLeaderboard = cacheHelper.get('leaderboard_top_10_v3');
             if (cachedLeaderboard) {
                 setLeaderboard(cachedLeaderboard);
                 if (user) fetchUserRank();
@@ -472,7 +472,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             }));
 
             setLeaderboard(formattedData || []);
-            cacheHelper.set('leaderboard_top_10_v2', formattedData || [], 5); // Cache for 5 mins
+            cacheHelper.set('leaderboard_top_10_v3', formattedData || [], 5); // Cache for 5 mins
 
             if (user) fetchUserRank(forceRefresh);
 
@@ -484,7 +484,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
     const fetchFullLeaderboard = async () => {
         setLoadingFull(true);
-        const cachedFull = cacheHelper.get('leaderboard_full_v2');
+        const cachedFull = cacheHelper.get('leaderboard_full_v3');
         if (cachedFull) {
             setFullLeaderboard(cachedFull);
             setLoadingFull(false);
@@ -505,7 +505,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 points: item.score
             }));
             setFullLeaderboard(formattedData || []);
-            cacheHelper.set('leaderboard_full_v2', formattedData || [], 5); // Cache for 5 mins
+            cacheHelper.set('leaderboard_full_v3', formattedData || [], 5); // Cache for 5 mins
         } catch (error) {
             console.error('Error fetching full leaderboard:', error);
         } finally {
@@ -710,23 +710,23 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     {user && userRank && !loadingFull && (() => {
                         const userBadge = getBadgeByLevel(userProfile?.training_level || 0);
                         return (
-                            <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg shadow-slate-200/30 dark:shadow-none p-4 sm:p-5">
-                                <div className="flex items-center justify-between gap-4">
+                            <div className="bg-white dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 shadow-md p-3 sm:p-4 mb-4">
+                                <div className="flex items-center justify-between gap-3">
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-2">
+                                        <p className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">
                                             {language === 'en' ? 'Your Standing' : 'আপনার অবস্থান'}
                                         </p>
-                                        <div className="flex items-center gap-3 flex-wrap">
-                                            <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">#{userRank.rank}</p>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">#{userRank.rank}</p>
                                             {userBadge && (
-                                                <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold border shadow-sm ${userBadge.color}`}>
+                                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold border shadow-sm ${userBadge.color}`}>
                                                     {language === 'en' ? userBadge.en : userBadge.bn}
                                                 </span>
                                             )}
+                                            <p className="text-xs font-bold text-slate-600 dark:text-slate-300 ml-1">{userRank.score.toLocaleString()} pts</p>
                                         </div>
-                                        <p className="text-sm text-slate-500 dark:text-slate-300 mt-1">{userRank.score.toLocaleString()} pts</p>
                                     </div>
-                                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-blue-600 dark:text-blue-300 border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-blue-600 dark:text-blue-300 border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
                                         {userProfile?.avatar_url ? <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
                                     </div>
                                 </div>
@@ -738,18 +738,18 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     <div className="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden shadow-lg shadow-slate-200/20 dark:shadow-none">
                         <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
                             <table className="w-full">
-                                <thead className="sticky top-0 bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
+                                <thead className="sticky top-0 bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700 z-10">
                                     <tr>
-                                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider w-12">
+                                        <th className="px-3 sm:px-4 py-2 text-left text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-10">
                                             {language === 'en' ? 'Rank' : 'র‍্যাঙ্ক'}
                                         </th>
-                                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                                        <th className="px-3 sm:px-4 py-2 text-left text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                             {language === 'en' ? 'Player' : 'খেলোয়াড়'}
                                         </th>
-                                        <th className="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                                        <th className="hidden sm:table-cell px-3 sm:px-4 py-2 text-left text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                             {language === 'en' ? 'Level' : 'স্তর'}
                                         </th>
-                                        <th className="px-4 sm:px-6 py-3 text-right text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                                        <th className="px-3 sm:px-4 py-2 text-right text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                             {language === 'en' ? 'Points' : 'পয়েন্ট'}
                                         </th>
                                     </tr>
@@ -785,49 +785,38 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             };
                                             return (
                                                 <React.Fragment key={index}>
-                                                    <tr className={`transition-colors ${isMe ? 'bg-blue-50/70 dark:bg-blue-900/10' : 'hover:bg-slate-50/50 dark:hover:bg-slate-700/20'}`}>
-                                                        <td className="px-4 sm:px-6 py-3">
-                                                            <div className="flex items-center gap-2">
+                                                    <tr className={`transition-colors border-b border-slate-50 dark:border-slate-700/50 ${isMe ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-slate-50/30 dark:hover:bg-slate-700/10'}`}>
+                                                        <td className="px-3 sm:px-4 py-2">
+                                                            <div className="flex items-center gap-1.5 text-xs">
                                                                 {getMedalIcon(index + 1) && (
-                                                                    <span className="text-lg">{getMedalIcon(index + 1)}</span>
+                                                                    <span className="text-sm">{getMedalIcon(index + 1)}</span>
                                                                 )}
-                                                                <span className={`text-sm font-bold ${index < 3 ? 'text-orange-600' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                                <span className={`font-bold ${index < 3 ? 'text-blue-600' : 'text-slate-400'}`}>
                                                                     #{index + 1}
                                                                 </span>
                                                             </div>
                                                         </td>
-                                                        <td className="px-4 sm:px-6 py-3">
+                                                        <td className="px-3 sm:px-4 py-2">
                                                             <div className="flex items-center gap-2 min-w-0">
-                                                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex-shrink-0 overflow-hidden border border-slate-300 dark:border-slate-600">
+                                                                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex-shrink-0 overflow-hidden border border-slate-300/50 dark:border-slate-600/50 shadow-sm">
                                                                     {item.avatar_url ? (
                                                                         <img src={item.avatar_url} alt="" className="w-full h-full object-cover" />
                                                                     ) : (
-                                                                        <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xs uppercase">{item.full_name?.[0] || '?'}</div>
+                                                                        <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-[10px] uppercase">{item.full_name?.[0] || '?'}</div>
                                                                     )}
                                                                 </div>
                                                                 <div className="min-w-0 flex-1">
-                                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                                    <div className="flex items-center gap-1.5 flex-wrap">
                                                                         <button
                                                                             onClick={toggleExpand}
-                                                                            className="text-left hover:underline focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+                                                                            className="text-left hover:underline focus:outline-none"
                                                                         >
-                                                                            <p className={`text-sm font-semibold truncate ${isMe ? 'text-blue-700 dark:text-blue-400' : 'text-slate-900 dark:text-slate-100'}`}>
+                                                                            <p className={`text-xs font-bold truncate ${isMe ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>
                                                                                 {isMe ? (language === 'en' ? 'You' : 'আপনি') : (item.full_name || 'Anonymous')}
                                                                             </p>
                                                                         </button>
-                                                                        {/* Expand/Collapse Icon */}
-                                                                        <button
-                                                                            onClick={toggleExpand}
-                                                                            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-transform duration-200"
-                                                                            style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                                                                        >
-                                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                                                                            </svg>
-                                                                        </button>
-                                                                        {/* Badge visible on mobile - inline with name */}
                                                                         {badge && (
-                                                                            <span className={`sm:hidden inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border shrink-0 ${badge.color}`}>
+                                                                            <span className={`sm:hidden inline-flex px-1.5 py-0.5 rounded text-[8px] font-bold border shrink-0 ${badge.color}`}>
                                                                                 {language === 'en' ? badge.en : badge.bn}
                                                                             </span>
                                                                         )}
@@ -835,17 +824,25 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 </div>
                                                             </div>
                                                         </td>
-                                                        <td className="hidden sm:table-cell px-4 sm:px-6 py-3">
+                                                        <td className="hidden sm:table-cell px-3 sm:px-4 py-2">
                                                             {badge && (
-                                                                <span className={`inline-flex px-2 py-1 rounded-full text-[11px] font-bold border ${badge.color}`}>
+                                                                <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold border ${badge.color}`}>
                                                                     {language === 'en' ? badge.en : badge.bn}
                                                                 </span>
                                                             )}
                                                         </td>
-                                                        <td className="px-4 sm:px-6 py-3 text-right">
-                                                            <span className={`text-sm font-bold tabular-nums ${isMe ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-slate-200'}`}>
-                                                                {item.points.toLocaleString()}
-                                                            </span>
+                                                        <td className="px-3 sm:px-4 py-2 text-right">
+                                                            <div className="flex flex-col items-end">
+                                                                <span className={`text-xs font-black tabular-nums ${isMe ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                                                                    {item.points.toLocaleString()}
+                                                                </span>
+                                                                {(item.completed_lessons?.length || 0) > 0 && (
+                                                                    <span className="text-[8px] font-bold text-orange-500 flex items-center gap-0.5 leading-tight">
+                                                                        <span>📖</span>
+                                                                        {(item.completed_lessons.length * 20).toLocaleString()}
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                     {/* Expanded District Row */}
@@ -1168,14 +1165,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     </div>
                                                 </div>
                                             )}
-                                            <div className={`flex items-center p-3 sm:p-4 transition-colors ${isUserRow
+                                            <div className={`flex items-center p-2 sm:p-3 transition-colors ${isUserRow
                                                 ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
                                                 : 'hover:bg-slate-50 dark:hover:bg-slate-900/50'
                                                 }`}>
-                                                <div className={`font-bold w-6 text-sm ${actualIndex < 3 ? 'text-yellow-500' : 'text-slate-300'
+                                                <div className={`font-bold w-5 text-xs ${actualIndex < 3 ? 'text-yellow-500' : 'text-slate-300'
                                                     }`}>#{actualIndex + 1}</div>
-                                                <div className="flex-shrink-0 mr-3">
-                                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-600 dark:text-slate-400 overflow-hidden">
+                                                <div className="flex-shrink-0 mr-2">
+                                                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-600 dark:text-slate-400 overflow-hidden">
                                                         {item.avatar_url ? <img src={item.avatar_url} alt="" className="w-full h-full object-cover" /> : (item.full_name?.[0] || 'U')}
                                                     </div>
                                                 </div>
@@ -1185,9 +1182,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             {item.full_name || 'Anonymous'} {isUserRow && '(You)'}
                                                         </p>
                                                         {/* Badge - Enhanced for mobile visibility */}
-                                                        {getBadgeByLevel(item.training_level) && (
-                                                            <div className={`px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold border uppercase tracking-tight shrink-0 shadow-sm ${getBadgeByLevel(item.training_level).color}`}>
+                                                        {item.training_level > 0 && (
+                                                            <div className={`px-2 py-0.5 rounded-lg text-[9px] sm:text-[10px] font-bold border uppercase tracking-tight shrink-0 shadow-sm ${getBadgeByLevel(item.training_level).color}`}>
                                                                 {language === 'en' ? getBadgeByLevel(item.training_level).en : getBadgeByLevel(item.training_level).bn}
+                                                            </div>
+                                                        )}
+                                                        {(item.completed_lessons?.length || 0) > 0 && (
+                                                            <div className="px-1.5 py-0.5 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-800/50 text-[9px] font-bold shadow-sm">
+                                                                📖 {(item.completed_lessons.length * 20).toLocaleString()}
                                                             </div>
                                                         )}
                                                     </div>
@@ -1196,11 +1198,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     </p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className={`text-sm sm:text-base font-bold ${isUserRow ? 'text-blue-600 dark:text-blue-400' : 'text-blue-600 dark:text-blue-400'
+                                                    <div className={`text-xs sm:text-sm font-black ${isUserRow ? 'text-blue-600 dark:text-blue-400' : 'text-blue-600 dark:text-blue-400'
                                                         }`}>
                                                         {item.points}
                                                     </div>
-                                                    <div className="text-[10px] text-slate-400 uppercase tracking-wider">{t.points}</div>
+                                                    <div className="text-[9px] text-slate-400 uppercase tracking-tighter">{t.points}</div>
                                                 </div>
                                             </div>
                                         </React.Fragment>

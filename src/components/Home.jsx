@@ -13,6 +13,7 @@ import {
 export default function Home({ setCurrentView, language, user, userProfile, t }) {
     const [score, setScore] = useState(userProfile?.points || 0);
     const [fullName, setFullName] = useState(userProfile?.full_name || null);
+    const [completedLessonsCount, setCompletedLessonsCount] = useState(userProfile?.completed_lessons?.length || 0);
     const [loading, setLoading] = useState(!userProfile && !!user);
     const [fetchError, setFetchError] = useState(false);
     const [visitorName, setVisitorName] = useState('');
@@ -26,6 +27,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
         if (userProfile) {
             setScore(userProfile.points || 0);
             setFullName(userProfile.full_name);
+            setCompletedLessonsCount(userProfile.completed_lessons?.length || 0);
             setLoading(false);
         } else if (user) {
             fetchProfile();
@@ -45,13 +47,14 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
         try {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('points, full_name')
+                .select('points, full_name, completed_lessons')
                 .eq('id', user.id)
                 .single();
 
             if (data) {
                 setScore(data.points || 0);
                 setFullName(data.full_name);
+                setCompletedLessonsCount(data.completed_lessons?.length || 0);
             }
         } catch (error) {
             console.error('Error fetching profile in Home:', error);
@@ -121,9 +124,17 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                                         {fullName || (user?.email ? user.email.split('@')[0] : visitorName)}
                                     </h1>
                                     {user && (
-                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md">
-                                            <span className="text-base">💎</span>
-                                            <span className="text-sm font-bold">{score.toLocaleString()}</span>
+                                        <div className="flex flex-col sm:flex-row items-baseline gap-2">
+                                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md">
+                                                <span className="text-base">💎</span>
+                                                <span className="text-sm font-bold">{score.toLocaleString()}</span>
+                                            </div>
+                                            {completedLessonsCount > 0 && (
+                                                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-800/50 text-[10px] font-bold">
+                                                    <span>📖</span>
+                                                    <span>{language === 'en' ? 'Reading Reward: ' : 'পড়ার পুরস্কার: '}+{completedLessonsCount * 20}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>

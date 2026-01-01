@@ -511,8 +511,8 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
                     // Force leaderboard and rank to refresh immediately 
                     // when the user next visits the Competitions tab
-                    cacheHelper.clear('leaderboard_top_10_v2');
-                    cacheHelper.clear('leaderboard_full_v2');
+                    cacheHelper.clear('leaderboard_top_10_v3');
+                    cacheHelper.clear('leaderboard_full_v3');
                     cacheHelper.clear(`user_rank_${user.id}`);
 
                     setRecentReward(bonusPoints);

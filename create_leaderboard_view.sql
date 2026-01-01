@@ -8,7 +8,8 @@ select
   full_name,
   district,
   avatar_url,
-  training_level
+  training_level,
+  completed_lessons
 from profiles
 where points > 0;
 
