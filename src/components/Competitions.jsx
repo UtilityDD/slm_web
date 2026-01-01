@@ -1161,6 +1161,30 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 <h3 className="text-center font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center justify-center gap-2 text-sm">
                     <span>🏅</span> {t.leaderboard}
                 </h3>
+
+                {user && userRank && !loading && (
+                    <div className="bg-white dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 shadow-md p-3 sm:p-4 mb-4">
+                        <div className="flex items-center justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">
+                                    {language === 'en' ? 'Your Standing' : 'আপনার অবস্থান'}
+                                </p>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">#{userRank.rank}</p>
+                                    {getBadgeByLevel(userProfile?.training_level || 0) && (
+                                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold border shadow-sm ${getBadgeByLevel(userProfile?.training_level || 0).color}`}>
+                                            {language === 'en' ? getBadgeByLevel(userProfile?.training_level || 0).en : getBadgeByLevel(userProfile?.training_level || 0).bn}
+                                        </span>
+                                    )}
+                                    <p className="text-xs font-bold text-slate-600 dark:text-slate-300 ml-1">{userRank.score.toLocaleString()} pts</p>
+                                </div>
+                            </div>
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-blue-600 dark:text-blue-300 border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
+                                {userProfile?.avatar_url ? <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
+                            </div>
+                        </div>
+                    </div>
+                )}
                 <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden divide-y divide-slate-100 dark:divide-slate-700">
                     {loading ? (
                         <>
