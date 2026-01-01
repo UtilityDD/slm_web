@@ -168,21 +168,21 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                             )}
                         </div>
 
-                        {/* Integrated Daily Insight Card (Replaces Floating Button) */}
+                        {/* Integrated Daily Insight Card - Minimalist Polished Style */}
                         <div
                             onClick={() => setShowTipModal(true)}
-                            className="group relative bg-gradient-to-br from-amber-400 to-orange-500 rounded-[2rem] p-5 text-white shadow-xl shadow-orange-500/20 cursor-pointer overflow-hidden transition-all active:scale-[0.98] active:brightness-95"
+                            className="group relative bg-white dark:bg-slate-800 rounded-[2rem] p-5 border border-blue-200 dark:border-blue-900 shadow-xl shadow-blue-500/5 cursor-pointer overflow-hidden transition-all active:scale-[0.98] active:brightness-95"
                         >
-                            <div className="absolute -right-4 -top-4 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-700" />
+                            <div className="absolute -right-4 -top-4 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-700" />
                             <div className="relative flex items-center gap-4">
-                                <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl shadow-inner">
+                                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/40 rounded-2xl flex items-center justify-center text-2xl shadow-sm border border-white dark:border-slate-700">
                                     💡
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-0.5">{language === 'en' ? 'Safety Insight' : 'সুরক্ষা টিপ'}</p>
-                                    <p className="text-sm font-bold leading-tight line-clamp-1 italic">"{dailyTip}"</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-0.5">{language === 'en' ? 'Safety Insight' : 'সুরক্ষা টিপ'}</p>
+                                    <p className="text-sm font-bold leading-tight text-slate-700 dark:text-slate-200 line-clamp-1 italic">"{dailyTip}"</p>
                                 </div>
-                                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-black">
+                                <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/80 flex items-center justify-center text-[10px] font-black text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
                                     →
                                 </div>
                             </div>
