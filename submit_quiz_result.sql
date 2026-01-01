@@ -25,15 +25,21 @@ begin
     raise exception 'Not authenticated';
   end if;
 
-  -- 1. Insert the attempt record (History)
-  insert into quiz_attempts (user_id, quiz_id, score)
-  values (current_user_id, p_quiz_id, p_score);
+  -- 1. Insert attempt record and update profile atomically
+  -- We only update the profile if the insert actually happened (it wasn't a duplicate)
+  -- This is the gold standard for idempotent scoring
+  insert into quiz_attempts (user_id, quiz_id, score, penalty)
+  values (current_user_id, p_quiz_id, p_score, p_penalty)
+  on conflict (user_id, quiz_id) do nothing;
 
-  -- 2. Update the profile score (Total for User)
-  update profiles
-  set points = coalesce(points, 0) + p_score,
-      total_penalties = coalesce(total_penalties, 0) + p_penalty -- Track penalty
-  where id = current_user_id;
+  -- 2. Only update profiles if the attempt was just created
+  -- Check if the last command affected any rows
+  if found then
+    update profiles
+    set points = coalesce(points, 0) + p_score,
+        total_penalties = coalesce(total_penalties, 0) + p_penalty
+    where id = current_user_id;
+  end if;
   
 end;
 $$;

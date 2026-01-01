@@ -119,19 +119,23 @@ export default function SmartLinemanUI() {
       const { data, error } = await supabase
         .from('profiles')
         .select('role, avatar_url, current_session_id, training_level, full_name, points, completed_lessons, total_penalties')
-        .eq('id', targetUser.id)
-        .single();
+        .eq('id', targetUser.id);
+
       if (error) {
         console.error('Error fetching profile:', error);
-      } else if (data) {
+      } else if (data && data.length > 0) {
+        const profileData = data[0];
         // Check for session mismatch
         const localSessionId = localStorage.getItem('slm_session_id');
-        if (data.current_session_id && localSessionId && data.current_session_id !== localSessionId) {
+        if (profileData.current_session_id && localSessionId && profileData.current_session_id !== localSessionId) {
           console.warn('Session mismatch detected. Logging out.');
           confirmLogout(true); // Pass true to indicate automatic logout
           return;
         }
-        setUserProfile(data);
+        setUserProfile(profileData);
+      } else {
+        console.warn('Profile not found for ID:', targetUser.id);
+        // Create a basic profile if missing? (Optional, but good to log)
       }
     }
   };

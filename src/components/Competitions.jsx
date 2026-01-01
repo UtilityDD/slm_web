@@ -15,6 +15,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [hourlyQuiz, setHourlyQuiz] = useState(null);
     const [timeLeft, setTimeLeft] = useState('');
     const [lastAttemptTime, setLastAttemptTime] = useState(null);
+    const [lastAttemptPenalty, setLastAttemptPenalty] = useState(0);
     const [reviewMode, setReviewMode] = useState(false);
     const [userRank, setUserRank] = useState(null);
     const [fullLeaderboard, setFullLeaderboard] = useState([]);
@@ -262,6 +263,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             });
         }
 
+        if (result.error) {
+            console.error('submit_quiz_result RPC Error:', result.error);
+        }
         return result;
     };
 
@@ -277,12 +281,26 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 submission.penalty || 0
             );
 
-            if (error) throw error;
+            if (error) {
+                // If the error is "duplicate key" (23505), it means the sync actually worked 
+                // in a previous attempt but the client didn't get the success response.
+                // We should treat this as a success and remove it from the queue.
+                if (error.code === '23505') {
+                    console.log('Submission already exists in database (23505), treating as success.');
+                } else {
+                    throw error;
+                }
+            }
 
             // Success - remove from queue
             await clearPendingSubmission(submission);
             setSyncStatus('success');
             setSyncErrorMessage(null);
+
+            // Update local penalty state
+            if (submission.penalty) {
+                setLastAttemptPenalty(submission.penalty);
+            }
 
             // Refresh data
             await fetchLeaderboard(true);
@@ -360,8 +378,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     };
 
     const fetchHourlyQuiz = async () => {
-        // Cache key includes language to separate EN/BN quizzes
-        const cacheKey = `hourly_quiz_db_bn`;
+        const now = getSyncedTime();
+        const hourId = `${now.getFullYear()}${now.getMonth() + 1}${now.getDate()}${now.getHours()}`;
+        // Cache key includes language and hour to ensure refresh every hour
+        const cacheKey = `hourly_quiz_db_bn_${hourId}`;
         const cachedQuiz = cacheHelper.get(cacheKey);
 
         if (cachedQuiz) {
@@ -383,8 +403,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             }
 
             if (data && data.length > 0) {
+                const now = getSyncedTime();
+                const hourId = `${now.getFullYear()}${now.getMonth() + 1}${now.getDate()}${now.getHours()}`;
                 const quizData = {
-                    id: 'hourly-challenge',
+                    id: `hourly-challenge-${hourId}`,
                     title: language === 'en' ? 'Hourly Safety Challenge' : 'প্রতি ঘন্টায় সুরক্ষা চ্যালেঞ্জ',
                     description: language === 'en' ? 'Test your safety knowledge! New questions every hour.' : 'আপনার সুরক্ষা জ্ঞান পরীক্ষা করুন! প্রতি ঘন্টায় নতুন প্রশ্ন।',
                     duration_minutes: 5,
@@ -414,17 +436,33 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
     const fetchLastAttempt = async (quizId) => {
         if (!user) return;
+
+        // Check local storage (Review Cache) for immediate penalty feedback
+        try {
+            const localData = localStorage.getItem(`review_${quizId}`);
+            if (localData) {
+                const parsed = JSON.parse(localData);
+                if (parsed.penalty !== undefined) {
+                    setLastAttemptPenalty(parsed.penalty);
+                }
+            }
+        } catch (e) {
+            console.error('Error reading local penalty:', e);
+        }
+
         const cacheKey = `last_attempt_${user.id}_${quizId}`;
-        const cachedAttempt = cacheHelper.get(cacheKey);
-        if (cachedAttempt) {
-            setLastAttemptTime(cachedAttempt);
+        const cached = cacheHelper.get(cacheKey);
+
+        if (cached && cached.time) {
+            setLastAttemptTime(cached.time);
+            setLastAttemptPenalty(cached.penalty || 0);
             return;
         }
 
         try {
             const { data, error } = await supabase
                 .from('quiz_attempts')
-                .select('created_at')
+                .select('created_at, penalty')
                 .eq('user_id', user.id)
                 .eq('quiz_id', quizId)
                 .order('created_at', { ascending: false })
@@ -432,7 +470,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
             if (data && data.length > 0) {
                 setLastAttemptTime(data[0].created_at);
-                cacheHelper.set(cacheKey, data[0].created_at, 5); // Cache for 5 mins
+                setLastAttemptPenalty(data[0].penalty || 0);
+                cacheHelper.set(cacheKey, { time: data[0].created_at, penalty: data[0].penalty || 0 }, 5); // Cache for 5 mins
             }
         } catch (error) {
             console.error('Error fetching last attempt:', error);
@@ -631,7 +670,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             }
         });
 
-        const isHighStakes = userRank && userRank.score > 1000;
+        const currentPoints = userProfile?.points || userRank?.score || 0;
+        const isHighStakes = currentPoints > 1000;
         let totalPenalty = 0;
 
         if (quizQuestions.length > 0) {
@@ -680,6 +720,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             setSyncStatus('success');
             setSyncErrorMessage(null);
             setIsSyncing(false);
+            setLastAttemptPenalty(totalPenalty);
 
             // Refresh leaderboard to show updated score immediately (bypass cache)
             await fetchLeaderboard(true);
@@ -1060,9 +1101,19 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     <div className="space-y-4">
                                         {/* Locked Status Card */}
                                         <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                                            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Next Quiz In</div>
-                                            <div className="text-2xl font-mono font-bold text-slate-700 dark:text-slate-300">
-                                                {timeString}
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Next Quiz In</div>
+                                                    <div className="text-2xl font-mono font-bold text-slate-700 dark:text-slate-300">
+                                                        {timeString}
+                                                    </div>
+                                                </div>
+                                                {lastAttemptPenalty > 0 && (
+                                                    <div className="text-right">
+                                                        <div className="text-[10px] font-bold text-red-500 uppercase tracking-wider mb-1">Points Lost</div>
+                                                        <div className="text-xl font-bold text-red-600 dark:text-red-400">-{lastAttemptPenalty}</div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
 
@@ -1079,6 +1130,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                             return (
                                 <div className="space-y-3">
+                                    {lastAttemptPenalty > 0 && (
+                                        <div className="text-center mb-1">
+                                            <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-tight bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded border border-red-100 dark:border-red-900/30">
+                                                Last Penalty: -{lastAttemptPenalty} Points
+                                            </span>
+                                        </div>
+                                    )}
                                     <button
                                         onClick={() => startQuiz(hourlyQuiz)}
                                         className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
