@@ -785,7 +785,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             };
                                             return (
                                                 <React.Fragment key={index}>
-                                                    <tr className={`transition-colors border-b border-slate-50 dark:border-slate-700/50 ${isMe ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-slate-50/30 dark:hover:bg-slate-700/10'}`}>
+                                                    <tr
+                                                        onClick={toggleExpand}
+                                                        className={`transition-colors border-b border-slate-50 dark:border-slate-700/50 cursor-pointer ${isMe ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-slate-50/30 dark:hover:bg-slate-700/10'}`}
+                                                    >
                                                         <td className="px-3 sm:px-4 py-2">
                                                             <div className="flex items-center gap-1.5 text-xs">
                                                                 {getMedalIcon(index + 1) && (
@@ -807,14 +810,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 </div>
                                                                 <div className="min-w-0 flex-1">
                                                                     <div className="flex items-center gap-1.5 flex-wrap">
-                                                                        <button
-                                                                            onClick={toggleExpand}
-                                                                            className="text-left hover:underline focus:outline-none"
-                                                                        >
-                                                                            <p className={`text-xs font-bold truncate ${isMe ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>
-                                                                                {isMe ? (language === 'en' ? 'You' : 'আপনি') : (item.full_name || 'Anonymous')}
-                                                                            </p>
-                                                                        </button>
+                                                                        <p className={`text-xs font-bold truncate ${isMe ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                                                                            {isMe ? (language === 'en' ? 'You' : 'আপনি') : (item.full_name || 'Anonymous')}
+                                                                        </p>
                                                                         {badge && (
                                                                             <span className={`sm:hidden inline-flex px-1.5 py-0.5 rounded text-[8px] font-bold border shrink-0 ${badge.color}`}>
                                                                                 {language === 'en' ? badge.en : badge.bn}
