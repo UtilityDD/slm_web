@@ -6,4 +6,9 @@ set points = (
     select coalesce(sum(score), 0)
     from quiz_attempts qa
     where qa.user_id = p.id
+),
+total_penalties = (
+    select coalesce(sum(penalty), 0)
+    from quiz_attempts qa
+    where qa.user_id = p.id
 );

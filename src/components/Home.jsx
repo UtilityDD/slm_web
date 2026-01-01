@@ -10,7 +10,7 @@ import {
     AdminIcon
 } from './icons';
 
-export default function Home({ setCurrentView, language, user, userProfile, t }) {
+export default function Home({ setCurrentView, language, user, userProfile, t, refreshProfile }) {
     const [score, setScore] = useState(userProfile?.points || 0);
     const [fullName, setFullName] = useState(userProfile?.full_name || null);
     const [completedLessonsCount, setCompletedLessonsCount] = useState(userProfile?.completed_lessons?.length || 0);

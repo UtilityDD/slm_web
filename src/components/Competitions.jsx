@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
 
-export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile }) {
+export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile }) {
     const [loading, setLoading] = useState(true);
     const [activeQuiz, setActiveQuiz] = useState(null);
     const [quizQuestions, setQuizQuestions] = useState([]);
@@ -744,6 +744,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             await fetchLeaderboard(true);
             // Refresh my rank (bypass cache)
             await fetchUserRank(true);
+            // Sync with global profile state for instant sidebar/home update
+            if (refreshProfile) {
+                await refreshProfile(user);
+            }
 
             // Refresh lock status
             if (activeQuiz && activeQuiz.id) {
@@ -1004,9 +1008,18 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     </h1>
                 </div>
 
-                <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-blue-50 text-blue-700 border border-blue-100 font-bold text-sm`}>
-                    <span className="text-lg">🏆</span>
-                    {language === 'en' ? 'Competition Mode' : 'প্রতিযোগিতা মোড'}
+                <div className="flex items-center gap-2">
+                    {lastAttemptPenalty > 0 && (
+                        <div className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-red-50 text-red-700 border border-red-100 font-bold text-sm animate-fade-in shadow-sm">
+                            <span className="text-lg">🔥</span>
+                            <span className="hidden xs:inline">{language === 'en' ? 'Last Loss:' : 'শেষ হারানো:'}</span>
+                            <span>-{lastAttemptPenalty}</span>
+                        </div>
+                    )}
+                    <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-blue-50 text-blue-700 border border-blue-100 font-bold text-sm`}>
+                        <span className="text-lg">🏆</span>
+                        {language === 'en' ? 'Competition Mode' : 'প্রতিযোগিতা মোড'}
+                    </div>
                 </div>
             </div>
 
@@ -1126,11 +1139,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         <div className="text-2xl font-mono font-bold text-slate-700 dark:text-slate-300">
                                                             {timeString}
                                                         </div>
-                                                        {lastAttemptPenalty > 0 && (
-                                                            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30">
-                                                                <span className="text-[10px] font-bold text-red-600 dark:text-red-400">-{lastAttemptPenalty} PTS</span>
-                                                            </div>
-                                                        )}
                                                     </div>
                                                 </div>
                                                 {/* Optional: Add a small icon or secondary label if needed */}

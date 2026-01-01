@@ -19,6 +19,8 @@ const Guide = lazy(() => import("./components/Guide"));
 const VerificationView = lazy(() => import("./components/VerificationView"));
 
 export default function SmartLinemanUI() {
+  const [globalLoading, setGlobalLoading] = useState(false);
+  const [appLoading, setAppLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
@@ -42,8 +44,6 @@ export default function SmartLinemanUI() {
   const [imageError, setImageError] = useState(false);
   const [notification, setNotification] = useState(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [globalLoading, setGlobalLoading] = useState(false);
-  const [appLoading, setAppLoading] = useState(true);
   const [pushNotification, setPushNotification] = useState(null);
   const [notificationsHistory, setNotificationsHistory] = useState([]);
   const [notifFetchError, setNotifFetchError] = useState(false);
@@ -566,7 +566,13 @@ export default function SmartLinemanUI() {
 
       switch (currentView) {
         case 'competitions':
-          return <Competitions language={language} user={user} setCurrentView={setCurrentView} />;
+          return <Competitions
+            language={language}
+            user={user}
+            setCurrentView={setCurrentView}
+            userProfile={userProfile}
+            refreshProfile={fetchProfile}
+          />;
         case 'leaderboard':
           return <Competitions
             language={language}
@@ -574,6 +580,7 @@ export default function SmartLinemanUI() {
             userProfile={userProfile}
             setCurrentView={setCurrentView}
             isFullLeaderboard={true}
+            refreshProfile={fetchProfile}
           />;
         case 'community':
           return <Community language={language} user={user} setCurrentView={setCurrentView} />;
@@ -585,7 +592,10 @@ export default function SmartLinemanUI() {
             user={user}
             userProfile={userProfile}
             setCurrentView={setCurrentView}
-            onProgressUpdate={(updated) => setCompletedLessons(updated)}
+            onProgressUpdate={(updated) => {
+              setCompletedLessons(updated);
+              fetchProfile(user);
+            }}
           />;
         case 'training':
           return <SafetyHub
@@ -593,7 +603,10 @@ export default function SmartLinemanUI() {
             user={user}
             userProfile={userProfile}
             setCurrentView={setCurrentView}
-            onProgressUpdate={(updated) => setCompletedLessons(updated)}
+            onProgressUpdate={(updated) => {
+              setCompletedLessons(updated);
+              fetchProfile(user);
+            }}
             mode="training"
           />;
         case 'admin':
@@ -614,6 +627,7 @@ export default function SmartLinemanUI() {
             t={t}
             user={user}
             userProfile={userProfile}
+            refreshProfile={fetchProfile}
           />;
       }
     })();
