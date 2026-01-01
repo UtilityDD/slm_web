@@ -37,12 +37,10 @@ begin
     created_at = EXCLUDED.created_at
   returning (xmax = 0) into is_new_record;
 
-  -- Only update profile if this was a NEW record (not an update)
-  if is_new_record then
-    update profiles
-    set points = greatest(0, coalesce(points, 0) + p_score),
-        total_penalties = coalesce(total_penalties, 0) + p_penalty
-    where id = current_user_id;
-  end if;
+  -- Always update profile points and penalties
+  update profiles
+  set points = greatest(0, coalesce(points, 0) + p_score),
+      total_penalties = coalesce(total_penalties, 0) + p_penalty
+  where id = current_user_id;
 end;
 $$;
