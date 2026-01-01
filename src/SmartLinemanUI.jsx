@@ -1,4 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
+import { SplashScreen } from '@capacitor/splash-screen';
 import { supabase } from "./supabaseClient";
 import { getBadgeByLevel, calculateLevelFromProgress } from './utils/badgeUtils';
 import { cacheHelper } from './utils/cacheHelper';
@@ -94,6 +95,17 @@ export default function SmartLinemanUI() {
           setShowUpdateModal(true);
         }
       });
+    }
+  }, []);
+
+  useEffect(() => {
+    // Hide native splash screen when app is ready
+    if (window.Capacitor) {
+      setTimeout(() => {
+        SplashScreen.hide({
+          fadeOutDuration: 500
+        });
+      }, 500); // Give React 500ms to settle
     }
   }, []);
 
