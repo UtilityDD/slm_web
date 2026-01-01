@@ -30,6 +30,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [syncStatus, setSyncStatus] = useState(null); // 'syncing', 'waiting', 'success', 'failed'
     const [pendingSubmission, setPendingSubmission] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
+    const [syncErrorMessage, setSyncErrorMessage] = useState(null);
 
     const getSyncedTime = () => {
         return new Date(Date.now() + serverTimeOffset);
@@ -229,9 +230,39 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         } catch (error) {
             console.error('Error processing pending queue:', error);
             setSyncStatus('failed');
+            setSyncErrorMessage(error.message || 'Queue processing failed');
         } finally {
             setIsSyncing(false);
         }
+    };
+
+    /**
+     * Safe wrapper for submit_quiz_result RPC
+     * Handles cases where the database might not have the p_penalty parameter yet
+     */
+    const safeSubmitQuizResult = async (quizId, score, penalty = 0) => {
+        // Try with 3 parameters first (New Schema)
+        const result = await supabase.rpc('submit_quiz_result', {
+            p_quiz_id: quizId,
+            p_score: score,
+            p_penalty: penalty
+        });
+
+        // If it fails with a "parameter" or "function" mismatch error, try with 2 parameters (Old Schema)
+        if (result.error && (
+            result.error.message?.includes('parameter') ||
+            result.error.message?.includes('function') ||
+            result.error.message?.includes('signature') ||
+            result.error.code === 'P0000'
+        )) {
+            console.warn('New submit_quiz_result signature not found or failed, falling back to old signature.');
+            return await supabase.rpc('submit_quiz_result', {
+                p_quiz_id: quizId,
+                p_score: score
+            });
+        }
+
+        return result;
     };
 
     // Retry a single submission
@@ -240,17 +271,18 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             console.log(`Retrying submission ${index + 1}:`, submission);
             setSyncStatus('syncing');
 
-            const { error } = await supabase.rpc('submit_quiz_result', {
-                p_quiz_id: submission.quiz_id,
-                p_score: submission.score,
-                p_penalty: submission.penalty || 0
-            });
+            const { error } = await safeSubmitQuizResult(
+                submission.quiz_id,
+                submission.score,
+                submission.penalty || 0
+            );
 
             if (error) throw error;
 
             // Success - remove from queue
             await clearPendingSubmission(submission);
             setSyncStatus('success');
+            setSyncErrorMessage(null);
 
             // Refresh data
             await fetchLeaderboard(true);
@@ -267,6 +299,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         } catch (error) {
             console.error('Retry failed:', error);
             setSyncStatus('failed');
+            setSyncErrorMessage(error.message || 'Unknown error');
             setRetryCount(prev => prev + 1);
             throw error;
         }
@@ -634,17 +667,18 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         setSyncStatus('syncing');
 
         try {
-            // Use the RPC function for atomic transaction
-            const { error } = await supabase.rpc('submit_quiz_result', {
-                p_quiz_id: activeQuiz.id || 'unknown_quiz',
-                p_score: calculatedScore,
-                p_penalty: totalPenalty
-            });
+            // Use the safe RPC helper to handle potential database version mismatches
+            const { error } = await safeSubmitQuizResult(
+                activeQuiz.id || 'unknown_quiz',
+                calculatedScore,
+                totalPenalty
+            );
 
             if (error) throw error;
 
             // Success!
             setSyncStatus('success');
+            setSyncErrorMessage(null);
             setIsSyncing(false);
 
             // Refresh leaderboard to show updated score immediately (bypass cache)
@@ -667,6 +701,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 quiz_id: activeQuiz.id || 'unknown_quiz',
                 user_id: user.id,
                 score: calculatedScore,
+                penalty: totalPenalty,
                 timestamp: attemptData.timestamp,
                 questions: quizQuestions,
                 answers: userAnswers,
@@ -680,7 +715,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 alert(t.waitingNetwork + ' ' + t.autoRetry);
             } else {
                 setSyncStatus('failed');
-                alert(t.syncFailed + ' ' + error.message);
+                setSyncErrorMessage(error.message || 'Sync failed');
+                // alert(t.syncFailed + ' ' + error.message);
             }
         }
     };
@@ -966,6 +1002,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             syncStatus === 'failed' ? t.syncFailed :
                                                                 t.syncing}
                                             </div>
+                                            {syncErrorMessage && syncStatus === 'failed' && (
+                                                <div className="text-[9px] text-red-500/80 dark:text-red-400/80 mt-0.5 font-medium max-w-[150px] truncate" title={syncErrorMessage}>
+                                                    Error: {syncErrorMessage}
+                                                </div>
+                                            )}
                                             {syncStatus === 'waiting' && (
                                                 <div className="text-[10px] text-yellow-600 dark:text-yellow-400 mt-0.5">
                                                     {t.autoRetry}
