@@ -1890,7 +1890,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                         </button>
                         <div className="flex-1 text-center min-w-0">
                             <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
-                                {trainingContent.level_title}
+                                {trainingContent.level_id && `${trainingContent.level_id}. `}{trainingContent.level_title}
                             </h2>
                         </div>
                         <div className="w-9 flex-shrink-0"></div> {/* Spacer for centering */}
@@ -1902,7 +1902,10 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                             <div className="inline-block px-4 py-1.5 rounded-full bg-white/25 backdrop-blur-sm text-[11px] uppercase tracking-wider font-bold mb-5 border border-white/30">
                                 {trainingContent.badge_name}
                             </div>
-                            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 reading-content leading-snug">{trainingContent.level_title}</h2>
+                            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 reading-content leading-snug">
+                                {trainingContent.level_id && <span className="text-orange-200 font-mono mr-3">{trainingContent.level_id}.</span>}
+                                {trainingContent.level_title}
+                            </h2>
                             <p className="text-orange-100 text-sm sm:text-base font-medium flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-orange-200"></span>
                                 Level {trainingContent.level_id}
