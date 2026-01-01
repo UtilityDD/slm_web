@@ -150,15 +150,17 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                         <span className="text-sm">💎</span>
                                         <span className="text-base font-black tracking-tighter">{score.toLocaleString()}</span>
                                     </div>
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1.5 mt-2 sm:mt-0 ml-1">
                                         {completedLessonsCount > 0 && (
-                                            <div className="h-8 w-8 flex items-center justify-center rounded-full bg-orange-100/50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-200/30 font-black text-[10px]" title="Reading Bonus">
-                                                📖
+                                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-800/30 shadow-sm">
+                                                <span className="text-xs">📖</span>
+                                                <span className="text-xs font-black tracking-tight">+{completedLessonsCount * 20}</span>
                                             </div>
                                         )}
                                         {totalPenalties > 0 && (
-                                            <div className="h-8 w-8 flex items-center justify-center rounded-full bg-red-100/50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200/30 font-black text-[10px]" title="Total Penalties">
-                                                🔥
+                                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800/30 shadow-sm">
+                                                <span className="text-xs">🔥</span>
+                                                <span className="text-xs font-black tracking-tight">-{totalPenalties.toLocaleString()}</span>
                                             </div>
                                         )}
                                     </div>
