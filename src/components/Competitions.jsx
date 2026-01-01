@@ -404,11 +404,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             }
 
             if (data && data.length > 0) {
-                const now = getSyncedTime();
-                // Enforce local hours explicitly
-                const hourId = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}`;
                 const quizData = {
-                    id: `hourly-challenge-${hourId}`,
+                    id: 'hourly-challenge', // Static ID for single-row cumulative scoring
                     title: language === 'en' ? 'Hourly Safety Challenge' : 'প্রতি ঘন্টায় সুরক্ষা চ্যালেঞ্জ',
                     description: language === 'en' ? 'Test your safety knowledge! New questions every hour.' : 'আপনার সুরক্ষা জ্ঞান পরীক্ষা করুন! প্রতি ঘন্টায় নতুন প্রশ্ন।',
                     duration_minutes: 5,
@@ -1122,19 +1119,21 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     <div className="space-y-4">
                                         {/* Locked Status Card */}
                                         <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                                            <div className="flex justify-between items-start">
+                                            <div className="flex items-end justify-between">
                                                 <div>
                                                     <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Next Quiz In</div>
-                                                    <div className="text-2xl font-mono font-bold text-slate-700 dark:text-slate-300">
-                                                        {timeString}
+                                                    <div className="flex items-baseline gap-3">
+                                                        <div className="text-2xl font-mono font-bold text-slate-700 dark:text-slate-300">
+                                                            {timeString}
+                                                        </div>
+                                                        {lastAttemptPenalty > 0 && (
+                                                            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30">
+                                                                <span className="text-[10px] font-bold text-red-600 dark:text-red-400">-{lastAttemptPenalty} PTS</span>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
-                                                {lastAttemptPenalty > 0 && (
-                                                    <div className="text-right">
-                                                        <div className="text-[10px] font-bold text-red-500 uppercase tracking-wider mb-1">Points Lost</div>
-                                                        <div className="text-xl font-bold text-red-600 dark:text-red-400">-{lastAttemptPenalty}</div>
-                                                    </div>
-                                                )}
+                                                {/* Optional: Add a small icon or secondary label if needed */}
                                             </div>
                                         </div>
 
