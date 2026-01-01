@@ -628,7 +628,7 @@ export default function SmartLinemanUI() {
 
   return (
     <div
-      className={`min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 font-sans flex flex-col md:flex-row ${language === 'bn' ? 'font-bengali' : ''}`}
+      className={`h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-300 font-sans flex flex-col md:flex-row ${language === 'bn' ? 'font-bengali' : ''}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -649,7 +649,7 @@ export default function SmartLinemanUI() {
       )}
 
       {/* Main Content Wrapper */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
         {showLogoutModal && (
           <LogoutConfirmationModal
             onConfirm={() => confirmLogout(false)}
@@ -1000,8 +1000,10 @@ export default function SmartLinemanUI() {
         </header>
 
         {/* Main Content Area */}
-        <div className="relative z-10">
-          {renderContent()}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden relative h-full">
+          <div className="relative z-10 w-full">
+            {renderContent()}
+          </div>
         </div>
 
         {/* Language Selection Modal */}
