@@ -18,6 +18,8 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
     const [loading, setLoading] = useState(!userProfile && !!user);
     const [fetchError, setFetchError] = useState(false);
     const [visitorName, setVisitorName] = useState('');
+    const [showTipModal, setShowTipModal] = useState(false);
+    const [dailyTip, setDailyTip] = useState('');
 
     const visitorNames = {
         en: ['Lineman', 'Hero', 'Superhero', 'Friend', 'Champion', 'Safety Star'],
@@ -40,6 +42,32 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
             const randomName = names[Math.floor(Math.random() * names.length)];
             setVisitorName(randomName);
         }
+
+        // Setup Daily Tip from Carousel Resources (Always Bengali)
+        const fetchDailyTip = async () => {
+            try {
+                const response = await fetch('/quizzes/carousol.json');
+                const data = await response.json();
+                const rules = data.rules || [];
+
+                if (rules.length > 0) {
+                    const now = new Date();
+                    const dateStr = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+                    let hash = 0;
+                    for (let i = 0; i < dateStr.length; i++) {
+                        hash = ((hash << 5) - hash) + dateStr.charCodeAt(i);
+                        hash |= 0;
+                    }
+                    setDailyTip(rules[Math.abs(hash) % rules.length]);
+                }
+            } catch (err) {
+                console.error('Error fetching daily tip:', err);
+                // Fallback tip if fetch fails
+                setDailyTip(language === 'en' ? "Always test for voltage before touching any conductor." : "যেকোনো কন্ডাক্টর স্পর্শ করার আগে সর্বদা ভোল্টেজ পরীক্ষা করুন।");
+            }
+        };
+
+        fetchDailyTip();
     }, [userProfile, user, language]);
 
     const fetchProfile = async () => {
@@ -275,6 +303,49 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
                             <span className="font-bold text-base">Share App</span>
                         </button>
                     </div>
+
+                    {/* Daily Tip Floating Button */}
+                    <button
+                        onClick={() => setShowTipModal(true)}
+                        className="fixed top-24 right-6 w-14 h-14 bg-amber-500 hover:bg-amber-600 text-white rounded-full shadow-lg shadow-amber-500/30 flex items-center justify-center text-2xl z-40 transition-all hover:scale-110 active:scale-90 animate-bounce cursor-pointer group"
+                        title={language === 'en' ? 'Daily Safety Tip' : 'আজকের সুরক্ষা টিপ'}
+                    >
+                        <span className="group-hover:rotate-12 transition-transform">💡</span>
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-4 w-4 bg-amber-500 border-2 border-white dark:border-slate-900"></span>
+                        </span>
+                    </button>
+
+                    {/* Daily Tip Modal */}
+                    {showTipModal && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+                            <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-scale-up border border-slate-100 dark:border-slate-700">
+                                <div className="bg-amber-500 p-6 text-white text-center relative">
+                                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-3 backdrop-blur-md">
+                                        💡
+                                    </div>
+                                    <h3 className="text-xl font-bold uppercase tracking-wider">
+                                        {language === 'en' ? 'Daily Safety Tip' : 'আজকের সুরক্ষা টিপ'}
+                                    </h3>
+                                    <p className="text-amber-100 text-xs mt-1 font-medium">
+                                        {new Date().toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                    </p>
+                                </div>
+                                <div className="p-8 text-center">
+                                    <p className="text-slate-700 dark:text-slate-300 text-lg font-medium leading-relaxed mb-8 italic">
+                                        "{dailyTip}"
+                                    </p>
+                                    <button
+                                        onClick={() => setShowTipModal(false)}
+                                        className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold transition-all shadow-lg shadow-amber-500/20 active:scale-95"
+                                    >
+                                        {language === 'en' ? 'Got it!' : 'বুঝেছি!'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </>
             )}
         </main>
