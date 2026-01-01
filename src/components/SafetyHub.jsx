@@ -1922,7 +1922,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                     <h3 className="font-bold text-blue-900 dark:text-blue-100 mb-3 uppercase tracking-wider text-xs">
                                         {language === 'en' ? 'Mission Briefing' : 'মিশন ব্রিফিং'}
                                     </h3>
-                                    <p className="text-slate-700 dark:text-slate-300 reading-content leading-relaxed text-base">
+                                    <p className="text-slate-700 dark:text-slate-300 reading-content leading-relaxed text-base whitespace-pre-line">
                                         {trainingContent.mission_briefing}
                                     </p>
                                 </div>
@@ -1970,7 +1970,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                                     {language === 'en' ? 'Details' : 'বিস্তারিত'}
                                                                 </p>
                                                             </div>
-                                                            <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
+                                                            <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed whitespace-pre-line">
                                                                 {point.specifications}
                                                             </p>
                                                         </div>
@@ -1983,7 +1983,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                                     {language === 'en' ? 'Key Point' : 'মূল বিষয়'}
                                                                 </p>
                                                             </div>
-                                                            <p className="text-base text-slate-800 dark:text-slate-200 reading-content leading-relaxed font-semibold">
+                                                            <p className="text-base text-slate-800 dark:text-slate-200 reading-content leading-relaxed font-semibold whitespace-pre-line">
                                                                 {point.importance}
                                                             </p>
                                                         </div>
@@ -1996,7 +1996,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                                     {language === 'en' ? 'Quick Tip' : 'পরামর্শ'}
                                                                 </p>
                                                             </div>
-                                                            <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
+                                                            <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed whitespace-pre-line">
                                                                 {point.daily_check}
                                                             </p>
                                                         </div>
@@ -2049,7 +2049,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                 <p className="text-[11px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-2">
                                                     {language === 'en' ? 'Myth' : 'মিথ'}
                                                 </p>
-                                                <p className="text-base text-slate-700 dark:text-slate-300 italic reading-content leading-relaxed font-medium">
+                                                <p className="text-base text-slate-700 dark:text-slate-300 italic reading-content leading-relaxed font-medium whitespace-pre-line">
                                                     "{item.myth}"
                                                 </p>
                                             </div>
@@ -2057,7 +2057,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                 <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-2">
                                                     {language === 'en' ? 'Reality' : 'বাস্তবতা'}
                                                 </p>
-                                                <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed">
+                                                <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed whitespace-pre-line">
                                                     {item.reality || item.fact}
                                                 </p>
                                             </div>
@@ -2084,7 +2084,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                             <h4 className="font-bold text-indigo-300 mb-4 reading-content text-lg sm:text-xl">
                                                 {fact.title}
                                             </h4>
-                                            <p className="text-slate-200 reading-content leading-relaxed text-base">
+                                            <p className="text-slate-200 reading-content leading-relaxed text-base whitespace-pre-line">
                                                 {fact.content}
                                             </p>
                                         </div>
