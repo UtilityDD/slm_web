@@ -107,55 +107,63 @@ export default function Home({ setCurrentView, language, user, userProfile, t })
             ) : (
                 <>
                     {/* Minimal Hero Section */}
-                    <div className="mb-8 sm:mb-10">
+                    {/* Compact Professional Hero Section */}
+                    <div className="mb-6 sm:mb-8 bg-white/50 dark:bg-slate-800/30 p-4 sm:p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm backdrop-blur-sm">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div>
-                                <div className="flex items-center gap-2 mb-0.5">
-                                    <span className="text-slate-400 dark:text-slate-400 font-medium block text-base sm:text-lg">{getGreeting()},</span>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em]">{getGreeting()}</span>
                                     {fetchError && (
                                         <button
                                             onClick={() => { setLoading(true); fetchProfile(); }}
-                                            className="text-[10px] bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full border border-red-100 dark:border-red-800 flex items-center gap-1 hover:bg-red-100 transition-colors"
+                                            className="text-[9px] bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full border border-red-100 dark:border-red-800 flex items-center gap-1 hover:bg-red-100 transition-colors"
                                         >
                                             <span>📡</span>
                                             {language === 'en' ? 'Retry' : 'আবার চেষ্টা করুন'}
                                         </button>
                                     )}
                                 </div>
-                                <div className="flex items-baseline gap-3">
-                                    <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <h1 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-tight">
                                         {fullName || (user?.email ? user.email.split('@')[0] : visitorName)}
                                     </h1>
+
                                     {user && (
-                                        <div className="flex flex-col sm:flex-row items-baseline gap-2">
-                                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md">
-                                                <span className="text-base">💎</span>
-                                                <span className="text-sm font-bold">{score.toLocaleString()}</span>
+                                        <div className="flex flex-wrap items-center gap-1.5">
+                                            {/* Main Score Badge */}
+                                            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-sm">
+                                                <span className="text-xs">💎</span>
+                                                <span className="text-xs font-black tracking-tight">{score.toLocaleString()}</span>
                                             </div>
-                                            {completedLessonsCount > 0 && (
-                                                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-800/50 text-[10px] font-bold">
-                                                    <span>📖</span>
-                                                    <span>{language === 'en' ? 'Reading Reward: ' : 'পড়ার পুরস্কার: '}+{completedLessonsCount * 20}</span>
-                                                </div>
-                                            )}
-                                            {totalPenalties > 0 && (
-                                                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800/50 text-[10px] font-bold">
-                                                    <span>🔥</span>
-                                                    <span>{language === 'en' ? 'Points Lost: ' : 'মোট পয়েন্ট হারানো: '}{totalPenalties.toLocaleString()}</span>
-                                                </div>
-                                            )}
+
+                                            {/* Subbadges in a smaller, lighter style */}
+                                            <div className="flex items-center gap-1.5">
+                                                {completedLessonsCount > 0 && (
+                                                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-50/80 dark:bg-orange-900/10 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-800/30 text-[9px] font-bold">
+                                                        <span>📖</span>
+                                                        <span>+{completedLessonsCount * 20}</span>
+                                                    </div>
+                                                )}
+                                                {totalPenalties > 0 && (
+                                                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-50/80 dark:bg-red-900/10 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800/30 text-[9px] font-bold">
+                                                        <span>🔥</span>
+                                                        <span>-{totalPenalties.toLocaleString()}</span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
                             </div>
+
                             {!user && (
                                 <div
                                     onClick={() => setCurrentView('login')}
-                                    className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border shadow-sm transition-all cursor-pointer bg-slate-50 text-slate-600 border-slate-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200"
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-900/30 bg-blue-50/50 dark:bg-blue-900/10 text-blue-600 dark:text-blue-400 shadow-sm transition-all cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20"
                                 >
-                                    <span className="text-lg">🔒</span>
-                                    <span className="text-sm font-semibold">
-                                        {language === 'en' ? 'Login to view score' : 'স্কোর দেখতে লগইন করুন'}
+                                    <span className="text-sm">🔒</span>
+                                    <span className="text-xs font-bold">
+                                        {language === 'en' ? 'Login' : 'লগইন করুন'}
                                     </span>
                                 </div>
                             )}
