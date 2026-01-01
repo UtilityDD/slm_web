@@ -242,7 +242,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
             const { error } = await supabase.rpc('submit_quiz_result', {
                 p_quiz_id: submission.quiz_id,
-                p_score: submission.score
+                p_score: submission.score,
+                p_penalty: submission.penalty || 0
             });
 
             if (error) throw error;
