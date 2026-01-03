@@ -500,7 +500,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 .from('leaderboard_view')
                 .select('score')
                 .eq('user_id', user.id)
-                .single();
+                .maybeSingle();
 
             if (myError || !myData) return;
 
@@ -793,10 +793,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                         <div className="flex items-center justify-between">
                             <div>
                                 <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-50">
-                                    🏆 {language === 'en' ? 'Global Leaderboard' : 'গ্লোবাল লিডারবোর্ড'}
+                                    🏆 {language === 'en' ? 'Global Leaderboard' : 'লিডারবোর্ড'}
                                 </h1>
                                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                    {language === 'en' ? 'Top performers across all regions' : 'সকল অঞ্চলে শীর্ষ পারফরমাররা'}
+                                    {language === 'en' ? 'Top performers across all regions' : ''}
                                 </p>
                             </div>
                             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800/50">
