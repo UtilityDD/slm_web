@@ -195,7 +195,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                     <div className="max-w-4xl mx-auto -mt-6 px-4">
                         <div
                             onClick={() => setShowTipModal(true)}
-                            className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-xl border border-slate-100 dark:border-slate-700 flex items-center gap-3 cursor-pointer group hover:border-orange-300 transition-all active:scale-95"
+                            className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-xl border border-slate-100 dark:border-slate-700 flex items-center gap-3 cursor-pointer group hover:border-orange-300 transition-all active:scale-95 animate-subtle-float"
                         >
                             <div className="w-10 h-10 bg-amber-50 dark:bg-amber-900/30 rounded-xl flex items-center justify-center text-xl shrink-0">
                                 💡
