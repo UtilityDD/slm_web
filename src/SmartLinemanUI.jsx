@@ -11,7 +11,10 @@ import { APP_NAME } from "./config";
 const Competitions = lazy(() => import("./components/Competitions"));
 const Community = lazy(() => import("./components/Community"));
 const Emergency = lazy(() => import("./components/Emergency"));
-const SafetyHub = lazy(() => import("./components/SafetyHub"));
+const SOPs = lazy(() => import("./components/safety/SOPs"));
+const MyPPE = lazy(() => import("./components/safety/MyPPE"));
+const MyTools = lazy(() => import("./components/safety/MyTools"));
+const Training = lazy(() => import("./components/safety/Training"));
 const Login = lazy(() => import("./components/Login"));
 const Admin = lazy(() => import("./components/Admin"));
 const AdminServices = lazy(() => import("./components/AdminServices"));
@@ -607,28 +610,32 @@ export default function SmartLinemanUI() {
           return <Community language={language} user={user} setCurrentView={setCurrentView} />;
         case 'emergency':
           return <Emergency language={language} user={user} setCurrentView={setCurrentView} />;
-        case 'safety':
-          return <SafetyHub
+        case 'sops':
+          return <SOPs
+            language={language}
+            user={user}
+            setCurrentView={setCurrentView}
+          />;
+        case 'my_ppe':
+          return <MyPPE
             language={language}
             user={user}
             userProfile={userProfile}
-            setCurrentView={setCurrentView}
-            onProgressUpdate={(updated) => {
-              setCompletedLessons(updated);
-              fetchProfile(user);
-            }}
+          />;
+        case 'my_tools':
+          return <MyTools
+            language={language}
+            user={user}
+            userProfile={userProfile}
           />;
         case 'training':
-          return <SafetyHub
+          return <Training
             language={language}
             user={user}
-            userProfile={userProfile}
-            setCurrentView={setCurrentView}
-            onProgressUpdate={(updated) => {
-              setCompletedLessons(updated);
+            onProgressUpdate={(newProgress) => {
+              setCompletedLessons(newProgress);
               fetchProfile(user);
             }}
-            mode="training"
           />;
         case 'admin':
           return <Admin language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;

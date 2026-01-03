@@ -109,14 +109,14 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
 
     const navItems = [
         { id: 'training', label: { en: 'Training', bn: 'প্রশিক্ষণ' }, icon: <TrainingIcon />, color: '#F9A825' },
-        { id: 'safety', label: { en: 'Safety (SOP)', bn: 'এসওপি' }, icon: <SafetyIcon />, color: '#00BCD4', tab: 'sops' },
+        { id: 'sops', label: { en: 'Safety (SOP)', bn: 'এসওপি' }, icon: <SafetyIcon />, color: '#00BCD4' },
         { id: 'community', label: { en: 'Community', bn: 'কমিউনিটি' }, icon: <CommunityIcon />, color: '#5C6BC0' },
         { id: 'emergency', label: { en: 'Emergency', bn: 'জরুরি' }, icon: <EmergencyIcon />, color: '#EF5350' },
-        { id: 'safety-ppe', label: { en: 'My PPE', bn: 'আমার পিপিই' }, icon: '👷', color: '#03A9F4', redirectTo: 'safety', tab: 'my_ppe' },
+        { id: 'my_ppe', label: { en: 'My PPE', bn: 'আমার পিপিই' }, icon: '👷', color: '#03A9F4' },
         { id: 'leaderboard', label: { en: 'Leaderboard', bn: 'লিডারবোর্ড' }, icon: '🏆', color: '#9C27B0' },
         { id: 'guide', label: { en: 'Handbook', bn: 'হ্যান্ডবুক' }, icon: '📖', color: '#4CAF50' },
         { id: 'competitions', label: { en: 'Competitions', bn: 'প্রতিযোগিতা' }, icon: <CompetitionIcon />, color: '#D81B60' },
-        { id: 'safety-tools', label: { en: 'My Tools', bn: 'আমার সরঞ্জাম' }, icon: '🔧', color: '#795548', redirectTo: 'safety', tab: 'my_tools' },
+        { id: 'my_tools', label: { en: 'My Tools', bn: 'আমার সরঞ্জাম' }, icon: '🔧', color: '#795548' },
         { id: 'share', label: { en: 'Share App', bn: 'শেয়ার অ্যাপ' }, icon: '🔗', color: '#3F51B5', action: handleShare },
         { id: 'admin', label: { en: 'Admin', bn: 'অ্যাডমিন' }, icon: '🤖', color: '#3F51B5' },
         { id: 'notifications', label: { en: 'Notifications', bn: 'বিজ্ঞপ্তি' }, icon: '🔔', color: '#009688' },
