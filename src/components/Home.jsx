@@ -145,8 +145,9 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                     <div className="bg-[#ea580c] dark:bg-[#d64a0a] pt-6 pb-12 px-6 rounded-b-[2.5rem] shadow-lg shadow-orange-900/10 dark:shadow-black/20">
                         <div className="max-w-4xl mx-auto flex items-center justify-between gap-6 overflow-hidden">
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-2 flex-wrap min-w-0">
-                                    <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
+                                {/* Line 1: Username + Training Badge */}
+                                <div className="flex items-center gap-2 mb-2 min-w-0">
+                                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white truncate">
                                         {(fullName && !fullName.includes('@')) ? fullName : (user ? 'Guest' : visitorName)}
                                     </h1>
                                     {trainingLevel > 0 && getBadgeByLevel(trainingLevel) && (
@@ -154,21 +155,17 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                             {language === 'en' ? getBadgeByLevel(trainingLevel).en : getBadgeByLevel(trainingLevel).bn}
                                         </div>
                                     )}
-                                    {completedLessonsCount > 0 && (
-                                        <div className="px-2 py-0.5 rounded-lg bg-orange-400/20 text-orange-100 border border-orange-400/30 text-[10px] font-bold shadow-sm shrink-0">
-                                            📖 {(completedLessonsCount * 20).toLocaleString()}
-                                        </div>
-                                    )}
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="text-orange-50 text-sm font-medium tracking-wide uppercase opacity-90">
-                                        ID: {slmId || user?.id?.slice(0, 8).toUpperCase() || 'LINEMAN001'}
-                                    </p>
-                                    <p className="text-orange-50 text-sm font-medium opacity-90 capitalize">
-                                        {role}-Member
-                                    </p>
-                                </div>
-                                <div className="mt-4 flex items-center gap-2">
+                                {/* Line 2: Member ID */}
+                                <p className="text-orange-50 text-sm font-medium tracking-wide uppercase opacity-90 mb-1">
+                                    ID: {slmId || user?.id?.slice(0, 8).toUpperCase() || 'LINEMAN001'}
+                                </p>
+                                {/* Line 3: Role */}
+                                <p className="text-orange-50 text-sm font-medium opacity-90 capitalize mb-3">
+                                    {role}-Member
+                                </p>
+                                {/* Line 4: Total Score + Reading Rewards */}
+                                <div className="flex items-center gap-2">
                                     <div className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-[10px] font-bold uppercase tracking-wider border border-white/20">
                                         💎 {score.toLocaleString()}
                                     </div>
