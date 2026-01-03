@@ -26,6 +26,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [showCompactView, setShowCompactView] = useState(!isFullLeaderboard);
     const [expandedRows, setExpandedRows] = useState(new Set()); // Track expanded user rows
     const [showHint, setShowHint] = useState(false);
+    const [hintViewedQuestions, setHintViewedQuestions] = useState(new Set());
 
     // Offline sync state
     const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -64,7 +65,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             syncFailed: "Sync failed. Please retry.",
             hint: "Hint",
             hintDisabled: "Select an answer to see hint",
-            placeholderHint: "Hint content will appear here..."
+            noHint: "No hint available for this question"
         },
         bn: {
             title: "প্রতিযোগিতা",
@@ -90,7 +91,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             syncFailed: "সিঙ্ক ব্যর্থ হয়েছে। অনুগ্রহ করে পুনঃচেষ্টা করুন।",
             hint: "ইঙ্গিত",
             hintDisabled: "ইঙ্গিত দেখতে একটি উত্তর নির্বাচন করুন",
-            placeholderHint: "এখানে ইঙ্গিত দেখা যাবে..."
+            noHint: "এই প্রশ্নের জন্য কোনো ইঙ্গিত নেই"
         }
     }[language];
 
@@ -422,6 +423,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                         question_text: q.question_text,
                         options: q.options,
                         correct_option_index: q.correct_answer_index,
+                        hint: q.hint, // Fetch hint from DB if available
                         category: q.category,
                         tags: q.tags
                     })),
@@ -644,6 +646,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         setScore(0);
         setReviewMode(false);
         setShowHint(false);
+        setHintViewedQuestions(new Set());
     };
 
     const startReview = () => {
@@ -661,6 +664,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     };
 
     const handleAnswerSelect = (questionId, optionIndex) => {
+        if (hintViewedQuestions.has(questionId)) return; // Prevent change if hint was viewed
         setUserAnswers(prev => ({ ...prev, [questionId]: optionIndex }));
     };
 
@@ -1470,13 +1474,24 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             {quizQuestions[currentQuestionIndex]?.question_text}
                                         </h2>
                                         <button
-                                            onClick={() => setShowHint(!showHint)}
+                                            onClick={() => {
+                                                const newShowHint = !showHint;
+                                                setShowHint(newShowHint);
+                                                if (newShowHint) {
+                                                    const qId = quizQuestions[currentQuestionIndex]?.id;
+                                                    setHintViewedQuestions(prev => {
+                                                        const next = new Set(prev);
+                                                        next.add(qId);
+                                                        return next;
+                                                    });
+                                                }
+                                            }}
                                             disabled={userAnswers[quizQuestions[currentQuestionIndex]?.id] === undefined && !reviewMode}
                                             className={`shrink-0 w-9 h-9 flex items-center justify-center rounded-xl transition-all shadow-sm active:scale-95 ${(userAnswers[quizQuestions[currentQuestionIndex]?.id] !== undefined || reviewMode)
                                                 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 hover:bg-amber-100'
                                                 : 'bg-slate-50 dark:bg-slate-900 text-slate-200 dark:text-slate-700 border border-slate-100 dark:border-slate-800 cursor-not-allowed opacity-40'
                                                 }`}
-                                            title={userAnswers[quizQuestions[currentQuestionIndex]?.id] === undefined && !reviewMode ? t.hintDisabled : t.hint}
+                                            title={hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id) ? (language === 'en' ? 'Answer Locked (Hint Viewed)' : 'উত্তর লক করা হয়েছে (ইঙ্গিত দেখা হয়েছে)') : (userAnswers[quizQuestions[currentQuestionIndex]?.id] === undefined && !reviewMode ? t.hintDisabled : t.hint)}
                                         >
                                             <span className="text-xl">💡</span>
                                         </button>
@@ -1487,7 +1502,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             <div className="flex items-start gap-2">
                                                 <span className="text-amber-500 mt-0.5">ℹ️</span>
                                                 <p className={`text-sm text-amber-800 dark:text-amber-300 italic font-medium leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                    {quizQuestions[currentQuestionIndex]?.hint || t.placeholderHint}
+                                                    {quizQuestions[currentQuestionIndex]?.hint || t.noHint}
                                                 </p>
                                             </div>
                                         </div>
@@ -1511,8 +1526,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 <button
                                                     key={idx}
                                                     onClick={() => !reviewMode && handleAnswerSelect(quizQuestions[currentQuestionIndex].id, idx)}
-                                                    disabled={reviewMode}
-                                                    className={`w-full text-left p-3.5 rounded-lg border transition-all duration-200 ${buttonClass}`}
+                                                    disabled={reviewMode || hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id)}
+                                                    className={`w-full text-left p-3.5 rounded-lg border transition-all duration-200 ${buttonClass} ${hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id) && !reviewMode ? 'cursor-not-allowed opacity-80' : ''}`}
                                                 >
                                                     <span className="mr-3 text-slate-400 font-mono">{String.fromCharCode(65 + idx)}.</span>
                                                     <span className={`reading-content text-sm sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
@@ -1520,6 +1535,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     </span>
                                                     {reviewMode && isCorrect && <span className="float-right text-green-600">✓</span>}
                                                     {reviewMode && isSelected && !isCorrect && <span className="float-right text-red-600">✗</span>}
+                                                    {hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id) && !reviewMode && isSelected && <span className="float-right text-slate-400">🔒</span>}
                                                 </button>
                                             );
                                         })}
