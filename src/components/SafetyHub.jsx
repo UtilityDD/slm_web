@@ -226,9 +226,9 @@ const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedL
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <button
                     onClick={() => setCurrentView('training')}
-                    className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-600 transition-all group text-left"
+                    className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-orange-400 dark:hover:border-orange-600 transition-all group text-left"
                 >
-                    <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
                         🎓
                     </div>
                     <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{language === 'en' ? 'Training' : 'প্রশিক্ষণ'}</h3>
@@ -268,9 +268,9 @@ const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedL
                             setActiveTab('my_tools');
                         }
                     }}
-                    className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-600 transition-all group text-left"
+                    className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-orange-400 dark:hover:border-orange-600 transition-all group text-left"
                 >
-                    <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
                         🛠️
                     </div>
                     <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{t.tabs.my_tools}</h3>
@@ -287,7 +287,7 @@ const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedL
                     </h3>
                     <button
                         onClick={() => setCurrentView('training')}
-                        className="text-xs font-bold text-blue-600 hover:underline"
+                        className="text-xs font-bold text-orange-600 hover:underline"
                     >
                         {language === 'en' ? 'View All' : 'সব দেখুন'}
                     </button>
@@ -300,7 +300,7 @@ const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedL
                         </div>
                         <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000"
+                                className="h-full bg-gradient-to-r from-orange-500 to-orange-600 rounded-full transition-all duration-1000"
                                 style={{ width: `${Math.min(100, (completedLessons.length / 91) * 100)}%` }}
                             ></div>
                         </div>
@@ -604,7 +604,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         {
             rule: language === 'en' ? "Min. Ground Clearance for LT line is 15 ft./ 4.6 meter." : "এলটি লাইনের জন্য ন্যূনতম গ্রাউন্ড ক্লিয়ারেন্স হল ১৫ ফুট/ ৪.৬ মিটার।",
             icon: "📏",
-            color: "from-blue-600 to-indigo-600"
+            color: "from-orange-600 to-orange-800"
         },
         {
             rule: language === 'en' ? "Wear PPE -> Shut down -> Earthing -> Discharge -> Work." : "পিপিই পরুন -> শাট ডাউন -> আর্থিং -> ডিসচার্জ -> কাজ করুন।",
@@ -1748,8 +1748,8 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                 }
                                             }}
                                             className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${isEditMode
-                                                ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
-                                                : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:border-indigo-300'
+                                                ? 'bg-orange-100 text-orange-700 border border-orange-200'
+                                                : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:border-orange-300'
                                                 }`}
                                         >
                                             {isEditMode ? (language === 'en' ? 'Done' : 'সম্পন্ন') : (language === 'en' ? 'Manage' : 'ম্যানেজ')}
@@ -1761,7 +1761,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                             <div className="p-8 text-center text-slate-400">Loading Tools list...</div>
                                         ) : (
                                             toolsChecklist.map((item, idx) => (
-                                                <div key={item.name} className={`p-3 sm:p-4 transition-colors ${item.available ? 'bg-indigo-50/30 dark:bg-indigo-900/10' : ''}`}>
+                                                <div key={item.name} className={`p-3 sm:p-4 transition-colors ${item.available ? 'bg-orange-50/30 dark:bg-orange-900/10' : ''}`}>
                                                     <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                                                         {/* Availability Checkbox - Only in Edit Mode */}
                                                         {isEditMode && (
@@ -1770,7 +1770,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                                     type="checkbox"
                                                                     checked={item.available}
                                                                     onChange={(e) => handleToolsChecklistChange(idx, 'available', e.target.checked)}
-                                                                    className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                                                    className="w-5 h-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
                                                                 />
                                                             </div>
                                                         )}
@@ -1912,13 +1912,13 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                         </div>
 
                         {/* Mission Briefing */}
-                        <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-900/20 border-l-4 border-blue-500 p-6 sm:p-8 rounded-r-2xl mb-10 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/30 dark:to-orange-900/20 border-l-4 border-orange-500 p-6 sm:p-8 rounded-r-2xl mb-10 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-800 flex items-center justify-center text-2xl flex-shrink-0">
+                                <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-800 flex items-center justify-center text-2xl flex-shrink-0">
                                     🎯
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="font-bold text-blue-900 dark:text-blue-100 mb-3 uppercase tracking-wider text-xs">
+                                    <h3 className="font-bold text-orange-900 dark:text-orange-100 mb-3 uppercase tracking-wider text-xs">
                                         {language === 'en' ? 'Mission Briefing' : 'মিশন ব্রিফিং'}
                                     </h3>
                                     <p className="text-slate-700 dark:text-slate-300 reading-content leading-relaxed text-base whitespace-pre-line">
@@ -1962,10 +1962,10 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                 )}
                                                 <div className="space-y-5">
                                                     {point.specifications && (
-                                                        <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/20 dark:to-blue-900/10 p-5 rounded-2xl border border-blue-100 dark:border-blue-900/30 hover:border-blue-200 dark:hover:border-blue-800 transition-colors">
+                                                        <div className="bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/20 dark:to-orange-900/10 p-5 rounded-2xl border border-orange-100 dark:border-orange-900/30 hover:border-orange-200 dark:hover:border-orange-800 transition-colors">
                                                             <div className="flex items-center gap-2 mb-3">
-                                                                <span className="text-blue-500 text-lg">📋</span>
-                                                                <p className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                                                <span className="text-orange-500 text-lg">📋</span>
+                                                                <p className="text-[11px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
                                                                     {language === 'en' ? 'Details' : 'বিস্তারিত'}
                                                                 </p>
                                                             </div>
@@ -2070,7 +2070,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                         {trainingContent.advanced_section && (
                             <div className="mt-12 bg-slate-900 rounded-3xl p-8 sm:p-10 text-white shadow-xl hover:shadow-2xl transition-shadow">
                                 <div className="flex items-center gap-4 mb-8">
-                                    <div className="w-12 h-12 rounded-xl bg-indigo-500 flex items-center justify-center text-2xl">
+                                    <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center text-2xl">
                                         🔬
                                     </div>
                                     <h3 className="text-2xl sm:text-3xl font-bold reading-content">
@@ -2080,7 +2080,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                 <div className="grid grid-cols-1 gap-6">
                                     {trainingContent.advanced_section.facts?.map((fact, idx) => (
                                         <div key={idx} className="bg-white/5 rounded-2xl p-6 sm:p-8 border border-white/10 hover:border-white/20 hover:bg-white/8 transition-all">
-                                            <h4 className="font-bold text-indigo-300 mb-4 reading-content text-lg sm:text-xl">
+                                            <h4 className="font-bold text-orange-300 mb-4 reading-content text-lg sm:text-xl">
                                                 {fact.title}
                                             </h4>
                                             <p className="text-slate-200 reading-content leading-relaxed text-base whitespace-pre-line">
@@ -2140,7 +2140,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
                                     <button
                                         onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                        className="w-full px-8 py-4 rounded-2xl font-bold transition-all bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-3 text-lg active:scale-95"
+                                        className="w-full px-8 py-4 rounded-2xl font-bold transition-all bg-orange-600 text-white hover:bg-orange-700 shadow-lg shadow-orange-500/20 flex items-center justify-center gap-3 text-lg active:scale-95"
                                     >
                                         <span className="text-xl">📝</span>
                                         {language === 'en' ? 'Practice Quiz' : 'প্র্যাকটিস কুইজ'}

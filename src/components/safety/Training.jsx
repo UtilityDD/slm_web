@@ -614,13 +614,13 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                         </div>
 
                         {/* Mission Briefing */}
-                        <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-900/20 border-l-4 border-blue-500 p-6 sm:p-8 rounded-r-2xl mb-10 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/30 dark:to-orange-900/20 border-l-4 border-orange-500 p-6 sm:p-8 rounded-r-2xl mb-10 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-800 flex items-center justify-center text-2xl flex-shrink-0">
+                                <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-800 flex items-center justify-center text-2xl flex-shrink-0">
                                     🎯
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="font-bold text-blue-900 dark:text-blue-100 mb-3 uppercase tracking-wider text-xs">
+                                    <h3 className="font-bold text-orange-900 dark:text-orange-100 mb-3 uppercase tracking-wider text-xs">
                                         {language === 'en' ? 'Mission Briefing' : 'মিশন ব্রিফিং'}
                                     </h3>
                                     <p className="text-slate-700 dark:text-slate-300 reading-content leading-relaxed text-base whitespace-pre-line">
@@ -664,10 +664,10 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                                 )}
                                                 <div className="space-y-5">
                                                     {point.specifications && (
-                                                        <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/20 dark:to-blue-900/10 p-5 rounded-2xl border border-blue-100 dark:border-blue-900/30 hover:border-blue-200 dark:hover:border-blue-800 transition-colors">
+                                                        <div className="bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/20 dark:to-orange-900/10 p-5 rounded-2xl border border-orange-100 dark:border-orange-900/30 hover:border-orange-200 dark:hover:border-orange-800 transition-colors">
                                                             <div className="flex items-center gap-2 mb-3">
-                                                                <span className="text-blue-500 text-lg">📋</span>
-                                                                <p className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                                                <span className="text-orange-500 text-lg">📋</span>
+                                                                <p className="text-[11px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
                                                                     {language === 'en' ? 'Details' : 'বিস্তারিত'}
                                                                 </p>
                                                             </div>
@@ -772,7 +772,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                         {trainingContent.advanced_section && (
                             <div className="mt-12 bg-slate-900 rounded-3xl p-8 sm:p-10 text-white shadow-xl hover:shadow-2xl transition-shadow">
                                 <div className="flex items-center gap-4 mb-8">
-                                    <div className="w-12 h-12 rounded-xl bg-indigo-500 flex items-center justify-center text-2xl">
+                                    <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center text-2xl">
                                         🧪
                                     </div>
                                     <h3 className="text-2xl sm:text-3xl font-bold reading-content">
@@ -782,7 +782,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                 <div className="grid grid-cols-1 gap-6">
                                     {trainingContent.advanced_section.facts?.map((fact, idx) => (
                                         <div key={idx} className="bg-white/5 rounded-2xl p-6 sm:p-8 border border-white/10 hover:border-white/20 hover:bg-white/8 transition-all">
-                                            <h4 className="font-bold text-indigo-300 mb-4 reading-content text-lg sm:text-xl">
+                                            <h4 className="font-bold text-orange-300 mb-4 reading-content text-lg sm:text-xl">
                                                 {fact.title}
                                             </h4>
                                             <p className="text-slate-200 reading-content leading-relaxed text-base whitespace-pre-line">
@@ -829,7 +829,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
 
                                     <button
                                         onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                        className="w-full px-8 py-4 rounded-2xl font-bold transition-all bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-3 text-lg active:scale-95"
+                                        className="w-full px-8 py-4 rounded-2xl font-bold transition-all bg-orange-600 text-white hover:bg-orange-700 shadow-lg shadow-orange-500/20 flex items-center justify-center gap-3 text-lg active:scale-95"
                                     >
                                         <span className="text-xl">📝</span>
                                         {language === 'en' ? 'Practice Quiz' : 'প্র্যাকটিস কুইজ'}

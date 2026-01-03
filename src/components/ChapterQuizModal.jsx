@@ -166,7 +166,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh]">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center p-20 space-y-4">
-                        <svg className="w-12 h-12 text-blue-500 animate-pulse" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <svg className="w-12 h-12 text-orange-500 animate-pulse" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                         <p className="text-slate-500 dark:text-slate-400 font-medium">{t.loadingText}</p>
@@ -265,7 +265,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
                                             <>
                                                 <button
                                                     onClick={() => setIsReviewMode(true)}
-                                                    className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-600/20"
+                                                    className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-orange-600/20"
                                                 >
                                                     {t.review}
                                                 </button>
@@ -321,13 +321,13 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
                                                 key={idx}
                                                 onClick={() => handleOptionSelect(idx)}
                                                 className={`w-full p-4 rounded-xl text-left transition-all border-2 ${userAnswers[currentQuestionIndex] === idx
-                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                                                    : 'border-slate-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400'
+                                                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300'
+                                                    : 'border-slate-100 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400'
                                                     }`}
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${userAnswers[currentQuestionIndex] === idx
-                                                        ? 'border-blue-500 bg-blue-500 text-white'
+                                                        ? 'border-orange-500 bg-orange-500 text-white'
                                                         : 'border-slate-300 dark:border-slate-600'
                                                         }`}>
                                                         {userAnswers[currentQuestionIndex] === idx && (
@@ -350,7 +350,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
                                     onClick={handleNext}
                                     disabled={userAnswers[currentQuestionIndex] === undefined}
                                     className={`w-full py-3 rounded-xl font-bold transition-all ${userAnswers[currentQuestionIndex] !== undefined
-                                        ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20'
+                                        ? 'bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/20'
                                         : 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
                                         }`}
                                 >

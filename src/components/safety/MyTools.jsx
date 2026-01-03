@@ -162,7 +162,7 @@ const MyTools = ({ user, setCurrentView, language }) => {
                 {!user ? (
                     <button
                         onClick={() => setCurrentView('login')}
-                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                        className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                     >
                         {language === 'en' ? 'Login to Save' : 'সংরক্ষণ করতে লগইন করুন'}
                     </button>
@@ -170,7 +170,7 @@ const MyTools = ({ user, setCurrentView, language }) => {
                     <button
                         onClick={handleSaveTools}
                         disabled={isSaving}
-                        className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-orange-700 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                         {isSaving ? (
                             <>
@@ -199,8 +199,8 @@ const MyTools = ({ user, setCurrentView, language }) => {
                         <div
                             key={item.name}
                             className={`relative p-5 rounded-2xl border-2 transition-all duration-300 ${item.available
-                                ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/10 shadow-md ring-1 ring-indigo-500/20'
-                                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-indigo-200 dark:hover:border-indigo-800 opacity-75 hover:opacity-100'
+                                ? 'border-orange-500 bg-orange-50/50 dark:bg-orange-900/10 shadow-md ring-1 ring-orange-500/20'
+                                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-orange-200 dark:hover:border-orange-800 opacity-75 hover:opacity-100'
                                 }`}
                         >
                             {/* Selection Checkbox */}
@@ -216,8 +216,8 @@ const MyTools = ({ user, setCurrentView, language }) => {
                                     <label
                                         htmlFor={`tools-checkbox-${index}`}
                                         className={`block w-6 h-6 rounded-md border-2 transition-all cursor-pointer ${item.available
-                                            ? 'bg-indigo-500 border-indigo-500'
-                                            : 'bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 hover:border-indigo-400'
+                                            ? 'bg-orange-500 border-orange-500'
+                                            : 'bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 hover:border-orange-400'
                                             }`}
                                     >
                                         <svg className={`w-full h-full text-white transform transition-transform ${item.available ? 'scale-100' : 'scale-0'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -228,7 +228,7 @@ const MyTools = ({ user, setCurrentView, language }) => {
                             </div>
 
                             <div className="flex items-center gap-4 mb-4 pr-10">
-                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-3xl shadow-sm transition-colors ${item.available ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600' : 'bg-slate-100 dark:bg-slate-700 text-slate-400'}`}>
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-3xl shadow-sm transition-colors ${item.available ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600' : 'bg-slate-100 dark:bg-slate-700 text-slate-400'}`}>
                                     {item.icon}
                                 </div>
                                 <h3 className={`font-bold text-lg leading-tight ${item.available ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
@@ -246,7 +246,7 @@ const MyTools = ({ user, setCurrentView, language }) => {
                                             min="1"
                                             value={item.count}
                                             onChange={(e) => handleChecklistChange(index, 'count', e.target.value)}
-                                            className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all shadow-sm"
+                                            className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all shadow-sm"
                                         />
                                     </div>
                                     <div>
@@ -254,7 +254,7 @@ const MyTools = ({ user, setCurrentView, language }) => {
                                         <select
                                             value={item.condition}
                                             onChange={(e) => handleChecklistChange(index, 'condition', e.target.value)}
-                                            className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all shadow-sm"
+                                            className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all shadow-sm"
                                         >
                                             <option>Good</option>
                                             <option>Worn</option>
@@ -268,7 +268,7 @@ const MyTools = ({ user, setCurrentView, language }) => {
                                         <select
                                             value={item.age}
                                             onChange={(e) => handleChecklistChange(index, 'age', e.target.value)}
-                                            className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all shadow-sm"
+                                            className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all shadow-sm"
                                         >
                                             <option>{'<'}6m</option>
                                             <option>6-12m</option>
@@ -281,7 +281,7 @@ const MyTools = ({ user, setCurrentView, language }) => {
                                         <select
                                             value={item.usage}
                                             onChange={(e) => handleChecklistChange(index, 'usage', e.target.value)}
-                                            className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all shadow-sm"
+                                            className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all shadow-sm"
                                         >
                                             <option>Personal</option>
                                             <option>Team</option>

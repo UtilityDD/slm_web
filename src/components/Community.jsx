@@ -85,11 +85,11 @@ export default function Community({ language = 'en', setCurrentView }) {
         {
             id: 'facebook',
             icon: (
-                <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
                 </svg>
             ),
-            bg: 'bg-blue-50 dark:bg-blue-900/20',
+            bg: 'bg-orange-50 dark:bg-orange-900/20',
             data: t.cards.facebook
         },
         {
@@ -126,7 +126,7 @@ export default function Community({ language = 'en', setCurrentView }) {
                     </h1>
                 </div>
 
-                <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-blue-50 text-blue-700 border border-blue-100 font-bold text-sm`}>
+                <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-orange-50 text-orange-700 border border-orange-100 font-bold text-sm`}>
                     <span className="text-lg">🤝</span>
                     {language === 'en' ? 'Community Mode' : 'কমিউনিটি মোড'}
                 </div>
@@ -165,7 +165,7 @@ export default function Community({ language = 'en', setCurrentView }) {
                                 <p className="text-xs text-slate-500 dark:text-slate-400">{card.data.desc}</p>
                             </div>
                         </div>
-                        <div className="px-4 py-1.5 bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <div className="px-4 py-1.5 bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold group-hover:bg-orange-600 group-hover:text-white transition-colors">
                             {card.data.action}
                         </div>
                     </div>

@@ -799,9 +799,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     {language === 'en' ? 'Top performers across all regions' : ''}
                                 </p>
                             </div>
-                            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800/50">
-                                <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
-                                <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800/50">
+                                <span className="w-2 h-2 bg-orange-600 rounded-full animate-pulse"></span>
+                                <span className="text-xs font-medium text-orange-700 dark:text-orange-300">
                                     {language === 'en' ? 'Live' : 'লাইভ'}
                                 </span>
                             </div>
@@ -830,7 +830,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             <p className="text-xs font-bold text-slate-600 dark:text-slate-300 ml-1">{userRank.score.toLocaleString()} pts</p>
                                         </div>
                                     </div>
-                                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-blue-600 dark:text-blue-300 border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-orange-600 dark:text-orange-300 border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
                                         {userProfile?.avatar_url ? <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
                                     </div>
                                 </div>
@@ -891,14 +891,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 <React.Fragment key={index}>
                                                     <tr
                                                         onClick={toggleExpand}
-                                                        className={`transition-colors border-b border-slate-50 dark:border-slate-700/50 cursor-pointer ${isMe ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-slate-50/30 dark:hover:bg-slate-700/10'}`}
+                                                        className={`transition-colors border-b border-slate-50 dark:border-slate-700/50 cursor-pointer ${isMe ? 'bg-orange-50/50 dark:bg-orange-900/10' : 'hover:bg-slate-50/30 dark:hover:bg-slate-700/10'}`}
                                                     >
                                                         <td className="px-3 sm:px-4 py-2">
                                                             <div className="flex items-center gap-1.5 text-xs">
                                                                 {getMedalIcon(index + 1) && (
                                                                     <span className="text-sm">{getMedalIcon(index + 1)}</span>
                                                                 )}
-                                                                <span className={`font-bold ${index < 3 ? 'text-blue-600' : 'text-slate-400'}`}>
+                                                                <span className={`font-bold ${index < 3 ? 'text-orange-600' : 'text-slate-400'}`}>
                                                                     #{index + 1}
                                                                 </span>
                                                             </div>
@@ -914,7 +914,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 </div>
                                                                 <div className="min-w-0 flex-1">
                                                                     <div className="flex items-center gap-1.5 flex-wrap">
-                                                                        <p className={`text-xs font-bold truncate ${isMe ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                                                                        <p className={`text-xs font-bold truncate ${isMe ? 'text-orange-700 dark:text-orange-400' : 'text-slate-800 dark:text-slate-200'}`}>
                                                                             {isMe ? (language === 'en' ? 'You' : 'আপনি') : (item.full_name || 'Anonymous')}
                                                                         </p>
                                                                         {badge && (
@@ -935,7 +935,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         </td>
                                                         <td className="px-3 sm:px-4 py-2 text-right">
                                                             <div className="flex flex-col items-end">
-                                                                <span className={`text-xs font-black tabular-nums ${isMe ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                                                                <span className={`text-xs font-black tabular-nums ${isMe ? 'text-orange-600 dark:text-orange-400' : 'text-slate-700 dark:text-slate-200'}`}>
                                                                     {item.points.toLocaleString()}
                                                                 </span>
                                                                 {(item.completed_lessons?.length || 0) > 0 && (
@@ -949,7 +949,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     </tr>
                                                     {/* Expanded District Row */}
                                                     {isExpanded && (
-                                                        <tr className={`${isMe ? 'bg-blue-50/50 dark:bg-blue-900/5' : 'bg-slate-50/50 dark:bg-slate-700/10'}`}>
+                                                        <tr className={`${isMe ? 'bg-orange-50/50 dark:bg-orange-900/5' : 'bg-slate-50/50 dark:bg-slate-700/10'}`}>
                                                             <td colSpan="4" className="px-4 sm:px-6 py-2">
                                                                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-[10px] text-slate-600 dark:text-slate-400 animate-fade-in py-1">
                                                                     <div className="flex items-center gap-1.5">
@@ -1016,7 +1016,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             <span>-{lastAttemptPenalty}</span>
                         </div>
                     )}
-                    <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-blue-50 text-blue-700 border border-blue-100 font-bold text-sm`}>
+                    <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-orange-50 text-orange-700 border border-orange-100 font-bold text-sm`}>
                         <span className="text-lg">🏆</span>
                         {language === 'en' ? 'Competition Mode' : 'প্রতিযোগিতা মোড'}
                     </div>
@@ -1028,7 +1028,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 {loading ? (
                     <SkeletonCard />
                 ) : hourlyQuiz ? (
-                    <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-blue-200 dark:border-blue-800 shadow-sm text-center">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-orange-200 dark:border-orange-800 shadow-sm text-center">
                         <div className="mb-6">
                             <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 tracking-tight">
                                 5 {language === 'en' ? 'Quizzes Every Hour!' : 'কুইজ প্রতি ঘন্টায়!'}
@@ -1052,12 +1052,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             <div className={`mb-3 p-3 rounded-lg border ${syncStatus === 'success' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' :
                                 syncStatus === 'failed' ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' :
                                     syncStatus === 'waiting' ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800' :
-                                        'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                                        'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
                                 }`}>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         {isSyncing && (
-                                            <svg className="animate-spin h-4 w-4 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <svg className="animate-spin h-4 w-4 text-orange-600 dark:text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
@@ -1066,7 +1066,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             <div className={`text-xs font-medium ${syncStatus === 'success' ? 'text-green-700 dark:text-green-300' :
                                                 syncStatus === 'failed' ? 'text-red-700 dark:text-red-300' :
                                                     syncStatus === 'waiting' ? 'text-yellow-700 dark:text-yellow-300' :
-                                                        'text-blue-700 dark:text-blue-300'
+                                                        'text-orange-700 dark:text-orange-300'
                                                 }`}>
                                                 {syncStatus === 'syncing' ? t.syncing :
                                                     syncStatus === 'waiting' ? t.waitingNetwork :
@@ -1106,7 +1106,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         disabled={pendingSubmission && pendingSubmission.quiz_id === hourlyQuiz.id}
                                         className={`w-full py-3 ${(pendingSubmission && pendingSubmission.quiz_id === hourlyQuiz.id)
                                             ? 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed text-slate-500 dark:text-slate-400'
-                                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                            : 'bg-orange-600 hover:bg-orange-700 text-white'
                                             } font-bold rounded-lg transition-colors flex items-center justify-center gap-2`}
                                     >
                                         <span>{t.play}</span>
@@ -1147,7 +1147,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                                         <button
                                             onClick={startReview}
-                                            className="w-full py-3 rounded-lg font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all text-sm flex items-center justify-center gap-2"
+                                            className="w-full py-3 rounded-lg font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-all text-sm flex items-center justify-center gap-2"
                                         >
                                             <span>Review Last Attempt</span>
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
@@ -1167,7 +1167,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     )}
                                     <button
                                         onClick={() => startQuiz(hourlyQuiz)}
-                                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                                        className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
                                     >
                                         <span>{t.play}</span>
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
@@ -1209,7 +1209,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 disabled={loading}
                                 className={`w-full py-3 px-6 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${loading
                                     ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
-                                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 active:scale-95'
+                                    : 'bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-500/20 active:scale-95'
                                     }`}
                             >
                                 {loading ? (
@@ -1232,8 +1232,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                             <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                                 <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
                                 </span>
                                 {language === 'en' ? 'Auto-refresh active' : 'স্বয়ংক্রিয় রিফ্রেশ সক্রিয়'}
                             </div>
@@ -1265,7 +1265,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     <p className="text-xs font-bold text-slate-600 dark:text-slate-300 ml-1">{userRank.score.toLocaleString()} pts</p>
                                 </div>
                             </div>
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-blue-600 dark:text-blue-300 border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-orange-600 dark:text-orange-300 border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
                                 {userProfile?.avatar_url ? <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
                             </div>
                         </div>
@@ -1287,7 +1287,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             </h4>
                             <button
                                 onClick={() => setCurrentView('login')}
-                                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors text-xs"
+                                className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors text-xs"
                             >
                                 {language === 'en' ? 'Login Now' : 'এখনই লগইন করুন'}
                             </button>
@@ -1329,7 +1329,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 </div>
                                             )}
                                             <div className={`flex items-center p-2 sm:p-3 transition-colors ${isUserRow
-                                                ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
+                                                ? 'bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-500'
                                                 : 'hover:bg-slate-50 dark:hover:bg-slate-900/50'
                                                 }`}>
                                                 <div className={`font-bold w-5 text-xs ${actualIndex < 3 ? 'text-yellow-500' : 'text-slate-300'
@@ -1361,7 +1361,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     </p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className={`text-xs sm:text-sm font-black ${isUserRow ? 'text-blue-600 dark:text-blue-400' : 'text-blue-600 dark:text-blue-400'
+                                                    <div className={`text-xs sm:text-sm font-black ${isUserRow ? 'text-orange-600 dark:text-orange-400' : 'text-orange-600 dark:text-orange-400'
                                                         }`}>
                                                         {item.points}
                                                     </div>
@@ -1384,7 +1384,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             </p>
                                             <button
                                                 onClick={() => fetchLeaderboard(true)}
-                                                className="mt-2 text-xs text-blue-600 font-bold hover:underline"
+                                                className="mt-2 text-xs text-orange-600 font-bold hover:underline"
                                             >
                                                 {language === 'en' ? "Try Again" : "আবার চেষ্টা করুন"}
                                             </button>
@@ -1400,7 +1400,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 <div className="p-3 text-center bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700">
                                     <button
                                         onClick={goToGlobalLeaderboard}
-                                        className="text-blue-600 dark:text-blue-400 font-bold hover:underline text-sm flex items-center gap-2 mx-auto"
+                                        className="text-orange-600 dark:text-orange-400 font-bold hover:underline text-sm flex items-center gap-2 mx-auto"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
@@ -1424,7 +1424,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     <div className="text-slate-500 text-xs">{userRank.score} pts</div>
                                 </div>
                             </div>
-                            <button onClick={goToGlobalLeaderboard} className="text-blue-600 text-sm font-bold">View All</button>
+                            <button onClick={goToGlobalLeaderboard} className="text-orange-600 text-sm font-bold">View All</button>
                         </div>
                     </div>
                 )}
@@ -1455,7 +1455,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                                 <div className="mb-8">
                                     <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full mb-6">
-                                        <div className="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}></div>
+                                        <div className="bg-orange-600 h-1.5 rounded-full transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}></div>
                                     </div>
                                     <h2 className={`reading-content text-lg sm:text-xl font-bold mb-6 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {quizQuestions[currentQuestionIndex]?.question_text}
@@ -1465,14 +1465,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             const isSelected = userAnswers[quizQuestions[currentQuestionIndex].id] === idx;
                                             const isCorrect = idx === quizQuestions[currentQuestionIndex].correct_option_index;
 
-                                            let buttonClass = 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 text-slate-600 dark:text-slate-400';
+                                            let buttonClass = 'border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 text-slate-600 dark:text-slate-400';
 
                                             if (reviewMode) {
                                                 if (isCorrect) buttonClass = 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-bold';
                                                 else if (isSelected && !isCorrect) buttonClass = 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400';
                                                 else buttonClass = 'border-slate-100 dark:border-slate-800 opacity-60';
                                             } else if (isSelected) {
-                                                buttonClass = 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-bold';
+                                                buttonClass = 'border-orange-600 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 font-bold';
                                             }
 
                                             return (
@@ -1507,7 +1507,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             {reviewMode ? 'Close Review' : 'Finish Quiz'}
                                         </button>
                                     ) : (
-                                        <button onClick={() => setCurrentQuestionIndex(prev => prev + 1)} className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors">
+                                        <button onClick={() => setCurrentQuestionIndex(prev => prev + 1)} className="px-6 py-2.5 bg-orange-600 text-white rounded-lg font-bold text-sm hover:bg-orange-700 transition-colors">
                                             Next →
                                         </button>
                                     )}
@@ -1531,9 +1531,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         <div className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">Skipped</div>
                                         <div className="text-xl font-bold text-slate-600 dark:text-slate-400">{quizResults?.skipped || 0}</div>
                                     </div>
-                                    <div className="bg-blue-50 dark:bg-blue-900/10 p-3 rounded-xl border border-blue-100 dark:border-blue-900/30">
-                                        <div className="text-[10px] font-bold text-blue-600 uppercase tracking-tighter mb-1">Net</div>
-                                        <div className="text-xl font-bold text-blue-700 dark:text-blue-400">{quizResults?.score || 0}</div>
+                                    <div className="bg-orange-50 dark:bg-orange-900/10 p-3 rounded-xl border border-orange-100 dark:border-orange-900/30">
+                                        <div className="text-[10px] font-bold text-orange-600 uppercase tracking-tighter mb-1">Net</div>
+                                        <div className="text-xl font-bold text-orange-700 dark:text-orange-400">{quizResults?.score || 0}</div>
                                     </div>
                                 </div>
 

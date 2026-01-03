@@ -31,7 +31,7 @@ export default function MyPPE({ language, user, setCurrentView }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
       </div>
     );
   }
@@ -44,8 +44,8 @@ export default function MyPPE({ language, user, setCurrentView }) {
           {language === 'en' ? 'Personal Protective Equipment' : 'ব্যক্তিগত সুরক্ষা সরঞ্জাম'}
         </h1>
         <p className="text-slate-600 dark:text-slate-400 mt-2">
-          {language === 'en' 
-            ? 'Manage and track your personal protective equipment' 
+          {language === 'en'
+            ? 'Manage and track your personal protective equipment'
             : 'আপনার ব্যক্তিগত সুরক্ষা সরঞ্জাম পরিচালনা করুন'}
         </p>
       </div>

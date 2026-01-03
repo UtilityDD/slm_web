@@ -4,6 +4,17 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-safety-red: #ef4444;
+  /* Emergency / Danger / Stop */
+  --color-safety-orange: #f97316;
+  /* Warning / Primary Brand / High Visibility */
+  --color-safety-yellow: #facc15;
+  /* Caution / Alert */
+  --color-safety-green: #22c55e;
+  /* Success / Safe / Confirm */
+}
+
 html {
   height: 100%;
 }
@@ -56,11 +67,11 @@ html {
   }
 
   .gradient-text {
-    @apply bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 bg-clip-text text-transparent font-extrabold;
+    @apply bg-gradient-to-r from-orange-600 via-orange-500 to-orange-700 bg-clip-text text-transparent font-extrabold;
   }
 
   .glow {
-    box-shadow: 0 0 20px rgba(37, 99, 235, 0.12);
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.12);
   }
 
   .safe-area-inset-top {
@@ -79,7 +90,7 @@ html {
   }
 
   .logo-text-default {
-    background-image: linear-gradient(to right, #3b82f6, #6366f1, #a855f7, #ec4899);
+    background-image: linear-gradient(to right, #f97316, #fb923c, #facc15, #ef4444);
   }
 
   .logo-text-home {
@@ -139,23 +150,23 @@ html {
   }
 
   .bottom-nav-item {
-    @apply flex flex-col items-center justify-center flex-1 text-slate-400 transition-all duration-300 cursor-pointer hover:text-blue-500;
+    @apply flex flex-col items-center justify-center flex-1 text-slate-400 transition-all duration-300 cursor-pointer hover:text-orange-500;
   }
 
   .bottom-nav-item.active {
-    @apply text-blue-600 font-bold scale-110;
+    @apply text-orange-600 font-bold scale-110;
   }
 
   /* FAB */
   .fab {
     @apply fixed bottom-20 right-4 w-12 h-12 rounded-2xl flex items-center justify-center text-white transition-all duration-300 cursor-pointer z-40;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    box-shadow: 0 8px 16px rgba(234, 88, 12, 0.25);
   }
 
   .fab:hover {
     @apply scale-110 -translate-y-1;
-    box-shadow: 0 12px 20px rgba(37, 99, 235, 0.35);
+    box-shadow: 0 12px 20px rgba(234, 88, 12, 0.35);
   }
 
   /* Material Card */
@@ -167,12 +178,12 @@ html {
   .material-card:hover {
     @apply -translate-y-1;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
-    border-color: rgba(37, 99, 235, 0.2);
+    border-color: rgba(249, 115, 22, 0.2);
   }
 
   /* Material Input */
   .material-input {
-    @apply w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all bg-slate-50/80 focus:bg-white text-sm font-medium dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-100;
+    @apply w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all bg-slate-50/80 focus:bg-white text-sm font-medium dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-100;
     min-height: 44px;
   }
 
@@ -183,7 +194,7 @@ html {
   }
 
   .material-button-primary {
-    @apply material-button bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 active:scale-95 shadow-lg shadow-blue-500/20;
+    @apply material-button bg-gradient-to-r from-orange-600 to-orange-500 text-white hover:from-orange-700 hover:to-orange-600 active:scale-95 shadow-lg shadow-orange-500/20;
   }
 
   /* Safe area for mobile devices */
@@ -270,11 +281,11 @@ html {
 
     0%,
     100% {
-      box-shadow: 0 0 10px rgba(37, 99, 235, 0.1);
+      box-shadow: 0 0 10px rgba(249, 115, 22, 0.1);
     }
 
     50% {
-      box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
+      box-shadow: 0 0 20px rgba(249, 115, 22, 0.2);
     }
   }
 
@@ -425,7 +436,7 @@ html {
 }
 
 .refresh-spinner {
-  @apply w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin;
+  @apply w-5 h-5 border-2 border-orange-600 border-t-transparent rounded-full animate-spin;
 }
 
 .animate-slide-up {

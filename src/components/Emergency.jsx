@@ -61,7 +61,7 @@ const Toast = ({ message, type, show, onDismiss }) => {
     const typeClasses = {
         success: "bg-green-600",
         error: "bg-red-600",
-        info: "bg-blue-600"
+        info: "bg-orange-600"
     };
 
     return (
@@ -128,7 +128,7 @@ const DonorCard = React.memo(({ donor, isExpanded, onToggle, t }) => (
 const ServiceCard = React.memo(({ service, config, isExpanded, onToggle }) => (
     <div
         onClick={onToggle}
-        className={`p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer group dark:bg-slate-700 dark:hover:bg-slate-600 ${isExpanded ? 'ring-2 ring-blue-500' : ''}`}
+        className={`p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer group dark:bg-slate-700 dark:hover:bg-slate-600 ${isExpanded ? 'ring-2 ring-orange-500' : ''}`}
     >
         <div className="flex items-center justify-between">
             <div className="min-w-0 pr-3">
@@ -141,7 +141,7 @@ const ServiceCard = React.memo(({ service, config, isExpanded, onToggle }) => (
                 onClick={(e) => e.stopPropagation()}
                 className="flex-shrink-0"
             >
-                <button className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${config.color === 'blue' ? 'bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white' :
+                <button className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${config.color === 'orange' || config.color === 'blue' ? 'bg-orange-100 text-orange-600 hover:bg-orange-600 hover:text-white' :
                     config.color === 'red' ? 'bg-red-100 text-red-600 hover:bg-red-600 hover:text-white' :
                         config.color === 'orange' ? 'bg-orange-100 text-orange-600 hover:bg-orange-600 hover:text-white' :
                             config.color === 'yellow' ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-600 hover:text-white' :
@@ -566,7 +566,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                     <button
                         onClick={() => setActiveTab('services')}
                         className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'services'
-                            ? 'bg-white dark:bg-slate-800 text-blue-600 shadow-lg shadow-blue-500/10'
+                            ? 'bg-white dark:bg-slate-800 text-orange-600 shadow-lg shadow-orange-500/10'
                             : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-slate-100'
                             }`}
                     >
@@ -714,7 +714,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                         value={serviceSearch}
                                         onChange={(e) => setServiceSearch(e.target.value)}
                                         placeholder={language === 'en' ? 'Search services by name or location...' : 'নাম বা অবস্থান দ্বারা সার্চ করুন...'}
-                                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-slate-50 text-sm transition-all dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100 dark:focus:ring-blue-900"
+                                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 bg-slate-50 text-sm transition-all dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100 dark:focus:ring-orange-900"
                                     />
                                     {serviceSearch && (
                                         <button

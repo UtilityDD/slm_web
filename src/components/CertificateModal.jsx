@@ -130,7 +130,7 @@ const CertificateModal = ({ isOpen, onClose, userName, level, badgeName, date, c
                         .badge-level {
                             font-size: 36pt;
                             font-weight: bold;
-                            color: #1e40af;
+                            color: #ea580c;
                             margin-bottom: 2mm;
                             text-transform: uppercase;
                             letter-spacing: 3pt;
@@ -363,7 +363,7 @@ const CertificateModal = ({ isOpen, onClose, userName, level, badgeName, date, c
                         </div>
 
                         <div className="mb-16">
-                            <div className="text-5xl font-bold text-blue-800 mb-2 uppercase tracking-widest">
+                            <div className="text-5xl font-bold text-orange-600 mb-2 uppercase tracking-widest">
                                 {badgeName || 'Safety Trainee'}
                             </div>
                             <div className="text-2xl text-slate-500 font-medium">Training Level {level || 1}</div>
@@ -433,7 +433,7 @@ const CertificateModal = ({ isOpen, onClose, userName, level, badgeName, date, c
 
                     <button
                         onClick={handlePrint}
-                        className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-lg shadow-blue-500/30 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                        className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg shadow-lg shadow-orange-500/30 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />

@@ -95,7 +95,7 @@ const VerificationView = ({ language, certificateId }) => {
                 {/* Header */}
                 <div className={`p-8 text-center ${status === 'verified' ? 'bg-emerald-600' :
                     status === 'invalid' ? 'bg-red-600' :
-                        status === 'error' ? 'bg-orange-600' : 'bg-blue-600'
+                        status === 'error' ? 'bg-amber-600' : 'bg-orange-600'
                     }`}>
                     <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-md">
                         {status === 'loading' && <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>}
@@ -117,7 +117,7 @@ const VerificationView = ({ language, certificateId }) => {
                             </div>
                             <div className="flex flex-col gap-1">
                                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{content.level}</label>
-                                <p className="text-xl font-bold text-blue-600 dark:text-blue-400">Level {certData.training_level || 0}</p>
+                                <p className="text-xl font-bold text-orange-600 dark:text-orange-400">Level {certData.training_level || 0}</p>
                             </div>
                             <div className="flex flex-col gap-1">
                                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{content.issued}</label>

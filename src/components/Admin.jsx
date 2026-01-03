@@ -534,7 +534,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
             {userProfile?.role === 'admin' && (
               <button
                 onClick={() => setShowNotificationModal(true)}
-                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2 text-sm"
+                className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 text-sm"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -545,7 +545,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
             {userProfile?.role === 'admin' && (
               <button
                 onClick={() => setShowInviteModal(true)}
-                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2 text-sm"
+                className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 text-sm"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -582,7 +582,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
           </p>
           <button
             onClick={() => fetchUsers(currentPage)}
-            className="px-8 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all"
+            className="px-8 py-2.5 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 shadow-lg shadow-orange-500/20 transition-all"
           >
             {language === 'en' ? 'Retry' : 'আবার চেষ্টা করুন'}
           </button>
@@ -620,7 +620,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                     <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${targetUser.role === 'admin'
                       ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
                       : targetUser.role === 'safety mitra'
-                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                        ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
                         : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
                       }`}>
                       {targetUser.role}
@@ -648,7 +648,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                       disabled={userProfile?.role === 'safety mitra' && targetUser.role === 'admin'}
                       className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all border ${userProfile?.role === 'safety mitra' && targetUser.role === 'admin'
                         ? 'opacity-50 cursor-not-allowed grayscale bg-slate-50 dark:bg-slate-900 text-slate-400 border-slate-200 dark:border-slate-700'
-                        : 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800'
+                        : 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 border-orange-200 dark:border-orange-800'
                         }`}
                     >
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -690,7 +690,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${targetUser.role === 'admin'
                         ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
                         : targetUser.role === 'safety mitra'
-                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                          ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
                           : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
                         }`}>
                         {targetUser.role}
@@ -1022,8 +1022,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
           <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100 dark:border-slate-700 animate-scale-in flex flex-col max-h-[90vh] overflow-hidden">
             <div className="flex justify-between items-center p-6 border-b dark:border-slate-700 shrink-0">
               <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-10 h-10 bg-orange-50 dark:bg-orange-900/30 rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
                 </div>
@@ -1042,7 +1042,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                   value={notificationForm.title}
                   onChange={(e) => setNotificationForm({ ...notificationForm, title: e.target.value })}
                   placeholder="Notification Headline"
-                  className="w-full px-4 py-3 border-2 border-slate-100 dark:border-slate-700 rounded-2xl focus:border-indigo-500 outline-none bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-all font-medium"
+                  className="w-full px-4 py-3 border-2 border-slate-100 dark:border-slate-700 rounded-2xl focus:border-orange-500 outline-none bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-all font-medium"
                   required
                 />
               </div>
@@ -1053,7 +1053,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                   value={notificationForm.message}
                   onChange={(e) => setNotificationForm({ ...notificationForm, message: e.target.value })}
                   placeholder="Enter your message here..."
-                  className="w-full px-4 py-3 border-2 border-slate-100 dark:border-slate-700 rounded-2xl focus:border-indigo-500 outline-none bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 h-32 resize-none transition-all"
+                  className="w-full px-4 py-3 border-2 border-slate-100 dark:border-slate-700 rounded-2xl focus:border-orange-500 outline-none bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 h-32 resize-none transition-all"
                   required
                 />
               </div>
@@ -1062,7 +1062,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Urgency</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { id: 'info', label: 'Info', color: 'blue' },
+                    { id: 'info', label: 'Info', color: 'orange' },
                     { id: 'update', label: 'Update', color: 'green' },
                     { id: 'warning', label: 'Warning', color: 'orange' },
                     { id: 'alert', label: 'Alert', color: 'red' }
@@ -1072,8 +1072,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                       type="button"
                       onClick={() => setNotificationForm({ ...notificationForm, type: type.id })}
                       className={`py-2.5 px-4 rounded-xl text-sm font-bold border-2 transition-all ${notificationForm.type === type.id
-                          ? `bg-${type.color}-500/10 border-${type.color}-500 text-${type.color}-600 dark:text-${type.color}-400`
-                          : 'border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 grayscale opacity-60'
+                        ? `bg-${type.color}-500/10 border-${type.color}-500 text-${type.color}-600 dark:text-${type.color}-400`
+                        : 'border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 grayscale opacity-60'
                         }`}
                     >
                       {type.label}
@@ -1095,7 +1095,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 type="submit"
                 onClick={handleSendNotification}
                 disabled={isSendingNotification}
-                className="order-1 sm:order-2 flex-1 py-4 px-4 rounded-2xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-xl shadow-indigo-500/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
+                className="order-1 sm:order-2 flex-1 py-4 px-4 rounded-2xl font-bold bg-orange-600 text-white hover:bg-orange-700 shadow-xl shadow-orange-500/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
               >
                 {isSendingNotification ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : 'Broadcast Now'}
               </button>

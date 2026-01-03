@@ -544,8 +544,8 @@ export default function SmartLinemanUI() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 relative z-0 pb-16 animate-slide-up-fade">
       <div className="text-center">
         <div className="relative mx-auto mb-6">
-          <div className="w-16 h-16 border-4 border-blue-100 dark:border-slate-700 rounded-full"></div>
-          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-16 h-16 border-4 border-orange-100 dark:border-slate-700 rounded-full"></div>
+          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
         </div>
         <p className="text-sm font-semibold text-slate-600 dark:text-slate-300 animate-pulse">
           {language === 'en' ? 'Loading...' : 'লোড হচ্ছে...'}
@@ -709,7 +709,7 @@ export default function SmartLinemanUI() {
         {showUpdateModal && updateInfo && (
           <div className="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 text-center border border-slate-200 dark:border-slate-700">
-              <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-20 h-20 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-4xl">🚀</span>
               </div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
@@ -736,7 +736,7 @@ export default function SmartLinemanUI() {
                     window.location.reload(true);
                   }
                 }}
-                className="block w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all transform hover:scale-[1.02] shadow-lg shadow-blue-600/20"
+                className="block w-full py-3.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-all transform hover:scale-[1.02] shadow-lg shadow-orange-600/20"
               >
                 {language === 'en' ? 'Refresh Now' : 'এখনই রিফ্রেশ করুন'}
               </button>
@@ -756,7 +756,7 @@ export default function SmartLinemanUI() {
             {isRefreshing ? (
               <div className="refresh-spinner"></div>
             ) : (
-              <div className="text-blue-600">
+              <div className="text-orange-600">
                 <svg className={`w-5 h-5 transition-transform duration-200 ${pullDistance > 60 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                 </svg>
@@ -772,8 +772,8 @@ export default function SmartLinemanUI() {
         {globalLoading && (
           <div className="fixed inset-0 z-[110] bg-white/60 dark:bg-slate-900/60 backdrop-blur-md flex flex-col items-center justify-center animate-fade-in">
             <div className="relative">
-              <div className="w-16 h-16 border-4 border-blue-100 dark:border-slate-700 rounded-full"></div>
-              <div className="absolute top-0 left-0 w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-16 h-16 border-4 border-orange-100 dark:border-slate-700 rounded-full"></div>
+              <div className="absolute top-0 left-0 w-16 h-16 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
             </div>
             <p className="mt-4 font-bold text-slate-600 dark:text-slate-300 animate-pulse">
               {language === 'en' ? 'Please wait...' : 'দয়া করে অপেক্ষা করুন...'}
@@ -802,12 +802,12 @@ export default function SmartLinemanUI() {
             <div className={`relative p-4 sm:p-5 rounded-2xl shadow-2xl border-2 flex gap-3 sm:gap-4 items-start ${pushNotification.type === 'alert' ? 'bg-red-50 border-red-500 dark:bg-red-900/20' :
               pushNotification.type === 'warning' ? 'bg-orange-50 border-orange-500 dark:bg-orange-900/20' :
                 pushNotification.type === 'update' ? 'bg-green-50 border-green-500 dark:bg-green-900/20' :
-                  'bg-blue-50 border-blue-500 dark:bg-blue-900/20'
+                  'bg-orange-50 border-orange-500 dark:bg-orange-900/20'
               }`}>
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0 ${pushNotification.type === 'alert' ? 'bg-red-100 text-red-600' :
                 pushNotification.type === 'warning' ? 'bg-orange-100 text-orange-600' :
                   pushNotification.type === 'update' ? 'bg-green-100 text-green-600' :
-                    'bg-blue-100 text-blue-600'
+                    'bg-orange-100 text-orange-600'
                 }`}>
                 {pushNotification.type === 'alert' ? '🚨' :
                   pushNotification.type === 'warning' ? '⚠️' :
@@ -830,12 +830,12 @@ export default function SmartLinemanUI() {
         )}
         {/* Background elements */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-[50vw] h-[50vw] bg-blue-100/40 dark:bg-blue-900/20 rounded-full blur-3xl translate-x-1/4 -translate-y-1/4"></div>
+          <div className="absolute top-0 right-0 w-[50vw] h-[50vw] bg-orange-100/40 dark:bg-orange-900/20 rounded-full blur-3xl translate-x-1/4 -translate-y-1/4"></div>
           <div className="absolute bottom-0 left-0 w-[40vw] h-[40vw] bg-cyan-100/40 dark:bg-cyan-900/20 rounded-full blur-3xl -translate-x-1/4 translate-y-1/4"></div>
         </div>
 
         {/* Header - Material Design */}
-        <header className={`${currentView === 'home' ? 'bg-[#3b6b99] border-transparent shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 elevation-2'} sticky top-0 z-[80] border-b safe-area-inset-top transition-all duration-300`}>
+        <header className={`${currentView === 'home' ? 'bg-[#ea580c] border-transparent shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 elevation-2'} sticky top-0 z-[80] border-b safe-area-inset-top transition-all duration-300`}>
           <div className="max-w-7xl mx-auto mobile-container">
             <div className="flex justify-between items-center h-14 md:h-16">
               {/* Mobile Menu & Logo - Keep on top of sidebar */}
@@ -903,7 +903,7 @@ export default function SmartLinemanUI() {
                             {language === 'en' ? 'Notifications' : 'বিজ্ঞপ্তি'}
                           </h3>
                           {notificationsHistory.length > 0 && (
-                            <span className="text-[10px] font-bold bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] font-bold bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 px-2 py-0.5 rounded-full">
                               {notificationsHistory.length}
                             </span>
                           )}
@@ -924,7 +924,7 @@ export default function SmartLinemanUI() {
                                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${notif.type === 'alert' ? 'bg-red-100 text-red-600' :
                                       notif.type === 'warning' ? 'bg-orange-100 text-orange-600' :
                                         notif.type === 'update' ? 'bg-green-100 text-green-600' :
-                                          'bg-blue-100 text-blue-600'
+                                          'bg-orange-100 text-orange-600'
                                       }`}>
                                       {notif.type === 'alert' ? '🚨' :
                                         notif.type === 'warning' ? '⚠️' :
@@ -975,7 +975,7 @@ export default function SmartLinemanUI() {
                           <div className="p-3 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700">
                             <button
                               onClick={() => setShowHistory(false)}
-                              className="w-full py-2 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors"
+                              className="w-full py-2 text-xs font-bold text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl transition-colors"
                             >
                               {language === 'en' ? 'Close' : 'বন্ধ করুন'}
                             </button>
@@ -1020,7 +1020,7 @@ export default function SmartLinemanUI() {
                 ) : (
                   <button
                     onClick={() => setCurrentView('login')}
-                    className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all shadow-md shadow-blue-500/20 touch-target"
+                    className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-all shadow-md shadow-orange-500/20 touch-target"
                     title={t.nav.login}
                     aria-label="Login"
                   >
@@ -1046,7 +1046,7 @@ export default function SmartLinemanUI() {
           <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
             <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-700 animate-scale-in">
               <div className="p-6 text-center border-b border-slate-100 dark:border-slate-700">
-                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
+                <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
                   🌐
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
@@ -1059,23 +1059,23 @@ export default function SmartLinemanUI() {
               <div className="p-4 grid grid-cols-1 gap-3">
                 <button
                   onClick={() => handleLanguageSelect('en')}
-                  className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${language === 'en' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-100 dark:border-slate-700 hover:border-blue-200'}`}
+                  className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${language === 'en' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-100 dark:border-slate-700 hover:border-orange-200'}`}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🇺🇸</span>
                     <span className="font-bold text-slate-900 dark:text-slate-100">English</span>
                   </div>
-                  {language === 'en' && <span className="text-blue-600">✓</span>}
+                  {language === 'en' && <span className="text-orange-600">✓</span>}
                 </button>
                 <button
                   onClick={() => handleLanguageSelect('bn')}
-                  className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${language === 'bn' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-100 dark:border-slate-700 hover:border-blue-200'}`}
+                  className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${language === 'bn' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-100 dark:border-slate-700 hover:border-orange-200'}`}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🇮🇳</span>
                     <span className="font-bold text-slate-900 dark:text-slate-100">বাংলা (Bengali)</span>
                   </div>
-                  {language === 'bn' && <span className="text-blue-600">✓</span>}
+                  {language === 'bn' && <span className="text-orange-600">✓</span>}
                 </button>
               </div>
               <div className="p-4 bg-slate-50 dark:bg-slate-800/50">

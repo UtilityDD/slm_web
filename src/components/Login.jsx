@@ -171,11 +171,11 @@ export default function Login({ onLogin, showNotification, initialView }) {
                     </div>
 
                     {/* Compact Invitation-Only Notice */}
-                    <div className="mb-6 flex items-center justify-center gap-2 py-2 px-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-100/50 dark:border-blue-800/30">
-                        <svg className="w-3.4 h-3.5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="mb-6 flex items-center justify-center gap-2 py-2 px-3 bg-orange-50/50 dark:bg-orange-900/10 rounded-lg border border-orange-100/50 dark:border-orange-800/30">
+                        <svg className="w-3.4 h-3.5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
-                        <span className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">
+                        <span className="text-[10px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wider">
                             Invitation Only Network
                         </span>
                     </div>
@@ -195,7 +195,7 @@ export default function Login({ onLogin, showNotification, initialView }) {
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                                 placeholder="Email address"
                             />
                         )}
@@ -207,14 +207,14 @@ export default function Login({ onLogin, showNotification, initialView }) {
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                                     placeholder={view === 'update' ? 'New password' : 'Password'}
                                 />
                                 {view === 'login' && (
                                     <button
                                         type="button"
                                         onClick={() => setView('forgot')}
-                                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-2 inline-block"
+                                        className="text-xs text-orange-600 dark:text-orange-400 hover:underline mt-2 inline-block"
                                     >
                                         Forgot password?
                                     </button>
@@ -232,7 +232,7 @@ export default function Login({ onLogin, showNotification, initialView }) {
                                     required
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-center text-2xl tracking-widest font-mono"
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-center text-2xl tracking-widest font-mono"
                                     placeholder="000000"
                                     maxLength={6}
                                 />
@@ -241,7 +241,7 @@ export default function Login({ onLogin, showNotification, initialView }) {
                                         type="button"
                                         onClick={handleSendOtp}
                                         disabled={timer > 0 || isOtpSending}
-                                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="text-xs text-orange-600 dark:text-orange-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {timer > 0 ? `Resend code in ${timer}s` : 'Resend Code'}
                                     </button>
@@ -255,7 +255,7 @@ export default function Login({ onLogin, showNotification, initialView }) {
                                 required
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                                 placeholder="Confirm password"
                             />
                         )}
@@ -263,7 +263,7 @@ export default function Login({ onLogin, showNotification, initialView }) {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                            className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                         >
                             {loading ? (
                                 <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
@@ -296,14 +296,14 @@ export default function Login({ onLogin, showNotification, initialView }) {
                         {view === 'otp_verify' ? (
                             <button
                                 onClick={() => setView('otp_request')}
-                                className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                                className="text-orange-600 dark:text-orange-400 font-semibold hover:underline"
                             >
                                 Change Email
                             </button>
                         ) : (view === 'forgot' || view === 'update' || view === 'otp_request') && (
                             <button
                                 onClick={() => setView('login')}
-                                className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                                className="text-orange-600 dark:text-orange-400 font-semibold hover:underline"
                             >
                                 Back to Sign In
                             </button>

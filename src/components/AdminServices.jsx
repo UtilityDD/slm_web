@@ -46,7 +46,7 @@ const ServiceItem = React.memo(({ service, serviceTypes, onEdit, onDelete }) => 
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                             </svg>
-                            <a href={`tel:${service.phone}`} className="text-blue-600 dark:text-blue-400 hover:underline">
+                            <a href={`tel:${service.phone}`} className="text-orange-600 dark:text-orange-400 hover:underline">
                                 {service.phone}
                             </a>
                         </div>
@@ -60,7 +60,7 @@ const ServiceItem = React.memo(({ service, serviceTypes, onEdit, onDelete }) => 
                 <div className="flex gap-2">
                     <button
                         onClick={() => onEdit(service)}
-                        className="px-3 py-1.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+                        className="px-3 py-1.5 text-sm font-semibold text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors"
                     >
                         Edit
                     </button>
@@ -101,7 +101,7 @@ export default function AdminServices({ language = 'en', userProfile }) {
     });
 
     const serviceTypes = {
-        hospitals: { label: 'Hospital', color: 'blue', icon: '🏥' },
+        hospitals: { label: 'Hospital', color: 'orange', icon: '🏥' },
         ambulance: { label: 'Ambulance', color: 'red', icon: '🚑' },
         fire: { label: 'Fire', color: 'orange', icon: '🚒' },
         police: { label: 'Police', color: 'slate', icon: '👮' },

@@ -165,7 +165,7 @@ const SOPs = ({ language }) => {
         {
             rule: language === 'en' ? "Min. Ground Clearance for LT line is 15 ft./ 4.6 meter." : "এলটি লাইনের জন্য ন্যূনতম গ্রাউন্ড ক্লিয়ারেন্স হল ১৫ ফুট/ ৪.৬ মিটার।",
             icon: "📏",
-            color: "from-blue-600 to-indigo-600"
+            color: "from-orange-600 to-orange-800"
         },
         {
             rule: language === 'en' ? "Wear PPE -> Shut down -> Earthing -> Discharge -> Work." : "পিপিই পরুন -> শাট ডাউন -> আর্থিং -> ডিসচার্জ -> কাজ করুন।",

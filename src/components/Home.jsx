@@ -108,18 +108,18 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
     };
 
     const navItems = [
-        { id: 'training', label: { en: 'Training', bn: 'প্রশিক্ষণ' }, icon: <TrainingIcon />, color: '#F9A825' },
-        { id: 'sops', label: { en: 'Safety (SOP)', bn: 'এসওপি' }, icon: <SafetyIcon />, color: '#00BCD4' },
-        { id: 'community', label: { en: 'Community', bn: 'কমিউনিটি' }, icon: <CommunityIcon />, color: '#5C6BC0' },
-        { id: 'emergency', label: { en: 'Emergency', bn: 'জরুরি' }, icon: <EmergencyIcon />, color: '#EF5350' },
-        { id: 'my_ppe', label: { en: 'My PPE', bn: 'আমার পিপিই' }, icon: '👷', color: '#03A9F4' },
-        { id: 'leaderboard', label: { en: 'Leaderboard', bn: 'লিডারবোর্ড' }, icon: '🏆', color: '#9C27B0' },
-        { id: 'guide', label: { en: 'Handbook', bn: 'হ্যান্ডবুক' }, icon: '📖', color: '#4CAF50' },
-        { id: 'competitions', label: { en: 'Competitions', bn: 'প্রতিযোগিতা' }, icon: <CompetitionIcon />, color: '#D81B60' },
-        { id: 'my_tools', label: { en: 'My Tools', bn: 'আমার সরঞ্জাম' }, icon: '🔧', color: '#795548' },
-        { id: 'share', label: { en: 'Share App', bn: 'শেয়ার অ্যাপ' }, icon: '🔗', color: '#3F51B5', action: handleShare },
-        { id: 'admin', label: { en: 'Admin', bn: 'অ্যাডমিন' }, icon: '🤖', color: '#3F51B5' },
-        { id: 'notifications', label: { en: 'Notifications', bn: 'বিজ্ঞপ্তি' }, icon: '🔔', color: '#009688' },
+        { id: 'training', label: { en: 'Training', bn: 'প্রশিক্ষণ' }, icon: <TrainingIcon />, color: '#f97316' }, // Orange
+        { id: 'sops', label: { en: 'Safety (SOP)', bn: 'এসওপি' }, icon: <SafetyIcon />, color: '#16a34a' },     // Green
+        { id: 'community', label: { en: 'Community', bn: 'কমিউনিটি' }, icon: <CommunityIcon />, color: '#f59e0b' }, // Amber/Yellow-ish
+        { id: 'emergency', label: { en: 'Emergency', bn: 'জরুরি' }, icon: <EmergencyIcon />, color: '#dc2626' },   // Red
+        { id: 'my_ppe', label: { en: 'My PPE', bn: 'আমার পিপিই' }, icon: '👷', color: '#facc15' },               // Yellow
+        { id: 'leaderboard', label: { en: 'Leaderboard', bn: 'লিডারবোর্ড' }, icon: '🏆', color: '#fb923c' },         // Light Orange
+        { id: 'guide', label: { en: 'Handbook', bn: 'হ্যান্ডবুক' }, icon: '📖', color: '#22c55e' },               // Green
+        { id: 'competitions', label: { en: 'Competitions', bn: 'প্রতিযোগিতা' }, icon: <CompetitionIcon />, color: '#ea580c' }, // Deep Orange
+        { id: 'my_tools', label: { en: 'My Tools', bn: 'আমার সরঞ্জাম' }, icon: '🔧', color: '#795548' },           // Brown (Industry)
+        { id: 'share', label: { en: 'Share App', bn: 'শেয়ার অ্যাপ' }, icon: '🔗', color: '#fbbf24', action: handleShare }, // Gold
+        { id: 'admin', label: { en: 'Admin', bn: 'অ্যাডমিন' }, icon: '🤖', color: '#475569' },                    // Slate (System)
+        { id: 'notifications', label: { en: 'Notifications', bn: 'বিজ্ঞপ্তি' }, icon: '🔔', color: '#f97316' },     // Orange
     ];
 
     const handleNav = (item) => {
@@ -140,8 +140,8 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                 <div className="p-4"><HomeSkeleton /></div>
             ) : (
                 <>
-                    {/* Integrated Blue Hero Section */}
-                    <div className="bg-[#3b6b99] pt-6 pb-12 px-6 rounded-b-[2.5rem] shadow-lg shadow-blue-900/10">
+                    {/* Integrated Safety Orange Hero Section */}
+                    <div className="bg-[#ea580c] pt-6 pb-12 px-6 rounded-b-[2.5rem] shadow-lg shadow-orange-900/10">
                         <div className="max-w-4xl mx-auto flex items-center justify-between gap-6 overflow-hidden">
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-2 flex-wrap min-w-0">
@@ -160,10 +160,10 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                     )}
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-blue-100 text-sm font-medium tracking-wide uppercase opacity-90">
+                                    <p className="text-orange-50 text-sm font-medium tracking-wide uppercase opacity-90">
                                         ID: {slmId || user?.id?.slice(0, 8).toUpperCase() || 'LINEMAN001'}
                                     </p>
-                                    <p className="text-blue-100 text-sm font-medium opacity-90 capitalize">
+                                    <p className="text-orange-50 text-sm font-medium opacity-90 capitalize">
                                         {role}-Member
                                     </p>
                                 </div>
@@ -177,7 +177,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                 </div>
                             </div>
                             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white/30 p-1 shrink-0 bg-white/10 backdrop-blur-sm overflow-hidden shadow-2xl">
-                                <div className="w-full h-full rounded-full bg-blue-100 flex items-center justify-center text-4xl overflow-hidden">
+                                <div className="w-full h-full rounded-full bg-orange-100 flex items-center justify-center text-4xl overflow-hidden">
                                     {userProfile?.avatar_url ? (
                                         <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
@@ -192,7 +192,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                     <div className="max-w-4xl mx-auto -mt-6 px-4">
                         <div
                             onClick={() => setShowTipModal(true)}
-                            className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-xl border border-slate-100 dark:border-slate-700 flex items-center gap-3 cursor-pointer group hover:border-blue-300 transition-all active:scale-95"
+                            className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-xl border border-slate-100 dark:border-slate-700 flex items-center gap-3 cursor-pointer group hover:border-orange-300 transition-all active:scale-95"
                         >
                             <div className="w-10 h-10 bg-amber-50 dark:bg-amber-900/30 rounded-xl flex items-center justify-center text-xl shrink-0">
                                 💡
@@ -205,7 +205,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                     "{dailyTip}"
                                 </p>
                             </div>
-                            <span className="text-xl text-slate-300 group-hover:text-blue-500 transition-colors">→</span>
+                            <span className="text-xl text-slate-300 group-hover:text-orange-500 transition-colors">→</span>
                         </div>
                     </div>
 
@@ -238,14 +238,14 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                     {showTipModal && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
                             <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl border border-slate-100 dark:border-slate-700">
-                                <div className="bg-[#3b6b99] p-6 text-white text-center relative">
+                                <div className="bg-[#ea580c] p-6 text-white text-center relative">
                                     <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-3 backdrop-blur-md">💡</div>
                                     <h3 className="text-xl font-bold uppercase tracking-wider">{language === 'en' ? 'Survival Tip' : 'বেঁচে থাকার টিপ'}</h3>
-                                    <p className="text-blue-100 text-xs mt-1 font-medium">{new Date().toLocaleDateString()}</p>
+                                    <p className="text-orange-50 text-xs mt-1 font-medium">{new Date().toLocaleDateString()}</p>
                                 </div>
                                 <div className="p-8 text-center">
                                     <p className="text-slate-700 dark:text-slate-300 text-lg font-medium leading-relaxed mb-8 italic">"{dailyTip}"</p>
-                                    <button onClick={() => setShowTipModal(false)} className="w-full py-3 bg-[#3b6b99] text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95">
+                                    <button onClick={() => setShowTipModal(false)} className="w-full py-3 bg-[#ea580c] text-white rounded-xl font-bold transition-all shadow-lg shadow-orange-500/20 active:scale-95">
                                         {language === 'en' ? 'Stay Safe' : 'নিরাপদ থাকুন'}
                                     </button>
                                 </div>

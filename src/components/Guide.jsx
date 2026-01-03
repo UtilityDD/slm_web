@@ -53,8 +53,8 @@ const Guide = ({ hideHeader = false }) => {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === tab.id
-                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105'
-                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-slate-200 dark:border-slate-700'
+                                    ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/30 scale-105'
+                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 border border-slate-200 dark:border-slate-700'
                                     }`}
                             >
                                 <span>{tab.icon}</span>
@@ -69,10 +69,10 @@ const Guide = ({ hideHeader = false }) => {
 
                     {/* Dynamic Header based on Tab */}
                     {!hideHeader && (
-                        <div className={`p-8 sm:p-10 text-center text-white relative overflow-hidden ${activeTab === 'intro' ? 'bg-gradient-to-br from-blue-700 to-indigo-800' :
+                        <div className={`p-8 sm:p-10 text-center text-white relative overflow-hidden ${activeTab === 'intro' ? 'bg-gradient-to-br from-orange-600 to-orange-800' :
                             activeTab === 'day1' ? 'bg-gradient-to-br from-green-600 to-teal-700' :
                                 activeTab === 'day2' ? 'bg-gradient-to-br from-orange-500 to-red-600' :
-                                    activeTab === 'data-collection' ? 'bg-gradient-to-br from-cyan-600 to-blue-700' :
+                                    activeTab === 'data-collection' ? 'bg-gradient-to-br from-cyan-600 to-orange-700' :
                                         'bg-gradient-to-br from-purple-600 to-pink-600'
                             }`}>
                             <div className="absolute inset-0 opacity-10">
@@ -111,10 +111,10 @@ const Guide = ({ hideHeader = false }) => {
                                         </p>
                                     </div>
                                     <div className="grid sm:grid-cols-2 gap-4">
-                                        <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-2xl border-l-4 border-blue-500">
+                                        <div className="p-4 bg-orange-50 dark:bg-orange-900/10 rounded-2xl border-l-4 border-orange-500">
                                             <p className="font-medium text-slate-700 dark:text-slate-300">কর্মক্ষেত্রে নিরাপত্তা চর্চা বৃদ্ধি (Safety Culture)</p>
                                         </div>
-                                        <div className="p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-2xl border-l-4 border-indigo-500">
+                                        <div className="p-4 bg-amber-50 dark:bg-amber-900/10 rounded-2xl border-l-4 border-amber-500">
                                             <p className="font-medium text-slate-700 dark:text-slate-300">শক্তিশালী সহযোগিতামূলক কমিউনিটি গঠন</p>
                                         </div>
                                     </div>
@@ -148,7 +148,7 @@ const Guide = ({ hideHeader = false }) => {
                                     <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-slate-900 dark:text-slate-100">
                                         <span className="text-2xl">🏗️</span> আমাদের দর্শন
                                     </h2>
-                                    <div className="space-y-3 italic text-blue-600 dark:text-blue-400 font-medium text-lg px-4 border-l-2 border-slate-200 dark:border-slate-700">
+                                    <div className="space-y-3 italic text-orange-600 dark:text-orange-400 font-medium text-lg px-4 border-l-2 border-slate-200 dark:border-slate-700">
                                         <p>🔹 "নির্দেশ নয়, সহযোগিতা"</p>
                                         <p>🔹 "অফিস নয়, কমিউনিটি"</p>
                                         <p>🔹 "কথা কম, কাজ বেশি"</p>
@@ -235,7 +235,7 @@ const Guide = ({ hideHeader = false }) => {
                                             <div>
                                                 <h3 className="font-bold text-slate-900 dark:text-slate-100">Healthy Competition</h3>
                                                 <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                                                    "Leaderboard" দেখান। কে কত পয়েন্ট পেল, তা নিয়ে তাদের মধ্যে বন্ধুত্বপূর্ণ প্রতিযোগিতা (Competition) তৈরি করুন। <span className="font-bold text-blue-600">"আমাদের টিমের কে সেরা?"</span>—এই চ্যালেঞ্জটি দিন।
+                                                    "Leaderboard" দেখান। কে কত পয়েন্ট পেল, তা নিয়ে তাদের মধ্যে বন্ধুত্বপূর্ণ প্রতিযোগিতা (Competition) তৈরি করুন। <span className="font-bold text-orange-600">"আমাদের টিমের কে সেরা?"</span>—এই চ্যালেঞ্জটি দিন।
                                                 </p>
                                             </div>
                                         </div>
@@ -270,12 +270,12 @@ const Guide = ({ hideHeader = false }) => {
                                         তথ্য সংগ্রহ: সঠিক পদ্ধতি ও দৃষ্টিভঙ্গি
                                     </h2>
                                     <p className="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
-                                        লাইনম্যানদের ব্যক্তিগত ও স্বাস্থ্যগত তথ্য সংগ্রহ করা একটি সংবেদনশীল কাজ। এটি কেবল ডাটা এন্ট্রি নয়, এটি তাদের <span className="font-bold text-blue-600">সুরক্ষা নিশ্চিত করার একটি ধাপ</span>।
+                                        লাইনম্যানদের ব্যক্তিগত ও স্বাস্থ্যগত তথ্য সংগ্রহ করা একটি সংবেদনশীল কাজ। এটি কেবল ডাটা এন্ট্রি নয়, এটি তাদের <span className="font-bold text-orange-600">সুরক্ষা নিশ্চিত করার একটি ধাপ</span>।
                                     </p>
 
                                     <div className="grid gap-6">
-                                        <div className="p-5 bg-blue-50 dark:bg-blue-900/10 rounded-2xl border-l-4 border-blue-500">
-                                            <h3 className="font-bold text-blue-700 dark:text-blue-400 mb-2 flex items-center gap-2">
+                                        <div className="p-5 bg-orange-50 dark:bg-orange-900/10 rounded-2xl border-l-4 border-orange-500">
+                                            <h3 className="font-bold text-orange-700 dark:text-orange-400 mb-2 flex items-center gap-2">
                                                 <span className="text-xl">🗣️</span> গল্পের ছলে শুরু (The Conversational Approach)
                                             </h3>
                                             <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
@@ -283,8 +283,8 @@ const Guide = ({ hideHeader = false }) => {
                                             </p>
                                         </div>
 
-                                        <div className="p-5 bg-indigo-50 dark:bg-indigo-900/10 rounded-2xl border-l-4 border-indigo-500">
-                                            <h3 className="font-bold text-indigo-700 dark:text-indigo-400 mb-2 flex items-center gap-2">
+                                        <div className="p-5 bg-amber-50 dark:bg-amber-900/10 rounded-2xl border-l-4 border-amber-500">
+                                            <h3 className="font-bold text-amber-700 dark:text-amber-400 mb-2 flex items-center gap-2">
                                                 <span className="text-xl">🛡️</span> উদ্দেশ্য ব্যাখ্যা করুন (Explain the 'Why')
                                             </h3>
                                             <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
@@ -369,7 +369,7 @@ const Guide = ({ hideHeader = false }) => {
                                     </div>
                                 </div>
 
-                                <div className="mt-8 p-6 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl text-white text-center shadow-xl">
+                                <div className="mt-8 p-6 bg-gradient-to-r from-orange-600 to-orange-700 rounded-2xl text-white text-center shadow-xl">
                                     <p className="text-lg font-medium opacity-90 mb-4">আমাদের সাথে যুক্ত হোন</p>
                                     <div className="bg-white p-2 rounded-lg inline-block mb-4">
                                         <QRCodeCanvas value="https://slm-web-eight.vercel.app/" size={100} />

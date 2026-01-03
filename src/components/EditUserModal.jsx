@@ -42,19 +42,19 @@ const EditUserModal = ({
                     <div className="flex border-b dark:border-slate-700 mb-6 overflow-x-auto no-scrollbar">
                         <button
                             onClick={() => setActiveEditTab('basic')}
-                            className={`px-4 py-3 sm:py-2 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${activeEditTab === 'basic' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            className={`px-4 py-3 sm:py-2 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${activeEditTab === 'basic' ? 'border-orange-600 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                         >
                             Basic Info
                         </button>
                         <button
                             onClick={() => setActiveEditTab('family')}
-                            className={`px-4 py-3 sm:py-2 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${activeEditTab === 'family' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            className={`px-4 py-3 sm:py-2 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${activeEditTab === 'family' ? 'border-orange-600 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                         >
                             Family Details
                         </button>
                         <button
                             onClick={() => setActiveEditTab('health')}
-                            className={`px-4 py-3 sm:py-2 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${activeEditTab === 'health' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            className={`px-4 py-3 sm:py-2 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${activeEditTab === 'health' ? 'border-orange-600 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                         >
                             Health & Safety
                         </button>
@@ -75,7 +75,7 @@ const EditUserModal = ({
                                                 </div>
                                             )}
                                         </div>
-                                        <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full cursor-pointer shadow-lg transition-transform hover:scale-105">
+                                        <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-orange-600 hover:bg-orange-700 text-white p-2 rounded-full cursor-pointer shadow-lg transition-transform hover:scale-105">
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -87,7 +87,7 @@ const EditUserModal = ({
                                     <div className="w-full space-y-3">
                                         <div>
                                             <label className="block text-xs font-medium text-slate-500 mb-1">Full Name</label>
-                                            <input type="text" name="full_name" value={editingUser.full_name || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                                            <input type="text" name="full_name" value={editingUser.full_name || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
                                         </div>
                                         <div>
                                             <label className="block text-xs font-medium text-slate-500 mb-1">Email</label>
@@ -101,11 +101,11 @@ const EditUserModal = ({
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
                                             <label className="block text-xs font-medium text-slate-500 mb-1">Phone</label>
-                                            <input type="text" name="phone" value={editingUser.phone || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                                            <input type="text" name="phone" value={editingUser.phone || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
                                         </div>
                                         <div>
                                             <label className="block text-xs font-medium text-slate-500 mb-1">Blood Group</label>
-                                            <select name="blood_group" value={editingUser.blood_group || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                                            <select name="blood_group" value={editingUser.blood_group || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
                                                 <option value="">Select Blood Group</option>
                                                 <option value="A+">A+</option>
                                                 <option value="A-">A-</option>
@@ -122,7 +122,7 @@ const EditUserModal = ({
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
                                             <label className="block text-xs font-medium text-slate-500 mb-1">District</label>
-                                            <select name="district" value={editingUser.district || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                                            <select name="district" value={editingUser.district || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
                                                 <option value="">Select District</option>
                                                 {Object.keys(wbLocations).map(district => (
                                                     <option key={district} value={district}>{district}</option>
@@ -131,7 +131,7 @@ const EditUserModal = ({
                                         </div>
                                         <div>
                                             <label className="block text-xs font-medium text-slate-500 mb-1">Block</label>
-                                            <select name="block" value={editingUser.block || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" disabled={!editingUser.district}>
+                                            <select name="block" value={editingUser.block || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" disabled={!editingUser.district}>
                                                 <option value="">Select Block</option>
                                                 {editingUser.district && wbLocations[editingUser.district]?.map(block => (
                                                     <option key={block} value={block}>{block}</option>
@@ -142,7 +142,7 @@ const EditUserModal = ({
 
                                     <div>
                                         <label className="block text-xs font-medium text-slate-500 mb-1">Role</label>
-                                        <select name="role" value={editingUser.role || 'lineman'} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" disabled={userProfile?.role === 'safety mitra' && editingUser.role === 'admin'}>
+                                        <select name="role" value={editingUser.role || 'lineman'} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" disabled={userProfile?.role === 'safety mitra' && editingUser.role === 'admin'}>
                                             <option value="lineman">Lineman</option>
                                             <option value="safety mitra">Safety Mitra</option>
                                             {userProfile?.role === 'admin' && <option value="admin">Admin</option>}
@@ -151,7 +151,7 @@ const EditUserModal = ({
 
                                     <div>
                                         <label className="block text-xs font-medium text-slate-500 mb-1">Job Type</label>
-                                        <select name="job" value={editingUser.job || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                                        <select name="job" value={editingUser.job || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
                                             <option value="">Select Job Type</option>
                                             <option value="HT-Mobile Van">HT-Mobile Van</option>
                                             <option value="LT-Mobile Van">LT-Mobile Van</option>
@@ -166,7 +166,7 @@ const EditUserModal = ({
                                                 name="supervisor_id"
                                                 value={editingUser.supervisor_id || ''}
                                                 onChange={handleChange}
-                                                className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                                                className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                                             >
                                                 <option value="">No Supervisor</option>
                                                 {supervisors.map(s => (
@@ -177,14 +177,14 @@ const EditUserModal = ({
                                     )}
 
                                     <div className="flex items-center p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-100 dark:border-slate-700">
-                                        <input type="checkbox" id="is_donor" name="is_donor" checked={editingUser.is_donor || false} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
+                                        <input type="checkbox" id="is_donor" name="is_donor" checked={editingUser.is_donor || false} onChange={handleChange} className="w-4 h-4 text-orange-600 rounded border-slate-300 focus:ring-orange-500" />
                                         <label htmlFor="is_donor" className="ml-2 text-xs text-slate-700 dark:text-slate-200 font-medium cursor-pointer">Register as Blood Donor</label>
                                     </div>
 
                                     {editingUser.is_donor && (
                                         <div className="animate-fade-in">
                                             <label className="block text-xs font-medium text-slate-500 mb-1">Last Donation Date</label>
-                                            <input type="date" name="last_donation_date" value={editingUser.last_donation_date || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                                            <input type="date" name="last_donation_date" value={editingUser.last_donation_date || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
                                         </div>
                                     )}
                                 </div>
@@ -196,15 +196,15 @@ const EditUserModal = ({
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div>
                                         <label className="block text-xs font-medium text-slate-500 mb-1">Date of Birth</label>
-                                        <input type="date" name="dob" value={editingUser.dob || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                                        <input type="date" name="dob" value={editingUser.dob || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
                                     </div>
                                     <div>
                                         <label className="block text-xs font-medium text-slate-500 mb-1">Age</label>
-                                        <input type="number" name="age" value={editingUser.age || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                                        <input type="number" name="age" value={editingUser.age || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
                                     </div>
                                     <div>
                                         <label className="block text-xs font-medium text-slate-500 mb-1">Education</label>
-                                        <input type="text" name="education" value={editingUser.education || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                                        <input type="text" name="education" value={editingUser.education || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
                                     </div>
                                 </div>
 
@@ -212,21 +212,21 @@ const EditUserModal = ({
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
                                             <label className="block text-xs font-medium text-slate-500 mb-1">Children Count</label>
-                                            <input type="number" name="children_count" value={editingUser.children_count || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                                            <input type="number" name="children_count" value={editingUser.children_count || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
                                         </div>
                                         <div>
                                             <label className="block text-xs font-medium text-slate-500 mb-1">Children Ages</label>
-                                            <input type="text" name="children_ages" value={editingUser.children_ages || ''} onChange={handleChange} placeholder="e.g. 5, 8" className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                                            <input type="text" name="children_ages" value={editingUser.children_ages || ''} onChange={handleChange} placeholder="e.g. 5, 8" className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
                                         </div>
                                     </div>
                                     <div className="space-y-3">
                                         <div className="flex items-center p-2.5 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-100 dark:border-slate-700">
-                                            <input type="checkbox" id="parents_stay" name="parents_stay" checked={editingUser.parents_stay || false} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
+                                            <input type="checkbox" id="parents_stay" name="parents_stay" checked={editingUser.parents_stay || false} onChange={handleChange} className="w-4 h-4 text-orange-600 rounded border-slate-300 focus:ring-orange-500" />
                                             <label htmlFor="parents_stay" className="ml-2 text-xs text-slate-700 dark:text-slate-200 font-medium cursor-pointer">Parents stay with them</label>
                                         </div>
                                         <div>
                                             <label className="block text-xs font-medium text-slate-500 mb-1">Parents' Occupation</label>
-                                            <input type="text" name="parents_occupation" value={editingUser.parents_occupation || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                                            <input type="text" name="parents_occupation" value={editingUser.parents_occupation || ''} onChange={handleChange} className="w-full px-4 py-3 sm:py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
                                         </div>
                                     </div>
                                 </div>
@@ -238,11 +238,11 @@ const EditUserModal = ({
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-xs font-medium text-slate-500 mb-1">Major Diseases</label>
-                                        <textarea name="major_diseases" value={editingUser.major_diseases || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-20 resize-none"></textarea>
+                                        <textarea name="major_diseases" value={editingUser.major_diseases || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-20 resize-none"></textarea>
                                     </div>
                                     <div>
                                         <label className="block text-xs font-medium text-slate-500 mb-1">Regular Medicines</label>
-                                        <textarea name="regular_medicines" value={editingUser.regular_medicines || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-20 resize-none"></textarea>
+                                        <textarea name="regular_medicines" value={editingUser.regular_medicines || ''} onChange={handleChange} className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-20 resize-none"></textarea>
                                     </div>
                                 </div>
 
@@ -284,7 +284,7 @@ const EditUserModal = ({
                         </button>
                         <button
                             onClick={handleSave}
-                            className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center"
+                            className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold bg-orange-600 text-white hover:bg-orange-700 shadow-lg shadow-orange-600/20 transition-all flex items-center justify-center"
                         >
                             Save Changes
                         </button>
