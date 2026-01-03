@@ -188,17 +188,48 @@ export default function SmartLinemanUI() {
   };
 
   const handleTouchStart = (e) => {
-    if (window.scrollY === 0) {
+    // Check if any scrollable parent is already scrolled down
+    let isAtTop = true;
+    let element = e.target;
+    while (element && element !== document.body) {
+      if (element.scrollTop > 0) {
+        isAtTop = false;
+        break;
+      }
+      element = element.parentElement;
+    }
+
+    if (isAtTop) {
       setStartY(e.touches[0].pageY);
+    } else {
+      setStartY(0);
     }
   };
 
   const handleTouchMove = (e) => {
-    if (window.scrollY === 0 && startY > 0) {
+    if (startY > 0) {
       const currentY = e.touches[0].pageY;
       const diff = currentY - startY;
+
+      // Only handle pull-down if we're moving downwards
       if (diff > 0) {
-        setPullDistance(Math.min(diff * 0.4, 80));
+        // Double check we are still at the top (targets can change during move)
+        let isAtTop = true;
+        let element = e.target;
+        while (element && element !== document.body) {
+          if (element.scrollTop > 0) {
+            isAtTop = false;
+            break;
+          }
+          element = element.parentElement;
+        }
+
+        if (isAtTop) {
+          setPullDistance(Math.min(diff * 0.4, 80));
+        } else {
+          setPullDistance(0);
+          setStartY(0);
+        }
       }
     }
   };
