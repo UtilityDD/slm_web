@@ -825,20 +825,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                         {language === 'en' ? 'Lesson Completed!' : 'পাঠ সম্পন্ন হয়েছে!'}
                                     </div>
 
-                                    {/* Reward Feedback */}
-                                    {recentReward && (
-                                        <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-800 rounded-2xl flex items-center justify-center gap-3 animate-bounce shadow-lg shadow-yellow-500/10">
-                                            <span className="text-2xl">🏆</span>
-                                            <div className="text-left">
-                                                <p className="text-sm font-black text-yellow-800 dark:text-yellow-400 leading-tight">
-                                                    {language === 'en' ? `+${recentReward} Competition Points Earned!` : `+${recentReward} কম্পিটিশন পয়েন্ট অর্জিত হয়েছে!`}
-                                                </p>
-                                                <p className="text-[10px] font-bold text-yellow-600/70 dark:text-yellow-500/50 uppercase tracking-wider">
-                                                    {language === 'en' ? 'First Completion Bonus' : 'প্রথম সমাপ্তি বোনাস'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
+                                    {/* Reward feedback removed from here, moved to global portal below */}
 
                                     <button
                                         onClick={() => initiateLessonCompletion(trainingContent.level_id)}
@@ -868,7 +855,28 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                 document.body
             )}
 
-            {showQuizModal && (
+            {/* Reward Toast - Highest Z-Index */}
+            {recentReward && createPortal(
+                <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[300] w-[90%] max-w-sm animate-slide-down">
+                    <div className="p-4 bg-white dark:bg-slate-800 border-2 border-yellow-400 dark:border-yellow-500/50 rounded-2xl flex items-center gap-4 shadow-2xl shadow-yellow-500/20">
+                        <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center text-2xl animate-bounce">
+                            🏆
+                        </div>
+                        <div className="flex-1 text-left">
+                            <p className="text-sm font-black text-slate-900 dark:text-white leading-tight">
+                                {language === 'en' ? `+${recentReward} Competition Points!` : `+${recentReward} কম্পিটিশন পয়েন্ট!`}
+                            </p>
+                            <p className="text-[10px] font-bold text-yellow-600 dark:text-yellow-500 uppercase tracking-wider">
+                                {language === 'en' ? 'Lesson Completed Bonus' : 'পাঠ সম্পন্ন বোনাস'}
+                            </p>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {/* Modals wrapped in Portals to fix Z-Index issues */}
+            {showQuizModal && createPortal(
                 <ChapterQuizModal
                     isOpen={showQuizModal}
                     onClose={() => setShowQuizModal(false)}
@@ -876,15 +884,22 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                     onComplete={handleQuizComplete}
                     chapterTitle={trainingContent?.level_title}
                     language={language}
-                />
+                />,
+                document.body
             )}
 
-            <CertificateModal
-                isOpen={showCertificateModal}
-                onClose={() => setShowCertificateModal(false)}
-                userName={user?.user_metadata?.full_name || 'Lineman'} // Fallback, update if profile passed
-                completionDate={new Date().toLocaleDateString()}
-            />
+            {showCertificateModal && createPortal(
+                <CertificateModal
+                    isOpen={showCertificateModal}
+                    onClose={() => setShowCertificateModal(false)}
+                    userName={user?.user_metadata?.full_name || 'Lineman'}
+                    completionDate={new Date().toLocaleDateString()}
+                    level={calculateLevelFromProgress(completedLessons, trainingChapters)}
+                    badgeName={calculateLevelFromProgress(completedLessons, trainingChapters) > 1 ? "Professional Lineman" : "Safety Trainee"}
+                    certificateId={`CERT-${user?.id?.slice(0, 8)}-${Date.now().toString().slice(-6)}`}
+                />,
+                document.body
+            )}
         </div>
     );
 }
