@@ -25,6 +25,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [fetchError, setFetchError] = useState(false);
     const [showCompactView, setShowCompactView] = useState(!isFullLeaderboard);
     const [expandedRows, setExpandedRows] = useState(new Set()); // Track expanded user rows
+    const [showHint, setShowHint] = useState(false);
 
     // Offline sync state
     const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -60,7 +61,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             previousPending: "Previous attempt pending sync",
             retryNow: "Retry Now",
             syncSuccess: "Score synced successfully!",
-            syncFailed: "Sync failed. Please retry."
+            syncFailed: "Sync failed. Please retry.",
+            hint: "Hint",
+            hintDisabled: "Select an answer to see hint",
+            placeholderHint: "Hint content will appear here..."
         },
         bn: {
             title: "প্রতিযোগিতা",
@@ -83,7 +87,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             previousPending: "পূর্ববর্তী প্রচেষ্টা সিঙ্কের জন্য অপেক্ষমাণ",
             retryNow: "এখনই পুনঃচেষ্টা করুন",
             syncSuccess: "স্কোর সফলভাবে সিঙ্ক হয়েছে!",
-            syncFailed: "সিঙ্ক ব্যর্থ হয়েছে। অনুগ্রহ করে পুনঃচেষ্টা করুন।"
+            syncFailed: "সিঙ্ক ব্যর্থ হয়েছে। অনুগ্রহ করে পুনঃচেষ্টা করুন।",
+            hint: "ইঙ্গিত",
+            hintDisabled: "ইঙ্গিত দেখতে একটি উত্তর নির্বাচন করুন",
+            placeholderHint: "এখানে ইঙ্গিত দেখা যাবে..."
         }
     }[language];
 
@@ -636,6 +643,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         setQuizSubmitted(false);
         setScore(0);
         setReviewMode(false);
+        setShowHint(false);
     };
 
     const startReview = () => {
@@ -1457,9 +1465,33 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full mb-6">
                                         <div className="bg-orange-600 h-1.5 rounded-full transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}></div>
                                     </div>
-                                    <h2 className={`reading-content text-lg sm:text-xl font-bold mb-6 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {quizQuestions[currentQuestionIndex]?.question_text}
-                                    </h2>
+                                    <div className="flex justify-between items-start gap-4 mb-6">
+                                        <h2 className={`reading-content text-lg sm:text-xl font-bold ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {quizQuestions[currentQuestionIndex]?.question_text}
+                                        </h2>
+                                        <button
+                                            onClick={() => setShowHint(!showHint)}
+                                            disabled={userAnswers[quizQuestions[currentQuestionIndex]?.id] === undefined && !reviewMode}
+                                            className={`shrink-0 w-9 h-9 flex items-center justify-center rounded-xl transition-all shadow-sm active:scale-95 ${(userAnswers[quizQuestions[currentQuestionIndex]?.id] !== undefined || reviewMode)
+                                                ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 hover:bg-amber-100'
+                                                : 'bg-slate-50 dark:bg-slate-900 text-slate-200 dark:text-slate-700 border border-slate-100 dark:border-slate-800 cursor-not-allowed opacity-40'
+                                                }`}
+                                            title={userAnswers[quizQuestions[currentQuestionIndex]?.id] === undefined && !reviewMode ? t.hintDisabled : t.hint}
+                                        >
+                                            <span className="text-xl">💡</span>
+                                        </button>
+                                    </div>
+
+                                    {showHint && (userAnswers[quizQuestions[currentQuestionIndex]?.id] !== undefined || reviewMode) && (
+                                        <div className="mb-6 p-4 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/30 rounded-2xl animate-fade-in">
+                                            <div className="flex items-start gap-2">
+                                                <span className="text-amber-500 mt-0.5">ℹ️</span>
+                                                <p className={`text-sm text-amber-800 dark:text-amber-300 italic font-medium leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    {quizQuestions[currentQuestionIndex]?.hint || t.placeholderHint}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
                                     <div className="space-y-2.5">
                                         {quizQuestions[currentQuestionIndex]?.options?.map((option, idx) => {
                                             const isSelected = userAnswers[quizQuestions[currentQuestionIndex].id] === idx;
@@ -1497,7 +1529,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 <div className="flex justify-between items-center pt-6 border-t border-slate-100 dark:border-slate-700">
                                     <button
                                         disabled={currentQuestionIndex === 0}
-                                        onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
+                                        onClick={() => {
+                                            setCurrentQuestionIndex(prev => prev - 1);
+                                            setShowHint(false);
+                                        }}
                                         className="text-slate-500 hover:text-slate-800 dark:text-slate-200 font-bold text-sm disabled:opacity-30 px-4"
                                     >
                                         ← Prev
@@ -1507,7 +1542,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             {reviewMode ? 'Close Review' : 'Finish Quiz'}
                                         </button>
                                     ) : (
-                                        <button onClick={() => setCurrentQuestionIndex(prev => prev + 1)} className="px-6 py-2.5 bg-orange-600 text-white rounded-lg font-bold text-sm hover:bg-orange-700 transition-colors">
+                                        <button
+                                            onClick={() => {
+                                                setCurrentQuestionIndex(prev => prev + 1);
+                                                setShowHint(false);
+                                            }}
+                                            className="px-6 py-2.5 bg-orange-600 text-white rounded-lg font-bold text-sm hover:bg-orange-700 transition-colors"
+                                        >
                                             Next →
                                         </button>
                                     )}
@@ -1550,8 +1591,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                         )}
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
 
