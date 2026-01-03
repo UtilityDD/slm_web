@@ -164,7 +164,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                         ID: {slmId || user?.id?.slice(0, 8).toUpperCase() || 'LINEMAN001'}
                                     </p>
                                     <p className="text-blue-100 text-sm font-medium opacity-90 capitalize">
-                                        {role} - Safety Mitra Network
+                                        {role}-Member
                                     </p>
                                 </div>
                                 <div className="mt-4 flex items-center gap-2">
