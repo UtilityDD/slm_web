@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { UserIcon } from './icons';
 
 export default function Sidebar({
   isOpen,
@@ -73,7 +74,9 @@ export default function Sidebar({
               {userProfile?.avatar_url ? (
                 <img src={userProfile.avatar_url} alt={userProfile.full_name} className="w-full h-full object-cover" />
               ) : (
-                userProfile?.full_name?.charAt(0).toUpperCase() || 'U'
+                <div className="w-7 h-7 text-white/90">
+                  <UserIcon />
+                </div>
               )}
             </div>
             <div className="flex-1 min-w-0 md:group-hover:block lg:block">

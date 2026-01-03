@@ -7,7 +7,8 @@ import {
     SafetyIcon,
     CommunityIcon,
     EmergencyIcon,
-    AdminIcon
+    AdminIcon,
+    UserIcon
 } from './icons';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 
@@ -181,7 +182,9 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                     {userProfile?.avatar_url ? (
                                         <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
-                                        fullName?.charAt(0) || user?.email?.charAt(0).toUpperCase() || '👤'
+                                        <div className="w-12 h-12 text-orange-400">
+                                            <UserIcon />
+                                        </div>
                                     )}
                                 </div>
                             </div>

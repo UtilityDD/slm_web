@@ -5,3 +5,4 @@ export { SafetyIcon } from './SafetyIcon';
 export { CommunityIcon } from './CommunityIcon';
 export { EmergencyIcon } from './EmergencyIcon';
 export { AdminIcon } from './AdminIcon';
+export { UserIcon } from './UserIcon';
