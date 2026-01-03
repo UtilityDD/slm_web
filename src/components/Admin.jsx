@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { cacheHelper } from '../utils/cacheHelper';
 import wbLocations from '../data/wb_locations.json';
@@ -98,6 +99,9 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [supervisors, setSupervisors] = useState([]);
   const [isSendingNotification, setIsSendingNotification] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [isInviting, setIsInviting] = useState(false);
 
   useEffect(() => {
     fetchUsers(currentPage);
@@ -329,6 +333,41 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   };
 
 
+  const handleInviteUser = async (e) => {
+    e.preventDefault();
+    if (!inviteEmail) {
+      alert('Please enter an email address.');
+      return;
+    }
+
+    setIsInviting(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: inviteEmail,
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}${window.location.pathname}#/login`
+        }
+      });
+
+      if (error) throw error;
+
+      alert(`Invitation sent successfully to ${inviteEmail}!`);
+      setInviteEmail('');
+      setShowInviteModal(false);
+    } catch (error) {
+      console.error('Error inviting user:', error);
+      if (error.message?.includes('already registered')) {
+        alert('This user is already registered in the system.');
+      } else {
+        alert(`Failed to send invitation: ${error.message}`);
+      }
+    } finally {
+      setIsInviting(false);
+    }
+  };
+
+
   const handleEdit = (targetUser) => {
     // Authorization check
     const canEdit =
@@ -501,6 +540,17 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 Send Notification
+              </button>
+            )}
+            {userProfile?.role === 'admin' && (
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2 text-sm"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+                Invite New Lineman
               </button>
             )}
             {userProfile?.role === 'admin' && (
@@ -740,7 +790,80 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       )}
 
 
-      {/* EDIT USER FULL-PAGE VIEW */}
+
+      {/* Invite User Modal - Portal-ized for Android/Mobile feel */}
+      {showInviteModal && createPortal(
+        <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-800 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md flex flex-col border-t sm:border border-slate-100 dark:border-slate-700 animate-slide-up sm:animate-scale-in max-h-[90vh]">
+            <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Invite New Lineman</h2>
+              <button
+                onClick={() => setShowInviteModal(false)}
+                className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                aria-label="Close"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <form onSubmit={handleInviteUser} className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-3xl flex items-center justify-center text-4xl mb-4 shadow-inner">
+                  👤
+                </div>
+                <p className="text-sm text-slate-500 dark:text-slate-400 max-w-[280px]">
+                  Send a private invitation link to a new lineman to join the Safety Mitra Network.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
+                  Lineman Email
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                  </div>
+                  <input
+                    type="email"
+                    required
+                    autoFocus
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all text-base lg:text-sm"
+                    placeholder="email@example.com"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2 pb-safe-offset-4">
+                <button
+                  type="button"
+                  onClick={() => setShowInviteModal(false)}
+                  className="order-2 sm:order-1 flex-1 py-4 rounded-2xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isInviting}
+                  className="order-1 sm:order-2 flex-1 py-4 rounded-2xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-xl shadow-indigo-500/25 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isInviting ? (
+                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  ) : (
+                    <>
+                      <span>Send Magic Link</span>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
       {/* Edit User Modal */}
       {/* Edit User Modal */}
       <EditUserModal
@@ -758,195 +881,213 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       />
 
       {/* Edit PPE Modal */}
-      {editingPPEUser && (
-        <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-800 w-full h-full min-h-screen sm:min-h-0 sm:h-auto sm:max-h-[90vh] sm:rounded-2xl sm:max-w-5xl shadow-2xl flex flex-col animate-scale-in">
-            <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
-              <div className="flex items-center gap-3">
-                {/* Mobile Back Button */}
+      {
+        editingPPEUser && (
+          <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white dark:bg-slate-800 w-full h-full min-h-screen sm:min-h-0 sm:h-auto sm:max-h-[90vh] sm:rounded-2xl sm:max-w-5xl shadow-2xl flex flex-col animate-scale-in">
+              <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
+                <div className="flex items-center gap-3">
+                  {/* Mobile Back Button */}
+                  <button
+                    onClick={() => setEditingPPEUser(null)}
+                    className="sm:hidden p-2 -ml-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+                  </button>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Manage PPE</h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{editingPPEUser.full_name}</p>
+                  </div>
+                </div>
                 <button
                   onClick={() => setEditingPPEUser(null)}
-                  className="sm:hidden p-2 -ml-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                  className="hidden sm:block text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
-                <div>
-                  <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Manage PPE</h2>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">{editingPPEUser.full_name}</p>
+              </div>
+
+              <div className="p-6 overflow-y-auto custom-scrollbar grow pb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {ppeChecklist.map((item, index) => (
+                    <div key={item.name} className={`relative p-4 rounded-xl border-2 transition-all ${item.available ? 'border-indigo-500 bg-indigo-50/10 dark:bg-indigo-900/10 shadow-sm' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 opacity-80'}`}>
+                      {/* Checkbox Overlay */}
+                      <div className="absolute top-3 right-3">
+                        <input
+                          type="checkbox"
+                          checked={item.available || false}
+                          onChange={(e) => handlePPEChecklistChange(index, 'available', e.target.checked)}
+                          className="w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="text-3xl filter drop-shadow-sm">{item.icon}</span>
+                        <h3 className={`font-bold leading-tight ${item.available ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-500 dark:text-slate-400'}`}>{item.name}</h3>
+                      </div>
+
+                      {item.available && (
+                        <div className="space-y-3 mt-4 animate-fade-in">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Count</label>
+                              <input
+                                type="number"
+                                min="1"
+                                value={item.count}
+                                onChange={(e) => handlePPEChecklistChange(index, 'count', e.target.value)}
+                                className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Condition</label>
+                              <select
+                                value={item.condition}
+                                onChange={(e) => handlePPEChecklistChange(index, 'condition', e.target.value)}
+                                className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
+                              >
+                                <option>Good</option>
+                                <option>Worn</option>
+                                <option>Damaged</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Age</label>
+                              <select
+                                value={item.age}
+                                onChange={(e) => handlePPEChecklistChange(index, 'age', e.target.value)}
+                                className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
+                              >
+                                <option>{'<'}6m</option>
+                                <option>6-12m</option>
+                                <option>1-2y</option>
+                                <option>{'>'}2y</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Usage</label>
+                              <select
+                                value={item.usage}
+                                onChange={(e) => handlePPEChecklistChange(index, 'usage', e.target.value)}
+                                className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
+                              >
+                                <option>Personal</option>
+                                <option>Team</option>
+                                <option>Spare</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
-              <button
-                onClick={() => setEditingPPEUser(null)}
-                className="hidden sm:block text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
 
-            <div className="p-6 overflow-y-auto custom-scrollbar grow pb-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {ppeChecklist.map((item, index) => (
-                  <div key={item.name} className={`relative p-4 rounded-xl border-2 transition-all ${item.available ? 'border-indigo-500 bg-indigo-50/10 dark:bg-indigo-900/10 shadow-sm' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 opacity-80'}`}>
-                    {/* Checkbox Overlay */}
-                    <div className="absolute top-3 right-3">
-                      <input
-                        type="checkbox"
-                        checked={item.available || false}
-                        onChange={(e) => handlePPEChecklistChange(index, 'available', e.target.checked)}
-                        className="w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
-                      />
-                    </div>
-
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="text-3xl filter drop-shadow-sm">{item.icon}</span>
-                      <h3 className={`font-bold leading-tight ${item.available ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-500 dark:text-slate-400'}`}>{item.name}</h3>
-                    </div>
-
-                    {item.available && (
-                      <div className="space-y-3 mt-4 animate-fade-in">
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Count</label>
-                            <input
-                              type="number"
-                              min="1"
-                              value={item.count}
-                              onChange={(e) => handlePPEChecklistChange(index, 'count', e.target.value)}
-                              className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Condition</label>
-                            <select
-                              value={item.condition}
-                              onChange={(e) => handlePPEChecklistChange(index, 'condition', e.target.value)}
-                              className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
-                            >
-                              <option>Good</option>
-                              <option>Worn</option>
-                              <option>Damaged</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Age</label>
-                            <select
-                              value={item.age}
-                              onChange={(e) => handlePPEChecklistChange(index, 'age', e.target.value)}
-                              className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
-                            >
-                              <option>{'<'}6m</option>
-                              <option>6-12m</option>
-                              <option>1-2y</option>
-                              <option>{'>'}2y</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Usage</label>
-                            <select
-                              value={item.usage}
-                              onChange={(e) => handlePPEChecklistChange(index, 'usage', e.target.value)}
-                              className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
-                            >
-                              <option>Personal</option>
-                              <option>Team</option>
-                              <option>Spare</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+              <div className="flex gap-3 pt-6 border-t dark:border-slate-700 bg-white dark:bg-slate-800 sticky bottom-0 z-10 shrink-0 mt-auto pb-safe">
+                <button
+                  onClick={() => setEditingPPEUser(null)}
+                  className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveUserPPE}
+                  disabled={isSavingPPE}
+                  className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-2"
+                >
+                  {isSavingPPE ? 'Saving...' : 'Save Changes'}
+                </button>
               </div>
             </div>
-
-            <div className="flex gap-3 pt-6 border-t dark:border-slate-700 bg-white dark:bg-slate-800 sticky bottom-0 z-10 shrink-0 mt-auto pb-safe">
-              <button
-                onClick={() => setEditingPPEUser(null)}
-                className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveUserPPE}
-                disabled={isSavingPPE}
-                className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-2"
-              >
-                {isSavingPPE ? 'Saving...' : 'Save Changes'}
-              </button>
-            </div>
           </div>
-        </div>
+        )
+      }
+
+      {/* Success Modal - Portal-ized */}
+      {showSuccessModal && createPortal(
+        <SuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          language={language}
+        />,
+        document.body
       )}
 
-      <SuccessModal
-        isOpen={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
-        language={language}
-      />
-
-      {/* Send Notification Modal */}
-      {showNotificationModal && (
-        <div className="fixed top-0 left-0 right-0 bottom-0 bg-slate-900/60 backdrop-blur-sm z-[120] p-4 pb-20 flex items-center justify-center">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md border border-slate-100 dark:border-slate-700 animate-scale-in flex flex-col max-h-[85vh] my-auto overflow-y-auto">
-            <div className="flex justify-between items-center p-6 pb-4 border-b dark:border-slate-700 shrink-0">
-              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                Send Push Notification
+      {/* Send Notification Modal - Portal-ized */}
+      {showNotificationModal && createPortal(
+        <div className="fixed top-0 left-0 right-0 bottom-0 bg-slate-900/60 backdrop-blur-sm z-[200] p-4 flex items-center justify-center">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100 dark:border-slate-700 animate-scale-in flex flex-col max-h-[90vh] overflow-hidden">
+            <div className="flex justify-between items-center p-6 border-b dark:border-slate-700 shrink-0">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                </div>
+                Broadcast
               </h2>
-              <button onClick={() => setShowNotificationModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+              <button onClick={() => setShowNotificationModal(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
-            <form onSubmit={handleSendNotification} className="space-y-4 flex-1 overflow-y-auto p-6 max-h-[65vh]">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Notification Title</label>
+            <form onSubmit={handleSendNotification} className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Title</label>
                 <input
                   type="text"
                   value={notificationForm.title}
                   onChange={(e) => setNotificationForm({ ...notificationForm, title: e.target.value })}
-                  placeholder="e.g., System Update"
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                  placeholder="Notification Headline"
+                  className="w-full px-4 py-3 border-2 border-slate-100 dark:border-slate-700 rounded-2xl focus:border-indigo-500 outline-none bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-all font-medium"
                   required
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Message Content</label>
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Message</label>
                 <textarea
                   value={notificationForm.message}
                   onChange={(e) => setNotificationForm({ ...notificationForm, message: e.target.value })}
-                  placeholder="Enter the notification message..."
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 h-32 resize-none"
+                  placeholder="Enter your message here..."
+                  className="w-full px-4 py-3 border-2 border-slate-100 dark:border-slate-700 rounded-2xl focus:border-indigo-500 outline-none bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 h-32 resize-none transition-all"
                   required
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Notification Type</label>
-                <select
-                  value={notificationForm.type}
-                  onChange={(e) => setNotificationForm({ ...notificationForm, type: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
-                >
-                  <option value="info">Information (Blue)</option>
-                  <option value="update">Update (Green)</option>
-                  <option value="warning">Warning (Orange)</option>
-                  <option value="alert">Alert (Red)</option>
-                </select>
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Urgency</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: 'info', label: 'Info', color: 'blue' },
+                    { id: 'update', label: 'Update', color: 'green' },
+                    { id: 'warning', label: 'Warning', color: 'orange' },
+                    { id: 'alert', label: 'Alert', color: 'red' }
+                  ].map((type) => (
+                    <button
+                      key={type.id}
+                      type="button"
+                      onClick={() => setNotificationForm({ ...notificationForm, type: type.id })}
+                      className={`py-2.5 px-4 rounded-xl text-sm font-bold border-2 transition-all ${notificationForm.type === type.id
+                          ? `bg-${type.color}-500/10 border-${type.color}-500 text-${type.color}-600 dark:text-${type.color}-400`
+                          : 'border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 grayscale opacity-60'
+                        }`}
+                    >
+                      {type.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-
             </form>
-            <div className="flex justify-end gap-3 p-6 border-t dark:border-slate-700 shrink-0 bg-gray-50 dark:bg-slate-800/50">
+
+            <div className="p-6 border-t dark:border-slate-700 flex flex-col sm:flex-row gap-3 bg-gray-50/50 dark:bg-slate-900/20 shrink-0">
               <button
                 type="button"
                 onClick={() => setShowNotificationModal(false)}
-                className="px-5 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                className="order-2 sm:order-1 flex-1 py-4 px-4 rounded-2xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 Cancel
               </button>
@@ -954,18 +1095,19 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 type="submit"
                 onClick={handleSendNotification}
                 disabled={isSendingNotification}
-                className="px-5 py-2.5 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all disabled:opacity-50"
+                className="order-1 sm:order-2 flex-1 py-4 px-4 rounded-2xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-xl shadow-indigo-500/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
               >
-                {isSendingNotification ? 'Sending...' : 'Send Now'}
+                {isSendingNotification ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : 'Broadcast Now'}
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Uniform bottom spacing for all roles to prevent content cut-off by sticky navs or safe areas */}
       <div className="h-24 sm:h-12 w-full"></div>
-    </div>
+    </div >
   );
 }
 

@@ -114,14 +114,7 @@ export default function Login({ onLogin, showNotification, initialView }) {
         setError(null);
 
         try {
-            if (view === 'signup') {
-                const { error } = await supabase.auth.signUp({
-                    email,
-                    password,
-                });
-                if (error) throw error;
-                showNotification('Check your email for the login link!');
-            } else if (view === 'login') {
+            if (view === 'login') {
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email,
                     password,
@@ -177,20 +170,15 @@ export default function Login({ onLogin, showNotification, initialView }) {
                         </h1>
                     </div>
 
-                    {/* Invitation-Only Notice for Signup */}
-                    {view === 'signup' && (
-                        <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200 text-sm rounded-lg border border-amber-200 dark:border-amber-800">
-                            <div className="flex items-start gap-2">
-                                <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                                </svg>
-                                <div>
-                                    <p className="font-semibold mb-1">Signup is by invitation only</p>
-                                    <p className="text-xs">New accounts can only be created through an invitation link. Please contact your administrator to receive an invitation email.</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {/* Compact Invitation-Only Notice */}
+                    <div className="mb-6 flex items-center justify-center gap-2 py-2 px-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-100/50 dark:border-blue-800/30">
+                        <svg className="w-3.4 h-3.5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <span className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">
+                            Invitation Only Network
+                        </span>
+                    </div>
 
                     {/* Error Message */}
                     {error && (
@@ -305,20 +293,21 @@ export default function Login({ onLogin, showNotification, initialView }) {
 
                     {/* Footer */}
                     <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
-                        {view === 'signup' ? 'Already have an account?' :
-                            view === 'forgot' || view === 'update' ? 'Remember your password?' : "Don't have an account?"}{' '}
-                        <button
-                            onClick={() => {
-                                if (view === 'otp_verify') {
-                                    setView('otp_request');
-                                } else {
-                                    setView(view === 'signup' || view === 'forgot' || view === 'update' || view === 'otp_request' ? 'login' : 'signup');
-                                }
-                            }}
-                            className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
-                        >
-                            {view === 'otp_verify' ? 'Change Email' : (view === 'signup' || view === 'forgot' || view === 'update' || view === 'otp_request' ? 'Sign In' : 'Sign Up')}
-                        </button>
+                        {view === 'otp_verify' ? (
+                            <button
+                                onClick={() => setView('otp_request')}
+                                className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                            >
+                                Change Email
+                            </button>
+                        ) : (view === 'forgot' || view === 'update' || view === 'otp_request') && (
+                            <button
+                                onClick={() => setView('login')}
+                                className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                            >
+                                Back to Sign In
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
