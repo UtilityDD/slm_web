@@ -141,7 +141,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
             ) : (
                 <>
                     {/* Integrated Safety Orange Hero Section */}
-                    <div className="bg-[#ea580c] pt-6 pb-12 px-6 rounded-b-[2.5rem] shadow-lg shadow-orange-900/10">
+                    <div className="bg-[#ea580c] dark:bg-[#d64a0a] pt-6 pb-12 px-6 rounded-b-[2.5rem] shadow-lg shadow-orange-900/10 dark:shadow-black/20">
                         <div className="max-w-4xl mx-auto flex items-center justify-between gap-6 overflow-hidden">
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-2 flex-wrap min-w-0">
@@ -226,7 +226,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                             {typeof item.icon === 'string' ? item.icon : React.cloneElement(item.icon, { className: 'w-full h-full' })}
                                         </div>
                                     </div>
-                                    <p className="text-[10px] sm:text-xs font-bold text-slate-600 dark:text-slate-300 leading-tight">
+                                    <p className="text-[10px] sm:text-xs font-bold text-slate-600 dark:text-slate-400 leading-tight">
                                         {item.label[language]}
                                     </p>
                                 </div>
