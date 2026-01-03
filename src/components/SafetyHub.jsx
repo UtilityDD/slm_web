@@ -296,12 +296,12 @@ const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedL
                     <div className="flex-1">
                         <div className="flex justify-between text-xs mb-1.5">
                             <span className="text-slate-500">{language === 'en' ? 'Overall Completion' : 'মোট সম্পন্ন'}</span>
-                            <span className="font-bold text-slate-700 dark:text-slate-300">{Math.round((completedLessons.length / 45) * 100)}%</span>
+                            <span className="font-bold text-slate-700 dark:text-slate-300">{Math.round((completedLessons.length / 91) * 100)}%</span>
                         </div>
                         <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000"
-                                style={{ width: `${Math.min(100, (completedLessons.length / 45) * 100)}%` }}
+                                style={{ width: `${Math.min(100, (completedLessons.length / 91) * 100)}%` }}
                             ></div>
                         </div>
                     </div>

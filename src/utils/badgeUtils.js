@@ -15,21 +15,33 @@ export const getBadgeByLevel = (level) => {
     return badgeLevels.find(b => b.level === level) || badgeLevels[0];
 };
 
+// Default lesson counts per chapter based on the training manifest
+const defaultChapterCounts = {
+    1: 10, 2: 10, 3: 10, 4: 10, 5: 10, 6: 11, 7: 10, 8: 10, 9: 10
+};
+
 export const calculateLevelFromProgress = (completedLessons, trainingChapters) => {
-    if (!completedLessons || completedLessons.length === 0 || !trainingChapters) return 0;
+    if (!completedLessons || completedLessons.length === 0) return 0;
 
-    // Sort chapters by number to ensure sequential checking
-    const sortedChapters = [...trainingChapters]
-        .filter(c => c.number < 10) // Exclude Chapter 10 (FAQ)
-        .sort((a, b) => a.number - b.number);
-
+    const chaptersToTrack = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     let currentLevel = 0;
 
-    for (const chapter of sortedChapters) {
+    for (const chapterNum of chaptersToTrack) {
+        // Find lesson count for this chapter (either from props or default)
+        let lessonCount = 0;
+        if (trainingChapters) {
+            const chap = trainingChapters.find(c => c.number === chapterNum);
+            lessonCount = chap ? chap.count : 0;
+        } else {
+            lessonCount = defaultChapterCounts[chapterNum] || 0;
+        }
+
+        if (lessonCount === 0) break;
+
         // Check if all lessons in this chapter are completed
         let allLessonsCompleted = true;
-        for (let i = 1; i <= chapter.count; i++) {
-            const lessonId = `${chapter.number}.${i}`;
+        for (let i = 1; i <= lessonCount; i++) {
+            const lessonId = `${chapterNum}.${i}`;
             if (!completedLessons.includes(lessonId)) {
                 allLessonsCompleted = false;
                 break;
@@ -37,10 +49,11 @@ export const calculateLevelFromProgress = (completedLessons, trainingChapters) =
         }
 
         if (allLessonsCompleted) {
-            currentLevel = chapter.number;
+            currentLevel = chapterNum;
         } else {
-            // If a chapter is not fully completed, stop checking further
-            // The user's level is the last fully completed chapter
+            // STOP HERE: This is the critical sequential check.
+            // If any lesson in the CURRENT chapter is missing, 
+            // the user cannot earn this badge or any subsequent ones.
             break;
         }
     }

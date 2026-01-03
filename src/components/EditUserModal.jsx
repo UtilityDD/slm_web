@@ -16,8 +16,8 @@ const EditUserModal = ({
     if (!editingUser) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-hidden sm:overflow-y-auto">
-            <div className="bg-white dark:bg-slate-800 rounded-none sm:rounded-2xl shadow-2xl w-full max-w-2xl border-0 sm:border border-slate-100 dark:border-slate-700 animate-scale-in flex flex-col h-full sm:h-auto sm:max-h-[90vh]">
+        <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white dark:bg-slate-800 w-full h-full min-h-screen sm:min-h-0 sm:h-auto sm:max-h-[90vh] sm:rounded-2xl sm:max-w-2xl shadow-2xl flex flex-col animate-scale-in">
                 <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
                     <div className="flex items-center gap-3">
                         {/* Mobile Back Button */}
@@ -37,7 +37,7 @@ const EditUserModal = ({
                     </button>
                 </div>
 
-                <div className="p-6 overflow-y-auto custom-scrollbar flex-1 pb-24 sm:pb-6">
+                <div className="p-6 overflow-y-auto custom-scrollbar grow pb-6">
                     {/* Tab Navigation */}
                     <div className="flex border-b dark:border-slate-700 mb-6 overflow-x-auto no-scrollbar">
                         <button
@@ -275,7 +275,7 @@ const EditUserModal = ({
                             </div>
                         )}
                     </div>
-                    <div className="border-t border-slate-200 dark:border-slate-700 p-4 sm:p-6 flex justify-end gap-3 bg-white dark:bg-slate-800 shrink-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] sm:shadow-none">
+                    <div className="flex gap-3 pt-6 border-t dark:border-slate-700 bg-white dark:bg-slate-800 sticky bottom-0 z-10 shrink-0 mt-auto pb-safe">
                         <button
                             onClick={handleCancelEdit}
                             className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"

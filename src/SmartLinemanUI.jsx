@@ -130,7 +130,7 @@ export default function SmartLinemanUI() {
     if (targetUser) {
       const { data, error } = await supabase
         .from('profiles')
-        .select('role, avatar_url, current_session_id, training_level, full_name, points, completed_lessons, total_penalties')
+        .select('role, avatar_url, current_session_id, training_level, full_name, points, completed_lessons, total_penalties, slm_id')
         .eq('id', targetUser.id);
 
       if (error) {
@@ -552,24 +552,33 @@ export default function SmartLinemanUI() {
   );
 
   const renderContent = () => {
+    // Define which views are accessible without login
+    const publicViews = ['login', 'update-password', 'verify'];
+    const isPublic = publicViews.includes(currentView);
+
+    // If not logged in and trying to access a private view, force login
+    if (!user && !isPublic) {
+      return (
+        <Suspense fallback={<PageLoader />}>
+          <Login
+            onLogin={(u) => {
+              setUser(u);
+              showNotification(language === 'en' ? 'Welcome!' : 'আপনাকে স্বাগতম!');
+              // Destination is already set in currentView, so it will render correctly after state change
+            }}
+            showNotification={showNotification}
+          />
+        </Suspense>
+      );
+    }
+
     const content = (() => {
-      if (currentView === 'login') {
+      if (currentView === 'login' || (currentView === 'update-password' && !user)) {
         return <Login
+          initialView={currentView === 'update-password' ? 'update' : 'login'}
           onLogin={(u) => {
             setUser(u);
             showNotification(language === 'en' ? 'Welcome back!' : 'আপনাকে স্বাগতম!');
-            setCurrentView('home');
-          }}
-          showNotification={showNotification}
-        />;
-      }
-
-      if (currentView === 'update-password') {
-        return <Login
-          initialView="update"
-          onLogin={(u) => {
-            setUser(u);
-            showNotification(language === 'en' ? 'Password updated!' : 'পাসওয়ার্ড আপডেট হয়েছে!');
             setCurrentView('home');
           }}
           showNotification={showNotification}
@@ -819,7 +828,7 @@ export default function SmartLinemanUI() {
         </div>
 
         {/* Header - Material Design */}
-        <header className="bg-white dark:bg-slate-800 elevation-2 sticky top-0 z-[80] border-b border-slate-200 dark:border-slate-700 safe-area-inset-top">
+        <header className={`${currentView === 'home' ? 'bg-[#3b6b99] border-transparent shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 elevation-2'} sticky top-0 z-[80] border-b safe-area-inset-top transition-all duration-300`}>
           <div className="max-w-7xl mx-auto mobile-container">
             <div className="flex justify-between items-center h-14 md:h-16">
               {/* Mobile Menu & Logo - Keep on top of sidebar */}
@@ -827,7 +836,7 @@ export default function SmartLinemanUI() {
                 {user && (
                   <button
                     onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className="md:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-700 dark:text-slate-200"
+                    className={`md:hidden p-2 ${currentView === 'home' ? 'hover:bg-white/10 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'} rounded-lg transition-colors`}
                     title="Menu"
                     aria-label="Toggle menu"
                   >
@@ -837,16 +846,12 @@ export default function SmartLinemanUI() {
                   </button>
                 )}
                 <div
-                  className="flex items-center gap-2 group cursor-pointer ripple-dark rounded-lg px-2 py-1 -ml-1"
+                  className="flex items-center gap-2 group cursor-pointer px-2 py-1 -ml-1 transition-all active:scale-95"
                   onClick={() => setCurrentView('home')}
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-700 to-blue-600 dark:from-blue-600 dark:to-blue-500 rounded-lg flex items-center justify-center font-bold text-xs text-white elevation-2">
-                    SL
-                  </div>
-                  <div className="hidden sm:block">
-                    <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                      {language === 'en' ? 'SmartLineman' : 'স্মার্ট লাইনম্যান'}
-                    </div>
+                  <div className={`text-xl sm:text-2xl logo-text ${currentView === 'home' ? 'logo-text-home' : 'logo-text-default'
+                    }`}>
+                    SmartLineMan
                   </div>
                 </div>
               </div>
@@ -867,10 +872,10 @@ export default function SmartLinemanUI() {
                         localStorage.setItem('lastSeenNotificationId', latestId);
                       }
                     }}
-                    className="flex items-center justify-center p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-all touch-target relative"
+                    className={`flex items-center justify-center p-2 ${currentView === 'home' ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200'} rounded-lg transition-all touch-target relative`}
                     title="Notifications"
                   >
-                    <svg className="w-5 h-5 text-slate-700 dark:text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
                     {notificationsHistory.length > 0 && notificationsHistory[0].id !== lastSeenNotificationId && (
@@ -974,19 +979,11 @@ export default function SmartLinemanUI() {
                   )}
                 </div>
 
-                {/* Language Toggle */}
-                <button
-                  onClick={() => setShowLanguageModal(true)}
-                  className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-all touch-target"
-                  title="Change Language"
-                >
-                  <span className="text-lg sm:text-xl">🌐</span>
-                </button>
 
                 {/* Theme Toggle */}
                 <button
                   onClick={handleThemeToggle}
-                  className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-all touch-target"
+                  className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 ${currentView === 'home' ? 'bg-white/10 hover:bg-white/20' : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600'} rounded-lg transition-all touch-target`}
                   title="Toggle Theme"
                 >
                   <span className="text-lg sm:text-xl">{theme === 'light' ? '🌙' : '☀️'}</span>
@@ -994,10 +991,10 @@ export default function SmartLinemanUI() {
 
                 {/* User Profile / Login */}
                 {user ? (
-                  <div className="flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2 border-l border-slate-200 dark:border-slate-700">
+                  <div className={`flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2 border-l ${currentView === 'home' ? 'border-white/20' : 'border-slate-200 dark:border-slate-700'}`}>
                     <div className="flex flex-col items-end hidden sm:flex">
-                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                        {userProfile?.full_name || user.email.split('@')[0]}
+                      <span className={`text-xs font-bold ${currentView === 'home' ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>
+                        {(userProfile?.full_name && !userProfile.full_name.includes('@')) ? userProfile.full_name : 'Guest'}
                       </span>
                       <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                         {userProfile?.role || 'Lineman'}
@@ -1016,12 +1013,13 @@ export default function SmartLinemanUI() {
                 ) : (
                   <button
                     onClick={() => setCurrentView('login')}
-                    className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold rounded-lg transition-all shadow-md shadow-blue-500/20 touch-target"
+                    className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all shadow-md shadow-blue-500/20 touch-target"
+                    title={t.nav.login}
+                    aria-label="Login"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    <span>{t.nav.login}</span>
                   </button>
                 )}
               </div>

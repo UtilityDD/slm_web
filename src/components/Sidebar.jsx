@@ -36,7 +36,7 @@ export default function Sidebar({
     { id: 'ppe', label: language === 'en' ? 'My PPE' : 'আমার পিপিই', icon: '👷', show: true, redirectTo: 'safety', tab: 'my_ppe' },
     { id: 'tools', label: language === 'en' ? 'My Tools' : 'আমার সরঞ্জাম', icon: '🔧', show: true, redirectTo: 'safety', tab: 'my_tools' },
     { id: 'emergency', label: language === 'en' ? 'Emergency' : 'জরুরি', icon: '🚨', show: true, color: 'text-red-600' },
-    { id: 'admin', label: userProfile?.role === 'safety mitra' ? (language === 'en' ? 'Safety Mitra' : 'সেফটি মিত্র') : (language === 'en' ? 'Admin' : 'অ্যাডমিন'), icon: '⚙️', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
+    { id: 'admin', label: language === 'en' ? 'Admin' : 'অ্যাডমিন', icon: '⚙️', show: true },
     { id: 'guide', label: language === 'en' ? 'Handbook' : 'হ্যান্ডবুক', icon: '📖', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
     { id: 'admin-services', label: language === 'en' ? 'Services Update' : 'সার্ভিস আপডেট', icon: '🔄', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
   ];
@@ -66,21 +66,21 @@ export default function Sidebar({
           } hover:w-64 group`}
       >
         {/* Sidebar Header */}
-        <div className="h-auto px-4 py-3 border-b border-slate-100 dark:border-slate-700 md:border-none">
+        <div className="h-auto px-5 py-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/20 safe-area-inset-top">
           {/* User Profile Section */}
           <div className="flex items-center gap-2 md:gap-1.5 lg:gap-2">
-            <div className="w-9 h-9 md:w-8 md:h-8 lg:w-9 lg:h-9 bg-gradient-to-br from-slate-300 to-slate-400 dark:from-slate-700 dark:to-slate-600 rounded-full flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-100 shrink-0 overflow-hidden">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-lg text-white shrink-0 overflow-hidden shadow-md">
               {userProfile?.avatar_url ? (
                 <img src={userProfile.avatar_url} alt={userProfile.full_name} className="w-full h-full object-cover" />
               ) : (
                 userProfile?.full_name?.charAt(0).toUpperCase() || 'U'
               )}
             </div>
-            <div className="flex-1 min-w-0 md:hidden lg:block">
-              <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
-                {userProfile?.full_name || 'User'}
+            <div className="flex-1 min-w-0 md:group-hover:block lg:block">
+              <p className="text-base font-bold text-slate-900 dark:text-slate-100 truncate tracking-tight">
+                {(userProfile?.full_name && !userProfile.full_name.includes('@')) ? userProfile.full_name : 'Guest'}
               </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium capitalize leading-tight">
+              <p className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
                 {userProfile?.role || 'lineman'}
               </p>
             </div>
@@ -119,8 +119,8 @@ export default function Sidebar({
                 key={item.id}
                 onClick={() => handleNavClick(item)}
                 className={`w-full flex items-center gap-2 px-3 md:px-1.5 py-2 rounded-lg transition-all duration-200 text-left ${isActive
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold'
-                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold'
+                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
                 title={item.label}
               >

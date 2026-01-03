@@ -141,12 +141,18 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       // Fetch paginated users with total count
       let query = supabase
         .from('profiles')
-        .select('id, full_name, email, role, district, block, avatar_url, created_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage, is_donor, last_donation_date, blood_group, phone, supervisor_id', { count: 'exact' });
+        .select('id, slm_id, full_name, email, role, district, block, avatar_url, created_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage, is_donor, last_donation_date, blood_group, phone, supervisor_id', { count: 'exact' });
 
-      // If Safety Mitra, only show their team
-      if (userProfile?.role === 'safety mitra') {
+
+      // Apply role-based filtering
+      if (userProfile?.role === 'lineman') {
+        // Linemen can only see their own profile
+        query = query.eq('id', user.id);
+      } else if (userProfile?.role === 'safety mitra') {
+        // Safety Mitras can see their team
         query = query.eq('supervisor_id', user.id);
       }
+      // Admins see all users (no filter)
 
       const { data, error, count } = await query
         .order('created_at', { ascending: false })
@@ -184,6 +190,17 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   ];
 
   const handleEditPPE = async (targetUser) => {
+    // Authorization check
+    const canEdit =
+      userProfile?.role === 'admin' ||
+      (userProfile?.role === 'safety mitra' && targetUser.supervisor_id === user.id) ||
+      (userProfile?.role === 'lineman' && targetUser.id === user.id);
+
+    if (!canEdit) {
+      alert('You do not have permission to edit this user\'s PPE.');
+      return;
+    }
+
     setEditingPPEUser(targetUser);
     setPpeChecklist([]); // Reset while loading
 
@@ -313,11 +330,17 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
 
   const handleEdit = (targetUser) => {
-    // Safety Mitra Restriction: Cannot edit Admins
-    if (userProfile?.role === 'safety mitra' && targetUser.role === 'admin') {
-      alert("Permission Denied: Safety Mitras cannot edit Administrators.");
+    // Authorization check
+    const canEdit =
+      userProfile?.role === 'admin' ||
+      (userProfile?.role === 'safety mitra' && targetUser.supervisor_id === user.id && targetUser.role !== 'admin') ||
+      (userProfile?.role === 'lineman' && targetUser.id === user.id);
+
+    if (!canEdit) {
+      alert('You do not have permission to edit this user\'s profile.');
       return;
     }
+
     setEditingUser({ ...targetUser });
     setAvatarFile(null);
     setAvatarPreview(targetUser.avatar_url);
@@ -463,7 +486,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-            {userProfile?.role === 'safety mitra' ? 'Safety Mitra' : 'Admin'}
+            {userProfile?.role === 'admin' ? 'Admin Panel' : userProfile?.role === 'safety mitra' ? 'Team Management' : 'My Profile'}
           </h1>
         </div>
 
@@ -525,9 +548,16 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
-                    <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">
-                      {targetUser.full_name}
-                    </h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                        {targetUser.full_name}
+                      </h3>
+                      {targetUser.slm_id && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-500 rounded border border-slate-200 dark:border-slate-600">
+                          {targetUser.slm_id}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                       {targetUser.email}
                     </p>
@@ -598,7 +628,10 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 {users.map((targetUser) => (
                   <tr key={targetUser.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-slate-900 dark:text-slate-100">{targetUser.full_name}</div>
+                      <div className="flex flex-col">
+                        <div className="font-medium text-slate-900 dark:text-slate-100">{targetUser.full_name}</div>
+                        {targetUser.slm_id && <div className="text-[10px] font-bold text-slate-400">{targetUser.slm_id}</div>}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-slate-600 dark:text-slate-400">{targetUser.email}</div>
@@ -726,8 +759,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
       {/* Edit PPE Modal */}
       {editingPPEUser && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-hidden sm:overflow-y-auto">
-          <div className="bg-white dark:bg-slate-800 rounded-none sm:rounded-2xl shadow-2xl w-full max-w-5xl border-0 sm:border border-slate-100 dark:border-slate-700 animate-scale-in flex flex-col h-full sm:h-auto sm:max-h-[90vh]">
+        <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-800 w-full h-full min-h-screen sm:min-h-0 sm:h-auto sm:max-h-[90vh] sm:rounded-2xl sm:max-w-5xl shadow-2xl flex flex-col animate-scale-in">
             <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
               <div className="flex items-center gap-3">
                 {/* Mobile Back Button */}
@@ -750,7 +783,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 pb-24 sm:pb-6">
+            <div className="p-6 overflow-y-auto custom-scrollbar grow pb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {ppeChecklist.map((item, index) => (
                   <div key={item.name} className={`relative p-4 rounded-xl border-2 transition-all ${item.available ? 'border-indigo-500 bg-indigo-50/10 dark:bg-indigo-900/10 shadow-sm' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 opacity-80'}`}>
@@ -829,7 +862,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               </div>
             </div>
 
-            <div className="border-t border-slate-200 dark:border-slate-700 p-4 sm:p-6 flex justify-end gap-3 bg-white dark:bg-slate-800 shrink-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] sm:shadow-none">
+            <div className="flex gap-3 pt-6 border-t dark:border-slate-700 bg-white dark:bg-slate-800 sticky bottom-0 z-10 shrink-0 mt-auto pb-safe">
               <button
                 onClick={() => setEditingPPEUser(null)}
                 className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
@@ -929,6 +962,9 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
           </div>
         </div>
       )}
+
+      {/* Uniform bottom spacing for all roles to prevent content cut-off by sticky navs or safe areas */}
+      <div className="h-24 sm:h-12 w-full"></div>
     </div>
   );
 }
