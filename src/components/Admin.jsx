@@ -482,7 +482,15 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       return;
     }
 
-    setEditingUser({ ...targetUser });
+    let userToEdit = { ...targetUser };
+
+    // Fix for users with Email in Full Name and Empty Email
+    if (!userToEdit.email && userToEdit.full_name && userToEdit.full_name.includes('@')) {
+      userToEdit.email = userToEdit.full_name;
+      userToEdit.full_name = ''; // Clear name so Admin can enter real name
+    }
+
+    setEditingUser(userToEdit);
     setAvatarFile(null);
     setAvatarPreview(targetUser.avatar_url);
   };
@@ -569,7 +577,9 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
     const { id, ...updates } = editingUser;
     updates.avatar_url = avatar_url;
-    delete updates.email; // Do not update email
+    updates.avatar_url = avatar_url;
+    // delete updates.email; // ALLOW Email updates now (to fix missing emails)
+    delete updates.points; // Do not allow manual point updates via Admin UI
     delete updates.points; // Do not allow manual point updates via Admin UI
     delete updates.created_at; // Do not update created_at timestamp
 
