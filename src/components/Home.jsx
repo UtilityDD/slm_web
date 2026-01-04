@@ -17,6 +17,8 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
     const [slmId, setSlmId] = useState(userProfile?.slm_id || '');
     const [role, setRole] = useState(userProfile?.role || 'Lineman');
     const [score, setScore] = useState(userProfile?.points || 0);
+
+    const [readingPoints, setReadingPoints] = useState(userProfile?.reading_points || 0);
     const [trainingLevel, setTrainingLevel] = useState(userProfile?.training_level || 0);
     const [completedLessonsCount, setCompletedLessonsCount] = useState(userProfile?.completed_lessons?.length || 0);
     const [totalPenalties, setTotalPenalties] = useState(userProfile?.total_penalties || 0);
@@ -34,7 +36,9 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
     useEffect(() => {
         if (userProfile) {
             setScore(userProfile.points || 0);
+            setReadingPoints(userProfile.reading_points || 0);
             setFullName(userProfile.full_name);
+
             setSlmId(userProfile.slm_id);
             setRole(userProfile.role || 'Lineman');
             setTrainingLevel(userProfile.training_level || 0);
@@ -79,6 +83,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
             const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
             if (data) {
                 setScore(data.points || 0);
+                setReadingPoints(data.reading_points || 0);
                 setFullName(data.full_name);
                 setSlmId(data.slm_id);
                 setRole(data.role || 'Lineman');
@@ -170,7 +175,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                         💎 {score.toLocaleString()}
                                     </div>
                                     <div className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-[10px] font-bold uppercase tracking-wider border border-white/20">
-                                        📖 {(completedLessonsCount * 20).toLocaleString()}
+                                        📖 {readingPoints.toLocaleString()}
                                     </div>
                                 </div>
                             </div>

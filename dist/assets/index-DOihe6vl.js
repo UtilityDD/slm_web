@@ -1,4 +1,4 @@
-import{d as BQ,R as sA}from"./index-BHi8S6ug.js";var xt={exports:{}};/*!
+import{d as BQ,R as sA}from"./index-CYnL4ZX2.js";var xt={exports:{}};/*!
  * html2canvas 1.4.1 <https://html2canvas.hertzen.com>
  * Copyright (c) 2022 Niklas von Hertzen <https://hertzen.com>
  * Released under MIT License
