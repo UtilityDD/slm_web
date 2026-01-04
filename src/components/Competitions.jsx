@@ -54,8 +54,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             score: "Your Score",
             close: "Close",
             loginReq: "Please login to participate",
-            highStakes: "High Stakes Mode Active",
-            highStakesDesc: "Wrong answers deduct 5 points",
+            highStakes: "High Stakes",
+            highStakesDesc: "Wrong or skipped answers deduct 15 points",
             syncing: "Syncing your score...",
             waitingNetwork: "Waiting for network connection...",
             autoRetry: "Auto-retry enabled",
@@ -80,8 +80,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             score: "আপনার স্কোর",
             close: "বন্ধ করুন",
             loginReq: "অংশগ্রহণ করতে লগইন করুন",
-            highStakes: "হাই স্টেক মোড সক্রিয়",
-            highStakesDesc: "ভুল উত্তরের জন্য ৫ পয়েন্ট কাটা হবে",
+            highStakes: "হাই স্টেক",
+            highStakesDesc: "ভুল বা স্কিপ করা উত্তরের জন্য ১৫ পয়েন্ট কাটা হবে",
             syncing: "আপনার স্কোর সিঙ্ক হচ্ছে...",
             waitingNetwork: "নেটওয়ার্ক সংযোগের জন্য অপেক্ষা করা হচ্ছে...",
             autoRetry: "স্বয়ংক্রিয় পুনঃচেষ্টা সক্রিয়",
@@ -693,12 +693,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         if (quizQuestions.length > 0) {
             calculatedScore = correctCount * pointsPerQuestion;
             if (isHighStakes) {
-                // Determine ACTUAL wrong choices (not skipped)
-                const actualWrongCount = quizQuestions.filter(q =>
-                    userAnswers[q.id] !== undefined && userAnswers[q.id] !== q.correct_option_index
+                // Determine wrong OR skipped choices
+                const wrongOrSkippedCount = quizQuestions.filter(q =>
+                    userAnswers[q.id] !== q.correct_option_index
                 ).length;
 
-                totalPenalty = actualWrongCount * 5; // Deduct 5 points per WRONG choice
+                totalPenalty = wrongOrSkippedCount * 15; // Deduct 15 points per WRONG or SKIPPED choice
                 calculatedScore -= totalPenalty;
             }
         }
@@ -1455,9 +1455,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         <div className="flex items-center gap-3">
                                             <p className="text-xs text-slate-500">{t.questions} {currentQuestionIndex + 1} / {quizQuestions.length}</p>
                                             {userRank && userRank.score > 1000 && (
-                                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 animate-pulse">
-                                                    <span className="text-[10px]">🔥</span>
-                                                    <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">{t.highStakes}</span>
+                                                <div className="flex items-center gap-1.5 animate-pulse">
+                                                    <span className="text-xl">🔥</span>
+                                                    <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-tight bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded border border-red-100 dark:border-red-900/30 whitespace-nowrap">
+                                                        {language === 'en' ? 'Loss 15 for Wrong/Skip' : 'ভুল/স্কিপ -১৫'}
+                                                    </span>
                                                 </div>
                                             )}
                                         </div>
