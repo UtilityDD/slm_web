@@ -1011,7 +1011,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
       {/* Edit PPE Modal */}
       {
-        editingPPEUser && (
+        editingPPEUser && createPortal(
           <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
             <div className="bg-white dark:bg-slate-800 w-full h-full sm:h-auto sm:min-h-0 sm:max-h-[90vh] sm:rounded-2xl sm:max-w-5xl shadow-2xl flex flex-col animate-scale-in overflow-hidden">
               <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
@@ -1131,13 +1131,14 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 </button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )
       }
 
       {/* Edit Tools Modal */}
       {
-        editingToolsUser && (
+        editingToolsUser && createPortal(
           <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
             <div className="bg-white dark:bg-slate-800 w-full h-full sm:h-auto sm:min-h-0 sm:max-h-[90vh] sm:rounded-2xl sm:max-w-5xl shadow-2xl flex flex-col animate-scale-in overflow-hidden">
               <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
@@ -1257,7 +1258,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 </button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )
       }
 

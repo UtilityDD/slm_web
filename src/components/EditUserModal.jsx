@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 export default function EditUserModal({
     editingUser,
@@ -15,7 +16,7 @@ export default function EditUserModal({
 }) {
     if (!editingUser) return null;
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 bg-slate-50 dark:bg-slate-950 sm:bg-slate-900/60 sm:backdrop-blur-sm animate-fade-in">
             {/* Modal Container */}
             <div className="bg-white dark:bg-slate-900 w-full h-full sm:h-auto sm:max-h-[92vh] sm:rounded-[32px] sm:max-w-2xl shadow-2xl flex flex-col animate-scale-in overflow-hidden border-none sm:border dark:border-slate-800">
@@ -257,7 +258,8 @@ export default function EditUserModal({
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
 
