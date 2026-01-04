@@ -5,6 +5,7 @@ import { getBadgeByLevel, calculateLevelFromProgress } from './utils/badgeUtils'
 import { cacheHelper } from './utils/cacheHelper';
 import LogoutConfirmationModal from "./components/LogoutConfirmationModal";
 import Sidebar from "./components/Sidebar";
+import NetworkStatusListener from "./components/NetworkStatusListener";
 import { APP_NAME } from "./config";
 
 // Lazy load heavy components for code splitting
@@ -1071,6 +1072,10 @@ export default function SmartLinemanUI() {
             {renderContent()}
           </div>
         </div>
+
+
+        {/* Network Status Listener */}
+        <NetworkStatusListener language={language} />
 
         {/* Language Selection Modal */}
         {showLanguageModal && (
