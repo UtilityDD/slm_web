@@ -134,7 +134,7 @@ export default function SmartLinemanUI() {
     if (targetUser) {
       const { data, error } = await supabase
         .from('profiles')
-        .select('role, avatar_url, current_session_id, training_level, full_name, points, completed_lessons, total_penalties, slm_id')
+        .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id')
         .eq('id', targetUser.id);
 
       if (error) {
