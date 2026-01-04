@@ -1,1 +1,9 @@
 node_modules
+dist
+dist-ssr
+*.local
+.idea
+.vscode
+android/app/build
+android/build
+local.properties
