@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UserIcon } from './icons';
+import { APP_NAME, CURRENT_APP_VERSION } from '../config';
 
 export default function Sidebar({
   isOpen,
@@ -153,8 +154,15 @@ export default function Sidebar({
               {language === 'en' ? 'Language' : 'ভাষা'}
             </span>
           </button>
+
+          {/* Version Display */}
+          <div className="px-3 md:px-0 py-2 text-center">
+            <p className="text-[10px] font-black tracking-widest text-slate-400 dark:text-slate-500 uppercase overflow-hidden">
+              <span className="md:hidden lg:inline group-hover:inline">{APP_NAME}</span> v{CURRENT_APP_VERSION}
+            </p>
+          </div>
         </div>
-      </aside>
+      </aside >
     </>
   );
 }
