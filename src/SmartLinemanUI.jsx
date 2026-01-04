@@ -6,7 +6,7 @@ import { cacheHelper } from './utils/cacheHelper';
 import LogoutConfirmationModal from "./components/LogoutConfirmationModal";
 import Sidebar from "./components/Sidebar";
 import NetworkStatusListener from "./components/NetworkStatusListener";
-import { APP_NAME } from "./config";
+import { APP_NAME, CURRENT_APP_VERSION } from "./config";
 
 // Lazy load heavy components for code splitting
 const Competitions = lazy(() => import("./components/Competitions"));
@@ -59,48 +59,73 @@ export default function SmartLinemanUI() {
   const [completedLessons, setCompletedLessons] = useState([]);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [updateInfo, setUpdateInfo] = useState(null);
+  const [isForceUpdate, setIsForceUpdate] = useState(false);
 
-  // Service Worker Update Listener
-  useEffect(() => {
-    if ('serviceWorker' in navigator && !window.Capacitor) {
-      navigator.serviceWorker.ready.then(registration => {
-        // Check for updates periodically
-        const checkForUpdate = () => {
-          registration.update();
-        };
-        const interval = setInterval(checkForUpdate, 60 * 60 * 1000); // Check every hour
-
-        // Listen for new worker installing
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          newWorker.addEventListener('statechange', () => {
-            // Has a new worker been installed and is waiting?
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              setUpdateInfo({
-                version_name: 'Latest', // Generic since we don't have DB version
-                update_url: '#'
-              });
-              setShowUpdateModal(true);
-            }
-          });
-        });
-
-        return () => clearInterval(interval);
-      });
-
-      // Also listen for controller change (if skipWaiting happened automatically)
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-          refreshing = true;
-          setUpdateInfo({
-            version_name: 'Latest',
-            update_url: '#'
-          });
-          setShowUpdateModal(true);
-        }
-      });
+  // Version Comparison Helper
+  const isVersionOlder = (current, min) => {
+    if (!current || !min) return false;
+    const v1 = current.split('.').map(Number);
+    const v2 = min.split('.').map(Number);
+    for (let i = 0; i < Math.max(v1.length, v2.length); i++) {
+      const num1 = v1[i] || 0;
+      const num2 = v2[i] || 0;
+      if (num1 < num2) return true;
+      if (num1 > num2) return false;
     }
+    return false;
+  };
+
+  // Check for App Updates (Native & PWA)
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      try {
+        // 1. Native Force Update Check (Capacitor)
+        if (window.Capacitor) {
+          const { data, error } = await supabase
+            .from('app_versions')
+            .select('version_name, update_url, force_update')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          if (data) {
+            const { version_name: latest_version, update_url, force_update } = data;
+            if (isVersionOlder(CURRENT_APP_VERSION, latest_version)) {
+              console.log(`Force update required: ${CURRENT_APP_VERSION} < ${latest_version}`);
+              setUpdateInfo({ version_name: latest_version, update_url });
+              setIsForceUpdate(force_update);
+              setShowUpdateModal(true);
+              return; // Priority: Force update blocks PWA check
+            }
+          }
+        }
+
+        // 2. Service Worker Update Listener (PWA)
+        if ('serviceWorker' in navigator && !window.Capacitor) {
+          const registration = await navigator.serviceWorker.ready;
+
+          // Check for updates periodically
+          const interval = setInterval(() => registration.update(), 60 * 60 * 1000);
+
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                setUpdateInfo({ version_name: 'Latest', update_url: '#' });
+                setIsForceUpdate(false);
+                setShowUpdateModal(true);
+              }
+            });
+          });
+
+          return () => clearInterval(interval);
+        }
+      } catch (err) {
+        console.error('Update check error:', err);
+      }
+    };
+
+    checkForUpdates();
   }, []);
 
   useEffect(() => {
@@ -747,38 +772,67 @@ export default function SmartLinemanUI() {
         {/* Forced Update Modal */}
         {showUpdateModal && updateInfo && (
           <div className="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 text-center border border-slate-200 dark:border-slate-700">
-              <div className="w-20 h-20 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-4xl">🚀</span>
-              </div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                {language === 'en' ? 'Update Available' : 'নতুন সংস্করণ উপলব্ধ'}
-              </h2>
-              <p className="text-slate-600 dark:text-slate-300 mb-6">
-                {language === 'en'
-                  ? `A new version is available. Please refresh to apply the latest updates.`
-                  : `একটি নতুন সংস্করণ এসেছে। সর্বশেষ আপডেটগুলি পেতে দয়া করে রিফ্রেশ করুন।`
-                }
-              </p>
-              <button
-                onClick={() => {
-                  // Clear service worker cache to ensure new version is fetched
-                  if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.getRegistrations().then((registrations) => {
-                      for (let registration of registrations) {
-                        registration.unregister();
-                      }
-                      window.localStorage.clear(); // Optional: Clear local storage if needed, but might be too aggressive if user data is there. Kept it safe by ONLY unregistering SW.
-                      window.location.reload(true);
-                    });
-                  } else {
-                    window.location.reload(true);
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 text-center border border-slate-200 dark:border-slate-700 relative overflow-hidden">
+              {/* Background Glow */}
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-orange-500/10 blur-[100px] rounded-full"></div>
+
+              <div className="relative">
+                <div className="w-20 h-20 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="text-4xl animate-bounce-slow">🚀</span>
+                </div>
+
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+                  {language === 'en' ? 'Update Available' : 'নতুন সংস্করণ উপলব্ধ'}
+                </h2>
+
+                <p className="text-slate-600 dark:text-slate-300 mb-6">
+                  {isForceUpdate
+                    ? (language === 'en'
+                      ? `A critical update (v${updateInfo.version_name}) is required to continue using the app.`
+                      : `পরবর্তী ধাপের জন্য একটি গুরুত্বপূর্ণ আপডেট (v${updateInfo.version_name}) প্রয়োজন।`)
+                    : (language === 'en'
+                      ? `A new version is available. Please refresh to apply the latest updates.`
+                      : `একটি নতুন সংস্করণ এসেছে। সর্বশেষ আপডেটগুলি পেতে দয়া করে রিফ্রেশ করুন।`)
                   }
-                }}
-                className="block w-full py-3.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-all transform hover:scale-[1.02] shadow-lg shadow-orange-600/20"
-              >
-                {language === 'en' ? 'Refresh Now' : 'এখনই রিফ্রেশ করুন'}
-              </button>
+                </p>
+
+                <div className="space-y-3">
+                  <button
+                    onClick={() => {
+                      if (isForceUpdate && updateInfo.update_url && updateInfo.update_url !== '#') {
+                        window.open(updateInfo.update_url, '_system');
+                      } else {
+                        // SW Refresh logic
+                        if ('serviceWorker' in navigator) {
+                          navigator.serviceWorker.getRegistrations().then((registrations) => {
+                            for (let registration of registrations) {
+                              registration.unregister();
+                            }
+                            window.location.reload(true);
+                          });
+                        } else {
+                          window.location.reload(true);
+                        }
+                      }
+                    }}
+                    className="block w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-all transform hover:scale-[1.02] shadow-lg shadow-orange-600/20"
+                  >
+                    {isForceUpdate
+                      ? (language === 'en' ? 'Update Now' : 'এখনই আপডেট করুন')
+                      : (language === 'en' ? 'Refresh Now' : 'এখনই রিফ্রেশ করুন')
+                    }
+                  </button>
+
+                  {!isForceUpdate && (
+                    <button
+                      onClick={() => setShowUpdateModal(false)}
+                      className="block w-full py-3 text-slate-500 dark:text-slate-400 font-bold hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                    >
+                      {language === 'en' ? 'Later' : 'পরে'}
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
