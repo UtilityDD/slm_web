@@ -22,6 +22,7 @@ const AdminServices = lazy(() => import("./components/AdminServices"));
 const Home = lazy(() => import("./components/Home"));
 const Guide = lazy(() => import("./components/Guide"));
 const VerificationView = lazy(() => import("./components/VerificationView"));
+const Notifications = lazy(() => import("./components/Notifications"));
 
 export default function SmartLinemanUI() {
   const [globalLoading, setGlobalLoading] = useState(false);
@@ -679,6 +680,12 @@ export default function SmartLinemanUI() {
           const certId = window.location.hash.split('/').pop();
           return <VerificationView language={language} certificateId={certId} />;
         }
+        case 'notifications':
+          return <Notifications
+            language={language}
+            notifications={notificationsHistory}
+            setCurrentView={setCurrentView}
+          />;
         case 'home':
         default:
           return <Home
