@@ -79,8 +79,8 @@ export default function Sidebar({
               {userProfile?.avatar_url ? (
                 <img src={userProfile.avatar_url} alt={userProfile.full_name} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-7 h-7 text-white/90">
-                  <UserIcon />
+                <div className="w-full h-full text-white/90 flex items-center justify-center p-2">
+                  <UserIcon className="w-full h-full" />
                 </div>
               )}
             </div>

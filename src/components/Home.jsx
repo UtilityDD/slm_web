@@ -190,8 +190,8 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                     {userProfile?.avatar_url ? (
                                         <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="w-12 h-12 text-orange-400">
-                                            <UserIcon />
+                                        <div className="w-full h-full text-orange-400 flex items-center justify-center p-2">
+                                            <UserIcon className="w-full h-full opacity-80" />
                                         </div>
                                     )}
                                 </div>
