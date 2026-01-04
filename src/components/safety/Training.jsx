@@ -211,6 +211,45 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
 
         // Lazy load subchapters
         try {
+            // Check cache first
+            const cacheKey = `training_module_${chapter.number}_${language}`;
+            const cachedData = cacheHelper.get(cacheKey);
+
+            if (cachedData) {
+                setSelectedChapter({ ...chapter, subchapters: cachedData });
+                setTrainingLoading(false);
+                return;
+            }
+
+            // Fetch from Supabase
+            const { data, error } = await supabase
+                .rpc('get_chapters_by_module', {
+                    module_num: chapter.number,
+                    lang: language
+                });
+
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                // Formatting: Extract content and merge with ID
+                const subchapters = data.map(row => ({
+                    ...row.content,
+                    level_id: row.id,
+                    chapterNum: row.module_number,
+                    subchapterNum: row.chapter_number
+                }));
+
+                // Cache the result (expire in 1 hour)
+                cacheHelper.set(cacheKey, subchapters, 60);
+
+                setSelectedChapter({ ...chapter, subchapters });
+            } else {
+                // Fallback to legacy file fetch if DB returns empty
+                throw new Error("No data in Supabase, falling back to files");
+            }
+        } catch (err) {
+            console.warn("Loading from Supabase failed, falling back to local files:", err);
+
             const promises = [];
             for (let s = 1; s <= chapter.count; s++) {
                 promises.push(
@@ -221,12 +260,10 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
             }
             const results = await Promise.all(promises);
             const subchapters = results
-                .map((data, idx) => data ? { ...data, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
+                .map((d, idx) => d ? { ...d, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
                 .filter(Boolean);
 
             setSelectedChapter({ ...chapter, subchapters });
-        } catch (err) {
-            console.error("Error loading chapter:", err);
         } finally {
             setTrainingLoading(false);
         }
