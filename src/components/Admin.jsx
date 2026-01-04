@@ -1013,7 +1013,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       {
         editingPPEUser && (
           <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white dark:bg-slate-800 w-full h-full min-h-screen sm:min-h-0 sm:h-auto sm:max-h-[90vh] sm:rounded-2xl sm:max-w-5xl shadow-2xl flex flex-col animate-scale-in">
+            <div className="bg-white dark:bg-slate-800 w-full h-full sm:h-auto sm:min-h-0 sm:max-h-[90vh] sm:rounded-2xl sm:max-w-5xl shadow-2xl flex flex-col animate-scale-in overflow-hidden">
               <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
                 <div className="flex items-center gap-3">
                   {/* Mobile Back Button */}
@@ -1115,7 +1115,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-6 border-t dark:border-slate-700 bg-white dark:bg-slate-800 sticky bottom-0 z-10 shrink-0 mt-auto pb-safe">
+              <div className="flex gap-3 p-4 sm:p-6 border-t dark:border-slate-700 bg-white dark:bg-slate-800 sticky bottom-0 z-10 shrink-0 sm:rounded-b-2xl">
                 <button
                   onClick={() => setEditingPPEUser(null)}
                   className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
@@ -1139,7 +1139,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       {
         editingToolsUser && (
           <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white dark:bg-slate-800 w-full h-full min-h-screen sm:min-h-0 sm:h-auto sm:max-h-[90vh] sm:rounded-2xl sm:max-w-5xl shadow-2xl flex flex-col animate-scale-in">
+            <div className="bg-white dark:bg-slate-800 w-full h-full sm:h-auto sm:min-h-0 sm:max-h-[90vh] sm:rounded-2xl sm:max-w-5xl shadow-2xl flex flex-col animate-scale-in overflow-hidden">
               <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
                 <div className="flex items-center gap-3">
                   {/* Mobile Back Button */}
@@ -1241,7 +1241,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-6 border-t dark:border-slate-700 bg-white dark:bg-slate-800 sticky bottom-0 z-10 shrink-0 mt-auto pb-safe">
+              <div className="flex gap-3 p-4 sm:p-6 border-t dark:border-slate-700 bg-white dark:bg-slate-800 sticky bottom-0 z-10 shrink-0 sm:rounded-b-2xl">
                 <button
                   onClick={() => setEditingToolsUser(null)}
                   className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
