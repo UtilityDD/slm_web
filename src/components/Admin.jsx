@@ -5,6 +5,7 @@ import { cacheHelper } from '../utils/cacheHelper';
 import wbLocations from '../data/wb_locations.json';
 
 import EditUserModal from './EditUserModal';
+import SaveSuccessModal from './SaveSuccessModal';
 
 const UserTableSkeleton = () => (
   <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
@@ -33,41 +34,6 @@ const UserTableSkeleton = () => (
   </div>
 );
 
-const SuccessModal = ({ isOpen, onClose, language }) => {
-  if (!isOpen) return null;
-
-  const t = {
-    en: {
-      title: 'Success!',
-      message: 'User profile has been updated successfully.',
-      close: 'Close'
-    },
-    bn: {
-      title: 'সফল!',
-      message: 'ব্যবহারকারীর প্রোফাইল সফলভাবে আপডেট করা হয়েছে।',
-      close: 'বন্ধ করুন'
-    }
-  }[language || 'en'];
-
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center border border-slate-100 dark:border-slate-700 animate-scale-in">
-        <div className="w-16 h-16 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
-          ✓
-        </div>
-        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.title}</h3>
-        <p className="text-slate-500 dark:text-slate-400 mb-6">{t.message}</p>
-        <button
-          onClick={onClose}
-          className="w-full py-3 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-white transition-colors"
-        >
-          {t.close}
-        </button>
-      </div>
-    </div>
-  );
-};
-
 export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -75,7 +41,9 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [editingUser, setEditingUser] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
+
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState({ title: '', message: '' });
   const [activeEditTab, setActiveEditTab] = useState('basic'); // 'basic', 'family', 'health'
 
   /* Pagination State */
@@ -89,6 +57,11 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [editingPPEUser, setEditingPPEUser] = useState(null);
   const [ppeChecklist, setPpeChecklist] = useState([]);
   const [isSavingPPE, setIsSavingPPE] = useState(false);
+
+  /* Tools Management State */
+  const [editingToolsUser, setEditingToolsUser] = useState(null);
+  const [toolsChecklist, setToolsChecklist] = useState([]);
+  const [isSavingTools, setIsSavingTools] = useState(false);
 
   /* Notification State */
   const [notificationForm, setNotificationForm] = useState({
@@ -193,6 +166,19 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     { name: "Torch/Emergency Light", icon: "🔦" }
   ];
 
+  const TOOLS_ITEMS = [
+    { name: "Pliers", icon: "🔧" },
+    { name: "Screwdriver Set", icon: "🪛" },
+    { name: "Wrench", icon: "🔧" },
+    { name: "Hammer", icon: "🔨" },
+    { name: "Tester", icon: "⚡" },
+    { name: "Multimeter", icon: "📟" },
+    { name: "Wire Stripper", icon: "✂️" },
+    { name: "Rope", icon: "🪢" },
+    { name: "Drill Machine", icon: "🔫" },
+    { name: "Ladder", icon: "🪜" }
+  ];
+
   const handleEditPPE = async (targetUser) => {
     // Authorization check
     const canEdit =
@@ -290,7 +276,11 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       // Clear cache for this user so they see updates immediately
       cacheHelper.clear(`user_ppe_${editingPPEUser.id}`);
 
-      alert('PPE Status updated successfully!');
+      setSuccessMessage({
+        title: language === 'en' ? 'PPE Updated' : 'পিপিই আপডেট করা হয়েছে',
+        message: language === 'en' ? 'PPE Status updated successfully!' : 'পিপিই স্ট্যাটাস সফলভাবে আপডেট করা হয়েছে!'
+      });
+      setShowSuccessModal(true);
       setEditingPPEUser(null);
       setEditingPPEUser(null);
     } catch (error) {
@@ -298,6 +288,118 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       alert('Failed to save PPE status');
     } finally {
       setIsSavingPPE(false);
+    }
+  };
+
+  /* Tools Management Logic */
+  const handleEditTools = async (targetUser) => {
+    // Authorization check
+    const canEdit =
+      userProfile?.role === 'admin' ||
+      (userProfile?.role === 'safety mitra' && targetUser.supervisor_id === user.id) ||
+      (userProfile?.role === 'lineman' && targetUser.id === user.id);
+
+    if (!canEdit) {
+      alert('You do not have permission to edit this user\'s Tools.');
+      return;
+    }
+
+    setEditingToolsUser(targetUser);
+    setToolsChecklist([]); // Reset while loading
+
+    try {
+      const { data: fetchedData, error } = await supabase
+        .from('user_tools')
+        .select('*')
+        .eq('user_id', targetUser.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      const data = fetchedData || [];
+
+      // Initialize checklist based on fetched data
+      const checklist = TOOLS_ITEMS.map(item => {
+        const existing = data.find(p => p.name === item.name);
+        return {
+          ...item,
+          available: !!existing,
+          id: existing?.id || null,
+          count: existing?.count || 1,
+          condition: existing?.condition || 'Good',
+          age: existing?.age_months ?
+            (existing.age_months <= 6 ? '<6m' :
+              existing.age_months <= 12 ? '6-12m' :
+                existing.age_months <= 24 ? '1-2y' : '>2y') : '<6m',
+          usage: existing?.details?.includes('Usage:') ?
+            existing.details.split('Usage:')[1].trim() : 'Personal'
+        };
+      });
+      setToolsChecklist(checklist);
+
+    } catch (error) {
+      console.error('Error fetching user Tools:', error);
+      alert('Failed to fetch Tools data');
+    }
+  };
+
+  const handleToolsChecklistChange = (index, field, value) => {
+    const updated = [...toolsChecklist];
+    updated[index] = { ...updated[index], [field]: value };
+    setToolsChecklist(updated);
+  };
+
+  const handleSaveUserTools = async () => {
+    if (!editingToolsUser) return;
+    setIsSavingTools(true);
+
+    try {
+      for (const item of toolsChecklist) {
+        const ageMonths = item.age === '<6m' ? 3 :
+          item.age === '6-12m' ? 9 :
+            item.age === '1-2y' ? 18 : 36;
+
+        const details = `Usage: ${item.usage}`;
+
+        if (item.available) {
+          if (item.id) {
+            // Update
+            await supabase.from('user_tools').update({
+              count: parseInt(item.count),
+              condition: item.condition,
+              age_months: ageMonths,
+              details: details
+            }).eq('id', item.id);
+          } else {
+            // Insert
+            await supabase.from('user_tools').insert([{
+              user_id: editingToolsUser.id,
+              name: item.name,
+              count: parseInt(item.count),
+              condition: item.condition,
+              age_months: ageMonths,
+              details: details
+            }]);
+          }
+        } else if (item.id) {
+          // Delete
+          await supabase.from('user_tools').delete().eq('id', item.id);
+        }
+      }
+
+      // Clear cache
+      cacheHelper.clear(`user_tools_${editingToolsUser.id}`);
+
+      setSuccessMessage({
+        title: language === 'en' ? 'Tools Updated' : 'সরঞ্জাম আপডেট করা হয়েছে',
+        message: language === 'en' ? 'Tools Status updated successfully!' : 'সরঞ্জাম স্ট্যাটাস সফলভাবে আপডেট করা হয়েছে!'
+      });
+      setShowSuccessModal(true);
+      setEditingToolsUser(null);
+    } catch (error) {
+      console.error('Error saving user Tools:', error);
+      alert('Failed to save Tools status');
+    } finally {
+      setIsSavingTools(false);
     }
   };
 
@@ -502,6 +604,10 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       setEditingUser(null);
       setAvatarFile(null);
       setAvatarPreview(null);
+      setSuccessMessage({
+        title: language === 'en' ? 'Profile Updated' : 'প্রোফাইল আপডেট করা হয়েছে',
+        message: language === 'en' ? 'User profile has been updated successfully.' : 'ব্যবহারকারীর প্রোফাইল সফলভাবে আপডেট করা হয়েছে।'
+      });
       setShowSuccessModal(true);
     }
   };
@@ -644,6 +750,13 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                       PPE
                     </button>
                     <button
+                      onClick={() => handleEditTools(targetUser)}
+                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-all"
+                    >
+                      <span>🛠️</span>
+                      Tools
+                    </button>
+                    <button
                       onClick={() => handleEdit(targetUser)}
                       disabled={userProfile?.role === 'safety mitra' && targetUser.role === 'admin'}
                       className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all border ${userProfile?.role === 'safety mitra' && targetUser.role === 'admin'
@@ -707,6 +820,12 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                             className="text-orange-600 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-300 border border-orange-200 dark:border-orange-800 px-3 py-1.5 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all font-medium text-xs"
                           >
                             🦺 PPE
+                          </button>
+                          <button
+                            onClick={() => handleEditTools(targetUser)}
+                            className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all font-medium text-xs"
+                          >
+                            🛠️ Tools
                           </button>
                           <button
                             onClick={() => handleEdit(targetUser)}
@@ -1006,15 +1125,140 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
         )
       }
 
-      {/* Success Modal - Portal-ized */}
-      {showSuccessModal && createPortal(
-        <SuccessModal
-          isOpen={showSuccessModal}
-          onClose={() => setShowSuccessModal(false)}
-          language={language}
-        />,
-        document.body
-      )}
+      {/* Edit Tools Modal */}
+      {
+        editingToolsUser && (
+          <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white dark:bg-slate-800 w-full h-full min-h-screen sm:min-h-0 sm:h-auto sm:max-h-[90vh] sm:rounded-2xl sm:max-w-5xl shadow-2xl flex flex-col animate-scale-in">
+              <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
+                <div className="flex items-center gap-3">
+                  {/* Mobile Back Button */}
+                  <button
+                    onClick={() => setEditingToolsUser(null)}
+                    className="sm:hidden p-2 -ml-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+                  </button>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Manage Tools</h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{editingToolsUser.full_name}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setEditingToolsUser(null)}
+                  className="hidden sm:block text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto custom-scrollbar grow pb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {toolsChecklist.map((item, index) => (
+                    <div key={item.name} className={`relative p-4 rounded-xl border-2 transition-all ${item.available ? 'border-indigo-500 bg-indigo-50/10 dark:bg-indigo-900/10 shadow-sm' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 opacity-80'}`}>
+                      {/* Checkbox Overlay */}
+                      <div className="absolute top-3 right-3">
+                        <input
+                          type="checkbox"
+                          checked={item.available || false}
+                          onChange={(e) => handleToolsChecklistChange(index, 'available', e.target.checked)}
+                          className="w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="text-3xl filter drop-shadow-sm">{item.icon}</span>
+                        <h3 className={`font-bold leading-tight ${item.available ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-500 dark:text-slate-400'}`}>{item.name}</h3>
+                      </div>
+
+                      {item.available && (
+                        <div className="space-y-3 mt-4 animate-fade-in">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Count</label>
+                              <input
+                                type="number"
+                                min="1"
+                                value={item.count}
+                                onChange={(e) => handleToolsChecklistChange(index, 'count', e.target.value)}
+                                className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Condition</label>
+                              <select
+                                value={item.condition}
+                                onChange={(e) => handleToolsChecklistChange(index, 'condition', e.target.value)}
+                                className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
+                              >
+                                <option>Good</option>
+                                <option>Worn</option>
+                                <option>Damaged</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Age</label>
+                              <select
+                                value={item.age}
+                                onChange={(e) => handleToolsChecklistChange(index, 'age', e.target.value)}
+                                className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
+                              >
+                                <option>{'<'}6m</option>
+                                <option>6-12m</option>
+                                <option>1-2y</option>
+                                <option>{'>'}2y</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Usage</label>
+                              <select
+                                value={item.usage}
+                                onChange={(e) => handleToolsChecklistChange(index, 'usage', e.target.value)}
+                                className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
+                              >
+                                <option>Personal</option>
+                                <option>Team</option>
+                                <option>Spare</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-6 border-t dark:border-slate-700 bg-white dark:bg-slate-800 sticky bottom-0 z-10 shrink-0 mt-auto pb-safe">
+                <button
+                  onClick={() => setEditingToolsUser(null)}
+                  className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveUserTools}
+                  disabled={isSavingTools}
+                  className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-2"
+                >
+                  {isSavingTools ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Success Modal - Uses the reusable SaveSuccessModal */}
+      <SaveSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title={successMessage.title}
+        message={successMessage.message}
+        language={language}
+      />
 
       {/* Send Notification Modal - Portal-ized */}
       {showNotificationModal && createPortal(

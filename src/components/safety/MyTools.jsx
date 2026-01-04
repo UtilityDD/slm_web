@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { cacheHelper } from '../../utils/cacheHelper';
+import SaveSuccessModal from '../SaveSuccessModal';
 
 const TOOLS_ITEMS = [
-    { name: "Pliers", icon: "🔧" },
-    { name: "Screwdriver Set", icon: "🪛" },
-    { name: "Wrench", icon: "🔧" },
-    { name: "Hammer", icon: "🔨" },
-    { name: "Tester", icon: "⚡" },
-    { name: "Multimeter", icon: "📟" },
-    { name: "Wire Stripper", icon: "✂️" },
-    { name: "Drill Machine", icon: "🔫" },
-    { name: "Ladder", icon: "🪜" },
-    { name: "Rope", icon: "🪢" }
+    { name: "Pliers", icon: "🔧", essential: true },
+    { name: "Screwdriver Set", icon: "🪛", essential: true },
+    { name: "Wrench", icon: "🔧", essential: true },
+    { name: "Hammer", icon: "🔨", essential: true },
+    { name: "Tester", icon: "⚡", essential: true },
+    { name: "Multimeter", icon: "📟", essential: true },
+    { name: "Wire Stripper", icon: "✂️", essential: true },
+    { name: "Rope", icon: "🪢", essential: true },
+    { name: "Drill Machine", icon: "🔫", essential: false },
+    { name: "Ladder", icon: "🪜", essential: false }
 ];
 
 const MyTools = ({ user, setCurrentView, language }) => {
@@ -20,6 +21,7 @@ const MyTools = ({ user, setCurrentView, language }) => {
     const [loading, setLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [toolsChecklist, setToolsChecklist] = useState([]);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -83,7 +85,8 @@ const MyTools = ({ user, setCurrentView, language }) => {
 
         try {
             // Prepare data for batch operations
-            const upsertItems = [];
+            const itemsToUpdate = [];
+            const itemsToInsert = [];
             const deleteIds = [];
 
             for (const item of toolsChecklist) {
@@ -94,16 +97,22 @@ const MyTools = ({ user, setCurrentView, language }) => {
                 const details = `Usage: ${item.usage}`;
 
                 if (item.available) {
-                    // Prepare for upsert (handles both insert and update)
-                    upsertItems.push({
-                        id: item.id || undefined, // Include ID for updates, undefined for inserts
+                    const payload = {
                         user_id: user.id,
                         name: item.name,
                         count: parseInt(item.count),
                         condition: item.condition,
                         age_months: ageMonths,
                         details: details
-                    });
+                    };
+
+                    if (item.id) {
+                        // Existing item - Update
+                        itemsToUpdate.push({ ...payload, id: item.id });
+                    } else {
+                        // New item - Insert
+                        itemsToInsert.push(payload);
+                    }
                 } else if (item.id) {
                     // Collect IDs for deletion
                     deleteIds.push(item.id);
@@ -120,19 +129,28 @@ const MyTools = ({ user, setCurrentView, language }) => {
                 if (deleteError) throw deleteError;
             }
 
-            // Perform Upserts
-            if (upsertItems.length > 0) {
-                const { error: upsertError } = await supabase
+            // Perform Updates (Upsert is safe here as IDs exist)
+            if (itemsToUpdate.length > 0) {
+                const { error: updateError } = await supabase
                     .from('user_tools')
-                    .upsert(upsertItems, { onConflict: 'id' });
+                    .upsert(itemsToUpdate, { onConflict: 'id' });
 
-                if (upsertError) throw upsertError;
+                if (updateError) throw updateError;
+            }
+
+            // Perform Inserts (New items only)
+            if (itemsToInsert.length > 0) {
+                const { error: insertError } = await supabase
+                    .from('user_tools')
+                    .insert(itemsToInsert);
+
+                if (insertError) throw insertError;
             }
 
             // Update Cache & Local State
             cacheHelper.clear(`user_tools_${user.id}`);
             await fetchTools();
-            alert(language === 'en' ? 'Tools list updated successfully!' : 'সরঞ্জাম তালিকা সফলভাবে আপডেট করা হয়েছে!');
+            setShowSuccessModal(true);
 
         } catch (error) {
             console.error('Error saving Tools:', error);
@@ -148,152 +166,184 @@ const MyTools = ({ user, setCurrentView, language }) => {
         setToolsChecklist(updated);
     };
 
+    // Derived state for categorized view
+    const missingEssentials = toolsChecklist.filter(item => item.essential && !item.available);
+    const myTools = toolsChecklist.filter(item => item.available);
+    const otherAvailable = toolsChecklist.filter(item => !item.essential && !item.available);
+
+    const ToolCard = ({ item, index, compact = false }) => (
+        <div
+            className={`relative rounded-xl border transition-all duration-300 ${item.available
+                ? 'border-orange-200 bg-orange-50 dark:bg-orange-900/10 dark:border-orange-800'
+                : 'border-slate-200 bg-white dark:bg-slate-800 dark:border-slate-700'
+                } ${compact ? 'p-3' : 'p-4'}`}
+        >
+            <div className="flex items-start gap-3">
+                <div
+                    onClick={() => handleChecklistChange(index, 'available', !item.available)}
+                    className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-xl cursor-pointer transition-colors ${item.available
+                        ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400'
+                        : 'bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-500 hover:bg-orange-50 hover:text-orange-500'
+                        }`}
+                >
+                    {item.icon}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start">
+                        <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-100 leading-snug truncate pr-6">
+                            {item.name}
+                        </h3>
+                        <input
+                            type="checkbox"
+                            checked={item.available || false}
+                            onChange={(e) => handleChecklistChange(index, 'available', e.target.checked)}
+                            className="w-4 h-4 text-orange-600 rounded border-slate-300 focus:ring-orange-500 cursor-pointer"
+                        />
+                    </div>
+
+                    {item.essential && !item.available && (
+                        <span className="inline-block mt-1 text-[10px] uppercase font-bold text-red-500 tracking-wide bg-red-50 dark:bg-red-900/20 px-1.5 py-0.5 rounded">
+                            Required
+                        </span>
+                    )}
+
+                    {/* Compact Details when available */}
+                    {item.available && (
+                        <div className="mt-3 grid grid-cols-2 gap-2">
+                            <div>
+                                <label className="block text-[10px] text-slate-500 uppercase font-semibold">Count</label>
+                                <select
+                                    className="w-full mt-0.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-1 py-1"
+                                    value={item.count}
+                                    onChange={(e) => handleChecklistChange(index, 'count', e.target.value)}
+                                >
+                                    {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] text-slate-500 uppercase font-semibold">Condition</label>
+                                <select
+                                    className="w-full mt-0.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-1 py-1"
+                                    value={item.condition}
+                                    onChange={(e) => handleChecklistChange(index, 'condition', e.target.value)}
+                                >
+                                    <option>Good</option>
+                                    <option>Fair</option>
+                                    <option>Worn</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
     return (
-        <div className="space-y-6 animate-fade-in">
-            <div className="flex justify-between items-center mb-6">
+        <div className="space-y-6 animate-fade-in pb-20">
+            {/* Header with Save */}
+            <div className="sticky top-0 z-20 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm py-4 border-b border-slate-200 dark:border-slate-800 -mx-4 px-4 flex justify-between items-center">
                 <div>
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                         {language === 'en' ? 'My Tools Checklist' : 'আমার সরঞ্জাম চেকলিস্ট'}
                     </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                        {language === 'en' ? 'Select the tools available with you' : 'আপনার সাথে থাকা সরঞ্জামগুলি নির্বাচন করুন'}
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {myTools.length}/{TOOLS_ITEMS.length} Items • {missingEssentials.length} Missing Essentials
                     </p>
                 </div>
                 {!user ? (
-                    <button
-                        onClick={() => setCurrentView('login')}
-                        className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
-                    >
-                        {language === 'en' ? 'Login to Save' : 'সংরক্ষণ করতে লগইন করুন'}
+                    <button onClick={() => setCurrentView('login')} className="text-sm px-3 py-1.5 bg-orange-600 text-white rounded-lg">
+                        Login
                     </button>
                 ) : (
                     <button
                         onClick={handleSaveTools}
                         disabled={isSaving}
-                        className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-orange-700 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="w-10 h-10 flex items-center justify-center bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg hover:shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+                        title={language === 'en' ? 'Save Changes' : 'পরিবর্তন সংরক্ষণ করুন'}
                     >
                         {isSaving ? (
-                            <>
-                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                {language === 'en' ? 'Saving...' : 'সংরক্ষণ হচ্ছে...'}
-                            </>
+                            <div className="w-5 h-5 border-2 border-white/30 dark:border-slate-900/30 border-t-white dark:border-t-slate-900 rounded-full animate-spin"></div>
                         ) : (
-                            <>
-                                <span>💾</span>
-                                {language === 'en' ? 'Save Changes' : 'পরিবর্তন সংরক্ষণ করুন'}
-                            </>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                                <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
+                            </svg>
                         )}
                     </button>
                 )}
             </div>
 
             {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[1, 2, 3, 4, 5, 6].map(i => (
-                        <div key={i} className="h-48 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse"></div>
-                    ))}
-                </div>
+                <div className="flex justify-center p-8"><div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div></div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {toolsChecklist.map((item, index) => (
-                        <div
-                            key={item.name}
-                            className={`relative p-5 rounded-2xl border-2 transition-all duration-300 ${item.available
-                                ? 'border-orange-500 bg-orange-50/50 dark:bg-orange-900/10 shadow-md ring-1 ring-orange-500/20'
-                                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-orange-200 dark:hover:border-orange-800 opacity-75 hover:opacity-100'
-                                }`}
-                        >
-                            {/* Selection Checkbox */}
-                            <div className="absolute top-4 right-4 z-10">
-                                <div className="relative">
-                                    <input
-                                        type="checkbox"
-                                        checked={item.available || false}
-                                        onChange={(e) => handleChecklistChange(index, 'available', e.target.checked)}
-                                        className="peer sr-only"
-                                        id={`tools-checkbox-${index}`}
-                                    />
-                                    <label
-                                        htmlFor={`tools-checkbox-${index}`}
-                                        className={`block w-6 h-6 rounded-md border-2 transition-all cursor-pointer ${item.available
-                                            ? 'bg-orange-500 border-orange-500'
-                                            : 'bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 hover:border-orange-400'
-                                            }`}
-                                    >
-                                        <svg className={`w-full h-full text-white transform transition-transform ${item.available ? 'scale-100' : 'scale-0'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                                        </svg>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-4 mb-4 pr-10">
-                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-3xl shadow-sm transition-colors ${item.available ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600' : 'bg-slate-100 dark:bg-slate-700 text-slate-400'}`}>
-                                    {item.icon}
-                                </div>
-                                <h3 className={`font-bold text-lg leading-tight ${item.available ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
-                                    {item.name}
-                                </h3>
-                            </div>
-
-                            {/* Details Form - Slide Down */}
-                            <div className={`space-y-3 overflow-hidden transition-all duration-300 ${item.available ? 'max-h-48 opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1 tracking-wider">Count</label>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            value={item.count}
-                                            onChange={(e) => handleChecklistChange(index, 'count', e.target.value)}
-                                            className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all shadow-sm"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1 tracking-wider">Condition</label>
-                                        <select
-                                            value={item.condition}
-                                            onChange={(e) => handleChecklistChange(index, 'condition', e.target.value)}
-                                            className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all shadow-sm"
-                                        >
-                                            <option>Good</option>
-                                            <option>Worn</option>
-                                            <option>Damaged</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1 tracking-wider">Age</label>
-                                        <select
-                                            value={item.age}
-                                            onChange={(e) => handleChecklistChange(index, 'age', e.target.value)}
-                                            className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all shadow-sm"
-                                        >
-                                            <option>{'<'}6m</option>
-                                            <option>6-12m</option>
-                                            <option>1-2y</option>
-                                            <option>{'>'}2y</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1 tracking-wider">Usage</label>
-                                        <select
-                                            value={item.usage}
-                                            onChange={(e) => handleChecklistChange(index, 'usage', e.target.value)}
-                                            className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all shadow-sm"
-                                        >
-                                            <option>Personal</option>
-                                            <option>Team</option>
-                                            <option>Spare</option>
-                                        </select>
-                                    </div>
-                                </div>
+                <div className="space-y-6">
+                    {/* Section 1: Missing Essentials (If any) */}
+                    {missingEssentials.length > 0 && (
+                        <div className="bg-red-50 dark:bg-red-900/10 rounded-2xl p-4 border border-red-100 dark:border-red-900/30">
+                            <h3 className="text-sm font-bold text-red-800 dark:text-red-400 mb-3 flex items-center gap-2 uppercase tracking-wide">
+                                <span className="text-lg">⚠️</span> {language === 'en' ? 'Missing Essentials' : 'প্রয়োজনীয় সরঞ্জাম নেই'}
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {missingEssentials.map(item => {
+                                    const realIndex = toolsChecklist.findIndex(p => p.name === item.name);
+                                    return <ToolCard key={item.name} item={item} index={realIndex} />;
+                                })}
                             </div>
                         </div>
-                    ))}
+                    )}
+
+                    {/* Section 2: My Tools */}
+                    <div>
+                        <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wide px-1">
+                            {language === 'en' ? 'My Tools' : 'আমার সরঞ্জাম'} ({myTools.length})
+                        </h3>
+                        {myTools.length === 0 ? (
+                            <div className="text-center py-8 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+                                <p className="text-sm text-slate-500">No items added yet</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {myTools.map(item => {
+                                    const realIndex = toolsChecklist.findIndex(p => p.name === item.name);
+                                    return <ToolCard key={item.name} item={item} index={realIndex} />;
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Section 3: Add More Items */}
+                    {otherAvailable.length > 0 && (
+                        <div>
+                            <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wide px-1">
+                                {language === 'en' ? 'Add Others' : 'অন্যান্য যোগ করুন'}
+                            </h3>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                {otherAvailable.map(item => {
+                                    const realIndex = toolsChecklist.findIndex(p => p.name === item.name);
+                                    return (
+                                        <div
+                                            key={item.name}
+                                            onClick={() => handleChecklistChange(realIndex, 'available', true)}
+                                            className="p-3 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors opacity-60 hover:opacity-100"
+                                        >
+                                            <span className="text-xl opacity-50">{item.icon}</span>
+                                            <span className="text-xs font-medium text-slate-600 dark:text-slate-400 truncate">{item.name}</span>
+                                            <span className="ml-auto text-slate-400 text-lg">+</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
+
+            <SaveSuccessModal
+                isOpen={showSuccessModal}
+                onClose={() => setShowSuccessModal(false)}
+                language={language}
+            />
         </div>
     );
 };
