@@ -8,7 +8,13 @@ import {
     CommunityIcon,
     EmergencyIcon,
     AdminIcon,
-    UserIcon
+    UserIcon,
+    MyPPEIcon,
+    LeaderboardIcon,
+    HandbookIcon,
+    MyToolsIcon,
+    ShareIcon,
+    NotificationIcon
 } from './icons';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 
@@ -118,14 +124,14 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
         { id: 'sops', label: { en: 'Safety (SOP)', bn: 'এসওপি' }, icon: <SafetyIcon />, color: '#16a34a' },     // Green
         { id: 'community', label: { en: 'Community', bn: 'কমিউনিটি' }, icon: <CommunityIcon />, color: '#f59e0b' }, // Amber/Yellow-ish
         { id: 'emergency', label: { en: 'Emergency', bn: 'জরুরি' }, icon: <EmergencyIcon />, color: '#dc2626' },   // Red
-        { id: 'my_ppe', label: { en: 'My PPE', bn: 'আমার পিপিই' }, icon: '👷', color: '#facc15' },               // Yellow
-        { id: 'leaderboard', label: { en: 'Leaderboard', bn: 'লিডারবোর্ড' }, icon: '🏆', color: '#fb923c' },         // Light Orange
-        { id: 'guide', label: { en: 'Handbook', bn: 'হ্যান্ডবুক' }, icon: '📖', color: '#22c55e' },               // Green
+        { id: 'my_ppe', label: { en: 'My PPE', bn: 'আমার পিপিই' }, icon: <MyPPEIcon />, color: '#facc15' },               // Yellow
+        { id: 'leaderboard', label: { en: 'Leaderboard', bn: 'লিডারবোর্ড' }, icon: <LeaderboardIcon />, color: '#fb923c' },         // Light Orange
+        { id: 'guide', label: { en: 'Handbook', bn: 'হ্যান্ডবুক' }, icon: <HandbookIcon />, color: '#22c55e' },               // Green
         { id: 'competitions', label: { en: 'Competitions', bn: 'প্রতিযোগিতা' }, icon: <CompetitionIcon />, color: '#ea580c' }, // Deep Orange
-        { id: 'my_tools', label: { en: 'My Tools', bn: 'আমার সরঞ্জাম' }, icon: '🔧', color: '#795548' },           // Brown (Industry)
-        { id: 'share', label: { en: 'Share App', bn: 'শেয়ার অ্যাপ' }, icon: '🔗', color: '#fbbf24', action: handleShare }, // Gold
-        { id: 'admin', label: { en: 'Admin', bn: 'অ্যাডমিন' }, icon: '🤖', color: '#475569' },                    // Slate (System)
-        { id: 'notifications', label: { en: 'Notifications', bn: 'বিজ্ঞপ্তি' }, icon: '🔔', color: '#f97316' },     // Orange
+        { id: 'my_tools', label: { en: 'My Tools', bn: 'আমার সরঞ্জাম' }, icon: <MyToolsIcon />, color: '#795548' },           // Brown (Industry)
+        { id: 'share', label: { en: 'Share App', bn: 'শেয়ার অ্যাপ' }, icon: <ShareIcon />, color: '#fbbf24', action: handleShare }, // Gold
+        { id: 'admin', label: { en: 'Admin', bn: 'অ্যাডমিন' }, icon: <AdminIcon />, color: '#475569' },                    // Slate (System)
+        { id: 'notifications', label: { en: 'Notifications', bn: 'বিজ্ঞপ্তি' }, icon: <NotificationIcon />, color: '#f97316' },     // Orange
     ];
 
     const handleNav = (item) => {

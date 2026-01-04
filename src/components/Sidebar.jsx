@@ -43,6 +43,11 @@ export default function Sidebar({
   ];
 
   const handleNavClick = (item) => {
+    if (item.url) {
+      window.open(item.url, '_system');
+      onClose();
+      return;
+    }
     if (item.redirectTo && item.tab) {
       window.location.hash = `/${item.redirectTo}?tab=${item.tab}`;
     } else {

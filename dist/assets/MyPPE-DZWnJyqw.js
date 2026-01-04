@@ -1,1 +1,0 @@
-import{j as e}from"./index-DI4FCiht.js";import{E as a}from"./EquipmentManager-CrmG8hHR.js";import"./cacheHelper-BlUM2QW1.js";import"./SaveSuccessModal-BmjZsSqb.js";const i=({user:t,setCurrentView:o,language:r})=>e.jsx(a,{type:"ppe",user:t,language:r,setCurrentView:o,showCategories:!0,showSaveButton:!0,accentColor:"orange"});export{i as default};
