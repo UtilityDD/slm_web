@@ -1,20 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { Network } from '@capacitor/network';
 
 const NetworkStatusListener = ({ language = 'en' }) => {
-    const [isOnline, setIsOnline] = useState(navigator.onLine);
+    const [isOnline, setIsOnline] = useState(true);
     const [isWeakSignal, setIsWeakSignal] = useState(false);
     const [showRestored, setShowRestored] = useState(false);
+    const [isCapacitor, setIsCapacitor] = useState(false);
 
     useEffect(() => {
-        const checkConnectionQuality = () => {
-            if (navigator.connection) {
-                const type = navigator.connection.effectiveType;
-                // Consider 'slow-2g' or '2g' as weak signal
-                setIsWeakSignal(type === 'slow-2g' || type === '2g');
+        // Detect if running in Capacitor (Android/iOS)
+        const capacitorDetected = window.Capacitor !== undefined;
+        setIsCapacitor(capacitorDetected);
+
+        const initializeNetworkStatus = async () => {
+            if (capacitorDetected) {
+                // Use Capacitor Network API for native platforms
+                try {
+                    const status = await Network.getStatus();
+                    setIsOnline(status.connected);
+
+                    // Listen for network status changes
+                    Network.addListener('networkStatusChange', (status) => {
+                        const wasOnline = isOnline;
+                        setIsOnline(status.connected);
+
+                        if (!wasOnline && status.connected) {
+                            // Connection restored
+                            setShowRestored(true);
+                            setTimeout(() => setShowRestored(false), 3000);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error initializing Capacitor Network:', error);
+                    // Fallback to web API
+                    setIsOnline(navigator.onLine);
+                }
+            } else {
+                // Use browser API for web
+                setIsOnline(navigator.onLine);
             }
         };
 
+        initializeNetworkStatus();
+
+        // Web fallback handlers
         const handleOnline = () => {
             setIsOnline(true);
             setShowRestored(true);
@@ -26,29 +56,43 @@ const NetworkStatusListener = ({ language = 'en' }) => {
             setShowRestored(false);
         };
 
+        if (!capacitorDetected) {
+            window.addEventListener('online', handleOnline);
+            window.addEventListener('offline', handleOffline);
+        }
+
+        // Weak signal detection (web only)
+        const checkConnectionQuality = () => {
+            if (navigator.connection && !capacitorDetected) {
+                const type = navigator.connection.effectiveType;
+                setIsWeakSignal(type === 'slow-2g' || type === '2g');
+            }
+        };
+
         const handleConnectionChange = () => {
             checkConnectionQuality();
         };
 
-        window.addEventListener('online', handleOnline);
-        window.addEventListener('offline', handleOffline);
-
-        // Network Information API listener
-        if (navigator.connection) {
+        if (navigator.connection && !capacitorDetected) {
             navigator.connection.addEventListener('change', handleConnectionChange);
-            checkConnectionQuality(); // Initial check
+            checkConnectionQuality();
         }
 
         return () => {
-            window.removeEventListener('online', handleOnline);
-            window.removeEventListener('offline', handleOffline);
-            if (navigator.connection) {
-                navigator.connection.removeEventListener('change', handleConnectionChange);
+            if (!capacitorDetected) {
+                window.removeEventListener('online', handleOnline);
+                window.removeEventListener('offline', handleOffline);
+                if (navigator.connection) {
+                    navigator.connection.removeEventListener('change', handleConnectionChange);
+                }
+            }
+            // Cleanup Capacitor listener
+            if (capacitorDetected) {
+                Network.removeAllListeners();
             }
         };
     }, []);
 
-    // Show banner if Offline OR Weak Signal
     const showWarning = !isOnline || isWeakSignal;
 
     if (!showWarning && !showRestored) return null;
