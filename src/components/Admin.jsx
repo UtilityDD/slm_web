@@ -675,8 +675,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               <button
                 onClick={() => setShowAnalytics(!showAnalytics)}
                 className={`px-5 py-2.5 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 text-sm ${showAnalytics
-                    ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 shadow-slate-500/10'
-                    : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20'
+                  ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 shadow-slate-500/10'
+                  : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20'
                   }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1031,8 +1031,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       {/* Edit PPE Modal */}
       {
         editingPPEUser && createPortal(
-          <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white dark:bg-slate-800 w-full h-full sm:h-auto sm:min-h-0 sm:max-h-[90vh] sm:rounded-2xl sm:max-w-5xl shadow-2xl flex flex-col animate-scale-in overflow-hidden">
+          <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in safe-area-inset-top">
+            <div className="bg-white dark:bg-slate-800 w-full h-full sm:h-auto sm:min-h-0 sm:max-h-[90vh] sm:rounded-2xl sm:max-w-5xl shadow-2xl flex flex-col animate-scale-in overflow-hidden pt-4 sm:pt-0">
               <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
                 <div className="flex items-center gap-3">
                   {/* Mobile Back Button */}
@@ -1158,8 +1158,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       {/* Edit Tools Modal */}
       {
         editingToolsUser && createPortal(
-          <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white dark:bg-slate-800 w-full h-full sm:h-auto sm:min-h-0 sm:max-h-[90vh] sm:rounded-2xl sm:max-w-5xl shadow-2xl flex flex-col animate-scale-in overflow-hidden">
+          <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in safe-area-inset-top">
+            <div className="bg-white dark:bg-slate-800 w-full h-full sm:h-auto sm:min-h-0 sm:max-h-[90vh] sm:rounded-2xl sm:max-w-5xl shadow-2xl flex flex-col animate-scale-in overflow-hidden pt-4 sm:pt-0">
               <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
                 <div className="flex items-center gap-3">
                   {/* Mobile Back Button */}
