@@ -17,9 +17,9 @@ export default function EditUserModal({
     if (!editingUser) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 bg-slate-50 dark:bg-slate-950 sm:bg-slate-900/60 sm:backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 bg-slate-50 dark:bg-slate-950 sm:bg-slate-900/60 sm:backdrop-blur-sm animate-fade-in safe-area-inset-top">
             {/* Modal Container */}
-            <div className="bg-white dark:bg-slate-900 w-full h-full sm:h-auto sm:max-h-[92vh] sm:rounded-[32px] sm:max-w-2xl shadow-2xl flex flex-col animate-scale-in overflow-hidden border-none sm:border dark:border-slate-800">
+            <div className="bg-white dark:bg-slate-900 w-full h-full sm:h-auto sm:max-h-[92vh] sm:rounded-[32px] sm:max-w-2xl shadow-2xl flex flex-col animate-scale-in overflow-hidden border-none sm:border dark:border-slate-800 pt-4 sm:pt-0">
 
                 {/* Android Native Toolbar */}
                 <div className="flex justify-between items-center px-2 py-3 sm:p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b dark:border-slate-800 shrink-0 sticky top-0 z-20">
@@ -90,8 +90,8 @@ export default function EditUserModal({
                                 key={tab.id}
                                 onClick={() => setActiveEditTab(tab.id)}
                                 className={`px-5 py-2.5 rounded-2xl text-sm font-bold transition-all whitespace-nowrap ${activeEditTab === tab.id
-                                        ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20 active:scale-95'
-                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                                    ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20 active:scale-95'
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
                                     }`}
                             >
                                 {tab.label}
