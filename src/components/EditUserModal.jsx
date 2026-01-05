@@ -12,7 +12,8 @@ export default function EditUserModal({
     handleFileChange,
     handleChange,
     wbLocations,
-    supervisors
+    supervisors,
+    onOpenDeleteConfirm
 }) {
     if (!editingUser) return null;
 
@@ -236,6 +237,32 @@ export default function EditUserModal({
                                 </div>
                             </div>
                         )}
+
+                        {/* Danger Zone - Admin Only */}
+                        {userProfile?.role === 'admin' && (
+                            <div className="pt-4 animate-fade-in">
+                                <div className="p-6 rounded-3xl border-2 border-red-100 dark:border-red-900/20 bg-red-500/5 dark:bg-red-500/10 mb-2">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-2xl shadow-sm">
+                                            ⚠️
+                                        </div>
+                                        <div className="flex-1">
+                                            <h4 className="font-bold text-red-600 dark:text-red-400">Danger Zone</h4>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+                                                Deleting this user will permanently remove their profile, equipment records, posts, and history.
+                                                This action <strong>cannot be undone</strong>.
+                                            </p>
+                                            <button
+                                                onClick={() => onOpenDeleteConfirm(editingUser)}
+                                                className="w-full py-3.5 bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-2xl font-black text-sm hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white transition-all active:scale-95 shadow-sm"
+                                            >
+                                                Delete User Account
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Bottom Padding for Scroll */}
@@ -273,6 +300,7 @@ function InputField({ label, icon, ...props }) {
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg filter dark:grayscale-[0.5]">{icon}</span>
                 <input
                     {...props}
+                    value={props.value ?? ''}
                     className={`w-full pl-12 pr-4 py-4 sm:py-3.5 bg-slate-50 dark:bg-slate-900/50 border-2 border-transparent rounded-[24px] text-sm font-bold text-slate-900 dark:text-slate-100 transition-all outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5 ${props.readOnly ? 'opacity-60 grayscale-[0.5] cursor-not-allowed' : ''}`}
                 />
             </div>
@@ -288,6 +316,7 @@ function SelectField({ label, icon, options, placeholder, ...props }) {
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg filter dark:grayscale-[0.5] pointer-events-none">{icon}</span>
                 <select
                     {...props}
+                    value={props.value ?? ''}
                     className="w-full pl-12 pr-10 py-4 sm:py-3.5 bg-slate-50 dark:bg-slate-900/50 border-2 border-transparent rounded-[24px] text-sm font-bold text-slate-900 dark:text-slate-100 transition-all outline-none appearance-none focus:bg-white dark:focus:bg-slate-900 focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5 disabled:opacity-50"
                 >
                     {placeholder && <option value="">{placeholder}</option>}
@@ -313,6 +342,7 @@ function TextAreaField({ label, icon, ...props }) {
                 <span className="absolute left-4 top-5 text-lg filter dark:grayscale-[0.5]">{icon}</span>
                 <textarea
                     {...props}
+                    value={props.value ?? ''}
                     className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-900/50 border-2 border-transparent rounded-[24px] text-sm font-bold text-slate-900 dark:text-slate-100 transition-all outline-none min-h-[120px] resize-none focus:bg-white dark:focus:bg-slate-900 focus:border-orange-500/30 focus:ring-4 focus:ring-orange-500/5"
                 />
             </div>

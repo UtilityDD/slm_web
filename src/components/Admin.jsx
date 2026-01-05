@@ -7,6 +7,7 @@ import wbLocations from '../data/wb_locations.json';
 import EditUserModal from './EditUserModal';
 import SaveSuccessModal from './SaveSuccessModal';
 import AdminAnalytics from './AdminAnalytics';
+import DeleteUserConfirmationModal from './DeleteUserConfirmationModal';
 
 const UserTableSkeleton = () => (
   <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
@@ -47,6 +48,10 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState({ title: '', message: '' });
   const [activeEditTab, setActiveEditTab] = useState('basic'); // 'basic', 'family', 'health'
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   /* Pagination State */
   const [currentPage, setCurrentPage] = useState(1);
@@ -624,6 +629,59 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     }
   };
 
+  const handleOpenDeleteConfirm = (targetUser) => {
+    setUserToDelete(targetUser);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+    setIsDeleting(true);
+
+    try {
+      // 1. Delete from profiles (Cascades based on SQL setup)
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userToDelete.id);
+
+      if (error) throw error;
+
+      // 2. Clear caches
+      for (let i = 1; i <= 5; i++) {
+        cacheHelper.clear(`admin_users_page_${i}`);
+        cacheHelper.clear(`admin_users_admin_all_page_${i}`);
+        cacheHelper.clear(`admin_users_safety mitra_${user.id}_page_${i}`);
+      }
+      cacheHelper.clear(`user_ppe_${userToDelete.id}`);
+      cacheHelper.clear(`user_tools_${userToDelete.id}`);
+
+      // 3. Update local state
+      setUsers(users.filter(u => u.id !== userToDelete.id));
+      setTotalUsers(prev => prev - 1);
+
+      // 4. Success feedback
+      setSuccessMessage({
+        title: language === 'en' ? 'User Deleted' : 'ইউজার মুছে ফেলা হয়েছে',
+        message: language === 'en'
+          ? `User ${userToDelete.full_name} has been permanently removed from the application. Please remember to manually delete them from Supabase Auth if needed.`
+          : `ইউজার ${userToDelete.full_name}-কে স্থায়ীভাবে সরিয়ে ফেলা হয়েছে। প্রয়োজন হলে দয়া করে সুপারবেস অথ থেকে ম্যানুয়ালি মুছে ফেলুন।`
+      });
+      setShowSuccessModal(true);
+
+      // 5. Cleanup
+      setShowDeleteConfirm(false);
+      setUserToDelete(null);
+      setEditingUser(null); // Close edit modal if it was open
+
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert(`Failed to delete user: ${error.message}`);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -1026,6 +1084,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
         handleChange={handleChange}
         wbLocations={wbLocations}
         supervisors={supervisors}
+        onOpenDeleteConfirm={handleOpenDeleteConfirm}
       />
 
       {/* Edit PPE Modal */}
@@ -1378,6 +1437,20 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
           </div>
         </div>,
         document.body
+      )}
+
+      {/* Delete User Confirmation Modal */}
+      {showDeleteConfirm && (
+        <DeleteUserConfirmationModal
+          onConfirm={handleDeleteUser}
+          onCancel={() => {
+            setShowDeleteConfirm(false);
+            setUserToDelete(null);
+          }}
+          targetUser={userToDelete}
+          language={language}
+          loading={isDeleting}
+        />
       )}
 
       {/* Uniform bottom spacing for all roles to prevent content cut-off by sticky navs or safe areas */}
