@@ -648,7 +648,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       if (error) throw error;
 
       // 2. Clear caches
-      for (let i = 1; i <= 5; i++) {
+      for (let i = 1; i <= 10; i++) {
         cacheHelper.clear(`admin_users_page_${i}`);
         cacheHelper.clear(`admin_users_admin_all_page_${i}`);
         cacheHelper.clear(`admin_users_safety mitra_${user.id}_page_${i}`);
