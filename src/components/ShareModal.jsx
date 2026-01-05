@@ -59,7 +59,7 @@ export default function ShareModal({ isOpen, onClose, shareUrl, language }) {
                             level="H"
                             includeMargin={false}
                             imageSettings={{
-                                src: "/resources/icon.png",
+                                src: "/icon-192.png",
                                 x: undefined,
                                 y: undefined,
                                 height: 40,
