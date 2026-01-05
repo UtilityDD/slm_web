@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { cacheHelper } from '../utils/cacheHelper';
 import wbLocations from '../data/wb_locations.json';
@@ -770,43 +771,43 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
             )}
 
             {/* Registration Modal */}
-            {showRegisterModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-                    <div className="material-card elevation-5 w-full max-w-md p-6 sm:p-8 animate-scale-up">
+            {showRegisterModal && createPortal(
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white dark:bg-slate-800 rounded-[32px] w-full max-w-md p-6 sm:p-8 animate-scale-in border border-slate-100 dark:border-slate-800 shadow-2xl overflow-hidden">
                         <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100 dark:border-slate-700">
-                            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight">
                                 {isDonor ? (language === 'en' ? 'Update Donor Profile' : 'রক্তদাতা প্রোফাইল আপডেট') : (language === 'en' ? 'Register as Blood Donor' : 'রক্তদাতা হিসেবে নিবন্ধন')}
                             </h3>
                             <button
                                 onClick={() => setShowRegisterModal(false)}
-                                className="text-slate-400 hover:text-slate-600 dark:text-slate-400 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors"
+                                className="text-slate-400 hover:text-slate-600 dark:text-slate-400 w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                             >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
                         </div>
 
-                        <form onSubmit={handleRegister} className="space-y-4">
+                        <form onSubmit={handleRegister} className="space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar px-1">
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">Full Name</label>
+                                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Full Name</label>
                                 <input
                                     type="text"
                                     required
                                     value={regForm.fullName}
                                     onChange={(e) => setRegForm({ ...regForm, fullName: e.target.value })}
-                                    className="material-input"
+                                    className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-900/50 border-2 border-transparent rounded-2xl text-sm font-bold text-slate-900 dark:text-slate-100 transition-all outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-red-500/30 focus:ring-4 focus:ring-red-500/5"
                                     placeholder="Enter your name"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-2">Blood Group</label>
+                                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Blood Group</label>
                                     <select
                                         required
                                         value={regForm.bloodGroup}
                                         onChange={(e) => setRegForm({ ...regForm, bloodGroup: e.target.value })}
-                                        className="material-input"
+                                        className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-900/50 border-2 border-transparent rounded-2xl text-sm font-bold text-slate-900 dark:text-slate-100 transition-all outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-red-500/30 focus:ring-4 focus:ring-red-500/5 appearance-none"
                                     >
                                         <option value="">Select</option>
                                         <option value="A+">A+</option>
@@ -820,22 +821,22 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-2">Last Donated</label>
+                                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Last Donated</label>
                                     <input
                                         type="date"
                                         value={regForm.lastDonated}
                                         onChange={(e) => setRegForm({ ...regForm, lastDonated: e.target.value })}
-                                        className="material-input"
+                                        className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-900/50 border-2 border-transparent rounded-2xl text-sm font-bold text-slate-900 dark:text-slate-100 transition-all outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-red-500/30 focus:ring-4 focus:ring-red-500/5"
                                     />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">District</label>
+                                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">District</label>
                                 <select
                                     required
                                     value={regForm.district}
                                     onChange={(e) => setRegForm({ ...regForm, district: e.target.value, block: '' })}
-                                    className="material-input"
+                                    className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-900/50 border-2 border-transparent rounded-2xl text-sm font-bold text-slate-900 dark:text-slate-100 transition-all outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-red-500/30 focus:ring-4 focus:ring-red-500/5 appearance-none"
                                 >
                                     <option value="">Select District</option>
                                     {Object.keys(wbLocations).sort().map(dist => (
@@ -844,13 +845,13 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">Block Name</label>
+                                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Block Name</label>
                                 <select
                                     required
                                     value={regForm.block}
                                     onChange={(e) => setRegForm({ ...regForm, block: e.target.value })}
                                     disabled={!regForm.district}
-                                    className="material-input disabled:opacity-50"
+                                    className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-900/50 border-2 border-transparent rounded-2xl text-sm font-bold text-slate-900 dark:text-slate-100 transition-all outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-red-500/30 focus:ring-4 focus:ring-red-500/5 appearance-none disabled:opacity-50"
                                 >
                                     <option value="">Select Block</option>
                                     {regForm.district && wbLocations[regForm.district]?.map(block => (
@@ -859,7 +860,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">Phone Number</label>
+                                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Phone Number</label>
                                 <input
                                     type="tel"
                                     required
@@ -870,7 +871,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                     }}
                                     pattern="[0-9]{10}"
                                     title="Please enter a valid 10-digit phone number"
-                                    className="material-input"
+                                    className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-900/50 border-2 border-transparent rounded-2xl text-sm font-bold text-slate-900 dark:text-slate-100 transition-all outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-red-500/30 focus:ring-4 focus:ring-red-500/5"
                                     placeholder="10-digit mobile number"
                                 />
                             </div>
@@ -879,21 +880,22 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                 <button
                                     type="button"
                                     onClick={() => setShowRegisterModal(false)}
-                                    className="material-button-outlined ripple-dark flex-1"
+                                    className="flex-1 py-4 rounded-2xl font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition-all active:scale-95"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isRegistering}
-                                    className="material-button-primary ripple flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1 py-4 rounded-2xl font-bold bg-red-600 text-white shadow-xl shadow-red-600/20 hover:bg-red-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isRegistering ? 'Processing...' : (isDonor ? 'Update' : 'Register')}
                                 </button>
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

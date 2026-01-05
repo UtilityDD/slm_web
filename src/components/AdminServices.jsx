@@ -344,8 +344,8 @@ export default function AdminServices({ language = 'en', userProfile }) {
 
                 {/* Add/Edit Service Modal */}
                 {showServiceModal && createPortal(
-                    <div className="fixed inset-0 z-[200] flex sm:items-center sm:justify-center p-0 bg-slate-50 dark:bg-slate-950 sm:bg-slate-900/60 sm:backdrop-blur-sm animate-fade-in">
-                        <div className="bg-white dark:bg-slate-900 w-full h-full sm:h-auto sm:max-h-[85vh] sm:rounded-[40px] sm:max-w-2xl shadow-2xl flex flex-col animate-scale-in overflow-hidden border-none sm:border dark:border-slate-800">
+                    <div className="fixed inset-0 z-[200] flex sm:items-center sm:justify-center p-0 bg-slate-50 dark:bg-slate-950 sm:bg-slate-900/60 sm:backdrop-blur-sm animate-fade-in safe-area-inset-top">
+                        <div className="bg-white dark:bg-slate-900 w-full h-full sm:h-auto sm:max-h-[85vh] sm:rounded-[40px] sm:max-w-2xl shadow-2xl flex flex-col animate-scale-in overflow-hidden border-none sm:border dark:border-slate-800 pt-4 sm:pt-0">
 
                             {/* Native Android Toolbar */}
                             <div className="flex justify-between items-center px-4 py-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b dark:border-slate-800 shrink-0 sticky top-0 z-20">
