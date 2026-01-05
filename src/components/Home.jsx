@@ -16,6 +16,7 @@ import {
     ShareIcon,
     NotificationIcon
 } from './icons';
+import ShareModal from './ShareModal';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 
 export default function Home({ setCurrentView, language, user, userProfile, t, refreshProfile }) {
@@ -33,6 +34,8 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
     const [visitorName, setVisitorName] = useState('');
     const [showTipModal, setShowTipModal] = useState(false);
     const [dailyTip, setDailyTip] = useState('');
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [shareUrl, setShareUrl] = useState("https://github.com/UtilityDD/slm_web/releases/latest");
 
     const visitorNames = {
         en: ['Lineman', 'Hero', 'Superhero', 'Friend', 'Champion', 'Safety Star'],
@@ -79,7 +82,26 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                 setDailyTip(language === 'en' ? "Always test for voltage before touching any conductor." : "যেকোনো কন্ডাক্টর স্পর্শ করার আগে সর্বদা ভোল্টেজ পরীক্ষা করুন।");
             }
         };
+
+        const fetchLatestShareUrl = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('app_versions')
+                    .select('update_url')
+                    .order('version_code', { ascending: false })
+                    .limit(1)
+                    .single();
+
+                if (data?.update_url) {
+                    setShareUrl(data.update_url);
+                }
+            } catch (err) {
+                console.error('Error fetching share URL:', err);
+            }
+        };
+
         fetchDailyTip();
+        fetchLatestShareUrl();
     }, [userProfile, user, language]);
 
     const fetchProfile = async () => {
@@ -105,18 +127,8 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
         }
     };
 
-    const handleShare = async () => {
-        const shareUrl = "https://slm-web-eight.vercel.app/";
-        const shareText = language === 'en'
-            ? "⚡ Join SmartLineman - The ultimate safety app! " + shareUrl
-            : "⚡ স্মার্ট লাইনম্যান অ্যাপে যোগ দিন! " + shareUrl;
-
-        if (navigator.share) {
-            try { await navigator.share({ title: 'SmartLineman', text: shareText, url: shareUrl }); }
-            catch (error) { if (error.name !== 'AbortError') console.error('Error sharing:', error); }
-        } else {
-            window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
-        }
+    const handleShare = () => {
+        setIsShareModalOpen(true);
     };
 
     const navItems = [
@@ -263,6 +275,13 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                             </div>
                         </div>
                     )}
+                    {/* Share Modal */}
+                    <ShareModal
+                        isOpen={isShareModalOpen}
+                        onClose={() => setIsShareModalOpen(false)}
+                        shareUrl={shareUrl}
+                        language={language}
+                    />
                 </>
             )}
         </div>
