@@ -601,9 +601,10 @@ export default function SmartLinemanUI() {
   const PageLoader = () => (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 relative z-0 pb-16 animate-slide-up-fade">
       <div className="text-center">
-        <div className="relative mx-auto mb-6">
-          <div className="w-16 h-16 border-4 border-orange-100 dark:border-slate-700 rounded-full"></div>
-          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="flex gap-2 justify-center mb-6">
+          <div className="w-4 h-4 bg-orange-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+          <div className="w-4 h-4 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+          <div className="w-4 h-4 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
         </div>
         <p className="text-sm font-semibold text-slate-600 dark:text-slate-300 animate-pulse">
           {language === 'en' ? 'Loading...' : 'লোড হচ্ছে...'}
