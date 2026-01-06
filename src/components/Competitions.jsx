@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
@@ -1432,9 +1433,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
 
             {/* Quiz Modal */}
-            {activeQuiz && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60">
-                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700">
+            {activeQuiz && createPortal(
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700 animate-scale-in">
                         {!quizSubmitted ? (
                             <>
                                 <div className="flex justify-between items-center mb-6">
@@ -1596,8 +1597,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             </div>
                         )}
                     </div>
-                </div>
-            )
+                </div>,
+                document.body
+            )}
             }
         </div >
     );

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], language = 'en', isPractice = false }) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -161,9 +162,9 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
         }, 500);
     };
 
-    return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh]">
+    return createPortal(
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] animate-scale-in">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center p-20 space-y-4">
                         <svg className="w-12 h-12 text-orange-500 animate-pulse" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -361,7 +362,8 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
                     </>
                 )}
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 
