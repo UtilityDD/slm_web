@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import TabLoader from './guide/TabLoader';
-import { downloadPDF } from '../utils/pdfUtils';
 
 // Lazy load tab components
 const IntroTab = lazy(() => import('./guide/IntroTab'));
@@ -47,11 +46,6 @@ const Guide = ({ hideHeader = false, userRole = 'lineman' }) => {
             });
     }, []);
 
-    const handleDownloadPDF = async () => {
-        if (contentRef.current) {
-            await downloadPDF(contentRef.current, 'SmartLineman_Volunteer_Handbook.pdf');
-        }
-    };
 
 
     return (
@@ -104,16 +98,6 @@ const Guide = ({ hideHeader = false, userRole = 'lineman' }) => {
                                 </p>
                             </div>
 
-                            {/* PDF Download Button - Only visible in header */}
-                            <button
-                                onClick={handleDownloadPDF}
-                                className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors z-50"
-                                title="Download PDF"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                            </button>
                         </div>
                     )}
 
