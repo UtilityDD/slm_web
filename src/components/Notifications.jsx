@@ -1,6 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export default function Notifications({ language, notifications = [], setCurrentView }) {
+    // Scroll to top when component mounts
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }, []);
+
     // If no notifications, show empty state
     if (!notifications || notifications.length === 0) {
         return (
@@ -71,9 +76,9 @@ export default function Notifications({ language, notifications = [], setCurrent
                     >
                         <div className="flex gap-4">
                             <div className={`w-12 h-12 rounded-xl shrink-0 flex items-center justify-center text-2xl ${notif.type === 'alert' ? 'bg-red-100 text-red-600 dark:bg-red-900/20' :
-                                    notif.type === 'warning' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/20' :
-                                        notif.type === 'success' ? 'bg-green-100 text-green-600 dark:bg-green-900/20' :
-                                            'bg-blue-100 text-blue-600 dark:bg-blue-900/20'
+                                notif.type === 'warning' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/20' :
+                                    notif.type === 'success' ? 'bg-green-100 text-green-600 dark:bg-green-900/20' :
+                                        'bg-blue-100 text-blue-600 dark:bg-blue-900/20'
                                 }`}>
                                 {notif.type === 'alert' ? '🚨' :
                                     notif.type === 'warning' ? '⚠️' :
