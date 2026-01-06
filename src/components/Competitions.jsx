@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
 import { storageUtils } from '../utils/storageUtils';
+import { requestManager } from '../utils/requestManager';
 
 export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile }) {
     const [loading, setLoading] = useState(true);
@@ -357,31 +358,27 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     };
 
     const fetchServerTime = async () => {
-        const cachedOffset = cacheHelper.get('server_time_offset');
-        if (cachedOffset !== null) {
-            setServerTimeOffset(cachedOffset);
-            return;
-        }
-
         try {
-            const { data, error } = await supabase.rpc('get_server_time');
-            if (data) {
-                const serverTime = new Date(data).getTime();
-                const localTime = Date.now();
-                const offset = serverTime - localTime;
-                setServerTimeOffset(offset);
-                cacheHelper.set('server_time_offset', offset, 30); // Cache for 30 mins
-            } else {
-                const response = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
-                if (response.ok) {
-                    const data = await response.json();
-                    const serverTime = new Date(data.datetime).getTime();
-                    const localTime = Date.now();
-                    const offset = serverTime - localTime;
-                    setServerTimeOffset(offset);
-                    cacheHelper.set('server_time_offset', offset, 30);
-                }
-            }
+            const offset = await requestManager.fetch(
+                'server_time_offset',
+                async () => {
+                    const { data, error } = await supabase.rpc('get_server_time');
+                    if (data) {
+                        const serverTime = new Date(data).getTime();
+                        return serverTime - Date.now();
+                    }
+                    // Fallback to WorldTimeAPI
+                    const response = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
+                    if (response.ok) {
+                        const timeData = await response.json();
+                        const serverTime = new Date(timeData.datetime).getTime();
+                        return serverTime - Date.now();
+                    }
+                    return 0;
+                },
+                { ttl: 30, swr: true }
+            );
+            setServerTimeOffset(offset || 0);
         } catch (error) {
             console.error('Error fetching server time:', error);
         }
@@ -390,52 +387,45 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const fetchHourlyQuiz = async () => {
         const now = getSyncedTime();
         const hourId = `${now.getFullYear()}${now.getMonth() + 1}${now.getDate()}${now.getHours()}`;
-        // Cache key includes language and hour to ensure refresh every hour
         const cacheKey = `hourly_quiz_db_bn_${hourId}`;
-        const cachedQuiz = cacheHelper.get(cacheKey);
-
-        if (cachedQuiz) {
-            setHourlyQuiz(cachedQuiz);
-            return;
-        }
 
         try {
-            // Fetch 5 random questions from Supabase
-            const { data, error } = await supabase.rpc('get_random_hourly_questions', {
-                lang: 'bn',
-                limit_count: 5
-            });
+            const quizData = await requestManager.fetch(
+                cacheKey,
+                async () => {
+                    const { data, error } = await supabase.rpc('get_random_hourly_questions', {
+                        lang: 'bn',
+                        limit_count: 5
+                    });
 
-            if (error) {
-                console.error('Error fetching hourly quiz from DB:', error);
-                setFetchError(true);
-                return;
-            }
+                    if (error) throw error;
 
-            if (data && data.length > 0) {
-                const quizData = {
-                    id: 'hourly-challenge', // Static ID for single-row cumulative scoring
-                    title: language === 'en' ? 'Hourly Safety Challenge' : 'প্রতি ঘন্টায় সুরক্ষা চ্যালেঞ্জ',
-                    description: language === 'en' ? 'Test your safety knowledge! New questions every hour.' : 'আপনার সুরক্ষা জ্ঞান পরীক্ষা করুন! প্রতি ঘন্টায় নতুন প্রশ্ন।',
-                    duration_minutes: 5,
-                    points_reward: 50,
-                    questions: data.map((q, index) => ({
-                        id: q.id, // Use DB ID
-                        question_text: q.question_text,
-                        options: q.options,
-                        correct_option_index: q.correct_answer_index,
-                        hint: q.hint, // Fetch hint from DB if available
-                        category: q.category,
-                        tags: q.tags
-                    })),
-                    isLocal: false // It's now remote
-                };
+                    if (data && data.length > 0) {
+                        return {
+                            id: 'hourly-challenge',
+                            title: language === 'en' ? 'Hourly Safety Challenge' : 'প্রতি ঘন্টায় সুরক্ষা চ্যালেঞ্জ',
+                            description: language === 'en' ? 'Test your safety knowledge! New questions every hour.' : 'আপনার সুরক্ষা জ্ঞান পরীক্ষা করুন! প্রতি ঘন্টায় নতুন প্রশ্ন।',
+                            duration_minutes: 5,
+                            points_reward: 50,
+                            questions: data.map((q) => ({
+                                id: q.id,
+                                question_text: q.question_text,
+                                options: q.options,
+                                correct_option_index: q.correct_answer_index,
+                                hint: q.hint,
+                                category: q.category,
+                                tags: q.tags
+                            })),
+                            isLocal: false
+                        };
+                    }
+                    return null;
+                },
+                { ttl: 60, swr: true }
+            );
 
+            if (quizData) {
                 setHourlyQuiz(quizData);
-                // Cache for 1 hour (60 mins) so user sees same quiz for an hour
-                cacheHelper.set(cacheKey, quizData, 60);
-            } else {
-                console.warn('No questions returned from DB');
             }
         } catch (error) {
             console.error('Unexpected error fetching hourly quiz:', error);
@@ -495,34 +485,33 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
     const fetchUserRank = async (forceRefresh = false) => {
         if (!user) return;
-        const cacheKey = `user_rank_${user.id}`;
-
-        if (!forceRefresh) {
-            const cachedRank = cacheHelper.get(cacheKey);
-            if (cachedRank) {
-                setUserRank(cachedRank);
-                return;
-            }
-        }
 
         try {
-            const { data: myData, error: myError } = await supabase
-                .from('leaderboard_view')
-                .select('score')
-                .eq('user_id', user.id)
-                .maybeSingle();
+            const rankData = await requestManager.fetch(
+                `user_rank_${user.id}`,
+                async () => {
+                    const { data: myData, error: myError } = await supabase
+                        .from('leaderboard_view')
+                        .select('score')
+                        .eq('user_id', user.id)
+                        .maybeSingle();
 
-            if (myError || !myData) return;
+                    if (myError || !myData) return null;
 
-            const { count, error: countError } = await supabase
-                .from('leaderboard_view')
-                .select('*', { count: 'exact', head: true })
-                .gt('score', myData.score);
+                    const { count, error: countError } = await supabase
+                        .from('leaderboard_view')
+                        .select('*', { count: 'exact', head: true })
+                        .gt('score', myData.score);
 
-            if (!countError) {
-                const rankData = { rank: count + 1, score: myData.score };
+                    if (countError) throw countError;
+
+                    return { rank: count + 1, score: myData.score };
+                },
+                { ttl: 5, swr: true, forceRefresh }
+            );
+
+            if (rankData) {
                 setUserRank(rankData);
-                cacheHelper.set(cacheKey, rankData, 5); // Cache for 5 mins
             }
         } catch (error) {
             console.error('Error fetching rank:', error);
@@ -530,32 +519,29 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     };
 
     const fetchLeaderboard = async (forceRefresh = false) => {
-        if (!forceRefresh) {
-            const cachedLeaderboard = cacheHelper.get('leaderboard_top_10_v3');
-            if (cachedLeaderboard) {
-                setLeaderboard(cachedLeaderboard);
-                if (user) fetchUserRank();
-                return;
-            }
-        }
-
         try {
-            const { data, error } = await supabase
-                .from('leaderboard_view')
-                .select('*')
-                .order('score', { ascending: false })
-                .limit(10);
+            const formattedData = await requestManager.fetch(
+                'leaderboard_top_10_v3',
+                async () => {
+                    const { data, error } = await supabase
+                        .from('leaderboard_view')
+                        .select('*')
+                        .order('score', { ascending: false })
+                        .limit(10);
 
-            if (error) throw error;
+                    if (error) throw error;
 
-            const formattedData = data.map(item => ({
-                ...item,
-                points: item.score
-            }));
+                    return data.map(item => ({
+                        ...item,
+                        points: item.score
+                    }));
+                },
+                { ttl: 5, swr: true, forceRefresh }
+            );
 
-            setLeaderboard(formattedData || []);
-            cacheHelper.set('leaderboard_top_10_v3', formattedData || [], 5); // Cache for 5 mins
-
+            if (formattedData) {
+                setLeaderboard(formattedData);
+            }
             if (user) fetchUserRank(forceRefresh);
 
         } catch (error) {
@@ -566,28 +552,29 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
     const fetchFullLeaderboard = async () => {
         setLoadingFull(true);
-        const cachedFull = cacheHelper.get('leaderboard_full_v3');
-        if (cachedFull) {
-            setFullLeaderboard(cachedFull);
-            setLoadingFull(false);
-            return;
-        }
-
         try {
-            const { data, error } = await supabase
-                .from('leaderboard_view')
-                .select('*')
-                .order('score', { ascending: false })
-                .limit(50);
+            const formattedData = await requestManager.fetch(
+                'leaderboard_full_v3',
+                async () => {
+                    const { data, error } = await supabase
+                        .from('leaderboard_view')
+                        .select('*')
+                        .order('score', { ascending: false })
+                        .limit(50);
 
-            if (error) throw error;
+                    if (error) throw error;
 
-            const formattedData = data.map(item => ({
-                ...item,
-                points: item.score
-            }));
-            setFullLeaderboard(formattedData || []);
-            cacheHelper.set('leaderboard_full_v3', formattedData || [], 5); // Cache for 5 mins
+                    return data.map(item => ({
+                        ...item,
+                        points: item.score
+                    }));
+                },
+                { ttl: 5, swr: true }
+            );
+
+            if (formattedData) {
+                setFullLeaderboard(formattedData);
+            }
         } catch (error) {
             console.error('Error fetching full leaderboard:', error);
         } finally {

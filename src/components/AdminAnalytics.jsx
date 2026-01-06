@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { requestManager } from '../utils/requestManager';
 
 const StatCard = ({ title, value, subValue, icon, color, delay }) => (
     <div
@@ -73,57 +74,65 @@ export default function AdminAnalytics({ language }) {
     async function fetchAnalytics() {
         setLoading(true);
         try {
-            // 1. Fetch User Counts & Ages
-            const { data: profiles, error: pError } = await supabase
-                .from('profiles')
-                .select('role, age');
+            const data = await requestManager.fetch(
+                'admin_analytics_summary',
+                async () => {
+                    // 1. Fetch User Counts & Ages
+                    const { data: profiles, error: pError } = await supabase
+                        .from('profiles')
+                        .select('role, age, id');
 
-            if (pError) throw pError;
+                    if (pError) throw pError;
 
-            const admins = profiles.filter(p => p.role === 'admin').length;
-            const safetyMitras = profiles.filter(p => p.role === 'safety mitra').length;
-            const linemenProfiles = profiles.filter(p => p.role === 'lineman');
-            const linemen = linemenProfiles.length;
+                    const admins = profiles.filter(p => p.role === 'admin').length;
+                    const safetyMitras = profiles.filter(p => p.role === 'safety mitra').length;
+                    const linemenProfiles = profiles.filter(p => p.role === 'lineman');
+                    const linemen = linemenProfiles.length;
 
-            const totalAge = linemenProfiles.reduce((acc, p) => acc + (p.age || 0), 0);
-            const avgAge = linemen > 0 ? (totalAge / linemen).toFixed(1) : 0;
+                    const totalAge = linemenProfiles.reduce((acc, p) => acc + (p.age || 0), 0);
+                    const avgAge = linemen > 0 ? (totalAge / linemen).toFixed(1) : 0;
 
-            // 2. Fetch PPE Stats (Availability among Linemen)
-            const { data: ppe, error: ppeError } = await supabase.from('user_ppe').select('user_id, name');
-            if (ppeError) throw ppeError;
+                    // 2. Fetch PPE Stats
+                    const { data: ppe, error: ppeError } = await supabase.from('user_ppe').select('user_id, name');
+                    if (ppeError) throw ppeError;
 
-            const ppeSummary = PPE_ITEMS.map(item => {
-                const uniqueHolders = new Set(
-                    ppe.filter(p => p.name === item.name).map(p => p.user_id)
-                );
-                // Only count holders that ARE linemen
-                const linemenHolders = linemenProfiles.filter(lp => uniqueHolders.has(lp.id)).length;
-                const percentage = linemen > 0 ? Math.round((linemenHolders / linemen) * 100) : 0;
-                return { ...item, percentage };
-            });
+                    const ppeSummary = PPE_ITEMS.map(item => {
+                        const uniqueHolders = new Set(
+                            ppe.filter(p => p.name === item.name).map(p => p.user_id)
+                        );
+                        const linemenHolders = linemenProfiles.filter(lp => uniqueHolders.has(lp.id)).length;
+                        const percentage = linemen > 0 ? Math.round((linemenHolders / linemen) * 100) : 0;
+                        return { ...item, percentage };
+                    });
 
-            // 3. Fetch Tools Stats
-            const { data: tools, error: tError } = await supabase.from('user_tools').select('user_id, name');
-            if (tError) throw tError;
+                    // 3. Fetch Tools Stats
+                    const { data: tools, error: tError } = await supabase.from('user_tools').select('user_id, name');
+                    if (tError) throw tError;
 
-            const toolsSummary = TOOLS_ITEMS.map(item => {
-                const uniqueHolders = new Set(
-                    tools.filter(p => p.name === item.name).map(p => p.user_id)
-                );
-                const linemenHolders = linemenProfiles.filter(lp => uniqueHolders.has(lp.id)).length;
-                const percentage = linemen > 0 ? Math.round((linemenHolders / linemen) * 100) : 0;
-                return { ...item, percentage };
-            });
+                    const toolsSummary = TOOLS_ITEMS.map(item => {
+                        const uniqueHolders = new Set(
+                            tools.filter(p => p.name === item.name).map(p => p.user_id)
+                        );
+                        const linemenHolders = linemenProfiles.filter(lp => uniqueHolders.has(lp.id)).length;
+                        const percentage = linemen > 0 ? Math.round((linemenHolders / linemen) * 100) : 0;
+                        return { ...item, percentage };
+                    });
 
-            setStats({
-                admins,
-                safetyMitras,
-                linemen,
-                avgAge,
-                ppeStats: ppeSummary,
-                toolsStats: toolsSummary
-            });
+                    return {
+                        admins,
+                        safetyMitras,
+                        linemen,
+                        avgAge,
+                        ppeStats: ppeSummary,
+                        toolsStats: toolsSummary
+                    };
+                },
+                { ttl: 15, swr: true } // Cache for 15 mins, update in background
+            );
 
+            if (data) {
+                setStats(data);
+            }
         } catch (err) {
             console.error('Error fetching analytics:', err);
         } finally {

@@ -4,6 +4,7 @@ import { supabase } from '../../supabaseClient';
 import { calculateLevelFromProgress } from '../../utils/badgeUtils';
 import { cacheHelper } from '../../utils/cacheHelper';
 import { storageUtils } from '../../utils/storageUtils';
+import { requestManager } from '../../utils/requestManager';
 import ChapterQuizModal from '../ChapterQuizModal';
 import CertificateModal from '../CertificateModal';
 
@@ -163,12 +164,20 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
         const fetchTrainingChapters = async () => {
             try {
                 setTrainingLoading(true);
-                const response = await fetch('/quizzes/training_manifest.json');
-                if (response.ok) {
-                    const data = await response.json();
+                const data = await requestManager.fetch(
+                    'training_manifest',
+                    async () => {
+                        const response = await fetch('/quizzes/training_manifest.json');
+                        if (response.ok) {
+                            return await response.json();
+                        }
+                        throw new Error('Manifest not found');
+                    },
+                    { ttl: 60, swr: true }
+                );
+
+                if (data) {
                     setTrainingChapters(data);
-                } else {
-                    throw new Error('Manifest not found');
                 }
             } catch (error) {
                 console.error('Error fetching training chapters:', error);
@@ -197,9 +206,18 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
         // Special handling for FAQ Chapter 10
         if (chapter.number === 10) {
             try {
-                const response = await fetch('/quizzes/chapter_10_qa.json');
-                if (response.ok) {
-                    const data = await response.json();
+                const data = await requestManager.fetch(
+                    'chapter_10_qa',
+                    async () => {
+                        const response = await fetch('/quizzes/chapter_10_qa.json');
+                        if (response.ok) {
+                            return await response.json();
+                        }
+                        return null;
+                    },
+                    { ttl: 60, swr: true }
+                );
+                if (data) {
                     setSelectedChapter({ ...chapter, isFAQ: true, content: data });
                 }
             } catch (err) {
@@ -212,59 +230,50 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
 
         // Lazy load subchapters
         try {
-            // Check cache first
             const cacheKey = `training_module_${chapter.number}_${language}`;
-            const cachedData = cacheHelper.get(cacheKey);
+            const subchapters = await requestManager.fetch(
+                cacheKey,
+                async () => {
+                    // Fetch from Supabase
+                    const { data, error } = await supabase
+                        .rpc('get_chapters_by_module', {
+                            module_num: chapter.number,
+                            lang: language
+                        });
 
-            if (cachedData) {
-                setSelectedChapter({ ...chapter, subchapters: cachedData });
-                setTrainingLoading(false);
-                return;
-            }
+                    if (error) throw error;
 
-            // Fetch from Supabase
-            const { data, error } = await supabase
-                .rpc('get_chapters_by_module', {
-                    module_num: chapter.number,
-                    lang: language
-                });
+                    if (data && data.length > 0) {
+                        return data.map(row => ({
+                            ...row.content,
+                            level_id: row.id,
+                            chapterNum: row.module_number,
+                            subchapterNum: row.chapter_number
+                        }));
+                    }
 
-            if (error) throw error;
+                    // Fallback to legacy file fetch if DB returns empty
+                    const promises = [];
+                    for (let s = 1; s <= chapter.count; s++) {
+                        promises.push(
+                            fetch(`/quizzes/chapter_${chapter.number}_${s}.json`)
+                                .then(r => r.ok ? r.json() : null)
+                                .catch(() => null)
+                        );
+                    }
+                    const results = await Promise.all(promises);
+                    return results
+                        .map((d, idx) => d ? { ...d, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
+                        .filter(Boolean);
+                },
+                { ttl: 60, swr: true }
+            );
 
-            if (data && data.length > 0) {
-                // Formatting: Extract content and merge with ID
-                const subchapters = data.map(row => ({
-                    ...row.content,
-                    level_id: row.id,
-                    chapterNum: row.module_number,
-                    subchapterNum: row.chapter_number
-                }));
-
-                // Cache the result (expire in 1 hour)
-                cacheHelper.set(cacheKey, subchapters, 60);
-
+            if (subchapters) {
                 setSelectedChapter({ ...chapter, subchapters });
-            } else {
-                // Fallback to legacy file fetch if DB returns empty
-                throw new Error("No data in Supabase, falling back to files");
             }
         } catch (err) {
-            console.warn("Loading from Supabase failed, falling back to local files:", err);
-
-            const promises = [];
-            for (let s = 1; s <= chapter.count; s++) {
-                promises.push(
-                    fetch(`/quizzes/chapter_${chapter.number}_${s}.json`)
-                        .then(r => r.ok ? r.json() : null)
-                        .catch(() => null)
-                );
-            }
-            const results = await Promise.all(promises);
-            const subchapters = results
-                .map((d, idx) => d ? { ...d, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
-                .filter(Boolean);
-
-            setSelectedChapter({ ...chapter, subchapters });
+            console.error("Loading subchapters failed:", err);
         } finally {
             setTrainingLoading(false);
         }

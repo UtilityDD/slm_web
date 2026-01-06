@@ -4,6 +4,7 @@ import { supabase } from "./supabaseClient";
 import { getBadgeByLevel, calculateLevelFromProgress } from './utils/badgeUtils';
 import { cacheHelper } from './utils/cacheHelper';
 import { storageUtils } from './utils/storageUtils';
+import { requestManager } from './utils/requestManager';
 import LogoutConfirmationModal from "./components/LogoutConfirmationModal";
 import Sidebar from "./components/Sidebar";
 import NetworkStatusListener from "./components/NetworkStatusListener";
@@ -158,28 +159,36 @@ export default function SmartLinemanUI() {
 
   const fetchProfile = async (userToFetch) => {
     const targetUser = userToFetch || user;
-    if (targetUser) {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id')
-        .eq('id', targetUser.id);
+    if (!targetUser) return;
 
-      if (error) {
-        console.error('Error fetching profile:', error);
-      } else if (data && data.length > 0) {
-        const profileData = data[0];
+    try {
+      const profileData = await requestManager.fetch(
+        `profile_${targetUser.id}`,
+        async () => {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id')
+            .eq('id', targetUser.id)
+            .single();
+
+          if (error) throw error;
+          return data;
+        },
+        { ttl: 10, swr: true, forceRefresh: false }
+      );
+
+      if (profileData) {
         // Check for session mismatch
         const localSessionId = storageUtils.getItem('slm_session_id');
         if (profileData.current_session_id && localSessionId && profileData.current_session_id !== localSessionId) {
           console.warn('Session mismatch detected. Logging out.');
-          confirmLogout(true); // Pass true to indicate automatic logout
+          confirmLogout(true);
           return;
         }
         setUserProfile(profileData);
-      } else {
-        console.warn('Profile not found for ID:', targetUser.id);
-        // Create a basic profile if missing? (Optional, but good to log)
       }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
     }
   };
 
@@ -515,6 +524,7 @@ export default function SmartLinemanUI() {
       setUser(null);
       setUserProfile(null);
       storageUtils.removeItem('slm_session_id');
+      cacheHelper.clearAll();
       setShowLogoutModal(false);
 
       if (isAutomatic === true) {
