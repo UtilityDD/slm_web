@@ -24,6 +24,7 @@ export default function Login({ onLogin, showNotification, initialView }) {
     const [otp, setOtp] = useState('');
     const [timer, setTimer] = useState(0);
     const [isOtpSending, setIsOtpSending] = useState(false);
+    const [rememberMe, setRememberMe] = useState(true);
 
     useEffect(() => {
         // Check if we're in a password recovery flow
@@ -34,6 +35,16 @@ export default function Login({ onLogin, showNotification, initialView }) {
         if (window.location.hash.includes('type=invite') || window.location.href.includes('type=invite')) {
             setView('update');
             showNotification('Welcome! Please set your password to complete your account setup.');
+        }
+
+        // Load remembered credentials
+        const savedEmail = localStorage.getItem('slm_remembered_email');
+        const savedPw = localStorage.getItem('slm_remembered_pw');
+        if (savedEmail) {
+            setEmail(savedEmail);
+            if (savedPw) {
+                setPassword(savedPw);
+            }
         }
     }, []);
 
@@ -98,6 +109,15 @@ export default function Login({ onLogin, showNotification, initialView }) {
 
                 if (profileError) console.error('Error updating session ID:', profileError);
                 localStorage.setItem('slm_session_id', sessionId);
+
+                // Remember Me logic (Email only for OTP)
+                if (rememberMe) {
+                    localStorage.setItem('slm_remembered_email', email);
+                } else {
+                    localStorage.removeItem('slm_remembered_email');
+                    localStorage.removeItem('slm_remembered_pw');
+                }
+
                 onLogin(data.user);
             }
         } catch (error) {
@@ -129,6 +149,16 @@ export default function Login({ onLogin, showNotification, initialView }) {
 
                     if (profileError) console.error('Error updating session ID:', profileError);
                     localStorage.setItem('slm_session_id', sessionId);
+
+                    // Remember Me logic
+                    if (rememberMe) {
+                        localStorage.setItem('slm_remembered_email', email);
+                        localStorage.setItem('slm_remembered_pw', password);
+                    } else {
+                        localStorage.removeItem('slm_remembered_email');
+                        localStorage.removeItem('slm_remembered_pw');
+                    }
+
                     onLogin(data.user);
                 }
             } else if (view === 'forgot') {
@@ -219,6 +249,28 @@ export default function Login({ onLogin, showNotification, initialView }) {
                                         Forgot password?
                                     </button>
                                 )}
+                            </div>
+                        )}
+
+                        {(view === 'login' || view === 'otp_request') && (
+                            <div className="flex items-center gap-2 px-1">
+                                <label className="flex items-center gap-2 cursor-pointer group">
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={rememberMe}
+                                            onChange={(e) => setRememberMe(e.target.checked)}
+                                            className="peer sr-only"
+                                        />
+                                        <div className="w-5 h-5 border-2 border-slate-200 dark:border-slate-700 rounded-md bg-slate-50 dark:bg-slate-900 transition-all peer-checked:bg-orange-600 peer-checked:border-orange-600 group-hover:border-orange-400"></div>
+                                        <svg className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity left-[3px] top-[3px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3.5" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 transition-colors">
+                                        Remember Me
+                                    </span>
+                                </label>
                             </div>
                         )}
 
