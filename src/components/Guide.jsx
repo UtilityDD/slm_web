@@ -87,7 +87,7 @@ const Guide = ({ hideHeader = false, userRole = 'lineman' }) => {
                                     activeTab === 'data-collection' ? 'bg-gradient-to-br from-cyan-600 to-orange-700' :
                                         'bg-gradient-to-br from-purple-600 to-pink-600'
                             }`}>
-                            <div className="absolute inset-0 opacity-10 pdf-hide">
+                            <div className="absolute inset-0 opacity-10">
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -mr-32 -mt-32 blur-3xl"></div>
                                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-white rounded-full -ml-32 -mb-32 blur-3xl"></div>
                             </div>

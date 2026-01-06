@@ -76,9 +76,11 @@ export const downloadPDF = async (element, filename = 'document.pdf') => {
         element.style.width = originalWidth;
         element.style.margin = originalMargin;
         element.style.padding = originalPadding;
-        element.style.backgroundColor = ''; // Remove forced background
-
-        elementsToHide.forEach(el => el.style.display = '');
+        // Restore original styles
+        element.classList.remove('pdf-mode');
+        element.style.width = originalWidth;
+        element.style.margin = originalMargin;
+        element.style.padding = originalPadding;
 
         return true;
     } catch (error) {
