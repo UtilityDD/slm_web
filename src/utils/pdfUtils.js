@@ -16,22 +16,31 @@ export const downloadPDF = async (element, filename = 'document.pdf') => {
         // Dynamically import html2pdf only when needed
         const html2pdf = (await import('html2pdf.js')).default;
 
-        const originalWidth = element.style.width;
-        const originalMargin = element.style.margin;
-        const originalPadding = element.style.padding;
-
         // Optimize for PDF 
         element.style.width = '375px';
         element.style.margin = '0';
         element.style.padding = '0';
+        element.style.backgroundColor = '#ffffff'; // Force white background
+
         // Add specific class for PDF styling if needed
         element.classList.add('pdf-mode');
+
+        // Hide decorative elements that cause artifacts
+        const elementsToHide = element.querySelectorAll('.pdf-hide');
+        elementsToHide.forEach(el => el.style.display = 'none');
 
         const opt = {
             margin: 0,
             filename: filename,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: 375, scrollY: 0 },
+            html2canvas: {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                windowWidth: 375,
+                scrollY: 0,
+                backgroundColor: '#ffffff' // Ensure canvas background is white
+            },
             jsPDF: { unit: 'px', format: [375, 812], orientation: 'portrait' },
             pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
         };
@@ -67,6 +76,9 @@ export const downloadPDF = async (element, filename = 'document.pdf') => {
         element.style.width = originalWidth;
         element.style.margin = originalMargin;
         element.style.padding = originalPadding;
+        element.style.backgroundColor = ''; // Remove forced background
+
+        elementsToHide.forEach(el => el.style.display = '');
 
         return true;
     } catch (error) {
