@@ -3,6 +3,7 @@ import { SplashScreen } from '@capacitor/splash-screen';
 import { supabase } from "./supabaseClient";
 import { getBadgeByLevel, calculateLevelFromProgress } from './utils/badgeUtils';
 import { cacheHelper } from './utils/cacheHelper';
+import { storageUtils } from './utils/storageUtils';
 import LogoutConfirmationModal from "./components/LogoutConfirmationModal";
 import Sidebar from "./components/Sidebar";
 import NetworkStatusListener from "./components/NetworkStatusListener";
@@ -38,7 +39,7 @@ export default function SmartLinemanUI() {
   });
   const [language, setLanguage] = useState('bn');
   const [theme, setTheme] = useState(() => {
-    const savedTheme = localStorage.getItem('appTheme');
+    const savedTheme = storageUtils.getItem('appTheme');
     if (savedTheme) return savedTheme;
     const hour = new Date().getHours();
     return (hour >= 6 && hour < 18) ? 'light' : 'dark';
@@ -54,7 +55,7 @@ export default function SmartLinemanUI() {
   const [notificationsHistory, setNotificationsHistory] = useState([]);
   const [notifFetchError, setNotifFetchError] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [lastSeenNotificationId, setLastSeenNotificationId] = useState(() => localStorage.getItem('lastSeenNotificationId'));
+  const [lastSeenNotificationId, setLastSeenNotificationId] = useState(() => storageUtils.getItem('lastSeenNotificationId'));
   const [showHandbookModal, setShowHandbookModal] = useState(false);
   const [completedLessons, setCompletedLessons] = useState([]);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -168,7 +169,7 @@ export default function SmartLinemanUI() {
       } else if (data && data.length > 0) {
         const profileData = data[0];
         // Check for session mismatch
-        const localSessionId = localStorage.getItem('slm_session_id');
+        const localSessionId = storageUtils.getItem('slm_session_id');
         if (profileData.current_session_id && localSessionId && profileData.current_session_id !== localSessionId) {
           console.warn('Session mismatch detected. Logging out.');
           confirmLogout(true); // Pass true to indicate automatic logout
@@ -460,7 +461,7 @@ export default function SmartLinemanUI() {
 
   // Check LocalStorage for Language on mount
   useEffect(() => {
-    const savedLang = localStorage.getItem('appLanguage');
+    const savedLang = storageUtils.getItem('appLanguage');
     if (savedLang) {
       setLanguage(savedLang);
     }
@@ -468,7 +469,7 @@ export default function SmartLinemanUI() {
 
   // Check LocalStorage or Time for Theme on mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem('appTheme');
+    const savedTheme = storageUtils.getItem('appTheme');
     let currentTheme = theme;
 
     if (savedTheme) {
@@ -488,14 +489,14 @@ export default function SmartLinemanUI() {
 
   const handleLanguageSelect = (lang) => {
     setLanguage(lang);
-    localStorage.setItem('appLanguage', lang);
+    storageUtils.setItem('appLanguage', lang);
     setShowLanguageModal(false);
   };
 
   const handleThemeToggle = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
-    localStorage.setItem('appTheme', newTheme);
+    storageUtils.setItem('appTheme', newTheme);
     if (newTheme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -513,7 +514,7 @@ export default function SmartLinemanUI() {
       await supabase.auth.signOut();
       setUser(null);
       setUserProfile(null);
-      localStorage.removeItem('slm_session_id');
+      storageUtils.removeItem('slm_session_id');
       setShowLogoutModal(false);
 
       if (isAutomatic === true) {

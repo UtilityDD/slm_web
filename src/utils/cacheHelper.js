@@ -1,6 +1,4 @@
-/**
- * Simple caching utility using localStorage with TTL (Time To Live)
- */
+import { storageUtils } from './storageUtils';
 
 const CACHE_PREFIX = 'slm_cache_';
 
@@ -17,7 +15,7 @@ export const cacheHelper = {
             data,
             expires
         };
-        localStorage.setItem(CACHE_PREFIX + key, JSON.stringify(cacheData));
+        storageUtils.setItem(CACHE_PREFIX + key, JSON.stringify(cacheData));
     },
 
     /**
@@ -26,18 +24,18 @@ export const cacheHelper = {
      * @returns {any|null} - Cached data or null if expired/not found
      */
     get: (key) => {
-        const item = localStorage.getItem(CACHE_PREFIX + key);
+        const item = storageUtils.getItem(CACHE_PREFIX + key);
         if (!item) return null;
 
         try {
             const { data, expires } = JSON.parse(item);
             if (Date.now() > expires) {
-                localStorage.removeItem(CACHE_PREFIX + key);
+                storageUtils.removeItem(CACHE_PREFIX + key);
                 return null;
             }
             return data;
         } catch (e) {
-            localStorage.removeItem(CACHE_PREFIX + key);
+            storageUtils.removeItem(CACHE_PREFIX + key);
             return null;
         }
     },
@@ -47,16 +45,19 @@ export const cacheHelper = {
      * @param {string} key 
      */
     clear: (key) => {
-        localStorage.removeItem(CACHE_PREFIX + key);
+        storageUtils.removeItem(CACHE_PREFIX + key);
     },
 
     /**
      * Clear all slm_cache items
      */
     clearAll: () => {
+        // We can access localStorage key iteration directly or add a method to storageUtils
+        // For iteration, direct access is acceptable if read-only, 
+        // but let's stick to safe removal.
         Object.keys(localStorage).forEach(key => {
             if (key.startsWith(CACHE_PREFIX)) {
-                localStorage.removeItem(key);
+                storageUtils.removeItem(key);
             }
         });
     }

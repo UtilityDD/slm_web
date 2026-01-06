@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { supabase } from '../../supabaseClient';
 import { calculateLevelFromProgress } from '../../utils/badgeUtils';
 import { cacheHelper } from '../../utils/cacheHelper';
+import { storageUtils } from '../../utils/storageUtils';
 import ChapterQuizModal from '../ChapterQuizModal';
 import CertificateModal from '../CertificateModal';
 
@@ -120,7 +121,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
 
             // 1. Load Local
             let localProgress = [];
-            const saved = localStorage.getItem(`training_progress_${user.id}`);
+            const saved = storageUtils.getItem(`training_progress_${user.id}`);
             if (saved) {
                 localProgress = JSON.parse(saved);
             }
@@ -142,7 +143,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
 
                     // Update local storage if different
                     if (merged.length !== localProgress.length) {
-                        localStorage.setItem(`training_progress_${user.id}`, JSON.stringify(merged));
+                        storageUtils.setItem(`training_progress_${user.id}`, JSON.stringify(merged));
                     }
                 } else {
                     // If no remote data, just set local
@@ -300,7 +301,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
             setCompletedLessons(updated);
 
             if (user) {
-                localStorage.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
+                storageUtils.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
 
                 // Sync to Supabase (Level + Detailed Progress)
                 const newLevel = calculateLevelFromProgress(updated, trainingChapters);

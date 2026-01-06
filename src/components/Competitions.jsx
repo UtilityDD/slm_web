@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
+import { storageUtils } from '../utils/storageUtils';
 
 export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile }) {
     const [loading, setLoading] = useState(true);
@@ -182,7 +183,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     // Check for pending submissions in LocalStorage
     const checkPendingSubmissions = () => {
         try {
-            const pending = localStorage.getItem('pending_quiz_submissions');
+            const pending = storageUtils.getItem('pending_quiz_submissions');
             if (pending) {
                 const submissions = JSON.parse(pending);
                 if (submissions && submissions.length > 0) {
@@ -201,7 +202,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     // Save failed submission to queue
     const savePendingSubmission = (quizData) => {
         try {
-            const existing = localStorage.getItem('pending_quiz_submissions');
+            const existing = storageUtils.getItem('pending_quiz_submissions');
             const queue = existing ? JSON.parse(existing) : [];
 
             // Avoid duplicates
@@ -212,7 +213,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
             if (!isDuplicate) {
                 queue.push(quizData);
-                localStorage.setItem('pending_quiz_submissions', JSON.stringify(queue));
+                storageUtils.setItem('pending_quiz_submissions', JSON.stringify(queue));
                 setPendingSubmission(quizData);
                 console.log('Saved pending submission:', quizData);
             }
@@ -224,7 +225,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     // Process all pending submissions
     const processPendingQueue = async () => {
         try {
-            const pending = localStorage.getItem('pending_quiz_submissions');
+            const pending = storageUtils.getItem('pending_quiz_submissions');
             if (!pending) return;
 
             const queue = JSON.parse(pending);
@@ -335,7 +336,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     // Clear pending submission after success
     const clearPendingSubmission = async (submission) => {
         try {
-            const pending = localStorage.getItem('pending_quiz_submissions');
+            const pending = storageUtils.getItem('pending_quiz_submissions');
             if (!pending) return;
 
             const queue = JSON.parse(pending);
@@ -344,10 +345,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             );
 
             if (filtered.length > 0) {
-                localStorage.setItem('pending_quiz_submissions', JSON.stringify(filtered));
+                storageUtils.setItem('pending_quiz_submissions', JSON.stringify(filtered));
                 setPendingSubmission(filtered[0] || null);
             } else {
-                localStorage.removeItem('pending_quiz_submissions');
+                storageUtils.removeItem('pending_quiz_submissions');
                 setPendingSubmission(null);
             }
         } catch (error) {
@@ -447,7 +448,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
         // Check local storage (Review Cache) for immediate penalty feedback
         try {
-            const localData = localStorage.getItem(`review_${quizId}`);
+            const localData = storageUtils.getItem(`review_${quizId}`);
             if (localData) {
                 const parsed = JSON.parse(localData);
                 if (parsed.penalty !== undefined) {
@@ -650,7 +651,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     };
 
     const startReview = () => {
-        const saved = localStorage.getItem(`review_${hourlyQuiz.id}`);
+        const saved = storageUtils.getItem(`review_${hourlyQuiz.id}`);
         if (!saved) return;
         const data = JSON.parse(saved);
 
@@ -722,7 +723,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             score: calculatedScore,
             penalty: totalPenalty
         };
-        localStorage.setItem(`review_${activeQuiz.id}`, JSON.stringify(attemptData));
+        storageUtils.setItem(`review_${activeQuiz.id}`, JSON.stringify(attemptData));
 
         // IMMEDIATE LOCK: Update local state to show countdown timer instantly
         // This ensures "Play Now" is disabled regardless of network status

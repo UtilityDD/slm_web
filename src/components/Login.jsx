@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { storageUtils } from '../utils/storageUtils';
 
 // UUID v4 generator - works in all browsers
 const generateUUID = () => {
@@ -38,8 +39,8 @@ export default function Login({ onLogin, showNotification, initialView }) {
         }
 
         // Load remembered credentials
-        const savedEmail = localStorage.getItem('slm_remembered_email');
-        const savedPw = localStorage.getItem('slm_remembered_pw');
+        const savedEmail = storageUtils.getItem('slm_remembered_email');
+        const savedPw = storageUtils.getItem('slm_remembered_pw');
         if (savedEmail) {
             setEmail(savedEmail);
             if (savedPw) {
@@ -108,14 +109,14 @@ export default function Login({ onLogin, showNotification, initialView }) {
                     .eq('id', data.user.id);
 
                 if (profileError) console.error('Error updating session ID:', profileError);
-                localStorage.setItem('slm_session_id', sessionId);
+                storageUtils.setItem('slm_session_id', sessionId);
 
                 // Remember Me logic (Email only for OTP)
                 if (rememberMe) {
-                    localStorage.setItem('slm_remembered_email', email);
+                    storageUtils.setItem('slm_remembered_email', email);
                 } else {
-                    localStorage.removeItem('slm_remembered_email');
-                    localStorage.removeItem('slm_remembered_pw');
+                    storageUtils.removeItem('slm_remembered_email');
+                    storageUtils.removeItem('slm_remembered_pw');
                 }
 
                 onLogin(data.user);
@@ -148,15 +149,15 @@ export default function Login({ onLogin, showNotification, initialView }) {
                         .eq('id', data.user.id);
 
                     if (profileError) console.error('Error updating session ID:', profileError);
-                    localStorage.setItem('slm_session_id', sessionId);
+                    storageUtils.setItem('slm_session_id', sessionId);
 
                     // Remember Me logic
                     if (rememberMe) {
-                        localStorage.setItem('slm_remembered_email', email);
-                        localStorage.setItem('slm_remembered_pw', password);
+                        storageUtils.setItem('slm_remembered_email', email);
+                        storageUtils.setItem('slm_remembered_pw', password);
                     } else {
-                        localStorage.removeItem('slm_remembered_email');
-                        localStorage.removeItem('slm_remembered_pw');
+                        storageUtils.removeItem('slm_remembered_email');
+                        storageUtils.removeItem('slm_remembered_pw');
                     }
 
                     onLogin(data.user);
