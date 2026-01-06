@@ -1,3 +1,7 @@
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
+
 /**
  * Utility to generate PDF from an HTML element using html2pdf.js
  * Loads the library dynamically to reduce initial bundle size.
@@ -20,6 +24,8 @@ export const downloadPDF = async (element, filename = 'document.pdf') => {
         element.style.width = '375px';
         element.style.margin = '0';
         element.style.padding = '0';
+        // Add specific class for PDF styling if needed
+        element.classList.add('pdf-mode');
 
         const opt = {
             margin: 0,
@@ -30,9 +36,31 @@ export const downloadPDF = async (element, filename = 'document.pdf') => {
             pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
         };
 
-        element.classList.add('pdf-mode');
+        if (Capacitor.isNativePlatform()) {
+            // Android/iOS: Generate Base64, Write to File, then Share
+            const pdfWorker = html2pdf().set(opt).from(element);
+            const pdfBase64 = await pdfWorker.outputPdf('datauristring');
 
-        await html2pdf().set(opt).from(element).save();
+            // Remove the data:application/pdf;base64, prefix
+            const base64Data = pdfBase64.split(',')[1];
+
+            const savedFile = await Filesystem.writeFile({
+                path: filename,
+                data: base64Data,
+                directory: Directory.Cache
+            });
+
+            await Share.share({
+                title: 'Download PDF',
+                text: 'Here is your PDF guide.',
+                url: savedFile.uri,
+                dialogTitle: 'Download PDF'
+            });
+
+        } else {
+            // Web: Standard download
+            await html2pdf().set(opt).from(element).save();
+        }
 
         // Restore original styles
         element.classList.remove('pdf-mode');
@@ -43,6 +71,13 @@ export const downloadPDF = async (element, filename = 'document.pdf') => {
         return true;
     } catch (error) {
         console.error('Error generating PDF:', error);
+        // Clean up styles even if error occurs
+        element.classList.remove('pdf-mode');
+        if (element.style.width === '375px') {
+            element.style.width = '';
+            element.style.margin = '';
+            element.style.padding = '';
+        }
         throw error;
     }
 };
