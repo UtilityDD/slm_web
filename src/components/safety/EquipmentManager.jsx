@@ -101,7 +101,6 @@ const EquipmentManager = React.forwardRef(({
                 count: 1,
                 condition: 'Good',
                 age_months: 0,
-                last_inspected: new Date().toISOString().split('T')[0],
                 details: ''
             }));
             setChecklist(initialChecklist);
@@ -144,7 +143,6 @@ const EquipmentManager = React.forwardRef(({
                 count: existing?.count || 1,
                 condition: existing?.condition || 'Good',
                 age_months: existing?.age_months || 0,
-                last_inspected: existing?.last_inspected || new Date().toISOString().split('T')[0],
                 details: existing?.details || ''
             };
         });
@@ -168,7 +166,6 @@ const EquipmentManager = React.forwardRef(({
                         count: parseInt(item.count),
                         condition: item.condition,
                         age_months: parseInt(item.age_months),
-                        last_inspected: item.last_inspected,
                         details: item.details || ''
                     };
 
@@ -313,19 +310,11 @@ const EquipmentManager = React.forwardRef(({
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1.5">Age (Months)</label>
-                                <input type="number" value={item.age_months} disabled={!isEditable}
-                                    onChange={(e) => handleChecklistChange(index, 'age_months', e.target.value)}
-                                    className={`w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-${finalAccentColor}-500 disabled:opacity-70`} />
-                            </div>
-                            <div>
-                                <label className="block text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1.5">Last Inspected</label>
-                                <input type="date" value={item.last_inspected} disabled={!isEditable}
-                                    onChange={(e) => handleChecklistChange(index, 'last_inspected', e.target.value)}
-                                    className={`w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-${finalAccentColor}-500 disabled:opacity-70`} />
-                            </div>
+                        <div>
+                            <label className="block text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1.5">Age (Months)</label>
+                            <input type="number" value={item.age_months} disabled={!isEditable}
+                                onChange={(e) => handleChecklistChange(index, 'age_months', e.target.value)}
+                                className={`w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-${finalAccentColor}-500 disabled:opacity-70`} />
                         </div>
 
                         <div>
