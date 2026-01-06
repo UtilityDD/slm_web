@@ -43,6 +43,9 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
     };
 
     useEffect(() => {
+        // Scroll to top when component mounts
+        window.scrollTo({ top: 0, behavior: 'instant' });
+
         if (userProfile) {
             setScore(userProfile.points || 0);
             setFullName(userProfile.full_name);
