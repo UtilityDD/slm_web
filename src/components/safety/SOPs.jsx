@@ -71,13 +71,6 @@ const SOPs = () => {
                 />
             )}
 
-            {/* Watermark Overlay - Central Big Text */}
-            <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10 overflow-hidden">
-                <div className="transform -rotate-12 opacity-15 text-red-600 dark:text-red-500 text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-widest text-center px-4 select-none">
-                    Demo Only.<br />Not to use.<br />Under development.
-                </div>
-            </div>
-
             {/* Persistent Bottom Warning */}
             <div className="absolute bottom-0 left-0 right-0 bg-red-600 text-white text-center py-1 text-[10px] sm:text-xs font-bold uppercase tracking-widest z-20 opacity-90">
                 Demo Only • Not to use • Under Development
