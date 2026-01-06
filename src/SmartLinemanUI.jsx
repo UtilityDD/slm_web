@@ -707,7 +707,7 @@ export default function SmartLinemanUI() {
         case 'admin-services':
           return <AdminServices language={language} userProfile={userProfile} />;
         case 'guide':
-          return <Guide />;
+          return <Guide userRole={userProfile?.role} />;
         case 'verify': {
           const certId = window.location.hash.split('/').pop();
           return <VerificationView language={language} certificateId={certId} />;
