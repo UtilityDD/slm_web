@@ -692,6 +692,12 @@ export default function SmartLinemanUI() {
             user={user}
             onProgressUpdate={(newProgress) => {
               setCompletedLessons(newProgress);
+              // Optimistic update for immediate feedback
+              setUserProfile(prev => prev ? {
+                ...prev,
+                completed_lessons: newProgress,
+                training_level: calculateLevelFromProgress(newProgress)
+              } : null);
               fetchProfile(user);
             }}
           />;

@@ -25,7 +25,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
     const [role, setRole] = useState(userProfile?.role || 'Lineman');
     const [score, setScore] = useState(userProfile?.points || 0);
 
-    const [readingPoints, setReadingPoints] = useState(userProfile?.reading_points || 0);
+    const readingPoints = (userProfile?.completed_lessons?.length || 0) * 20;
     const [trainingLevel, setTrainingLevel] = useState(userProfile?.training_level || 0);
     const [completedLessonsCount, setCompletedLessonsCount] = useState(userProfile?.completed_lessons?.length || 0);
     const [totalPenalties, setTotalPenalties] = useState(userProfile?.total_penalties || 0);
@@ -45,7 +45,6 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
     useEffect(() => {
         if (userProfile) {
             setScore(userProfile.points || 0);
-            setReadingPoints(userProfile.reading_points || 0);
             setFullName(userProfile.full_name);
 
             setSlmId(userProfile.slm_id);

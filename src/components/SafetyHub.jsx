@@ -529,17 +529,14 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
             if (user) {
                 localStorage.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
 
-                // Sync to Supabase (Level + Detailed Progress)
-                const newLevel = calculateLevelFromProgress(updated, trainingChapters);
-                supabase.from('profiles')
+                // Sync to Supabase
+                const newLevel = calculateLevelFromProgress(updated);
+                await supabase.from('profiles')
                     .update({
                         training_level: newLevel,
                         completed_lessons: updated
                     })
-                    .eq('id', user.id)
-                    .then(({ error }) => {
-                        if (error) console.error('Error syncing training progress:', error);
-                    });
+                    .eq('id', user.id);
             }
             if (onProgressUpdate) {
                 onProgressUpdate(updated);
