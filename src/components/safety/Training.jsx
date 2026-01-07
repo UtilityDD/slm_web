@@ -102,7 +102,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
     const [pendingLessonId, setPendingLessonId] = useState(null);
     const [previousQuizQuestions, setPreviousQuizQuestions] = useState({});
     const [recentReward, setRecentReward] = useState(null);
-    const [activeImageModal, setActiveImageModal] = useState(null);
+    const [activeImageModal, setActiveImageModal] = useState(null); // { type: 'image', value: 'url' } or { type: 'text', value: 'content' }
 
     // Body scroll locking when full-page training is open
     useEffect(() => {
@@ -170,17 +170,23 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
 
         return parts.map((part, index) => {
             if (part.startsWith('((') && part.endsWith('))')) {
-                const imgPath = part.slice(2, -2);
+                const content = part.slice(2, -2);
+                const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(content);
+
                 return (
                     <button
                         key={index}
                         onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            setActiveImageModal(`/quizzes/${imgPath}`);
+                            if (isImage) {
+                                setActiveImageModal({ type: 'image', value: `/quizzes/${content}` });
+                            } else {
+                                setActiveImageModal({ type: 'text', value: content });
+                            }
                         }}
                         className="inline-flex items-center justify-center w-8 h-8 mx-1 bg-orange-100 dark:bg-orange-900/40 rounded-full text-orange-600 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/60 transition-all animate-blink border border-orange-200 dark:border-orange-800/50 align-middle"
-                        title="Click to view image"
+                        title={isImage ? "Click to view image" : "Click to read more"}
                     >
                         <svg className="w-5 h-5 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -191,7 +197,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
             } else if (part.startsWith('[[') && part.endsWith(']]')) {
                 const imgPath = part.slice(2, -2);
                 return (
-                    <div key={index} className="my-6 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-lg group relative cursor-pointer" onClick={() => setActiveImageModal(`/quizzes/${imgPath}`)}>
+                    <div key={index} className="my-6 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-lg group relative cursor-pointer" onClick={() => setActiveImageModal({ type: 'image', value: `/quizzes/${imgPath}` })}>
                         <img
                             src={`/quizzes/${imgPath}`}
                             alt="Inline lesson helper"
@@ -1017,12 +1023,26 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                             </svg>
                         </button>
 
-                        <div className="p-2 sm:p-4 h-full flex items-center justify-center bg-slate-900 border-t border-white/5">
-                            <img
-                                src={activeImageModal}
-                                alt="Shared document preview"
-                                className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
-                            />
+                        <div className="p-4 sm:p-8 h-full flex items-center justify-center bg-slate-900 border-t border-white/5">
+                            {activeImageModal.type === 'image' ? (
+                                <img
+                                    src={activeImageModal.value}
+                                    alt="Preview"
+                                    className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
+                                />
+                            ) : (
+                                <div className="max-w-xl w-full bg-slate-800 p-6 sm:p-8 rounded-3xl border border-white/10 shadow-2xl animate-scale-in">
+                                    <h3 className="text-lg font-bold text-orange-400 mb-4 flex items-center gap-2">
+                                        <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Details
+                                    </h3>
+                                    <p className="text-base sm:text-lg text-slate-200 leading-relaxed whitespace-pre-line text-left font-medium">
+                                        {activeImageModal.value}
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>,
