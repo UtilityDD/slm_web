@@ -102,6 +102,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
     const [pendingLessonId, setPendingLessonId] = useState(null);
     const [previousQuizQuestions, setPreviousQuizQuestions] = useState({});
     const [recentReward, setRecentReward] = useState(null);
+    const [activeImageModal, setActiveImageModal] = useState(null);
 
     // Body scroll locking when full-page training is open
     useEffect(() => {
@@ -158,6 +159,57 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
 
         loadProgress();
     }, [user]);
+
+    // Custom parser for interactive content: ((image_path|label)) and [[image_path]]
+    const renderTextWithImages = (text) => {
+        if (!text) return null;
+
+        // Pattern for ((path)) -> Blinking eye icon to open modal
+        // Pattern for [[path]] -> Inline embedded image
+        const parts = text.split(/(\(\(.*?\)\)|\[\[.*?\]\])/g);
+
+        return parts.map((part, index) => {
+            if (part.startsWith('((') && part.endsWith('))')) {
+                const imgPath = part.slice(2, -2);
+                return (
+                    <button
+                        key={index}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setActiveImageModal(`/quizzes/${imgPath}`);
+                        }}
+                        className="inline-flex items-center justify-center w-8 h-8 mx-1 bg-orange-100 dark:bg-orange-900/40 rounded-full text-orange-600 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/60 transition-all animate-blink border border-orange-200 dark:border-orange-800/50 align-middle"
+                        title="Click to view image"
+                    >
+                        <svg className="w-5 h-5 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </button>
+                );
+            } else if (part.startsWith('[[') && part.endsWith(']]')) {
+                const imgPath = part.slice(2, -2);
+                return (
+                    <div key={index} className="my-6 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-lg group relative cursor-pointer" onClick={() => setActiveImageModal(`/quizzes/${imgPath}`)}>
+                        <img
+                            src={`/quizzes/${imgPath}`}
+                            alt="Inline lesson helper"
+                            className="w-full h-auto object-cover max-h-[400px] transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <div className="bg-black/50 backdrop-blur-md rounded-full p-3 text-white opacity-0 group-hover:opacity-100 transition-all transform scale-75 group-hover:scale-100">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+            return part;
+        });
+    };
 
     // Fetch Training Chapters
     useEffect(() => {
@@ -502,7 +554,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                                     </span>
                                                 </summary>
                                                 <div className="px-4 pb-4 pl-[3.25rem] text-slate-600 dark:text-slate-400 text-sm leading-relaxed border-t border-slate-100 dark:border-slate-700 pt-4 bg-slate-50/50 dark:bg-slate-900/30">
-                                                    <p>{q.answer}</p>
+                                                    <div>{renderTextWithImages(q.answer)}</div>
                                                     {q.image && (
                                                         <div className="mt-4 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm max-w-md">
                                                             <img
@@ -668,7 +720,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                         {language === 'en' ? 'Mission Briefing' : 'মিশন ব্রিফিং'}
                                     </h3>
                                     <p className="text-slate-700 dark:text-slate-300 reading-content leading-relaxed text-base whitespace-pre-line">
-                                        {trainingContent.mission_briefing}
+                                        {renderTextWithImages(trainingContent.mission_briefing)}
                                     </p>
                                 </div>
                             </div>
@@ -716,7 +768,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                                                 </p>
                                                             </div>
                                                             <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed whitespace-pre-line">
-                                                                {point.specifications}
+                                                                {renderTextWithImages(point.specifications)}
                                                             </p>
                                                         </div>
                                                     )}
@@ -729,7 +781,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                                                 </p>
                                                             </div>
                                                             <p className="text-base text-slate-800 dark:text-slate-200 reading-content leading-relaxed font-semibold whitespace-pre-line">
-                                                                {point.importance}
+                                                                {renderTextWithImages(point.importance)}
                                                             </p>
                                                         </div>
                                                     )}
@@ -742,7 +794,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                                                 </p>
                                                             </div>
                                                             <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed whitespace-pre-line">
-                                                                {point.daily_check}
+                                                                {renderTextWithImages(point.daily_check)}
                                                             </p>
                                                         </div>
                                                     )}
@@ -769,7 +821,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                     {trainingContent.pro_tip.content?.map((tip, idx) => (
                                         <li key={idx} className="flex items-start gap-4 text-emerald-50 reading-content leading-relaxed text-base">
                                             <span className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">✓</span>
-                                            <span>{tip}</span>
+                                            <span className="flex-1">{renderTextWithImages(tip)}</span>
                                         </li>
                                     ))}
                                 </ul>
@@ -795,7 +847,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                                     {language === 'en' ? 'Myth' : 'মিথ'}
                                                 </p>
                                                 <p className="text-base text-slate-700 dark:text-slate-300 italic reading-content leading-relaxed font-medium whitespace-pre-line">
-                                                    "{item.myth}"
+                                                    "{renderTextWithImages(item.myth)}"
                                                 </p>
                                             </div>
                                             <div className="pt-5 border-t border-slate-200 dark:border-slate-700">
@@ -803,7 +855,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                                     {language === 'en' ? 'Reality' : 'বাস্তবতা'}
                                                 </p>
                                                 <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed whitespace-pre-line">
-                                                    {item.reality || item.fact}
+                                                    {renderTextWithImages(item.reality || item.fact)}
                                                 </p>
                                             </div>
                                         </div>
@@ -830,7 +882,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                                 {fact.title}
                                             </h4>
                                             <p className="text-slate-200 reading-content leading-relaxed text-base whitespace-pre-line">
-                                                {fact.content}
+                                                {renderTextWithImages(fact.content)}
                                             </p>
                                         </div>
                                     ))}
@@ -942,6 +994,38 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                     badgeName={calculateLevelFromProgress(completedLessons, trainingChapters) > 1 ? "Professional Lineman" : "Safety Trainee"}
                     certificateId={`CERT-${user?.id?.slice(0, 8)}-${Date.now().toString().slice(-6)}`}
                 />,
+                document.body
+            )}
+
+            {/* Image Preview Modal */}
+            {activeImageModal && createPortal(
+                <div
+                    className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md animate-fade-in"
+                    onClick={() => setActiveImageModal(null)}
+                >
+                    <div
+                        className="relative max-w-5xl w-full bg-slate-800 rounded-3xl overflow-hidden shadow-2xl border border-white/10 animate-scale-in"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {/* Close Button */}
+                        <button
+                            onClick={() => setActiveImageModal(null)}
+                            className="absolute top-4 right-4 z-10 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full transition-colors"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        <div className="p-2 sm:p-4 h-full flex items-center justify-center bg-slate-900 border-t border-white/5">
+                            <img
+                                src={activeImageModal}
+                                alt="Shared document preview"
+                                className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
+                            />
+                        </div>
+                    </div>
+                </div>,
                 document.body
             )}
         </div>
