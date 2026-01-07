@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import secureStorage from '../../utils/secureStorage';
 import { supabase } from '../../supabaseClient';
 import { calculateLevelFromProgress } from '../../utils/badgeUtils';
 import { cacheHelper } from '../../utils/cacheHelper';
@@ -222,6 +223,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
         const fetchTrainingChapters = async () => {
             try {
                 setTrainingLoading(true);
+                setFetchError(false); // Clear previous error on retry
                 const data = await requestManager.fetch(
                     'training_manifest',
                     async () => {
@@ -231,7 +233,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                         }
                         throw new Error('Manifest not found');
                     },
-                    { ttl: 60, swr: true }
+                    { ttl: 60, swr: true, forceRefresh: true }
                 );
 
                 if (data) {
@@ -286,52 +288,119 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
             return;
         }
 
-        // Lazy load subchapters
+        // Lazy load subchapters with Versioned Sync
         try {
-            const cacheKey = `training_module_${chapter.number}_${language}`;
-            const subchapters = await requestManager.fetch(
-                cacheKey,
-                async () => {
-                    // Fetch from Supabase
-                    const { data, error } = await supabase
-                        .rpc('get_chapters_by_module', {
-                            module_num: chapter.number,
-                            lang: language
-                        });
+            // 1. Fetch metadata (id and version) for specific module
+            const { data: remoteMetadata, error: metaError } = await supabase
+                .from('training_chapters')
+                .select('id, version, module_number, chapter_number')
+                .eq('module_number', chapter.number)
+                .eq('language', language)
+                .eq('is_active', true);
 
-                    if (error) throw error;
+            if (metaError) {
+                console.warn("Versioning check failed, falling back to legacy fetch:", metaError);
+                throw new Error("fallback");
+            }
 
-                    if (data && data.length > 0) {
-                        return data.map(row => ({
-                            ...row.content,
-                            level_id: row.id,
-                            chapterNum: row.module_number,
-                            subchapterNum: row.chapter_number
-                        }));
-                    }
+            if (!remoteMetadata || remoteMetadata.length === 0) {
+                throw new Error("fallback");
+            }
 
-                    // Fallback to legacy file fetch if DB returns empty
-                    const promises = [];
-                    for (let s = 1; s <= chapter.count; s++) {
-                        promises.push(
-                            fetch(`/quizzes/chapter_${chapter.number}_${s}.json`)
-                                .then(r => r.ok ? r.json() : null)
-                                .catch(() => null)
-                        );
-                    }
-                    const results = await Promise.all(promises);
-                    return results
-                        .map((d, idx) => d ? { ...d, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
-                        .filter(Boolean);
-                },
-                { ttl: 60, swr: true }
-            );
+            // 2. Load locally stored content and compare versions
+            const subchapters = [];
+            const localVersions = secureStorage.getItem('training_content_versions') || {};
+            let needsFullFetch = false;
 
-            if (subchapters) {
-                setSelectedChapter({ ...chapter, subchapters });
+            for (const meta of remoteMetadata) {
+                const localContent = secureStorage.getItem(`training_content_${meta.id}`);
+                const localVer = localVersions[meta.id];
+
+                if (localContent && localVer === meta.version) {
+                    // Use local encrypted content
+                    subchapters.push({
+                        ...localContent,
+                        level_id: meta.id,
+                        chapterNum: meta.module_number,
+                        subchapterNum: meta.chapter_number
+                    });
+                } else {
+                    // This chapter needs to be fetched/updated
+                    needsFullFetch = true;
+                    break;
+                }
+            }
+
+            // 3. If everything is up-to-date locally, we are done
+            if (!needsFullFetch && subchapters.length === remoteMetadata.length) {
+                setSelectedChapter({ ...chapter, subchapters: subchapters.sort((a, b) => a.subchapterNum - b.subchapterNum) });
+                setTrainingLoading(false);
+                return;
+            }
+
+            // 4. Fetch full data if any mismatch found
+            const { data: fullData, error: fetchError } = await supabase
+                .rpc('get_chapters_by_module', {
+                    module_num: chapter.number,
+                    lang: language
+                });
+
+            if (fetchError) throw fetchError;
+
+            if (fullData && fullData.length > 0) {
+                const updatedVersions = { ...localVersions };
+                const processed = fullData.map(row => {
+                    // Save to secure storage
+                    secureStorage.setItem(`training_content_${row.id}`, row.content);
+                    updatedVersions[row.id] = row.version;
+
+                    return {
+                        ...row.content,
+                        level_id: row.id,
+                        chapterNum: row.module_number,
+                        subchapterNum: row.chapter_number
+                    };
+                });
+
+                // Update global version tracker
+                secureStorage.setItem('training_content_versions', updatedVersions);
+                setSelectedChapter({ ...chapter, subchapters: processed });
+            } else {
+                // Fallback to legacy file fetch if DB returns empty
+                const promises = [];
+                for (let s = 1; s <= chapter.count; s++) {
+                    promises.push(
+                        fetch(`/quizzes/chapter_${chapter.number}_${s}.json`)
+                            .then(r => r.ok ? r.json() : null)
+                            .catch(() => null)
+                    );
+                }
+                const results = await Promise.all(promises);
+                const processed = results
+                    .map((d, idx) => d ? { ...d, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
+                    .filter(Boolean);
+                setSelectedChapter({ ...chapter, subchapters: processed });
             }
         } catch (err) {
-            console.error("Loading subchapters failed:", err);
+            console.error("Supabase sync failed, falling back to legacy fetch:", err);
+            // Robust fallback for ANY error in the Supabase logic
+            try {
+                const promises = [];
+                for (let s = 1; s <= chapter.count; s++) {
+                    promises.push(
+                        fetch(`/quizzes/chapter_${chapter.number}_${s}.json`)
+                            .then(r => r.ok ? r.json() : null)
+                            .catch(() => null)
+                    );
+                }
+                const results = await Promise.all(promises);
+                const processed = results
+                    .map((d, idx) => d ? { ...d, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
+                    .filter(Boolean);
+                setSelectedChapter({ ...chapter, subchapters: processed });
+            } catch (fallbackErr) {
+                console.error("Critical failure loading subchapters:", fallbackErr);
+            }
         } finally {
             setTrainingLoading(false);
         }
@@ -452,12 +521,24 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                             ? 'Unable to load training data. Please check your internet connection.'
                             : 'প্রশিক্ষণ তথ্য লোড করা সম্ভব হয়নি। আপনার ইন্টারনেট কানেকশন চেক করুন।'}
                     </p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="px-6 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
-                    >
-                        {language === 'en' ? 'Retry' : 'আবার চেষ্টা করুন'}
-                    </button>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="px-6 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
+                        >
+                            {language === 'en' ? 'Retry' : 'আবার চেষ্টা করুন'}
+                        </button>
+                        <button
+                            onClick={() => {
+                                localStorage.clear();
+                                window.location.hash = '#/';
+                                window.location.reload();
+                            }}
+                            className="px-6 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition-all"
+                        >
+                            {language === 'en' ? 'Reset Cache & Login' : 'ক্যাশ মুছে নতুন করে লগিন করুন'}
+                        </button>
+                    </div>
                 </div>
             )}
 
