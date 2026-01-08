@@ -8,6 +8,7 @@ import { storageUtils } from '../../utils/storageUtils';
 import { requestManager } from '../../utils/requestManager';
 import ChapterQuizModal from '../ChapterQuizModal';
 import CertificateModal from '../CertificateModal';
+import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 
 const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, onClick }) => {
     const isFAQ = chapter.number === 10;
@@ -104,6 +105,8 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
     const [previousQuizQuestions, setPreviousQuizQuestions] = useState({});
     const [recentReward, setRecentReward] = useState(null);
     const [activeImageModal, setActiveImageModal] = useState(null); // { type: 'image', value: 'url' } or { type: 'text', value: 'content' }
+
+    const { speak, pause, resume, stop, isPlaying, isPaused, activeId } = useTextToSpeech(language);
 
     // Body scroll locking when full-page training is open
     useEffect(() => {
@@ -404,6 +407,75 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
         } finally {
             setTrainingLoading(false);
         }
+    };
+
+    // TTS Logic: Compile full lesson text
+    const handleReadLesson = (id = 'full_lesson') => {
+        if (!trainingContent) return;
+
+        let parts = [];
+
+        // Add Mission Briefing
+        if (trainingContent.mission_briefing) {
+            parts.push((language === 'en' ? "Mission Briefing. " : "মিশন ব্রিফিং। ") + trainingContent.mission_briefing);
+        }
+
+        // Add Main Content Sections
+        if (trainingContent.sections) {
+            trainingContent.sections.forEach(section => {
+                if (section.title) parts.push(section.title);
+                if (section.points) {
+                    section.points.forEach(point => {
+                        if (point.item_name) parts.push(point.item_name);
+                        if (point.specifications) parts.push(point.specifications);
+                        if (point.importance) parts.push(point.importance);
+                        if (point.daily_check) parts.push(point.daily_check);
+                    });
+                }
+            });
+        }
+
+        // Add Pro Tips (JSON structure: "pro_tip" object with "content" array)
+        const pt = trainingContent.pro_tip || trainingContent.pro_tips;
+        if (pt) {
+            if (pt.title) parts.push(pt.title);
+            if (pt.content && Array.isArray(pt.content)) {
+                pt.content.forEach(tip => parts.push(tip));
+            } else if (Array.isArray(pt)) {
+                pt.forEach(tip => parts.push(tip));
+            }
+        }
+
+        // Add Myth Busters (JSON structure: "myth_buster" object with "myths" array)
+        const mb = trainingContent.myth_buster || trainingContent.myth_busters;
+        if (mb) {
+            if (mb.title) parts.push(mb.title);
+            const myths = mb.myths || mb;
+            if (Array.isArray(myths)) {
+                myths.forEach(item => {
+                    if (item.myth) parts.push((language === 'en' ? "Myth: " : "ভুল ধারণা: ") + item.myth);
+                    if (item.reality || item.fact) parts.push((language === 'en' ? "Reality: " : "সঠিক তথ্য: ") + (item.reality || item.fact));
+                });
+            }
+        }
+
+        // Add Advanced Sections (JSON structure: "advanced_section" object with "facts" array)
+        const adv = trainingContent.advanced_section || trainingContent.advanced_sections;
+        if (adv) {
+            if (adv.title) parts.push(adv.title);
+            const facts = adv.facts || adv.content || adv;
+            if (Array.isArray(facts)) {
+                facts.forEach(section => {
+                    if (section.title) parts.push(section.title);
+                    if (section.content) parts.push(section.content);
+                    else if (typeof section === 'string') parts.push(section);
+                });
+            }
+        }
+
+        // Join everything with periods to ensure pauses between blocks
+        const fullText = parts.join(". ");
+        speak(fullText, id);
     };
 
     const finalizeLessonCompletion = async (lessonId) => {
@@ -753,6 +825,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                     <div className="sticky top-0 z-50 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between shadow-sm gap-3 safe-area-inset-top">
                         <button
                             onClick={() => {
+                                stop();
                                 setTrainingContent(null);
                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                             }}
@@ -768,12 +841,66 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                 {trainingContent.level_id && `${trainingContent.level_id}. `}{trainingContent.level_title}
                             </h2>
                         </div>
-                        <div className="w-9 flex-shrink-0">
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            {/* Audio Controls (TTS) */}
+                            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-700/50 p-1 rounded-xl">
+                                {!isPlaying ? (
+                                    <button
+                                        onClick={() => handleReadLesson('full_lesson')}
+                                        className="p-1.5 hover:bg-orange-100 dark:hover:bg-orange-900/40 rounded-lg text-orange-600 dark:text-orange-400 transition-all"
+                                        title={language === 'en' ? 'Read Lesson' : 'পাঠ শুনুন'}
+                                    >
+                                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M8 5v14l11-7z" />
+                                        </svg>
+                                    </button>
+                                ) : (
+                                    <>
+                                        {isPaused ? (
+                                            <button
+                                                onClick={resume}
+                                                className="p-1.5 hover:bg-orange-100 dark:hover:bg-orange-900/40 rounded-lg text-orange-600 dark:text-orange-400"
+                                            >
+                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M8 5v14l11-7z" />
+                                                </svg>
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={pause}
+                                                className="p-1.5 hover:bg-orange-100 dark:hover:bg-orange-900/40 rounded-lg text-orange-600 dark:text-orange-400"
+                                            >
+                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={stop}
+                                            className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg text-red-600 dark:text-red-400"
+                                        >
+                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M6 6h12v12H6z" />
+                                            </svg>
+                                        </button>
+                                        {/* Pulsing "Reading" Indicator */}
+                                        {!isPaused && (
+                                            <div className="flex gap-0.5 px-1">
+                                                <div className="w-1 h-3 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                                <div className="w-1 h-4 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                                <div className="w-1 h-3 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+
                             {/* Complete Button for Training Content */}
                             {!completedLessons.includes(trainingContent.level_id) && (
                                 <button
                                     onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                    className="bg-emerald-500 text-white p-1.5 rounded-lg text-xs font-bold"
+                                    className="bg-emerald-500 hover:bg-emerald-600 text-white w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+                                    title={language === 'en' ? 'Mark Completed' : 'সম্পন্ন চিহ্নিত করুন'}
                                 >
                                     ✓
                                 </button>
@@ -797,7 +924,39 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                         </div>
 
                         {/* Mission Briefing */}
-                        <div className="bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/30 dark:to-orange-900/20 border-l-4 border-orange-500 p-6 sm:p-8 rounded-r-2xl mb-10 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/30 dark:to-orange-900/20 border-l-4 border-orange-500 p-6 sm:p-8 rounded-r-2xl mb-10 shadow-sm hover:shadow-md transition-shadow relative group/briefing">
+                            <div className="absolute right-4 top-4 flex gap-1 items-center opacity-0 group-hover/briefing:opacity-100 transition-opacity z-10">
+                                {activeId === 'briefing' ? (
+                                    <>
+                                        <button
+                                            onClick={isPaused ? resume : pause}
+                                            className="p-2 bg-white/80 dark:bg-slate-800/80 rounded-full text-orange-600 shadow-sm"
+                                        >
+                                            {isPaused ? (
+                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                            ) : (
+                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
+                                            )}
+                                        </button>
+                                        <button
+                                            onClick={stop}
+                                            className="p-2 bg-white/80 dark:bg-slate-800/80 rounded-full text-red-600 shadow-sm"
+                                        >
+                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h12v12H6z" /></svg>
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button
+                                        onClick={() => speak((language === 'en' ? "Mission Briefing. " : "মিশন ব্রিফিং। ") + trainingContent.mission_briefing, 'briefing')}
+                                        className="p-2 bg-white/80 dark:bg-slate-800/80 rounded-full text-orange-600 shadow-sm"
+                                        title={language === 'en' ? 'Read Briefing' : 'ব্রিফিং শুনুন'}
+                                    >
+                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
+                                        </svg>
+                                    </button>
+                                )}
+                            </div>
                             <div className="flex items-start gap-4">
                                 <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-800 flex items-center justify-center text-2xl flex-shrink-0">
                                     🎯
@@ -817,14 +976,80 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                         <div className="space-y-10">
                             {trainingContent.sections?.map((section, sIdx) => (
                                 <div key={sIdx} className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-10 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-shadow">
-                                    <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-8 reading-content flex items-center gap-4">
-                                        <span className="w-2 h-8 bg-gradient-to-b from-orange-500 to-orange-400 rounded-full flex-shrink-0"></span>
-                                        {section.title}
-                                    </h3>
+                                    <div className="flex justify-between items-center mb-8">
+                                        <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 reading-content flex items-center gap-4">
+                                            <span className="w-2 h-8 bg-gradient-to-b from-orange-500 to-orange-400 rounded-full flex-shrink-0"></span>
+                                            {section.title}
+                                        </h3>
+                                        <div className="flex gap-1 items-center">
+                                            {activeId === `section-${sIdx}` ? (
+                                                <>
+                                                    <button
+                                                        onClick={isPaused ? resume : pause}
+                                                        className="p-2 border border-orange-100 dark:border-orange-900/30 rounded-xl text-orange-600 hover:bg-orange-50"
+                                                    >
+                                                        {isPaused ? '▶' : '⏸'}
+                                                    </button>
+                                                    <button
+                                                        onClick={stop}
+                                                        className="p-2 border border-red-100 dark:border-red-900/30 rounded-xl text-red-600 hover:bg-red-50"
+                                                    >
+                                                        ⏹
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <button
+                                                    onClick={() => {
+                                                        let text = section.title + ". ";
+                                                        if (section.points) {
+                                                            section.points.forEach(p => {
+                                                                text += (p.item_name || "") + ". " + (p.specifications || "") + ". " + (p.importance || "") + ". " + (p.daily_check || "") + ". ";
+                                                            });
+                                                        }
+                                                        speak(text, `section-${sIdx}`);
+                                                    }}
+                                                    className="p-2 border border-orange-100 dark:border-orange-900/30 rounded-xl text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all flex items-center gap-2 text-[10px] font-bold"
+                                                >
+                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
+                                                    </svg>
+                                                    {language === 'en' ? 'Read' : 'শুনুন'}
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
                                     <div className="space-y-10">
                                         {section.points?.map((point, pIdx) => (
-                                            <div key={pIdx} className="relative pl-7 border-l-2 border-orange-200 dark:border-orange-900/30">
+                                            <div key={pIdx} className="relative pl-7 border-l-2 border-orange-200 dark:border-orange-900/30 group/point">
                                                 <div className="absolute left-[-7px] top-1 w-3.5 h-3.5 rounded-full bg-orange-500 border-2 border-white dark:border-slate-800 shadow-sm"></div>
+                                                <div className="absolute -right-2 top-0 flex gap-1 opacity-0 group-hover/point:opacity-100 transition-opacity z-10">
+                                                    {activeId === `point-${sIdx}-${pIdx}` ? (
+                                                        <>
+                                                            <button
+                                                                onClick={isPaused ? resume : pause}
+                                                                className="p-1.5 bg-orange-100 dark:bg-orange-900/40 rounded-lg text-orange-600"
+                                                            >
+                                                                {isPaused ? '▶' : '⏸'}
+                                                            </button>
+                                                            <button
+                                                                onClick={stop}
+                                                                className="p-1.5 bg-red-100 dark:bg-red-900/40 rounded-lg text-red-600"
+                                                            >
+                                                                ⏹
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => speak((point.item_name || "") + ". " + (point.specifications || "") + ". " + (point.importance || "") + ". " + (point.daily_check || ""), `point-${sIdx}-${pIdx}`)}
+                                                            className="p-1.5 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-orange-600"
+                                                            title={language === 'en' ? 'Read this point' : 'এই পয়েন্টটি শুনুন'}
+                                                        >
+                                                            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
+                                                            </svg>
+                                                        </button>
+                                                    )}
+                                                </div>
                                                 <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-4 reading-content text-lg sm:text-xl">
                                                     {point.item_name}
                                                 </h4>
@@ -903,6 +1128,32 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                     <h3 className="text-2xl sm:text-3xl font-bold reading-content">
                                         {trainingContent.pro_tip.title}
                                     </h3>
+                                    <div className="ml-auto flex gap-1">
+                                        {activeId === 'pro_tip' ? (
+                                            <>
+                                                <button onClick={isPaused ? resume : pause} className="p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-all">
+                                                    {isPaused ? '▶' : '⏸'}
+                                                </button>
+                                                <button onClick={stop} className="p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-all">
+                                                    ⏹
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <button
+                                                onClick={() => {
+                                                    let text = trainingContent.pro_tip.title + ". ";
+                                                    trainingContent.pro_tip.content?.forEach(tip => text += tip + ". ");
+                                                    speak(text, 'pro_tip');
+                                                }}
+                                                className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all"
+                                                title={language === 'en' ? 'Read Pro Tips' : 'প্রো টিপস শুনুন'}
+                                            >
+                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                                 <ul className="space-y-5">
                                     {trainingContent.pro_tip.content?.map((tip, idx) => (
@@ -920,11 +1171,39 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                             <div className="mt-12 bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-10 border-2 border-red-100 dark:border-red-900/30 shadow-sm hover:shadow-md transition-shadow">
                                 <div className="flex items-center gap-3 mb-8">
                                     <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-2xl">
-                                        ⚠️
+                                        💡
                                     </div>
                                     <h3 className="text-2xl sm:text-3xl font-bold text-red-700 dark:text-red-400 reading-content">
                                         {trainingContent.myth_buster.title}
                                     </h3>
+                                    <div className="ml-auto flex gap-1">
+                                        {activeId === 'myth_buster' ? (
+                                            <>
+                                                <button onClick={isPaused ? resume : pause} className="p-2 bg-red-100 dark:bg-red-900/40 rounded-full text-red-600">
+                                                    {isPaused ? '▶' : '⏸'}
+                                                </button>
+                                                <button onClick={stop} className="p-2 bg-red-100 dark:bg-red-900/40 rounded-full text-red-600">
+                                                    ⏹
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <button
+                                                onClick={() => {
+                                                    let text = trainingContent.myth_buster.title + ". ";
+                                                    trainingContent.myth_buster.myths?.forEach(m => {
+                                                        text += (language === 'en' ? "Myth: " : "ভুল ধারণা: ") + m.myth + ". " + (language === 'en' ? "Fact: " : "বাস্তবতা: ") + (m.reality || m.fact) + ". ";
+                                                    });
+                                                    speak(text, 'myth_buster');
+                                                }}
+                                                className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full text-red-600 hover:bg-red-200 transition-all"
+                                                title={language === 'en' ? 'Read Myth Busters' : 'মিথ বাস্টার শুনুন'}
+                                            >
+                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-1 gap-5">
                                     {trainingContent.myth_buster.myths?.map((item, idx) => (
@@ -961,6 +1240,34 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                     <h3 className="text-2xl sm:text-3xl font-bold reading-content">
                                         {trainingContent.advanced_section.title}
                                     </h3>
+                                    <div className="ml-auto flex gap-1">
+                                        {activeId === 'advanced' ? (
+                                            <>
+                                                <button onClick={isPaused ? resume : pause} className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-blue-400">
+                                                    {isPaused ? '▶' : '⏸'}
+                                                </button>
+                                                <button onClick={stop} className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-red-400">
+                                                    ⏹
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <button
+                                                onClick={() => {
+                                                    let text = trainingContent.advanced_section.title + ". ";
+                                                    trainingContent.advanced_section.facts?.forEach(f => {
+                                                        text += (f.title ? f.title + ". " : "") + (f.content || f) + ". ";
+                                                    });
+                                                    speak(text, 'advanced');
+                                                }}
+                                                className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all"
+                                                title={language === 'en' ? 'Read Advanced Section' : 'অ্যাডভান্সড সেকশন শুনুন'}
+                                            >
+                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-1 gap-6">
                                     {trainingContent.advanced_section.facts?.map((fact, idx) => (
