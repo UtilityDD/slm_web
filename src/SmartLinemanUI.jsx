@@ -1,5 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import { SplashScreen } from '@capacitor/splash-screen';
+import { Browser } from '@capacitor/browser';
 import { supabase } from "./supabaseClient";
 import { getBadgeByLevel, calculateLevelFromProgress } from './utils/badgeUtils';
 import { cacheHelper } from './utils/cacheHelper';
@@ -857,7 +858,7 @@ export default function SmartLinemanUI() {
                   <button
                     onClick={() => {
                       if (isForceUpdate && updateInfo.update_url && updateInfo.update_url !== '#') {
-                        window.open(updateInfo.update_url, '_system');
+                        Browser.open({ url: updateInfo.update_url });
                       } else {
                         // SW Refresh logic
                         if ('serviceWorker' in navigator) {
