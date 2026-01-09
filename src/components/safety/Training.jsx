@@ -230,13 +230,13 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                 const data = await requestManager.fetch(
                     'training_manifest',
                     async () => {
-                        const response = await fetch('/quizzes/training_manifest.json');
+                        const response = await fetch('quizzes/training_manifest.json');
                         if (response.ok) {
                             return await response.json();
                         }
                         throw new Error('Manifest not found');
                     },
-                    { ttl: 60, swr: true, forceRefresh: true }
+                    { ttl: 60, swr: true, forceRefresh: false }
                 );
 
                 if (data) {
@@ -272,7 +272,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                 const data = await requestManager.fetch(
                     'chapter_10_qa',
                     async () => {
-                        const response = await fetch('/quizzes/chapter_10_qa.json');
+                        const response = await fetch('quizzes/chapter_10_qa.json');
                         if (response.ok) {
                             return await response.json();
                         }
@@ -292,118 +292,116 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
         }
 
         // Lazy load subchapters with Versioned Sync
+        // Use requestManager to cache chapter content logic
         try {
-            // 1. Fetch metadata (id and version) for specific module
-            const { data: remoteMetadata, error: metaError } = await supabase
-                .from('training_chapters')
-                .select('id, version, module_number, chapter_number')
-                .eq('module_number', chapter.number)
-                .eq('language', language)
-                .eq('is_active', true);
+            const cachedSubchapters = await requestManager.fetch(
+                `chapter_${chapter.number}_content_${language}`, // Unique key per chapter/lang
+                async () => {
+                    // 1. Try Supabase/SecureStorage logic first
+                    try {
+                        // 1. Fetch metadata (id and version) for specific module
+                        const { data: remoteMetadata, error: metaError } = await supabase
+                            .from('training_chapters')
+                            .select('id, version, module_number, chapter_number')
+                            .eq('module_number', chapter.number)
+                            .eq('language', language)
+                            .eq('is_active', true);
 
-            if (metaError) {
-                console.warn("Versioning check failed, falling back to legacy fetch:", metaError);
-                throw new Error("fallback");
-            }
+                        if (metaError || !remoteMetadata || remoteMetadata.length === 0) {
+                            throw new Error("fallback");
+                        }
 
-            if (!remoteMetadata || remoteMetadata.length === 0) {
-                throw new Error("fallback");
-            }
+                        // 2. Load locally stored content and compare versions
+                        const subchapters = [];
+                        const localVersions = secureStorage.getItem('training_content_versions') || {};
+                        let needsFullFetch = false;
 
-            // 2. Load locally stored content and compare versions
-            const subchapters = [];
-            const localVersions = secureStorage.getItem('training_content_versions') || {};
-            let needsFullFetch = false;
+                        for (const meta of remoteMetadata) {
+                            const localContent = secureStorage.getItem(`training_content_${meta.id}`);
+                            const localVer = localVersions[meta.id];
 
-            for (const meta of remoteMetadata) {
-                const localContent = secureStorage.getItem(`training_content_${meta.id}`);
-                const localVer = localVersions[meta.id];
+                            if (localContent && localVer === meta.version) {
+                                subchapters.push({
+                                    ...localContent,
+                                    level_id: meta.id,
+                                    chapterNum: meta.module_number,
+                                    subchapterNum: meta.chapter_number
+                                });
+                            } else {
+                                needsFullFetch = true;
+                                break;
+                            }
+                        }
 
-                if (localContent && localVer === meta.version) {
-                    // Use local encrypted content
-                    subchapters.push({
-                        ...localContent,
-                        level_id: meta.id,
-                        chapterNum: meta.module_number,
-                        subchapterNum: meta.chapter_number
-                    });
-                } else {
-                    // This chapter needs to be fetched/updated
-                    needsFullFetch = true;
-                    break;
-                }
-            }
+                        if (!needsFullFetch && subchapters.length === remoteMetadata.length) {
+                            return subchapters.sort((a, b) => a.subchapterNum - b.subchapterNum);
+                        }
 
-            // 3. If everything is up-to-date locally, we are done
-            if (!needsFullFetch && subchapters.length === remoteMetadata.length) {
-                setSelectedChapter({ ...chapter, subchapters: subchapters.sort((a, b) => a.subchapterNum - b.subchapterNum) });
-                setTrainingLoading(false);
-                return;
-            }
+                        // Fetch full data if needed
+                        const { data: fullData, error: fetchError } = await supabase
+                            .rpc('get_chapters_by_module', {
+                                module_num: chapter.number,
+                                lang: language
+                            });
 
-            // 4. Fetch full data if any mismatch found
-            const { data: fullData, error: fetchError } = await supabase
-                .rpc('get_chapters_by_module', {
-                    module_num: chapter.number,
-                    lang: language
-                });
+                        if (fetchError) throw fetchError;
 
-            if (fetchError) throw fetchError;
+                        if (fullData && fullData.length > 0) {
+                            const updatedVersions = { ...localVersions };
+                            const processed = fullData.map(row => {
+                                secureStorage.setItem(`training_content_${row.id}`, row.content);
+                                updatedVersions[row.id] = row.version;
+                                return {
+                                    ...row.content,
+                                    level_id: row.id,
+                                    chapterNum: row.module_number,
+                                    subchapterNum: row.chapter_number
+                                };
+                            });
+                            secureStorage.setItem('training_content_versions', updatedVersions);
+                            return processed;
+                        }
+                    } catch (err) {
+                        // Fallback to legacy file fetching
+                        // console.log("Falling back to legacy fetch for chapter", chapter.number);
+                    }
 
-            if (fullData && fullData.length > 0) {
-                const updatedVersions = { ...localVersions };
-                const processed = fullData.map(row => {
-                    // Save to secure storage
-                    secureStorage.setItem(`training_content_${row.id}`, row.content);
-                    updatedVersions[row.id] = row.version;
+                    // Legacy Fetch Loop
+                    const promises = [];
+                    for (let s = 1; s <= chapter.count; s++) {
+                        promises.push(
+                            fetch(`quizzes/chapter_${chapter.number}_${s}.json`)
+                                .then(r => r.ok ? r.json() : null)
+                                .catch(() => null)
+                        );
+                    }
+                    const results = await Promise.all(promises);
+                    return results
+                        .map((d, idx) => d ? { ...d, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
+                        .filter(Boolean);
+                },
+                { ttl: 5, swr: true } // Return cache instantly, but ALWAYS check Supabase in background
+            );
 
-                    return {
-                        ...row.content,
-                        level_id: row.id,
-                        chapterNum: row.module_number,
-                        subchapterNum: row.chapter_number
-                    };
-                });
-
-                // Update global version tracker
-                secureStorage.setItem('training_content_versions', updatedVersions);
-                setSelectedChapter({ ...chapter, subchapters: processed });
-            } else {
-                // Fallback to legacy file fetch if DB returns empty
-                const promises = [];
-                for (let s = 1; s <= chapter.count; s++) {
-                    promises.push(
-                        fetch(`/quizzes/chapter_${chapter.number}_${s}.json`)
-                            .then(r => r.ok ? r.json() : null)
-                            .catch(() => null)
-                    );
-                }
-                const results = await Promise.all(promises);
-                const processed = results
-                    .map((d, idx) => d ? { ...d, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
-                    .filter(Boolean);
-                setSelectedChapter({ ...chapter, subchapters: processed });
+            if (cachedSubchapters) {
+                setSelectedChapter({ ...chapter, subchapters: cachedSubchapters });
             }
         } catch (err) {
-            console.error("Supabase sync failed, falling back to legacy fetch:", err);
-            // Robust fallback for ANY error in the Supabase logic
-            try {
-                const promises = [];
-                for (let s = 1; s <= chapter.count; s++) {
-                    promises.push(
-                        fetch(`/quizzes/chapter_${chapter.number}_${s}.json`)
-                            .then(r => r.ok ? r.json() : null)
-                            .catch(() => null)
-                    );
-                }
-                const results = await Promise.all(promises);
-                const processed = results
-                    .map((d, idx) => d ? { ...d, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
-                    .filter(Boolean);
-                setSelectedChapter({ ...chapter, subchapters: processed });
-            } catch (fallbackErr) {
-                console.error("Critical failure loading subchapters:", fallbackErr);
+            console.error("Critical failure in handleChapterClick:", err);
+            // Emergency final fallback (uncached)
+            const promises = [];
+            for (let s = 1; s <= chapter.count; s++) {
+                promises.push(
+                    fetch(`quizzes/chapter_${chapter.number}_${s}.json`)
+                        .then(r => r.ok ? r.json() : null)
+                        .catch(() => null)
+                );
             }
+            const results = await Promise.all(promises);
+            const processed = results
+                .map((d, idx) => d ? { ...d, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
+                .filter(Boolean);
+            setSelectedChapter({ ...chapter, subchapters: processed });
         } finally {
             setTrainingLoading(false);
         }
@@ -533,7 +531,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
         const filename = `questions_${lessonId.replace('.', '_')}.json`;
 
         try {
-            const response = await fetch(`/quizzes/${filename}`);
+            const response = await fetch(`quizzes/${filename}`);
             if (!response.ok) {
                 // If no quiz file exists, just complete the lesson
                 finalizeLessonCompletion(lessonId);
@@ -666,8 +664,8 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                             /* FAQ View */
                             <div className="space-y-4">
                                 <div className="bg-gradient-to-r from-violet-100 to-fuchsia-100 dark:from-violet-900/30 dark:to-fuchsia-900/30 p-6 rounded-2xl mb-6 border border-violet-200 dark:border-violet-700">
-                                    <h2 className="text-2xl font-bold text-violet-900 dark:text-violet-100 mb-2">{selectedChapter.content.title}</h2>
-                                    <p className="text-violet-700 dark:text-violet-300 mb-4">{selectedChapter.content.subtitle}</p>
+                                    <h2 className="text-2xl font-bold text-violet-900 dark:text-violet-100 mb-2">{selectedChapter.content?.title || 'FAQ'}</h2>
+                                    <p className="text-violet-700 dark:text-violet-300 mb-4">{selectedChapter.content?.subtitle}</p>
 
                                     {/* Search Input */}
                                     <div className="relative">
@@ -686,7 +684,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                     </div>
                                 </div>
 
-                                {selectedChapter.content.questions
+                                {selectedChapter.content?.questions
                                     .filter(q => {
                                         if (!faqSearchQuery) return true;
                                         const query = faqSearchQuery.toLowerCase();
@@ -717,7 +715,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                                     {q.image && (
                                                         <div className="mt-4 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm max-w-md">
                                                             <img
-                                                                src={`/quizzes/faq_images/${q.image}`}
+                                                                src={`quizzes/faq_images/${q.image}`}
                                                                 alt={q.question}
                                                                 className="w-full h-auto object-cover"
                                                                 loading="lazy"
@@ -736,7 +734,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                         </div>
                                     ))}
 
-                                {selectedChapter.content.questions.filter(q => {
+                                {selectedChapter.content?.questions.filter(q => {
                                     if (!faqSearchQuery) return true;
                                     const query = faqSearchQuery.toLowerCase();
                                     return (
@@ -1056,7 +1054,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                                 {point.image_name && (
                                                     <div className="mb-6 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
                                                         <img
-                                                            src={`/quizzes/${point.image_name}`}
+                                                            src={`quizzes/${point.image_name}`}
                                                             alt={point.item_name}
                                                             className="w-full h-auto object-cover max-h-80"
                                                             loading="lazy"

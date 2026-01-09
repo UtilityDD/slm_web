@@ -281,14 +281,33 @@ export default function SmartLinemanUI() {
 
   useEffect(() => {
     // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user).finally(() => setAppLoading(false));
-      } else {
+    // Check active session with fail-safe timeout
+    const initSession = async () => {
+      // Force app loading to false after 3s max (fail-safe)
+      const timeoutId = setTimeout(() => {
+        console.warn('Session check timed out, forcing app load');
+        setAppLoading(false);
+      }, 3000);
+
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        setUser(session?.user ?? null);
+
+        if (session?.user) {
+          // Verify profile but don't block indefinitely
+          await fetchProfile(session.user).catch(console.error);
+        }
+      } catch (err) {
+        console.error('Session initialization error:', err);
+      } finally {
+        clearTimeout(timeoutId);
         setAppLoading(false);
       }
-    });
+    };
+
+    initSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
@@ -428,10 +447,30 @@ export default function SmartLinemanUI() {
       })
       .subscribe();
 
+    // Listen for session changes (Single Device Login)
+    const sessionChannel = supabase
+      .channel('public:profiles')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'profiles',
+        filter: user ? `id=eq.${user.id}` : undefined
+      }, (payload) => {
+        const remoteSessionId = payload.new.current_session_id;
+        const localSessionId = storageUtils.getItem('slm_session_id');
+
+        if (remoteSessionId && localSessionId && remoteSessionId !== localSessionId) {
+          console.warn('Real-time session mismatch detected. Logging out.');
+          confirmLogout(true);
+        }
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(sessionChannel);
     };
-  }, []);
+  }, [user]);
 
   // Scroll to top when view changes and sync with URL hash
   useEffect(() => {

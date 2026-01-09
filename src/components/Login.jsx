@@ -103,12 +103,15 @@ export default function Login({ onLogin, showNotification, initialView }) {
 
             if (data.user) {
                 const sessionId = generateUUID();
-                const { error: profileError } = await supabase
+                // Update session ID in background
+                supabase
                     .from('profiles')
                     .update({ current_session_id: sessionId })
-                    .eq('id', data.user.id);
+                    .eq('id', data.user.id)
+                    .then(({ error }) => {
+                        if (error) console.error('Error updating session ID:', error);
+                    });
 
-                if (profileError) console.error('Error updating session ID:', profileError);
                 storageUtils.setItem('slm_session_id', sessionId);
 
                 // Remember Me logic (Email only for OTP)
@@ -143,12 +146,15 @@ export default function Login({ onLogin, showNotification, initialView }) {
                 if (error) throw error;
                 if (data.user) {
                     const sessionId = generateUUID();
-                    const { error: profileError } = await supabase
+                    // Update session ID in background
+                    supabase
                         .from('profiles')
                         .update({ current_session_id: sessionId })
-                        .eq('id', data.user.id);
+                        .eq('id', data.user.id)
+                        .then(({ error }) => {
+                            if (error) console.error('Error updating session ID:', error);
+                        });
 
-                    if (profileError) console.error('Error updating session ID:', profileError);
                     storageUtils.setItem('slm_session_id', sessionId);
 
                     // Remember Me logic

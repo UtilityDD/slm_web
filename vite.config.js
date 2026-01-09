@@ -3,7 +3,8 @@ import react from '@vitejs/plugin-react';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  base: mode === 'production' ? './' : '/',
   plugins: [
     react(),
     ViteImageOptimizer({
@@ -20,4 +21,4 @@ export default defineConfig({
     port: 5173,
     host: true
   }
-})
+}))
