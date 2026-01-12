@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import secureStorage from '../../utils/secureStorage';
 import { supabase } from '../../supabaseClient';
-import { calculateLevelFromProgress } from '../../utils/badgeUtils';
+import { calculateLevelFromProgress, getBadgeByLevel } from '../../utils/badgeUtils';
 import { cacheHelper } from '../../utils/cacheHelper';
 import { storageUtils } from '../../utils/storageUtils';
 import { requestManager } from '../../utils/requestManager';
@@ -106,7 +106,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
     const [recentReward, setRecentReward] = useState(null);
     const [activeImageModal, setActiveImageModal] = useState(null); // { type: 'image', value: 'url' } or { type: 'text', value: 'content' }
 
-    const { speak, pause, resume, stop, isPlaying, isPaused, activeId } = useTextToSpeech(language);
+    const { speak, pause, resume, stop, isPlaying, isPaused } = useTextToSpeech(language);
 
     // Body scroll locking when full-page training is open
     useEffect(() => {
@@ -230,13 +230,13 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                 const data = await requestManager.fetch(
                     'training_manifest',
                     async () => {
-                        const response = await fetch('quizzes/training_manifest.json');
+                        const response = await fetch('/quizzes/training_manifest.json');
                         if (response.ok) {
                             return await response.json();
                         }
                         throw new Error('Manifest not found');
                     },
-                    { ttl: 60, swr: true, forceRefresh: false }
+                    { ttl: 60, swr: true, forceRefresh: true }
                 );
 
                 if (data) {
@@ -272,7 +272,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                 const data = await requestManager.fetch(
                     'chapter_10_qa',
                     async () => {
-                        const response = await fetch('quizzes/chapter_10_qa.json');
+                        const response = await fetch('/quizzes/chapter_10_qa.json');
                         if (response.ok) {
                             return await response.json();
                         }
@@ -292,123 +292,125 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
         }
 
         // Lazy load subchapters with Versioned Sync
-        // Use requestManager to cache chapter content logic
         try {
-            const cachedSubchapters = await requestManager.fetch(
-                `chapter_${chapter.number}_content_${language}`, // Unique key per chapter/lang
-                async () => {
-                    // 1. Try Supabase/SecureStorage logic first
-                    try {
-                        // 1. Fetch metadata (id and version) for specific module
-                        const { data: remoteMetadata, error: metaError } = await supabase
-                            .from('training_chapters')
-                            .select('id, version, module_number, chapter_number')
-                            .eq('module_number', chapter.number)
-                            .eq('language', language)
-                            .eq('is_active', true);
+            // 1. Fetch metadata (id and version) for specific module
+            const { data: remoteMetadata, error: metaError } = await supabase
+                .from('training_chapters')
+                .select('id, version, module_number, chapter_number')
+                .eq('module_number', chapter.number)
+                .eq('language', language)
+                .eq('is_active', true);
 
-                        if (metaError || !remoteMetadata || remoteMetadata.length === 0) {
-                            throw new Error("fallback");
-                        }
+            if (metaError) {
+                console.warn("Versioning check failed, falling back to legacy fetch:", metaError);
+                throw new Error("fallback");
+            }
 
-                        // 2. Load locally stored content and compare versions
-                        const subchapters = [];
-                        const localVersions = secureStorage.getItem('training_content_versions') || {};
-                        let needsFullFetch = false;
+            if (!remoteMetadata || remoteMetadata.length === 0) {
+                throw new Error("fallback");
+            }
 
-                        for (const meta of remoteMetadata) {
-                            const localContent = secureStorage.getItem(`training_content_${meta.id}`);
-                            const localVer = localVersions[meta.id];
+            // 2. Load locally stored content and compare versions
+            const subchapters = [];
+            const localVersions = secureStorage.getItem('training_content_versions') || {};
+            let needsFullFetch = false;
 
-                            if (localContent && localVer === meta.version) {
-                                subchapters.push({
-                                    ...localContent,
-                                    level_id: meta.id,
-                                    chapterNum: meta.module_number,
-                                    subchapterNum: meta.chapter_number
-                                });
-                            } else {
-                                needsFullFetch = true;
-                                break;
-                            }
-                        }
+            for (const meta of remoteMetadata) {
+                const localContent = secureStorage.getItem(`training_content_${meta.id}`);
+                const localVer = localVersions[meta.id];
 
-                        if (!needsFullFetch && subchapters.length === remoteMetadata.length) {
-                            return subchapters.sort((a, b) => a.subchapterNum - b.subchapterNum);
-                        }
+                if (localContent && localVer === meta.version) {
+                    // Use local encrypted content
+                    subchapters.push({
+                        ...localContent,
+                        level_id: meta.id,
+                        chapterNum: meta.module_number,
+                        subchapterNum: meta.chapter_number
+                    });
+                } else {
+                    // This chapter needs to be fetched/updated
+                    needsFullFetch = true;
+                    break;
+                }
+            }
 
-                        // Fetch full data if needed
-                        const { data: fullData, error: fetchError } = await supabase
-                            .rpc('get_chapters_by_module', {
-                                module_num: chapter.number,
-                                lang: language
-                            });
+            // 3. If everything is up-to-date locally, we are done
+            if (!needsFullFetch && subchapters.length === remoteMetadata.length) {
+                setSelectedChapter({ ...chapter, subchapters: subchapters.sort((a, b) => a.subchapterNum - b.subchapterNum) });
+                setTrainingLoading(false);
+                return;
+            }
 
-                        if (fetchError) throw fetchError;
+            // 4. Fetch full data if any mismatch found
+            const { data: fullData, error: fetchError } = await supabase
+                .rpc('get_chapters_by_module', {
+                    module_num: chapter.number,
+                    lang: language
+                });
 
-                        if (fullData && fullData.length > 0) {
-                            const updatedVersions = { ...localVersions };
-                            const processed = fullData.map(row => {
-                                secureStorage.setItem(`training_content_${row.id}`, row.content);
-                                updatedVersions[row.id] = row.version;
-                                return {
-                                    ...row.content,
-                                    level_id: row.id,
-                                    chapterNum: row.module_number,
-                                    subchapterNum: row.chapter_number
-                                };
-                            });
-                            secureStorage.setItem('training_content_versions', updatedVersions);
-                            return processed;
-                        }
-                    } catch (err) {
-                        // Fallback to legacy file fetching
-                        // console.log("Falling back to legacy fetch for chapter", chapter.number);
-                    }
+            if (fetchError) throw fetchError;
 
-                    // Legacy Fetch Loop
-                    const promises = [];
-                    for (let s = 1; s <= chapter.count; s++) {
-                        promises.push(
-                            fetch(`quizzes/chapter_${chapter.number}_${s}.json`)
-                                .then(r => r.ok ? r.json() : null)
-                                .catch(() => null)
-                        );
-                    }
-                    const results = await Promise.all(promises);
-                    return results
-                        .map((d, idx) => d ? { ...d, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
-                        .filter(Boolean);
-                },
-                { ttl: 5, swr: true } // Return cache instantly, but ALWAYS check Supabase in background
-            );
+            if (fullData && fullData.length > 0) {
+                const updatedVersions = { ...localVersions };
+                const processed = fullData.map(row => {
+                    // Save to secure storage
+                    secureStorage.setItem(`training_content_${row.id}`, row.content);
+                    updatedVersions[row.id] = row.version;
 
-            if (cachedSubchapters) {
-                setSelectedChapter({ ...chapter, subchapters: cachedSubchapters });
+                    return {
+                        ...row.content,
+                        level_id: row.id,
+                        chapterNum: row.module_number,
+                        subchapterNum: row.chapter_number
+                    };
+                });
+
+                // Update global version tracker
+                secureStorage.setItem('training_content_versions', updatedVersions);
+                setSelectedChapter({ ...chapter, subchapters: processed });
+            } else {
+                // Fallback to legacy file fetch if DB returns empty
+                const promises = [];
+                for (let s = 1; s <= chapter.count; s++) {
+                    promises.push(
+                        fetch(`/quizzes/chapter_${chapter.number}_${s}.json`)
+                            .then(r => r.ok ? r.json() : null)
+                            .catch(() => null)
+                    );
+                }
+                const results = await Promise.all(promises);
+                const processed = results
+                    .map((d, idx) => d ? { ...d, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
+                    .filter(Boolean);
+                setSelectedChapter({ ...chapter, subchapters: processed });
             }
         } catch (err) {
-            console.error("Critical failure in handleChapterClick:", err);
-            // Emergency final fallback (uncached)
-            const promises = [];
-            for (let s = 1; s <= chapter.count; s++) {
-                promises.push(
-                    fetch(`quizzes/chapter_${chapter.number}_${s}.json`)
-                        .then(r => r.ok ? r.json() : null)
-                        .catch(() => null)
-                );
+            console.error("Supabase sync failed, falling back to legacy fetch:", err);
+            // Robust fallback for ANY error in the Supabase logic
+            try {
+                const promises = [];
+                for (let s = 1; s <= chapter.count; s++) {
+                    promises.push(
+                        fetch(`/quizzes/chapter_${chapter.number}_${s}.json`)
+                            .then(r => r.ok ? r.json() : null)
+                            .catch(() => null)
+                    );
+                }
+                const results = await Promise.all(promises);
+                const processed = results
+                    .map((d, idx) => d ? { ...d, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
+                    .filter(Boolean);
+                setSelectedChapter({ ...chapter, subchapters: processed });
+            } catch (fallbackErr) {
+                console.error("Critical failure loading subchapters:", fallbackErr);
             }
-            const results = await Promise.all(promises);
-            const processed = results
-                .map((d, idx) => d ? { ...d, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
-                .filter(Boolean);
-            setSelectedChapter({ ...chapter, subchapters: processed });
         } finally {
             setTrainingLoading(false);
         }
     };
 
     // TTS Logic: Compile full lesson text
-    const handleReadLesson = (id = 'full_lesson') => {
+    const handleReadLesson = () => {
         if (!trainingContent) return;
 
         let parts = [];
@@ -473,72 +475,51 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
 
         // Join everything with periods to ensure pauses between blocks
         const fullText = parts.join(". ");
-        speak(fullText, id);
+        speak(fullText);
     };
 
     const finalizeLessonCompletion = async (lessonId) => {
         const alreadyCompleted = completedLessons.includes(lessonId);
 
         if (!alreadyCompleted) {
-            const updated = [...completedLessons, lessonId];
-            setCompletedLessons(updated);
+            // First time completion bonus
+            const bonusPoints = 20;
 
             if (user) {
                 try {
-                    // Calculate new reading points directly
-                    const newReadingPoints = updated.length * 20;
-                    const bonusPoints = 20;
-
-                    // Fetch current quiz_points to calculate total
-                    const { data: currentProfile } = await supabase
-                        .from('profiles')
-                        .select('quiz_points')
-                        .eq('id', user.id)
-                        .single();
-
-                    const newTotalPoints = (currentProfile?.quiz_points || 0) + newReadingPoints;
-
-                    // Calculate new level
-                    const newLevel = calculateLevelFromProgress(updated, trainingChapters);
-
-                    // Direct update to profiles - all in one transaction
-                    const { data, error } = await supabase.from('profiles')
-                        .update({
-                            training_level: newLevel,
-                            completed_lessons: updated,
-                            reading_points: newReadingPoints,
-                            points: newTotalPoints
-                        })
-                        .eq('id', user.id);
-
-                    if (error) {
-                        console.error('Profile update error:', error);
-                        alert(`Failed to save progress to database: ${error.message}\n\nYour progress is saved locally but won't sync to leaderboard.`);
-                        throw error;
-                    }
-
-                    console.log('✅ Profile updated successfully:', {
-                        lessons: updated.length,
-                        reading_points: newReadingPoints,
-                        total_points: newTotalPoints
+                    await supabase.rpc('submit_quiz_result', {
+                        p_quiz_id: `lesson_bonus_${lessonId}`,
+                        p_score: bonusPoints
                     });
 
-                    // Update local storage
-                    storageUtils.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
-
-                    // Clear caches
+                    // Force leaderboard and rank to refresh immediately 
                     cacheHelper.clear('leaderboard_top_10_v3');
                     cacheHelper.clear('leaderboard_full_v3');
                     cacheHelper.clear(`user_rank_${user.id}`);
 
-                    // Show reward notification
                     setRecentReward(bonusPoints);
+                    // Clear reward message after 5 seconds
                     setTimeout(() => setRecentReward(null), 5000);
                 } catch (err) {
-                    console.error('Error updating lesson progress:', err);
+                    console.error('Error awarding lesson bonus:', err);
                 }
             }
 
+            const updated = [...completedLessons, lessonId];
+            setCompletedLessons(updated);
+
+            if (user) {
+                storageUtils.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
+
+                // Sync to Supabase (Level + Detailed Progress)
+                const newLevel = calculateLevelFromProgress(updated, trainingChapters);
+                await supabase.from('profiles')
+                    .update({
+                        training_level: newLevel,
+                        completed_lessons: updated
+                    })
+                    .eq('id', user.id);
+            }
             if (onProgressUpdate) {
                 onProgressUpdate(updated);
             }
@@ -552,7 +533,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
         const filename = `questions_${lessonId.replace('.', '_')}.json`;
 
         try {
-            const response = await fetch(`quizzes/${filename}`);
+            const response = await fetch(`/quizzes/${filename}`);
             if (!response.ok) {
                 // If no quiz file exists, just complete the lesson
                 finalizeLessonCompletion(lessonId);
@@ -685,8 +666,8 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                             /* FAQ View */
                             <div className="space-y-4">
                                 <div className="bg-gradient-to-r from-violet-100 to-fuchsia-100 dark:from-violet-900/30 dark:to-fuchsia-900/30 p-6 rounded-2xl mb-6 border border-violet-200 dark:border-violet-700">
-                                    <h2 className="text-2xl font-bold text-violet-900 dark:text-violet-100 mb-2">{selectedChapter.content?.title || 'FAQ'}</h2>
-                                    <p className="text-violet-700 dark:text-violet-300 mb-4">{selectedChapter.content?.subtitle}</p>
+                                    <h2 className="text-2xl font-bold text-violet-900 dark:text-violet-100 mb-2">{selectedChapter.content.title}</h2>
+                                    <p className="text-violet-700 dark:text-violet-300 mb-4">{selectedChapter.content.subtitle}</p>
 
                                     {/* Search Input */}
                                     <div className="relative">
@@ -705,7 +686,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                     </div>
                                 </div>
 
-                                {selectedChapter.content?.questions
+                                {selectedChapter.content.questions
                                     .filter(q => {
                                         if (!faqSearchQuery) return true;
                                         const query = faqSearchQuery.toLowerCase();
@@ -736,7 +717,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                                     {q.image && (
                                                         <div className="mt-4 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm max-w-md">
                                                             <img
-                                                                src={`quizzes/faq_images/${q.image}`}
+                                                                src={`/quizzes/faq_images/${q.image}`}
                                                                 alt={q.question}
                                                                 className="w-full h-auto object-cover"
                                                                 loading="lazy"
@@ -755,7 +736,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                         </div>
                                     ))}
 
-                                {selectedChapter.content?.questions.filter(q => {
+                                {selectedChapter.content.questions.filter(q => {
                                     if (!faqSearchQuery) return true;
                                     const query = faqSearchQuery.toLowerCase();
                                     return (
@@ -865,7 +846,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                             <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-700/50 p-1 rounded-xl">
                                 {!isPlaying ? (
                                     <button
-                                        onClick={() => handleReadLesson('full_lesson')}
+                                        onClick={handleReadLesson}
                                         className="p-1.5 hover:bg-orange-100 dark:hover:bg-orange-900/40 rounded-lg text-orange-600 dark:text-orange-400 transition-all"
                                         title={language === 'en' ? 'Read Lesson' : 'পাঠ শুনুন'}
                                     >
@@ -944,38 +925,15 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
 
                         {/* Mission Briefing */}
                         <div className="bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/30 dark:to-orange-900/20 border-l-4 border-orange-500 p-6 sm:p-8 rounded-r-2xl mb-10 shadow-sm hover:shadow-md transition-shadow relative group/briefing">
-                            <div className="absolute right-4 top-4 flex gap-1 items-center opacity-0 group-hover/briefing:opacity-100 transition-opacity z-10">
-                                {activeId === 'briefing' ? (
-                                    <>
-                                        <button
-                                            onClick={isPaused ? resume : pause}
-                                            className="p-2 bg-white/80 dark:bg-slate-800/80 rounded-full text-orange-600 shadow-sm"
-                                        >
-                                            {isPaused ? (
-                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                                            ) : (
-                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
-                                            )}
-                                        </button>
-                                        <button
-                                            onClick={stop}
-                                            className="p-2 bg-white/80 dark:bg-slate-800/80 rounded-full text-red-600 shadow-sm"
-                                        >
-                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h12v12H6z" /></svg>
-                                        </button>
-                                    </>
-                                ) : (
-                                    <button
-                                        onClick={() => speak((language === 'en' ? "Mission Briefing. " : "মিশন ব্রিফিং। ") + trainingContent.mission_briefing, 'briefing')}
-                                        className="p-2 bg-white/80 dark:bg-slate-800/80 rounded-full text-orange-600 shadow-sm"
-                                        title={language === 'en' ? 'Read Briefing' : 'ব্রিফিং শুনুন'}
-                                    >
-                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                                        </svg>
-                                    </button>
-                                )}
-                            </div>
+                            <button
+                                onClick={() => speak((language === 'en' ? "Mission Briefing. " : "মিশন ব্রিফিং। ") + trainingContent.mission_briefing)}
+                                className="absolute right-4 top-4 p-2 bg-white/80 dark:bg-slate-800/80 rounded-full text-orange-600 opacity-0 group-hover/briefing:opacity-100 transition-opacity shadow-sm z-10"
+                                title={language === 'en' ? 'Read Briefing' : 'ব্রিফিং শুনুন'}
+                            >
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
+                                </svg>
+                            </button>
                             <div className="flex items-start gap-4">
                                 <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-800 flex items-center justify-center text-2xl flex-shrink-0">
                                     🎯
@@ -1000,82 +958,35 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                             <span className="w-2 h-8 bg-gradient-to-b from-orange-500 to-orange-400 rounded-full flex-shrink-0"></span>
                                             {section.title}
                                         </h3>
-                                        <div className="flex gap-1 items-center">
-                                            {activeId === `section-${sIdx}` ? (
-                                                <>
-                                                    <button
-                                                        onClick={isPaused ? resume : pause}
-                                                        className="p-2 border border-orange-100 dark:border-orange-900/30 rounded-xl text-orange-600 hover:bg-orange-50"
-                                                    >
-                                                        {isPaused ? '▶' : '⏸'}
-                                                    </button>
-                                                    <button
-                                                        onClick={stop}
-                                                        className="p-2 border border-red-100 dark:border-red-900/30 rounded-xl text-red-600 hover:bg-red-50"
-                                                    >
-                                                        ⏹
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                <button
-                                                    onClick={() => {
-                                                        let text = section.title + ". ";
-                                                        if (section.points) {
-                                                            section.points.forEach(p => {
-                                                                text += (p.item_name || "") + ". " + (p.specifications || "") + ". " + (p.importance || "") + ". " + (p.daily_check || "") + ". ";
-                                                            });
-                                                        }
-                                                        speak(text, `section-${sIdx}`);
-                                                    }}
-                                                    className="p-2 border border-orange-100 dark:border-orange-900/30 rounded-xl text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all flex items-center gap-2 text-[10px] font-bold"
-                                                >
-                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                                                    </svg>
-                                                    {language === 'en' ? 'Read' : 'শুনুন'}
-                                                </button>
-                                            )}
-                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                let text = section.title + ". ";
+                                                if (section.points) {
+                                                    section.points.forEach(p => {
+                                                        text += (p.item_name || "") + ". " + (p.specifications || "") + ". " + (p.importance || "") + ". " + (p.daily_check || "") + ". ";
+                                                    });
+                                                }
+                                                speak(text);
+                                            }}
+                                            className="p-2 border border-orange-100 dark:border-orange-900/30 rounded-xl text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all flex items-center gap-2 text-[10px] font-bold"
+                                        >
+                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
+                                            </svg>
+                                            {language === 'en' ? 'Read' : 'শুনুন'}
+                                        </button>
                                     </div>
                                     <div className="space-y-10">
                                         {section.points?.map((point, pIdx) => (
-                                            <div key={pIdx} className="relative pl-7 border-l-2 border-orange-200 dark:border-orange-900/30 group/point">
+                                            <div key={pIdx} className="relative pl-7 border-l-2 border-orange-200 dark:border-orange-900/30">
                                                 <div className="absolute left-[-7px] top-1 w-3.5 h-3.5 rounded-full bg-orange-500 border-2 border-white dark:border-slate-800 shadow-sm"></div>
-                                                <div className="absolute -right-2 top-0 flex gap-1 opacity-0 group-hover/point:opacity-100 transition-opacity z-10">
-                                                    {activeId === `point-${sIdx}-${pIdx}` ? (
-                                                        <>
-                                                            <button
-                                                                onClick={isPaused ? resume : pause}
-                                                                className="p-1.5 bg-orange-100 dark:bg-orange-900/40 rounded-lg text-orange-600"
-                                                            >
-                                                                {isPaused ? '▶' : '⏸'}
-                                                            </button>
-                                                            <button
-                                                                onClick={stop}
-                                                                className="p-1.5 bg-red-100 dark:bg-red-900/40 rounded-lg text-red-600"
-                                                            >
-                                                                ⏹
-                                                            </button>
-                                                        </>
-                                                    ) : (
-                                                        <button
-                                                            onClick={() => speak((point.item_name || "") + ". " + (point.specifications || "") + ". " + (point.importance || "") + ". " + (point.daily_check || ""), `point-${sIdx}-${pIdx}`)}
-                                                            className="p-1.5 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-orange-600"
-                                                            title={language === 'en' ? 'Read this point' : 'এই পয়েন্টটি শুনুন'}
-                                                        >
-                                                            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                                                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                                                            </svg>
-                                                        </button>
-                                                    )}
-                                                </div>
                                                 <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-4 reading-content text-lg sm:text-xl">
                                                     {point.item_name}
                                                 </h4>
                                                 {point.image_name && (
                                                     <div className="mb-6 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
                                                         <img
-                                                            src={`quizzes/${point.image_name}`}
+                                                            src={`/quizzes/${point.image_name}`}
                                                             alt={point.item_name}
                                                             className="w-full h-auto object-cover max-h-80"
                                                             loading="lazy"
@@ -1147,32 +1058,19 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                     <h3 className="text-2xl sm:text-3xl font-bold reading-content">
                                         {trainingContent.pro_tip.title}
                                     </h3>
-                                    <div className="ml-auto flex gap-1">
-                                        {activeId === 'pro_tip' ? (
-                                            <>
-                                                <button onClick={isPaused ? resume : pause} className="p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-all">
-                                                    {isPaused ? '▶' : '⏸'}
-                                                </button>
-                                                <button onClick={stop} className="p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-all">
-                                                    ⏹
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <button
-                                                onClick={() => {
-                                                    let text = trainingContent.pro_tip.title + ". ";
-                                                    trainingContent.pro_tip.content?.forEach(tip => text += tip + ". ");
-                                                    speak(text, 'pro_tip');
-                                                }}
-                                                className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all"
-                                                title={language === 'en' ? 'Read Pro Tips' : 'প্রো টিপস শুনুন'}
-                                            >
-                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                                                </svg>
-                                            </button>
-                                        )}
-                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            let text = trainingContent.pro_tip.title + ". ";
+                                            trainingContent.pro_tip.content?.forEach(tip => text += tip + ". ");
+                                            speak(text);
+                                        }}
+                                        className="ml-auto p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all"
+                                        title={language === 'en' ? 'Read Pro Tips' : 'প্রো টিপস শুনুন'}
+                                    >
+                                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
+                                        </svg>
+                                    </button>
                                 </div>
                                 <ul className="space-y-5">
                                     {trainingContent.pro_tip.content?.map((tip, idx) => (
@@ -1190,39 +1088,11 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                             <div className="mt-12 bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-10 border-2 border-red-100 dark:border-red-900/30 shadow-sm hover:shadow-md transition-shadow">
                                 <div className="flex items-center gap-3 mb-8">
                                     <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-2xl">
-                                        💡
+                                        ⚠️
                                     </div>
                                     <h3 className="text-2xl sm:text-3xl font-bold text-red-700 dark:text-red-400 reading-content">
                                         {trainingContent.myth_buster.title}
                                     </h3>
-                                    <div className="ml-auto flex gap-1">
-                                        {activeId === 'myth_buster' ? (
-                                            <>
-                                                <button onClick={isPaused ? resume : pause} className="p-2 bg-red-100 dark:bg-red-900/40 rounded-full text-red-600">
-                                                    {isPaused ? '▶' : '⏸'}
-                                                </button>
-                                                <button onClick={stop} className="p-2 bg-red-100 dark:bg-red-900/40 rounded-full text-red-600">
-                                                    ⏹
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <button
-                                                onClick={() => {
-                                                    let text = trainingContent.myth_buster.title + ". ";
-                                                    trainingContent.myth_buster.myths?.forEach(m => {
-                                                        text += (language === 'en' ? "Myth: " : "ভুল ধারণা: ") + m.myth + ". " + (language === 'en' ? "Fact: " : "বাস্তবতা: ") + (m.reality || m.fact) + ". ";
-                                                    });
-                                                    speak(text, 'myth_buster');
-                                                }}
-                                                className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full text-red-600 hover:bg-red-200 transition-all"
-                                                title={language === 'en' ? 'Read Myth Busters' : 'মিথ বাস্টার শুনুন'}
-                                            >
-                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                                                </svg>
-                                            </button>
-                                        )}
-                                    </div>
                                 </div>
                                 <div className="grid grid-cols-1 gap-5">
                                     {trainingContent.myth_buster.myths?.map((item, idx) => (
@@ -1259,34 +1129,6 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                     <h3 className="text-2xl sm:text-3xl font-bold reading-content">
                                         {trainingContent.advanced_section.title}
                                     </h3>
-                                    <div className="ml-auto flex gap-1">
-                                        {activeId === 'advanced' ? (
-                                            <>
-                                                <button onClick={isPaused ? resume : pause} className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-blue-400">
-                                                    {isPaused ? '▶' : '⏸'}
-                                                </button>
-                                                <button onClick={stop} className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-red-400">
-                                                    ⏹
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <button
-                                                onClick={() => {
-                                                    let text = trainingContent.advanced_section.title + ". ";
-                                                    trainingContent.advanced_section.facts?.forEach(f => {
-                                                        text += (f.title ? f.title + ". " : "") + (f.content || f) + ". ";
-                                                    });
-                                                    speak(text, 'advanced');
-                                                }}
-                                                className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all"
-                                                title={language === 'en' ? 'Read Advanced Section' : 'অ্যাডভান্সড সেকশন শুনুন'}
-                                            >
-                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                                                </svg>
-                                            </button>
-                                        )}
-                                    </div>
                                 </div>
                                 <div className="grid grid-cols-1 gap-6">
                                     {trainingContent.advanced_section.facts?.map((fact, idx) => (
@@ -1398,15 +1240,23 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
             )}
 
             {showCertificateModal && createPortal(
-                <CertificateModal
-                    isOpen={showCertificateModal}
-                    onClose={() => setShowCertificateModal(false)}
-                    userName={user?.user_metadata?.full_name || 'Lineman'}
-                    completionDate={new Date().toLocaleDateString()}
-                    level={calculateLevelFromProgress(completedLessons, trainingChapters)}
-                    badgeName={calculateLevelFromProgress(completedLessons, trainingChapters) > 1 ? "Professional Lineman" : "Safety Trainee"}
-                    certificateId={`CERT-${user?.id?.slice(0, 8)}-${Date.now().toString().slice(-6)}`}
-                />,
+                (() => {
+                    const currentLevel = calculateLevelFromProgress(completedLessons, trainingChapters);
+                    const badge = getBadgeByLevel(currentLevel);
+                    const badgeName = badge ? (language === 'en' ? badge.en : badge.bn) : (language === 'en' ? "Safety Trainee" : "সুরক্ষা প্রশিক্ষণার্থী");
+
+                    return (
+                        <CertificateModal
+                            isOpen={showCertificateModal}
+                            onClose={() => setShowCertificateModal(false)}
+                            userName={user?.user_metadata?.full_name || 'Lineman'}
+                            completionDate={new Date().toLocaleDateString()}
+                            level={currentLevel}
+                            badgeName={badgeName}
+                            certificateId={`CERT-${user?.id?.slice(0, 8)}-${Date.now().toString().slice(-6)}`}
+                        />
+                    );
+                })(),
                 document.body
             )}
 
