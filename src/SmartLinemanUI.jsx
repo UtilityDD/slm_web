@@ -676,8 +676,8 @@ export default function SmartLinemanUI() {
           <Login
             onLogin={(u) => {
               setUser(u);
+              fetchProfile(u);
               showNotification(language === 'en' ? 'Welcome!' : 'আপনাকে স্বাগতম!');
-              // Destination is already set in currentView, so it will render correctly after state change
             }}
             showNotification={showNotification}
           />
@@ -691,6 +691,7 @@ export default function SmartLinemanUI() {
           initialView={currentView === 'update-password' ? 'update' : 'login'}
           onLogin={(u) => {
             setUser(u);
+            fetchProfile(u);
             showNotification(language === 'en' ? 'Welcome back!' : 'আপনাকে স্বাগতম!');
             setCurrentView('home');
           }}

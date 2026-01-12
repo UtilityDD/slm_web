@@ -480,44 +480,65 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
         const alreadyCompleted = completedLessons.includes(lessonId);
 
         if (!alreadyCompleted) {
-            // First time completion bonus
-            const bonusPoints = 20;
-
-            if (user) {
-                try {
-                    await supabase.rpc('submit_quiz_result', {
-                        p_quiz_id: `lesson_bonus_${lessonId}`,
-                        p_score: bonusPoints
-                    });
-
-                    // Force leaderboard and rank to refresh immediately 
-                    cacheHelper.clear('leaderboard_top_10_v3');
-                    cacheHelper.clear('leaderboard_full_v3');
-                    cacheHelper.clear(`user_rank_${user.id}`);
-
-                    setRecentReward(bonusPoints);
-                    // Clear reward message after 5 seconds
-                    setTimeout(() => setRecentReward(null), 5000);
-                } catch (err) {
-                    console.error('Error awarding lesson bonus:', err);
-                }
-            }
-
             const updated = [...completedLessons, lessonId];
             setCompletedLessons(updated);
 
             if (user) {
-                storageUtils.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
+                try {
+                    // Calculate new reading points directly
+                    const newReadingPoints = updated.length * 20;
+                    const bonusPoints = 20;
 
-                // Sync to Supabase (Level + Detailed Progress)
-                const newLevel = calculateLevelFromProgress(updated, trainingChapters);
-                await supabase.from('profiles')
-                    .update({
-                        training_level: newLevel,
-                        completed_lessons: updated
-                    })
-                    .eq('id', user.id);
+                    // Fetch current quiz_points to calculate total
+                    const { data: currentProfile } = await supabase
+                        .from('profiles')
+                        .select('quiz_points')
+                        .eq('id', user.id)
+                        .single();
+
+                    const newTotalPoints = (currentProfile?.quiz_points || 0) + newReadingPoints;
+
+                    // Calculate new level
+                    const newLevel = calculateLevelFromProgress(updated, trainingChapters);
+
+                    // Direct update to profiles - all in one transaction
+                    const { data, error } = await supabase.from('profiles')
+                        .update({
+                            training_level: newLevel,
+                            completed_lessons: updated,
+                            reading_points: newReadingPoints,
+                            points: newTotalPoints
+                        })
+                        .eq('id', user.id);
+
+                    if (error) {
+                        console.error('Profile update error:', error);
+                        alert(`Failed to save progress to database: ${error.message}\n\nYour progress is saved locally but won't sync to leaderboard.`);
+                        throw error;
+                    }
+
+                    console.log('✅ Profile updated successfully:', {
+                        lessons: updated.length,
+                        reading_points: newReadingPoints,
+                        total_points: newTotalPoints
+                    });
+
+                    // Update local storage
+                    storageUtils.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
+
+                    // Clear caches
+                    cacheHelper.clear('leaderboard_top_10_v3');
+                    cacheHelper.clear('leaderboard_full_v3');
+                    cacheHelper.clear(`user_rank_${user.id}`);
+
+                    // Show reward notification
+                    setRecentReward(bonusPoints);
+                    setTimeout(() => setRecentReward(null), 5000);
+                } catch (err) {
+                    console.error('Error updating lesson progress:', err);
+                }
             }
+
             if (onProgressUpdate) {
                 onProgressUpdate(updated);
             }

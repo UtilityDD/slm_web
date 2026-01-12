@@ -25,7 +25,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
     const [role, setRole] = useState(userProfile?.role || 'Lineman');
     const [score, setScore] = useState(userProfile?.points || 0);
 
-    const readingPoints = (userProfile?.completed_lessons?.length || 0) * 20;
+    const readingPoints = userProfile?.reading_points || 0;
     const [trainingLevel, setTrainingLevel] = useState(userProfile?.training_level || 0);
     const [completedLessonsCount, setCompletedLessonsCount] = useState(userProfile?.completed_lessons?.length || 0);
     const [totalPenalties, setTotalPenalties] = useState(userProfile?.total_penalties || 0);

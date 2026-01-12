@@ -2,374 +2,289 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { storageUtils } from '../utils/storageUtils';
 
-// UUID v4 generator - works in all browsers
-const generateUUID = () => {
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-        return crypto.randomUUID();
-    }
-    // Fallback for older browsers
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-};
-
-export default function Login({ onLogin, showNotification, initialView }) {
-    const [loading, setLoading] = useState(false);
-    const [email, setEmail] = useState('');
+export default function Login({ onLogin, showNotification }) {
+    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [view, setView] = useState(initialView || 'login'); // login, signup, forgot, update, otp_request, otp_verify
-    const [error, setError] = useState(null);
-    const [otp, setOtp] = useState('');
-    const [timer, setTimer] = useState(0);
-    const [isOtpSending, setIsOtpSending] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [mustChangePassword, setMustChangePassword] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
+    const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(true);
 
     useEffect(() => {
-        // Check if we're in a password recovery flow
-        if (window.location.hash.includes('type=recovery') || window.location.href.includes('type=recovery')) {
-            setView('update');
-        }
-        // Check if we're in an invitation flow
-        if (window.location.hash.includes('type=invite') || window.location.href.includes('type=invite')) {
-            setView('update');
-            showNotification('Welcome! Please set your password to complete your account setup.');
-        }
-
-        // Load remembered credentials
-        const savedEmail = storageUtils.getItem('slm_remembered_email');
-        const savedPw = storageUtils.getItem('slm_remembered_pw');
-        if (savedEmail) {
-            setEmail(savedEmail);
-            if (savedPw) {
-                setPassword(savedPw);
-            }
+        // Load remembered phone number
+        const savedPhone = storageUtils.getItem('slm_remembered_phone');
+        if (savedPhone) {
+            setPhone(savedPhone);
         }
     }, []);
 
-    useEffect(() => {
-        let interval;
-        if (timer > 0) {
-            interval = setInterval(() => {
-                setTimer((prev) => prev - 1);
-            }, 1000);
-        }
-        return () => clearInterval(interval);
-    }, [timer]);
-
-    const handleSendOtp = async (e) => {
-        if (e) e.preventDefault();
-        setLoading(true);
-        setError(null);
-        setIsOtpSending(true);
-
-        try {
-            const { error } = await supabase.auth.signInWithOtp({
-                email,
-                options: {
-                    shouldCreateUser: false, // Only allow existing users to login via OTP
-                }
-            });
-
-            if (error) throw error;
-
-            setView('otp_verify');
-            setTimer(60);
-            showNotification('Login code sent to your email!');
-        } catch (error) {
-            setError(error.message);
-            showNotification(error.message, 'error');
-        } finally {
-            setLoading(false);
-            setIsOtpSending(false);
-        }
+    const formatPhone = (value) => {
+        // Remove all non-digits
+        const cleaned = value.replace(/\D/g, '');
+        // Take only first 10 digits
+        return cleaned.substring(0, 10);
     };
 
-    const handleVerifyOtp = async (e) => {
+    const handlePhoneChange = (e) => {
+        const formatted = formatPhone(e.target.value);
+        setPhone(formatted);
+    };
+
+    const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError(null);
 
         try {
-            const { data, error } = await supabase.auth.verifyOtp({
-                email,
-                token: otp,
-                type: 'email',
+            // Validate inputs
+            if (phone.length !== 10) {
+                throw new Error('Phone number must be 10 digits');
+            }
+            if (password.length !== 6) {
+                throw new Error('Password must be 6 characters');
+            }
+
+            const { data, error } = await supabase.rpc('authenticate_user', {
+                p_phone: phone,
+                p_password: password
             });
 
             if (error) throw error;
 
-            if (data.user) {
-                const sessionId = generateUUID();
-                // Update session ID in background
-                supabase
-                    .from('profiles')
-                    .update({ current_session_id: sessionId })
-                    .eq('id', data.user.id)
-                    .then(({ error }) => {
-                        if (error) console.error('Error updating session ID:', error);
-                    });
+            if (!data || data.length === 0) {
+                throw new Error('Invalid phone number or password');
+            }
 
-                storageUtils.setItem('slm_session_id', sessionId);
+            const user = data[0];
 
-                // Remember Me logic (Email only for OTP)
+            if (user.must_change_password) {
+                // Show password change form
+                setMustChangePassword(true);
+                setCurrentUser(user);
+                showNotification('Please set a new password to continue', 'info');
+            } else {
+                // Remember phone if checkbox is checked
                 if (rememberMe) {
-                    storageUtils.setItem('slm_remembered_email', email);
+                    storageUtils.setItem('slm_remembered_phone', phone);
                 } else {
-                    storageUtils.removeItem('slm_remembered_email');
-                    storageUtils.removeItem('slm_remembered_pw');
+                    storageUtils.removeItem('slm_remembered_phone');
                 }
 
-                onLogin(data.user);
+                // Store session
+                storageUtils.setItem('session_token', user.session_token);
+                storageUtils.setItem('user_id', user.user_id);
+
+                // Trigger app login
+                onLogin({
+                    id: user.user_id,
+                    phone: user.phone_number,
+                    full_name: user.full_name,
+                    role: user.role,
+                    slm_id: user.slm_id
+                });
+
+                showNotification(`Welcome back, ${user.full_name}!`, 'success');
             }
         } catch (error) {
-            setError(error.message);
+            console.error('Login error:', error);
             showNotification(error.message, 'error');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleAuth = async (e) => {
+    const handleChangePassword = async (e) => {
         e.preventDefault();
+
+        if (newPassword.length !== 6) {
+            showNotification('Password must be exactly 6 characters', 'error');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            showNotification('Passwords do not match', 'error');
+            return;
+        }
+
         setLoading(true);
-        setError(null);
 
         try {
-            if (view === 'login') {
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email,
-                    password,
-                });
-                if (error) throw error;
-                if (data.user) {
-                    const sessionId = generateUUID();
-                    // Update session ID in background
-                    supabase
-                        .from('profiles')
-                        .update({ current_session_id: sessionId })
-                        .eq('id', data.user.id)
-                        .then(({ error }) => {
-                            if (error) console.error('Error updating session ID:', error);
-                        });
+            const { error } = await supabase.rpc('change_password', {
+                p_user_id: currentUser.user_id,
+                p_new_password: newPassword
+            });
 
-                    storageUtils.setItem('slm_session_id', sessionId);
+            if (error) throw error;
 
-                    // Remember Me logic
-                    if (rememberMe) {
-                        storageUtils.setItem('slm_remembered_email', email);
-                        storageUtils.setItem('slm_remembered_pw', password);
-                    } else {
-                        storageUtils.removeItem('slm_remembered_email');
-                        storageUtils.removeItem('slm_remembered_pw');
-                    }
-
-                    onLogin(data.user);
-                }
-            } else if (view === 'forgot') {
-                const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: `${window.location.origin}${window.location.pathname}#/login`,
-                });
-                if (error) throw error;
-                showNotification('Password reset link sent to your email!');
-                setView('login');
-            } else if (view === 'update') {
-                if (password !== confirmPassword) {
-                    throw new Error("Passwords do not match");
-                }
-                const { error } = await supabase.auth.updateUser({ password });
-                if (error) throw error;
-                showNotification('Password updated successfully! You can now sign in.');
-                setView('login');
+            // Remember phone if checkbox is checked
+            if (rememberMe) {
+                storageUtils.setItem('slm_remembered_phone', phone);
             }
+
+            // Store session and auto-login
+            storageUtils.setItem('session_token', currentUser.session_token);
+            storageUtils.setItem('user_id', currentUser.user_id);
+
+            onLogin({
+                id: currentUser.user_id,
+                phone: currentUser.phone_number,
+                full_name: currentUser.full_name,
+                role: currentUser.role,
+                slm_id: currentUser.slm_id
+            });
+
+            showNotification('Password changed successfully!', 'success');
         } catch (error) {
-            setError(error.message);
+            console.error('Password change error:', error);
             showNotification(error.message, 'error');
         } finally {
             setLoading(false);
         }
     };
 
-    return (
-        <div className="h-[100dvh] flex items-center justify-center bg-slate-50 dark:bg-slate-900 px-4 safe-area-inset-top safe-area-inset-bottom overflow-hidden">
-            <div className="w-full max-w-sm">
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
-                    {/* Header */}
-                    <div className="mb-6">
-                        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                            {view === 'signup' ? 'Create Account' :
-                                view === 'forgot' ? 'Reset Password' :
-                                    view === 'update' ? 'New Password' :
-                                        view === 'otp_request' ? 'Login with Code' :
-                                            view === 'otp_verify' ? 'Verify Code' : 'Sign In'}
-                        </h1>
-                    </div>
+    if (mustChangePassword) {
+        // PASSWORD CHANGE FORM - Simplified & Modern
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-900 p-4">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-transparent to-orange-600/20 pointer-events-none"></div>
 
-                    {/* Compact Invitation-Only Notice */}
-                    <div className="mb-6 flex items-center justify-center gap-2 py-2 px-3 bg-orange-50/50 dark:bg-orange-900/10 rounded-lg border border-orange-100/50 dark:border-orange-800/30">
-                        <svg className="w-3.4 h-3.5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                        <span className="text-[10px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wider">
-                            Invitation Only Network
-                        </span>
-                    </div>
-
-                    {/* Error Message */}
-                    {error && (
-                        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-lg border border-red-200 dark:border-red-800">
-                            {error}
+                <div className="w-full max-w-md relative z-10">
+                    <div className="bg-white/10 dark:bg-slate-800/40 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/10">
+                        <div className="text-center mb-10">
+                            <h1 className="text-3xl font-bold text-white mb-2">SmartLineman</h1>
+                            <p className="text-slate-400 text-sm">Secure Your Account</p>
                         </div>
-                    )}
 
-                    {/* Form */}
-                    <form onSubmit={view === 'otp_request' ? handleSendOtp : view === 'otp_verify' ? handleVerifyOtp : handleAuth} className="space-y-4">
-                        {(view === 'login' || view === 'signup' || view === 'forgot' || view === 'otp_request') && (
-                            <input
-                                type="email"
-                                required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                placeholder="Email address"
-                            />
-                        )}
-
-                        {(view === 'login' || view === 'signup' || view === 'update') && (
+                        <form onSubmit={handleChangePassword} className="space-y-6">
                             <div>
-                                <input
-                                    type="password"
-                                    required
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                    placeholder={view === 'update' ? 'New password' : 'Password'}
-                                />
-                                {view === 'login' && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setView('forgot')}
-                                        className="text-xs text-orange-600 dark:text-orange-400 hover:underline mt-2 inline-block"
-                                    >
-                                        Forgot password?
-                                    </button>
-                                )}
-                            </div>
-                        )}
-
-                        {(view === 'login' || view === 'otp_request') && (
-                            <div className="flex items-center gap-2 px-1">
-                                <label className="flex items-center gap-2 cursor-pointer group">
-                                    <div className="relative flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={rememberMe}
-                                            onChange={(e) => setRememberMe(e.target.checked)}
-                                            className="peer sr-only"
-                                        />
-                                        <div className="w-5 h-5 border-2 border-slate-200 dark:border-slate-700 rounded-md bg-slate-50 dark:bg-slate-900 transition-all peer-checked:bg-orange-600 peer-checked:border-orange-600 group-hover:border-orange-400"></div>
-                                        <svg className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity left-[3px] top-[3px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3.5" d="M5 13l4 4L19 7" />
-                                        </svg>
-                                    </div>
-                                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 transition-colors">
-                                        Remember Me
-                                    </span>
-                                </label>
-                            </div>
-                        )}
-
-                        {view === 'otp_verify' && (
-                            <div>
-                                <div className="mb-4 text-sm text-center text-slate-600 dark:text-slate-400">
-                                    Code sent to <span className="font-semibold text-slate-900 dark:text-slate-200">{email}</span>
-                                </div>
                                 <input
                                     type="text"
                                     required
-                                    value={otp}
-                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-center text-2xl tracking-widest font-mono"
-                                    placeholder="000000"
-                                    maxLength={6}
+                                    maxLength="6"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all outline-none text-center tracking-[0.5em] text-xl"
+                                    placeholder="NEW PIN"
                                 />
-                                <div className="mt-2 text-center">
-                                    <button
-                                        type="button"
-                                        onClick={handleSendOtp}
-                                        disabled={timer > 0 || isOtpSending}
-                                        className="text-xs text-orange-600 dark:text-orange-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {timer > 0 ? `Resend code in ${timer}s` : 'Resend Code'}
-                                    </button>
-                                </div>
                             </div>
-                        )}
 
-                        {view === 'update' && (
-                            <input
-                                type="password"
-                                required
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                placeholder="Confirm password"
-                            />
-                        )}
+                            <div>
+                                <input
+                                    type="text"
+                                    required
+                                    maxLength="6"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all outline-none text-center tracking-[0.5em] text-xl"
+                                    placeholder="CONFIRM PIN"
+                                />
+                            </div>
 
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                        >
-                            {loading ? (
-                                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                            ) : (
-                                view === 'signup' ? 'Create Account' :
-                                    view === 'forgot' ? 'Send Reset Link' :
-                                        view === 'update' ? 'Update Password' :
-                                            view === 'otp_request' ? 'Send Login Code' :
-                                                view === 'otp_verify' ? 'Verify & Login' : 'Sign In'
-                            )}
-                        </button>
-
-                        {view === 'login' && (
                             <button
-                                type="button"
-                                onClick={() => setView('otp_request')}
-                                className="w-full py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                                type="submit"
+                                disabled={loading}
+                                className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl shadow-xl shadow-blue-600/20 transition-all transform active:scale-[0.98] disabled:opacity-50"
                             >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </svg>
-                                Sign in with OTP
+                                {loading ? 'Saving...' : 'Set PIN & Continue'}
                             </button>
-                        )}
-
-                    </form>
-
-                    {/* Footer */}
-                    <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
-                        {view === 'otp_verify' ? (
-                            <button
-                                onClick={() => setView('otp_request')}
-                                className="text-orange-600 dark:text-orange-400 font-semibold hover:underline"
-                            >
-                                Change Email
-                            </button>
-                        ) : (view === 'forgot' || view === 'update' || view === 'otp_request') && (
-                            <button
-                                onClick={() => setView('login')}
-                                className="text-orange-600 dark:text-orange-400 font-semibold hover:underline"
-                            >
-                                Back to Sign In
-                            </button>
-                        )}
+                        </form>
                     </div>
                 </div>
             </div>
-        </div >
+        );
+    }
+
+    // LOGIN FORM - Simplified & Modern
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-900 p-4">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-transparent to-orange-600/20 pointer-events-none"></div>
+
+            <div className="w-full max-w-md relative z-10">
+                <div className="bg-white/10 dark:bg-slate-800/40 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/10">
+                    <div className="text-center mb-10">
+                        <h1 className="text-4xl font-black text-white tracking-tight mb-2">SmartLineman</h1>
+                        <p className="text-slate-400 text-sm font-medium">Electrical Safety Platform</p>
+                    </div>
+
+                    <form onSubmit={handleLogin} className="space-y-6">
+                        <div className="space-y-2">
+                            <input
+                                type="tel"
+                                required
+                                value={phone}
+                                onChange={handlePhoneChange}
+                                className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all outline-none text-lg text-center"
+                                placeholder="Phone Number"
+                                autoFocus
+                            />
+                        </div>
+
+                        <div className="relative group">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                required
+                                maxLength="6"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all outline-none text-lg text-center tracking-[0.3em]"
+                                placeholder="6-Digit PIN"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                            >
+                                {showPassword ? (
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
+                                ) : (
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                )}
+                            </button>
+                        </div>
+
+                        <div className="flex items-center justify-between px-1">
+                            <label className="flex items-center gap-3 cursor-pointer group">
+                                <div className="relative">
+                                    <input
+                                        type="checkbox"
+                                        checked={rememberMe}
+                                        onChange={(e) => setRememberMe(e.target.checked)}
+                                        className="sr-only peer"
+                                    />
+                                    <div className="w-5 h-5 border-2 border-white/20 rounded-md peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all"></div>
+                                    <svg className="absolute top-0.5 left-0.5 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <span className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Remember me</span>
+                            </label>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading || phone.length !== 10 || password.length !== 6}
+                            className="w-full py-4 px-6 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-2xl shadow-xl shadow-orange-600/20 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:shadow-none"
+                        >
+                            {loading ? (
+                                <span className="flex items-center justify-center gap-3">
+                                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                    Signing in...
+                                </span>
+                            ) : (
+                                'Sign In'
+                            )}
+                        </button>
+                    </form>
+                </div>
+
+                <div className="mt-8 text-center">
+                    <p className="text-slate-500 text-xs">
+                        Empowering linemen through safety & recognition
+                    </p>
+                </div>
+            </div>
+        </div>
     );
 }

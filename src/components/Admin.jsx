@@ -80,8 +80,10 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [isSendingNotification, setIsSendingNotification] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
+  const [invitePhone, setInvitePhone] = useState('');
+  const [inviteName, setInviteName] = useState('');
   const [isInviting, setIsInviting] = useState(false);
+  const [tempPasswordResult, setTempPasswordResult] = useState(null);
 
   useEffect(() => {
     fetchUsers(currentPage);
@@ -442,38 +444,70 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   };
 
 
+  const formatPhone = (value) => {
+    // Remove all non-digits
+    const cleaned = value.replace(/\D/g, '');
+    // Take only first 10 digits
+    return cleaned.substring(0, 10);
+  };
+
+  const handlePhoneChange = (value) => {
+    setInvitePhone(formatPhone(value));
+  };
+
   const handleInviteUser = async (e) => {
     e.preventDefault();
-    if (!inviteEmail) {
-      alert('Please enter an email address.');
+    if (!invitePhone || invitePhone.length !== 10) {
+      alert('Please enter a valid 10-digit phone number.');
+      return;
+    }
+    if (!inviteName || inviteName.trim() === '') {
+      alert('Please enter the user\'s full name.');
       return;
     }
 
     setIsInviting(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: inviteEmail,
-        options: {
-          shouldCreateUser: true,
-          emailRedirectTo: `${window.location.origin}${window.location.pathname}#/login`
-        }
+      const { data, error } = await supabase.rpc('create_user_account', {
+        p_phone: invitePhone,
+        p_full_name: inviteName.trim(),
+        p_supervisor_id: userProfile.role === 'safety mitra' ? user.id : null
       });
 
       if (error) throw error;
 
-      alert(`Invitation sent successfully to ${inviteEmail}!`);
-      setInviteEmail('');
-      setShowInviteModal(false);
+      const result = data[0];
+
+      // Show temporary password to admin
+      setTempPasswordResult({
+        phone: result.phone_number,
+        name: inviteName,
+        password: result.temp_password
+      });
+
+      // Clear form but keep modal open to show password
+      setInvitePhone('');
+      setInviteName('');
+
+      // Refresh user list
+      await fetchUsers(currentPage);
     } catch (error) {
-      console.error('Error inviting user:', error);
+      console.error('Error creating user:', error);
       if (error.message?.includes('already registered')) {
-        alert('This user is already registered in the system.');
+        alert('This phone number is already registered in the system.');
       } else {
-        alert(`Failed to send invitation: ${error.message}`);
+        alert(`Failed to create user: ${error.message}`);
       }
     } finally {
       setIsInviting(false);
     }
+  };
+
+  const handleCloseInviteModal = () => {
+    setShowInviteModal(false);
+    setTempPasswordResult(null);
+    setInvitePhone('');
+    setInviteName('');
   };
 
 
@@ -1002,69 +1036,134 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
         <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
           <div className="bg-white dark:bg-slate-800 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md flex flex-col border-t sm:border border-slate-100 dark:border-slate-700 animate-slide-up sm:animate-scale-in max-h-[90vh]">
             <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Invite New Lineman</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Create New User</h2>
               <button
-                onClick={() => setShowInviteModal(false)}
+                onClick={handleCloseInviteModal}
                 className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
                 aria-label="Close"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            <form onSubmit={handleInviteUser} className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-3xl flex items-center justify-center text-4xl mb-4 shadow-inner">
-                  👤
-                </div>
-                <p className="text-sm text-slate-500 dark:text-slate-400 max-w-[280px]">
-                  Send a private invitation link to a new lineman to join the Safety Mitra Network.
-                </p>
-              </div>
 
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
-                  Lineman Email
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-500 transition-colors">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+            {tempPasswordResult ? (
+              // SHOW TEMP PASSWORD RESULT
+              <div className="p-6 space-y-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-20 h-20 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-3xl flex items-center justify-center text-4xl mb-4 shadow-inner">
+                    ✅
                   </div>
-                  <input
-                    type="email"
-                    required
-                    autoFocus
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all text-base lg:text-sm"
-                    placeholder="email@example.com"
-                  />
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">User Created!</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Share these credentials with the new user</p>
                 </div>
-              </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-2 pb-safe-offset-4">
+                <div className="space-y-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Name</label>
+                    <p className="text-lg font-bold text-slate-900 dark:text-slate-100">{tempPasswordResult.name}</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Phone Number</label>
+                    <p className="text-lg font-mono font-bold text-slate-900 dark:text-slate-100">{tempPasswordResult.phone}</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Temporary Password</label>
+                    <p className="text-2xl font-mono font-bold text-green-600 dark:text-green-400 tracking-widest">{tempPasswordResult.password}</p>
+                  </div>
+                </div>
+
+                <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4">
+                  <p className="text-sm text-orange-900 dark:text-orange-300">
+                    ⚠️ <strong>Important:</strong> User must change this password on first login
+                  </p>
+                </div>
+
                 <button
-                  type="button"
-                  onClick={() => setShowInviteModal(false)}
-                  className="order-2 sm:order-1 flex-1 py-4 rounded-2xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  onClick={handleCloseInviteModal}
+                  className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isInviting}
-                  className="order-1 sm:order-2 flex-1 py-4 rounded-2xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-xl shadow-indigo-500/25 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {isInviting ? (
-                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                  ) : (
-                    <>
-                      <span>Send Magic Link</span>
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                    </>
-                  )}
+                  Done
                 </button>
               </div>
-            </form>
+            ) : (
+              // CREATE USER FORM
+              <form onSubmit={handleInviteUser} className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-3xl flex items-center justify-center text-4xl mb-4 shadow-inner">
+                    👤
+                  </div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 max-w-[280px]">
+                    Create a new lineman account. They will receive a temporary password to login.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
+                    Full Name
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      autoFocus
+                      value={inviteName}
+                      onChange={(e) => setInviteName(e.target.value)}
+                      className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all text-base lg:text-sm"
+                      placeholder="Enter full name"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
+                    Phone Number (10 digits)
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                    </div>
+                    <input
+                      type="tel"
+                      required
+                      value={invitePhone}
+                      onChange={(e) => handlePhoneChange(e.target.value)}
+                      className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all text-base lg:text-sm font-mono tracking-wider"
+                      placeholder="9876543210"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 ml-1">
+                    {invitePhone.length}/10 digits
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 pt-2 pb-safe-offset-4">
+                  <button
+                    type="button"
+                    onClick={handleCloseInviteModal}
+                    className="order-2 sm:order-1 flex-1 py-4 rounded-2xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isInviting || invitePhone.length !== 10 || !inviteName.trim()}
+                    className="order-1 sm:order-2 flex-1 py-4 rounded-2xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-xl shadow-indigo-500/25 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isInviting ? (
+                      <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    ) : (
+                      <>
+                        <span>Create User</span>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>,
         document.body

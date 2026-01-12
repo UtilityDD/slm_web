@@ -726,14 +726,31 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         setSyncStatus('syncing');
 
         try {
-            // Use the safe RPC helper to handle potential database version mismatches
-            const { error } = await safeSubmitQuizResult(
-                activeQuiz.id || 'unknown_quiz',
-                calculatedScore,
-                totalPenalty
-            );
+            // Fetch current profile scores
+            const { data: currentProfile, error: fetchError } = await supabase
+                .from('profiles')
+                .select('quiz_points, reading_points, total_penalties')
+                .eq('id', user.id)
+                .single();
 
-            if (error) throw error;
+            if (fetchError) throw fetchError;
+
+            // Calculate new scores
+            const newQuizPoints = (currentProfile?.quiz_points || 0) + calculatedScore;
+            const newPenalties = (currentProfile?.total_penalties || 0) + totalPenalty;
+            const newTotalPoints = (currentProfile?.reading_points || 0) + newQuizPoints;
+
+            // Direct update to profiles
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({
+                    quiz_points: newQuizPoints,
+                    total_penalties: newPenalties,
+                    points: newTotalPoints
+                })
+                .eq('id', user.id);
+
+            if (updateError) throw updateError;
 
             // Success!
             setSyncStatus('success');
@@ -1600,7 +1617,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 </div>,
                 document.body
             )}
-            }
         </div >
     );
 }
