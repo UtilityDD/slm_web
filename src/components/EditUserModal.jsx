@@ -111,10 +111,24 @@ export default function EditUserModal({
                                         Personal Information
                                     </h4>
                                     <div className="space-y-5">
-                                        <InputField label="Full Name" name="full_name" value={editingUser.full_name} onChange={handleChange} icon="👤" />
+                                        <InputField
+                                            label="Full Name"
+                                            name="full_name"
+                                            value={editingUser.full_name}
+                                            onChange={handleChange}
+                                            readOnly={userProfile?.role !== 'admin'}
+                                            icon="👤"
+                                        />
                                         <InputField label="Email Address" name="email" value={editingUser.email} readOnly icon="📧" />
                                         <div className="grid grid-cols-2 gap-4">
-                                            <InputField label="Phone" name="phone" value={editingUser.phone} onChange={handleChange} icon="📱" />
+                                            <InputField
+                                                label="Phone"
+                                                name="phone_number"
+                                                value={editingUser.phone_number || editingUser.phone}
+                                                onChange={handleChange}
+                                                readOnly={true}
+                                                icon="📱"
+                                            />
                                             <SelectField label="Blood Group" name="blood_group" value={editingUser.blood_group} onChange={handleChange} options={['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']} icon="🩸" />
                                         </div>
                                     </div>
@@ -132,7 +146,7 @@ export default function EditUserModal({
                                             <SelectField label="Block" name="block" value={editingUser.block} onChange={handleChange} options={editingUser.district ? wbLocations[editingUser.district] : []} disabled={!editingUser.district} icon="🗺️" placeholder="Select Block" />
                                         </div>
                                         <SelectField label="Job Type" name="job" value={editingUser.job} onChange={handleChange} options={['HT-Mobile Van', 'LT-Mobile Van', 'HT-LT Others']} icon="👷" placeholder="Select Job Type" />
-                                        <SelectField label="Role" name="role" value={editingUser.role} onChange={handleChange} options={['lineman', 'safety mitra', ...(userProfile?.role === 'admin' ? ['admin'] : [])]} disabled={userProfile?.role === 'safety mitra' && editingUser.role === 'admin'} icon="🎖️" />
+                                        <SelectField label="Role" name="role" value={editingUser.role} onChange={handleChange} options={['lineman', 'safety mitra', ...(userProfile?.role === 'admin' ? ['admin'] : [])]} disabled={userProfile?.role !== 'admin'} icon="🎖️" />
                                         {userProfile?.role === 'admin' && (
                                             <SelectField
                                                 label="Supervisor"

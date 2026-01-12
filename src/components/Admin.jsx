@@ -127,7 +127,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       // Fetch paginated users with total count
       let query = supabase
         .from('profiles')
-        .select('id, slm_id, full_name, email, role, district, block, avatar_url, created_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage, is_donor, last_donation_date, blood_group, phone, supervisor_id', { count: 'exact' });
+        .select('id, slm_id, full_name, email, role, district, block, avatar_url, created_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage, is_donor, last_donation_date, blood_group, phone, phone_number, supervisor_id', { count: 'exact' });
 
 
       // Apply role-based filtering
