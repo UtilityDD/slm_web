@@ -388,7 +388,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const fetchHourlyQuiz = async () => {
         const now = getSyncedTime();
         const hourId = `${now.getFullYear()}${now.getMonth() + 1}${now.getDate()}${now.getHours()}`;
-        const cacheKey = `hourly_quiz_db_bn_${hourId}`;
+        const cacheKey = `hourly_quiz_db_bn_v2_${hourId}`;
 
         try {
             const quizData = await requestManager.fetch(
@@ -403,7 +403,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                     if (data && data.length > 0) {
                         return {
-                            id: 'hourly-challenge',
+                            id: `hourly-challenge-${hourId}`,
                             title: language === 'en' ? 'Hourly Safety Challenge' : 'প্রতি ঘন্টায় সুরক্ষা চ্যালেঞ্জ',
                             description: language === 'en' ? 'Test your safety knowledge! New questions every hour.' : 'আপনার সুরক্ষা জ্ঞান পরীক্ষা করুন! প্রতি ঘন্টায় নতুন প্রশ্ন।',
                             duration_minutes: 5,
@@ -738,7 +738,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             // Success!
             setSyncStatus('success');
             setSyncErrorMessage(null);
-            setIsSyncing(false);
+            // setIsSyncing(false); // Moved down to keep loading state valid during fetch
             setLastAttemptPenalty(totalPenalty);
 
             // Refresh leaderboard to show updated score immediately (bypass cache)
@@ -749,6 +749,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             if (refreshProfile) {
                 await refreshProfile(user);
             }
+
+            setIsSyncing(false); // Now we are done
 
             // Refresh lock status
             if (activeQuiz && activeQuiz.id) {
@@ -828,7 +830,17 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     {language === 'en' ? userBadge.en : userBadge.bn}
                                                 </span>
                                             )}
-                                            <p className="text-xs font-bold text-slate-600 dark:text-slate-300 ml-1">{userRank.score.toLocaleString()} pts</p>
+                                            {isSyncing ? (
+                                                <div className="ml-1 px-2 py-0.5 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-100 dark:border-orange-800/30 flex items-center gap-1.5 animate-pulse">
+                                                    <svg className="animate-spin h-3 w-3 text-orange-600 dark:text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    <span className="text-[10px] font-bold text-orange-700 dark:text-orange-300">Syncing...</span>
+                                                </div>
+                                            ) : (
+                                                <p className="text-xs font-bold text-slate-600 dark:text-slate-300 ml-1">{userRank.score.toLocaleString()} pts</p>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-orange-600 dark:text-orange-300 border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
@@ -1563,25 +1575,35 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             </>
                         ) : (
                             <div className="text-center py-6">
-                                <div className="w-20 h-20 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">🎉</div>
-                                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.completed}</h2>
+                                <div className="w-20 h-20 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">🎉</div>
+                                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">{t.completed}</h2>
 
-                                <div className="grid grid-cols-4 gap-2 mb-8 mt-4">
+                                {/* Animated Score Popup */}
+                                <div className="flex flex-col items-center justify-center mb-8 animate-scale-in">
+                                    <div className={`text-6xl sm:text-7xl font-black mb-2 drop-shadow-sm ${(quizResults?.score || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                                        }`}>
+                                        {(quizResults?.score || 0) > 0 ? '+' : ''}{quizResults?.score || 0}
+                                    </div>
+                                    <div className={`text-xs sm:text-sm font-bold uppercase tracking-widest ${(quizResults?.score || 0) >= 0 ? 'text-green-600/70 dark:text-green-400/70' : 'text-red-600/70 dark:text-red-400/70'
+                                        }`}>
+                                        {(quizResults?.score || 0) >= 0
+                                            ? (language === 'en' ? 'Points Earned' : 'পয়েন্ট অর্জিত')
+                                            : (language === 'en' ? 'Points Lost' : 'পয়েন্ট হারানো')}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-2 mb-8">
                                     <div className="bg-green-50 dark:bg-green-900/10 p-3 rounded-xl border border-green-100 dark:border-green-900/30">
                                         <div className="text-[10px] font-bold text-green-600 uppercase tracking-tighter mb-1">Right</div>
-                                        <div className="text-xl font-bold text-green-700 dark:text-green-400">+{quizResults?.pointsEarned || 0}</div>
+                                        <div className="text-lg font-bold text-green-700 dark:text-green-400">+{quizResults?.pointsEarned || 0}</div>
                                     </div>
                                     <div className="bg-red-50 dark:bg-red-900/10 p-3 rounded-xl border border-red-100 dark:border-red-900/30">
                                         <div className="text-[10px] font-bold text-red-600 uppercase tracking-tighter mb-1">Wrong</div>
-                                        <div className="text-xl font-bold text-red-700 dark:text-red-400">-{quizResults?.penalty || 0}</div>
+                                        <div className="text-lg font-bold text-red-700 dark:text-red-400">-{quizResults?.penalty || 0}</div>
                                     </div>
                                     <div className="bg-slate-50 dark:bg-slate-900/10 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                                         <div className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">Skipped</div>
-                                        <div className="text-xl font-bold text-slate-600 dark:text-slate-400">{quizResults?.skipped || 0}</div>
-                                    </div>
-                                    <div className="bg-orange-50 dark:bg-orange-900/10 p-3 rounded-xl border border-orange-100 dark:border-orange-900/30">
-                                        <div className="text-[10px] font-bold text-orange-600 uppercase tracking-tighter mb-1">Net</div>
-                                        <div className="text-xl font-bold text-orange-700 dark:text-orange-400">{quizResults?.score || 0}</div>
+                                        <div className="text-lg font-bold text-slate-600 dark:text-slate-400">{quizResults?.skipped || 0}</div>
                                     </div>
                                 </div>
 
