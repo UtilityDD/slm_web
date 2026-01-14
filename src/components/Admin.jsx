@@ -752,7 +752,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 Send Notification
               </button>
             )}
-            {userProfile?.role === 'admin' && (
+            {(userProfile?.role === 'admin' || userProfile?.role === 'safety mitra') && (
               <button
                 onClick={() => setShowInviteModal(true)}
                 className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 text-sm"
@@ -815,113 +815,56 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       ) : showAnalytics ? (
         <AdminAnalytics language={language} />
       ) : (
-        <>
-          {/* Mobile Card View */}
-          <div className="md:hidden space-y-3">
-            {users.map((targetUser) => (
-              <div
-                key={targetUser.id}
-                className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 hover:shadow-md transition-all"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                        {targetUser.full_name}
-                      </h3>
-                      {targetUser.slm_id && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-500 rounded border border-slate-200 dark:border-slate-600">
-                          {targetUser.slm_id}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                      {targetUser.email}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Role:</span>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${targetUser.role === 'admin'
-                      ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                      : targetUser.role === 'safety mitra'
-                        ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                        : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-                      }`}>
-                      {targetUser.role}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">📍</span>
-                    <span className="text-xs text-slate-700 dark:text-slate-300 truncate">
-                      {targetUser.district || 'N/A'}
-                    </span>
-                  </div>
-                </div>
-
-                {!(userProfile?.role === 'safety mitra' && targetUser.role === 'admin') && (
-                  <div className="flex gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
-                    <button
-                      onClick={() => handleEditPPE(targetUser)}
-                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-lg transition-all border border-orange-200 dark:border-orange-800"
-                    >
-                      <span>🦺</span>
-                      PPE
-                    </button>
-                    <button
-                      onClick={() => handleEditTools(targetUser)}
-                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-all"
-                    >
-                      <span>🛠️</span>
-                      Tools
-                    </button>
-                    <button
-                      onClick={() => handleEdit(targetUser)}
-                      disabled={userProfile?.role === 'safety mitra' && targetUser.role === 'admin'}
-                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all border ${userProfile?.role === 'safety mitra' && targetUser.role === 'admin'
-                        ? 'opacity-50 cursor-not-allowed grayscale bg-slate-50 dark:bg-slate-900 text-slate-400 border-slate-200 dark:border-slate-700'
-                        : 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 border-orange-200 dark:border-orange-800'
-                        }`}
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      Edit
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
+        users.length === 0 ? (
+          <div className="bg-white dark:bg-slate-800 shadow rounded-lg p-12 text-center border border-slate-200 dark:border-slate-700">
+            <div className="text-4xl mb-4">👥</div>
+            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">
+              {userProfile?.role === 'safety mitra'
+                ? (language === 'en' ? 'No one is yet tagged' : 'এখনও কাউকে ট্যাগ করা হয়নি')
+                : (language === 'en' ? 'No users found' : 'কোনো ব্যবহারকারী পাওয়া যায়নি')}
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+              {userProfile?.role === 'safety mitra'
+                ? (language === 'en'
+                  ? 'There are no linemen currently assigned to you. Please contact an administrator.'
+                  : 'বর্তমানে আপনার সাথে কোনো লাইনম্যান সংযুক্ত নেই। অনুগ্রহ করে অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।')
+                : (language === 'en'
+                  ? 'Try adjusting your filters or add a new user.'
+                  : 'আপনার ফিল্টার পরিবর্তন করুন বা নতুন ব্যবহারকারী যোগ করুন।')
+              }
+            </p>
           </div>
-
-          {/* Desktop Table View */}
-          <div className="hidden md:block bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
-              <thead className="bg-gray-50 dark:bg-slate-700">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Full Name</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Email</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Role</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">District</th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
-                {users.map((targetUser) => (
-                  <tr key={targetUser.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-col">
-                        <div className="font-medium text-slate-900 dark:text-slate-100">{targetUser.full_name}</div>
-                        {targetUser.slm_id && <div className="text-[10px] font-bold text-slate-400">{targetUser.slm_id}</div>}
+        ) : (
+          <>
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-3">
+              {users.map((targetUser) => (
+                <div
+                  key={targetUser.id}
+                  className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 hover:shadow-md transition-all"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                          {targetUser.full_name}
+                        </h3>
+                        {targetUser.slm_id && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-500 rounded border border-slate-200 dark:border-slate-600">
+                            {targetUser.slm_id}
+                          </span>
+                        )}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-slate-600 dark:text-slate-400">{targetUser.email}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${targetUser.role === 'admin'
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                        {targetUser.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Role:</span>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${targetUser.role === 'admin'
                         ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
                         : targetUser.role === 'safety mitra'
                           ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
@@ -929,44 +872,122 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                         }`}>
                         {targetUser.role}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-slate-600 dark:text-slate-400">{targetUser.district || 'N/A'}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      {!(userProfile?.role === 'safety mitra' && targetUser.role === 'admin') && (
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => handleEditPPE(targetUser)}
-                            className="text-orange-600 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-300 border border-orange-200 dark:border-orange-800 px-3 py-1.5 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all font-medium text-xs"
-                          >
-                            🦺 PPE
-                          </button>
-                          <button
-                            onClick={() => handleEditTools(targetUser)}
-                            className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all font-medium text-xs"
-                          >
-                            🛠️ Tools
-                          </button>
-                          <button
-                            onClick={() => handleEdit(targetUser)}
-                            disabled={userProfile?.role === 'safety mitra' && targetUser.role === 'admin'}
-                            className={`border px-3 py-1.5 rounded-lg transition-all font-medium text-xs ${userProfile?.role === 'safety mitra' && targetUser.role === 'admin'
-                              ? 'opacity-50 cursor-not-allowed grayscale border-slate-200 dark:border-slate-700 text-slate-400'
-                              : 'text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
-                              }`}
-                          >
-                            ✏️ Edit
-                          </button>
-                        </div>
-                      )}
-                    </td>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">📍</span>
+                      <span className="text-xs text-slate-700 dark:text-slate-300 truncate">
+                        {targetUser.district || 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {!(userProfile?.role === 'safety mitra' && targetUser.role === 'admin') && (
+                    <div className="flex gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
+                      <button
+                        onClick={() => handleEditPPE(targetUser)}
+                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-lg transition-all border border-orange-200 dark:border-orange-800"
+                      >
+                        <span>🦺</span>
+                        PPE
+                      </button>
+                      <button
+                        onClick={() => handleEditTools(targetUser)}
+                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-all"
+                      >
+                        <span>🛠️</span>
+                        Tools
+                      </button>
+                      <button
+                        onClick={() => handleEdit(targetUser)}
+                        disabled={userProfile?.role === 'safety mitra' && targetUser.role === 'admin'}
+                        className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all border ${userProfile?.role === 'safety mitra' && targetUser.role === 'admin'
+                          ? 'opacity-50 cursor-not-allowed grayscale bg-slate-50 dark:bg-slate-900 text-slate-400 border-slate-200 dark:border-slate-700'
+                          : 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 border-orange-200 dark:border-orange-800'
+                          }`}
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Edit
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                <thead className="bg-gray-50 dark:bg-slate-700">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Full Name</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Email</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Role</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">District</th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
+                </thead>
+                <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+                  {users.map((targetUser) => (
+                    <tr key={targetUser.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <div className="font-medium text-slate-900 dark:text-slate-100">{targetUser.full_name}</div>
+                          {targetUser.slm_id && <div className="text-[10px] font-bold text-slate-400">{targetUser.slm_id}</div>}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-slate-600 dark:text-slate-400">{targetUser.email}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${targetUser.role === 'admin'
+                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                          : targetUser.role === 'safety mitra'
+                            ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                            : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                          }`}>
+                          {targetUser.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-slate-600 dark:text-slate-400">{targetUser.district || 'N/A'}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        {!(userProfile?.role === 'safety mitra' && targetUser.role === 'admin') && (
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => handleEditPPE(targetUser)}
+                              className="text-orange-600 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-300 border border-orange-200 dark:border-orange-800 px-3 py-1.5 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all font-medium text-xs"
+                            >
+                              🦺 PPE
+                            </button>
+                            <button
+                              onClick={() => handleEditTools(targetUser)}
+                              className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all font-medium text-xs"
+                            >
+                              🛠️ Tools
+                            </button>
+                            <button
+                              onClick={() => handleEdit(targetUser)}
+                              disabled={userProfile?.role === 'safety mitra' && targetUser.role === 'admin'}
+                              className={`border px-3 py-1.5 rounded-lg transition-all font-medium text-xs ${userProfile?.role === 'safety mitra' && targetUser.role === 'admin'
+                                ? 'opacity-50 cursor-not-allowed grayscale border-slate-200 dark:border-slate-700 text-slate-400'
+                                : 'text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
+                                }`}
+                            >
+                              ✏️ Edit
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )
       )}
 
       {/* Pagination Controls */}
