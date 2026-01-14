@@ -143,107 +143,80 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         return () => clearInterval(interval);
     }, [serverTimeOffset]); // Update timer when offset is calculated
 
-    // Network monitoring and pending submission queue
-    const handleOnline = () => {
-        setIsOnline(true);
-        console.log('Network restored');
-        // Auto-refresh data when network returns
-        if (!hourlyQuiz || fetchError) {
-            loadData();
-        }
-        processPendingQueue();
+    // Simplified Hourly Quiz ID Generation
+    const getHourlyQuizId = () => {
+        const now = getSyncedTime();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hour = String(now.getHours()).padStart(2, '0');
+        return `hourly-challenge-${year}-${month}-${day}-${hour}`;
     };
 
-    const handleOffline = () => {
-        setIsOnline(false);
-        console.log('Network offline');
-    };
+    /**
+     * Direct submission logic for Hourly Quiz
+     * No background queues. No complex retries.
+     * Simple: Try -> Success (Lock) OR Fail (Show Error)
+     */
+    const submitHourlyQuiz = async (score, penalty) => {
+        setIsSyncing(true);
+        setSyncStatus('syncing');
+        setSyncErrorMessage(null);
 
-    useEffect(() => {
-        window.addEventListener('online', handleOnline);
-        window.addEventListener('offline', handleOffline);
+        // 1. Strict ID for the current hour
+        const quizId = getHourlyQuizId();
 
-        // Check for pending submissions on mount
-        checkPendingSubmissions();
+        // 2. Sanitize Inputs (Postgres expects Integers)
+        const cleanScore = Math.round(Number(score)) || 0;
+        const cleanPenalty = Math.round(Number(penalty)) || 0;
 
-        // Subtle polling fallback for connectivity check (every 30s)
-        const pollInterval = setInterval(() => {
-            if (!navigator.onLine && isOnline) {
-                handleOffline();
-            } else if (navigator.onLine && !isOnline) {
-                handleOnline();
-            }
-        }, 30000);
-
-        return () => {
-            window.removeEventListener('online', handleOnline);
-            window.removeEventListener('offline', handleOffline);
-            clearInterval(pollInterval);
+        const params = {
+            p_quiz_id: quizId,
+            p_score: cleanScore,
+            p_user_id: user.id
         };
-    }, [isOnline, hourlyQuiz, fetchError]);
 
-    // Check for pending submissions in LocalStorage
-    const checkPendingSubmissions = () => {
-        try {
-            const pending = storageUtils.getItem('pending_quiz_submissions');
-            if (pending) {
-                const submissions = JSON.parse(pending);
-                if (submissions && submissions.length > 0) {
-                    setPendingSubmission(submissions[0]); // Show first pending
-                    // Auto-process if online
-                    if (navigator.onLine) {
-                        processPendingQueue();
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Error checking pending submissions:', error);
+        // Only attach penalty if non-zero (Matches Training.jsx success pattern)
+        if (cleanPenalty > 0) {
+            params.p_penalty = cleanPenalty;
         }
-    };
 
-    // Save failed submission to queue
-    const savePendingSubmission = (quizData) => {
+        console.log('Submitting Hourly Quiz:', params);
+
         try {
-            const existing = storageUtils.getItem('pending_quiz_submissions');
-            const queue = existing ? JSON.parse(existing) : [];
+            // 3. Direct RPC Call
+            const { error } = await supabase.rpc('submit_quiz_result_v2', params);
 
-            // Avoid duplicates
-            const isDuplicate = queue.some(item =>
-                item.quiz_id === quizData.quiz_id &&
-                item.timestamp === quizData.timestamp
-            );
+            if (error) throw error;
 
-            if (!isDuplicate) {
-                queue.push(quizData);
-                storageUtils.setItem('pending_quiz_submissions', JSON.stringify(queue));
-                setPendingSubmission(quizData);
-                console.log('Saved pending submission:', quizData);
-            }
+            // 3. Success: Lock the UI immediately
+            setSyncStatus('success');
+
+            // Update local state to show "Locked" view
+            // We use the timestamp we generated to safeguard against drift
+            const now = getSyncedTime();
+            setLastAttemptTime(now.toISOString());
+            setLastAttemptPenalty(penalty);
+
+            // Update cache to prevent stale reads on reload
+            const cacheKey = `last_attempt_${user.id}_${hourlyQuiz?.id}`; // Keep using hourlyQuiz.id for cache key consistency if needed, OR switch to strict ID. 
+            // Better to use the strict ID for cache to avoid ambiguity? 
+            // actually, hourlyQuiz.id in state currently comes from fetchHourlyQuiz which uses YYYYMMDDHH. 
+            // Let's stick to updating the state that drives the UI.
+
+            // Also refresh leaderboard for immediate feedback
+            fetchLeaderboard(true);
+            refreshProfile(user);
+
         } catch (error) {
-            console.error('Error saving pending submission:', error);
-        }
-    };
+            console.error('Submission failed:', error);
+            setSyncStatus('failed'); // This will show the "Retry" button
 
-    // Process all pending submissions
-    const processPendingQueue = async () => {
-        try {
-            const pending = storageUtils.getItem('pending_quiz_submissions');
-            if (!pending) return;
-
-            const queue = JSON.parse(pending);
-            if (queue.length === 0) return;
-
-            setIsSyncing(true);
-            setSyncStatus('syncing');
-
-            for (let i = 0; i < queue.length; i++) {
-                const submission = queue[i];
-                await retrySubmission(submission, i);
+            if (error.message?.includes('JWT') || error.code === 'P0001' || error.message?.includes('authenticated')) {
+                setSyncErrorMessage('Session expired. Please login again.');
+            } else {
+                setSyncErrorMessage(error.message || 'Submission failed');
             }
-        } catch (error) {
-            console.error('Error processing pending queue:', error);
-            setSyncStatus('failed');
-            setSyncErrorMessage(error.message || 'Queue processing failed');
         } finally {
             setIsSyncing(false);
         }
@@ -254,29 +227,22 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
      * Handles cases where the database might not have the p_penalty parameter yet
      */
     const safeSubmitQuizResult = async (quizId, score, penalty = 0) => {
-        // Try with 3 parameters first (New Schema)
-        const result = await supabase.rpc('submit_quiz_result', {
+        // Use V2 function to bypass ambiguity issues
+        // Simplify arguments to match successful pattern in Training.jsx
+        const params = {
             p_quiz_id: quizId,
-            p_score: score,
-            p_penalty: penalty
-        });
+            p_score: score
+        };
 
-        // If it fails with a "parameter" or "function" mismatch error, try with 2 parameters (Old Schema)
-        if (result.error && (
-            result.error.message?.includes('parameter') ||
-            result.error.message?.includes('function') ||
-            result.error.message?.includes('signature') ||
-            result.error.code === 'P0000'
-        )) {
-            console.warn('New submit_quiz_result signature not found or failed, falling back to old signature.');
-            return await supabase.rpc('submit_quiz_result', {
-                p_quiz_id: quizId,
-                p_score: score
-            });
+        // Only add penalty if explicitly present and non-zero
+        if (penalty) {
+            params.p_penalty = penalty;
         }
 
+        const result = await supabase.rpc('submit_quiz_result_v2', params);
+
         if (result.error) {
-            console.error('submit_quiz_result RPC Error:', result.error);
+            console.error('submit_quiz_result_v2 RPC Error:', result.error);
         }
         return result;
     };
@@ -387,7 +353,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
     const fetchHourlyQuiz = async () => {
         const now = getSyncedTime();
-        const hourId = `${now.getFullYear()}${now.getMonth() + 1}${now.getDate()}${now.getHours()}`;
+        // Use simpler strict format: YYYY-MM-DD-HH
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hour = String(now.getHours()).padStart(2, '0');
+        const hourId = `${year}-${month}-${day}-${hour}`;
+
         const cacheKey = `hourly_quiz_db_bn_v2_${hourId}`;
 
         try {
@@ -403,7 +375,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                     if (data && data.length > 0) {
                         return {
-                            id: `hourly-challenge-${hourId}`,
+                            id: `hourly-challenge-${hourId}`, // Ensure this ID format is consistent
                             title: language === 'en' ? 'Hourly Safety Challenge' : 'প্রতি ঘন্টায় সুরক্ষা চ্যালেঞ্জ',
                             description: language === 'en' ? 'Test your safety knowledge! New questions every hour.' : 'আপনার সুরক্ষা জ্ঞান পরীক্ষা করুন! প্রতি ঘন্টায় নতুন প্রশ্ন।',
                             duration_minutes: 5,
@@ -639,7 +611,25 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     };
 
     const startReview = () => {
-        const saved = storageUtils.getItem(`review_${hourlyQuiz.id}`);
+        if (!hourlyQuiz) return;
+
+        // Check for correct ID format first
+        let saved = storageUtils.getItem(`review_${hourlyQuiz.id}`);
+
+        // Fallback: Check for legacy ID (no dashes) if strict ID not found
+        if (!saved) {
+            const legacyId = hourlyQuiz.id.replace(/-/g, '').replace('hourlychallenge', 'hourly-challenge'); // simplistic fallback attempt or just reconstruct
+            // Actually, easier to just check the other likely key
+            // Our strict ID is hourly-challenge-YYYY-MM-DD-HH
+            // Previous bad ID was hourly-challenge-YYYYMMDDHH
+            const parts = hourlyQuiz.id.split('hourly-challenge-');
+            if (parts.length > 1) {
+                const ts = parts[1]; // YYYY-MM-DD-HH
+                const legacyTs = ts.replace(/-/g, '');
+                saved = storageUtils.getItem(`review_hourly-challenge-${legacyTs}`);
+            }
+        }
+
         if (!saved) return;
         const data = JSON.parse(saved);
 
@@ -652,9 +642,44 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         setCurrentQuestionIndex(0);
     };
 
+    const calculatePenalty = (answers) => {
+        const currentPoints = userProfile?.points || userRank?.score || 0;
+        const isHighStakes = currentPoints > 1000;
+        let totalPenalty = 0;
+
+        if (isHighStakes && quizQuestions.length > 0) {
+            // Determine wrong OR skipped choices
+            const wrongOrSkippedCount = quizQuestions.filter(q =>
+                answers[q.id] !== q.correct_option_index
+            ).length;
+
+            totalPenalty = wrongOrSkippedCount * 15; // Deduct 15 points per WRONG or SKIPPED choice
+        }
+        return totalPenalty;
+    };
+
     const handleAnswerSelect = (questionId, optionIndex) => {
         if (hintViewedQuestions.has(questionId)) return; // Prevent change if hint was viewed
         setUserAnswers(prev => ({ ...prev, [questionId]: optionIndex }));
+    };
+
+    const handleQuizComplete = async (finalScore, userResponses) => {
+        if (!activeQuiz) return;
+
+        const penalty = calculatePenalty(userResponses);
+
+        setScore(finalScore);
+        setQuizSubmitted(true);
+        setActiveQuiz(null);
+
+        // Immediate submission attempt
+        // If logged in, submit immediately
+        if (user) {
+            await submitHourlyQuiz(finalScore, penalty);
+        } else {
+            // Not logged in - just show score and let them login to save if they want (future feature)
+            // For now, we just show the score.
+        }
     };
 
     const submitQuiz = async () => {
@@ -670,48 +695,44 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             }
         });
 
-        const currentPoints = userProfile?.points || userRank?.score || 0;
-        const isHighStakes = currentPoints > 1000;
-        let totalPenalty = 0;
         let pointsPerQuestion = 10;
-
         if (activeQuiz && activeQuiz.points_reward && quizQuestions.length > 0) {
             pointsPerQuestion = Math.floor(activeQuiz.points_reward / quizQuestions.length);
         }
 
-        if (quizQuestions.length > 0) {
-            calculatedScore = correctCount * pointsPerQuestion;
-            if (isHighStakes) {
-                // Determine wrong OR skipped choices
-                const wrongOrSkippedCount = quizQuestions.filter(q =>
-                    userAnswers[q.id] !== q.correct_option_index
-                ).length;
+        calculatedScore = correctCount * pointsPerQuestion;
 
-                totalPenalty = wrongOrSkippedCount * 15; // Deduct 15 points per WRONG or SKIPPED choice
-                calculatedScore -= totalPenalty;
-            }
-        }
+        // Calculate penalty
+        const penalty = calculatePenalty(userAnswers);
+        calculatedScore -= penalty;
+
         setScore(calculatedScore);
+
         // Store individual counts for the results screen
         setQuizResults({
             correct: correctCount,
             wrong: quizQuestions.filter(q => userAnswers[q.id] !== undefined && userAnswers[q.id] !== q.correct_option_index).length,
             skipped: quizQuestions.filter(q => userAnswers[q.id] === undefined).length,
-            penalty: totalPenalty,
+            penalty: penalty,
             score: calculatedScore,
             pointsEarned: correctCount * pointsPerQuestion
         });
         setQuizSubmitted(true);
 
-        // Save for Review (Local Storage) - do this first
+        // Save for Review (Local Storage)
         const attemptData = {
             timestamp: new Date().toISOString(),
             questions: quizQuestions,
             answers: userAnswers,
             score: calculatedScore,
-            penalty: totalPenalty
+            penalty: penalty
         };
         storageUtils.setItem(`review_${activeQuiz.id}`, JSON.stringify(attemptData));
+
+        // Submit immediately if user is logged in
+        if (user) {
+            await submitHourlyQuiz(calculatedScore, penalty);
+        }
 
         // IMMEDIATE LOCK: Update local state to show countdown timer instantly
         // This ensures "Play Now" is disabled regardless of network status
@@ -730,7 +751,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             const { error } = await safeSubmitQuizResult(
                 activeQuiz.id || 'unknown_quiz',
                 calculatedScore,
-                totalPenalty
+                penalty
             );
 
             if (error) throw error;
@@ -739,7 +760,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             setSyncStatus('success');
             setSyncErrorMessage(null);
             // setIsSyncing(false); // Moved down to keep loading state valid during fetch
-            setLastAttemptPenalty(totalPenalty);
+            setLastAttemptPenalty(penalty);
 
             // Refresh leaderboard to show updated score immediately (bypass cache)
             await fetchLeaderboard(true);
@@ -761,28 +782,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         } catch (error) {
             console.error('Error saving result:', error);
             setIsSyncing(false);
+            setSyncStatus('failed');
 
-            // Save to pending queue for retry
-            const pendingData = {
-                quiz_id: activeQuiz.id || 'unknown_quiz',
-                user_id: user.id,
-                score: calculatedScore,
-                penalty: totalPenalty,
-                timestamp: attemptData.timestamp,
-                questions: quizQuestions,
-                answers: userAnswers,
-                retry_count: 0
-            };
-
-            savePendingSubmission(pendingData);
-
-            if (!navigator.onLine) {
-                setSyncStatus('waiting');
-                alert(t.waitingNetwork + ' ' + t.autoRetry);
+            if (error.message?.includes('JWT') || error.code === 'P0001' || error.message?.includes('authenticated')) {
+                setSyncErrorMessage('Session expired. Please login again.');
             } else {
-                setSyncStatus('failed');
                 setSyncErrorMessage(error.message || 'Sync failed');
-                // alert(t.syncFailed + ' ' + error.message);
             }
         }
     };
@@ -1100,12 +1105,21 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         </div>
                                     </div>
                                     {syncStatus === 'failed' && !isSyncing && (
-                                        <button
-                                            onClick={processPendingQueue}
-                                            className="px-3 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 rounded transition-colors"
-                                        >
-                                            {t.retryNow}
-                                        </button>
+                                        syncErrorMessage?.includes('Session expired') ? (
+                                            <button
+                                                onClick={() => setCurrentView('login')}
+                                                className="px-3 py-1 text-xs font-medium text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/40 rounded transition-colors"
+                                            >
+                                                {language === 'en' ? 'Login' : 'লগইন'}
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => submitHourlyQuiz(score, lastAttemptPenalty)} // Retry with last calculated values
+                                                className="px-3 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 rounded transition-colors"
+                                            >
+                                                {t.retryNow}
+                                            </button>
+                                        )
                                     )}
                                 </div>
                             </div>

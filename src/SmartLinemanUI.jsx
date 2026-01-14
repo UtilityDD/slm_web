@@ -508,6 +508,29 @@ export default function SmartLinemanUI() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
+  // Add a listener to re-check auth when the app becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible') {
+        console.log('App became visible, re-checking session...');
+        const { data: { session } } = await supabase.auth.getSession();
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        if (currentUser) {
+          await fetchProfile(currentUser);
+        } else {
+          setUserProfile(null);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   // Check LocalStorage for Language on mount
   useEffect(() => {
     const savedLang = storageUtils.getItem('appLanguage');

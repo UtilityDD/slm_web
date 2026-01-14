@@ -487,7 +487,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
 
             if (user) {
                 try {
-                    await supabase.rpc('submit_quiz_result', {
+                    await supabase.rpc('submit_quiz_result_v2', {
                         p_quiz_id: `lesson_bonus_${lessonId}`,
                         p_score: bonusPoints
                     });
