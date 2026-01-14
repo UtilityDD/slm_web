@@ -84,6 +84,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [inviteName, setInviteName] = useState('');
   const [isInviting, setIsInviting] = useState(false);
   const [tempPasswordResult, setTempPasswordResult] = useState(null);
+  const [showInviteHelp, setShowInviteHelp] = useState(false);
 
   useEffect(() => {
     fetchUsers(currentPage);
@@ -753,15 +754,24 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               </button>
             )}
             {(userProfile?.role === 'admin' || userProfile?.role === 'safety mitra') && (
-              <button
-                onClick={() => setShowInviteModal(true)}
-                className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 text-sm"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                </svg>
-                Invite New Lineman
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowInviteModal(true)}
+                  className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 text-sm"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                  Invite New Lineman
+                </button>
+                <button
+                  onClick={() => setShowInviteHelp(true)}
+                  className="w-10 h-10 flex items-center justify-center bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-xl transition-all shadow-sm"
+                  title="Guideline"
+                >
+                  <span className="font-bold text-lg">?</span>
+                </button>
+              </div>
             )}
             {userProfile?.role === 'admin' && (
               <button
@@ -1571,6 +1581,71 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
           language={language}
           loading={isDeleting}
         />
+      )}
+
+      {/* Invite Guideline Modal */}
+      {showInviteHelp && createPortal(
+        <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in safe-area-inset-top">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-sm">?</span>
+                How to Add a Lineman
+              </h3>
+              <button onClick={() => setShowInviteHelp(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="flex gap-4">
+                <div className="flex-none flex flex-col items-center">
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm">1</div>
+                  <div className="w-0.5 grow bg-indigo-50 dark:bg-indigo-900/10 my-1"></div>
+                </div>
+                <div className="pb-6">
+                  <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-1">Enter Details</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Click <strong>Invite New Lineman</strong> and enter their <strong>Name</strong> and <strong>Phone Number</strong>.</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-none flex flex-col items-center">
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm">2</div>
+                  <div className="w-0.5 grow bg-indigo-50 dark:bg-indigo-900/10 my-1"></div>
+                </div>
+                <div className="pb-6">
+                  <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-1">Get Temporary Password</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">The system will generate a temporary password (e.g., <code>123456</code>). Write this down.</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-none flex flex-col items-center">
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm">3</div>
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-1">Share & Login</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Share the phone number and password with the lineman. They must login and change their password.</p>
+                </div>
+              </div>
+
+              <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-900/30">
+                <p className="text-xs text-orange-800 dark:text-orange-300">
+                  <strong>Note:</strong> The new lineman will be automatically tagged to you (Safety Mitra).
+                </p>
+              </div>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700">
+              <button
+                onClick={() => setShowInviteHelp(false)}
+                className="w-full py-3 bg-slate-900 dark:bg-slate-700 text-white rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-slate-600 transition-colors"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* Uniform bottom spacing for all roles to prevent content cut-off by sticky navs or safe areas */}
