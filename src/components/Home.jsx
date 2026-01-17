@@ -78,10 +78,12 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                         hash |= 0;
                     }
                     setDailyTip(rules[Math.abs(hash) % rules.length]);
+                    setShowTipModal(true);
                 }
             } catch (err) {
                 console.error('Error fetching daily tip:', err);
                 setDailyTip(language === 'en' ? "Always test for voltage before touching any conductor." : "যেকোনো কন্ডাক্টর স্পর্শ করার আগে সর্বদা ভোল্টেজ পরীক্ষা করুন।");
+                setShowTipModal(true);
             }
         };
 
@@ -213,24 +215,42 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                         </div>
                     </div>
 
-                    {/* Quick Insight Bar */}
-                    <div className="max-w-4xl mx-auto -mt-6 px-4">
+                    {/* Hero section ends here, Awareness banner follows */}
+
+                    {/* Awareness Banner - High Impact */}
+                    <div className="max-w-4xl mx-auto px-4 mt-6">
                         <div
-                            onClick={() => setShowTipModal(true)}
-                            className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-xl border border-slate-100 dark:border-slate-700 flex items-center gap-3 cursor-pointer group hover:border-orange-300 transition-all active:scale-95 animate-subtle-float"
+                            className="relative overflow-hidden group cursor-pointer"
+                            onClick={() => setCurrentView('accident-stories')}
                         >
-                            <div className="w-10 h-10 bg-amber-50 dark:bg-amber-900/30 rounded-xl flex items-center justify-center text-xl shrink-0">
-                                💡
+                            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-slate-900 rounded-2xl animate-pulse-slow opacity-90"></div>
+                            <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-500"></div>
+
+                            <div className="relative p-5 sm:p-6 rounded-2xl border border-white/10 flex items-center gap-4 sm:gap-6">
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-3xl sm:text-4xl shadow-inner shrink-0 animate-bounce-subtle">
+                                    ⚠️
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-white text-base sm:text-lg font-bold leading-tight mb-1 drop-shadow-md">
+                                        {language === 'bn' ? 'একটি সতর্কবার্তা' : 'A Warning Message'}
+                                    </h3>
+                                    <p className="text-red-50 text-xs sm:text-sm font-medium leading-relaxed opacity-90">
+                                        {language === 'bn'
+                                            ? 'উদাসীনতা আর অবহেলার নির্মম বলি হয়ে অকালে হারিয়ে যাচ্ছে কত প্রাণ!'
+                                            : 'Countless lives are lost prematurely as victims of indifference and negligence!'}
+                                    </p>
+                                    <div className="mt-3 inline-flex items-center gap-2 text-white text-[10px] font-bold uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm group-hover:bg-white/30 transition-all">
+                                        {language === 'bn' ? 'বিস্তারিত পড়ুন' : 'Read Full Story'}
+                                        <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                    </div>
+                                </div>
+
+                                {/* Decorative elements */}
+                                <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-all"></div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">
-                                    {language === 'en' ? 'Daily Safety Tip' : 'সুরক্ষা টিপ'}
-                                </p>
-                                <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate italic">
-                                    "{dailyTip}"
-                                </p>
-                            </div>
-                            <span className="text-xl text-slate-300 group-hover:text-orange-500 transition-colors">→</span>
+
+                            {/* Border Glow for Focus */}
+                            <div className="absolute inset-0 rounded-2xl border-2 border-red-500/50 animate-pulse pointer-events-none"></div>
                         </div>
                     </div>
 

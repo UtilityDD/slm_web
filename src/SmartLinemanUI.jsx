@@ -26,6 +26,7 @@ const Home = lazy(() => import("./components/Home"));
 const Guide = lazy(() => import("./components/Guide"));
 const VerificationView = lazy(() => import("./components/VerificationView"));
 const Notifications = lazy(() => import("./components/Notifications"));
+const AwarenessStories = lazy(() => import("./components/safety/AwarenessStories"));
 
 export default function SmartLinemanUI() {
   const [globalLoading, setGlobalLoading] = useState(false);
@@ -800,6 +801,10 @@ export default function SmartLinemanUI() {
           return <Notifications
             language={language}
             notifications={notificationsHistory}
+            setCurrentView={setCurrentView}
+          />;
+        case 'accident-stories':
+          return <AwarenessStories
             setCurrentView={setCurrentView}
           />;
         case 'home':
