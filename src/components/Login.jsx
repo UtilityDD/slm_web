@@ -14,10 +14,15 @@ export default function Login({ onLogin, showNotification }) {
     const [rememberMe, setRememberMe] = useState(true);
 
     useEffect(() => {
-        // Load remembered phone number
+        // Load remembered credentials
         const savedPhone = storageUtils.getItem('slm_remembered_phone');
+        const savedPin = storageUtils.getItem('slm_remembered_pin');
+
         if (savedPhone) {
             setPhone(savedPhone);
+        }
+        if (savedPin) {
+            setPassword(savedPin);
         }
     }, []);
 
@@ -65,11 +70,13 @@ export default function Login({ onLogin, showNotification }) {
                 setCurrentUser(user);
                 showNotification('Please set a new password to continue', 'info');
             } else {
-                // Remember phone if checkbox is checked
+                // Remember credentials if checkbox is checked
                 if (rememberMe) {
                     storageUtils.setItem('slm_remembered_phone', phone);
+                    storageUtils.setItem('slm_remembered_pin', password);
                 } else {
                     storageUtils.removeItem('slm_remembered_phone');
+                    storageUtils.removeItem('slm_remembered_pin');
                 }
 
                 // Store session
@@ -118,9 +125,10 @@ export default function Login({ onLogin, showNotification }) {
 
             if (error) throw error;
 
-            // Remember phone if checkbox is checked
+            // Remember credentials if checkbox is checked
             if (rememberMe) {
                 storageUtils.setItem('slm_remembered_phone', phone);
+                storageUtils.setItem('slm_remembered_pin', newPassword);
             }
 
             // Store session and auto-login

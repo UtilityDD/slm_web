@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import HomeSkeleton from './loaders/HomeSkeleton';
 import {
@@ -36,6 +37,15 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
     const [dailyTip, setDailyTip] = useState('');
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [shareUrl, setShareUrl] = useState("https://github.com/UtilityDD/slm_web/releases/latest");
+    const [emotionalImageIndex, setEmotionalImageIndex] = useState(0);
+
+    const emotionalImages = [
+        '/assets/emotional/lineman.png',
+        '/assets/emotional/child.png',
+        '/assets/emotional/wife.png',
+        '/assets/emotional/mother.png',
+        '/assets/emotional/eyes.png'
+    ];
 
     const visitorNames = {
         en: ['Lineman', 'Hero', 'Superhero', 'Friend', 'Champion', 'Safety Star'],
@@ -104,8 +114,14 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
             }
         };
 
+        const imageInterval = setInterval(() => {
+            setEmotionalImageIndex(prev => (prev + 1) % emotionalImages.length);
+        }, 4000);
+
         fetchDailyTip();
         fetchLatestShareUrl();
+
+        return () => clearInterval(imageInterval);
     }, [userProfile, user, language]);
 
     const fetchProfile = async () => {
@@ -220,37 +236,43 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                     {/* Awareness Banner - High Impact */}
                     <div className="max-w-4xl mx-auto px-4 mt-6">
                         <div
-                            className="relative overflow-hidden group cursor-pointer"
+                            className="relative overflow-hidden group cursor-pointer rounded-3xl bg-slate-950 shadow-2xl border border-white/5"
                             onClick={() => setCurrentView('accident-stories')}
                         >
-                            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-slate-900 rounded-2xl animate-pulse-slow opacity-90"></div>
-                            <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-500"></div>
+                            {/* The main emotional photo on the left with fade */}
+                            <div className="absolute inset-y-0 left-0 w-full sm:w-2/3 pointer-events-none">
+                                <img
+                                    src={emotionalImages[emotionalImageIndex]}
+                                    alt="Emotional scene"
+                                    className="h-full w-full object-cover transition-all duration-1000 ease-in-out"
+                                    style={{
+                                        maskImage: 'linear-gradient(to right, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 90%)',
+                                        WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 90%)'
+                                    }}
+                                />
+                            </div>
 
-                            <div className="relative p-5 sm:p-6 rounded-2xl border border-white/10 flex items-center gap-4 sm:gap-6">
-                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-3xl sm:text-4xl shadow-inner shrink-0 animate-bounce-subtle">
-                                    ⚠️
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="text-white text-base sm:text-lg font-bold leading-tight mb-1 drop-shadow-md">
-                                        {language === 'bn' ? 'একটি সতর্কবার্তা' : 'A Warning Message'}
+                            {/* Sophisticated Gradient Overlays */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-950/40 to-slate-950/95"></div>
+                            <div className="absolute inset-0 border-2 border-red-500/20 rounded-3xl animate-pulse pointer-events-none"></div>
+
+                            {/* Content container - shifted right to avoid covering the face too much */}
+                            <div className="relative p-6 sm:p-8 min-h-[160px] flex flex-col justify-center">
+                                <div className="max-w-[65%] ml-auto text-right">
+                                    <h3 className="text-white text-xl sm:text-2xl font-black leading-tight mb-2 drop-shadow-xl tracking-tight uppercase italic">
+                                        {language === 'bn' ? 'করুণ কাহিনী!' : 'A Tragic Story'}
                                     </h3>
-                                    <p className="text-red-50 text-xs sm:text-sm font-medium leading-relaxed opacity-90">
+                                    <p className="text-red-100 text-sm sm:text-base font-medium leading-relaxed opacity-95 drop-shadow-md italic mb-4">
                                         {language === 'bn'
                                             ? 'উদাসীনতা আর অবহেলার নির্মম বলি হয়ে অকালে হারিয়ে যাচ্ছে কত প্রাণ!'
                                             : 'Countless lives are lost prematurely as victims of indifference and negligence!'}
                                     </p>
-                                    <div className="mt-3 inline-flex items-center gap-2 text-white text-[10px] font-bold uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm group-hover:bg-white/30 transition-all">
+                                    <div className="inline-flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest bg-red-600/80 hover:bg-red-600 px-5 py-2.5 rounded-full backdrop-blur-md transition-all shadow-lg active:scale-95">
                                         {language === 'bn' ? 'বিস্তারিত পড়ুন' : 'Read Full Story'}
                                         <span className="group-hover:translate-x-1 transition-transform">→</span>
                                     </div>
                                 </div>
-
-                                {/* Decorative elements */}
-                                <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-all"></div>
                             </div>
-
-                            {/* Border Glow for Focus */}
-                            <div className="absolute inset-0 rounded-2xl border-2 border-red-500/50 animate-pulse pointer-events-none"></div>
                         </div>
                     </div>
 
@@ -280,7 +302,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                     </div>
 
                     {/* Daily Tip Modal */}
-                    {showTipModal && (
+                    {showTipModal && createPortal(
                         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
                             <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl border border-slate-100 dark:border-slate-700">
                                 <div className="bg-[#ea580c] p-6 text-white text-center relative">
@@ -295,7 +317,8 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                     </button>
                                 </div>
                             </div>
-                        </div>
+                        </div>,
+                        document.body
                     )}
                     {/* Share Modal */}
                     <ShareModal
