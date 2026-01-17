@@ -513,13 +513,22 @@ export default function SmartLinemanUI() {
     const handleVisibilityChange = async () => {
       if (document.visibilityState === 'visible') {
         console.log('App became visible, re-checking session...');
-        const { data: { session } } = await supabase.auth.getSession();
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-        if (currentUser) {
-          await fetchProfile(currentUser);
-        } else {
-          setUserProfile(null);
+
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+
+          // Only update user state if we have a definitive answer
+          if (session?.user) {
+            // Session is valid - update user and profile
+            setUser(session.user);
+            await fetchProfile(session.user);
+          }
+          // IMPORTANT: Don't clear user state if session is null!
+          // The session might be temporarily unavailable during rehydration.
+          // Let the auth state listener handle actual logouts.
+        } catch (err) {
+          console.error('Error checking session on visibility change:', err);
+          // Don't logout on errors - session might just be temporarily unavailable
         }
       }
     };

@@ -1916,7 +1916,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                 </div>
                                 <div className="flex-1">
                                     <h3 className="font-bold text-orange-900 dark:text-orange-100 mb-3 uppercase tracking-wider text-xs">
-                                        {language === 'en' ? 'Mission Briefing' : 'মিশন ব্রিফিং'}
+                                        {language === 'en' ? 'Mission Briefing' : 'মূল কথা'}
                                     </h3>
                                     <p className="text-slate-700 dark:text-slate-300 reading-content leading-relaxed text-base whitespace-pre-line">
                                         {trainingContent.mission_briefing}

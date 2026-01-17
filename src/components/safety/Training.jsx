@@ -417,7 +417,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
 
         // Add Mission Briefing
         if (trainingContent.mission_briefing) {
-            parts.push((language === 'en' ? "Mission Briefing. " : "মিশন ব্রিফিং। ") + trainingContent.mission_briefing);
+            parts.push((language === 'en' ? "Mission Briefing. " : "মূল কথা। ") + trainingContent.mission_briefing);
         }
 
         // Add Main Content Sections
@@ -926,7 +926,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                         {/* Mission Briefing */}
                         <div className="bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/30 dark:to-orange-900/20 border-l-4 border-orange-500 p-6 sm:p-8 rounded-r-2xl mb-10 shadow-sm hover:shadow-md transition-shadow relative group/briefing">
                             <button
-                                onClick={() => speak((language === 'en' ? "Mission Briefing. " : "মিশন ব্রিফিং। ") + trainingContent.mission_briefing)}
+                                onClick={() => speak((language === 'en' ? "Mission Briefing. " : "মূল কথা। ") + trainingContent.mission_briefing)}
                                 className="absolute right-4 top-4 p-2 bg-white/80 dark:bg-slate-800/80 rounded-full text-orange-600 opacity-0 group-hover/briefing:opacity-100 transition-opacity shadow-sm z-10"
                                 title={language === 'en' ? 'Read Briefing' : 'ব্রিফিং শুনুন'}
                             >
@@ -940,7 +940,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                 </div>
                                 <div className="flex-1">
                                     <h3 className="font-bold text-orange-900 dark:text-orange-100 mb-4 uppercase tracking-wider text-sm">
-                                        {language === 'en' ? 'Mission Briefing' : 'মিশন ব্রিফিং'}
+                                        {language === 'en' ? 'Mission Briefing' : 'মূল কথা'}
                                     </h3>
                                     <p className="text-slate-800 dark:text-slate-200 reading-content leading-loose text-lg sm:text-xl whitespace-pre-line">
                                         {renderTextWithImages(trainingContent.mission_briefing)}
