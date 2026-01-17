@@ -212,6 +212,8 @@ export default function Login({ onLogin, showNotification }) {
                         <div className="space-y-2">
                             <input
                                 type="tel"
+                                name="phone"
+                                autoComplete="username"
                                 required
                                 value={phone}
                                 onChange={handlePhoneChange}
@@ -224,6 +226,8 @@ export default function Login({ onLogin, showNotification }) {
                         <div className="relative group">
                             <input
                                 type={showPassword ? "text" : "password"}
+                                name="password"
+                                autoComplete="current-password"
                                 required
                                 maxLength="6"
                                 value={password}
