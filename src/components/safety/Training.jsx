@@ -934,15 +934,15 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                     <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
                                 </svg>
                             </button>
-                            <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-800 flex items-center justify-center text-2xl flex-shrink-0">
+                            <div className="flex items-start gap-5">
+                                <div className="w-14 h-14 rounded-2xl bg-orange-100 dark:bg-orange-800 flex items-center justify-center text-3xl flex-shrink-0 shadow-sm">
                                     🎯
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="font-bold text-orange-900 dark:text-orange-100 mb-3 uppercase tracking-wider text-xs">
+                                    <h3 className="font-bold text-orange-900 dark:text-orange-100 mb-4 uppercase tracking-wider text-sm">
                                         {language === 'en' ? 'Mission Briefing' : 'মিশন ব্রিফিং'}
                                     </h3>
-                                    <p className="text-slate-700 dark:text-slate-300 reading-content leading-relaxed text-base whitespace-pre-line">
+                                    <p className="text-slate-800 dark:text-slate-200 reading-content leading-loose text-lg sm:text-xl whitespace-pre-line">
                                         {renderTextWithImages(trainingContent.mission_briefing)}
                                     </p>
                                 </div>
@@ -950,10 +950,10 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                         </div>
 
                         {/* Sections */}
-                        <div className="space-y-10">
+                        <div className="space-y-12">
                             {trainingContent.sections?.map((section, sIdx) => (
-                                <div key={sIdx} className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-10 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-shadow">
-                                    <div className="flex justify-between items-center mb-8">
+                                <div key={sIdx} className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-10 shadow-sm border border-slate-100 dark:border-slate-700">
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10 border-b border-slate-100 dark:border-slate-700 pb-6">
                                         <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 reading-content flex items-center gap-4">
                                             <span className="w-2 h-8 bg-gradient-to-b from-orange-500 to-orange-400 rounded-full flex-shrink-0"></span>
                                             {section.title}
@@ -968,74 +968,78 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                                 }
                                                 speak(text);
                                             }}
-                                            className="p-2 border border-orange-100 dark:border-orange-900/30 rounded-xl text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all flex items-center gap-2 text-[10px] font-bold"
+                                            className="w-full sm:w-auto px-5 py-3 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-xl text-orange-700 dark:text-orange-400 font-bold transition-all flex items-center justify-center gap-2 text-sm shadow-sm"
                                         >
-                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                                 <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
                                             </svg>
-                                            {language === 'en' ? 'Read' : 'শুনুন'}
+                                            {language === 'en' ? 'Listen to Section' : 'এই অংশটি শুনুন'}
                                         </button>
                                     </div>
-                                    <div className="space-y-10">
+                                    <div className="space-y-12">
                                         {section.points?.map((point, pIdx) => (
-                                            <div key={pIdx} className="relative pl-7 border-l-2 border-orange-200 dark:border-orange-900/30">
-                                                <div className="absolute left-[-7px] top-1 w-3.5 h-3.5 rounded-full bg-orange-500 border-2 border-white dark:border-slate-800 shadow-sm"></div>
-                                                <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-4 reading-content text-lg sm:text-xl">
+                                            <div key={pIdx} className="relative pl-0 sm:pl-7 border-l-0 sm:border-l-2 border-orange-200 dark:border-orange-900/30">
+                                                <div className="hidden sm:block absolute left-[-7px] top-1.5 w-3.5 h-3.5 rounded-full bg-orange-500 border-2 border-white dark:border-slate-800 shadow-sm"></div>
+
+                                                {/* Mobile: Top Border Separator */}
+                                                <div className="sm:hidden w-full h-px bg-slate-100 dark:bg-slate-700/50 mb-6"></div>
+
+                                                <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-5 reading-content text-xl sm:text-2xl leading-tight">
                                                     {point.item_name}
                                                 </h4>
                                                 {point.image_name && (
-                                                    <div className="mb-6 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+                                                    <div className="mb-8 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow bg-slate-50 dark:bg-slate-900/50">
                                                         <img
                                                             src={`/quizzes/${point.image_name}`}
                                                             alt={point.item_name}
-                                                            className="w-full h-auto object-cover max-h-80"
+                                                            className="w-full h-auto object-cover max-h-96"
                                                             loading="lazy"
                                                         />
                                                         {point.image_caption && (
-                                                            <div className="bg-slate-50 dark:bg-slate-900/50 px-4 sm:px-5 py-3 border-t border-slate-100 dark:border-slate-700">
-                                                                <p className="text-sm text-slate-600 dark:text-slate-400 italic text-center font-medium">
+                                                            <div className="bg-white dark:bg-slate-800/80 px-5 py-4 border-t border-slate-100 dark:border-slate-700">
+                                                                <p className="text-base text-slate-600 dark:text-slate-400 italic text-center font-medium leading-relaxed">
                                                                     {point.image_caption}
                                                                 </p>
                                                             </div>
                                                         )}
                                                     </div>
                                                 )}
-                                                <div className="space-y-5">
+                                                <div className="space-y-6">
                                                     {point.specifications && (
-                                                        <div className="bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/20 dark:to-orange-900/10 p-5 rounded-2xl border border-orange-100 dark:border-orange-900/30 hover:border-orange-200 dark:hover:border-orange-800 transition-colors">
-                                                            <div className="flex items-center gap-2 mb-3">
-                                                                <span className="text-orange-500 text-lg">📋</span>
-                                                                <p className="text-[11px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                                                        <div className="bg-white dark:bg-slate-800/50 p-6 rounded-2xl border-l-4 border-orange-500 shadow-sm">
+                                                            <div className="flex items-center gap-3 mb-3">
+                                                                <span className="text-orange-500 text-2xl">📋</span>
+                                                                <p className="text-sm font-bold text-slate-900 dark:text-slate-200 uppercase tracking-wider">
                                                                     {language === 'en' ? 'Details' : 'বিস্তারিত'}
                                                                 </p>
                                                             </div>
-                                                            <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed whitespace-pre-line">
+                                                            <p className="text-lg text-slate-700 dark:text-slate-300 reading-content leading-loose whitespace-pre-line">
                                                                 {renderTextWithImages(point.specifications)}
                                                             </p>
                                                         </div>
                                                     )}
                                                     {point.importance && (
-                                                        <div className="bg-gradient-to-br from-amber-50 to-amber-50/50 dark:from-amber-950/20 dark:to-amber-900/10 p-5 rounded-2xl border-2 border-amber-200 dark:border-amber-900/30 hover:border-amber-300 dark:hover:border-amber-800 transition-colors">
-                                                            <div className="flex items-center gap-2 mb-3">
-                                                                <span className="text-amber-500 text-lg">💡</span>
-                                                                <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-                                                                    {language === 'en' ? 'Key Point' : 'মূল বিষয়'}
+                                                        <div className="bg-amber-50 dark:bg-amber-900/10 p-6 rounded-2xl border border-amber-100 dark:border-amber-800/30">
+                                                            <div className="flex items-center gap-3 mb-3">
+                                                                <span className="text-amber-500 text-2xl">💡</span>
+                                                                <p className="text-sm font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider">
+                                                                    {language === 'en' ? 'Why it matters' : 'কেন এটি গুরুত্বপূর্ণ?'}
                                                                 </p>
                                                             </div>
-                                                            <p className="text-base text-slate-800 dark:text-slate-200 reading-content leading-relaxed font-semibold whitespace-pre-line">
+                                                            <p className="text-lg font-medium text-slate-800 dark:text-slate-200 reading-content leading-loose whitespace-pre-line">
                                                                 {renderTextWithImages(point.importance)}
                                                             </p>
                                                         </div>
                                                     )}
                                                     {point.daily_check && (
-                                                        <div className="bg-gradient-to-br from-emerald-50 to-emerald-50/50 dark:from-emerald-950/20 dark:to-emerald-900/10 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/30 hover:border-emerald-200 dark:hover:border-emerald-800 transition-colors">
-                                                            <div className="flex items-center gap-2 mb-3">
-                                                                <span className="text-emerald-500 text-lg">✓</span>
-                                                                <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                                                                    {language === 'en' ? 'Quick Tip' : 'পরামর্শ'}
+                                                        <div className="bg-emerald-50 dark:bg-emerald-900/10 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-800/30">
+                                                            <div className="flex items-center gap-3 mb-3">
+                                                                <span className="text-emerald-500 text-2xl">✓</span>
+                                                                <p className="text-sm font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider">
+                                                                    {language === 'en' ? 'Action Item' : 'করণীয় কাজ'}
                                                                 </p>
                                                             </div>
-                                                            <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed whitespace-pre-line">
+                                                            <p className="text-lg text-slate-800 dark:text-slate-200 reading-content leading-loose whitespace-pre-line">
                                                                 {renderTextWithImages(point.daily_check)}
                                                             </p>
                                                         </div>
@@ -1050,33 +1054,37 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
 
                         {/* Pro Tips */}
                         {trainingContent.pro_tip && (
-                            <div className="mt-12 bg-gradient-to-br from-emerald-500 via-emerald-500 to-teal-600 rounded-3xl p-8 sm:p-10 text-white shadow-lg shadow-emerald-500/25">
-                                <div className="flex items-center gap-4 mb-8">
-                                    <div className="w-12 h-12 rounded-xl bg-white/25 backdrop-blur-sm flex items-center justify-center text-2xl">
+                            <div className="mt-16 bg-emerald-50 dark:bg-emerald-900/10 rounded-3xl p-8 sm:p-10 border-2 border-emerald-500 shadow-xl shadow-emerald-500/10">
+                                <div className="flex items-center gap-5 mb-10">
+                                    <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-800 flex items-center justify-center text-3xl shadow-sm text-emerald-600 dark:text-emerald-400">
                                         💡
                                     </div>
-                                    <h3 className="text-2xl sm:text-3xl font-bold reading-content">
-                                        {trainingContent.pro_tip.title}
-                                    </h3>
+                                    <div>
+                                        <h3 className="text-2xl sm:text-3xl font-bold text-emerald-900 dark:text-emerald-100 reading-content leading-tight">
+                                            {trainingContent.pro_tip.title}
+                                        </h3>
+                                        <p className="text-emerald-700 dark:text-emerald-400 text-sm mt-1 font-bold uppercase tracking-wider">{language === 'en' ? 'Expert Advice' : 'বিশেষজ্ঞের পরামর্শ'}</p>
+                                    </div>
+
                                     <button
                                         onClick={() => {
                                             let text = trainingContent.pro_tip.title + ". ";
                                             trainingContent.pro_tip.content?.forEach(tip => text += tip + ". ");
                                             speak(text);
                                         }}
-                                        className="ml-auto p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all"
+                                        className="ml-auto p-3 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-800 dark:hover:bg-emerald-700 rounded-xl transition-all text-emerald-700 dark:text-emerald-300"
                                         title={language === 'en' ? 'Read Pro Tips' : 'প্রো টিপস শুনুন'}
                                     >
-                                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
                                         </svg>
                                     </button>
                                 </div>
-                                <ul className="space-y-5">
+                                <ul className="space-y-6">
                                     {trainingContent.pro_tip.content?.map((tip, idx) => (
-                                        <li key={idx} className="flex items-start gap-4 text-emerald-50 reading-content leading-relaxed text-base">
-                                            <span className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">✓</span>
-                                            <span className="flex-1">{renderTextWithImages(tip)}</span>
+                                        <li key={idx} className="flex items-start gap-5 text-slate-800 dark:text-emerald-50 reading-content leading-loose text-lg sm:text-xl">
+                                            <span className="w-8 h-8 rounded-full bg-emerald-200 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1 shadow-sm">✓</span>
+                                            <span className="flex-1 font-medium">{renderTextWithImages(tip)}</span>
                                         </li>
                                     ))}
                                 </ul>
@@ -1085,31 +1093,40 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
 
                         {/* Myth Buster */}
                         {trainingContent.myth_buster && (
-                            <div className="mt-12 bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-10 border-2 border-red-100 dark:border-red-900/30 shadow-sm hover:shadow-md transition-shadow">
-                                <div className="flex items-center gap-3 mb-8">
-                                    <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-2xl">
+                            <div className="mt-16 bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-10 border-2 border-red-100 dark:border-red-900/30 shadow-lg">
+                                <div className="flex items-center gap-5 mb-10">
+                                    <div className="w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-3xl shadow-sm">
                                         ⚠️
                                     </div>
-                                    <h3 className="text-2xl sm:text-3xl font-bold text-red-700 dark:text-red-400 reading-content">
-                                        {trainingContent.myth_buster.title}
-                                    </h3>
+                                    <div>
+                                        <h3 className="text-2xl sm:text-3xl font-bold text-red-800 dark:text-red-400 reading-content">
+                                            {trainingContent.myth_buster.title}
+                                        </h3>
+                                        <p className="text-red-600/80 dark:text-red-400/80 text-sm mt-1 font-bold uppercase tracking-wider">{language === 'en' ? 'Common Misconceptions' : 'ভুল ধারণা বনাম সঠিক তথ্য'}</p>
+                                    </div>
                                 </div>
-                                <div className="grid grid-cols-1 gap-5">
+                                <div className="grid grid-cols-1 gap-6">
                                     {trainingContent.myth_buster.myths?.map((item, idx) => (
-                                        <div key={idx} className="bg-gradient-to-br from-slate-50 to-slate-50/50 dark:from-slate-900/50 dark:to-slate-900/30 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-800 transition-colors">
-                                            <div className="mb-5">
-                                                <p className="text-[11px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-2">
-                                                    {language === 'en' ? 'Myth' : 'মিথ'}
-                                                </p>
-                                                <p className="text-base text-slate-700 dark:text-slate-300 italic reading-content leading-relaxed font-medium whitespace-pre-line">
+                                        <div key={idx} className="bg-slate-50 dark:bg-slate-900/40 rounded-3xl p-0 overflow-hidden border border-slate-200 dark:border-slate-700">
+                                            <div className="p-6 bg-red-50/50 dark:bg-red-900/10 border-b border-red-100 dark:border-red-900/20">
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <span className="text-red-500 text-xl">❌</span>
+                                                    <p className="text-sm font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">
+                                                        {language === 'en' ? 'Myth' : 'ভুল ধারণা'}
+                                                    </p>
+                                                </div>
+                                                <p className="text-lg sm:text-xl text-slate-800 dark:text-slate-200 italic reading-content leading-relaxed font-medium">
                                                     "{renderTextWithImages(item.myth)}"
                                                 </p>
                                             </div>
-                                            <div className="pt-5 border-t border-slate-200 dark:border-slate-700">
-                                                <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-2">
-                                                    {language === 'en' ? 'Reality' : 'বাস্তবতা'}
-                                                </p>
-                                                <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed whitespace-pre-line">
+                                            <div className="p-6 bg-emerald-50/50 dark:bg-emerald-900/10">
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <span className="text-emerald-500 text-xl">✅</span>
+                                                    <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+                                                        {language === 'en' ? 'Reality' : 'সঠিক তথ্য'}
+                                                    </p>
+                                                </div>
+                                                <p className="text-lg sm:text-xl text-slate-800 dark:text-slate-200 reading-content leading-relaxed font-medium">
                                                     {renderTextWithImages(item.reality || item.fact)}
                                                 </p>
                                             </div>
