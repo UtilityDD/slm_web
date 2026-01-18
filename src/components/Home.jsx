@@ -26,7 +26,8 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
     const [role, setRole] = useState(userProfile?.role || 'Lineman');
     const [score, setScore] = useState(userProfile?.points || 0);
 
-    const readingPoints = userProfile?.reading_points || 0;
+    const [readingPoints, setReadingPoints] = useState(userProfile?.reading_points || 0);
+    const [avatarUrl, setAvatarUrl] = useState(userProfile?.avatar_url || '');
     const [trainingLevel, setTrainingLevel] = useState(userProfile?.training_level || 0);
     const [completedLessonsCount, setCompletedLessonsCount] = useState(userProfile?.completed_lessons?.length || 0);
     const [totalPenalties, setTotalPenalties] = useState(userProfile?.total_penalties || 0);
@@ -58,8 +59,9 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
 
         if (userProfile) {
             setScore(userProfile.points || 0);
+            setReadingPoints(userProfile.reading_points || 0);
             setFullName(userProfile.full_name);
-
+            setAvatarUrl(userProfile.avatar_url);
             setSlmId(userProfile.slm_id);
             setRole(userProfile.role || 'Lineman');
             setTrainingLevel(userProfile.training_level || 0);
@@ -133,6 +135,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                 setScore(data.points || 0);
                 setReadingPoints(data.reading_points || 0);
                 setFullName(data.full_name);
+                setAvatarUrl(data.avatar_url);
                 setSlmId(data.slm_id);
                 setRole(data.role || 'Lineman');
                 setTrainingLevel(data.training_level || 0);
@@ -219,8 +222,8 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                             </div>
                             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white/30 p-1 shrink-0 bg-white/10 backdrop-blur-sm overflow-hidden shadow-2xl">
                                 <div className="w-full h-full rounded-full bg-orange-100 flex items-center justify-center text-4xl overflow-hidden">
-                                    {userProfile?.avatar_url ? (
-                                        <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                                    {avatarUrl ? (
+                                        <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full text-orange-400 flex items-center justify-center p-2">
                                             <UserIcon className="w-full h-full opacity-80" />
