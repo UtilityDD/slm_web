@@ -9,6 +9,7 @@ import { requestManager } from '../../utils/requestManager';
 import ChapterQuizModal from '../ChapterQuizModal';
 import CertificateModal from '../CertificateModal';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
+import LessonCelebration from './LessonCelebration';
 
 const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, onClick }) => {
     const isFAQ = chapter.number === 10;
@@ -1314,25 +1315,14 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
             )
             }
 
-            {/* Reward Toast - Highest Z-Index */}
+            {/* Reward Celebration - Portalized Modal */}
             {
-                recentReward && createPortal(
-                    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[300] w-[90%] max-w-sm animate-slide-down">
-                        <div className="p-4 bg-white dark:bg-slate-800 border-2 border-yellow-400 dark:border-yellow-500/50 rounded-2xl flex items-center gap-4 shadow-2xl shadow-yellow-500/20">
-                            <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center text-2xl animate-bounce">
-                                🏆
-                            </div>
-                            <div className="flex-1 text-left">
-                                <p className="text-sm font-black text-slate-900 dark:text-white leading-tight">
-                                    {language === 'en' ? `+${recentReward} Competition Points!` : `+${recentReward} কম্পিটিশন পয়েন্ট!`}
-                                </p>
-                                <p className="text-[10px] font-bold text-yellow-600 dark:text-yellow-500 uppercase tracking-wider">
-                                    {language === 'en' ? 'Lesson Completed Bonus' : 'পাঠ সম্পন্ন বোনাস'}
-                                </p>
-                            </div>
-                        </div>
-                    </div>,
-                    document.body
+                recentReward && (
+                    <LessonCelebration
+                        points={recentReward}
+                        language={language}
+                        onClose={() => setRecentReward(null)}
+                    />
                 )
             }
 
