@@ -136,8 +136,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
         // Linemen can only see their own profile
         query = query.eq('id', user.id);
       } else if (userProfile?.role === 'safety mitra') {
-        // Safety Mitras can see their team
-        query = query.eq('supervisor_id', user.id);
+        // Safety Mitras can see their team AND themselves
+        query = query.or(`id.eq.${user.id},supervisor_id.eq.${user.id}`);
       }
       // Admins see all users (no filter)
 
@@ -193,8 +193,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     // Authorization check
     const canEdit =
       userProfile?.role === 'admin' ||
-      (userProfile?.role === 'safety mitra' && targetUser.supervisor_id === user.id) ||
-      (userProfile?.role === 'lineman' && targetUser.id === user.id);
+      targetUser.id === user.id ||
+      (userProfile?.role === 'safety mitra' && targetUser.supervisor_id === user.id);
 
     if (!canEdit) {
       alert('You do not have permission to edit this user\'s PPE.');
@@ -306,8 +306,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     // Authorization check
     const canEdit =
       userProfile?.role === 'admin' ||
-      (userProfile?.role === 'safety mitra' && targetUser.supervisor_id === user.id) ||
-      (userProfile?.role === 'lineman' && targetUser.id === user.id);
+      targetUser.id === user.id ||
+      (userProfile?.role === 'safety mitra' && targetUser.supervisor_id === user.id);
 
     if (!canEdit) {
       alert('You do not have permission to edit this user\'s Tools.');
@@ -516,8 +516,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     // Authorization check
     const canEdit =
       userProfile?.role === 'admin' ||
-      (userProfile?.role === 'safety mitra' && targetUser.supervisor_id === user.id && targetUser.role !== 'admin') ||
-      (userProfile?.role === 'lineman' && targetUser.id === user.id);
+      targetUser.id === user.id ||
+      (userProfile?.role === 'safety mitra' && targetUser.supervisor_id === user.id && targetUser.role !== 'admin');
 
     if (!canEdit) {
       alert('You do not have permission to edit this user\'s profile.');
