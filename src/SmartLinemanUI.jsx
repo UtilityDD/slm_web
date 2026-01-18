@@ -1225,7 +1225,7 @@ export default function SmartLinemanUI() {
 
         {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden relative h-full">
-          <div className="relative z-10 w-full">
+          <div className="relative z-10 w-full view-transition" key={currentView}>
             {renderContent()}
           </div>
         </div>

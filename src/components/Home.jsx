@@ -20,6 +20,38 @@ import {
 import ShareModal from './ShareModal';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 
+const CountUp = ({ end, duration = 1000, start = true }) => {
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+        if (!start) return;
+
+        let startTime;
+        let animationFrame;
+
+        const animate = (timestamp) => {
+            if (!startTime) startTime = timestamp;
+            const progress = timestamp - startTime;
+            const percentage = Math.min(progress / duration, 1);
+
+            // Easing function: easeOutExpo
+            const easeOutExpo = 1 - Math.pow(2, -10 * percentage);
+            setCount(Math.floor(easeOutExpo * end));
+
+            if (progress < duration) {
+                animationFrame = requestAnimationFrame(animate);
+            } else {
+                setCount(end);
+            }
+        };
+
+        animationFrame = requestAnimationFrame(animate);
+        return () => cancelAnimationFrame(animationFrame);
+    }, [end, duration, start]);
+
+    return <span>{count.toLocaleString()}</span>;
+};
+
 export default function Home({ setCurrentView, language, user, userProfile, t, refreshProfile }) {
     const [fullName, setFullName] = useState(userProfile?.full_name || '');
     const [slmId, setSlmId] = useState(userProfile?.slm_id || '');
@@ -182,7 +214,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
     };
 
     return (
-        <div className="min-h-screen bg-mimic-pattern pb-12">
+        <div className="min-h-screen bg-mimic-pattern pb-12 animate-fadeIn">
             {loading ? (
                 <div className="p-4"><HomeSkeleton /></div>
             ) : (
@@ -212,11 +244,13 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                 </p>
                                 {/* Line 4: Total Score + Reading Rewards */}
                                 <div className="flex items-center gap-2">
-                                    <div className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-[10px] font-bold uppercase tracking-wider border border-white/20">
-                                        💎 {score.toLocaleString()}
+                                    <div className="px-3 py-1 bg-white/10 backdrop-blur-xl rounded-full text-white text-[10px] font-bold uppercase tracking-wider border border-white/30 shadow-sm flex items-center gap-1.5">
+                                        <span className="opacity-80">💎</span>
+                                        {loading ? '...' : <CountUp end={score} start={!showTipModal && !!dailyTip} />}
                                     </div>
-                                    <div className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-[10px] font-bold uppercase tracking-wider border border-white/20">
-                                        📖 {readingPoints.toLocaleString()}
+                                    <div className="px-3 py-1 bg-white/10 backdrop-blur-xl rounded-full text-white text-[10px] font-bold uppercase tracking-wider border border-white/30 shadow-sm flex items-center gap-1.5">
+                                        <span className="opacity-80">📖</span>
+                                        {loading ? '...' : <CountUp end={readingPoints} start={!showTipModal && !!dailyTip} />}
                                     </div>
                                 </div>
                             </div>
@@ -239,7 +273,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                     {/* Awareness Banner - High Impact */}
                     <div className="max-w-4xl mx-auto px-4 mt-6">
                         <div
-                            className="relative overflow-hidden group cursor-pointer rounded-3xl bg-slate-950 shadow-2xl border border-white/5"
+                            className="relative overflow-hidden group cursor-pointer rounded-3xl bg-slate-950 shadow-2xl border border-white/5 active:scale-[0.98] transition-all"
                             onClick={() => setCurrentView('accident-stories')}
                         >
                             {/* The main emotional photo on the left with fade */}
@@ -248,6 +282,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                     src={emotionalImages[emotionalImageIndex]}
                                     alt="Emotional scene"
                                     className="h-full w-full object-cover transition-all duration-1000 ease-in-out"
+                                    key={emotionalImageIndex}
                                     style={{
                                         maskImage: 'linear-gradient(to right, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 90%)',
                                         WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 90%)'
@@ -259,18 +294,27 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-950/40 to-slate-950/95"></div>
                             <div className="absolute inset-0 border-2 border-red-500/20 rounded-3xl animate-pulse pointer-events-none"></div>
 
+                            {/* Progress bar at bottom */}
+                            <div className="absolute bottom-0 left-0 h-1 bg-red-600/30 w-full">
+                                <div
+                                    className="h-full bg-red-600 transition-all duration-[4000ms] ease-linear"
+                                    style={{ width: '100%' }}
+                                    key={emotionalImageIndex}
+                                ></div>
+                            </div>
+
                             {/* Content container - shifted right to avoid covering the face too much */}
-                            <div className="relative p-6 sm:p-8 min-h-[160px] flex flex-col justify-center">
-                                <div className="max-w-[65%] ml-auto text-right">
-                                    <h3 className="text-white text-xl sm:text-2xl font-black leading-tight mb-2 drop-shadow-xl tracking-tight uppercase italic">
+                            <div className="relative p-7 sm:p-10 min-h-[180px] flex flex-col justify-center">
+                                <div className="max-w-[70%] ml-auto text-right">
+                                    <h3 className="text-white text-xl sm:text-3xl font-black leading-tight mb-2 drop-shadow-xl tracking-tight uppercase italic">
                                         {language === 'bn' ? 'করুণ কাহিনী!' : 'A Tragic Story'}
                                     </h3>
-                                    <p className="text-red-100 text-sm sm:text-base font-medium leading-relaxed opacity-95 drop-shadow-md italic mb-4">
+                                    <p className="text-red-100 text-sm sm:text-base font-bold leading-relaxed opacity-95 drop-shadow-md italic mb-5">
                                         {language === 'bn'
                                             ? 'উদাসীনতা আর অবহেলার নির্মম বলি হয়ে অকালে হারিয়ে যাচ্ছে কত প্রাণ!'
                                             : 'Countless lives are lost prematurely as victims of indifference and negligence!'}
                                     </p>
-                                    <div className="inline-flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest bg-red-600/80 hover:bg-red-600 px-5 py-2.5 rounded-full backdrop-blur-md transition-all shadow-lg active:scale-95">
+                                    <div className="inline-flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest bg-red-600 hover:bg-red-700 px-6 py-3 rounded-full shadow-xl active:scale-95 transition-all">
                                         {language === 'bn' ? 'বিস্তারিত পড়ুন' : 'Read Full Story'}
                                         <span className="group-hover:translate-x-1 transition-transform">→</span>
                                     </div>

@@ -119,54 +119,67 @@ export default function Community({ language = 'en', setCurrentView }) {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 md:mb-6 animate-fade-in transition-all duration-500">
             {/* Minimal Header */}
-            <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="mb-6 flex flex-row items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                        {t.title}
+                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
+                        <span className="text-orange-600">🤝</span> {t.title}
                     </h1>
                 </div>
 
-                <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-orange-50 text-orange-700 border border-orange-100 font-bold text-sm`}>
-                    <span className="text-lg">🤝</span>
-                    {language === 'en' ? 'Community Mode' : 'কমিউনিটি মোড'}
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-600/10 text-orange-600 dark:text-orange-400 border border-orange-200/50 dark:border-orange-900/30 font-bold text-[10px] uppercase tracking-wider">
+                    <span className="animate-pulse">●</span> {language === 'en' ? 'Live Community' : 'লাইভ কমিউনিটি'}
                 </div>
             </div>
 
-            {/* Subdued Banner */}
-            <div className="mb-10">
-                <div className="bg-slate-100 dark:bg-slate-800/50 rounded-2xl p-5 sm:p-6 border border-slate-200/50 dark:border-slate-700/50 flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center text-2xl shadow-sm">
-                        💡
+            {/* Premium Banner */}
+            <div className="mb-10 animate-slide-up">
+                <div className="relative overflow-hidden bg-gradient-to-br from-orange-600 to-orange-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-orange-500/20">
+                    <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6">
+                        <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-4xl backdrop-blur-md shadow-inner animate-float">
+                            💡
+                        </div>
+                        <div className="text-center sm:text-left">
+                            <h2 className="text-xl sm:text-2xl font-black mb-1">{t.banner.title}</h2>
+                            <p className="text-orange-50 text-xs sm:text-sm font-medium opacity-90 leading-relaxed max-w-sm">
+                                {t.banner.subtitle}
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">{t.banner.title}</h2>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">{t.banner.subtitle}</p>
-                    </div>
+                    {/* Decorative Elements */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-2xl -ml-12 -mb-12"></div>
                 </div>
             </div>
 
             {/* List of Channels */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {cards.map((card) => (
+                {cards.map((card, idx) => (
                     <div
                         key={card.id}
                         onClick={() => {
                             setShowToast(true);
                             setTimeout(() => setShowToast(false), 2000);
                         }}
-                        className="group bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-between gap-4"
+                        style={{ animationDelay: `${idx * 0.1}s` }}
+                        className="group bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-100 dark:border-slate-700/50 shadow-sm hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 cursor-pointer flex items-center justify-between gap-4"
                     >
                         <div className="flex items-center gap-4">
-                            <div className={`w-12 h-12 rounded-xl ${card.bg} flex items-center justify-center group-hover:scale-105 transition-transform`}>
+                            <div className={`w-14 h-14 rounded-2xl ${card.bg} flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner`}>
                                 {card.icon}
                             </div>
                             <div>
-                                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">{card.data.title}</h3>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">{card.data.desc}</p>
+                                <h3 className="text-base font-black text-slate-800 dark:text-slate-100 group-hover:text-orange-600 transition-colors">
+                                    {card.data.title}
+                                </h3>
+                                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-tight">
+                                    {card.data.desc}
+                                </p>
                             </div>
                         </div>
-                        <div className="px-4 py-1.5 bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold group-hover:bg-orange-600 group-hover:text-white transition-colors">
-                            {card.data.action}
+                        <div className="h-8 w-8 rounded-full bg-slate-50 dark:bg-slate-700 flex items-center justify-center text-slate-400 group-hover:bg-orange-600 group-hover:text-white transition-all transform group-hover:translate-x-1">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
+                            </svg>
                         </div>
                     </div>
                 ))}
@@ -174,16 +187,19 @@ export default function Community({ language = 'en', setCurrentView }) {
 
             {/* Toast */}
             {showToast && (
-                <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-6 py-3 rounded-full shadow-xl z-50 animate-toast-in flex items-center gap-2">
-                    <span className="text-sm font-bold">{t.comingSoon}</span>
+                <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur-md text-white px-8 py-4 rounded-2xl shadow-2xl z-50 animate-toast-in flex items-center gap-3 border border-white/20">
+                    <span className="text-xl">🚀</span>
+                    <span className="text-sm font-black uppercase tracking-widest">{t.comingSoon}</span>
                 </div>
             )}
 
             {/* Minimal Footer */}
-            <div className="mt-12 text-center">
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest opacity-60">
-                    {t.footer}
-                </p>
+            <div className="mt-16 text-center">
+                <div className="inline-block px-4 py-1 rounded-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                    <p className="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-[0.2em]">
+                        {t.footer}
+                    </p>
+                </div>
             </div>
         </div>
     );

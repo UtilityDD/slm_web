@@ -6,6 +6,13 @@ import { cacheHelper } from '../utils/cacheHelper';
 import { storageUtils } from '../utils/storageUtils';
 import { requestManager } from '../utils/requestManager';
 
+const LiveIndicator = () => (
+    <div className="live-pulse" title="Live Now">
+        <span className="live-pulse-ring"></span>
+        <span className="live-pulse-dot"></span>
+    </div>
+);
+
 export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile }) {
     const [loading, setLoading] = useState(true);
     const [activeQuiz, setActiveQuiz] = useState(null);
@@ -1321,33 +1328,101 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                         </div>
                     ) : (
                         <>
+                            {/* Podium-Style Top 3 */}
+                            {leaderboard.length >= 3 && (
+                                <div className="px-4 py-6 sm:py-8">
+                                    {/* Winners podium */}
+                                    <div className="flex items-end justify-center gap-2 sm:gap-4 mb-6 max-w-md mx-auto">
+                                        {/* 2nd Place (Left) */}
+                                        <div className="flex-1 flex flex-col items-center animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                                            <div className="relative mb-2">
+                                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 dark:from-slate-600 dark:to-slate-700 flex items-center justify-center font-bold text-white border-4 border-white dark:border-slate-800 shadow-lg overflow-hidden">
+                                                    {leaderboard[1].avatar_url ? (
+                                                        <img src={leaderboard[1].avatar_url} alt="2nd" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        leaderboard[1].full_name?.[0] || 'U'
+                                                    )}
+                                                </div>
+                                                <div className="absolute -top-2 -right-2 w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-slate-400 to-slate-500 dark:from-slate-500 dark:to-slate-600 rounded-full flex items-center justify-center text-white font-black text-xs sm:text-sm shadow-lg border-2 border-white dark:border-slate-800">
+                                                    2
+                                                </div>
+                                            </div>
+                                            <div className="bg-gradient-to-b from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 rounded-t-xl px-3 py-4 sm:py-6 w-full flex flex-col items-center shadow-xl border-t-4 border-slate-400 dark:border-slate-500">
+                                                <p className="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-200 truncate w-full text-center mb-1">{leaderboard[1].full_name || 'Anonymous'}</p>
+                                                <p className="text-[10px] sm:text-xs font-bold text-orange-600 dark:text-orange-400">🏆 {leaderboard[1].points.toLocaleString()}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* 1st Place (Center - Tallest) */}
+                                        <div className="flex-1 flex flex-col items-center animate-slide-up" style={{ animationDelay: '0s' }}>
+                                            <div className="relative mb-2">
+                                                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-500 flex items-center justify-center font-bold text-white border-4 border-white dark:border-slate-800 shadow-2xl overflow-hidden">
+                                                    {leaderboard[0].avatar_url ? (
+                                                        <img src={leaderboard[0].avatar_url} alt="1st" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        leaderboard[0].full_name?.[0] || 'U'
+                                                    )}
+                                                </div>
+                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl sm:text-3xl animate-bounce-subtle">
+                                                    👑
+                                                </div>
+                                                <div className="absolute -bottom-2  -right-2 w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-white font-black text-sm sm:text-base shadow-xl border-2 border-white dark:border-slate-800">
+                                                    1
+                                                </div>
+                                            </div>
+                                            <div className="bg-gradient-to-b from-yellow-100 to-yellow-200 dark:from-yellow-900/40 dark:to-yellow-800/40 rounded-t-xl px-3 py-6 sm:py-10 w-full flex flex-col items-center shadow-2xl border-t-4 border-yellow-500">
+                                                <p className="text-sm sm:text-base font-black text-slate-800 dark:text-yellow-200 truncate w-full text-center mb-1">{leaderboard[0].full_name || 'Anonymous'}</p>
+                                                <p className="text-xs sm:text-sm font-bold text-orange-600 dark:text-orange-400">🏆 {leaderboard[0].points.toLocaleString()}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* 3rd Place (Right) */}
+                                        <div className="flex-1 flex flex-col items-center animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                                            <div className="relative mb-2">
+                                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-amber-600 to-amber-700 dark:from-amber-700 dark:to-amber-800 flex items-center justify-center font-bold text-white border-4 border-white dark:border-slate-800 shadow-lg overflow-hidden">
+                                                    {leaderboard[2].avatar_url ? (
+                                                        <img src={leaderboard[2].avatar_url} alt="3rd" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        leaderboard[2].full_name?.[0] || 'U'
+                                                    )}
+                                                </div>
+                                                <div className="absolute -top-2 -right-2 w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-amber-600 to-amber-700 dark:from-amber-700 dark:to-amber-800 rounded-full flex items-center justify-center text-white font-black text-xs sm:text-sm shadow-lg border-2 border-white dark:border-slate-800">
+                                                    3
+                                                </div>
+                                            </div>
+                                            <div className="bg-gradient-to-b from-amber-200 to-amber-300 dark:from-amber-900/40 dark:to-amber-800/40 rounded-t-xl px-3 py-3 sm:py-5 w-full flex flex-col items-center shadow-xl border-t-4 border-amber-600 dark:border-amber-700">
+                                                <p className="text-xs sm:text-sm font-black text-amber-900 dark:text-amber-200 truncate w-full text-center mb-1">{leaderboard[2].full_name || 'Anonymous'}</p>
+                                                <p className="text-[10px] sm:text-xs font-bold text-orange-600 dark:text-orange-400">🏆 {leaderboard[2].points.toLocaleString()}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Remaining positions (4th onwards) */}
                             {(() => {
-                                // Determine which entries to show
-                                const displayEntries = showCompactView
+                                const entries = showCompactView
                                     ? (() => {
-                                        const top3 = leaderboard.slice(0, 3);
                                         const userIndex = leaderboard.findIndex(item => item.user_id === user?.id);
-
-                                        // If user is in top 3 or not found, just show top 3
-                                        if (userIndex === -1 || userIndex < 3) {
-                                            return top3;
+                                        // If user is rank 4 or lower, show them extra
+                                        if (userIndex >= 3) {
+                                            const userEntry = { ...leaderboard[userIndex], actualIndex: userIndex, isRemoteUser: true };
+                                            // Show some entries around or just the user
+                                            return [userEntry];
                                         }
-
-                                        // Otherwise, show top 3 + user's position
-                                        const userEntry = { ...leaderboard[userIndex], actualIndex: userIndex };
-                                        return [...top3, userEntry];
+                                        return []; // No extra entries if user in top 3 or compact view doesn't need them
                                     })()
-                                    : leaderboard;
+                                    : leaderboard.slice(3);
 
-                                return displayEntries.map((item, displayIndex) => {
+                                return entries.map((item, index) => {
+                                    const actualIndex = item.actualIndex !== undefined ? item.actualIndex : index + 3;
                                     const isUserRow = item.user_id === user?.id;
-                                    const actualIndex = item.actualIndex !== undefined ? item.actualIndex : displayIndex;
-                                    const showDivider = showCompactView && displayIndex === 3;
+                                    const showDivider = showCompactView && actualIndex >= 3;
 
                                     return (
-                                        <React.Fragment key={item.user_id || displayIndex}>
+                                        <React.Fragment key={item.user_id || actualIndex}>
                                             {showDivider && (
-                                                <div className="px-4 py-2 bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+                                                <div className="px-4 py-2 bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 border-y border-slate-200 dark:border-slate-700">
                                                     <div className="flex items-center gap-2 justify-center">
                                                         <div className="h-px flex-1 bg-slate-300 dark:bg-slate-600"></div>
                                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Your Position</span>
@@ -1355,44 +1430,62 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     </div>
                                                 </div>
                                             )}
-                                            <div className={`flex items-center p-2 sm:p-3 transition-colors ${isUserRow
-                                                ? 'bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-500'
-                                                : 'hover:bg-slate-50 dark:hover:bg-slate-900/50'
-                                                }`}>
-                                                <div className={`font-bold w-5 text-xs ${actualIndex < 3 ? 'text-yellow-500' : 'text-slate-300'
-                                                    }`}>#{actualIndex + 1}</div>
-                                                <div className="flex-shrink-0 mr-2">
-                                                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-600 dark:text-slate-400 overflow-hidden">
-                                                        {item.avatar_url ? <img src={item.avatar_url} alt="" className="w-full h-full object-cover" /> : (item.full_name?.[0] || 'U')}
+                                            <div
+                                                className={`flex items-center p-3 sm:p-4 transition-all duration-300 relative overflow-hidden border-b border-slate-100 dark:border-slate-700 last:border-b-0 ${isUserRow
+                                                    ? 'bg-orange-50/50 dark:bg-orange-900/10'
+                                                    : 'hover:bg-slate-50 dark:hover:bg-slate-900/50'
+                                                    }`}
+                                            >
+                                                {/* User Row Shimmer Effect */}
+                                                {isUserRow && (
+                                                    <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
+                                                        <div className="shimmer h-full w-full"></div>
+                                                    </div>
+                                                )}
+
+                                                <div className="flex flex-col items-center justify-center w-7 sm:w-8 shrink-0">
+                                                    <span className="text-sm sm:text-base font-black text-slate-400 dark:text-slate-500">
+                                                        #{actualIndex + 1}
+                                                    </span>
+                                                </div>
+
+                                                <div className="relative shrink-0 mx-2">
+                                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-600 overflow-hidden shadow-sm">
+                                                        {item.avatar_url ? (
+                                                            <img src={item.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            item.full_name?.[0] || 'U'
+                                                        )}
+                                                    </div>
+                                                    {/* Live / Activity Indicator */}
+                                                    <div className="absolute -bottom-1 -right-1 z-10">
+                                                        {isUserRow ? (
+                                                            <LiveIndicator />
+                                                        ) : (
+                                                            item.updated_at && (new Date() - new Date(item.updated_at) < 15 * 60 * 1000) && (
+                                                                <div className="w-2 h-2 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-800" title="Recently Active"></div>
+                                                            )
+                                                        )}
                                                     </div>
                                                 </div>
+
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
-                                                            {item.full_name || 'Anonymous'} {isUserRow && '(You)'}
-                                                        </p>
-                                                        {/* Badge - Enhanced for mobile visibility */}
-                                                        {item.training_level > 0 && (
-                                                            <div className={`px-2 py-0.5 rounded-lg text-[9px] sm:text-[10px] font-bold border uppercase tracking-tight shrink-0 shadow-sm ${getBadgeByLevel(item.training_level).color}`}>
+                                                    <div className="flex items-center gap-2 mb-0.5">
+                                                        <h4 className={`font-bold truncate text-sm sm:text-base ${isUserRow ? 'text-orange-700 dark:text-orange-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                                                            {item.full_name || 'Anonymous'} {isUserRow && language === 'en' && '(You)'}
+                                                        </h4>
+                                                        {item.training_level > 0 && getBadgeByLevel(item.training_level) && (
+                                                            <span className={`px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase tracking-tighter border shadow-sm shrink-0 ${getBadgeByLevel(item.training_level).color}`}>
                                                                 {language === 'en' ? getBadgeByLevel(item.training_level).en : getBadgeByLevel(item.training_level).bn}
-                                                            </div>
-                                                        )}
-                                                        {(item.completed_lessons?.length || 0) > 0 && (
-                                                            <div className="px-1.5 py-0.5 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-800/50 text-[9px] font-bold shadow-sm">
-                                                                📖 {(item.completed_lessons.length * 20).toLocaleString()}
-                                                            </div>
+                                                            </span>
                                                         )}
                                                     </div>
-                                                    <p className="text-[10px] sm:text-xs text-slate-500 truncate mt-0.5">
-                                                        {item.district || 'West Bengal'}
-                                                    </p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className={`text-xs sm:text-sm font-black ${isUserRow ? 'text-orange-600 dark:text-orange-400' : 'text-orange-600 dark:text-orange-400'
-                                                        }`}>
-                                                        {item.points}
+                                                    <div className="flex items-center gap-3 text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
+                                                        <span className="flex items-center gap-1">🏆 {item.points.toLocaleString()} {t.points}</span>
+                                                        {(item.completed_lessons?.length > 0) && (
+                                                            <span className="flex items-center gap-1 opacity-75">📚 {item.completed_lessons.length}</span>
+                                                        )}
                                                     </div>
-                                                    <div className="text-[9px] text-slate-400 uppercase tracking-tighter">{t.points}</div>
                                                 </div>
                                             </div>
                                         </React.Fragment>

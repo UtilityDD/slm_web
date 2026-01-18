@@ -567,3 +567,52 @@ html {
     transform: none;
   }
 }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 dark:bg-slate-700 rounded-full transition-colors;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-orange-400 dark:bg-orange-600;
+}
+
+/* Page Transitions */
+.view-transition {
+  animation: view-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes view-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Live Indicator */
+.live-pulse {
+  @apply relative flex h-2.5 w-2.5;
+}
+
+.live-pulse-ring {
+  @apply animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75;
+}
+
+.live-pulse-dot {
+  @apply relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+}
