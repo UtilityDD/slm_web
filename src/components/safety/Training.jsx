@@ -734,10 +734,6 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                 
                                 <div className="relative z-10 flex items-center justify-between">
                                     <div className="flex-1">
-                                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-bold mb-4 border border-white/30">
-                                            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                                            {language === 'en' ? '90 Days Training Program' : '৯০ দিনের প্রশিক্ষণ কর্মসূচি'}
-                                        </div>
                                         <h1 className="text-5xl font-black mb-4 tracking-tight">
                                             {language === 'en' ? 'Master Electrical Safety' : 'বৈদ্যুতিক নিরাপত্তায় পারদর্শী হন'}
                                         </h1>
