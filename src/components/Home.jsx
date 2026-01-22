@@ -71,6 +71,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [shareUrl, setShareUrl] = useState("https://github.com/UtilityDD/slm_web/releases/latest");
     const [emotionalImageIndex, setEmotionalImageIndex] = useState(0);
+    const [currentChapter, setCurrentChapter] = useState('1.1');
 
     const emotionalImages = [
         '/assets/emotional/lineman.png',
@@ -99,6 +100,51 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
             setTrainingLevel(userProfile.training_level || 0);
             setCompletedLessonsCount(userProfile.completed_lessons?.length || 0);
             setTotalPenalties(userProfile.total_penalties || 0);
+            
+            // Get the most recent chapter from completed lessons (only continuous reading)
+            if (userProfile.completed_lessons && userProfile.completed_lessons.length > 0) {
+                const lessons = userProfile.completed_lessons
+                    .map(id => id.toString())
+                    .filter(id => id.match(/^\d+\.\d+$/))
+                    .map(id => {
+                        const [chapter, lesson] = id.split('.').map(Number);
+                        return { chapter, lesson, id };
+                    })
+                    .sort((a, b) => {
+                        if (a.chapter !== b.chapter) return a.chapter - b.chapter;
+                        return a.lesson - b.lesson;
+                    });
+                
+                // Find the last continuously completed lesson
+                let lastContinuousChapter = 1;
+                let lastContinuousLesson = 0;
+                
+                for (let i = 0; i < lessons.length; i++) {
+                    const { chapter, lesson } = lessons[i];
+                    
+                    // Check if this is the next expected lesson in sequence
+                    if (chapter === lastContinuousChapter && lesson === lastContinuousLesson + 1) {
+                        lastContinuousLesson = lesson;
+                    } else if (chapter === lastContinuousChapter + 1 && lesson === 1 && lastContinuousLesson > 0) {
+                        // Moving to next chapter - this is valid
+                        lastContinuousChapter = chapter;
+                        lastContinuousLesson = lesson;
+                    } else {
+                        // Non-continuous reading detected, stop here
+                        break;
+                    }
+                }
+                
+                // Set next lesson to read
+                if (lastContinuousLesson > 0) {
+                    setCurrentChapter(`${lastContinuousChapter}.${lastContinuousLesson + 1}`);
+                } else {
+                    setCurrentChapter('1.1');
+                }
+            } else {
+                setCurrentChapter('1.1');
+            }
+            
             setLoading(false);
         } else if (user) {
             fetchProfile();
@@ -219,50 +265,108 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                 <div className="p-4"><HomeSkeleton /></div>
             ) : (
                 <>
-                    {/* Integrated Safety Orange Hero Section */}
-                    <div className="bg-[#ea580c] dark:bg-[#d64a0a] pt-6 pb-12 px-6 rounded-b-[2.5rem] shadow-lg shadow-orange-900/10 dark:shadow-black/20">
-                        <div className="max-w-4xl mx-auto flex items-center justify-between gap-6 overflow-hidden">
-                            <div className="flex-1 min-w-0">
-                                {/* Line 1: Username + Training Badge */}
-                                <div className="flex items-center gap-2 mb-2 min-w-0">
-                                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white truncate">
-                                        {(fullName && !fullName.includes('@')) ? fullName : (user ? 'Guest' : visitorName)}
-                                    </h1>
-                                    {trainingLevel > 0 && getBadgeByLevel(trainingLevel) && (
-                                        <div className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border uppercase tracking-tight shadow-sm shrink-0 ${getBadgeByLevel(trainingLevel).color}`}>
-                                            {language === 'en' ? getBadgeByLevel(trainingLevel).en : getBadgeByLevel(trainingLevel).bn}
+                    {/* Integrated Safety Orange Hero Section - Desktop Optimized - Compact */}
+                    <div className="bg-[#ea580c] dark:bg-[#d64a0a] pt-4 pb-6 lg:pb-8 px-4 lg:px-6 rounded-b-3xl shadow-lg shadow-orange-900/10 dark:shadow-black/20">
+                        <div className="max-w-7xl mx-auto">
+                            {/* Desktop: Two-column layout, Mobile: Stacked */}
+                            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-8">
+                                {/* Left Column: Profile Info */}
+                                <div className="flex items-center gap-4 lg:flex-1">
+                                    <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-4 border-white/30 p-1 shrink-0 bg-white/10 backdrop-blur-sm overflow-hidden shadow-2xl">
+                                        <div className="w-full h-full rounded-full bg-orange-100 flex items-center justify-center text-4xl overflow-hidden">
+                                            {avatarUrl ? (
+                                                <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full text-orange-400 flex items-center justify-center p-2">
+                                                    <UserIcon className="w-full h-full opacity-80" />
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
-                                {/* Line 2: Member ID */}
-                                <p className="text-orange-50 text-sm font-medium tracking-wide uppercase opacity-90 mb-1">
-                                    ID: {slmId || user?.id?.slice(0, 8).toUpperCase() || 'LINEMAN001'}
-                                </p>
-                                {/* Line 3: Role */}
-                                <p className="text-orange-50 text-sm font-medium opacity-90 capitalize mb-3">
-                                    {role}-Member
-                                </p>
-                                {/* Line 4: Total Score + Reading Rewards */}
-                                <div className="flex items-center gap-2">
-                                    <div className="px-3 py-1 bg-white/10 backdrop-blur-xl rounded-full text-white text-[10px] font-bold uppercase tracking-wider border border-white/30 shadow-sm flex items-center gap-1.5">
-                                        <span className="opacity-80">💎</span>
-                                        {loading ? '...' : <CountUp end={score} start={!showTipModal && !!dailyTip} />}
                                     </div>
-                                    <div className="px-3 py-1 bg-white/10 backdrop-blur-xl rounded-full text-white text-[10px] font-bold uppercase tracking-wider border border-white/30 shadow-sm flex items-center gap-1.5">
-                                        <span className="opacity-80">📖</span>
-                                        {loading ? '...' : <CountUp end={readingPoints} start={!showTipModal && !!dailyTip} />}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white/30 p-1 shrink-0 bg-white/10 backdrop-blur-sm overflow-hidden shadow-2xl">
-                                <div className="w-full h-full rounded-full bg-orange-100 flex items-center justify-center text-4xl overflow-hidden">
-                                    {avatarUrl ? (
-                                        <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full text-orange-400 flex items-center justify-center p-2">
-                                            <UserIcon className="w-full h-full opacity-80" />
+                                    <div className="flex-1 min-w-0">
+                                        {/* Line 1: Username + Training Badge */}
+                                        <div className="flex items-center gap-2 mb-1.5 min-w-0">
+                                            <h1 className="text-lg sm:text-xl lg:text-3xl font-bold text-white truncate">
+                                                {(fullName && !fullName.includes('@')) ? fullName : (user ? 'Guest' : visitorName)}
+                                            </h1>
+                                            {trainingLevel > 0 && getBadgeByLevel(trainingLevel) && (
+                                                <div className={`px-2 py-0.5 lg:px-2.5 lg:py-0.5 rounded-lg text-[9px] lg:text-[10px] font-bold border uppercase tracking-tight shadow-sm shrink-0 ${getBadgeByLevel(trainingLevel).color}`}>
+                                                    {language === 'en' ? getBadgeByLevel(trainingLevel).en : getBadgeByLevel(trainingLevel).bn}
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
+                                        {/* Line 2: Member ID */}
+                                        <p className="text-orange-50 text-xs lg:text-sm font-medium tracking-wide uppercase opacity-90 mb-0.5">
+                                            ID: {slmId || user?.id?.slice(0, 8).toUpperCase() || 'LINEMAN001'}
+                                        </p>
+                                        {/* Line 3: Role */}
+                                        <p className="text-orange-50 text-xs lg:text-sm font-medium opacity-90 capitalize mb-2">
+                                            {role}-Member
+                                        </p>
+                                        {/* Line 4: Total Score + Reading Rewards */}
+                                        <div className="flex items-center gap-2">
+                                            <div className="px-2.5 py-1 lg:px-3 lg:py-1.5 bg-white/10 backdrop-blur-xl rounded-full text-white text-[9px] lg:text-xs font-bold uppercase tracking-wider border border-white/30 shadow-sm flex items-center gap-1">
+                                                <span className="opacity-80 text-sm lg:text-base">💎</span>
+                                                {loading ? '...' : <CountUp end={score} start={!showTipModal && !!dailyTip} />}
+                                            </div>
+                                            <div className="px-2.5 py-1 lg:px-3 lg:py-1.5 bg-white/10 backdrop-blur-xl rounded-full text-white text-[9px] lg:text-xs font-bold uppercase tracking-wider border border-white/30 shadow-sm flex items-center gap-1">
+                                                <span className="opacity-80 text-sm lg:text-base">📖</span>
+                                                {loading ? '...' : <CountUp end={readingPoints} start={!showTipModal && !!dailyTip} />}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Right Column: Stats Cards - Desktop Only */}
+                                <div className="hidden lg:flex lg:flex-col gap-3 lg:w-80">
+                                    {/* Current Reading Chapter */}
+                                    <div 
+                                        className="bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all cursor-pointer active:scale-[0.98]"
+                                        onClick={() => setCurrentView('training')}
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center text-xl shrink-0">
+                                                📖
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-orange-100 text-[10px] uppercase tracking-wider font-semibold opacity-80 mb-1">
+                                                    {language === 'en' ? 'Continue Reading' : 'পড়া চালিয়ে যান'}
+                                                </div>
+                                                <div className="text-white text-xl font-bold mb-0.5">
+                                                    {language === 'en' ? `Chapter ${currentChapter}` : `অধ্যায় ${currentChapter}`}
+                                                </div>
+                                                <div className="text-orange-100 text-xs opacity-90">
+                                                    {language === 'en' ? 'Next in your training path' : 'আপনার প্রশিক্ষণ পথে পরবর্তী'}
+                                                </div>
+                                            </div>
+                                            <div className="text-right shrink-0">
+                                                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                                                    <div className="text-white text-xl font-black">
+                                                        {currentChapter.split('.')[0]}
+                                                    </div>
+                                                </div>
+                                                <div className="text-orange-100 text-[9px] uppercase font-semibold opacity-75 mt-0.5 text-center">
+                                                    {language === 'en' ? 'Level' : 'স্তর'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Progress Summary */}
+                                    <div className="grid grid-cols-2 gap-2.5">
+                                        <div className="bg-white/10 backdrop-blur-xl rounded-lg p-3 border border-white/20">
+                                            <div className="text-orange-100 text-[9px] uppercase tracking-wider font-semibold opacity-80 mb-0.5">
+                                                {language === 'en' ? 'Lessons' : 'পাঠ'}
+                                            </div>
+                                            <div className="text-white text-2xl font-black">{completedLessonsCount}</div>
+                                        </div>
+                                        <div className="bg-white/10 backdrop-blur-xl rounded-lg p-3 border border-white/20">
+                                            <div className="text-orange-100 text-[9px] uppercase tracking-wider font-semibold opacity-80 mb-0.5">
+                                                {language === 'en' ? 'Chapter' : 'অধ্যায়'}
+                                            </div>
+                                            <div className="text-white text-2xl font-black">{currentChapter.split('.')[0]}</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -271,9 +375,9 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                     {/* Hero section ends here, Awareness banner follows */}
 
                     {/* Awareness Banner - High Impact */}
-                    <div className="max-w-4xl mx-auto px-4 mt-6">
+                    <div className="max-w-7xl mx-auto px-4 mt-6 lg:mt-8">
                         <div
-                            className="relative overflow-hidden group cursor-pointer rounded-3xl bg-slate-950 shadow-2xl border border-white/5 active:scale-[0.98] transition-all"
+                            className="relative overflow-hidden group cursor-pointer rounded-3xl bg-slate-950 shadow-2xl border border-white/5 hover:scale-[1.01] active:scale-[0.99] transition-all duration-300"
                             onClick={() => setCurrentView('accident-stories')}
                         >
                             {/* The main emotional photo on the left with fade */}
@@ -323,24 +427,25 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                         </div>
                     </div>
 
-                    {/* Mimic Grid Layout */}
-                    <div className="max-w-4xl mx-auto px-4 mt-8">
-                        <div className="grid grid-cols-3 gap-3 sm:gap-6">
+                    {/* Mimic Grid Layout - Responsive */}
+                    <div className="max-w-7xl mx-auto px-4 mt-8 lg:mt-12">
+                        {/* Responsive Grid: 3 cols mobile, 4 tablet, 6 desktop */}
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-6">
                             {navItems.map((item) => (
                                 <div
                                     key={item.id}
                                     onClick={() => handleNav(item)}
-                                    className="mimic-card aspect-square text-center"
+                                    className="mimic-card aspect-square text-center group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                                 >
                                     <div
-                                        className="w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-xl sm:text-2xl mb-3 shadow-sm border border-black/5"
+                                        className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-xl sm:text-2xl mb-3 shadow-sm border border-black/5 mx-auto group-hover:scale-110 transition-transform duration-300"
                                         style={{ backgroundColor: item.color, color: '#fff' }}
                                     >
-                                        <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
+                                        <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 flex items-center justify-center">
                                             {typeof item.icon === 'string' ? item.icon : React.cloneElement(item.icon, { className: 'w-full h-full' })}
                                         </div>
                                     </div>
-                                    <p className="text-[10px] sm:text-xs font-bold text-slate-600 dark:text-slate-400 leading-tight">
+                                    <p className="text-[10px] sm:text-xs lg:text-sm font-bold text-slate-600 dark:text-slate-400 leading-tight group-hover:text-slate-800 dark:group-hover:text-slate-200 transition-colors">
                                         {item.label[language]}
                                     </p>
                                 </div>
