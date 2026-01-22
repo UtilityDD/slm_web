@@ -19,21 +19,21 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
     return (
         <div
             onClick={() => onClick(chapter)}
-            className={`p-5 rounded-xl border transition-all cursor-pointer group relative overflow-hidden ${isFAQ
-                ? 'bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-900/20 dark:to-fuchsia-900/20 border-violet-200 dark:border-violet-700 hover:border-violet-400 dark:hover:border-violet-500 shadow-sm hover:shadow-md'
-                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-md'
+            className={`p-5 rounded-xl border transition-all duration-300 cursor-pointer group relative overflow-hidden lg:hover:-translate-y-2 lg:hover:shadow-2xl ${isFAQ
+                ? 'bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-900/20 dark:to-fuchsia-900/20 border-violet-200 dark:border-violet-700 hover:border-violet-400 dark:hover:border-violet-500 shadow-sm hover:shadow-md lg:shadow-lg'
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-md lg:shadow-lg lg:hover:shadow-orange-500/20'
                 }`}
         >
             <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg font-bold border ${isFAQ
+                    <div className={`w-10 h-10 lg:w-14 lg:h-14 rounded-lg lg:rounded-2xl flex items-center justify-center text-lg lg:text-2xl font-bold border lg:shadow-md lg:group-hover:scale-110 transition-transform duration-300 ${isFAQ
                         ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 border-violet-200 dark:border-violet-800'
-                        : 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-900/50'
+                        : 'bg-gradient-to-br from-orange-400 to-orange-600 text-white border-orange-500 dark:border-orange-700'
                         }`}>
                         {isFAQ ? '?' : chapter.number}
                     </div>
                     <div>
-                        <h3 className={`font-bold leading-tight transition-colors ${isFAQ
+                        <h3 className={`font-bold leading-tight lg:text-xl transition-colors ${language === 'bn' ? 'font-bengali' : ''} ${isFAQ
                             ? 'text-violet-900 dark:text-violet-100 group-hover:text-violet-700 dark:group-hover:text-violet-300'
                             : 'text-slate-900 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400'
                             }`}>
@@ -67,15 +67,20 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
             {/* Progress Bar - Hide for FAQ */}
             {!isFAQ && (
                 <>
-                    <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mt-2">
+                    <div className="w-full h-2 lg:h-2.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mt-2 shadow-inner">
                         <div
-                            className={`h-full rounded-full transition-all duration-500 ${progress === 100 ? 'bg-emerald-500' : 'bg-orange-500'}`}
+                            className={`h-full rounded-full transition-all duration-500 lg:group-hover:shadow-lg ${progress === 100 ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' : 'bg-gradient-to-r from-orange-400 to-orange-600'}`}
                             style={{ width: `${progress}%` }}
                         ></div>
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-1.5 text-right">
-                        {progress}% {language === 'en' ? 'Complete' : 'সম্পন্ন'}
-                    </p>
+                    <div className="flex items-center justify-between mt-2">
+                        <p className="text-[10px] lg:text-xs text-slate-400 font-semibold">
+                            {completedCount}/{chapter.count} {language === 'en' ? 'Lessons' : 'পাঠ'}
+                        </p>
+                        <p className="text-[10px] lg:text-xs font-bold ${progress === 100 ? 'text-emerald-600' : 'text-orange-600'}">
+                            {progress}%
+                        </p>
+                    </div>
                 </>
             )}
 
@@ -98,6 +103,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
     const [faqSearchQuery, setFaqSearchQuery] = useState('');
     const [showCertificateModal, setShowCertificateModal] = useState(false);
     const [fetchError, setFetchError] = useState(false);
+    const [readingPoints, setReadingPoints] = useState(0);
 
     // Quiz Modal State
     const [showQuizModal, setShowQuizModal] = useState(false);
@@ -137,27 +143,48 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
             try {
                 const { data, error } = await supabase
                     .from('profiles')
-                    .select('completed_lessons')
+                    .select('completed_lessons, reading_points')
                     .eq('id', user.id)
                     .single();
 
-                if (data && data.completed_lessons) {
-                    // 3. Merge (Union)
-                    const remoteProgress = Array.isArray(data.completed_lessons) ? data.completed_lessons : [];
-                    const merged = [...new Set([...localProgress, ...remoteProgress])];
+                if (error) {
+                    console.error("Supabase error fetching lessons:", error);
+                }
 
-                    setCompletedLessons(merged);
+                if (data) {
+                    console.log('✅ Lessons fetched from Supabase:', {
+                        completed_lessons: data.completed_lessons?.length || 0,
+                        reading_points: data.reading_points || 0,
+                        sample_lessons: data.completed_lessons?.slice(0, 5)
+                    });
 
-                    // Update local storage if different
-                    if (merged.length !== localProgress.length) {
-                        storageUtils.setItem(`training_progress_${user.id}`, JSON.stringify(merged));
+                    // Set reading points
+                    setReadingPoints(data.reading_points || 0);
+                    
+                    if (data.completed_lessons) {
+                        // 3. Merge (Union)
+                        const remoteProgress = Array.isArray(data.completed_lessons) ? data.completed_lessons : [];
+                        const merged = [...new Set([...localProgress, ...remoteProgress])];
+
+                        setCompletedLessons(merged);
+                        console.log(`📊 Total lessons after merge: ${merged.length}`);
+
+                        // Update local storage if different
+                        if (merged.length !== localProgress.length) {
+                            storageUtils.setItem(`training_progress_${user.id}`, JSON.stringify(merged));
+                        }
+                    } else {
+                        // If no remote data, just set local
+                        console.log('⚠️ No completed_lessons in Supabase, using local only');
+                        setCompletedLessons(localProgress);
                     }
                 } else {
                     // If no remote data, just set local
+                    console.log('⚠️ No data from Supabase, using local only');
                     setCompletedLessons(localProgress);
                 }
             } catch (err) {
-                console.error("Error syncing progress:", err);
+                console.error("❌ Error syncing progress:", err);
                 setCompletedLessons(localProgress);
             }
         };
@@ -624,7 +651,164 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                 ) : !selectedChapter && !trainingContent ? (
                     /* Chapter List View */
                     <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {/* Progress Stats Section - Top of Page */}
+                        <div className="mb-8 lg:mb-12">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                                {/* Total Chapters */}
+                                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-2xl lg:rounded-3xl p-5 lg:p-6 border border-blue-200 dark:border-blue-700 shadow-sm hover:shadow-md transition-all duration-300">
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="w-12 h-12 lg:w-14 lg:h-14 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                                            <span className="text-2xl lg:text-3xl">📚</span>
+                                        </div>
+                                    </div>
+                                    <div className="text-3xl lg:text-4xl font-bold text-blue-600 dark:text-blue-400 mb-1 lg:mb-2">
+                                        {trainingChapters.length - 1}
+                                    </div>
+                                    <div className="text-xs lg:text-sm font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
+                                        {language === 'en' ? 'Total Chapters' : 'মোট অধ্যায়'}
+                                    </div>
+                                </div>
+
+                                {/* Completed Chapters */}
+                                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-2xl lg:rounded-3xl p-5 lg:p-6 border border-emerald-200 dark:border-emerald-700 shadow-sm hover:shadow-md transition-all duration-300">
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="w-12 h-12 lg:w-14 lg:h-14 bg-emerald-500/10 rounded-xl flex items-center justify-center">
+                                            <span className="text-2xl lg:text-3xl">✅</span>
+                                        </div>
+                                    </div>
+                                    <div className="text-3xl lg:text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-1 lg:mb-2">
+                                        {trainingChapters.filter(ch => {
+                                            if (ch.number === 10) return false;
+                                            const completed = completedLessons.filter(id => id && id.toString().startsWith(`${ch.number}.`)).length;
+                                            return completed === ch.count;
+                                        }).length}
+                                    </div>
+                                    <div className="text-xs lg:text-sm font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">
+                                        {language === 'en' ? 'Completed Chapters' : 'সম্পন্ন অধ্যায়'}
+                                    </div>
+                                </div>
+
+                                {/* Total Lessons */}
+                                <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-2xl lg:rounded-3xl p-5 lg:p-6 border border-orange-200 dark:border-orange-700 shadow-sm hover:shadow-md transition-all duration-300">
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="w-12 h-12 lg:w-14 lg:h-14 bg-orange-500/10 rounded-xl flex items-center justify-center">
+                                            <span className="text-2xl lg:text-3xl">📖</span>
+                                        </div>
+                                    </div>
+                                    <div className="text-3xl lg:text-4xl font-bold text-orange-600 dark:text-orange-400 mb-1 lg:mb-2">
+                                        {trainingChapters.reduce((sum, ch) => sum + (ch.number === 10 ? 0 : ch.count), 0)}
+                                    </div>
+                                    <div className="text-xs lg:text-sm font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">
+                                        {language === 'en' ? 'Total Lessons' : 'মোট পাঠ'}
+                                    </div>
+                                </div>
+
+                                {/* Completed Lessons */}
+                                <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-2xl lg:rounded-3xl p-5 lg:p-6 border border-purple-200 dark:border-purple-700 shadow-sm hover:shadow-md transition-all duration-300">
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="w-12 h-12 lg:w-14 lg:h-14 bg-purple-500/10 rounded-xl flex items-center justify-center">
+                                            <span className="text-2xl lg:text-3xl">🎯</span>
+                                        </div>
+                                    </div>
+                                    <div className="text-3xl lg:text-4xl font-bold text-purple-600 dark:text-purple-400 mb-1 lg:mb-2">
+                                        {completedLessons.filter(id => {
+                                            const str = id.toString();
+                                            return str.match(/^\d+\.\d+$/) && !str.startsWith('10.');
+                                        }).length}
+                                    </div>
+                                    <div className="text-xs lg:text-sm font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">
+                                        {language === 'en' ? 'Completed Lessons' : 'সম্পন্ন পাঠ'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Desktop Hero Section */}
+                        <div className="hidden lg:block mb-12">
+                            <div className="bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-3xl p-10 text-white shadow-2xl shadow-orange-500/30 border border-orange-400/20 overflow-hidden relative">
+                                {/* Decorative Background Pattern */}
+                                <div className="absolute inset-0 opacity-10">
+                                    <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+                                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-yellow-300 rounded-full blur-3xl"></div>
+                                </div>
+                                
+                                <div className="relative z-10 flex items-center justify-between">
+                                    <div className="flex-1">
+                                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-bold mb-4 border border-white/30">
+                                            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                                            {language === 'en' ? '90 Days Training Program' : '৯০ দিনের প্রশিক্ষণ কর্মসূচি'}
+                                        </div>
+                                        <h1 className="text-5xl font-black mb-4 tracking-tight">
+                                            {language === 'en' ? 'Master Electrical Safety' : 'বৈদ্যুতিক নিরাপত্তায় পারদর্শী হন'}
+                                        </h1>
+                                        <p className="text-orange-100 text-lg font-medium max-w-2xl mb-6">
+                                            {language === 'en' ? 'Complete training modules, earn badges, and become a certified safety expert.' : 'প্রশিক্ষণ মডিউল সম্পন্ন করুন, ব্যাজ অর্জন করুন এবং একজন সার্টিফাইড সেফটি এক্সপার্ট হয়ে উঠুন।'}
+                                        </p>
+                                        
+                                        {/* Progress Bar */}
+                                        <div className="max-w-2xl">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-sm font-semibold text-orange-100">
+                                                    {language === 'en' ? 'Overall Progress' : 'সামগ্রিক অগ্রগতি'}
+                                                </span>
+                                                <span className="text-2xl font-black">
+                                                    {Math.round((completedLessons.filter(id => {
+                                                        const str = id.toString();
+                                                        return str.match(/^\d+\.\d+$/) && !str.startsWith('10.');
+                                                    }).length / trainingChapters.reduce((sum, ch) => sum + (ch.number === 10 ? 0 : ch.count), 0)) * 100) || 0}%
+                                                </span>
+                                            </div>
+                                            <div className="h-4 bg-white/20 backdrop-blur-sm rounded-full overflow-hidden border border-white/30">
+                                                <div 
+                                                    className="h-full bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 transition-all duration-1000 ease-out shadow-lg"
+                                                    style={{
+                                                        width: `${Math.round((completedLessons.filter(id => {
+                                                            const str = id.toString();
+                                                            return str.match(/^\d+\.\d+$/) && !str.startsWith('10.');
+                                                        }).length / trainingChapters.reduce((sum, ch) => sum + (ch.number === 10 ? 0 : ch.count), 0)) * 100) || 0}%`
+                                                    }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Achievement Badges */}
+                                    <div className="hidden xl:flex items-center gap-4">
+                                        <div className="text-center bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 min-w-[140px]">
+                                            <div className="text-5xl mb-2">📊</div>
+                                            <div className="text-3xl font-black mb-1">
+                                                {readingPoints || 0}
+                                            </div>
+                                            <div className="text-orange-200 text-xs font-bold uppercase tracking-wider">
+                                                {language === 'en' ? 'Reading Score' : 'পঠন স্কোর'}
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="text-center bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 min-w-[140px]">
+                                            <div className="text-5xl mb-2">⚡</div>
+                                            <div className="text-3xl font-black mb-1">
+                                                {(() => {
+                                                    const totalLessons = trainingChapters.reduce((sum, ch) => sum + (ch.number === 10 ? 0 : ch.count), 0);
+                                                    if (!totalLessons) return 90;
+                                                    const completed = completedLessons.filter(id => {
+                                                        const str = id.toString();
+                                                        return str.match(/^\d+\.\d+$/) && !str.startsWith('10.');
+                                                    }).length;
+                                                    const progress = completed / totalLessons;
+                                                    const daysLeft = Math.max(0, 90 - Math.floor(progress * 90));
+                                                    return isNaN(daysLeft) ? 90 : daysLeft;
+                                                })()}
+                                            </div>
+                                            <div className="text-orange-200 text-xs font-bold uppercase tracking-wider">
+                                                {language === 'en' ? 'Days Left' : 'দিন বাকি'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 lg:gap-8">
                             {trainingChapters.map((chapter) => (
                                 <TrainingChapterCard
                                     key={chapter.number}
@@ -641,13 +825,13 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                             <div className="mt-12 flex justify-center pb-8">
                                 <button
                                     onClick={() => setShowCertificateModal(true)}
-                                    className="group relative inline-flex items-center justify-center px-8 py-3.5 font-bold text-white transition-all duration-300 bg-slate-900 dark:bg-white dark:text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 dark:focus:ring-white shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-95 border border-slate-800 dark:border-slate-200"
+                                    className="group relative inline-flex items-center justify-center px-8 py-3.5 lg:px-12 lg:py-5 font-bold text-white transition-all duration-300 bg-slate-900 dark:bg-white dark:text-slate-900 rounded-xl lg:rounded-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 dark:focus:ring-white shadow-xl hover:shadow-2xl lg:hover:shadow-slate-900/40 dark:lg:hover:shadow-white/40 hover:scale-[1.02] lg:hover:scale-105 active:scale-95 border border-slate-800 dark:border-slate-200"
                                 >
-                                    <span className="relative flex items-center gap-3">
-                                        <svg className="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <span className="relative flex items-center gap-3 lg:gap-4">
+                                        <svg className="w-6 h-6 lg:w-8 lg:h-8 text-yellow-400 lg:group-hover:rotate-12 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2 .712V17a1 1 0 001 1z" />
                                         </svg>
-                                        <span className="text-lg tracking-tight">View Achievement Certificate</span>
+                                        <span className="text-lg lg:text-2xl tracking-tight">View Achievement Certificate</span>
                                     </span>
                                 </button>
                             </div>
@@ -909,44 +1093,44 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                         </div>
                     </div>
 
-                    <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8 pb-16">
+                    <div className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4 lg:px-8 py-6 sm:py-8 lg:py-10 pb-16 lg:pb-20">
                         {/* Hero Header */}
-                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-6 sm:p-10 text-white mb-10 shadow-xl shadow-orange-500/20">
-                            <div className="inline-block px-4 py-1.5 rounded-full bg-white/25 backdrop-blur-sm text-[11px] uppercase tracking-wider font-bold mb-5 border border-white/30">
+                        <div className="bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-2xl lg:rounded-3xl p-8 lg:p-12 text-white mb-8 lg:mb-12 shadow-xl border border-orange-400/20">
+                            <div className="inline-block px-4 py-1.5 lg:px-5 lg:py-2 rounded-full bg-white/20 backdrop-blur-md text-xs lg:text-sm uppercase tracking-wide font-semibold mb-4 lg:mb-5 border border-white/30">
                                 {trainingContent.badge_name}
                             </div>
-                            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 reading-content leading-snug">
+                            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4 reading-content leading-tight">
                                 {trainingContent.level_title}
                             </h2>
-                            <p className="text-orange-100 text-sm sm:text-base font-medium flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-orange-200"></span>
+                            <p className="text-orange-50 text-sm lg:text-base font-medium flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-lg animate-pulse"></span>
                                 Level {trainingContent.level_id}
                             </p>
                         </div>
 
                         {/* Mission Briefing */}
-                        <div className="bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/30 dark:to-orange-900/20 border-l-4 border-orange-500 p-6 sm:p-8 rounded-r-2xl mb-10 shadow-sm hover:shadow-md transition-shadow relative group/briefing">
-                            <div className="flex justify-end mb-4 border-b border-orange-100/50 dark:border-orange-900/10 pb-2">
+                        <div className="bg-gradient-to-br from-orange-50 via-orange-50 to-amber-50 dark:from-orange-950/40 dark:via-orange-900/30 dark:to-amber-950/40 border-l-4 border-orange-500 p-6 lg:p-8 rounded-r-2xl mb-8 lg:mb-12 shadow-md hover:shadow-lg transition-all duration-300">
+                            <div className="flex justify-end mb-4">
                                 <button
                                     onClick={() => speak((language === 'en' ? "Mission Briefing. " : "মূল কথা। ") + trainingContent.mission_briefing)}
-                                    className="px-3 py-1.5 bg-white/40 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800 rounded-lg text-orange-700 dark:text-orange-400 font-bold transition-all flex items-center gap-1.5 text-[10px] uppercase tracking-tight shadow-sm border border-orange-100/50 dark:border-orange-500/20"
+                                    className="px-3 py-1.5 lg:px-4 lg:py-2 bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 rounded-lg text-orange-700 dark:text-orange-400 font-semibold transition-all flex items-center gap-2 text-xs uppercase tracking-tight shadow-sm border border-orange-200/50 dark:border-orange-500/30"
                                 >
-                                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
                                     </svg>
-                                    {language === 'en' ? 'Listen' : 'এই অংশটি শুনুন'}
+                                    {language === 'en' ? 'Listen' : 'শুনুন'}
                                 </button>
                             </div>
 
-                            <div className="flex items-start gap-3 sm:gap-5">
-                                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-orange-100 dark:bg-orange-800 flex items-center justify-center text-xl sm:text-3xl flex-shrink-0 shadow-sm">
+                            <div className="flex items-start gap-4 lg:gap-5">
+                                <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-2xl lg:text-3xl flex-shrink-0 shadow-md">
                                     🎯
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="font-bold text-orange-900 dark:text-orange-100 mb-4 uppercase tracking-wider text-xs sm:text-sm">
+                                    <h3 className="font-semibold text-orange-900 dark:text-orange-100 mb-3 uppercase tracking-wide text-xs lg:text-sm">
                                         {language === 'en' ? 'Mission Briefing' : 'মূল কথা'}
                                     </h3>
-                                    <p className="text-slate-800 dark:text-slate-200 reading-content leading-loose text-lg sm:text-xl whitespace-pre-line">
+                                    <p className={`text-slate-800 dark:text-slate-200 reading-content leading-relaxed text-base lg:text-lg whitespace-pre-line ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {renderTextWithImages(trainingContent.mission_briefing)}
                                     </p>
                                 </div>
@@ -954,10 +1138,10 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                         </div>
 
                         {/* Sections */}
-                        <div className="space-y-12">
+                        <div className="space-y-10 lg:space-y-14">
                             {trainingContent.sections?.map((section, sIdx) => (
-                                <div key={sIdx} className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-10 shadow-sm border border-slate-100 dark:border-slate-700">
-                                    <div className="flex flex-col gap-4 mb-10 border-b border-slate-100 dark:border-slate-700 pb-6">
+                                <div key={sIdx} className="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-10 shadow-md border border-slate-200 dark:border-slate-700">
+                                    <div className="flex flex-col gap-3 lg:gap-4 mb-6 lg:mb-8 border-b border-slate-200 dark:border-slate-700 pb-4 lg:pb-6">
                                         <div className="flex justify-end">
                                             <button
                                                 onClick={() => {
@@ -969,28 +1153,28 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                                     }
                                                     speak(text);
                                                 }}
-                                                className="px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-lg text-orange-700 dark:text-orange-400 font-bold transition-all flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-tight shadow-sm border border-orange-100 dark:border-orange-500/20"
+                                                className="px-3 py-1.5 lg:px-4 lg:py-2 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-lg text-orange-700 dark:text-orange-400 font-semibold transition-all flex items-center gap-2 text-xs uppercase tracking-tight shadow-sm border border-orange-200 dark:border-orange-500/30"
                                             >
-                                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                                     <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
                                                 </svg>
-                                                {language === 'en' ? 'Listen to Section' : 'এই অংশটি শুনুন'}
+                                                {language === 'en' ? 'Listen' : 'শুনুন'}
                                             </button>
                                         </div>
-                                        <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 reading-content flex items-center gap-3 sm:gap-4">
-                                            <span className="w-2 h-8 bg-gradient-to-b from-orange-500 to-orange-400 rounded-full flex-shrink-0"></span>
+                                        <h3 className={`text-xl lg:text-2xl font-bold text-slate-900 dark:text-slate-100 reading-content flex items-center gap-3 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            <span className="w-1 lg:w-1.5 h-8 bg-gradient-to-b from-orange-500 to-orange-600 rounded-full flex-shrink-0"></span>
                                             {section.title}
                                         </h3>
                                     </div>
-                                    <div className="space-y-12">
+                                    <div className="space-y-8 lg:space-y-12">
                                         {section.points?.map((point, pIdx) => (
-                                            <div key={pIdx} className="relative pl-0 sm:pl-7 border-l-0 sm:border-l-2 border-orange-200 dark:border-orange-900/30">
-                                                <div className="hidden sm:block absolute left-[-7px] top-1.5 w-3.5 h-3.5 rounded-full bg-orange-500 border-2 border-white dark:border-slate-800 shadow-sm"></div>
+                                            <div key={pIdx} className="relative pl-0 sm:pl-6 lg:pl-8 border-l-0 sm:border-l-2 border-orange-300 dark:border-orange-800/50">
+                                                <div className="hidden sm:block absolute left-[-5px] top-1.5 w-3 h-3 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 border-2 border-white dark:border-slate-800 shadow-md"></div>
 
                                                 {/* Mobile: Top Border Separator */}
-                                                <div className="sm:hidden w-full h-px bg-slate-100 dark:bg-slate-700/50 mb-6"></div>
+                                                <div className="sm:hidden w-full h-px bg-gradient-to-r from-slate-200 to-transparent dark:from-slate-700 dark:to-transparent mb-4"></div>
 
-                                                <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-5 reading-content text-xl sm:text-2xl leading-tight">
+                                                <h4 className={`font-semibold text-slate-900 dark:text-slate-100 mb-5 lg:mb-6 reading-content text-lg lg:text-xl leading-snug ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                     {point.item_name}
                                                 </h4>
                                                 {point.image_name && (
@@ -1010,75 +1194,81 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                                         )}
                                                     </div>
                                                 )}
-                                                <div className="space-y-6">
+                                                <div className="space-y-6 lg:space-y-8">
                                                     {point.specifications && (
-                                                        <div className="bg-white dark:bg-slate-800/50 p-6 rounded-2xl border-l-4 border-orange-500 shadow-sm relative group/block">
-                                                            <div className="flex justify-end mb-2 opacity-0 group-hover/block:opacity-100 transition-opacity">
+                                                        <div className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-800/80 dark:to-slate-800/50 p-5 lg:p-7 rounded-xl lg:rounded-2xl border-l-4 border-orange-500 shadow-sm hover:shadow-md transition-shadow duration-300 relative group/block">
+                                                            <div className="flex justify-end mb-3 opacity-0 group-hover/block:opacity-100 transition-opacity">
                                                                 <button
                                                                     onClick={() => speak((language === 'en' ? "Details. " : "বিস্তারিত। ") + point.specifications)}
-                                                                    className="px-2 py-1 bg-orange-50 dark:bg-orange-900/20 rounded-md text-orange-600 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-tight border border-orange-100 dark:border-orange-500/10"
+                                                                    className="px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-lg text-orange-600 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-tight border border-orange-200 dark:border-orange-500/20 shadow-sm"
                                                                 >
-                                                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                                                                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                                                                         <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
                                                                     </svg>
-                                                                    {language === 'en' ? 'Listen' : 'এই অংশটি শুনুন'}
+                                                                    {language === 'en' ? 'Listen' : 'শুনুন'}
                                                                 </button>
                                                             </div>
-                                                            <div className="flex items-center gap-3 mb-3">
-                                                                <span className="text-orange-500 text-2xl">📋</span>
-                                                                <p className="text-sm font-bold text-slate-900 dark:text-slate-200 uppercase tracking-wider">
+                                                            <div className="flex items-center gap-3 mb-3 lg:mb-4">
+                                                                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                                                                    <span className="text-xl lg:text-2xl">📋</span>
+                                                                </div>
+                                                                <p className="text-xs lg:text-sm font-semibold text-slate-900 dark:text-slate-200 uppercase tracking-wide">
                                                                     {language === 'en' ? 'Details' : 'বিস্তারিত'}
                                                                 </p>
                                                             </div>
-                                                            <p className="text-lg text-slate-700 dark:text-slate-300 reading-content leading-loose whitespace-pre-line">
+                                                            <p className={`text-base lg:text-lg text-slate-700 dark:text-slate-300 reading-content leading-relaxed whitespace-pre-line ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                                 {renderTextWithImages(point.specifications)}
                                                             </p>
                                                         </div>
                                                     )}
                                                     {point.importance && (
-                                                        <div className="bg-amber-50 dark:bg-amber-900/10 p-6 rounded-2xl border border-amber-100 dark:border-amber-800/30 relative group/block">
-                                                            <div className="flex justify-end mb-2 opacity-0 group-hover/block:opacity-100 transition-opacity">
+                                                        <div className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/10 p-5 lg:p-7 rounded-xl lg:rounded-2xl border-l-4 border-amber-500 shadow-sm hover:shadow-md transition-shadow duration-300 relative group/block">
+                                                            <div className="flex justify-end mb-3 opacity-0 group-hover/block:opacity-100 transition-opacity">
                                                                 <button
                                                                     onClick={() => speak((language === 'en' ? "Why it matters. " : "কেন এটি গুরুত্বপূর্ণ। ") + point.importance)}
-                                                                    className="px-2 py-1 bg-amber-100/50 dark:bg-amber-800/20 rounded-md text-amber-600 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-tight border border-amber-200 dark:border-amber-500/10"
+                                                                    className="px-3 py-1.5 bg-amber-100/70 dark:bg-amber-800/30 hover:bg-amber-200 dark:hover:bg-amber-800/40 rounded-lg text-amber-700 dark:text-amber-400 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-tight border border-amber-200 dark:border-amber-500/20 shadow-sm"
                                                                 >
-                                                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                                                                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                                                                         <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
                                                                     </svg>
-                                                                    {language === 'en' ? 'Listen' : 'এই অংশটি শুনুন'}
+                                                                    {language === 'en' ? 'Listen' : 'শুনুন'}
                                                                 </button>
                                                             </div>
-                                                            <div className="flex items-center gap-3 mb-3">
-                                                                <span className="text-amber-500 text-2xl">💡</span>
-                                                                <p className="text-sm font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider">
-                                                                    {language === 'en' ? 'Why it matters' : 'কেন এটি গুরুত্বপূর্ণ?'}
+                                                            <div className="flex items-center gap-3 mb-3 lg:mb-4">
+                                                                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
+                                                                    <span className="text-xl lg:text-2xl">💡</span>
+                                                                </div>
+                                                                <p className="text-xs lg:text-sm font-semibold text-amber-800 dark:text-amber-400 uppercase tracking-wide">
+                                                                    {language === 'en' ? 'Why it matters' : 'কেন গুরুত্বপূর্ণ'}
                                                                 </p>
                                                             </div>
-                                                            <p className="text-lg font-medium text-slate-800 dark:text-slate-200 reading-content leading-loose whitespace-pre-line">
+                                                            <p className={`text-base lg:text-lg font-medium text-slate-800 dark:text-slate-200 reading-content leading-relaxed whitespace-pre-line ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                                 {renderTextWithImages(point.importance)}
                                                             </p>
                                                         </div>
                                                     )}
                                                     {point.daily_check && (
-                                                        <div className="bg-emerald-50 dark:bg-emerald-900/10 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-800/30 relative group/block">
-                                                            <div className="flex justify-end mb-2 opacity-0 group-hover/block:opacity-100 transition-opacity">
+                                                        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/10 p-5 lg:p-7 rounded-xl lg:rounded-2xl border-l-4 border-emerald-500 shadow-sm hover:shadow-md transition-shadow duration-300 relative group/block">
+                                                            <div className="flex justify-end mb-3 opacity-0 group-hover/block:opacity-100 transition-opacity">
                                                                 <button
                                                                     onClick={() => speak((language === 'en' ? "Action item. " : "করণীয় কাজ। ") + point.daily_check)}
-                                                                    className="px-2 py-1 bg-emerald-100/50 dark:bg-emerald-800/20 rounded-md text-emerald-600 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-tight border border-emerald-200 dark:border-emerald-500/10"
+                                                                    className="px-3 py-1.5 bg-emerald-100/70 dark:bg-emerald-800/30 hover:bg-emerald-200 dark:hover:bg-emerald-800/40 rounded-lg text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-tight border border-emerald-200 dark:border-emerald-500/20 shadow-sm"
                                                                 >
-                                                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                                                                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                                                                         <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
                                                                     </svg>
-                                                                    {language === 'en' ? 'Listen' : 'এই অংশটি শুনুন'}
+                                                                    {language === 'en' ? 'Listen' : 'শুনুন'}
                                                                 </button>
                                                             </div>
-                                                            <div className="flex items-center gap-3 mb-3">
-                                                                <span className="text-emerald-500 text-2xl">✓</span>
-                                                                <p className="text-sm font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider">
+                                                            <div className="flex items-center gap-3 mb-3 lg:mb-4">
+                                                                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+                                                                    <span className="text-xl lg:text-2xl">✓</span>
+                                                                </div>
+                                                                <p className="text-xs lg:text-sm font-semibold text-emerald-800 dark:text-emerald-400 uppercase tracking-wide">
                                                                     {language === 'en' ? 'Action Item' : 'করণীয় কাজ'}
                                                                 </p>
                                                             </div>
-                                                            <p className="text-lg text-slate-800 dark:text-slate-200 reading-content leading-loose whitespace-pre-line">
+                                                            <p className={`text-base lg:text-lg text-slate-800 dark:text-slate-200 reading-content leading-relaxed whitespace-pre-line ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                                 {renderTextWithImages(point.daily_check)}
                                                             </p>
                                                         </div>
@@ -1115,7 +1305,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                             💡
                                         </div>
                                         <div>
-                                            <h3 className="text-2xl sm:text-3xl font-bold text-emerald-900 dark:text-emerald-100 reading-content leading-tight">
+                                            <h3 className={`text-2xl sm:text-3xl font-bold text-emerald-900 dark:text-emerald-100 reading-content leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                 {trainingContent.pro_tip.title}
                                             </h3>
                                             <p className="text-emerald-700 dark:text-emerald-400 text-sm mt-1 font-bold uppercase tracking-wider">{language === 'en' ? 'Expert Advice' : 'বিশেষজ্ঞের পরামর্শ'}</p>
@@ -1124,7 +1314,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                 </div>
                                 <ul className="space-y-6">
                                     {trainingContent.pro_tip.content?.map((tip, idx) => (
-                                        <li key={idx} className="flex items-start gap-3 sm:gap-5 text-slate-800 dark:text-emerald-50 reading-content leading-loose text-lg sm:text-xl">
+                                        <li key={idx} className={`flex items-start gap-3 sm:gap-5 text-slate-800 dark:text-emerald-50 reading-content leading-loose text-lg sm:text-xl ${language === 'bn' ? 'font-bengali' : ''}`}>
                                             <span className="w-8 h-8 rounded-full bg-emerald-200 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1 shadow-sm">✓</span>
                                             <span className="flex-1 font-medium">{renderTextWithImages(tip)}</span>
                                         </li>
@@ -1220,7 +1410,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                         <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center text-2xl shadow-sm">
                                             🧪
                                         </div>
-                                        <h3 className="text-2xl sm:text-3xl font-bold reading-content">
+                                        <h3 className={`text-2xl sm:text-3xl font-bold reading-content ${language === 'bn' ? 'font-bengali' : ''}`}>
                                             {trainingContent.advanced_section.title}
                                         </h3>
                                     </div>

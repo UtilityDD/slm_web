@@ -603,6 +603,15 @@ html {
   }
 }
 
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Live Indicator */
 .live-pulse {
   @apply relative flex h-2.5 w-2.5;
@@ -615,4 +624,8 @@ html {
 .live-pulse-dot {
   @apply relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500;
   box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
 }
