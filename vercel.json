@@ -1,9 +1,8 @@
 {
-    "redirects": [
+    "rewrites": [
         {
             "source": "/(.*)",
-            "destination": "https://utilitydd.github.io/slm_web/maintenance.html",
-            "permanent": false
+            "destination": "/index.html"
         }
     ]
 }
