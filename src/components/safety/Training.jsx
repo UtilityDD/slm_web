@@ -571,9 +571,28 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
             const allQuestions = await response.json();
 
             if (allQuestions && allQuestions.length > 0) {
-                // Randomize all questions and pick up to 10
-                let selected = [...allQuestions].sort(() => 0.5 - Math.random());
-                selected = selected.slice(0, 10);
+                // Separate image-based and text-based questions
+                const isImageQuestion = (q) => {
+                    const hasQuestionImage = !!q.image;
+                    const hasImageOptions = Array.isArray(q.options) && q.options.some(opt =>
+                        typeof opt === 'string' && (opt.startsWith('/') || opt.includes('.jpg') || opt.includes('.png') || opt.includes('.webp'))
+                    );
+                    return hasQuestionImage || hasImageOptions;
+                };
+
+                const imagePool = allQuestions.filter(isImageQuestion).sort(() => 0.5 - Math.random());
+                const textPool = allQuestions.filter(q => !isImageQuestion(q)).sort(() => 0.5 - Math.random());
+
+                // Pick up to 2 guaranteed image questions
+                const guaranteedCount = Math.min(imagePool.length, 2);
+                const selectedImageQuestions = imagePool.slice(0, guaranteedCount);
+
+                // Remaining pool: unused image questions + all text questions
+                const remainingPool = [...imagePool.slice(guaranteedCount), ...textPool].sort(() => 0.5 - Math.random());
+
+                // Combine and shuffle up to 10 total
+                let selected = [...selectedImageQuestions, ...remainingPool].slice(0, 10);
+                selected = selected.sort(() => 0.5 - Math.random());
 
                 // Update previous questions for next attempt
                 setPreviousQuizQuestions(prev => ({

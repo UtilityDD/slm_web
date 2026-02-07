@@ -215,6 +215,11 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
                                                     </span>
                                                     <p className="font-medium text-slate-800 dark:text-slate-200">{q.questionText}</p>
                                                 </div>
+                                                {q.image && (
+                                                    <div className="mb-4 ml-9 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 max-w-[200px]">
+                                                        <img src={q.image} alt="Question" className="w-full h-auto" />
+                                                    </div>
+                                                )}
                                                 <div className="space-y-2 pl-9">
                                                     {q.options.map((opt, optIdx) => {
                                                         const isSelected = userAnswer === optIdx;
@@ -223,12 +228,18 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
                                                         if (isTheCorrectAnswer) optionClass = "text-green-600 dark:text-green-400 font-bold";
                                                         else if (isSelected && !isCorrect) optionClass = "text-red-500 dark:text-red-400 line-through";
 
+                                                        const isOptionImage = typeof opt === 'string' && (opt.startsWith('/') || opt.includes('.jpg') || opt.includes('.png') || opt.includes('.webp'));
+
                                                         return (
                                                             <div key={optIdx} className="flex items-start gap-2 text-sm">
                                                                 <span className="mt-1">
                                                                     {isTheCorrectAnswer ? '✅' : isSelected ? '❌' : '⚪'}
                                                                 </span>
-                                                                <span className={optionClass}>{opt}</span>
+                                                                {isOptionImage ? (
+                                                                    <img src={opt} alt="Option" className="w-16 h-16 object-cover rounded-lg border border-slate-200 dark:border-slate-700" />
+                                                                ) : (
+                                                                    <span className={optionClass}>{opt}</span>
+                                                                )}
                                                             </div>
                                                         );
                                                     })}
@@ -316,29 +327,40 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
                                         {currentQuestion?.questionText}
                                     </div>
 
-                                    <div className="space-y-3">
-                                        {currentQuestion?.options.map((option, idx) => (
-                                            <button
-                                                key={idx}
-                                                onClick={() => handleOptionSelect(idx)}
-                                                className={`w-full p-4 rounded-xl text-left transition-all border-2 ${userAnswers[currentQuestionIndex] === idx
-                                                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300'
-                                                    : 'border-slate-100 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400'
-                                                    }`}
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${userAnswers[currentQuestionIndex] === idx
-                                                        ? 'border-orange-500 bg-orange-500 text-white'
-                                                        : 'border-slate-300 dark:border-slate-600'
-                                                        }`}>
-                                                        {userAnswers[currentQuestionIndex] === idx && (
-                                                            <div className="w-2 h-2 bg-white rounded-full" />
-                                                        )}
-                                                    </div>
-                                                    <span>{option}</span>
-                                                </div>
-                                            </button>
-                                        ))}
+                                    {currentQuestion?.image && (
+                                        <div className="rounded-2xl overflow-hidden border-4 border-white dark:border-slate-700 shadow-xl max-h-[220px] flex justify-center bg-slate-100 dark:bg-slate-900">
+                                            <img
+                                                src={currentQuestion.image}
+                                                alt="Visual aid"
+                                                className="max-w-full max-h-full object-contain animate-fade-in"
+                                            />
+                                        </div>
+                                    )}
+
+                                    <div className={`space-y-3 ${currentQuestion?.options.some(opt => typeof opt === 'string' && (opt.startsWith('/') || opt.includes('.'))) ? 'grid grid-cols-2 gap-4 space-y-0' : ''}`}>
+                                        {currentQuestion?.options.map((option, idx) => {
+                                            const isImage = typeof option === 'string' && (option.startsWith('/') || option.includes('.jpg') || option.includes('.png') || option.includes('.webp'));
+
+                                            return (
+                                                <button
+                                                    key={idx}
+                                                    onClick={() => handleOptionSelect(idx)}
+                                                    className={`relative rounded-2xl transition-all border-2 flex group ${userAnswers[currentQuestionIndex] === idx
+                                                        ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300'
+                                                        : 'border-slate-100 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400'
+                                                        } ${isImage
+                                                            ? 'aspect-square flex-col items-center justify-center p-3'
+                                                            : 'w-full py-4 px-5 items-center justify-start text-left'
+                                                        }`}
+                                                >
+                                                    {isImage ? (
+                                                        <img src={option} alt={`Option ${idx + 1}`} className="max-w-full max-h-[80%] object-contain rounded-lg shadow-sm group-hover:scale-105 transition-transform" />
+                                                    ) : (
+                                                        <span className="font-medium text-left w-full leading-snug">{option}</span>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}
