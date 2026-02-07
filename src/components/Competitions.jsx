@@ -13,6 +13,27 @@ const LiveIndicator = () => (
     </div>
 );
 
+// Deterministic PRNG for Anti-Cheat
+const seedRandom = (seed) => {
+    let m = 0x80000000;
+    let a = 1103515245;
+    let c = 12345;
+    let state = seed ? seed : Math.floor(Math.random() * (m - 1));
+    return function () {
+        state = (a * state + c) % m;
+        return state / (m - 1);
+    };
+};
+
+const stringToSeed = (str) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash |= 0;
+    }
+    return Math.abs(hash);
+};
+
 export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile }) {
     const [loading, setLoading] = useState(true);
     const [activeQuiz, setActiveQuiz] = useState(null);
@@ -45,6 +66,48 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [pendingSubmission, setPendingSubmission] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
     const [syncErrorMessage, setSyncErrorMessage] = useState(null);
+
+    // PERSISTENCE & ANTI-CHEAT LOGIC
+    useEffect(() => {
+        if (!activeQuiz || quizSubmitted) return;
+
+        const state = {
+            quizId: activeQuiz.id,
+            questions: quizQuestions,
+            currentIndex: currentQuestionIndex,
+            answers: userAnswers,
+            hints: Array.from(hintViewedQuestions),
+            timestamp: Date.now()
+        };
+        storageUtils.setItem('slm_hourly_active_quiz_state', state);
+    }, [activeQuiz, quizQuestions, currentQuestionIndex, userAnswers, hintViewedQuestions, quizSubmitted]);
+
+    useEffect(() => {
+        const checkResumption = () => {
+            const savedState = storageUtils.getItem('slm_hourly_active_quiz_state');
+            if (savedState && hourlyQuiz && savedState.quizId === hourlyQuiz.id) {
+                const stateTime = new Date(savedState.timestamp);
+                const now = getSyncedTime();
+
+                // Only resume if it's the same hour/day
+                if (stateTime.getHours() === now.getHours() && stateTime.getDate() === now.getDate()) {
+                    setQuizQuestions(savedState.questions);
+                    setCurrentQuestionIndex(savedState.currentIndex);
+                    setUserAnswers(savedState.answers);
+                    setHintViewedQuestions(new Set(savedState.hints || []));
+                    setActiveQuiz(hourlyQuiz);
+                    setQuizSubmitted(false);
+                    console.log('Restored quiz state for anti-cheat protection');
+                } else {
+                    storageUtils.removeItem('slm_hourly_active_quiz_state');
+                }
+            }
+        };
+
+        if (hourlyQuiz && !activeQuiz) {
+            checkResumption();
+        }
+    }, [hourlyQuiz, activeQuiz]);
 
     const getSyncedTime = () => {
         return new Date(Date.now() + serverTimeOffset);
@@ -582,19 +645,26 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
         setActiveQuiz(quiz);
 
-        // Randomly select 5 questions and shuffle their options
+        // Seeded Randomization for Anti-Cheat: User-specific and Hour-specific
+        const seed = stringToSeed(user.id + quiz.id);
+        const rng = seedRandom(seed);
+
+        // Deterministic selection and shuffling
         if (quiz.questions && quiz.questions.length > 0) {
-            const shuffledQuestions = [...quiz.questions].sort(() => 0.5 - Math.random());
+            // First sort by ID/Text to ensure consistent initial order before shuffling
+            const baseQuestions = [...quiz.questions].sort((a, b) => {
+                const idA = String(a.id || a.question_text);
+                const idB = String(b.id || b.question_text);
+                return idA.localeCompare(idB);
+            });
+
+            // Deterministically pick 5 questions
+            const shuffledQuestions = [...baseQuestions].sort(() => 0.5 - rng());
             const selectedQuestions = shuffledQuestions.slice(0, 5).map(q => {
                 if (!q.options || q.options.length === 0) return q;
 
-                // Store the correct answer text before shuffling options
                 const correctAnswerText = q.options[q.correct_option_index];
-
-                // Shuffle the options array
-                const shuffledOptions = [...q.options].sort(() => 0.5 - Math.random());
-
-                // Find the new index of the correct answer
+                const shuffledOptions = [...q.options].sort(() => 0.5 - rng());
                 const newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
 
                 return {
@@ -615,6 +685,23 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         setReviewMode(false);
         setShowHint(false);
         setHintViewedQuestions(new Set());
+    };
+
+    const handleAbortQuiz = () => {
+        if (activeQuiz && !quizSubmitted) {
+            const warning = language === 'en'
+                ? 'Exiting now will result in 0 points for this hour. Are you sure?'
+                : 'এখন বেরিয়ে গেলে আপনি এই ঘণ্টার জন্য ০ পয়েন্ট পাবেন। আপনি কি নিশ্চিত?';
+
+            if (window.confirm(warning)) {
+                // Submit with 0 score and max penalty (75 for 5 wrong/skipped questions if applicable)
+                submitHourlyQuiz(0, 0);
+                setActiveQuiz(null);
+                storageUtils.removeItem('slm_hourly_active_quiz_state');
+            }
+        } else {
+            setActiveQuiz(null);
+        }
     };
 
     const startReview = () => {
@@ -1572,7 +1659,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             )}
                                         </div>
                                     </div>
-                                    <button onClick={() => setActiveQuiz(null)} className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">✕</button>
+                                    <button onClick={handleAbortQuiz} className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">✕</button>
                                 </div>
 
                                 <div className="mb-8">
@@ -1720,7 +1807,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                 )}
 
-                                <button onClick={() => { setActiveQuiz(null); setQuizSubmitted(false); }} className="w-full py-3 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-lg font-bold hover:bg-slate-800 dark:hover:bg-white transition-colors">
+                                <button onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); }} className="w-full py-3 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-lg font-bold hover:bg-slate-800 dark:hover:bg-white transition-colors">
                                     {t.close}
                                 </button>
                             </div>

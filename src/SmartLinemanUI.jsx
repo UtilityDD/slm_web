@@ -1,6 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Browser } from '@capacitor/browser';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { supabase } from "./supabaseClient";
 import { getBadgeByLevel, calculateLevelFromProgress } from './utils/badgeUtils';
 import { cacheHelper } from './utils/cacheHelper';
@@ -548,6 +549,33 @@ export default function SmartLinemanUI() {
       setLanguage(savedLang);
     }
   }, []);
+
+  // Dynamic StatusBar Management for Android
+  useEffect(() => {
+    const updateStatusBar = async () => {
+      if (!window.Capacitor) return;
+
+      try {
+        if (theme === 'dark') {
+          // Dark background needs light icons
+          await StatusBar.setStyle({ style: Style.Dark });
+        } else {
+          // In Light Mode:
+          // Home screen (orange) needs light icons
+          // Other screens (white) need dark icons
+          if (currentView === 'home') {
+            await StatusBar.setStyle({ style: Style.Dark });
+          } else {
+            await StatusBar.setStyle({ style: Style.Light });
+          }
+        }
+      } catch (err) {
+        console.warn('StatusBar update failed:', err);
+      }
+    };
+
+    updateStatusBar();
+  }, [currentView, theme]);
 
   // Check LocalStorage or Time for Theme on mount
   useEffect(() => {

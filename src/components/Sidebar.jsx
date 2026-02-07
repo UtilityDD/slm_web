@@ -69,11 +69,11 @@ export default function Sidebar({
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:static left-0 top-0 h-screen w-72 md:w-64 bg-white dark:bg-slate-900 shadow-2xl md:shadow-none border-r border-slate-200/50 dark:border-slate-700/50 z-[100] transform transition-all duration-300 md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        className={`fixed md:static left-0 top-0 h-screen w-72 md:w-64 bg-white dark:bg-slate-900 shadow-2xl md:shadow-none border-r border-slate-200/50 dark:border-slate-700/50 z-[100] transform transition-all duration-300 md:translate-x-0 flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
           }`}
       >
         {/* Sidebar Header - Enhanced */}
-        <div className="px-6 py-6 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-br from-orange-50 to-white dark:from-slate-800 dark:to-slate-900">
+        <div className="px-6 py-6 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-br from-orange-50 to-white dark:from-slate-800 dark:to-slate-900 shrink-0">
           {/* User Profile Section */}
           <div className="flex items-center gap-3 mb-4">
             <div className="relative">
@@ -154,7 +154,7 @@ export default function Sidebar({
         </nav>
 
         {/* Sidebar Footer - Enhanced */}
-        <div className="border-t border-slate-200 dark:border-slate-700 p-3 space-y-2 bg-slate-50 dark:bg-slate-900/50">
+        <div className="border-t border-slate-200 dark:border-slate-700 p-3 space-y-2 bg-slate-50 dark:bg-slate-900/50 shrink-0">
           <button
             onClick={onToggleLanguageModal}
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 transition-all hover:translate-x-1 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-left"
