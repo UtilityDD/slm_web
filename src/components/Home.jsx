@@ -100,7 +100,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
             setTrainingLevel(userProfile.training_level || 0);
             setCompletedLessonsCount(userProfile.completed_lessons?.length || 0);
             setTotalPenalties(userProfile.total_penalties || 0);
-            
+
             // Get the most recent chapter from completed lessons (only continuous reading)
             if (userProfile.completed_lessons && userProfile.completed_lessons.length > 0) {
                 const lessons = userProfile.completed_lessons
@@ -114,14 +114,14 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                         if (a.chapter !== b.chapter) return a.chapter - b.chapter;
                         return a.lesson - b.lesson;
                     });
-                
+
                 // Find the last continuously completed lesson
                 let lastContinuousChapter = 1;
                 let lastContinuousLesson = 0;
-                
+
                 for (let i = 0; i < lessons.length; i++) {
                     const { chapter, lesson } = lessons[i];
-                    
+
                     // Check if this is the next expected lesson in sequence
                     if (chapter === lastContinuousChapter && lesson === lastContinuousLesson + 1) {
                         lastContinuousLesson = lesson;
@@ -134,7 +134,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                         break;
                     }
                 }
-                
+
                 // Set next lesson to read
                 if (lastContinuousLesson > 0) {
                     setCurrentChapter(`${lastContinuousChapter}.${lastContinuousLesson + 1}`);
@@ -144,7 +144,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
             } else {
                 setCurrentChapter('1.1');
             }
-            
+
             setLoading(false);
         } else if (user) {
             fetchProfile();
@@ -266,8 +266,8 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
             ) : (
                 <>
                     {/* Integrated Safety Orange Hero Section - Desktop Optimized - Compact */}
-                    <div className="bg-[#ea580c] dark:bg-[#d64a0a] pt-4 pb-6 lg:pb-8 px-4 lg:px-6 rounded-b-3xl shadow-lg shadow-orange-900/10 dark:shadow-black/20">
-                        <div className="max-w-7xl mx-auto">
+                    <div className="bg-[#ea580c] dark:bg-[#d64a0a] pt-4 pb-6 lg:pb-8 rounded-b-3xl shadow-lg shadow-orange-900/10 dark:shadow-black/20">
+                        <div className="max-w-7xl mx-auto mobile-container">
                             {/* Desktop: Two-column layout, Mobile: Stacked */}
                             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-8">
                                 {/* Left Column: Profile Info */}
@@ -320,7 +320,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                 {/* Right Column: Stats Cards - Desktop Only */}
                                 <div className="hidden lg:flex lg:flex-col gap-3 lg:w-80">
                                     {/* Current Reading Chapter */}
-                                    <div 
+                                    <div
                                         className="bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all cursor-pointer active:scale-[0.98]"
                                         onClick={() => setCurrentView('training')}
                                     >

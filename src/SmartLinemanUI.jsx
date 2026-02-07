@@ -1057,7 +1057,7 @@ export default function SmartLinemanUI() {
 
         {/* Header - Material Design - Hidden on Login & Stories or when forced login */}
         {((user && !['login', 'accident-stories'].includes(currentView)) || currentView === 'verify') && (
-          <header className={`${currentView === 'home' ? 'bg-[#ea580c] dark:bg-[#c2410c] border-transparent shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 elevation-2'} sticky top-0 z-[80] border-b safe-area-inset-top transition-all duration-300`}>
+          <header className={`${currentView === 'home' ? 'bg-[#ea580c] dark:bg-[#c2410c] border-transparent shadow-none' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 elevation-2'} sticky top-0 z-[80] border-b safe-area-inset-top transition-all duration-300`}>
             <div className="max-w-7xl mx-auto mobile-container">
               <div className="flex justify-between items-center h-14 md:h-16">
                 {/* Mobile Menu & Logo */}
