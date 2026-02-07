@@ -15,7 +15,9 @@
   /* Success / Safe / Confirm */
 }
 
-html {
+html,
+body,
+#root {
   height: 100%;
 }
 
@@ -607,6 +609,7 @@ html {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }

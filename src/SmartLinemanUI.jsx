@@ -734,15 +734,17 @@ export default function SmartLinemanUI() {
     if (!user && !isPublic) {
       return (
         <Suspense fallback={<PageLoader />}>
-          <Login
-            onLogin={(u) => {
-              setUser(u);
-              fetchProfile(u);
-              showNotification(language === 'en' ? 'Welcome!' : 'আপনাকে স্বাগতম!');
-            }}
-            showNotification={showNotification}
-            setCurrentView={setCurrentView}
-          />
+          <div className="flex-1 flex flex-col min-h-0 w-full animate-slide-up-fade">
+            <Login
+              onLogin={(u) => {
+                setUser(u);
+                fetchProfile(u);
+                showNotification(language === 'en' ? 'Welcome!' : 'আপনাকে স্বাগতম!');
+              }}
+              showNotification={showNotification}
+              setCurrentView={setCurrentView}
+            />
+          </div>
         </Suspense>
       );
     }
@@ -853,7 +855,7 @@ export default function SmartLinemanUI() {
     // Wrap in Suspense for code splitting with smooth transition
     return (
       <Suspense fallback={<PageLoader />}>
-        <div key={currentView} className="animate-slide-up-fade w-full">
+        <div key={currentView} className="h-full w-full view-transition">
           {content}
         </div>
       </Suspense>
@@ -1053,209 +1055,161 @@ export default function SmartLinemanUI() {
           <div className="absolute bottom-0 left-0 w-[40vw] h-[40vw] bg-cyan-100/40 dark:bg-cyan-900/20 rounded-full blur-3xl -translate-x-1/4 translate-y-1/4"></div>
         </div>
 
-        {/* Header - Material Design */}
-        <header className={`${currentView === 'home' ? 'bg-[#ea580c] border-transparent shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 elevation-2'} sticky top-0 z-[80] border-b safe-area-inset-top transition-all duration-300`}>
-          <div className="max-w-7xl mx-auto mobile-container">
-            <div className="flex justify-between items-center h-14 md:h-16">
-              {/* Mobile Menu & Logo - Keep on top of sidebar */}
-              <div className="flex items-center gap-2 relative z-[110]">
-                {user && (
-                  <button
-                    onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className={`md:hidden p-2 ${currentView === 'home' ? 'hover:bg-white/10 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'} rounded-lg transition-colors`}
-                    title="Menu"
-                    aria-label="Toggle menu"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                  </button>
-                )}
-                <div
-                  className="flex items-center gap-2 group cursor-pointer px-2 py-1 -ml-1 transition-all active:scale-95"
-                  onClick={() => setCurrentView('home')}
-                >
-                  <div className={`text-xl sm:text-2xl logo-text ${currentView === 'home' ? 'logo-text-home' : 'logo-text-default'
-                    }`}>
-                    SmartLineMan
-                  </div>
-                </div>
-              </div>
-
-              {/* Spacer */}
-              <div className="flex-grow"></div>
-
-              {/* Right Side Actions */}
-              <div className="flex items-center gap-1 sm:gap-2">
-                {/* Notification Bell */}
-                <div className="relative">
-                  <button
-                    onClick={() => {
-                      setShowHistory(!showHistory);
-                      if (notificationsHistory.length > 0) {
-                        const latestId = notificationsHistory[0].id;
-                        setLastSeenNotificationId(latestId);
-                        localStorage.setItem('lastSeenNotificationId', latestId);
-                      }
-                    }}
-                    className={`flex items-center justify-center p-2 ${currentView === 'home' ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200'} rounded-lg transition-all touch-target relative`}
-                    title="Notifications"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    {notificationsHistory.length > 0 && notificationsHistory[0].id !== lastSeenNotificationId && (
-                      <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-800 rounded-full"></span>
-                    )}
-                  </button>
-
-                  {/* Notifications Dropdown */}
-                  {showHistory && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-40"
-                        onClick={() => setShowHistory(false)}
-                      ></div>
-                      <div className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-16 sm:top-full sm:mt-2 w-auto sm:w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-50 overflow-hidden animate-slide-down">
-                        <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
-                          <h3 className="font-bold text-slate-900 dark:text-slate-100">
-                            {language === 'en' ? 'Notifications' : 'বিজ্ঞপ্তি'}
-                          </h3>
-                          {notificationsHistory.length > 0 && (
-                            <span className="text-[10px] font-bold bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 px-2 py-0.5 rounded-full">
-                              {notificationsHistory.length}
-                            </span>
-                          )}
-                        </div>
-                        <div className="max-h-96 overflow-y-auto">
-                          {notifFetchError ? (
-                            <div className="p-8 text-center">
-                              <span className="text-2xl mb-2 block">📡</span>
-                              <p className="text-sm text-slate-500 dark:text-slate-400">
-                                {language === 'en' ? 'Failed to load notifications' : 'বিজ্ঞপ্তি লোড করতে ব্যর্থ হয়েছে'}
-                              </p>
-                            </div>
-                          ) : notificationsHistory.length > 0 ? (
-                            <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                              {notificationsHistory.map((notif) => (
-                                <div key={notif.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group relative">
-                                  <div className="flex gap-3">
-                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${notif.type === 'alert' ? 'bg-red-100 text-red-600' :
-                                      notif.type === 'warning' ? 'bg-orange-100 text-orange-600' :
-                                        notif.type === 'update' ? 'bg-green-100 text-green-600' :
-                                          'bg-orange-100 text-orange-600'
-                                      }`}>
-                                      {notif.type === 'alert' ? '🚨' :
-                                        notif.type === 'warning' ? '⚠️' :
-                                          notif.type === 'update' ? '✅' : '📢'}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-0.5">{notif.title}</p>
-                                      <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">{notif.message}</p>
-                                      <p className="text-[10px] text-slate-400 mt-1">
-                                        {new Date(notif.created_at).toLocaleDateString(language === 'bn' ? 'bn-IN' : 'en-US', {
-                                          month: 'short',
-                                          day: 'numeric',
-                                          hour: '2-digit',
-                                          minute: '2-digit'
-                                        })}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  {userProfile?.role === 'admin' && (
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteNotification(notif.id);
-                                      }}
-                                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 transition-all"
-                                      title="Delete notification"
-                                    >
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                      </svg>
-                                    </button>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="p-12 text-center">
-                              <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3">
-                                <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                                </svg>
-                              </div>
-                              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                                {language === 'en' ? 'No notifications yet' : 'এখনও কোনো বিজ্ঞপ্তি নেই'}
-                              </p>
-                            </div>
-                          )}
-                          <div className="p-3 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700">
-                            <button
-                              onClick={() => setShowHistory(false)}
-                              className="w-full py-2 text-xs font-bold text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl transition-colors"
-                            >
-                              {language === 'en' ? 'Close' : 'বন্ধ করুন'}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-
-                {/* Theme Toggle */}
-                <button
-                  onClick={handleThemeToggle}
-                  className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 ${currentView === 'home' ? 'bg-white/10 hover:bg-white/20' : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600'} rounded-lg transition-all touch-target`}
-                  title="Toggle Theme"
-                >
-                  <span className="text-lg sm:text-xl">{theme === 'light' ? '🌙' : '☀️'}</span>
-                </button>
-
-                {/* User Profile / Login */}
-                {user ? (
-                  <div className={`flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2 border-l ${currentView === 'home' ? 'border-white/20' : 'border-slate-200 dark:border-slate-700'}`}>
-                    <div className="flex flex-col items-end hidden sm:flex">
-                      <span className={`text-xs font-bold ${currentView === 'home' ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>
-                        {(userProfile?.full_name && !userProfile.full_name.includes('@')) ? userProfile.full_name : 'Guest'}
-                      </span>
-                      <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        {userProfile?.role || 'Lineman'}
-                      </span>
-                    </div>
+        {/* Header - Material Design - Hidden on Login & Stories or when forced login */}
+        {((user && !['login', 'accident-stories'].includes(currentView)) || currentView === 'verify') && (
+          <header className={`${currentView === 'home' ? 'bg-[#ea580c] border-transparent shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 elevation-2'} sticky top-0 z-[80] border-b safe-area-inset-top transition-all duration-300`}>
+            <div className="max-w-7xl mx-auto mobile-container">
+              <div className="flex justify-between items-center h-14 md:h-16">
+                {/* Mobile Menu & Logo */}
+                <div className="flex items-center gap-2 relative z-[110]">
+                  {user && (
                     <button
-                      onClick={handleLogout}
-                      className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-all touch-target"
-                      title="Logout"
+                      onClick={() => setSidebarOpen(!sidebarOpen)}
+                      className={`md:hidden p-2 ${currentView === 'home' ? 'hover:bg-white/10 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'} rounded-lg transition-colors`}
+                      title="Menu"
+                      aria-label="Toggle menu"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                       </svg>
                     </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setCurrentView('login')}
-                    className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-all shadow-md shadow-orange-500/20 touch-target"
-                    title={t.nav.login}
-                    aria-label="Login"
+                  )}
+                  <div
+                    className="flex items-center gap-2 group cursor-pointer px-2 py-1 -ml-1 transition-all active:scale-95"
+                    onClick={() => setCurrentView('home')}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
+                    <div className={`text-xl sm:text-2xl logo-text ${currentView === 'home' ? 'logo-text-home' : 'logo-text-default'}`}>
+                      SmartLineMan
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex-grow"></div>
+
+                <div className="flex items-center gap-1 sm:gap-2">
+                  {/* Notification Bell */}
+                  <div className="relative">
+                    <button
+                      onClick={() => {
+                        setShowHistory(!showHistory);
+                        if (notificationsHistory.length > 0) {
+                          const latestId = notificationsHistory[0].id;
+                          setLastSeenNotificationId(latestId);
+                          localStorage.setItem('lastSeenNotificationId', latestId);
+                        }
+                      }}
+                      className={`flex items-center justify-center p-2 ${currentView === 'home' ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200'} rounded-lg transition-all touch-target relative`}
+                      title="Notifications"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                      {notificationsHistory.length > 0 && notificationsHistory[0].id !== lastSeenNotificationId && (
+                        <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-800 rounded-full"></span>
+                      )}
+                    </button>
+
+                    {/* Notifications Dropdown */}
+                    {showHistory && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-40"
+                          onClick={() => setShowHistory(false)}
+                        ></div>
+                        <div className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-16 sm:top-full sm:mt-2 w-auto sm:w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-50 overflow-hidden animate-slide-down">
+                          <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                            <h3 className="font-bold text-slate-900 dark:text-slate-100">
+                              {language === 'en' ? 'Notifications' : 'বিজ্ঞপ্তি'}
+                            </h3>
+                            {notificationsHistory.length > 0 && (
+                              <span className="text-[10px] font-bold bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 px-2 py-0.5 rounded-full">
+                                {notificationsHistory.length}
+                              </span>
+                            )}
+                          </div>
+                          <div className="max-h-96 overflow-y-auto">
+                            {notifFetchError ? (
+                              <div className="p-8 text-center text-slate-500">
+                                {language === 'en' ? 'Failed to load notifications' : 'বিজ্ঞপ্তি লোড করতে ব্যর্থ হয়েছে'}
+                              </div>
+                            ) : notificationsHistory.length > 0 ? (
+                              <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                                {notificationsHistory.map((notif) => (
+                                  <div key={notif.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group relative">
+                                    <div className="flex gap-3">
+                                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${notif.type === 'alert' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'}`}>
+                                        {notif.type === 'alert' ? '🚨' : '📢'}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-0.5">{notif.title}</p>
+                                        <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">{notif.message}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="p-12 text-center text-slate-500">
+                                {language === 'en' ? 'No notifications' : 'কোনো বিজ্ঞপ্তি নেই'}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Theme Toggle */}
+                  <button
+                    onClick={handleThemeToggle}
+                    className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 ${currentView === 'home' ? 'bg-white/10 hover:bg-white/20' : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600'} rounded-lg transition-all touch-target`}
+                    title="Toggle Theme"
+                  >
+                    <span className="text-lg sm:text-xl">{theme === 'light' ? '🌙' : '☀️'}</span>
                   </button>
-                )}
+
+                  {/* Profile / Login */}
+                  {user ? (
+                    <div className={`flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2 border-l ${currentView === 'home' ? 'border-white/20' : 'border-slate-200 dark:border-slate-700'}`}>
+                      <div className="flex flex-col items-end hidden sm:flex">
+                        <span className={`text-xs font-bold ${currentView === 'home' ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>
+                          {(userProfile?.full_name && !userProfile.full_name.includes('@')) ? userProfile.full_name : 'Guest'}
+                        </span>
+                        <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          {userProfile?.role || 'Lineman'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-all touch-target"
+                        title="Logout"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setCurrentView('login')}
+                      className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-all shadow-md shadow-orange-500/20 touch-target"
+                      title={t.nav.login}
+                      aria-label="Login"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </header>
+          </header>
+        )}
 
         {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden relative h-full">
-          <div className="relative z-10 w-full view-transition" key={currentView}>
+        <div className="flex-1 overflow-y-auto overflow-x-hidden relative">
+          <div className="h-full relative z-10 w-full view-transition" key={currentView}>
             {renderContent()}
           </div>
         </div>
@@ -1313,6 +1267,6 @@ export default function SmartLinemanUI() {
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 }

@@ -262,14 +262,17 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                 <div className="bg-white/10 dark:bg-black/20 backdrop-blur-2xl rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-8 sm:p-12 border border-white/10">
                     <div className="text-center mb-10">
                         <div className="flex justify-center mb-6">
-                            <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl flex items-center justify-center shadow-lg shadow-orange-500/20">
-                                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                </svg>
+                            <div className="w-32 sm:w-40 relative group">
+                                <img
+                                    src="/icons/logo.png"
+                                    alt="SmartLineMan Logo"
+                                    className="w-full h-auto drop-shadow-2xl brightness-110"
+                                    style={{ mixBlendMode: 'lighten' }}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-orange-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
                             </div>
                         </div>
-                        <h1 className="text-4xl font-black text-white tracking-tighter mb-2">SmartLineMan</h1>
-                        <p className="text-orange-100/60 text-sm font-medium tracking-wide uppercase">Safety Starts With You</p>
+                        <p className="text-orange-100/60 text-xs font-medium tracking-[0.2em] uppercase">Safety Starts With You</p>
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-6">
