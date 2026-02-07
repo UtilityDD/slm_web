@@ -160,7 +160,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
 
                     // Set reading points
                     setReadingPoints(data.reading_points || 0);
-                    
+
                     if (data.completed_lessons) {
                         // 3. Merge (Union)
                         const remoteProgress = Array.isArray(data.completed_lessons) ? data.completed_lessons : [];
@@ -750,7 +750,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                     <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
                                     <div className="absolute bottom-0 left-0 w-96 h-96 bg-yellow-300 rounded-full blur-3xl"></div>
                                 </div>
-                                
+
                                 <div className="relative z-10 flex items-center justify-between">
                                     <div className="flex-1">
                                         <h1 className="text-5xl font-black mb-4 tracking-tight">
@@ -759,7 +759,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                         <p className="text-orange-100 text-lg font-medium max-w-2xl mb-6">
                                             {language === 'en' ? 'Complete training modules, earn badges, and become a certified safety expert.' : 'প্রশিক্ষণ মডিউল সম্পন্ন করুন, ব্যাজ অর্জন করুন এবং একজন সার্টিফাইড সেফটি এক্সপার্ট হয়ে উঠুন।'}
                                         </p>
-                                        
+
                                         {/* Progress Bar */}
                                         <div className="max-w-2xl">
                                             <div className="flex items-center justify-between mb-2">
@@ -774,7 +774,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                                 </span>
                                             </div>
                                             <div className="h-4 bg-white/20 backdrop-blur-sm rounded-full overflow-hidden border border-white/30">
-                                                <div 
+                                                <div
                                                     className="h-full bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 transition-all duration-1000 ease-out shadow-lg"
                                                     style={{
                                                         width: `${Math.round((completedLessons.filter(id => {
@@ -786,7 +786,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     {/* Achievement Badges */}
                                     <div className="hidden xl:flex items-center gap-4">
                                         <div className="text-center bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 min-w-[140px]">
@@ -798,7 +798,7 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                                 {language === 'en' ? 'Reading Score' : 'পঠন স্কোর'}
                                             </div>
                                         </div>
-                                        
+
                                         <div className="text-center bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 min-w-[140px]">
                                             <div className="text-5xl mb-2">⚡</div>
                                             <div className="text-3xl font-black mb-1">
@@ -1137,18 +1137,18 @@ export default function Training({ language = 'en', user, onProgressUpdate }) {
                                 </button>
                             </div>
 
-                            <div className="flex items-start gap-4 lg:gap-5">
-                                <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-2xl lg:text-3xl flex-shrink-0 shadow-md">
-                                    🎯
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="font-semibold text-orange-900 dark:text-orange-100 mb-3 uppercase tracking-wide text-xs lg:text-sm">
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-center gap-3 lg:gap-4">
+                                    <div className="w-10 h-10 lg:w-14 lg:h-14 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-xl lg:text-3xl flex-shrink-0 shadow-md">
+                                        🎯
+                                    </div>
+                                    <h3 className="font-semibold text-orange-900 dark:text-orange-100 uppercase tracking-wide text-sm lg:text-base">
                                         {language === 'en' ? 'Mission Briefing' : 'মূল কথা'}
                                     </h3>
-                                    <p className={`text-slate-800 dark:text-slate-200 reading-content leading-relaxed text-base lg:text-lg whitespace-pre-line ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {renderTextWithImages(trainingContent.mission_briefing)}
-                                    </p>
                                 </div>
+                                <p className={`text-slate-800 dark:text-slate-200 reading-content leading-relaxed text-base lg:text-lg whitespace-pre-line ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    {renderTextWithImages(trainingContent.mission_briefing)}
+                                </p>
                             </div>
                         </div>
 

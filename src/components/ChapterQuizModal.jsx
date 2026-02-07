@@ -263,7 +263,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
                                         {isPassed ? t.completed : t.failed}
                                     </h2>
                                     <p className="text-slate-600 dark:text-slate-400 mb-2">
-                                        {t.score} <span className={`font-bold text-xl ${isPassed ? 'text-green-600' : 'text-amber-600'}`}>{score}</span> {t.outOf} {totalQuestions}
+                                        {t.score} <span className={`font-bold text-xl ${isPassed ? 'text-green-600' : 'text-amber-600'}`}>{score} / {totalQuestions}</span>
                                     </p>
                                     {!isPassed && (
                                         <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
