@@ -727,7 +727,7 @@ export default function SmartLinemanUI() {
 
   const renderContent = () => {
     // Define which views are accessible without login
-    const publicViews = ['login', 'update-password', 'verify'];
+    const publicViews = ['login', 'update-password', 'verify', 'accident-stories'];
     const isPublic = publicViews.includes(currentView);
 
     // If not logged in and trying to access a private view, force login
@@ -741,6 +741,7 @@ export default function SmartLinemanUI() {
               showNotification(language === 'en' ? 'Welcome!' : 'আপনাকে স্বাগতম!');
             }}
             showNotification={showNotification}
+            setCurrentView={setCurrentView}
           />
         </Suspense>
       );
@@ -757,6 +758,7 @@ export default function SmartLinemanUI() {
             setCurrentView('home');
           }}
           showNotification={showNotification}
+          setCurrentView={setCurrentView}
         />;
       }
 
