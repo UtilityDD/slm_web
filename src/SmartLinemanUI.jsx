@@ -28,6 +28,7 @@ const Guide = lazy(() => import("./components/Guide"));
 const VerificationView = lazy(() => import("./components/VerificationView"));
 const Notifications = lazy(() => import("./components/Notifications"));
 const AwarenessStories = lazy(() => import("./components/safety/AwarenessStories"));
+const VideoGuide = lazy(() => import("./components/safety/VideoGuide"));
 
 export default function SmartLinemanUI() {
   const [globalLoading, setGlobalLoading] = useState(false);
@@ -818,6 +819,7 @@ export default function SmartLinemanUI() {
               } : null);
               fetchProfile(user);
             }}
+            setCurrentView={setCurrentView}
           />;
         case 'admin':
           return <Admin language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;
@@ -837,6 +839,11 @@ export default function SmartLinemanUI() {
           />;
         case 'accident-stories':
           return <AwarenessStories
+            setCurrentView={setCurrentView}
+          />;
+        case 'video-guide':
+          return <VideoGuide
+            language={language}
             setCurrentView={setCurrentView}
           />;
         case 'home':
