@@ -59,6 +59,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [showHint, setShowHint] = useState(false);
     const [hintViewedQuestions, setHintViewedQuestions] = useState(new Set());
 
+    // Gamified Ladder state
+    const [todayAttempts, setTodayAttempts] = useState([]);
+    const ladderRef = React.useRef(null);
+
     // Offline sync state
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [isSyncing, setIsSyncing] = useState(false);
@@ -138,7 +142,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             syncFailed: "Sync failed. Please retry.",
             hint: "Hint",
             hintDisabled: "Select an answer to see hint",
-            noHint: "No hint available for this question"
+            noHint: "No hint available for this question",
+            streak: "In a Row"
         },
         bn: {
             title: "প্রতিযোগিতা",
@@ -164,7 +169,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             syncFailed: "সিঙ্ক ব্যর্থ হয়েছে। অনুগ্রহ করে পুনঃচেষ্টা করুন।",
             hint: "ইঙ্গিত",
             hintDisabled: "ইঙ্গিত দেখতে একটি উত্তর নির্বাচন করুন",
-            noHint: "এই প্রশ্নের জন্য কোনো ইঙ্গিত নেই"
+            noHint: "এই প্রশ্নের জন্য কোনো ইঙ্গিত নেই",
+            streak: "একটানা"
         }
     }[language];
 
@@ -186,6 +192,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             // Only fetch leaderboard if user is logged in
             if (user) {
                 promises.push(fetchLeaderboard());
+                promises.push(fetchTodayAttempts());
             }
 
             await Promise.all(promises);
@@ -222,6 +229,135 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         const hour = String(now.getHours()).padStart(2, '0');
         return `hourly-challenge-${year}-${month}-${day}-${hour}`;
     };
+
+    // --- GAMIFIED LADDER: Data Layer ---
+    const fetchTodayAttempts = async () => {
+        if (!user) return;
+        const now = getSyncedTime();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const prefix = `hourly-challenge-${year}-${month}-${day}-`;
+
+        try {
+            const { data, error } = await supabase
+                .from('quiz_attempts')
+                .select('quiz_id, score, penalty, created_at')
+                .eq('user_id', user.id)
+                .like('quiz_id', `${prefix}%`)
+                .order('created_at', { ascending: true });
+
+            if (!error && data) {
+                setTodayAttempts(data);
+            }
+        } catch (e) {
+            console.error('Error fetching today attempts:', e);
+        }
+    };
+
+    // Scroll to live node on mount/update
+    useEffect(() => {
+        if (ladderRef.current && !loading) {
+            setTimeout(() => {
+                const liveNode = document.getElementById('node-live') || document.getElementById('node-upcoming-next');
+                if (liveNode) {
+                    liveNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 500);
+        }
+    }, [todayAttempts, loading, showCompactView]);
+
+
+    const buildHourlySlots = () => {
+        const now = getSyncedTime();
+        const currentHour = now.getHours();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+
+        // Build a map of hour -> attempt
+        const attemptMap = {};
+        todayAttempts.forEach(a => {
+            // quiz_id format: hourly-challenge-YYYY-MM-DD-HH
+            const hourStr = a.quiz_id.split('-').pop();
+            const hour = parseInt(hourStr, 10);
+            if (!isNaN(hour)) {
+                attemptMap[hour] = a;
+            }
+        });
+
+        // Check if current hour is locked (already played)
+        const isCurrentHourPlayed = !!attemptMap[currentHour] || (lastAttemptTime && (() => {
+            const last = new Date(lastAttemptTime);
+            return last.getFullYear() === now.getFullYear() &&
+                last.getMonth() === now.getMonth() &&
+                last.getDate() === now.getDate() &&
+                last.getHours() === currentHour;
+        })());
+
+        const slots = [];
+        // Show hours 0 to 23
+        for (let h = 0; h <= 23; h++) {
+            const attempt = attemptMap[h];
+            let status;
+            if (h === currentHour) {
+                status = isCurrentHourPlayed ? 'played' : 'live';
+            } else if (h < currentHour) {
+                status = attempt ? 'played' : 'missed';
+            } else if (h === currentHour + 1 && isCurrentHourPlayed) {
+                status = 'upcoming-next';
+            } else {
+                status = 'upcoming';
+            }
+
+            // Adjust label for 12-hour format
+            const hour12 = h % 12 || 12;
+            const ampm = h < 12 ? 'AM' : 'PM';
+
+            slots.push({
+                hour: h,
+                status,
+                score: attempt?.score ?? null,
+                penalty: attempt?.penalty ?? null,
+                label: `${hour12} ${ampm}`,
+            });
+        }
+        // Render 23 at top, 0 at bottom
+        return slots.reverse();
+    };
+
+    const getTodayScore = () => todayAttempts.reduce((sum, a) => sum + (a.score || 0), 0);
+
+    const getStreak = (slots) => {
+        const now = getSyncedTime();
+        const currentHour = now.getHours();
+        let streak = 0;
+        // Count consecutive played hours ending at current/last hour
+        // Slots are already reversed (23 -> 0)
+
+        let counting = false;
+        // Find start point: either current hour (if played) or previous hour
+        // Since slots are 23..0, we iterate
+        for (const slot of slots) {
+            if (slot.hour > currentHour) continue; // Future
+
+            // If it's current hour and live, skip (doesn't break streak yet, but doesn't count)
+            if (slot.hour === currentHour && slot.status === 'live') continue;
+
+            if (slot.status === 'played') {
+                streak++;
+                counting = true;
+            } else if (counting) {
+                // Break streak if we hit a non-played slot (missed) after starting count
+                break;
+            } else if (slot.status === 'missed') {
+                // If we haven't started counting yet and hit a miss, streak is 0
+                break;
+            }
+        }
+        return streak;
+    };
+
 
     /**
      * Direct submission logic for Hourly Quiz
@@ -274,7 +410,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             // actually, hourlyQuiz.id in state currently comes from fetchHourlyQuiz which uses YYYYMMDDHH. 
             // Let's stick to updating the state that drives the UI.
 
-            // Also refresh leaderboard for immediate feedback
+            // Also refresh leaderboard and attempts for immediate feedback
+            fetchTodayAttempts();
             fetchLeaderboard(true);
             refreshProfile(user);
 
@@ -351,6 +488,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             }
 
             // Refresh data
+            await fetchTodayAttempts();
             await fetchLeaderboard(true);
             if (submission.quiz_id === hourlyQuiz?.id) {
                 // Update local state immediately to lock the UI
@@ -825,64 +963,15 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
         // Submit immediately if user is logged in
         if (user) {
+            // This now handles Supabase RPC, profile refresh and leaderboard update
             await submitHourlyQuiz(calculatedScore, penalty);
         }
 
         // IMMEDIATE LOCK: Update local state to show countdown timer instantly
-        // This ensures "Play Now" is disabled regardless of network status
         if (activeQuiz && activeQuiz.id === hourlyQuiz?.id) {
             setLastAttemptTime(attemptData.timestamp);
             const cacheKey = `last_attempt_${user.id}_${activeQuiz.id}`;
             cacheHelper.set(cacheKey, attemptData.timestamp, 5);
-        }
-
-        // Attempt to save to Supabase
-        setIsSyncing(true);
-        setSyncStatus('syncing');
-
-        try {
-            // Use the safe RPC helper to handle potential database version mismatches
-            const { error } = await safeSubmitQuizResult(
-                activeQuiz.id || 'unknown_quiz',
-                calculatedScore,
-                penalty
-            );
-
-            if (error) throw error;
-
-            // Success!
-            setSyncStatus('success');
-            setSyncErrorMessage(null);
-            // setIsSyncing(false); // Moved down to keep loading state valid during fetch
-            setLastAttemptPenalty(penalty);
-
-            // Refresh leaderboard to show updated score immediately (bypass cache)
-            await fetchLeaderboard(true);
-            // Refresh my rank (bypass cache)
-            await fetchUserRank(true);
-            // Sync with global profile state for instant sidebar/home update
-            if (refreshProfile) {
-                await refreshProfile(user);
-            }
-
-            setIsSyncing(false); // Now we are done
-
-            // Refresh lock status
-            if (activeQuiz && activeQuiz.id) {
-                cacheHelper.clear(`last_attempt_${user.id}_${activeQuiz.id}`);
-                fetchLastAttempt(activeQuiz.id);
-            }
-
-        } catch (error) {
-            console.error('Error saving result:', error);
-            setIsSyncing(false);
-            setSyncStatus('failed');
-
-            if (error.message?.includes('JWT') || error.code === 'P0001' || error.message?.includes('authenticated')) {
-                setSyncErrorMessage('Session expired. Please login again.');
-            } else {
-                setSyncErrorMessage(error.message || 'Sync failed');
-            }
         }
     };
 
@@ -1111,534 +1200,232 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-            {/* Minimal Header */}
-            <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                        {t.title}
-                    </h1>
-                </div>
-
-                <div className="flex items-center gap-2">
-                    {lastAttemptPenalty > 0 && (
-                        <div className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-red-50 text-red-700 border border-red-100 font-bold text-sm animate-fade-in shadow-sm">
-                            <span className="text-lg">🔥</span>
-                            <span className="hidden xs:inline">{language === 'en' ? 'Last Loss:' : 'শেষ হারানো:'}</span>
-                            <span>-{lastAttemptPenalty}</span>
+        <div className="max-w-md mx-auto min-h-screen relative pb-20">
+            {/* 1. STICKY SCOREBOARD HEADER */}
+            <div className="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm transition-all duration-300">
+                <div className="px-4 py-4">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex flex-col">
+                            <h1 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2 tracking-tight">
+                                <span className="text-2xl">🏆</span> {language === 'en' ? 'Daily Challenge' : 'দৈনিক চ্যালেঞ্জ'}
+                            </h1>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mt-1">Climb the power ladder</p>
                         </div>
-                    )}
-                    <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-orange-50 text-orange-700 border border-orange-100 font-bold text-sm`}>
-                        <span className="text-lg">🏆</span>
-                        {language === 'en' ? 'Competition Mode' : 'প্রতিযোগিতা মোড'}
-                    </div>
-                </div>
-            </div>
-
-            {/* Hourly Quiz Card - Redesigned for Impact */}
-            <div className="max-w-md mx-auto mb-12">
-                {loading ? (
-                    <SkeletonCard />
-                ) : hourlyQuiz ? (
-                    <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-orange-200 dark:border-orange-800 shadow-sm text-center">
-                        <div className="mb-6">
-                            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 tracking-tight">
-                                5 {language === 'en' ? 'Quizzes Every Hour!' : 'কুইজ প্রতি ঘন্টায়!'}
-                            </h2>
-                            <div className="flex items-center justify-center gap-6 text-xs text-slate-500 dark:text-slate-400">
-                                <div className="flex flex-col items-center">
-                                    <span className="text-xl mb-1">📝</span>
-                                    <span className="font-bold">5 {t.questions}</span>
-                                </div>
-                                <div className="w-px h-8 bg-slate-100 dark:bg-slate-700"></div>
-                                <div className="flex flex-col items-center">
-                                    <span className="text-xl mb-1">💎</span>
-                                    <span className="font-bold">50 {t.points}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Action Area */}
-                        {/* Sync Status Indicator */}
-                        {(isSyncing || pendingSubmission) && (
-                            <div className={`mb-3 p-3 rounded-lg border ${syncStatus === 'success' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' :
-                                syncStatus === 'failed' ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' :
-                                    syncStatus === 'waiting' ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800' :
-                                        'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
-                                }`}>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        {isSyncing && (
-                                            <svg className="animate-spin h-4 w-4 text-orange-600 dark:text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                        )}
-                                        <div>
-                                            <div className={`text-xs font-medium ${syncStatus === 'success' ? 'text-green-700 dark:text-green-300' :
-                                                syncStatus === 'failed' ? 'text-red-700 dark:text-red-300' :
-                                                    syncStatus === 'waiting' ? 'text-yellow-700 dark:text-yellow-300' :
-                                                        'text-orange-700 dark:text-orange-300'
-                                                }`}>
-                                                {syncStatus === 'syncing' ? t.syncing :
-                                                    syncStatus === 'waiting' ? t.waitingNetwork :
-                                                        syncStatus === 'success' ? t.syncSuccess :
-                                                            syncStatus === 'failed' ? t.syncFailed :
-                                                                t.syncing}
-                                            </div>
-                                            {syncErrorMessage && syncStatus === 'failed' && (
-                                                <div className="text-[9px] text-red-500/80 dark:text-red-400/80 mt-0.5 font-medium max-w-[150px] truncate" title={syncErrorMessage}>
-                                                    Error: {syncErrorMessage}
-                                                </div>
-                                            )}
-                                            {syncStatus === 'waiting' && (
-                                                <div className="text-[10px] text-yellow-600 dark:text-yellow-400 mt-0.5">
-                                                    {t.autoRetry}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    {syncStatus === 'failed' && !isSyncing && (
-                                        syncErrorMessage?.includes('Session expired') ? (
-                                            <button
-                                                onClick={() => setCurrentView('login')}
-                                                className="px-3 py-1 text-xs font-medium text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/40 rounded transition-colors"
-                                            >
-                                                {language === 'en' ? 'Login' : 'লগইন'}
-                                            </button>
-                                        ) : (
-                                            <button
-                                                onClick={() => submitHourlyQuiz(score, lastAttemptPenalty)} // Retry with last calculated values
-                                                className="px-3 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 rounded transition-colors"
-                                            >
-                                                {t.retryNow}
-                                            </button>
-                                        )
-                                    )}
+                        {userRank && (
+                            <div className="flex flex-col items-end gap-1">
+                                <div className="flex items-center gap-2">
+                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border shadow-sm ${getBadgeByLevel(userProfile?.training_level || 0).color}`}>
+                                        {language === 'en' ? getBadgeByLevel(userProfile?.training_level || 0).en : getBadgeByLevel(userProfile?.training_level || 0).bn}
+                                    </span>
+                                    <span className="text-sm font-black text-slate-800 dark:text-slate-200 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-md">#{userRank.rank}</span>
                                 </div>
                             </div>
                         )}
+                    </div>
 
-                        {(() => {
-                            if (!lastAttemptTime) {
-                                return (
+                    <div className="grid grid-cols-3 gap-3">
+                        {/* Total Score */}
+                        <div className="bg-slate-100/50 dark:bg-slate-800/40 rounded-xl p-3 text-center border border-slate-200/50 dark:border-slate-700/50">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.points}</p>
+                            <p className="text-xl font-black text-slate-900 dark:text-slate-100 tabular-nums">{userRank?.score?.toLocaleString() || 0}</p>
+                        </div>
+                        {/* Today's Score */}
+                        <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3 text-center border border-orange-100 dark:border-orange-900/30">
+                            <p className="text-[10px] font-black text-orange-400 dark:text-orange-500 uppercase tracking-widest mb-1">{language === 'en' ? 'Today' : 'আজ'}</p>
+                            <p className="text-xl font-black text-orange-600 dark:text-orange-400 tabular-nums">+{getTodayScore().toLocaleString()}</p>
+                        </div>
+                        {/* Streak */}
+                        <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 text-center border border-amber-100 dark:border-amber-900/30">
+                            <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1">{t.streak}</p>
+                            <p className="text-xl font-black text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2">
+                                {getStreak(buildHourlySlots())} <span className="text-lg animate-pulse">🔥</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* 2. INFINITE SCROLL LADDER */}
+            <div className="px-4 py-10 relative space-y-0" ref={ladderRef}>
+                {/* Center Line Shadow */}
+                <div className="absolute left-1/2 top-0 bottom-0 w-2 bg-slate-50 dark:bg-slate-950/20 -translate-x-1/2 z-0 blur-sm"></div>
+                <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-100 dark:bg-slate-800/50 -translate-x-1/2 z-0"></div>
+
+                {loading ? (
+                    Array(6).fill(0).map((_, i) => (
+                        <div key={i} className="relative z-10 flex min-h-[100px] items-center justify-center">
+                            <div className="w-full max-w-[280px] h-20 bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse"></div>
+                        </div>
+                    ))
+                ) : (
+                    buildHourlySlots().map((slot, index, arr) => {
+                        const isLive = slot.status === 'live';
+                        const isPlayed = slot.status === 'played';
+                        const isMissed = slot.status === 'missed';
+                        const isUpcoming = slot.status === 'upcoming';
+                        const isNextChallenge = slot.status === 'upcoming-next';
+
+                        return (
+                            <div key={slot.hour} id={isLive ? 'node-live' : (isNextChallenge ? 'node-upcoming-next' : undefined)} className={`relative z-10 flex items-center justify-center py-5 ${isLive ? 'node-live py-8 my-2' : isNextChallenge ? 'py-6 my-1' : ''}`}>
+
+                                {/* Connector Line to next node (if not last) */}
+                                {index < arr.length - 1 && (
+                                    <div className={`absolute top-1/2 left-1/2 w-1 -translate-x-1/2 h-[calc(100%+40px)] -z-10
+                                        ${isUpcoming ? 'border-l-2 border-dashed border-slate-200 dark:border-slate-800' :
+                                            isMissed ? 'bg-slate-200 dark:bg-slate-800' :
+                                                'bg-gradient-to-b from-orange-400 to-orange-200 dark:from-orange-600 dark:to-orange-900/30'}`}>
+                                    </div>
+                                )}
+
+                                {/* Main Card */}
+                                <div className={`relative w-full max-w-[340px] transition-all duration-300 ${isLive ? 'scale-100' : 'scale-[0.98] opacity-95'}`}>
+
+                                    {/* Hour Label Badge */}
+                                    <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-md z-20 border
+                                        ${isLive ? 'bg-orange-600 text-white border-orange-400 shadow-orange-500/20' :
+                                            isPlayed ? 'bg-white dark:bg-slate-800 text-green-600 dark:text-green-400 border-green-200 dark:border-green-800' :
+                                                isNextChallenge ? 'bg-amber-500 text-white border-amber-300 shadow-amber-500/20' :
+                                                    isMissed ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700' :
+                                                        'bg-slate-50 dark:bg-slate-800/80 text-slate-300 dark:text-slate-600 border-slate-100 dark:border-slate-700'}`}>
+                                        {slot.label}
+                                    </div>
+
+                                    {/* Card Content */}
                                     <button
-                                        onClick={() => startQuiz(hourlyQuiz)}
-                                        disabled={pendingSubmission && pendingSubmission.quiz_id === hourlyQuiz.id}
-                                        className={`w-full py-3 ${(pendingSubmission && pendingSubmission.quiz_id === hourlyQuiz.id)
-                                            ? 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed text-slate-500 dark:text-slate-400'
-                                            : 'bg-orange-600 hover:bg-orange-700 text-white'
-                                            } font-bold rounded-lg transition-colors flex items-center justify-center gap-2`}
+                                        disabled={!isLive && !isPlayed}
+                                        onClick={() => {
+                                            if (isLive) startQuiz(hourlyQuiz);
+                                            else if (isPlayed) startReview();
+                                        }}
+                                        className={`w-full overflow-hidden rounded-2xl border-2 relative group text-left transition-all active:scale-[0.98]
+                                            ${isLive ? 'bg-white dark:bg-slate-900 border-orange-500 shadow-[0_10px_30px_-10px_rgba(249,115,22,0.3)] dark:shadow-none' :
+                                                isPlayed ? 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-green-300 dark:hover:border-green-800' :
+                                                    isNextChallenge ? 'bg-white dark:bg-slate-900 border-amber-400 shadow-[0_8px_20px_-8px_rgba(245,158,11,0.2)]' :
+                                                        isMissed ? 'bg-slate-50/50 dark:bg-slate-900/30 border-slate-100 dark:border-slate-800 opacity-70 grayscale' :
+                                                            'bg-slate-50/30 dark:bg-slate-900/10 border-slate-50 dark:border-slate-900 opacity-40 cursor-default'}`}
                                     >
-                                        <span>{t.play}</span>
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                                    </button>
-                                );
-                            }
-
-                            const last = new Date(lastAttemptTime);
-                            const now = getSyncedTime();
-                            const isLocked =
-                                last.getFullYear() === now.getFullYear() &&
-                                last.getMonth() === now.getMonth() &&
-                                last.getDate() === now.getDate() &&
-                                last.getHours() === now.getHours();
-
-                            if (isLocked) {
-                                const minutesLeft = 59 - now.getMinutes();
-                                const secondsLeft = 59 - now.getSeconds();
-                                const timeString = `${minutesLeft}:${secondsLeft < 10 ? '0' : ''}${secondsLeft}`;
-
-                                return (
-                                    <div className="space-y-4">
-                                        {/* Locked Status Card */}
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                                            <div className="flex items-end justify-between">
-                                                <div>
-                                                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Next Quiz In</div>
-                                                    <div className="flex items-baseline gap-3">
-                                                        <div className="text-2xl font-mono font-bold text-slate-700 dark:text-slate-300">
-                                                            {timeString}
+                                        <div className="p-4 sm:p-5 flex items-center justify-between gap-4">
+                                            <div className="flex-1">
+                                                {isLive ? (
+                                                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <LiveIndicator />
+                                                            <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest">LIVE NOW</span>
+                                                        </div>
+                                                        <div className="text-xl font-black text-slate-900 dark:text-white leading-tight mb-1">
+                                                            {activeQuiz?.title || (language === 'en' ? 'Hourly Challenge' : 'সুরক্ষা চ্যালেঞ্জ')}
+                                                        </div>
+                                                        {timeLeft && (
+                                                            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                                                                <span className="text-[10px]">⏳</span> {language === 'en' ? 'Closing in' : 'শেষ হবে'} <span className="text-orange-600 dark:text-orange-400 font-mono">{timeLeft}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : isPlayed ? (
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-12 h-12 rounded-xl bg-green-50 dark:bg-green-900/30 flex flex-col items-center justify-center border border-green-100 dark:border-green-800/50">
+                                                            <span className="text-[10px] font-black text-green-600 dark:text-green-400 leading-none mb-0.5">SCORE</span>
+                                                            <span className="text-lg font-black text-green-700 dark:text-green-300">+{slot.score}</span>
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-none mb-1">Challenge Completed</div>
+                                                            {slot.penalty > 0 ? (
+                                                                <div className="text-[10px] font-bold text-red-500 dark:text-red-400 flex items-center gap-1">
+                                                                    <span>⚠️</span> -{slot.penalty} penalty applied
+                                                                </div>
+                                                            ) : (
+                                                                <div className="text-[10px] font-bold text-green-500 flex items-center gap-1">
+                                                                    <span>✨</span> Perfect Score!
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                </div>
-                                                {/* Optional: Add a small icon or secondary label if needed */}
-                                            </div>
-                                        </div>
-
-                                        <button
-                                            onClick={startReview}
-                                            className="w-full py-3 rounded-lg font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-all text-sm flex items-center justify-center gap-2"
-                                        >
-                                            <span>Review Last Attempt</span>
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                        </button>
-                                    </div>
-                                );
-                            }
-
-                            return (
-                                <div className="space-y-3">
-                                    {lastAttemptPenalty > 0 && (
-                                        <div className="text-center mb-1">
-                                            <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-tight bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded border border-red-100 dark:border-red-900/30">
-                                                Last Penalty: -{lastAttemptPenalty} Points
-                                            </span>
-                                        </div>
-                                    )}
-                                    <button
-                                        onClick={() => startQuiz(hourlyQuiz)}
-                                        className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <span>{t.play}</span>
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                                    </button>
-                                    <button
-                                        onClick={startReview}
-                                        className="w-full py-2 rounded-lg font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all text-xs"
-                                    >
-                                        Review Last Attempt
-                                    </button>
-                                </div>
-                            );
-                        })()}
-                    </div>
-                ) : (
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border-2 border-dashed border-slate-200 dark:border-slate-700 text-center shadow-sm animate-fade-in">
-                        <div className="w-20 h-20 mx-auto mb-6 bg-slate-50 dark:bg-slate-900/50 rounded-full flex items-center justify-center relative">
-                            <span className="text-4xl">📡</span>
-                            {!isOnline && (
-                                <div className="absolute top-0 right-0 w-6 h-6 bg-red-500 rounded-full border-4 border-white dark:border-slate-800 flex items-center justify-center">
-                                    <span className="text-[10px] text-white font-bold">!</span>
-                                </div>
-                            )}
-                        </div>
-
-                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-3">
-                            {language === 'en' ? 'Connection Lost' : 'সংযোগ বিচ্ছিন্ন হয়েছে'}
-                        </h3>
-
-                        <p className="text-slate-500 dark:text-slate-400 text-sm mb-8 max-w-xs mx-auto leading-relaxed">
-                            {language === 'en'
-                                ? "We can't reach the safety servers right now. Don't worry, we'll automatically reconnect when you're back online."
-                                : "আমরা এই মুহূর্তে সার্ভারের সাথে সংযোগ করতে পারছি না। চিন্তা করবেন না, ইন্টারনেট ফিরে এলে আমরা স্বয়ংক্রিয়ভাবে আবার চেষ্টা করব।"}
-                        </p>
-
-                        <div className="space-y-3">
-                            <button
-                                onClick={() => loadData()}
-                                disabled={loading}
-                                className={`w-full py-3 px-6 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${loading
-                                    ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
-                                    : 'bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-500/20 active:scale-95'
-                                    }`}
-                            >
-                                {loading ? (
-                                    <>
-                                        <svg className="animate-spin h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        <span>{language === 'en' ? 'Checking...' : 'পরীক্ষা করা হচ্ছে...'}</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                        </svg>
-                                        <span>{language === 'en' ? 'Try Again Now' : 'এখনই আবার চেষ্টা করুন'}</span>
-                                    </>
-                                )}
-                            </button>
-
-                            <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                                </span>
-                                {language === 'en' ? 'Auto-refresh active' : 'স্বয়ংক্রিয় রিফ্রেশ সক্রিয়'}
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Leaderboard - Minimal List */}
-            <div className="max-w-5xl mx-auto">
-                <h3 className="text-center font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center justify-center gap-2 text-sm">
-                    <span>🏅</span> {t.leaderboard}
-                </h3>
-
-                {user && userRank && !loading && (
-                    <div className="bg-white dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 shadow-md p-3 sm:p-4 mb-4">
-                        <div className="flex items-center justify-between gap-3">
-                            <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">
-                                    {language === 'en' ? 'Your Standing' : 'আপনার অবস্থান'}
-                                </p>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">#{userRank.rank}</p>
-                                    {getBadgeByLevel(userProfile?.training_level || 0) && (
-                                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold border shadow-sm ${getBadgeByLevel(userProfile?.training_level || 0).color}`}>
-                                            {language === 'en' ? getBadgeByLevel(userProfile?.training_level || 0).en : getBadgeByLevel(userProfile?.training_level || 0).bn}
-                                        </span>
-                                    )}
-                                    <p className="text-xs font-bold text-slate-600 dark:text-slate-300 ml-1">{userRank.score.toLocaleString()} pts</p>
-                                </div>
-                            </div>
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-orange-600 dark:text-orange-300 border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
-                                {userProfile?.avatar_url ? <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
-                            </div>
-                        </div>
-                    </div>
-                )}
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden divide-y divide-slate-100 dark:divide-slate-700">
-                    {loading ? (
-                        <>
-                            <SkeletonRow />
-                            <SkeletonRow />
-                            <SkeletonRow />
-                            <SkeletonRow />
-                            <SkeletonRow />
-                        </>
-                    ) : !user ? (
-                        <div className="p-8 text-center">
-                            <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-4 text-sm">
-                                {language === 'en' ? 'Login to view Leaderboard' : 'লিডারবোর্ড দেখতে লগইন করুন'}
-                            </h4>
-                            <button
-                                onClick={() => setCurrentView('login')}
-                                className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors text-xs"
-                            >
-                                {language === 'en' ? 'Login Now' : 'এখনই লগইন করুন'}
-                            </button>
-                        </div>
-                    ) : (
-                        <>
-                            {/* Podium-Style Top 3 */}
-                            {leaderboard.length >= 3 && (
-                                <div className="px-4 py-6 sm:py-8">
-                                    {/* Winners podium */}
-                                    <div className="flex items-end justify-center gap-2 sm:gap-4 mb-6 max-w-md mx-auto">
-                                        {/* 2nd Place (Left) */}
-                                        <div className="flex-1 flex flex-col items-center animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                                            <div className="relative mb-2">
-                                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 dark:from-slate-600 dark:to-slate-700 flex items-center justify-center font-bold text-white border-4 border-white dark:border-slate-800 shadow-lg overflow-hidden">
-                                                    {leaderboard[1].avatar_url ? (
-                                                        <img src={leaderboard[1].avatar_url} alt="2nd" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        leaderboard[1].full_name?.[0] || 'U'
-                                                    )}
-                                                </div>
-                                                <div className="absolute -top-2 -right-2 w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-slate-400 to-slate-500 dark:from-slate-500 dark:to-slate-600 rounded-full flex items-center justify-center text-white font-black text-xs sm:text-sm shadow-lg border-2 border-white dark:border-slate-800">
-                                                    2
-                                                </div>
-                                            </div>
-                                            <div className="bg-gradient-to-b from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 rounded-t-xl px-3 py-4 sm:py-6 w-full flex flex-col items-center shadow-xl border-t-4 border-slate-400 dark:border-slate-500">
-                                                <p className="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-200 truncate w-full text-center mb-1">{leaderboard[1].full_name || 'Anonymous'}</p>
-                                                <p className="text-[10px] sm:text-xs font-bold text-orange-600 dark:text-orange-400">🏆 {leaderboard[1].points.toLocaleString()}</p>
-                                            </div>
-                                        </div>
-
-                                        {/* 1st Place (Center - Tallest) */}
-                                        <div className="flex-1 flex flex-col items-center animate-slide-up" style={{ animationDelay: '0s' }}>
-                                            <div className="relative mb-2">
-                                                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-500 flex items-center justify-center font-bold text-white border-4 border-white dark:border-slate-800 shadow-2xl overflow-hidden">
-                                                    {leaderboard[0].avatar_url ? (
-                                                        <img src={leaderboard[0].avatar_url} alt="1st" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        leaderboard[0].full_name?.[0] || 'U'
-                                                    )}
-                                                </div>
-                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl sm:text-3xl animate-bounce-subtle">
-                                                    👑
-                                                </div>
-                                                <div className="absolute -bottom-2  -right-2 w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-white font-black text-sm sm:text-base shadow-xl border-2 border-white dark:border-slate-800">
-                                                    1
-                                                </div>
-                                            </div>
-                                            <div className="bg-gradient-to-b from-yellow-100 to-yellow-200 dark:from-yellow-900/40 dark:to-yellow-800/40 rounded-t-xl px-3 py-6 sm:py-10 w-full flex flex-col items-center shadow-2xl border-t-4 border-yellow-500">
-                                                <p className="text-sm sm:text-base font-black text-slate-800 dark:text-yellow-200 truncate w-full text-center mb-1">{leaderboard[0].full_name || 'Anonymous'}</p>
-                                                <p className="text-xs sm:text-sm font-bold text-orange-600 dark:text-orange-400">🏆 {leaderboard[0].points.toLocaleString()}</p>
-                                            </div>
-                                        </div>
-
-                                        {/* 3rd Place (Right) */}
-                                        <div className="flex-1 flex flex-col items-center animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                                            <div className="relative mb-2">
-                                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-amber-600 to-amber-700 dark:from-amber-700 dark:to-amber-800 flex items-center justify-center font-bold text-white border-4 border-white dark:border-slate-800 shadow-lg overflow-hidden">
-                                                    {leaderboard[2].avatar_url ? (
-                                                        <img src={leaderboard[2].avatar_url} alt="3rd" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        leaderboard[2].full_name?.[0] || 'U'
-                                                    )}
-                                                </div>
-                                                <div className="absolute -top-2 -right-2 w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-amber-600 to-amber-700 dark:from-amber-700 dark:to-amber-800 rounded-full flex items-center justify-center text-white font-black text-xs sm:text-sm shadow-lg border-2 border-white dark:border-slate-800">
-                                                    3
-                                                </div>
-                                            </div>
-                                            <div className="bg-gradient-to-b from-amber-200 to-amber-300 dark:from-amber-900/40 dark:to-amber-800/40 rounded-t-xl px-3 py-3 sm:py-5 w-full flex flex-col items-center shadow-xl border-t-4 border-amber-600 dark:border-amber-700">
-                                                <p className="text-xs sm:text-sm font-black text-amber-900 dark:text-amber-200 truncate w-full text-center mb-1">{leaderboard[2].full_name || 'Anonymous'}</p>
-                                                <p className="text-[10px] sm:text-xs font-bold text-orange-600 dark:text-orange-400">🏆 {leaderboard[2].points.toLocaleString()}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Remaining positions (4th onwards) */}
-                            {(() => {
-                                const entries = showCompactView
-                                    ? (() => {
-                                        const userIndex = leaderboard.findIndex(item => item.user_id === user?.id);
-                                        // If user is rank 4 or lower, show them extra
-                                        if (userIndex >= 3) {
-                                            const userEntry = { ...leaderboard[userIndex], actualIndex: userIndex, isRemoteUser: true };
-                                            // Show some entries around or just the user
-                                            return [userEntry];
-                                        }
-                                        return []; // No extra entries if user in top 3 or compact view doesn't need them
-                                    })()
-                                    : leaderboard.slice(3);
-
-                                return entries.map((item, index) => {
-                                    const actualIndex = item.actualIndex !== undefined ? item.actualIndex : index + 3;
-                                    const isUserRow = item.user_id === user?.id;
-                                    const showDivider = showCompactView && actualIndex >= 3;
-
-                                    return (
-                                        <React.Fragment key={item.user_id || actualIndex}>
-                                            {showDivider && (
-                                                <div className="px-4 py-2 bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 border-y border-slate-200 dark:border-slate-700">
-                                                    <div className="flex items-center gap-2 justify-center">
-                                                        <div className="h-px flex-1 bg-slate-300 dark:bg-slate-600"></div>
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Your Position</span>
-                                                        <div className="h-px flex-1 bg-slate-300 dark:bg-slate-600"></div>
+                                                ) : isMissed ? (
+                                                    <div>
+                                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">CHALLENGE MISSED</div>
+                                                        <div className="text-sm font-bold text-slate-500 dark:text-slate-500 flex items-center gap-2">
+                                                            <span>❄️</span> No points earned this hour
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            )}
-                                            <div
-                                                className={`flex items-center p-3 sm:p-4 transition-all duration-300 relative overflow-hidden border-b border-slate-100 dark:border-slate-700 last:border-b-0 ${isUserRow
-                                                    ? 'bg-orange-50/50 dark:bg-orange-900/10'
-                                                    : 'hover:bg-slate-50 dark:hover:bg-slate-900/50'
-                                                    }`}
-                                            >
-                                                {/* User Row Shimmer Effect */}
-                                                {isUserRow && (
-                                                    <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
-                                                        <div className="shimmer h-full w-full"></div>
+                                                ) : isNextChallenge ? (
+                                                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                                                            <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">NEXT CHALLENGE</span>
+                                                        </div>
+                                                        <div className="text-xl font-black text-slate-900 dark:text-white leading-tight mb-1">
+                                                            {language === 'en' ? 'Upcoming Power Play' : 'পরবর্তী চ্যালেঞ্জ আসছে'}
+                                                        </div>
+                                                        {timeLeft && (
+                                                            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                                                                <span className="text-[10px]">⏰</span> {language === 'en' ? 'Starts in' : 'শুরু হবে'} <span className="text-amber-600 dark:text-amber-400 font-mono italic">{timeLeft}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <div>
+                                                        <div className="text-[10px] font-bold text-slate-300 dark:text-slate-700 uppercase tracking-widest mb-1">LOCKED</div>
+                                                        <div className="text-sm font-bold text-slate-400 dark:text-slate-700">
+                                                            Next hour challenge
+                                                        </div>
                                                     </div>
                                                 )}
-
-                                                <div className="flex flex-col items-center justify-center w-7 sm:w-8 shrink-0">
-                                                    <span className="text-sm sm:text-base font-black text-slate-400 dark:text-slate-500">
-                                                        #{actualIndex + 1}
-                                                    </span>
-                                                </div>
-
-                                                <div className="relative shrink-0 mx-2">
-                                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-600 overflow-hidden shadow-sm">
-                                                        {item.avatar_url ? (
-                                                            <img src={item.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            item.full_name?.[0] || 'U'
-                                                        )}
-                                                    </div>
-                                                    {/* Live / Activity Indicator */}
-                                                    <div className="absolute -bottom-1 -right-1 z-10">
-                                                        {isUserRow ? (
-                                                            <LiveIndicator />
-                                                        ) : (
-                                                            item.updated_at && (new Date() - new Date(item.updated_at) < 15 * 60 * 1000) && (
-                                                                <div className="w-2 h-2 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-800" title="Recently Active"></div>
-                                                            )
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2 mb-0.5">
-                                                        <h4 className={`font-bold truncate text-sm sm:text-base ${isUserRow ? 'text-orange-700 dark:text-orange-400' : 'text-slate-800 dark:text-slate-200'}`}>
-                                                            {item.full_name || 'Anonymous'} {isUserRow && language === 'en' && '(You)'}
-                                                        </h4>
-                                                        {item.training_level > 0 && getBadgeByLevel(item.training_level) && (
-                                                            <span className={`px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase tracking-tighter border shadow-sm shrink-0 ${getBadgeByLevel(item.training_level).color}`}>
-                                                                {language === 'en' ? getBadgeByLevel(item.training_level).en : getBadgeByLevel(item.training_level).bn}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex items-center gap-3 text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
-                                                        <span className="flex items-center gap-1">🏆 {item.points.toLocaleString()} {t.points}</span>
-                                                        {(item.completed_lessons?.length > 0) && (
-                                                            <span className="flex items-center gap-1 opacity-75">📚 {item.completed_lessons.length}</span>
-                                                        )}
-                                                    </div>
-                                                </div>
                                             </div>
-                                        </React.Fragment>
-                                    );
-                                });
-                            })()}
-                            {leaderboard.length === 0 && (
-                                <div className="p-8 text-center text-slate-400">
-                                    {fetchError ? (
-                                        <div className="flex flex-col items-center gap-2">
-                                            <span className="text-2xl">📡</span>
-                                            <p className="text-sm font-medium">
-                                                {language === 'en'
-                                                    ? "Unable to load leaderboard. Please check your connection."
-                                                    : "লিডারবোর্ড লোড করা সম্ভব হয়নি। আপনার ইন্টারনেট কানেকশন চেক করুন।"}
-                                            </p>
-                                            <button
-                                                onClick={() => fetchLeaderboard(true)}
-                                                className="mt-2 text-xs text-orange-600 font-bold hover:underline"
-                                            >
-                                                {language === 'en' ? "Try Again" : "আবার চেষ্টা করুন"}
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        language === 'en' ? "No participants yet. Be the first!" : "এখনও কেউ অংশগ্রহণ করেনি। আপনিই প্রথম হোন!"
-                                    )}
-                                </div>
-                            )}
 
-                            {/* View All/Collapse Button */}
-                            {leaderboard.length > 3 && (
-                                <div className="p-3 text-center bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700">
-                                    <button
-                                        onClick={goToGlobalLeaderboard}
-                                        className="text-orange-600 dark:text-orange-400 font-bold hover:underline text-sm flex items-center gap-2 mx-auto"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                        {language === 'en' ? 'View Full Leaderboard' : 'সম্পূর্ণ লিডারবোর্ড দেখুন'}
+                                            <div className="shrink-0">
+                                                {isLive ? (
+                                                    <div className="w-12 h-12 rounded-2xl bg-orange-600 flex items-center justify-center text-white shadow-lg shadow-orange-500/40 animate-pulse active:scale-90 transition-transform">
+                                                        <svg className="w-6 h-6 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /></svg>
+                                                    </div>
+                                                ) : isPlayed ? (
+                                                    <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 border border-slate-100 dark:border-slate-700 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                                                    </div>
+                                                ) : isNextChallenge ? (
+                                                    <div className="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-500 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-10 h-10 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 flex items-center justify-center text-slate-300 dark:text-slate-700 border border-slate-200 dark:border-slate-800">
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
                                     </button>
                                 </div>
-                            )}
-                        </>
-                    )}
-                </div>
-
-                {/* Sticky My Rank (if User exists and Rank exists) */}
-                {user && userRank && (
-                    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 p-4 shadow-2xl transform transition-transform duration-300 z-40 sm:hidden">
-                        <div className="flex items-center justify-between max-w-sm mx-auto">
-                            <div className="flex items-center gap-3">
-                                <span className="text-xl font-bold text-slate-400">#{userRank.rank}</span>
-                                <div className="text-sm">
-                                    <div className="font-bold text-slate-800 dark:text-slate-200">You</div>
-                                    <div className="text-slate-500 text-xs">{userRank.score} pts</div>
-                                </div>
                             </div>
-                            <button onClick={goToGlobalLeaderboard} className="text-orange-600 text-sm font-bold">View All</button>
-                        </div>
-                    </div>
+                        );
+                    })
                 )}
             </div>
 
+            {/* 3. MINI LEADERBOARD PREVIEW */}
+            <div className="px-4 mb-20">
+                <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-bold text-slate-700 dark:text-slate-300 text-sm">Top Players Today</h3>
+                        <button onClick={goToGlobalLeaderboard} className="text-orange-600 text-xs font-bold hover:underline">View All</button>
+                    </div>
+                    {/* Reuse mini list logic or simple placeholder for now */}
+                    <div className="space-y-3">
+                        {loading ? <SkeletonRow /> : leaderboard.slice(0, 3).map((item, idx) => (
+                            <div key={idx} className="flex items-center gap-3">
+                                <div className="w-6 text-center text-xs font-bold text-slate-400">#{idx + 1}</div>
+                                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                                    {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : null}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{item.full_name}</div>
+                                    <div className="text-[10px] text-slate-500">{item.points.toLocaleString()} pts</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
 
-            {/* Quiz Modal */}
+            {/* Quiz Modal (Keep Portal) */}
             {activeQuiz && createPortal(
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
                     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700 animate-scale-in">
