@@ -111,7 +111,62 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
     const [pendingLessonId, setPendingLessonId] = useState(null);
     const [previousQuizQuestions, setPreviousQuizQuestions] = useState({});
     const [recentReward, setRecentReward] = useState(null);
-    const [activeImageModal, setActiveImageModal] = useState(null); // { type: 'image', value: 'url' } or { type: 'text', value: 'content' }
+    const [activeSectionIndex, setActiveSectionIndex] = useState(0); // For Journal Mode
+    const [isJournalMode, setIsJournalMode] = useState(false);
+    const [activeImageModal, setActiveImageModal] = useState(null);
+    const [showAllChapters, setShowAllChapters] = useState(false);
+
+    const getSlides = (content) => {
+        if (!content) return [];
+        const slides = [];
+
+        // Hero Slide
+        slides.push({
+            type: 'hero',
+            level_title: content.level_title,
+            badge_name: content.badge_name,
+            level_id: content.level_id,
+            mission_briefing: content.mission_briefing
+        });
+
+        // Section Slides
+        if (content.sections) {
+            content.sections.forEach(section => {
+                slides.push({
+                    type: 'section',
+                    ...section
+                });
+            });
+        }
+
+        // Support Slides
+        if (content.pro_tip) slides.push({ type: 'pro_tip', ...content.pro_tip });
+        if (content.myth_buster) slides.push({ type: 'myth_buster', ...content.myth_buster });
+        if (content.advanced_section) slides.push({ type: 'advanced', ...content.advanced_section });
+
+        // Completion Slide
+        slides.push({ type: 'completion', level_id: content.level_id });
+
+        return slides;
+    };
+
+    const slides = getSlides(trainingContent);
+    const isFirstSlide = activeSectionIndex === 0;
+    const isLastSlide = activeSectionIndex === slides.length - 1;
+
+    const nextSlide = () => {
+        if (!isLastSlide) {
+            setActiveSectionIndex(prev => prev + 1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const prevSlide = () => {
+        if (!isFirstSlide) {
+            setActiveSectionIndex(prev => prev - 1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
 
     const { speak, pause, resume, stop, isPlaying, isPaused } = useTextToSpeech(language);
 
@@ -439,69 +494,39 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
     // TTS Logic: Compile full lesson text
     const handleReadLesson = () => {
-        if (!trainingContent) return;
+        const currentSlide = slides[activeSectionIndex];
+        if (!currentSlide) return;
 
         let parts = [];
 
-        // Add Mission Briefing
-        if (trainingContent.mission_briefing) {
-            parts.push((language === 'en' ? "Mission Briefing. " : "মূল কথা। ") + trainingContent.mission_briefing);
-        }
-
-        // Add Main Content Sections
-        if (trainingContent.sections) {
-            trainingContent.sections.forEach(section => {
-                if (section.title) parts.push(section.title);
-                if (section.points) {
-                    section.points.forEach(point => {
-                        if (point.item_name) parts.push(point.item_name);
-                        if (point.specifications) parts.push(point.specifications);
-                        if (point.importance) parts.push(point.importance);
-                        if (point.daily_check) parts.push(point.daily_check);
-                    });
-                }
+        if (currentSlide.type === 'hero') {
+            parts.push(currentSlide.level_title);
+            parts.push(currentSlide.mission_briefing);
+        } else if (currentSlide.type === 'section') {
+            parts.push(currentSlide.title);
+            currentSlide.points?.forEach(point => {
+                parts.push(point.item_name);
+                if (point.specifications) parts.push(point.specifications);
+                if (point.importance) parts.push(point.importance);
+                if (point.daily_check) parts.push(point.daily_check);
+            });
+        } else if (currentSlide.type === 'pro_tip') {
+            parts.push("Pro Tip");
+            currentSlide.content?.forEach(tip => parts.push(tip));
+        } else if (currentSlide.type === 'myth_buster') {
+            parts.push(currentSlide.title);
+            currentSlide.myths?.forEach(item => {
+                parts.push((language === 'en' ? "Myth: " : "ভুল ধারণা: ") + item.myth);
+                parts.push((language === 'en' ? "Reality: " : "সঠিক তথ্য: ") + (item.reality || item.fact));
+            });
+        } else if (currentSlide.type === 'advanced') {
+            parts.push(currentSlide.title);
+            currentSlide.facts?.forEach(fact => {
+                parts.push(fact.title);
+                parts.push(fact.content);
             });
         }
 
-        // Add Pro Tips (JSON structure: "pro_tip" object with "content" array)
-        const pt = trainingContent.pro_tip || trainingContent.pro_tips;
-        if (pt) {
-            if (pt.title) parts.push(pt.title);
-            if (pt.content && Array.isArray(pt.content)) {
-                pt.content.forEach(tip => parts.push(tip));
-            } else if (Array.isArray(pt)) {
-                pt.forEach(tip => parts.push(tip));
-            }
-        }
-
-        // Add Myth Busters (JSON structure: "myth_buster" object with "myths" array)
-        const mb = trainingContent.myth_buster || trainingContent.myth_busters;
-        if (mb) {
-            if (mb.title) parts.push(mb.title);
-            const myths = mb.myths || mb;
-            if (Array.isArray(myths)) {
-                myths.forEach(item => {
-                    if (item.myth) parts.push((language === 'en' ? "Myth: " : "ভুল ধারণা: ") + item.myth);
-                    if (item.reality || item.fact) parts.push((language === 'en' ? "Reality: " : "সঠিক তথ্য: ") + (item.reality || item.fact));
-                });
-            }
-        }
-
-        // Add Advanced Sections (JSON structure: "advanced_section" object with "facts" array)
-        const adv = trainingContent.advanced_section || trainingContent.advanced_sections;
-        if (adv) {
-            if (adv.title) parts.push(adv.title);
-            const facts = adv.facts || adv.content || adv;
-            if (Array.isArray(facts)) {
-                facts.forEach(section => {
-                    if (section.title) parts.push(section.title);
-                    if (section.content) parts.push(section.content);
-                    else if (typeof section === 'string') parts.push(section);
-                });
-            }
-        }
-
-        // Join everything with periods to ensure pauses between blocks
         const fullText = parts.join(". ");
         speak(fullText);
     };
@@ -628,7 +653,6 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                 </h1>
             </div>
 
-            {/* Network Error UI */}
             {fetchError && (
                 <div className="max-w-md mx-auto mb-8 p-6 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-800 rounded-2xl text-center animate-fade-in">
                     <div className="text-3xl mb-3">📡</div>
@@ -661,313 +685,321 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                 </div>
             )}
 
-            <div>
-                {trainingLoading ? (
-                    <div className="text-center py-12">
-                        <div className="inline-block w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
-                        <p className="mt-4 text-slate-500">Loading training content...</p>
-                    </div>
-                ) : !selectedChapter && !trainingContent ? (
-                    /* Chapter List View */
-                    <>
-                        {/* Progress Stats Section - Top of Page */}
-                        <div className="mb-8 lg:mb-12">
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                                {/* Total Chapters */}
-                                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-2xl lg:rounded-3xl p-5 lg:p-6 border border-blue-200 dark:border-blue-700 shadow-sm hover:shadow-md transition-all duration-300">
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div className="w-12 h-12 lg:w-14 lg:h-14 bg-blue-500/10 rounded-xl flex items-center justify-center">
-                                            <span className="text-2xl lg:text-3xl">📚</span>
-                                        </div>
+            {/* Main Content Area */}
+            {trainingLoading ? (
+                <div className="text-center py-12">
+                    <div className="inline-block w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="mt-4 text-slate-500">Loading training content...</p>
+                </div>
+            ) : !selectedChapter && !trainingContent ? (
+                <>
+                    {/* Gamified Journey Map Logic */}
+                    {(() => {
+                        // If loading, show spinner
+                        if (trainingLoading) {
+                            return (
+                                <div className="text-center py-12">
+                                    <div className="inline-block w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+                                    <p className="mt-4 text-slate-500">Loading your journey...</p>
+                                </div>
+                            );
+                        }
+
+                        // If content is selected, show nothing here
+                        if (selectedChapter || trainingContent) return null;
+
+                        const isMobile = window.innerWidth < 768;
+                        const journeyChapters = trainingChapters.filter(c => c.number !== 10);
+
+                        // Main Journey View
+                        return (
+                            <div className="animate-fade-in relative max-w-3xl mx-auto pb-32">
+
+                                {/* Header */}
+                                <div className="text-center mb-16 pt-4">
+                                    <div className="inline-block px-4 py-1.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-xs font-bold uppercase tracking-widest mb-4">
+                                        {language === 'en' ? 'Interactive Curriculum' : 'ইন্টারঅ্যাক্টিভ পাঠ্যক্রম'}
                                     </div>
-                                    <div className="text-3xl lg:text-4xl font-bold text-blue-600 dark:text-blue-400 mb-1 lg:mb-2">
-                                        {trainingChapters.length - 1}
-                                    </div>
-                                    <div className="text-xs lg:text-sm font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
-                                        {language === 'en' ? 'Total Chapters' : 'মোট অধ্যায়'}
-                                    </div>
+                                    <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">
+                                        {language === 'en' ? 'Safety Roadmap' : 'সেফটি রোডম্যাপ'}
+                                    </h1>
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium max-w-lg mx-auto">
+                                        {language === 'en' ? 'Complete each module to unlock the next step in your professional development.' : 'আপনার পেশাগত উন্নয়নের পরবর্তী ধাপ আনলক করতে প্রতিটি মডিউল সম্পূর্ণ করুন।'}
+                                    </p>
                                 </div>
 
-                                {/* Completed Chapters */}
-                                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-2xl lg:rounded-3xl p-5 lg:p-6 border border-emerald-200 dark:border-emerald-700 shadow-sm hover:shadow-md transition-all duration-300">
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div className="w-12 h-12 lg:w-14 lg:h-14 bg-emerald-500/10 rounded-xl flex items-center justify-center">
-                                            <span className="text-2xl lg:text-3xl">✅</span>
-                                        </div>
-                                    </div>
-                                    <div className="text-3xl lg:text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-1 lg:mb-2">
-                                        {trainingChapters.filter(ch => {
-                                            if (ch.number === 10) return false;
-                                            const completed = completedLessons.filter(id => id && id.toString().startsWith(`${ch.number}.`)).length;
-                                            return completed === ch.count;
-                                        }).length}
-                                    </div>
-                                    <div className="text-xs lg:text-sm font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">
-                                        {language === 'en' ? 'Completed Chapters' : 'সম্পন্ন অধ্যায়'}
-                                    </div>
-                                </div>
+                                {/* Journey Container */}
+                                <div className="relative">
 
-                                {/* Total Lessons */}
-                                <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-2xl lg:rounded-3xl p-5 lg:p-6 border border-orange-200 dark:border-orange-700 shadow-sm hover:shadow-md transition-all duration-300">
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div className="w-12 h-12 lg:w-14 lg:h-14 bg-orange-500/10 rounded-xl flex items-center justify-center">
-                                            <span className="text-2xl lg:text-3xl">📖</span>
-                                        </div>
-                                    </div>
-                                    <div className="text-3xl lg:text-4xl font-bold text-orange-600 dark:text-orange-400 mb-1 lg:mb-2">
-                                        {trainingChapters.reduce((sum, ch) => sum + (ch.number === 10 ? 0 : ch.count), 0)}
-                                    </div>
-                                    <div className="text-xs lg:text-sm font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">
-                                        {language === 'en' ? 'Total Lessons' : 'মোট পাঠ'}
-                                    </div>
-                                </div>
-
-                                {/* Completed Lessons */}
-                                <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-2xl lg:rounded-3xl p-5 lg:p-6 border border-purple-200 dark:border-purple-700 shadow-sm hover:shadow-md transition-all duration-300">
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div className="w-12 h-12 lg:w-14 lg:h-14 bg-purple-500/10 rounded-xl flex items-center justify-center">
-                                            <span className="text-2xl lg:text-3xl">🎯</span>
-                                        </div>
-                                    </div>
-                                    <div className="text-3xl lg:text-4xl font-bold text-purple-600 dark:text-purple-400 mb-1 lg:mb-2">
-                                        {completedLessons.filter(id => {
-                                            const str = id.toString();
-                                            return str.match(/^\d+\.\d+$/) && !str.startsWith('10.');
-                                        }).length}
-                                    </div>
-                                    <div className="text-xs lg:text-sm font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">
-                                        {language === 'en' ? 'Completed Lessons' : 'সম্পন্ন পাঠ'}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Desktop Hero Section */}
-                        <div className="hidden lg:block mb-12">
-                            <div className="bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-3xl p-10 text-white shadow-2xl shadow-orange-500/30 border border-orange-400/20 overflow-hidden relative">
-                                {/* Decorative Background Pattern */}
-                                <div className="absolute inset-0 opacity-10">
-                                    <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
-                                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-yellow-300 rounded-full blur-3xl"></div>
-                                </div>
-
-                                <div className="relative z-10 flex items-center justify-between">
-                                    <div className="flex-1">
-                                        <h1 className="text-5xl font-black mb-4 tracking-tight">
-                                            {language === 'en' ? 'Master Electrical Safety' : 'বৈদ্যুতিক নিরাপত্তায় পারদর্শী হন'}
-                                        </h1>
-                                        <p className="text-orange-100 text-lg font-medium max-w-2xl mb-6">
-                                            {language === 'en' ? 'Complete training modules, earn badges, and become a certified safety expert.' : 'প্রশিক্ষণ মডিউল সম্পন্ন করুন, ব্যাজ অর্জন করুন এবং একজন সার্টিফাইড সেফটি এক্সপার্ট হয়ে উঠুন।'}
-                                        </p>
-
-                                        {/* Progress Bar */}
-                                        <div className="max-w-2xl">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="text-sm font-semibold text-orange-100">
-                                                    {language === 'en' ? 'Overall Progress' : 'সামগ্রিক অগ্রগতি'}
-                                                </span>
-                                                <span className="text-2xl font-black">
-                                                    {Math.round((completedLessons.filter(id => {
-                                                        const str = id.toString();
-                                                        return str.match(/^\d+\.\d+$/) && !str.startsWith('10.');
-                                                    }).length / trainingChapters.reduce((sum, ch) => sum + (ch.number === 10 ? 0 : ch.count), 0)) * 100) || 0}%
-                                                </span>
-                                            </div>
-                                            <div className="h-4 bg-white/20 backdrop-blur-sm rounded-full overflow-hidden border border-white/30">
-                                                <div
-                                                    className="h-full bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 transition-all duration-1000 ease-out shadow-lg"
-                                                    style={{
-                                                        width: `${Math.round((completedLessons.filter(id => {
-                                                            const str = id.toString();
-                                                            return str.match(/^\d+\.\d+$/) && !str.startsWith('10.');
-                                                        }).length / trainingChapters.reduce((sum, ch) => sum + (ch.number === 10 ? 0 : ch.count), 0)) * 100) || 0}%`
-                                                    }}
-                                                ></div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Achievement Badges */}
-                                    <div className="hidden xl:flex items-center gap-4">
-                                        <div className="text-center bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 min-w-[140px]">
-                                            <div className="text-5xl mb-2">📊</div>
-                                            <div className="text-3xl font-black mb-1">
-                                                {readingPoints || 0}
-                                            </div>
-                                            <div className="text-orange-200 text-xs font-bold uppercase tracking-wider">
-                                                {language === 'en' ? 'Reading Score' : 'পঠন স্কোর'}
-                                            </div>
-                                        </div>
-
-                                        <div className="text-center bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 min-w-[140px]">
-                                            <div className="text-5xl mb-2">⚡</div>
-                                            <div className="text-3xl font-black mb-1">
-                                                {(() => {
-                                                    const totalLessons = trainingChapters.reduce((sum, ch) => sum + (ch.number === 10 ? 0 : ch.count), 0);
-                                                    if (!totalLessons) return 90;
-                                                    const completed = completedLessons.filter(id => {
-                                                        const str = id.toString();
-                                                        return str.match(/^\d+\.\d+$/) && !str.startsWith('10.');
-                                                    }).length;
-                                                    const progress = completed / totalLessons;
-                                                    const daysLeft = Math.max(0, 90 - Math.floor(progress * 90));
-                                                    return isNaN(daysLeft) ? 90 : daysLeft;
-                                                })()}
-                                            </div>
-                                            <div className="text-orange-200 text-xs font-bold uppercase tracking-wider">
-                                                {language === 'en' ? 'Days Left' : 'দিন বাকি'}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 lg:gap-8">
-                            {trainingChapters.map((chapter) => (
-                                <TrainingChapterCard
-                                    key={chapter.number}
-                                    chapter={chapter}
-                                    completedLessons={completedLessons}
-                                    language={language}
-                                    onClick={handleChapterClick}
-                                />
-                            ))}
-                        </div>
-
-                        {/* Video Library CTA */}
-                        <div className="mt-12 group">
-                            <button
-                                onClick={() => setCurrentView('video-guide')}
-                                className="w-full relative overflow-hidden bg-gradient-to-r from-orange-600 to-orange-500 rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.01]"
-                            >
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-2xl group-hover:bg-white/20 transition-colors"></div>
-                                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                                    <div className="flex items-center gap-6 text-center md:text-left">
-                                        <div className="w-16 h-16 lg:w-20 lg:h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-4xl lg:text-5xl shadow-inner">
-                                            📺
-                                        </div>
-                                        <div>
-                                            <h2 className={`text-2xl lg:text-3xl font-black mb-1 lg:mb-2 tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                {language === 'en' ? 'Video Learning Library' : 'ভিডিও লার্নিং লাইব্রেরি'}
-                                            </h2>
-                                            <p className={`text-orange-50 text-sm lg:text-base font-medium opacity-90 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                {language === 'en' ? 'Explore topic-wise safety guides and training videos' : 'বিষয়ভিত্তিক নিরাপত্তা গাইড এবং প্রশিক্ষণ ভিডিও দেখুন'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3 px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-xl font-black uppercase tracking-wider text-sm transition-all border border-white/30 shadow-lg">
-                                        <span>{language === 'en' ? 'Watch Now' : 'এখনই দেখুন'}</span>
-                                        <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </button>
-                        </div>
-
-                        {/* Certificate Button */}
-                        {user && (
-                            <div className="mt-12 flex justify-center pb-8">
-                                <button
-                                    onClick={() => setShowCertificateModal(true)}
-                                    className="group relative inline-flex items-center justify-center px-8 py-3.5 lg:px-12 lg:py-5 font-bold text-white transition-all duration-300 bg-slate-900 dark:bg-white dark:text-slate-900 rounded-xl lg:rounded-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 dark:focus:ring-white shadow-xl hover:shadow-2xl lg:hover:shadow-slate-900/40 dark:lg:hover:shadow-white/40 hover:scale-[1.02] lg:hover:scale-105 active:scale-95 border border-slate-800 dark:border-slate-200"
-                                >
-                                    <span className="relative flex items-center gap-3 lg:gap-4">
-                                        <svg className="w-6 h-6 lg:w-8 lg:h-8 text-yellow-400 lg:group-hover:rotate-12 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2 .712V17a1 1 0 001 1z" />
-                                        </svg>
-                                        <span className="text-lg lg:text-2xl tracking-tight">View Achievement Certificate</span>
-                                    </span>
-                                </button>
-                            </div>
-                        )}
-                    </>
-                ) : selectedChapter && !trainingContent ? (
-                    /* Subchapter List View or FAQ View */
-                    <div>
-                        <button
-                            onClick={() => setSelectedChapter(null)}
-                            className="mb-6 flex items-center gap-2 text-orange-600 hover:text-orange-700 font-bold"
-                        >
-                            ← {language === 'en' ? 'Back to Chapters' : 'অধ্যায়ে ফিরে যান'}
-                        </button>
-
-                        {selectedChapter.isFAQ ? (
-                            /* FAQ View */
-                            <div className="space-y-4">
-                                <div className="bg-gradient-to-r from-violet-100 to-fuchsia-100 dark:from-violet-900/30 dark:to-fuchsia-900/30 p-6 rounded-2xl mb-6 border border-violet-200 dark:border-violet-700">
-                                    <h2 className="text-2xl font-bold text-violet-900 dark:text-violet-100 mb-2">{selectedChapter.content.title}</h2>
-                                    <p className="text-violet-700 dark:text-violet-300 mb-4">{selectedChapter.content.subtitle}</p>
-
-                                    {/* Search Input */}
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            placeholder={language === 'en' ? 'Search questions, answers, or tags...' : 'প্রশ্ন, উত্তর বা ট্যাগ খুঁজুন...'}
-                                            value={faqSearchQuery}
-                                            onChange={(e) => setFaqSearchQuery(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-violet-200 dark:border-violet-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none shadow-sm"
+                                    {/* SVG Path Connector */}
+                                    <svg
+                                        className="absolute top-0 left-0 w-full h-full z-0 overflow-visible pointer-events-none"
+                                        style={{ height: '100%' }}
+                                        viewBox={`0 0 100 ${journeyChapters.length * 180}`}
+                                        preserveAspectRatio="none"
+                                    >
+                                        <defs>
+                                            <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                <stop offset="0%" stopColor="#f97316" stopOpacity="0.2" />
+                                                <stop offset="100%" stopColor="#f97316" stopOpacity="0.8" />
+                                            </linearGradient>
+                                            <mask id="pathMask">
+                                                <path
+                                                    d={`M 50 0 L 50 ${journeyChapters.length * 180}`}
+                                                    stroke="white"
+                                                    strokeWidth="8"
+                                                    strokeDasharray="10 10"
+                                                />
+                                            </mask>
+                                        </defs>
+                                        <path
+                                            d={journeyChapters.map((_, i) => {
+                                                if (i === journeyChapters.length - 1) return '';
+                                                const startY = i * 180 + 60; // Center of node
+                                                const endY = (i + 1) * 180 + 60;
+                                                return `M 50 ${startY} L 50 ${endY}`;
+                                            }).join(" ")}
+                                            stroke="#e2e8f0"
+                                            strokeWidth="8"
+                                            strokeLinecap="round"
+                                            fill="none"
+                                            className="dark:stroke-slate-800"
                                         />
-                                        <div className="absolute left-3 top-3.5 text-violet-400">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
+                                        {/* Animated Progress Line */}
+                                        <path
+                                            d={journeyChapters.map((_, i) => {
+                                                if (i === journeyChapters.length - 1) return '';
+                                                const completedCount = completedLessons.filter(id => id && id.toString().startsWith(`${journeyChapters[i].number}.`)).length;
+                                                if (completedCount < journeyChapters[i].count) return '';
 
-                                {selectedChapter.content.questions
-                                    .filter(q => {
-                                        if (!faqSearchQuery) return true;
-                                        const query = faqSearchQuery.toLowerCase();
-                                        return (
-                                            q.question.toLowerCase().includes(query) ||
-                                            q.answer.toLowerCase().includes(query) ||
-                                            q.tags.some(tag => tag.toLowerCase().includes(query))
-                                        );
-                                    })
-                                    .map((q, idx) => (
-                                        <div key={q.id} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-all">
-                                            <details className="group">
-                                                <summary className="flex items-center justify-between p-4 cursor-pointer list-none">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold text-sm shrink-0">
-                                                            {q.id.replace('q', '')}
-                                                        </div>
-                                                        <span className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
-                                                            {q.question}
-                                                        </span>
+                                                const startY = i * 180 + 60;
+                                                const endY = (i + 1) * 180 + 60;
+                                                return `M 50 ${startY} L 50 ${endY}`;
+                                            }).join(" ")}
+                                            stroke="url(#pathGradient)"
+                                            strokeWidth="8"
+                                            strokeLinecap="round"
+                                            fill="none"
+                                            className="motion-reduce:hidden"
+                                        />
+                                    </svg>
+
+                                    {/* Nodes Loop */}
+                                    <div className="relative z-10 flex flex-col gap-0">
+                                        {journeyChapters.map((chapter, index) => {
+                                            const completedCount = completedLessons.filter(id => id && id.toString().startsWith(`${chapter.number}.`)).length;
+                                            const isCompleted = completedCount === chapter.count && chapter.count > 0;
+
+                                            // Complex Lock Logic: Locked if previous is not complete AND this is not the first one
+                                            const isLocked = index > 0 && (() => {
+                                                const prevChapter = trainingChapters[index - 1];
+                                                const prevCompleted = completedLessons.filter(id => id && id.toString().startsWith(`${prevChapter.number}.`)).length;
+                                                return prevCompleted < prevChapter.count;
+                                            })();
+
+                                            const isActive = !isLocked && !isCompleted;
+                                            const isLeft = index % 2 === 0;
+
+                                            return (
+                                                <div
+                                                    key={chapter.number}
+                                                    id={`chapter-node-${index}`}
+                                                    className={`flex w-full h-[180px] items-center justify-center relative group`}
+                                                >
+                                                    {/* Side Info Card (Alternating) - Desktop Only */}
+                                                    <div className={`hidden md:flex absolute top-1/2 -translate-y-1/2 w-56 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-xl border border-slate-100 dark:border-slate-700 transition-all duration-500 
+                                                ${isLeft ? 'right-[55%] text-right items-end origin-right' : 'left-[55%] text-left items-start origin-left'}
+                                                ${isLocked ? 'opacity-50 grayscale blur-[1px]' : 'opacity-100 hover:scale-105'}
+                                            `}>
+                                                        <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-1">{chapter.title}</h3>
+                                                        <p className="text-xs text-slate-500 mb-2">{chapter.count} {language === 'en' ? 'Lessons' : 'পাঠ'}</p>
+                                                        {/* Mini Progress */}
+                                                        {!isLocked && (
+                                                            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                                                <div
+                                                                    className={`h-full rounded-full ${isCompleted ? 'bg-emerald-500' : 'bg-orange-500'}`}
+                                                                    style={{ width: `${Math.round((completedCount / chapter.count) * 100)}%` }}
+                                                                ></div>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    <span className="transition group-open:rotate-180">
-                                                        <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                                                    </span>
-                                                </summary>
-                                                <div className="px-4 pb-4 pl-[3.25rem] text-slate-600 dark:text-slate-400 text-sm leading-relaxed border-t border-slate-100 dark:border-slate-700 pt-4 bg-slate-50/50 dark:bg-slate-900/30">
-                                                    <div>{renderTextWithImages(q.answer)}</div>
-                                                    {q.image && (
-                                                        <div className="mt-4 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm max-w-md">
-                                                            <img
-                                                                src={`/quizzes/faq_images/${q.image}`}
-                                                                alt={q.question}
-                                                                className="w-full h-auto object-cover"
-                                                                loading="lazy"
-                                                            />
+
+                                                    {/* The Node Itself */}
+                                                    <div
+                                                        onClick={() => handleChapterClick(chapter)}
+                                                        className={`
+                                                    relative w-24 h-24 sm:w-28 sm:h-28 rounded-[2rem] flex flex-col items-center justify-center cursor-pointer transition-all duration-300 z-20 
+                                                    ${isLocked
+                                                                ? 'bg-slate-100 dark:bg-slate-800 border-4 border-slate-200 dark:border-slate-700 text-slate-400'
+                                                                : isCompleted
+                                                                    ? 'bg-emerald-500 border-4 border-emerald-200 dark:border-emerald-800 shadow-lg shadow-emerald-500/30 text-white transform hover:scale-110'
+                                                                    : 'bg-orange-500 border-8 border-orange-100 dark:border-orange-900/30 shadow-2xl shadow-orange-500/40 text-white transform hover:scale-110 animate-float-y'
+                                                            }
+                                                `}
+                                                    >
+                                                        {/* Active Pulse Ring */}
+                                                        {isActive && (
+                                                            <div className="absolute inset-0 rounded-[2rem] border-4 border-orange-500 animate-ping opacity-50"></div>
+                                                        )}
+
+                                                        {/* Inner Content */}
+                                                        <div className="flex flex-col items-center">
+                                                            {isLocked ? (
+                                                                <svg className="w-8 h-8 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                            ) : isCompleted ? (
+                                                                <svg className="w-10 h-10 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg>
+                                                            ) : (
+                                                                <span className="text-3xl font-black">{chapter.number}</span>
+                                                            )}
                                                         </div>
-                                                    )}
-                                                    <div className="mt-3 flex flex-wrap gap-2">
-                                                        {q.tags.map(tag => (
-                                                            <span key={tag} className="px-2 py-1 rounded-md bg-slate-200 dark:bg-slate-700 text-xs text-slate-600 dark:text-slate-400 font-medium">
-                                                                #{tag}
-                                                            </span>
-                                                        ))}
+
+                                                        {/* Mobile Label popup (if needed) or simple number */}
+                                                        {!isLocked && isActive && (
+                                                            <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 whitespace-nowrap px-4 py-1.5 bg-orange-600 text-white text-xs font-bold rounded-full shadow-lg animate-bounce-subtle z-30">
+                                                                {language === 'en' ? 'START HERE' : 'এখানে শুরু করুন'}
+                                                                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-orange-600 rotate-45"></div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Chapter Title for Mobile (Below node) */}
+                                                        <div className="md:hidden absolute top-28 w-40 text-center">
+                                                            <p className={`text-sm font-bold ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>
+                                                                {chapter.title}
+                                                            </p>
+                                                            {isActive && (
+                                                                <p className="text-[10px] text-orange-600 font-bold uppercase mt-1">
+                                                                    {completedCount}/{chapter.count} {language === 'en' ? 'Done' : 'সম্পন্ন'}
+                                                                </p>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </details>
-                                        </div>
-                                    ))}
+                                            );
+                                        })}
+                                    </div>
+                                </div>
 
-                                {selectedChapter.content.questions.filter(q => {
+                            </div>
+                        );
+                    })()}
+                    {/* Video Library CTA */}
+                    <div className="mt-12 group">
+                        <button
+                            onClick={() => setCurrentView('video-guide')}
+                            className="w-full relative overflow-hidden bg-gradient-to-r from-orange-600 to-orange-500 rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.01]"
+                        >
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-2xl group-hover:bg-white/20 transition-colors"></div>
+                            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                                <div className="flex items-center gap-6 text-center md:text-left">
+                                    <div className="w-16 h-16 lg:w-20 lg:h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-4xl lg:text-5xl shadow-inner">
+                                        📺
+                                    </div>
+                                    <div>
+                                        <h2 className={`text-2xl lg:text-3xl font-black mb-1 lg:mb-2 tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {language === 'en' ? 'Video Learning Library' : 'ভিডিও লার্নিং লাইব্রেরি'}
+                                        </h2>
+                                        <p className={`text-orange-50 text-sm lg:text-base font-medium opacity-90 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {language === 'en' ? 'Explore topic-wise safety guides and training videos' : 'বিষয়ভিত্তিক নিরাপত্তা গাইড এবং প্রশিক্ষণ ভিডিও দেখুন'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-xl font-black uppercase tracking-wider text-sm transition-all border border-white/30 shadow-lg">
+                                    <span>{language === 'en' ? 'Watch Now' : 'এখনই দেখুন'}</span>
+                                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+
+                    {/* FAQ CTA Card */}
+                    <div className="mt-8 group">
+                        <button
+                            onClick={() => {
+                                const faq = trainingChapters.find(c => c.number === 10);
+                                if (faq) handleChapterClick(faq);
+                            }}
+                            className="w-full relative overflow-hidden bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.01]"
+                        >
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-2xl group-hover:bg-white/20 transition-colors"></div>
+                            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                                <div className="flex items-center gap-6 text-center md:text-left">
+                                    <div className="w-16 h-16 lg:w-20 lg:h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-4xl lg:text-5xl shadow-inner">
+                                        💡
+                                    </div>
+                                    <div>
+                                        <h2 className={`text-2xl lg:text-3xl font-black mb-1 lg:mb-2 tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {language === 'en' ? 'Quick Help & FAQ' : 'কি, কেন?, কিভাবে?'}
+                                        </h2>
+                                        <p className={`text-violet-50 text-sm lg:text-base font-medium opacity-90 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {language === 'en' ? 'Get answers to common safety questions and procedures' : 'আপনার মনে আসা সব প্রশ্নের সহজ সমাধান ও গাইড'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-xl font-black uppercase tracking-wider text-sm transition-all border border-white/30 shadow-lg">
+                                    <span>{language === 'en' ? 'Search Answers' : 'উত্তর খুঁজুন'}</span>
+                                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+
+                    {/* Certificate Button */}
+                    {user && (
+                        <div className="mt-12 flex justify-center pb-8">
+                            <button
+                                onClick={() => setShowCertificateModal(true)}
+                                className="group relative inline-flex items-center justify-center px-8 py-3.5 lg:px-12 lg:py-5 font-bold text-white transition-all duration-300 bg-slate-900 dark:bg-white dark:text-slate-900 rounded-xl lg:rounded-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 dark:focus:ring-white shadow-xl hover:shadow-2xl lg:hover:shadow-slate-900/40 dark:lg:hover:shadow-white/40 hover:scale-[1.02] lg:hover:scale-105 active:scale-95 border border-slate-800 dark:border-slate-200"
+                            >
+                                <span className="relative flex items-center gap-3 lg:gap-4">
+                                    <svg className="w-6 h-6 lg:w-8 lg:h-8 text-yellow-400 lg:group-hover:rotate-12 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2 .712V17a1 1 0 001 1z" />
+                                    </svg>
+                                    <span className="text-lg lg:text-2xl tracking-tight">View Achievement Certificate</span>
+                                </span>
+                            </button>
+                        </div>
+                    )}
+                </>
+            ) : selectedChapter && !trainingContent ? (
+                /* Subchapter List View or FAQ View */
+                <div>
+                    <button
+                        onClick={() => setSelectedChapter(null)}
+                        className="mb-6 flex items-center gap-2 text-orange-600 hover:text-orange-700 font-bold"
+                    >
+                        ← {language === 'en' ? 'Back to Chapters' : 'অধ্যায়ে ফিরে যান'}
+                    </button>
+
+                    {selectedChapter.isFAQ ? (
+                        /* FAQ View */
+                        <div className="space-y-4">
+                            <div className="bg-gradient-to-r from-violet-100 to-fuchsia-100 dark:from-violet-900/30 dark:to-fuchsia-900/30 p-6 rounded-2xl mb-6 border border-violet-200 dark:border-violet-700">
+                                <h2 className="text-2xl font-bold text-violet-900 dark:text-violet-100 mb-2">{selectedChapter.content.title}</h2>
+                                <p className="text-violet-700 dark:text-violet-300 mb-4">{selectedChapter.content.subtitle}</p>
+
+                                {/* Search Input */}
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        placeholder={language === 'en' ? 'Search questions, answers, or tags...' : 'প্রশ্ন, উত্তর বা ট্যাগ খুঁজুন...'}
+                                        value={faqSearchQuery}
+                                        onChange={(e) => setFaqSearchQuery(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-violet-200 dark:border-violet-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none shadow-sm"
+                                    />
+                                    <div className="absolute left-3 top-3.5 text-violet-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {selectedChapter.content.questions
+                                .filter(q => {
                                     if (!faqSearchQuery) return true;
                                     const query = faqSearchQuery.toLowerCase();
                                     return (
@@ -975,347 +1007,267 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                         q.answer.toLowerCase().includes(query) ||
                                         q.tags.some(tag => tag.toLowerCase().includes(query))
                                     );
-                                }).length === 0 && (
-                                        <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-                                            <div className="text-4xl mb-3">🔍</div>
-                                            <p>{language === 'en' ? 'No results found' : 'কোন ফলাফল পাওয়া যায়নি'}</p>
-                                        </div>
-                                    )}
-                            </div>
-                        ) : (
-                            /* Regular Subchapter List */
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {selectedChapter.subchapters.map((subchapter, index) => {
-                                    const isUnlocked = isLessonUnlocked(subchapter.chapterNum, subchapter.subchapterNum);
-                                    const isCompleted = completedLessons.includes(subchapter.level_id);
-
-                                    return (
-                                        <div
-                                            key={subchapter.level_id}
-                                            onClick={() => {
-                                                if (!user) {
-                                                    // Handle login logic if needed, or pass prop
-                                                    return;
-                                                }
-                                                if (isUnlocked) {
-                                                    setTrainingContent(subchapter);
-                                                }
-                                            }}
-                                            className={`bg-white dark:bg-slate-800 p-3 rounded-lg border transition-all flex items-center gap-3 ${isUnlocked
-                                                ? 'border-slate-200 dark:border-slate-700 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-sm cursor-pointer'
-                                                : 'border-slate-100 dark:border-slate-800 opacity-60 cursor-not-allowed'
-                                                } ${isCompleted ? 'bg-emerald-50/30 dark:bg-emerald-900/10' : ''} group`}
-                                        >
-                                            {/* ID Box - Always Visible */}
-                                            <div className={`w-10 h-10 rounded-md flex items-center justify-center text-sm font-bold flex-shrink-0 border ${isCompleted
-                                                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
-                                                : isUnlocked
-                                                    ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-900/30'
-                                                    : 'bg-slate-50 dark:bg-slate-800/50 text-slate-400 border-slate-100 dark:border-slate-700'
-                                                }`}>
-                                                {subchapter.level_id}
-                                            </div>
-
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-0.5">
-                                                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                                                        {subchapter.badge_name}
+                                })
+                                .map((q, idx) => (
+                                    <div key={q.id} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-all">
+                                        <details className="group">
+                                            <summary className="flex items-center justify-between p-4 cursor-pointer list-none">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold text-sm shrink-0">
+                                                        {q.id.replace('q', '')}
+                                                    </div>
+                                                    <span className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                                                        {q.question}
                                                     </span>
-                                                    {isCompleted && (
-                                                        <span className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px]">✓</span>
-                                                    )}
-                                                    {!isUnlocked && (
-                                                        <span className="text-[10px] text-slate-400">🔒</span>
-                                                    )}
                                                 </div>
-                                                <h4 className={`font-bold text-sm truncate ${isUnlocked ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'
-                                                    }`}>
-                                                    {subchapter.level_title}
-                                                </h4>
+                                                <span className="transition group-open:rotate-180">
+                                                    <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                                                </span>
+                                            </summary>
+                                            <div className="px-4 pb-4 pl-[3.25rem] text-slate-600 dark:text-slate-400 text-sm leading-relaxed border-t border-slate-100 dark:border-slate-700 pt-4 bg-slate-50/50 dark:bg-slate-900/30">
+                                                <div>{renderTextWithImages(q.answer)}</div>
+                                                {q.image && (
+                                                    <div className="mt-4 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm max-w-md">
+                                                        <img
+                                                            src={`/quizzes/faq_images/${q.image}`}
+                                                            alt={q.question}
+                                                            className="w-full h-auto object-cover"
+                                                            loading="lazy"
+                                                        />
+                                                    </div>
+                                                )}
+                                                <div className="mt-3 flex flex-wrap gap-2">
+                                                    {q.tags.map(tag => (
+                                                        <span key={tag} className="px-2 py-1 rounded-md bg-slate-200 dark:bg-slate-700 text-xs text-slate-600 dark:text-slate-400 font-medium">
+                                                            #{tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
                                             </div>
+                                        </details>
+                                    </div>
+                                ))}
 
-                                            {/* Arrow Icon */}
-                                            {isUnlocked && (
-                                                <div className="text-slate-300 dark:text-slate-600 group-hover:text-orange-500 transition-colors">
-                                                    →
-                                                </div>
-                                            )}
+                            {selectedChapter.content.questions.filter(q => {
+                                if (!faqSearchQuery) return true;
+                                const query = faqSearchQuery.toLowerCase();
+                                return (
+                                    q.question.toLowerCase().includes(query) ||
+                                    q.answer.toLowerCase().includes(query) ||
+                                    q.tags.some(tag => tag.toLowerCase().includes(query))
+                                );
+                            }).length === 0 && (
+                                    <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+                                        <div className="text-4xl mb-3">🔍</div>
+                                        <p>{language === 'en' ? 'No results found' : 'কোন ফলাফল পাওয়া যায়নি'}</p>
+                                    </div>
+                                )}
+                        </div>
+                    ) : (
+                        /* Regular Subchapter List */
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {selectedChapter.subchapters.map((subchapter, index) => {
+                                const isUnlocked = isLessonUnlocked(subchapter.chapterNum, subchapter.subchapterNum);
+                                const isCompleted = completedLessons.includes(subchapter.level_id);
+
+                                return (
+                                    <div
+                                        key={subchapter.level_id}
+                                        onClick={() => {
+                                            if (!user) {
+                                                // Handle login logic if needed, or pass prop
+                                                return;
+                                            }
+                                            if (isUnlocked) {
+                                                setTrainingContent(subchapter);
+                                                setActiveSectionIndex(0);
+                                                setIsJournalMode(true);
+                                            }
+                                        }}
+                                        className={`bg-white dark:bg-slate-800 p-3 rounded-lg border transition-all flex items-center gap-3 ${isUnlocked
+                                            ? 'border-slate-200 dark:border-slate-700 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-sm cursor-pointer'
+                                            : 'border-slate-100 dark:border-slate-800 opacity-60 cursor-not-allowed'
+                                            } ${isCompleted ? 'bg-emerald-50/30 dark:bg-emerald-900/10' : ''} group`}
+                                    >
+                                        {/* ID Box - Always Visible */}
+                                        <div className={`w-10 h-10 rounded-md flex items-center justify-center text-sm font-bold flex-shrink-0 border ${isCompleted
+                                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                                            : isUnlocked
+                                                ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-900/30'
+                                                : 'bg-slate-50 dark:bg-slate-800/50 text-slate-400 border-slate-100 dark:border-slate-700'
+                                            }`}>
+                                            {subchapter.level_id}
                                         </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div >
-                ) : null}
-            </div>
 
-            {/* Full Page Content View - Using Portal to bypass parent layout constraints */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-0.5">
+                                                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                                                    {subchapter.badge_name}
+                                                </span>
+                                                {isCompleted && (
+                                                    <span className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px]">✓</span>
+                                                )}
+                                                {!isUnlocked && (
+                                                    <span className="text-[10px] text-slate-400">🔒</span>
+                                                )}
+                                            </div>
+                                            <h4 className={`font-bold text-sm truncate ${isUnlocked ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'
+                                                }`}>
+                                                {subchapter.level_title}
+                                            </h4>
+                                        </div>
+
+                                        {/* Arrow Icon */}
+                                        {isUnlocked && (
+                                            <div className="text-slate-300 dark:text-slate-600 group-hover:text-orange-500 transition-colors">
+                                                →
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            ) : null
+            }
+
+            {/* Safety Journal UI - Immersive Slide-based Experience */}
             {
                 trainingContent && createPortal(
-                    <div className="fixed inset-0 z-[100] bg-slate-50 dark:bg-slate-900 overflow-y-auto animate-slide-up w-full">
-                        {/* Sticky Header */}
-                        <div className="sticky top-0 z-50 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between shadow-sm gap-3 safe-area-inset-top">
-                            <button
-                                onClick={() => {
-                                    stop();
-                                    setTrainingContent(null);
-                                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                                }}
-                                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-500 flex-shrink-0"
-                                title={language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-                            <div className="flex-1 text-center min-w-0">
-                                <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
-                                    {trainingContent.level_id && `${trainingContent.level_id}. `}{trainingContent.level_title}
-                                </h2>
-                            </div>
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                                {/* Audio Controls (TTS) */}
-                                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-700/50 p-1 rounded-xl">
-                                    {!isPlaying ? (
-                                        <button
-                                            onClick={handleReadLesson}
-                                            className="p-1.5 hover:bg-orange-100 dark:hover:bg-orange-900/40 rounded-lg text-orange-600 dark:text-orange-400 transition-all"
-                                            title={language === 'en' ? 'Read Lesson' : 'পাঠ শুনুন'}
-                                        >
-                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M8 5v14l11-7z" />
-                                            </svg>
-                                        </button>
-                                    ) : (
-                                        <>
-                                            {isPaused ? (
-                                                <button
-                                                    onClick={resume}
-                                                    className="p-1.5 hover:bg-orange-100 dark:hover:bg-orange-900/40 rounded-lg text-orange-600 dark:text-orange-400"
-                                                >
-                                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M8 5v14l11-7z" />
-                                                    </svg>
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={pause}
-                                                    className="p-1.5 hover:bg-orange-100 dark:hover:bg-orange-900/40 rounded-lg text-orange-600 dark:text-orange-400"
-                                                >
-                                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                                                    </svg>
-                                                </button>
-                                            )}
-                                            <button
-                                                onClick={stop}
-                                                className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg text-red-600 dark:text-red-400"
-                                            >
-                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                                    <path d="M6 6h12v12H6z" />
-                                                </svg>
-                                            </button>
-                                            {/* Pulsing "Reading" Indicator */}
-                                            {!isPaused && (
-                                                <div className="flex gap-0.5 px-1">
-                                                    <div className="w-1 h-3 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                                                    <div className="w-1 h-4 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                                                    <div className="w-1 h-3 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
+                    <div className="fixed inset-0 z-[100] bg-slate-50 dark:bg-slate-900 overflow-hidden flex flex-col safe-area-inset-top">
+                        {/* Progress Header */}
+                        <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 pt-2 shadow-sm">
+                            <div className="flex items-center justify-between px-4 pb-2">
+                                <button
+                                    onClick={() => {
+                                        stop();
+                                        setTrainingContent(null);
+                                        setIsJournalMode(false);
+                                    }}
+                                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-500 transition-colors"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+
+                                <div className="text-center flex-1 mx-4">
+                                    <span className="text-[10px] uppercase font-bold text-orange-500 tracking-widest block mb-0.5">
+                                        {trainingContent.badge_name || "Safety Journal"}
+                                    </span>
+                                    <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                                        {trainingContent.level_title}
+                                    </h2>
                                 </div>
 
-                                {/* Complete Button for Training Content */}
-                                {!completedLessons.includes(trainingContent.level_id) && (
+                                <div className="flex items-center gap-1">
                                     <button
-                                        onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                        className="bg-emerald-500 hover:bg-emerald-600 text-white w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
-                                        title={language === 'en' ? 'Mark Completed' : 'সম্পন্ন চিহ্নিত করুন'}
+                                        onClick={handleReadLesson}
+                                        className={`p-2 rounded-full transition-all ${isPlaying ? 'text-orange-600 bg-orange-50' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
                                     >
-                                        ✓
+                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                            {isPlaying ? (
+                                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                                            ) : (
+                                                <path d="M8 5v14l11-7z" />
+                                            )}
+                                        </svg>
                                     </button>
-                                )}
+                                </div>
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div className="h-1 w-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+                                <div
+                                    className="h-full bg-orange-500 transition-all duration-500 ease-out"
+                                    style={{ width: `${((activeSectionIndex + 1) / slides.length) * 100}%` }}
+                                ></div>
                             </div>
                         </div>
 
-                        <div className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4 lg:px-8 py-6 sm:py-8 lg:py-10 pb-16 lg:pb-20">
-                            {/* Hero Header */}
-                            <div className="bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-2xl lg:rounded-3xl p-8 lg:p-12 text-white mb-8 lg:mb-12 shadow-xl border border-orange-400/20">
-                                <div className="inline-block px-4 py-1.5 lg:px-5 lg:py-2 rounded-full bg-white/20 backdrop-blur-md text-xs lg:text-sm uppercase tracking-wide font-semibold mb-4 lg:mb-5 border border-white/30">
-                                    {trainingContent.badge_name}
-                                </div>
-                                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4 reading-content leading-tight">
-                                    {trainingContent.level_title}
-                                </h2>
-                                <p className="text-orange-50 text-sm lg:text-base font-medium flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-lg animate-pulse"></span>
-                                    Level {trainingContent.level_id}
-                                </p>
-                            </div>
-
-                            {/* Mission Briefing */}
-                            <div className="bg-gradient-to-br from-orange-50 via-orange-50 to-amber-50 dark:from-orange-950/40 dark:via-orange-900/30 dark:to-amber-950/40 border-l-4 border-orange-500 p-6 lg:p-8 rounded-r-2xl mb-8 lg:mb-12 shadow-md hover:shadow-lg transition-all duration-300">
-                                <div className="flex justify-end mb-4">
-                                    <button
-                                        onClick={() => speak((language === 'en' ? "Mission Briefing. " : "মূল কথা। ") + trainingContent.mission_briefing)}
-                                        className="px-3 py-1.5 lg:px-4 lg:py-2 bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 rounded-lg text-orange-700 dark:text-orange-400 font-semibold transition-all flex items-center gap-2 text-xs uppercase tracking-tight shadow-sm border border-orange-200/50 dark:border-orange-500/30"
-                                    >
-                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                                        </svg>
-                                        {language === 'en' ? 'Listen' : 'শুনুন'}
-                                    </button>
-                                </div>
-
-                                <div className="flex flex-col gap-4">
-                                    <div className="flex items-center gap-3 lg:gap-4">
-                                        <div className="w-10 h-10 lg:w-14 lg:h-14 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-xl lg:text-3xl flex-shrink-0 shadow-md">
-                                            🎯
-                                        </div>
-                                        <h3 className="font-semibold text-orange-900 dark:text-orange-100 uppercase tracking-wide text-sm lg:text-base">
-                                            {language === 'en' ? 'Mission Briefing' : 'মূল কথা'}
-                                        </h3>
-                                    </div>
-                                    <p className={`text-slate-800 dark:text-slate-200 reading-content leading-relaxed text-base lg:text-lg whitespace-pre-line ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {renderTextWithImages(trainingContent.mission_briefing)}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Sections */}
-                            <div className="space-y-10 lg:space-y-14">
-                                {trainingContent.sections?.map((section, sIdx) => (
-                                    <div key={sIdx} className="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-10 shadow-md border border-slate-200 dark:border-slate-700">
-                                        <div className="flex flex-col gap-3 lg:gap-4 mb-6 lg:mb-8 border-b border-slate-200 dark:border-slate-700 pb-4 lg:pb-6">
-                                            <div className="flex justify-end">
-                                                <button
-                                                    onClick={() => {
-                                                        let text = section.title + ". ";
-                                                        if (section.points) {
-                                                            section.points.forEach(p => {
-                                                                text += (p.item_name || "") + ". " + (p.specifications || "") + ". " + (p.importance || "") + ". " + (p.daily_check || "") + ". ";
-                                                            });
-                                                        }
-                                                        speak(text);
-                                                    }}
-                                                    className="px-3 py-1.5 lg:px-4 lg:py-2 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-lg text-orange-700 dark:text-orange-400 font-semibold transition-all flex items-center gap-2 text-xs uppercase tracking-tight shadow-sm border border-orange-200 dark:border-orange-500/30"
-                                                >
-                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                                                    </svg>
-                                                    {language === 'en' ? 'Listen' : 'শুনুন'}
-                                                </button>
+                        {/* Slide Content Area */}
+                        <div className="flex-1 overflow-y-auto relative bg-mimic-pattern">
+                            <div key={activeSectionIndex} className="max-w-2xl mx-auto px-6 py-8 animate-fade-in mb-24">
+                                {slides[activeSectionIndex]?.type === 'hero' && (
+                                    <div className="space-y-8">
+                                        <div className="aspect-[4/3] rounded-3xl overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-xl border border-white/20">
+                                            <div className="w-full h-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-6xl shadow-inner">
+                                                📔
                                             </div>
-                                            <h3 className={`text-xl lg:text-2xl font-bold text-slate-900 dark:text-slate-100 reading-content flex items-center gap-3 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                <span className="w-1 lg:w-1.5 h-8 bg-gradient-to-b from-orange-500 to-orange-600 rounded-full flex-shrink-0"></span>
-                                                {section.title}
+                                        </div>
+                                        <div className="space-y-4">
+                                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full text-xs font-bold uppercase tracking-wider">
+                                                <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                                                Mission Objective
+                                            </div>
+                                            <h3 className={`text-3xl font-extrabold text-slate-900 dark:text-slate-100 leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                {trainingContent.level_title}
+                                            </h3>
+                                            <p className={`text-lg text-slate-600 dark:text-slate-400 leading-relaxed reading-content ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                {renderTextWithImages(trainingContent.mission_briefing)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {slides[activeSectionIndex]?.type === 'section' && (
+                                    <div className="space-y-8">
+                                        <div className="flex items-center gap-4 mb-4">
+                                            <div className="w-12 h-12 rounded-2xl bg-orange-500 flex items-center justify-center text-2xl shadow-lg shadow-orange-500/20 text-white font-bold">
+                                                {activeSectionIndex}
+                                            </div>
+                                            <h3 className={`text-2xl font-bold text-slate-900 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                {slides[activeSectionIndex].title}
                                             </h3>
                                         </div>
-                                        <div className="space-y-8 lg:space-y-12">
-                                            {section.points?.map((point, pIdx) => (
-                                                <div key={pIdx} className="relative pl-0 sm:pl-6 lg:pl-8 border-l-0 sm:border-l-2 border-orange-300 dark:border-orange-800/50">
-                                                    <div className="hidden sm:block absolute left-[-5px] top-1.5 w-3 h-3 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 border-2 border-white dark:border-slate-800 shadow-md"></div>
 
-                                                    {/* Mobile: Top Border Separator */}
-                                                    <div className="sm:hidden w-full h-px bg-gradient-to-r from-slate-200 to-transparent dark:from-slate-700 dark:to-transparent mb-4"></div>
-
-                                                    <h4 className={`font-semibold text-slate-900 dark:text-slate-100 mb-5 lg:mb-6 reading-content text-lg lg:text-xl leading-snug ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        <div className="space-y-8">
+                                            {slides[activeSectionIndex].points?.map((point, pIdx) => (
+                                                <div key={pIdx} className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700/50 space-y-4">
+                                                    <h4 className={`text-xl font-bold text-slate-900 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                         {point.item_name}
                                                     </h4>
                                                     {point.image_name && (
-                                                        <div className="mb-8 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow bg-slate-50 dark:bg-slate-900/50">
+                                                        <div
+                                                            className="rounded-2xl overflow-hidden cursor-zoom-in"
+                                                            onClick={() => setActiveImageModal({ type: 'image', value: `/quizzes/${point.image_name}` })}
+                                                        >
                                                             <img
                                                                 src={`/quizzes/${point.image_name}`}
                                                                 alt={point.item_name}
-                                                                className="w-full h-auto object-cover max-h-96"
+                                                                className="w-full h-auto object-cover max-h-80"
                                                                 loading="lazy"
                                                             />
-                                                            {point.image_caption && (
-                                                                <div className="bg-white dark:bg-slate-800/80 px-5 py-4 border-t border-slate-100 dark:border-slate-700">
-                                                                    <p className="text-base text-slate-600 dark:text-slate-400 italic text-center font-medium leading-relaxed">
-                                                                        {point.image_caption}
-                                                                    </p>
-                                                                </div>
-                                                            )}
                                                         </div>
                                                     )}
-                                                    <div className="space-y-6 lg:space-y-8">
+                                                    <div className="space-y-3">
                                                         {point.specifications && (
-                                                            <div className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-800/80 dark:to-slate-800/50 p-5 lg:p-7 rounded-xl lg:rounded-2xl border-l-4 border-orange-500 shadow-sm hover:shadow-md transition-shadow duration-300 relative group/block">
-                                                                <div className="flex justify-end mb-3 opacity-0 group-hover/block:opacity-100 transition-opacity">
-                                                                    <button
-                                                                        onClick={() => speak((language === 'en' ? "Details. " : "বিস্তারিত। ") + point.specifications)}
-                                                                        className="px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-lg text-orange-600 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-tight border border-orange-200 dark:border-orange-500/20 shadow-sm"
-                                                                    >
-                                                                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                                                                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                                                                        </svg>
-                                                                        {language === 'en' ? 'Listen' : 'শুনুন'}
-                                                                    </button>
-                                                                </div>
-                                                                <div className="flex items-center gap-3 mb-3 lg:mb-4">
-                                                                    <div className="w-8 h-8 lg:w-10 lg:h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-                                                                        <span className="text-xl lg:text-2xl">📋</span>
-                                                                    </div>
-                                                                    <p className="text-xs lg:text-sm font-semibold text-slate-900 dark:text-slate-200 uppercase tracking-wide">
-                                                                        {language === 'en' ? 'Details' : 'বিস্তারিত'}
-                                                                    </p>
-                                                                </div>
-                                                                <p className={`text-base lg:text-lg text-slate-700 dark:text-slate-300 reading-content leading-relaxed whitespace-pre-line ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            <div className="flex gap-3">
+                                                                <span className="text-orange-500 font-bold">📋</span>
+                                                                <p className={`text-slate-700 dark:text-slate-300 leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                                     {renderTextWithImages(point.specifications)}
                                                                 </p>
                                                             </div>
                                                         )}
                                                         {point.importance && (
-                                                            <div className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/10 p-5 lg:p-7 rounded-xl lg:rounded-2xl border-l-4 border-amber-500 shadow-sm hover:shadow-md transition-shadow duration-300 relative group/block">
-                                                                <div className="flex justify-end mb-3 opacity-0 group-hover/block:opacity-100 transition-opacity">
-                                                                    <button
-                                                                        onClick={() => speak((language === 'en' ? "Why it matters. " : "কেন এটি গুরুত্বপূর্ণ। ") + point.importance)}
-                                                                        className="px-3 py-1.5 bg-amber-100/70 dark:bg-amber-800/30 hover:bg-amber-200 dark:hover:bg-amber-800/40 rounded-lg text-amber-700 dark:text-amber-400 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-tight border border-amber-200 dark:border-amber-500/20 shadow-sm"
-                                                                    >
-                                                                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                                                                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                                                                        </svg>
-                                                                        {language === 'en' ? 'Listen' : 'শুনুন'}
-                                                                    </button>
+                                                            <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/20">
+                                                                <div className="flex items-center gap-2 mb-1 text-amber-700 dark:text-amber-400 font-bold text-xs uppercase tracking-wider">
+                                                                    <span>💡</span>
+                                                                    {language === 'en' ? 'Why it matters' : 'কেন গুরুত্বপূর্ণ'}
                                                                 </div>
-                                                                <div className="flex items-center gap-3 mb-3 lg:mb-4">
-                                                                    <div className="w-8 h-8 lg:w-10 lg:h-10 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
-                                                                        <span className="text-xl lg:text-2xl">💡</span>
-                                                                    </div>
-                                                                    <p className="text-xs lg:text-sm font-semibold text-amber-800 dark:text-amber-400 uppercase tracking-wide">
-                                                                        {language === 'en' ? 'Why it matters' : 'কেন গুরুত্বপূর্ণ'}
-                                                                    </p>
-                                                                </div>
-                                                                <p className={`text-base lg:text-lg font-medium text-slate-800 dark:text-slate-200 reading-content leading-relaxed whitespace-pre-line ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                <p className={`text-slate-800 dark:text-slate-200 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                                     {renderTextWithImages(point.importance)}
                                                                 </p>
                                                             </div>
                                                         )}
                                                         {point.daily_check && (
-                                                            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/10 p-5 lg:p-7 rounded-xl lg:rounded-2xl border-l-4 border-emerald-500 shadow-sm hover:shadow-md transition-shadow duration-300 relative group/block">
-                                                                <div className="flex justify-end mb-3 opacity-0 group-hover/block:opacity-100 transition-opacity">
-                                                                    <button
-                                                                        onClick={() => speak((language === 'en' ? "Action item. " : "করণীয় কাজ। ") + point.daily_check)}
-                                                                        className="px-3 py-1.5 bg-emerald-100/70 dark:bg-emerald-800/30 hover:bg-emerald-200 dark:hover:bg-emerald-800/40 rounded-lg text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-tight border border-emerald-200 dark:border-emerald-500/20 shadow-sm"
-                                                                    >
-                                                                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                                                                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                                                                        </svg>
-                                                                        {language === 'en' ? 'Listen' : 'শুনুন'}
-                                                                    </button>
+                                                            <div className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/20">
+                                                                <div className="flex items-center gap-2 mb-1 text-emerald-700 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider">
+                                                                    <span>✓</span>
+                                                                    {language === 'en' ? 'Pro Action' : 'করণীয় কাজ'}
                                                                 </div>
-                                                                <div className="flex items-center gap-3 mb-3 lg:mb-4">
-                                                                    <div className="w-8 h-8 lg:w-10 lg:h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
-                                                                        <span className="text-xl lg:text-2xl">✓</span>
-                                                                    </div>
-                                                                    <p className="text-xs lg:text-sm font-semibold text-emerald-800 dark:text-emerald-400 uppercase tracking-wide">
-                                                                        {language === 'en' ? 'Action Item' : 'করণীয় কাজ'}
-                                                                    </p>
-                                                                </div>
-                                                                <p className={`text-base lg:text-lg text-slate-800 dark:text-slate-200 reading-content leading-relaxed whitespace-pre-line ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                <p className={`text-slate-800 dark:text-slate-200 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                                     {renderTextWithImages(point.daily_check)}
                                                                 </p>
                                                             </div>
@@ -1325,227 +1277,179 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                             ))}
                                         </div>
                                     </div>
-                                ))}
-                            </div>
+                                )}
 
-                            {/* Pro Tips */}
-                            {trainingContent.pro_tip && (
-                                <div className="mt-16 bg-emerald-50 dark:bg-emerald-900/10 rounded-3xl p-8 sm:p-10 border-2 border-emerald-500 shadow-xl shadow-emerald-500/10">
-                                    <div className="flex flex-col gap-4 mb-10">
-                                        <div className="flex justify-end">
-                                            <button
-                                                onClick={() => {
-                                                    let text = trainingContent.pro_tip.title + ". ";
-                                                    trainingContent.pro_tip.content?.forEach(tip => text += tip + ". ");
-                                                    speak(text);
-                                                }}
-                                                className="px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-800 dark:hover:bg-emerald-700 rounded-lg transition-all text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 text-[10px] uppercase tracking-tight shadow-sm border border-emerald-200/50 dark:border-emerald-500/20 font-bold"
-                                            >
-                                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                                                </svg>
-                                                {language === 'en' ? 'Listen' : 'এই অংশটি শুনুন'}
-                                            </button>
-                                        </div>
-                                        <div className="flex items-center gap-3 sm:gap-5">
-                                            <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-emerald-100 dark:bg-emerald-800 flex items-center justify-center text-xl sm:text-3xl shadow-sm text-emerald-600 dark:text-emerald-400">
+                                {slides[activeSectionIndex]?.type === 'pro_tip' && (
+                                    <div className="bg-emerald-600 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                                        <div className="relative z-10 space-y-6">
+                                            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-4xl shadow-xl">
                                                 💡
                                             </div>
-                                            <div>
-                                                <h3 className={`text-2xl sm:text-3xl font-bold text-emerald-900 dark:text-emerald-100 reading-content leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                    {trainingContent.pro_tip.title}
+                                            <div className="space-y-4">
+                                                <h3 className={`text-2xl font-bold ${language === 'bn' ? 'font-bengali text-3xl' : ''}`}>
+                                                    {slides[activeSectionIndex].title}
                                                 </h3>
-                                                <p className="text-emerald-700 dark:text-emerald-400 text-sm mt-1 font-bold uppercase tracking-wider">{language === 'en' ? 'Expert Advice' : 'বিশেষজ্ঞের পরামর্শ'}</p>
+                                                <div className="space-y-4">
+                                                    {slides[activeSectionIndex].content?.map((tip, idx) => (
+                                                        <div key={idx} className="flex gap-4 items-start">
+                                                            <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs flex-shrink-0 mt-1">✓</span>
+                                                            <p className={`text-emerald-50 text-lg leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                {renderTextWithImages(tip)}
+                                                            </p>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <ul className="space-y-6">
-                                        {trainingContent.pro_tip.content?.map((tip, idx) => (
-                                            <li key={idx} className={`flex items-start gap-3 sm:gap-5 text-slate-800 dark:text-emerald-50 reading-content leading-loose text-lg sm:text-xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                <span className="w-8 h-8 rounded-full bg-emerald-200 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1 shadow-sm">✓</span>
-                                                <span className="flex-1 font-medium">{renderTextWithImages(tip)}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
+                                )}
 
-                            {/* Myth Buster */}
-                            {trainingContent.myth_buster && (
-                                <div className="mt-16 bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-10 border-2 border-red-100 dark:border-red-900/30 shadow-lg">
-                                    <div className="flex flex-col gap-4 mb-10">
-                                        <div className="flex justify-end">
-                                            <button
-                                                onClick={() => {
-                                                    let text = trainingContent.myth_buster.title + ". ";
-                                                    trainingContent.myth_buster.myths?.forEach(item => {
-                                                        text += (language === 'en' ? "Myth: " : "ভুল ধারণা: ") + item.myth + ". " + (language === 'en' ? "Reality: " : "সঠিক তথ্য: ") + (item.reality || item.fact) + ". ";
-                                                    });
-                                                    speak(text);
-                                                }}
-                                                className="px-3 py-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 rounded-lg transition-all text-red-700 dark:text-red-400 flex items-center gap-1.5 text-[10px] uppercase tracking-tight font-bold border border-red-200/50 dark:border-red-800/50 shadow-sm"
-                                            >
-                                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                                                </svg>
-                                                {language === 'en' ? 'Listen' : 'এই অংশটি শুনুন'}
-                                            </button>
-                                        </div>
-                                        <div className="flex items-center gap-3 sm:gap-5">
-                                            <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-xl sm:text-3xl shadow-sm">
+                                {slides[activeSectionIndex]?.type === 'myth_buster' && (
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-4 mb-2">
+                                            <div className="w-12 h-12 rounded-2xl bg-red-500 flex items-center justify-center text-2xl shadow-lg shadow-red-500/20 text-white">
                                                 ⚠️
                                             </div>
-                                            <div>
-                                                <h3 className="text-2xl sm:text-3xl font-bold text-red-800 dark:text-red-400 reading-content">
-                                                    {trainingContent.myth_buster.title}
-                                                </h3>
-                                                <p className="text-red-600/80 dark:text-red-400/80 text-sm mt-1 font-bold uppercase tracking-wider">{language === 'en' ? 'Common Misconceptions' : 'ভুল ধারণা বনাম সঠিক তথ্য'}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 gap-6">
-                                        {trainingContent.myth_buster.myths?.map((item, idx) => (
-                                            <div key={idx} className="bg-slate-50 dark:bg-slate-900/40 rounded-3xl p-0 overflow-hidden border border-slate-200 dark:border-slate-700">
-                                                <div className="p-6 bg-red-50/50 dark:bg-red-900/10 border-b border-red-100 dark:border-red-900/20">
-                                                    <div className="flex items-center gap-2 mb-3">
-                                                        <span className="text-red-500 text-xl">❌</span>
-                                                        <p className="text-sm font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">
-                                                            {language === 'en' ? 'Myth' : 'ভুল ধারণা'}
-                                                        </p>
-                                                    </div>
-                                                    <p className="text-lg sm:text-xl text-slate-800 dark:text-slate-200 italic reading-content leading-relaxed font-medium">
-                                                        "{renderTextWithImages(item.myth)}"
-                                                    </p>
-                                                </div>
-                                                <div className="p-6 bg-emerald-50/50 dark:bg-emerald-900/10">
-                                                    <div className="flex items-center gap-2 mb-3">
-                                                        <span className="text-emerald-500 text-xl">✅</span>
-                                                        <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-                                                            {language === 'en' ? 'Reality' : 'সঠিক তথ্য'}
-                                                        </p>
-                                                    </div>
-                                                    <p className="text-lg sm:text-xl text-slate-800 dark:text-slate-200 reading-content leading-relaxed font-medium">
-                                                        {renderTextWithImages(item.reality || item.fact)}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Advanced Section */}
-                            {trainingContent.advanced_section && (
-                                <div className="mt-12 bg-slate-900 rounded-3xl p-8 sm:p-10 text-white shadow-xl hover:shadow-2xl transition-shadow">
-                                    <div className="flex flex-col gap-4 mb-8">
-                                        <div className="flex justify-end">
-                                            <button
-                                                onClick={() => {
-                                                    let text = trainingContent.advanced_section.title + ". ";
-                                                    trainingContent.advanced_section.facts?.forEach(f => text += f.title + ". " + f.content + ". ");
-                                                    speak(text);
-                                                }}
-                                                className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-all text-white flex items-center gap-1.5 text-[10px] uppercase tracking-tight font-bold border border-white/20 shadow-sm"
-                                            >
-                                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                                                </svg>
-                                                {language === 'en' ? 'Listen' : 'এই অংশটি শুনুন'}
-                                            </button>
-                                        </div>
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center text-2xl shadow-sm">
-                                                🧪
-                                            </div>
-                                            <h3 className={`text-2xl sm:text-3xl font-bold reading-content ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                {trainingContent.advanced_section.title}
+                                            <h3 className={`text-2xl font-bold text-red-600 dark:text-red-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                {slides[activeSectionIndex].title}
                                             </h3>
                                         </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 gap-6">
-                                        {trainingContent.advanced_section.facts?.map((fact, idx) => (
-                                            <div key={idx} className="bg-white/5 rounded-2xl p-6 sm:p-8 border border-white/10 hover:border-white/20 hover:bg-white/8 transition-all group/block relative">
-                                                <div className="flex justify-end mb-2 opacity-0 group-hover/block:opacity-100 transition-opacity">
-                                                    <button
-                                                        onClick={() => speak(fact.title + ". " + fact.content)}
-                                                        className="px-2 py-1 bg-white/10 rounded-md text-white flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-tight border border-white/20"
-                                                    >
-                                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                                                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                                                        </svg>
-                                                        {language === 'en' ? 'Listen' : 'এই অংশটি শুনুন'}
-                                                    </button>
+                                        <div className="space-y-4">
+                                            {slides[activeSectionIndex].myths?.map((item, idx) => (
+                                                <div key={idx} className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden border border-red-100 dark:border-red-900/20 shadow-sm">
+                                                    <div className="p-5 bg-red-50/50 dark:bg-red-900/10 border-b border-red-100 dark:border-red-900/20">
+                                                        <p className="text-xs font-bold text-red-600 uppercase tracking-widest mb-1">{language === 'en' ? 'Common Myth' : 'ভুল ধারণা'}</p>
+                                                        <p className={`text-slate-800 dark:text-slate-200 font-medium italic ${language === 'bn' ? 'font-bengali text-lg' : ''}`}>
+                                                            "{renderTextWithImages(item.myth)}"
+                                                        </p>
+                                                    </div>
+                                                    <div className="p-5 bg-emerald-50/50 dark:bg-emerald-900/10">
+                                                        <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1">{language === 'en' ? 'The Truth' : 'সঠিক তথ্য'}</p>
+                                                        <p className={`text-slate-800 dark:text-slate-200 font-bold ${language === 'bn' ? 'font-bengali text-lg' : ''}`}>
+                                                            {renderTextWithImages(item.reality || item.fact)}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-start justify-between mb-4">
-                                                    <h4 className="font-bold text-orange-300 reading-content text-lg sm:text-xl">
-                                                        {fact.title}
-                                                    </h4>
-                                                </div>
-                                                <p className="text-slate-200 reading-content leading-relaxed text-base whitespace-pre-line">
-                                                    {renderTextWithImages(fact.content)}
-                                                </p>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
 
-                            {/* Mark as Complete Button stack */}
-                            <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
-                                {!completedLessons.includes(trainingContent.level_id) ? (
-                                    <>
-                                        <button
-                                            onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                            className="w-full px-8 py-4 rounded-2xl font-bold transition-all bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-3 text-lg active:scale-95"
-                                        >
-                                            <span className="text-xl">✓</span>
-                                            {language === 'en' ? 'Mark as Complete' : 'সম্পন্ন হিসেবে চিহ্নিত করুন'}
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setTrainingContent(null);
-                                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                                            }}
-                                            className="w-full mt-4 px-8 py-4 rounded-2xl font-bold transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center gap-3 text-lg active:scale-95"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                                            </svg>
-                                            {language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}
-                                        </button>
-                                    </>
-                                ) : (
-                                    <div className="space-y-4">
-                                        <div className="w-full px-8 py-4 rounded-2xl font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 flex items-center justify-center gap-3 text-lg border border-emerald-200 dark:border-emerald-800">
-                                            <span className="text-xl">✓</span>
-                                            {language === 'en' ? 'Lesson Completed!' : 'পাঠ সম্পন্ন হয়েছে!'}
+                                {slides[activeSectionIndex]?.type === 'advanced' && (
+                                    <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl space-y-8">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-14 h-14 rounded-2xl bg-orange-500 flex items-center justify-center text-3xl shadow-lg text-white font-bold">
+                                                🧪
+                                            </div>
+                                            <h3 className={`text-2xl font-bold ${language === 'bn' ? 'font-bengali text-3xl' : ''}`}>
+                                                {slides[activeSectionIndex].title}
+                                            </h3>
+                                        </div>
+                                        <div className="space-y-6">
+                                            {slides[activeSectionIndex].facts?.map((fact, idx) => (
+                                                <div key={idx} className="space-y-2 border-l-2 border-orange-500 pl-6">
+                                                    <h4 className="text-orange-400 font-bold text-lg">{fact.title}</h4>
+                                                    <p className={`text-slate-300 leading-relaxed ${language === 'bn' ? 'font-bengali text-lg' : ''}`}>
+                                                        {renderTextWithImages(fact.content)}
+                                                    </p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {slides[activeSectionIndex]?.type === 'completion' && (
+                                    <div className="flex flex-col items-center justify-center space-y-8 py-12 text-center">
+                                        <div className="relative">
+                                            <div className="w-32 h-32 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-6xl animate-bounce-in">
+                                                🏆
+                                            </div>
+                                            <div className="absolute -top-2 -right-2 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold border-4 border-white dark:border-slate-800 shadow-lg animate-bounce">
+                                                ✓
+                                            </div>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <h3 className={`text-3xl font-extrabold text-slate-900 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                {language === 'en' ? 'Session Complete!' : 'সেশন সম্পন্ন হয়েছে!'}
+                                            </h3>
+                                            <p className="text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
+                                                {language === 'en' ? 'You have successfully completed this safety mission. Ready to test your knowledge?' : 'আপনি সফলভাবে এই সুরক্ষা মিশনটি সম্পন্ন করেছেন। আপনার জ্ঞান পরীক্ষা করতে প্রস্তুত?'}
+                                            </p>
                                         </div>
 
-                                        {/* Reward feedback removed from here, moved to global portal below */}
-
-                                        <button
-                                            onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                            className="w-full px-8 py-4 rounded-2xl font-bold transition-all bg-orange-600 text-white hover:bg-orange-700 shadow-lg shadow-orange-500/20 flex items-center justify-center gap-3 text-lg active:scale-95"
-                                        >
-                                            <span className="text-xl">📝</span>
-                                            {language === 'en' ? 'Practice Quiz' : 'প্র্যাকটিস কুইজ'}
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setTrainingContent(null);
-                                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                                            }}
-                                            className="w-full px-8 py-4 rounded-2xl font-bold transition-all bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:opacity-90 flex items-center justify-center gap-3 text-lg active:scale-95"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                                            </svg>
-                                            {language === 'en' ? 'Back to Lessons' : 'পাঠে ফিরে যান'}
-                                        </button>
+                                        <div className="w-full max-w-sm space-y-4 pt-4">
+                                            {!completedLessons.includes(trainingContent.level_id) ? (
+                                                <button
+                                                    onClick={() => initiateLessonCompletion(trainingContent.level_id)}
+                                                    className="w-full material-button-primary py-4 text-lg"
+                                                >
+                                                    {language === 'en' ? 'Claim Rewards & Start Quiz' : 'পুরস্কার সংগ্রহ এবং কুইজ শুরু করুন'}
+                                                </button>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-100 dark:border-emerald-800 flex items-center justify-center gap-2">
+                                                        <span>✅</span>
+                                                        {language === 'en' ? 'Lesson Completed' : 'পাঠ সম্পন্ন হয়েছে'}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => initiateLessonCompletion(trainingContent.level_id)}
+                                                        className="w-full material-button-primary py-4 text-lg"
+                                                    >
+                                                        {language === 'en' ? 'Retry Practice Quiz' : 'প্র্যাকটিস কুইজ খেলুন'}
+                                                    </button>
+                                                </div>
+                                            )}
+                                            <button
+                                                onClick={() => {
+                                                    setTrainingContent(null);
+                                                    setIsJournalMode(false);
+                                                }}
+                                                className="w-full p-4 rounded-2xl font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-colors"
+                                            >
+                                                {language === 'en' ? 'Back to Training List' : 'তালিকা ফিরে যান'}
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
+                        </div>
 
+                        {/* Navigation Footer */}
+                        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-t border-slate-200 dark:border-slate-700 px-6 py-4 pb-8 flex items-center justify-between shadow-2xl relative z-10 transition-all duration-300">
+                            <button
+                                onClick={prevSlide}
+                                disabled={isFirstSlide}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${isFirstSlide ? 'opacity-0 pointer-events-none' : 'text-slate-500 hover:text-orange-500 active:scale-95'}`}
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                                </svg>
+                                <span className="font-bold">{language === 'en' ? 'PREV' : 'আগের'}</span>
+                            </button>
+
+                            <div className="flex gap-1.5 h-1.5">
+                                {slides.map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className={`h-1.5 rounded-full transition-all duration-300 ${i === activeSectionIndex ? 'w-6 bg-orange-500' : 'w-1.5 bg-slate-200 dark:bg-slate-700'}`}
+                                    />
+                                ))}
+                            </div>
+
+                            {!isLastSlide ? (
+                                <button
+                                    onClick={nextSlide}
+                                    className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-2xl font-bold shadow-lg shadow-orange-500/20 active:scale-95 hover:bg-orange-600 transition-all animate-bounce-in"
+                                >
+                                    <span className="font-bold">{language === 'en' ? 'NEXT' : 'পরের'}</span>
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                            ) : (
+                                <div className="w-20"></div> /* Placeholder for balance */
+                            )}
                         </div>
                     </div>,
                     document.body
