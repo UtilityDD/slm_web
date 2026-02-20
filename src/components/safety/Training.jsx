@@ -115,6 +115,8 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
     const [isJournalMode, setIsJournalMode] = useState(false);
     const [activeImageModal, setActiveImageModal] = useState(null);
     const [showAllChapters, setShowAllChapters] = useState(false);
+    const [learningInsights, setLearningInsights] = useState(null);
+    const [isInsightsLoading, setIsInsightsLoading] = useState(false);
 
     const getSlides = (content) => {
         if (!content) return [];
@@ -246,6 +248,122 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
         loadProgress();
     }, [user]);
+
+    // Fetch and Calculate Learning Insights
+    useEffect(() => {
+        const fetchInsights = async () => {
+            if (!user) return;
+            setIsInsightsLoading(true);
+
+            try {
+                const { data, error } = await supabase
+                    .from('quiz_attempts')
+                    .select('created_at, quiz_id')
+                    .eq('user_id', user.id)
+                    .like('quiz_id', 'lesson_bonus_%')
+                    .order('created_at', { ascending: false });
+
+                if (!error && data) {
+                    // 1. Calculate Streak
+                    const dates = data.map(d => new Date(d.created_at).toDateString());
+                    const uniqueDates = [...new Set(dates)];
+                    let streak = 0;
+                    const today = new Date().toDateString();
+                    const yesterday = new Date(Date.now() - 86400000).toDateString();
+
+                    if (uniqueDates[0] === today || uniqueDates[0] === yesterday) {
+                        streak = 1;
+                        for (let i = 0; i < uniqueDates.length - 1; i++) {
+                            const d1 = new Date(uniqueDates[i]);
+                            const d2 = new Date(uniqueDates[i + 1]);
+                            const diff = (d1 - d2) / (1000 * 60 * 60 * 24);
+                            if (diff === 1) streak++;
+                            else break;
+                        }
+                    }
+
+                    // 2. Peak Hour
+                    const hours = data.map(d => new Date(d.created_at).getHours());
+                    const hourCounts = {};
+                    hours.forEach(h => hourCounts[h] = (hourCounts[h] || 0) + 1);
+                    const peakHour = Object.keys(hourCounts).reduce((a, b) => hourCounts[a] > hourCounts[b] ? a : b, 0);
+
+                    // 3. Weekly Momentum
+                    const lastWeek = new Date(Date.now() - 7 * 86400000);
+                    const weeklyCons = data.filter(d => new Date(d.created_at) > lastWeek).length;
+
+                    // --- NEW: Descriptive Feedback & Ratings ---
+
+                    // Habit Feedback (Based on Streak)
+                    let habitRating = 1;
+                    let habitFeedback = "";
+                    if (streak >= 7) { habitRating = 5; habitFeedback = language === 'en' ? "Amazing consistency! You're a pro." : "আপনার শেখার আগ্রহ দারুণ! নিয়মিত বজায় রাখুন।"; }
+                    else if (streak >= 3) { habitRating = 4; habitFeedback = language === 'en' ? "Good job! You're reading regularly." : "আপনার শেখার আগ্রহ ভাল। নিয়মিত পড়ছেন।"; }
+                    else if (streak >= 1) { habitRating = 3; habitFeedback = language === 'en' ? "Occasional learner. Aim for daily reading!" : "আপনি মাঝেমধ্যে পড়েন। নিয়মিত হওয়ার চেষ্টা করুন।"; }
+                    else { habitRating = 2; habitFeedback = language === 'en' ? "A bit irregular. Try to read every day!" : "আপনি ভীষণ অনিয়মিত। প্রতিদিন পড়ার অভ্যাস করুন।"; }
+                    if (data.length === 0) { habitRating = 1; habitFeedback = language === 'en' ? "Start your journey today!" : "আজই আপনার শেখার যাত্রা শুরু করুন!"; }
+
+                    // Timing Feedback (Based on Peak Hour)
+                    let timingFeedback = "";
+                    let timingRating = 5;
+                    const maxFreq = hourCounts[peakHour] || 0;
+                    const isRandom = data.length >= 3 && maxFreq < 2;
+
+                    if (isRandom) {
+                        timingRating = 3;
+                        timingFeedback = language === 'en' ? "Your learning time is inconsistent. Try setting a fixed schedule for better results!" : "আপনার পড়ার কোনো নির্দিষ্ট সময় নেই। প্রতিদিন একটি নির্দিষ্ট সময়ে পড়ার অভ্যাস করলে ভালো ফল পাবেন।";
+                    } else if (peakHour >= 5 && peakHour < 11) {
+                        timingFeedback = language === 'en' ? "You usually read in the morning! Very good habit." : "আপনি সাধারণত সকালে পড়েন! খুব ভাল অভ্যাস।";
+                    } else if (peakHour >= 11 && peakHour < 16) {
+                        timingFeedback = language === 'en' ? "Great use of daylight for learning!" : "আপনি দিনের আলোয় শিখছেন!";
+                    } else if (peakHour >= 16 && peakHour < 21) {
+                        timingFeedback = language === 'en' ? "Productive evening learner. Keep it up!" : "আপনি বিকেলের সময় ব্যবহার করছেন।";
+                    } else if (peakHour >= 21 || peakHour < 1) {
+                        timingFeedback = language === 'en' ? "Quiet night learning. Stay focused!" : "আপনি রাতে শান্তিতে শিখতে পছন্দ করেন। চালিয়ে যান!";
+                    } else {
+                        timingFeedback = language === 'en' ? "Learning at late hours. Get enough rest too!" : "আপনি অনেক রাত পর্যন্ত পড়ছেন। পর্যাপ্ত বিশ্রামও নিন!";
+                    }
+
+                    // Weekly Momentum Feedback
+                    let weeklyRating = 1;
+                    let weeklyFeedback = "";
+                    if (data.length === 0) {
+                        weeklyRating = 1;
+                        weeklyFeedback = language === 'en' ? "Your journey starts now! Complete your first lesson." : "আপনার যাত্রা মাত্র শুরু হলো! আজই প্রথম পাঠ সম্পন্ন করুন।";
+                    } else if (weeklyCons >= 5) {
+                        weeklyRating = 5;
+                        weeklyFeedback = language === 'en' ? "Great speed this week! Learning fast." : "এই সপ্তাহে দুর্দান্ত গতি ছিল! আপনি দ্রুত শিখছেন।";
+                    } else if (weeklyCons >= 2) {
+                        weeklyRating = 4;
+                        weeklyFeedback = language === 'en' ? "Steady progress this week." : "শিখনের গতি মাঝারি। আরও একটু চেষ্টা করুন।";
+                    } else {
+                        weeklyRating = 2;
+                        weeklyFeedback = language === 'en' ? "Low momentum this week. Start again!" : "এই সপ্তাহে গতি বেশ কম। আবার শুরু করুন!";
+                    }
+
+                    setLearningInsights({
+                        streak,
+                        peakHour: parseInt(peakHour, 10),
+                        isRandom,
+                        weeklyMomentum: weeklyCons,
+                        totalLessons: data.length,
+                        habitRating,
+                        habitFeedback,
+                        timingFeedback,
+                        timingRating,
+                        weeklyRating,
+                        weeklyFeedback
+                    });
+                }
+            } catch (err) {
+                console.error("Error calculating insights:", err);
+            } finally {
+                setIsInsightsLoading(false);
+            }
+        };
+
+        fetchInsights();
+    }, [user, completedLessons, language]);
 
     // Custom parser for interactive content: ((image_path|label)) and [[image_path]]
     const renderTextWithImages = (text) => {
@@ -713,7 +831,81 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
                         // Main Journey View
                         return (
-                            <div className="animate-fade-in relative max-w-3xl mx-auto pb-32">
+                            <div className="animate-fade-in relative max-w-4xl mx-auto pb-32">
+                                {/* Desktop Background Decorative Elements */}
+                                <div className="hidden lg:block absolute top-[10%] -left-64 w-96 h-96 bg-orange-200/20 dark:bg-orange-900/10 rounded-full blur-[120px] pointer-events-none"></div>
+                                <div className="hidden lg:block absolute top-[40%] -right-64 w-96 h-96 bg-blue-200/20 dark:bg-blue-900/10 rounded-full blur-[120px] pointer-events-none"></div>
+                                <div className="hidden lg:block absolute top-[70%] -left-64 w-96 h-96 bg-emerald-200/20 dark:bg-emerald-900/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+                                {/* Insights Welcome Hero Section */}
+                                {learningInsights && learningInsights.totalLessons > 0 && !isInsightsLoading && (
+                                    <div className="mb-12 animate-fade-in group">
+                                        <div className="relative overflow-hidden bg-gradient-to-br from-orange-500/10 via-blue-500/5 to-slate-500/5 dark:from-orange-500/20 dark:via-blue-500/10 dark:to-slate-900/40 p-6 lg:p-8 rounded-[2.5rem] border border-white/50 dark:border-slate-700/50 shadow-2xl backdrop-blur-xl">
+                                            {/* Decorative Background Elements */}
+                                            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                                            <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4"></div>
+
+                                            <div className="relative z-10">
+                                                <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
+                                                    {/* User Avatar/Icon Circle */}
+                                                    <div className="relative">
+                                                        <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-tr from-orange-100 to-white dark:from-orange-950/50 dark:to-slate-800 rounded-full flex items-center justify-center text-4xl shadow-xl border-4 border-white dark:border-slate-700 group-hover:scale-105 transition-transform duration-500">
+                                                            👋
+                                                        </div>
+                                                        <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800 shadow-lg">
+                                                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2 .712V17a1 1 0 001 1z" />
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex-1 text-center md:text-left">
+                                                        <h2 className={`text-2xl md:text-3xl font-black text-slate-800 dark:text-white mb-2 leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            {language === 'en' ? `Welcome back, Explorer!` : `স্বাগতম! আপনি কেমন শিখছেন?`}
+                                                        </h2>
+                                                        <div className="flex flex-col gap-2">
+                                                            <div className="flex items-center gap-2 justify-center md:justify-start">
+                                                                <div className="flex gap-0.5">
+                                                                    {[...Array(5)].map((_, i) => (
+                                                                        <svg key={i} className={`w-3.5 h-3.5 ${i < learningInsights.habitRating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-300 dark:text-slate-600'}`} viewBox="0 0 20 20">
+                                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                                        </svg>
+                                                                    ))}
+                                                                </div>
+                                                                <span className={`text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                    {language === 'en' ? 'Daily Goal Rating' : 'আপনার রেটিং'}
+                                                                </span>
+                                                            </div>
+                                                            <p className={`text-slate-600 dark:text-slate-300 font-bold ${language === 'bn' ? 'font-bengali text-lg' : 'text-md'}`}>
+                                                                {learningInsights.habitFeedback}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Summary Stats Row */}
+                                                <div className="mt-8 pt-6 border-t border-slate-200/50 dark:border-slate-700/50 grid grid-cols-2 md:grid-cols-3 gap-4">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{language === 'en' ? 'Current Streak' : 'টানা শিখন'}</span>
+                                                        <span className="text-xl font-black text-orange-600 dark:text-orange-400">{learningInsights.streak} {language === 'en' ? 'Days' : 'দিন'}</span>
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{language === 'en' ? 'Peak Timing' : 'পড়ার প্রিয় সময়'}</span>
+                                                        <span className={`text-sm font-bold text-blue-600 dark:text-blue-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            {learningInsights.isRandom ? (language === 'en' ? 'Variable Focus' : 'সময়ের কোনো ঠিক নেই') : (learningInsights.peakHour === 0 ? '12 AM' : learningInsights.peakHour > 12 ? `${learningInsights.peakHour - 12} PM` : `${learningInsights.peakHour} AM`)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="hidden md:flex flex-col">
+                                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{language === 'en' ? 'Momentum' : 'সাপ্তাহিক গতি'}</span>
+                                                        <p className={`text-xs font-bold text-slate-500 dark:text-slate-400 italic line-clamp-1 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            {learningInsights.weeklyFeedback}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Header */}
                                 <div className="text-center mb-16 pt-4">
@@ -739,33 +931,47 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                         preserveAspectRatio="none"
                                     >
                                         <defs>
-                                            <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                                <stop offset="0%" stopColor="#f97316" stopOpacity="0.2" />
-                                                <stop offset="100%" stopColor="#f97316" stopOpacity="0.8" />
+                                            <linearGradient id="pathGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" stopColor="#f97316" stopOpacity="0.3" />
+                                                <stop offset="50%" stopColor="#3b82f6" stopOpacity="0.6" />
+                                                <stop offset="100%" stopColor="#f97316" stopOpacity="0.3" />
                                             </linearGradient>
-                                            <mask id="pathMask">
-                                                <path
-                                                    d={`M 50 0 L 50 ${journeyChapters.length * 180}`}
-                                                    stroke="white"
-                                                    strokeWidth="8"
-                                                    strokeDasharray="10 10"
-                                                />
-                                            </mask>
+                                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                                                <feGaussianBlur stdDeviation="1.5" result="blur" />
+                                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                            </filter>
                                         </defs>
+
+                                        {/* Background Static Path (Curvy for Desktop) */}
                                         <path
                                             d={journeyChapters.map((_, i) => {
                                                 if (i === journeyChapters.length - 1) return '';
-                                                const startY = i * 180 + 60; // Center of node
+                                                const startY = i * 180 + 60;
                                                 const endY = (i + 1) * 180 + 60;
-                                                return `M 50 ${startY} L 50 ${endY}`;
+                                                const isLeftCur = i % 2 === 0;
+                                                const nextLeft = (i + 1) % 2 === 0;
+
+                                                const offset = isMobile ? 12 : 15;
+                                                const x1 = isLeftCur ? (50 - offset) : (50 + offset);
+                                                const x2 = nextLeft ? (50 - offset) : (50 + offset);
+
+                                                // Bezier Curve: C x1 y1, x2 y2, x3 y3
+                                                // For vertical flow, control points are mid-way vertically
+                                                const cpY1 = startY + 60;
+                                                const cpY2 = endY - 60;
+
+                                                return i === 0
+                                                    ? `M ${x1} ${startY} C ${x1} ${cpY1}, ${x2} ${cpY2}, ${x2} ${endY}`
+                                                    : `C ${x1} ${cpY1}, ${x2} ${cpY2}, ${x2} ${endY}`;
                                             }).join(" ")}
-                                            stroke="#e2e8f0"
+                                            stroke="currentColor"
                                             strokeWidth="8"
                                             strokeLinecap="round"
                                             fill="none"
-                                            className="dark:stroke-slate-800"
+                                            className="text-slate-200 dark:text-slate-800 transition-all duration-1000"
                                         />
-                                        {/* Animated Progress Line */}
+
+                                        {/* Animated Progress Path (Curvy) */}
                                         <path
                                             d={journeyChapters.map((_, i) => {
                                                 if (i === journeyChapters.length - 1) return '';
@@ -774,31 +980,42 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
                                                 const startY = i * 180 + 60;
                                                 const endY = (i + 1) * 180 + 60;
-                                                return `M 50 ${startY} L 50 ${endY}`;
+                                                const isLeftCur = i % 2 === 0;
+                                                const nextLeft = (i + 1) % 2 === 0;
+
+                                                const offset = isMobile ? 12 : 15;
+                                                const x1 = isLeftCur ? (50 - offset) : (50 + offset);
+                                                const x2 = nextLeft ? (50 - offset) : (50 + offset);
+                                                const cpY1 = startY + 60;
+                                                const cpY2 = endY - 60;
+
+                                                return i === 0
+                                                    ? `M ${x1} ${startY} C ${x1} ${cpY1}, ${x2} ${cpY2}, ${x2} ${endY}`
+                                                    : `C ${x1} ${cpY1}, ${x2} ${cpY2}, ${x2} ${endY}`;
                                             }).join(" ")}
                                             stroke="url(#pathGradient)"
                                             strokeWidth="8"
                                             strokeLinecap="round"
                                             fill="none"
-                                            className="motion-reduce:hidden"
+                                            filter="url(#glow)"
+                                            className="motion-safe:animate-pulse"
                                         />
                                     </svg>
 
                                     {/* Nodes Loop */}
-                                    <div className="relative z-10 flex flex-col gap-0">
+                                    <div className="relative z-10 flex flex-col gap-0 pt-10">
                                         {journeyChapters.map((chapter, index) => {
                                             const completedCount = completedLessons.filter(id => id && id.toString().startsWith(`${chapter.number}.`)).length;
                                             const isCompleted = completedCount === chapter.count && chapter.count > 0;
 
-                                            // Complex Lock Logic: Locked if previous is not complete AND this is not the first one
                                             const isLocked = index > 0 && (() => {
-                                                const prevChapter = trainingChapters[index - 1];
-                                                const prevCompleted = completedLessons.filter(id => id && id.toString().startsWith(`${prevChapter.number}.`)).length;
-                                                return prevCompleted < prevChapter.count;
+                                                const prevChapter = trainingChapters.find(c => c.number === journeyChapters[index - 1].number);
+                                                const prevCompletedCount = completedLessons.filter(id => id && id.toString().startsWith(`${prevChapter.number}.`)).length;
+                                                return prevCompletedCount < prevChapter.count;
                                             })();
 
                                             const isActive = !isLocked && !isCompleted;
-                                            const isLeft = index % 2 === 0;
+                                            const isLeftNode = index % 2 === 0;
 
                                             return (
                                                 <div
@@ -807,17 +1024,61 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                     className={`flex w-full h-[180px] items-center justify-center relative group`}
                                                 >
                                                     {/* Side Info Card (Alternating) - Desktop Only */}
-                                                    <div className={`hidden md:flex absolute top-1/2 -translate-y-1/2 w-56 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-xl border border-slate-100 dark:border-slate-700 transition-all duration-500 
-                                                ${isLeft ? 'right-[55%] text-right items-end origin-right' : 'left-[55%] text-left items-start origin-left'}
-                                                ${isLocked ? 'opacity-50 grayscale blur-[1px]' : 'opacity-100 hover:scale-105'}
-                                            `}>
-                                                        <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-1">{chapter.title}</h3>
-                                                        <p className="text-xs text-slate-500 mb-2">{chapter.count} {language === 'en' ? 'Lessons' : 'পাঠ'}</p>
-                                                        {/* Mini Progress */}
+                                                    <div className={`hidden md:flex flex-col absolute top-1/2 -translate-y-1/2 w-[26rem] rounded-[2.5rem] bg-white/60 dark:bg-slate-900/40 backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/40 dark:border-slate-800/40 transition-all duration-700 overflow-hidden
+                                                            ${isLeftNode ? 'right-[80%] text-right items-end origin-right' : 'left-[80%] text-left items-start origin-left'}
+                                                            ${isLocked ? 'opacity-40 grayscale scale-95' : 'opacity-100 group-hover:scale-[1.03]'}
+                                                        `}>
+                                                        {/* Path Connector with Pulse Dot */}
+                                                        <div className={`absolute top-1/2 -translate-y-1/2 flex items-center ${isLeftNode ? '-right-14' : '-left-14'}`}>
+                                                            <div className={`w-14 h-[1px] bg-gradient-to-r ${isLeftNode ? 'from-transparent to-orange-400' : 'from-orange-400 to-transparent'} opacity-50`}></div>
+                                                            <div className={`w-2.5 h-2.5 rounded-full bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.6)] ${isLeftNode ? '-ml-1.25' : '-mr-1.25'} animate-pulse`}></div>
+                                                        </div>
+
+                                                        {/* 1. Header Row (Title Only) */}
+                                                        <div className="w-full px-8 pt-7 pb-4 bg-gradient-to-b from-white/20 to-transparent dark:from-slate-800/10">
+                                                            <h3 className={`w-full font-black text-slate-900 dark:text-white tracking-tighter whitespace-nowrap overflow-hidden text-ellipsis ${language === 'bn' ? 'font-bengali text-2xl' : 'text-xl'}`}>
+                                                                {chapter.title}
+                                                            </h3>
+                                                            <div className={`w-12 h-1 mt-2 bg-gradient-to-r ${isLeftNode ? 'ml-auto from-orange-400 to-amber-400' : 'mr-auto from-orange-400 to-amber-400'} rounded-full opacity-80`}></div>
+                                                        </div>
+
+                                                        {/* 2. Metadata Layer (Horizontal Split) */}
+                                                        <div className={`flex w-full items-center gap-6 px-8 py-4 ${isLeftNode ? 'flex-row-reverse' : 'flex-row'}`}>
+                                                            {/* stylized number badge */}
+                                                            <div className={`flex-shrink-0 w-14 h-14 rounded-3xl flex items-center justify-center text-xl font-black shadow-2xl border-2 ${isCompleted ? 'bg-emerald-500 border-emerald-200/50 text-white shadow-emerald-500/20' :
+                                                                isLocked ? 'bg-slate-100 border-slate-200 text-slate-400 shadow-inner' :
+                                                                    'bg-orange-600 border-orange-200/50 text-white shadow-orange-600/30'
+                                                                }`}>
+                                                                {index + 1 < 10 ? `0${index + 1}` : index + 1}
+                                                            </div>
+
+                                                            <div className={`flex flex-col gap-1.5 flex-grow ${isLeftNode ? 'items-end' : 'items-start'}`}>
+                                                                <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border shadow-sm ${isLocked ? 'bg-slate-100 text-slate-400 border-slate-200' :
+                                                                    isCompleted ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                                        'bg-orange-50 text-orange-600 border-orange-200'
+                                                                    }`}>
+                                                                    {isLocked ? (language === 'en' ? 'LOCKED' : 'বন্ধ') :
+                                                                        isCompleted ? (language === 'en' ? 'DONE' : 'সম্পন্ন') :
+                                                                            (language === 'en' ? 'ACTIVE' : 'চলছে')}
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 tracking-widest uppercase opacity-90">
+                                                                        {chapter.count} {language === 'en' ? 'Lessons' : 'পাঠ'}
+                                                                    </span>
+                                                                    {!isLocked && (
+                                                                        <span className={`text-[11px] font-black ${isCompleted ? 'text-emerald-500' : 'text-orange-500'}`}>
+                                                                            {Math.round((completedCount / chapter.count) * 100)}%
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* 3. Minimalist Edge-to-Edge Progress Track (at very bottom) */}
                                                         {!isLocked && (
-                                                            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                                            <div className="w-full h-1.5 bg-slate-100/30 dark:bg-slate-800/30 mt-auto">
                                                                 <div
-                                                                    className={`h-full rounded-full ${isCompleted ? 'bg-emerald-500' : 'bg-orange-500'}`}
+                                                                    className={`h-full transition-all duration-1000 shadow-[0_0_10px_rgba(249,115,22,0.3)] ${isCompleted ? 'bg-emerald-500' : 'bg-gradient-to-r from-orange-500 to-amber-400 animate-shimmer'}`}
                                                                     style={{ width: `${Math.round((completedCount / chapter.count) * 100)}%` }}
                                                                 ></div>
                                                             </div>
@@ -828,14 +1089,15 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                     <div
                                                         onClick={() => handleChapterClick(chapter)}
                                                         className={`
-                                                    relative w-24 h-24 sm:w-28 sm:h-28 rounded-[2rem] flex flex-col items-center justify-center cursor-pointer transition-all duration-300 z-20 
-                                                    ${isLocked
-                                                                ? 'bg-slate-100 dark:bg-slate-800 border-4 border-slate-200 dark:border-slate-700 text-slate-400'
+                                                                relative w-24 h-24 sm:w-32 sm:h-32 rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer transition-all duration-500 z-20 hover:rotate-3
+                                                                ${isLeftNode ? (isMobile ? '-translate-x-[12%]' : '-translate-x-[15%]') : (isMobile ? 'translate-x-[12%]' : 'translate-x-[15%]')}
+                                                                ${isLocked
+                                                                ? 'bg-slate-100 dark:bg-slate-800/50 border-4 border-slate-200 dark:border-slate-700/50 text-slate-400 shadow-inner'
                                                                 : isCompleted
-                                                                    ? 'bg-emerald-500 border-4 border-emerald-200 dark:border-emerald-800 shadow-lg shadow-emerald-500/30 text-white transform hover:scale-110'
-                                                                    : 'bg-orange-500 border-8 border-orange-100 dark:border-orange-900/30 shadow-2xl shadow-orange-500/40 text-white transform hover:scale-110 animate-float-y'
+                                                                    ? 'bg-gradient-to-br from-emerald-500 to-teal-600 border-4 border-emerald-200/50 dark:border-emerald-500/30 shadow-2xl shadow-emerald-500/20 text-white transform hover:scale-110 active:scale-95'
+                                                                    : 'bg-gradient-to-br from-orange-500 to-amber-600 border-[6px] border-orange-100 dark:border-orange-500/30 shadow-2xl shadow-orange-500/40 text-white transform hover:scale-110 active:scale-95 animate-float-y'
                                                             }
-                                                `}
+                                                            `}
                                                     >
                                                         {/* Active Pulse Ring */}
                                                         {isActive && (
@@ -878,10 +1140,109 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                         })}
                                     </div>
                                 </div>
-
                             </div>
                         );
                     })()}
+
+                    {/* Learning Insights Section */}
+                    {learningInsights && (
+                        <div className="mt-12 animate-fade-in px-4 lg:px-0">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-1.5 h-8 bg-orange-600 rounded-full"></div>
+                                <h3 className={`text-2xl font-black text-slate-800 dark:text-white tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    {language === 'en' ? 'How are you learning?' : 'আপনি কেমন শিখছেন?'}
+                                </h3>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                {/* Streak / Habit Card */}
+                                <div className="group relative bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-500">
+                                    <div className="flex flex-col h-full">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">
+                                                🔥
+                                            </div>
+                                            <div className="flex gap-0.5">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <svg key={i} className={`w-4 h-4 ${i < learningInsights.habitRating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-200 dark:text-slate-600'}`} viewBox="0 0 20 20">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                    </svg>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <h4 className="font-bold text-slate-800 dark:text-white mb-2 uppercase text-xs tracking-widest">
+                                            {language === 'en' ? 'Your Habit' : 'শেখার আগ্রহ'}
+                                        </h4>
+                                        <p className={`text-slate-600 dark:text-slate-400 font-bold leading-tight ${language === 'bn' ? 'font-bengali text-base' : 'text-sm'}`}>
+                                            {learningInsights.habitFeedback}
+                                        </p>
+                                        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
+                                            <span className="text-[10px] uppercase font-black text-slate-400">{language === 'en' ? 'Current Streak' : 'টানা শিখন'}</span>
+                                            <span className="text-sm font-black text-orange-600">{learningInsights.streak} {language === 'en' ? 'Days' : 'দিন'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Timing Card */}
+                                <div className="group relative bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-500">
+                                    <div className="flex flex-col h-full">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">
+                                                {learningInsights.peakHour >= 6 && learningInsights.peakHour < 18 ? '☀️' : '🌙'}
+                                            </div>
+                                            <div className="flex gap-0.5">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <svg key={i} className={`w-4 h-4 ${i < learningInsights.timingRating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-200 dark:text-slate-600'}`} viewBox="0 0 20 20">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                    </svg>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <h4 className="font-bold text-slate-800 dark:text-white mb-2 uppercase text-xs tracking-widest">
+                                            {language === 'en' ? 'Peak Time' : 'পড়ার প্রিয় সময়'}
+                                        </h4>
+                                        <p className={`text-slate-600 dark:text-slate-400 font-bold leading-tight ${language === 'bn' ? 'font-bengali text-base' : 'text-sm'}`}>
+                                            {learningInsights.timingFeedback}
+                                        </p>
+                                        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
+                                            <span className="text-[10px] uppercase font-black text-slate-400">{language === 'en' ? 'Active at' : 'সক্রিয়'}</span>
+                                            <span className="text-sm font-black text-blue-600">
+                                                {learningInsights.isRandom ? (language === 'en' ? 'Variable' : 'অনিশ্চিত') : (learningInsights.peakHour === 0 ? '12 AM' : learningInsights.peakHour > 12 ? `${learningInsights.peakHour - 12} PM` : `${learningInsights.peakHour} AM`)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Weekly Momentum Card */}
+                                <div className="group relative bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-500">
+                                    <div className="flex flex-col h-full">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">
+                                                🚀
+                                            </div>
+                                            <div className="flex gap-0.5">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <svg key={i} className={`w-4 h-4 ${i < learningInsights.weeklyRating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-200 dark:text-slate-600'}`} viewBox="0 0 20 20">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                    </svg>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <h4 className="font-bold text-slate-800 dark:text-white mb-2 uppercase text-xs tracking-widest">
+                                            {language === 'en' ? 'Weekly Speed' : 'সাপ্তাহিক গতি'}
+                                        </h4>
+                                        <p className={`text-slate-600 dark:text-slate-400 font-bold leading-tight ${language === 'bn' ? 'font-bengali text-base' : 'text-sm'}`}>
+                                            {learningInsights.weeklyFeedback}
+                                        </p>
+                                        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
+                                            <span className="text-[10px] uppercase font-black text-slate-400">{language === 'en' ? 'Last 7 Days' : 'গত ৭ দিনে'}</span>
+                                            <span className="text-sm font-black text-emerald-600">{learningInsights.weeklyMomentum} {language === 'en' ? 'Lessons' : 'পাঠ'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     {/* Video Library CTA */}
                     <div className="mt-12 group">
                         <button
