@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import secureStorage from '../../utils/secureStorage';
 import { supabase } from '../../supabaseClient';
@@ -117,6 +117,14 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
     const [showAllChapters, setShowAllChapters] = useState(false);
     const [learningInsights, setLearningInsights] = useState(null);
     const [isInsightsLoading, setIsInsightsLoading] = useState(false);
+    const galleryRef = useRef(null);
+
+    const scrollGallery = (direction) => {
+        if (galleryRef.current) {
+            const scrollAmount = direction === 'left' ? -300 : 300;
+            galleryRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+    };
 
     const getSlides = (content) => {
         if (!content) return [];
@@ -1426,8 +1434,30 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                         </div>
                     ) : (
                         /* Regular Subchapter List - Redesigned as a Gallery */
-                        <div className="relative">
-                            <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-8 -mx-4 px-4 gap-6 scroll-smooth">
+                        <div className="relative group/gallery">
+                            {/* Navigation Buttons - Desktop only */}
+                            <button
+                                onClick={() => scrollGallery('left')}
+                                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 z-30 w-12 h-12 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 shadow-xl items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-orange-500 hover:text-white transition-all duration-300 hidden lg:flex opacity-0 group-hover/gallery:opacity-100 group-hover/gallery:translate-x-0"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+
+                            <button
+                                onClick={() => scrollGallery('right')}
+                                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 z-30 w-12 h-12 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 shadow-xl items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-orange-500 hover:text-white transition-all duration-300 hidden lg:flex opacity-0 group-hover/gallery:opacity-100 group-hover/gallery:-translate-x-0"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+
+                            <div
+                                ref={galleryRef}
+                                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-8 -mx-4 px-4 gap-6 scroll-smooth"
+                            >
                                 {selectedChapter.subchapters.map((subchapter, index) => {
                                     const isUnlocked = isLessonUnlocked(subchapter.chapterNum, subchapter.subchapterNum);
                                     const isCompleted = completedLessons.includes(subchapter.level_id);
@@ -1448,10 +1478,10 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                         >
                                             {/* Book Background Gradient */}
                                             <div className={`absolute inset-0 bg-gradient-to-br transition-all duration-700 ${isCompleted
-                                                    ? 'from-emerald-400 via-emerald-500 to-teal-600'
-                                                    : isUnlocked
-                                                        ? 'from-orange-400 via-orange-500 to-rose-500'
-                                                        : 'from-slate-400 to-slate-600'
+                                                ? 'from-emerald-400 via-emerald-500 to-teal-600'
+                                                : isUnlocked
+                                                    ? 'from-orange-400 via-orange-500 to-rose-500'
+                                                    : 'from-slate-400 to-slate-600'
                                                 } ${isNext ? 'animate-pulse-slow' : ''}`} />
 
                                             {/* Decorative Patterns */}
@@ -1467,10 +1497,10 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                             <div className="absolute inset-0 p-8 flex flex-col items-center text-center">
                                                 {/* Status Badge */}
                                                 <div className={`self-end px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md border ${isCompleted
-                                                        ? 'bg-emerald-500/20 text-white border-emerald-400/30'
-                                                        : isUnlocked
-                                                            ? 'bg-white/20 text-white border-white/30'
-                                                            : 'bg-black/20 text-slate-300 border-white/10'
+                                                    ? 'bg-emerald-500/20 text-white border-emerald-400/30'
+                                                    : isUnlocked
+                                                        ? 'bg-white/20 text-white border-white/30'
+                                                        : 'bg-black/20 text-slate-300 border-white/10'
                                                     }`}>
                                                     {isCompleted ? (language === 'en' ? 'Done' : 'সম্পন্ন') : (isUnlocked ? (language === 'en' ? 'Ready' : 'শুরু করুন') : (language === 'en' ? 'Locked' : 'লক'))}
                                                 </div>

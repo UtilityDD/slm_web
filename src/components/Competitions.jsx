@@ -143,7 +143,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             hint: "Hint",
             hintDisabled: "Select an answer to see hint",
             noHint: "No hint available for this question",
-            streak: "In a Row"
+            streak: "In a Row",
+            missedTitle: "CHALLENGE MISSED",
+            missedDesc: "Points Earned = 0",
+            upcomingStatus: "Challenge Upcoming"
         },
         bn: {
             title: "প্রতিযোগিতা",
@@ -170,7 +173,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             hint: "ইঙ্গিত",
             hintDisabled: "ইঙ্গিত দেখতে একটি উত্তর নির্বাচন করুন",
             noHint: "এই প্রশ্নের জন্য কোনো ইঙ্গিত নেই",
-            streak: "একটানা"
+            streak: "একটানা",
+            missedTitle: "চ্যালেঞ্জ মিস করেছেন",
+            missedDesc: "অর্জিত পয়েন্ট = ০",
+            upcomingStatus: "আসন্ন চ্যালেঞ্জ"
         }
     }[language];
 
@@ -411,7 +417,18 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             // Let's stick to updating the state that drives the UI.
 
             // Also refresh leaderboard and attempts for immediate feedback
-            fetchTodayAttempts();
+            const mockAttempt = {
+                quiz_id: quizId,
+                score: cleanScore,
+                penalty: cleanPenalty,
+                completed_at: now.toISOString()
+            };
+            setTodayAttempts(prev => {
+                const exists = prev.some(a => a.quiz_id === quizId);
+                if (exists) return prev;
+                return [mockAttempt, ...prev];
+            });
+
             fetchLeaderboard(true);
             refreshProfile(user);
 
@@ -776,9 +793,21 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         }
 
         // Check if there's a pending submission for this quiz
-        if (pendingSubmission && pendingSubmission.quiz_id === quiz.id) {
+        if ((pendingSubmission && pendingSubmission.quiz_id === quiz.id) || isSyncing) {
             alert(t.previousPending + '. ' + (isOnline ? t.retryNow : t.waitingNetwork));
             return;
+        }
+
+        // Double-check if already played this hour (Race Condition Guard)
+        const now = getSyncedTime();
+        if (lastAttemptTime) {
+            const last = new Date(lastAttemptTime);
+            if (last.getFullYear() === now.getFullYear() &&
+                last.getMonth() === now.getMonth() &&
+                last.getDate() === now.getDate() &&
+                last.getHours() === now.getHours()) {
+                return;
+            }
         }
 
         setActiveQuiz(quiz);
@@ -961,17 +990,17 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         };
         storageUtils.setItem(`review_${activeQuiz.id}`, JSON.stringify(attemptData));
 
-        // Submit immediately if user is logged in
-        if (user) {
-            // This now handles Supabase RPC, profile refresh and leaderboard update
-            await submitHourlyQuiz(calculatedScore, penalty);
-        }
-
-        // IMMEDIATE LOCK: Update local state to show countdown timer instantly
+        // IMMEDIATE LOCK: Update local state before network call to prevent race condition
         if (activeQuiz && activeQuiz.id === hourlyQuiz?.id) {
             setLastAttemptTime(attemptData.timestamp);
             const cacheKey = `last_attempt_${user.id}_${activeQuiz.id}`;
             cacheHelper.set(cacheKey, attemptData.timestamp, 5);
+        }
+
+        // Submit immediately if user is logged in
+        if (user) {
+            // This now handles Supabase RPC, profile refresh and leaderboard update
+            await submitHourlyQuiz(calculatedScore, penalty);
         }
     };
 
@@ -1342,9 +1371,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     </div>
                                                 ) : isMissed ? (
                                                     <div>
-                                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">CHALLENGE MISSED</div>
+                                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t.missedTitle}</div>
                                                         <div className="text-sm font-bold text-slate-500 dark:text-slate-500 flex items-center gap-2">
-                                                            <span>❄️</span> No points earned this hour
+                                                            <span>❄️</span> {t.missedDesc}
                                                         </div>
                                                     </div>
                                                 ) : isNextChallenge ? (
@@ -1364,9 +1393,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     </div>
                                                 ) : (
                                                     <div>
-                                                        <div className="text-[10px] font-bold text-slate-300 dark:text-slate-700 uppercase tracking-widest mb-1">LOCKED</div>
-                                                        <div className="text-sm font-bold text-slate-400 dark:text-slate-700">
-                                                            Next hour challenge
+                                                        <div className="text-sm font-bold text-slate-300 dark:text-slate-700 italic">
+                                                            {t.upcomingStatus}
                                                         </div>
                                                     </div>
                                                 )}
