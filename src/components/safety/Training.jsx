@@ -1425,68 +1425,96 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                 )}
                         </div>
                     ) : (
-                        /* Regular Subchapter List */
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {selectedChapter.subchapters.map((subchapter, index) => {
-                                const isUnlocked = isLessonUnlocked(subchapter.chapterNum, subchapter.subchapterNum);
-                                const isCompleted = completedLessons.includes(subchapter.level_id);
+                        /* Regular Subchapter List - Redesigned as a Gallery */
+                        <div className="relative">
+                            <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-8 -mx-4 px-4 gap-6 scroll-smooth">
+                                {selectedChapter.subchapters.map((subchapter, index) => {
+                                    const isUnlocked = isLessonUnlocked(subchapter.chapterNum, subchapter.subchapterNum);
+                                    const isCompleted = completedLessons.includes(subchapter.level_id);
+                                    const isNext = isUnlocked && !isCompleted &&
+                                        (index === 0 || completedLessons.includes(selectedChapter.subchapters[index - 1]?.level_id));
 
-                                return (
-                                    <div
-                                        key={subchapter.level_id}
-                                        onClick={() => {
-                                            if (!user) {
-                                                // Handle login logic if needed, or pass prop
-                                                return;
-                                            }
-                                            if (isUnlocked) {
+                                    return (
+                                        <div
+                                            key={subchapter.level_id}
+                                            onClick={() => {
+                                                if (!user || !isUnlocked) return;
                                                 setTrainingContent(subchapter);
                                                 setActiveSectionIndex(0);
                                                 setIsJournalMode(true);
-                                            }
-                                        }}
-                                        className={`bg-white dark:bg-slate-800 p-3 rounded-lg border transition-all flex items-center gap-3 ${isUnlocked
-                                            ? 'border-slate-200 dark:border-slate-700 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-sm cursor-pointer'
-                                            : 'border-slate-100 dark:border-slate-800 opacity-60 cursor-not-allowed'
-                                            } ${isCompleted ? 'bg-emerald-50/30 dark:bg-emerald-900/10' : ''} group`}
-                                    >
-                                        {/* ID Box - Always Visible */}
-                                        <div className={`w-10 h-10 rounded-md flex items-center justify-center text-sm font-bold flex-shrink-0 border ${isCompleted
-                                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
-                                            : isUnlocked
-                                                ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-900/30'
-                                                : 'bg-slate-50 dark:bg-slate-800/50 text-slate-400 border-slate-100 dark:border-slate-700'
-                                            }`}>
-                                            {subchapter.level_id}
-                                        </div>
+                                            }}
+                                            className={`flex-shrink-0 w-[240px] sm:w-[280px] snap-center relative aspect-[3/4] rounded-[2.5rem] overflow-hidden transition-all duration-500 group ${isUnlocked ? 'cursor-pointer hover:scale-[1.02] hover:-translate-y-2' : 'cursor-not-allowed grayscale'
+                                                }`}
+                                        >
+                                            {/* Book Background Gradient */}
+                                            <div className={`absolute inset-0 bg-gradient-to-br transition-all duration-700 ${isCompleted
+                                                    ? 'from-emerald-400 via-emerald-500 to-teal-600'
+                                                    : isUnlocked
+                                                        ? 'from-orange-400 via-orange-500 to-rose-500'
+                                                        : 'from-slate-400 to-slate-600'
+                                                } ${isNext ? 'animate-pulse-slow' : ''}`} />
 
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-0.5">
-                                                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                                                    {subchapter.badge_name}
-                                                </span>
-                                                {isCompleted && (
-                                                    <span className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px]">✓</span>
-                                                )}
-                                                {!isUnlocked && (
-                                                    <span className="text-[10px] text-slate-400">🔒</span>
-                                                )}
+                                            {/* Decorative Patterns */}
+                                            <div className="absolute inset-0 opacity-10 pointer-events-none">
+                                                <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -mr-16 -mt-16 blur-3xl" />
+                                                <div className="absolute bottom-0 left-0 w-32 h-32 bg-black rounded-full -ml-16 -mb-16 blur-3xl" />
                                             </div>
-                                            <h4 className={`font-bold text-sm truncate ${isUnlocked ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400'
-                                                }`}>
-                                                {subchapter.level_title}
-                                            </h4>
-                                        </div>
 
-                                        {/* Arrow Icon */}
-                                        {isUnlocked && (
-                                            <div className="text-slate-300 dark:text-slate-600 group-hover:text-orange-500 transition-colors">
-                                                →
+                                            {/* Glass Overlay */}
+                                            <div className="absolute inset-0 bg-white/10 dark:bg-black/20 backdrop-blur-[2px] border border-white/20" />
+
+                                            {/* Content Layout */}
+                                            <div className="absolute inset-0 p-8 flex flex-col items-center text-center">
+                                                {/* Status Badge */}
+                                                <div className={`self-end px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md border ${isCompleted
+                                                        ? 'bg-emerald-500/20 text-white border-emerald-400/30'
+                                                        : isUnlocked
+                                                            ? 'bg-white/20 text-white border-white/30'
+                                                            : 'bg-black/20 text-slate-300 border-white/10'
+                                                    }`}>
+                                                    {isCompleted ? (language === 'en' ? 'Done' : 'সম্পন্ন') : (isUnlocked ? (language === 'en' ? 'Ready' : 'শুরু করুন') : (language === 'en' ? 'Locked' : 'লক'))}
+                                                </div>
+
+                                                {/* Center Icon/Number */}
+                                                <div className="flex-1 flex flex-col items-center justify-center">
+                                                    <div className={`w-20 h-20 rounded-3xl flex items-center justify-center text-3xl mb-4 shadow-2xl transition-transform duration-500 group-hover:rotate-6 ${isCompleted ? 'bg-white/30' : 'bg-white/20'
+                                                        }`}>
+                                                        {isCompleted ? '⭐' : (isUnlocked ? '📖' : '🔒')}
+                                                    </div>
+                                                    <div className="text-[10px] font-black text-white/60 tracking-[0.2em] uppercase mb-1">
+                                                        {language === 'en' ? 'Lesson' : 'পাঠ'} {subchapter.level_id}
+                                                    </div>
+                                                </div>
+
+                                                {/* Title Section */}
+                                                <div className="w-full">
+                                                    <h4 className={`text-xl font-black text-white leading-tight mb-2 drop-shadow-lg ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                        {subchapter.level_title}
+                                                    </h4>
+                                                    <div className="h-1 w-12 bg-white/30 rounded-full mx-auto" />
+                                                </div>
                                             </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
+
+                                            {/* Next Indicator */}
+                                            {isNext && (
+                                                <div className="absolute top-4 left-4">
+                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white rounded-full shadow-lg">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                                                        <span className="text-[9px] font-black text-slate-900 uppercase tracking-tighter">Next Up</span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Scroll Indicators */}
+                            <div className="flex justify-center gap-1.5 mt-2">
+                                {selectedChapter.subchapters.length > 1 && selectedChapter.subchapters.map((_, i) => (
+                                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>
