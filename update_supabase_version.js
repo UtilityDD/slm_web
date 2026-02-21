@@ -10,18 +10,18 @@ async function updateVersion() {
         .from('app_versions')
         .insert([
             {
-                version_code: 22,
-                version_name: '1.3.22',
+                version_code: 24,
+                version_name: '1.3.24',
                 force_update: false,
                 update_url: 'https://github.com/UtilityDD/slm_web/releases',
-                release_notes: 'Integrated SandyLoading dotLottie into the "Next Challenge" card and refined quiz exit logic.'
+                release_notes: 'Added official WhatsApp group link to Community screen and synchronized latest UI refinements.'
             }
         ]);
 
     if (error) {
         console.error('Error updating version:', error);
     } else {
-        console.log('Successfully updated Supabase to 1.3.22');
+        console.log('Successfully updated Supabase to 1.3.24');
     }
 }
 
