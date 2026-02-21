@@ -820,7 +820,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
             {/* Main Content Area */}
             {trainingLoading ? (
-                <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
+                <div className="loading-container-fixed animate-fade-in">
                     <div className="w-48 h-48 lg:w-64 lg:h-64 mb-4">
                         <DotLottiePlayer
                             src={sandyLoading}
@@ -829,40 +829,19 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                         />
                     </div>
                     <p className={`text-slate-500 font-bold ${language === 'bn' ? 'font-bengali text-xl' : 'text-lg tracking-wide'}`}>
-                        {language === 'en' ? 'Preparing your safety lesson...' : 'আপনার সুরক্ষা পাঠ প্রস্তুত করা হচ্ছে...'}
+                        {language === 'en' ? 'Preparing your safety journey...' : 'আপনার সুরক্ষা পথ প্রস্তুত করা হচ্ছে...'}
                     </p>
                 </div>
             ) : !selectedChapter && !trainingContent ? (
-                <>
+                <div className="animate-fade-in-up">
                     {/* Gamified Journey Map Logic */}
                     {(() => {
-                        // If loading, show spinner
-                        if (trainingLoading) {
-                            return (
-                                <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
-                                    <div className="w-48 h-48 lg:w-64 lg:h-64 mb-4">
-                                        <DotLottiePlayer
-                                            src={sandyLoading}
-                                            autoplay
-                                            loop
-                                        />
-                                    </div>
-                                    <p className={`text-slate-500 font-bold ${language === 'bn' ? 'font-bengali text-xl' : 'text-lg tracking-wide'}`}>
-                                        {language === 'en' ? 'Building your journey...' : 'আপনার সুরক্ষা পথ তৈরি করা হচ্ছে...'}
-                                    </p>
-                                </div>
-                            );
-                        }
-
-                        // If content is selected, show nothing here
-                        if (selectedChapter || trainingContent) return null;
-
                         const isMobile = window.innerWidth < 768;
                         const journeyChapters = trainingChapters.filter(c => c.number !== 10);
 
                         // Main Journey View
                         return (
-                            <div className="animate-fade-in relative max-w-4xl mx-auto pb-32">
+                            <div className="relative max-w-4xl mx-auto pb-32">
                                 {/* Desktop Background Decorative Elements */}
                                 <div className="hidden lg:block absolute top-[10%] -left-64 w-96 h-96 bg-orange-200/20 dark:bg-orange-900/10 rounded-full blur-[120px] pointer-events-none"></div>
                                 <div className="hidden lg:block absolute top-[40%] -right-64 w-96 h-96 bg-blue-200/20 dark:bg-blue-900/10 rounded-full blur-[120px] pointer-events-none"></div>
@@ -1355,7 +1334,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                             </button>
                         </div>
                     )}
-                </>
+                </div>
             ) : selectedChapter && !trainingContent ? (
                 /* Subchapter List View or FAQ View */
                 <div>
@@ -1577,7 +1556,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
             {/* Safety Journal UI - Immersive Slide-based Experience */}
             {
                 trainingContent && createPortal(
-                    <div className="fixed inset-0 z-[100] bg-slate-50 dark:bg-slate-900 overflow-hidden flex flex-col safe-area-inset-top">
+                    <div className="fixed inset-0 z-[100] bg-slate-50 dark:bg-slate-900 overflow-hidden flex flex-col safe-area-inset-top animate-fade-in-up">
                         {/* Progress Header */}
                         <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 pt-2 shadow-sm">
                             <div className="flex items-center justify-between px-4 pb-2">

@@ -10,18 +10,18 @@ async function updateVersion() {
         .from('app_versions')
         .insert([
             {
-                version_code: 24,
-                version_name: '1.3.24',
+                version_code: 27,
+                version_name: '1.3.27',
                 force_update: false,
                 update_url: 'https://github.com/UtilityDD/slm_web/releases',
-                release_notes: 'Added official WhatsApp group link to Community screen and synchronized latest UI refinements.'
+                release_notes: 'Version bump and performance optimizations for localized competition cards.'
             }
         ]);
 
     if (error) {
         console.error('Error updating version:', error);
     } else {
-        console.log('Successfully updated Supabase to 1.3.24');
+        console.log('Successfully updated Supabase to 1.3.27');
     }
 }
 

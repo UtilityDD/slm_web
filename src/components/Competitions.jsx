@@ -148,7 +148,18 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             streak: "In a Row",
             missedTitle: "CHALLENGE MISSED",
             missedDesc: "Points Earned = 0",
-            upcomingStatus: "Challenge Upcoming"
+            upcomingStatus: "Challenge Upcoming",
+            scoreLabel: "SCORE",
+            challengeCompleted: "Challenge Completed",
+            penaltyApplied: "penalty applied",
+            perfectScore: "Perfect Score!",
+            liveNow: "LIVE NOW",
+            nextChallengeLabel: "NEXT CHALLENGE",
+            upcomingPowerPlay: "Upcoming Power Play",
+            startsIn: "Starts in",
+            closingIn: "Closing in",
+            topPlayersToday: "Top Players Today",
+            viewAll: "View All"
         },
         bn: {
             title: "প্রতিযোগিতা",
@@ -178,7 +189,18 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             streak: "একটানা",
             missedTitle: "চ্যালেঞ্জ মিস করেছেন",
             missedDesc: "অর্জিত পয়েন্ট = ০",
-            upcomingStatus: "আসন্ন চ্যালেঞ্জ"
+            upcomingStatus: "আসন্ন চ্যালেঞ্জ",
+            scoreLabel: "স্কোর",
+            challengeCompleted: "চ্যালেঞ্জ সম্পন্ন",
+            penaltyApplied: "পেনাল্টি প্রযোজ্য",
+            perfectScore: "চমৎকার স্কোর!",
+            liveNow: "এখন লাইভ",
+            nextChallengeLabel: "পরবর্তী চ্যালেঞ্জ",
+            upcomingPowerPlay: "পরবর্তী চ্যালেঞ্জ আসছে",
+            startsIn: "শুরু হবে",
+            closingIn: "শেষ হবে",
+            topPlayersToday: "আজকের সেরা খেলোয়াড়",
+            viewAll: "সব দেখুন"
         }
     }[language];
 
@@ -1341,32 +1363,32 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <LiveIndicator />
-                                                            <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest">LIVE NOW</span>
+                                                            <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest">{t.liveNow}</span>
                                                         </div>
                                                         <div className="text-xl font-black text-slate-900 dark:text-white leading-tight mb-1">
                                                             {activeQuiz?.title || (language === 'en' ? 'Hourly Challenge' : 'সুরক্ষা চ্যালেঞ্জ')}
                                                         </div>
                                                         {timeLeft && (
                                                             <div className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                                                                <span className="text-[10px]">⏳</span> {language === 'en' ? 'Closing in' : 'শেষ হবে'} <span className="text-orange-600 dark:text-orange-400 font-mono">{timeLeft}</span>
+                                                                <span className="text-[10px]">⏳</span> {t.closingIn} <span className="text-orange-600 dark:text-orange-400 font-mono">{timeLeft}</span>
                                                             </div>
                                                         )}
                                                     </div>
                                                 ) : isPlayed ? (
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-12 h-12 rounded-xl bg-green-50 dark:bg-green-900/30 flex flex-col items-center justify-center border border-green-100 dark:border-green-800/50">
-                                                            <span className="text-[10px] font-black text-green-600 dark:text-green-400 leading-none mb-0.5">SCORE</span>
+                                                            <span className="text-[10px] font-black text-green-600 dark:text-green-400 leading-none mb-0.5">{t.scoreLabel}</span>
                                                             <span className="text-lg font-black text-green-700 dark:text-green-300">+{slot.score}</span>
                                                         </div>
                                                         <div>
-                                                            <div className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-none mb-1">Challenge Completed</div>
+                                                            <div className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-none mb-1">{t.challengeCompleted}</div>
                                                             {slot.penalty > 0 ? (
                                                                 <div className="text-[10px] font-bold text-red-500 dark:text-red-400 flex items-center gap-1">
-                                                                    <span>⚠️</span> -{slot.penalty} penalty applied
+                                                                    <span>⚠️</span> -{slot.penalty} {t.penaltyApplied}
                                                                 </div>
                                                             ) : (
                                                                 <div className="text-[10px] font-bold text-green-500 flex items-center gap-1">
-                                                                    <span>✨</span> Perfect Score!
+                                                                    <span>✨</span> {t.perfectScore}
                                                                 </div>
                                                             )}
                                                         </div>
@@ -1382,14 +1404,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
-                                                            <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">NEXT CHALLENGE</span>
+                                                            <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">{t.nextChallengeLabel}</span>
                                                         </div>
                                                         <div className="text-xl font-black text-slate-900 dark:text-white leading-tight mb-1">
-                                                            {language === 'en' ? 'Upcoming Power Play' : 'পরবর্তী চ্যালেঞ্জ আসছে'}
+                                                            {t.upcomingPowerPlay}
                                                         </div>
                                                         {timeLeft && (
                                                             <div className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                                                                <span className="text-[10px]">⏰</span> {language === 'en' ? 'Starts in' : 'শুরু হবে'} <span className="text-amber-600 dark:text-amber-400 font-mono italic">{timeLeft}</span>
+                                                                <span className="text-[10px]">⏰</span> {t.startsIn} <span className="text-amber-600 dark:text-amber-400 font-mono italic">{timeLeft}</span>
                                                             </div>
                                                         )}
                                                     </div>
@@ -1438,8 +1460,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             <div className="px-4 mb-20">
                 <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-bold text-slate-700 dark:text-slate-300 text-sm">Top Players Today</h3>
-                        <button onClick={goToGlobalLeaderboard} className="text-orange-600 text-xs font-bold hover:underline">View All</button>
+                        <h3 className="font-bold text-slate-700 dark:text-slate-300 text-sm">{t.topPlayersToday}</h3>
+                        <button onClick={goToGlobalLeaderboard} className="text-orange-600 text-xs font-bold hover:underline">{t.viewAll}</button>
                     </div>
                     {/* Reuse mini list logic or simple placeholder for now */}
                     <div className="space-y-3">
