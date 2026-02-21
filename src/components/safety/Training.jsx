@@ -14,6 +14,7 @@ import Lottie from 'lottie-react';
 import { DotLottiePlayer } from '@dotlottie/react-player';
 import lottieEye from '../../assets/lottie_eye.json';
 import sandyLoading from '../../assets/SandyLoading.lottie';
+import calendarLottie from '../../assets/calendar.lottie';
 
 const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, onClick }) => {
     const isFAQ = chapter.number === 10;
@@ -1227,8 +1228,13 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                 <div className="group relative bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-500">
                                     <div className="flex flex-col h-full">
                                         <div className="flex items-center justify-between mb-4">
-                                            <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">
-                                                🚀
+                                            <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform overflow-hidden">
+                                                <DotLottiePlayer
+                                                    src={calendarLottie}
+                                                    autoplay
+                                                    loop
+                                                    className="w-14 h-14"
+                                                />
                                             </div>
                                             <div className="flex gap-0.5">
                                                 {[...Array(5)].map((_, i) => (

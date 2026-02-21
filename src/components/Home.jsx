@@ -19,6 +19,9 @@ import {
 } from './icons';
 import ShareModal from './ShareModal';
 import { getBadgeByLevel } from '../utils/badgeUtils';
+import { DotLottiePlayer } from '@dotlottie/react-player';
+import mailLottie from '../assets/mail.lottie';
+import sandyLoading from '../assets/SandyLoading.lottie';
 
 const CountUp = ({ end, duration = 1000, start = true }) => {
     const [count, setCount] = useState(0);
@@ -458,7 +461,14 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
                             <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl border border-slate-100 dark:border-slate-700">
                                 <div className="bg-[#ea580c] p-6 text-white text-center relative">
-                                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-3 backdrop-blur-md">💡</div>
+                                    <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-3 backdrop-blur-md overflow-hidden border border-white/30">
+                                        <DotLottiePlayer
+                                            src={mailLottie}
+                                            autoplay
+                                            loop
+                                            className="w-24 h-24"
+                                        />
+                                    </div>
                                     <h3 className="text-xl font-bold uppercase tracking-wider">{language === 'en' ? 'Survival Tip' : 'বেঁচে থাকার টিপ'}</h3>
                                     <p className="text-orange-50 text-xs mt-1 font-medium">{new Date().toLocaleDateString()}</p>
                                 </div>
