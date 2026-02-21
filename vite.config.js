@@ -7,13 +7,8 @@ export default defineConfig(({ mode }) => ({
   base: mode === 'production' ? './' : '/',
   plugins: [
     react(),
-    // ViteImageOptimizer({
-    //   png: { quality: 80 },
-    //   jpeg: { quality: 75 },
-    //   webp: { quality: 80 },
-    //   avif: { quality: 70 },
-    // }),
   ],
+  assetsInclude: ['**/*.lottie'],
   esbuild: {
     drop: ['console', 'debugger'],
   },

@@ -10,6 +10,10 @@ import ChapterQuizModal from '../ChapterQuizModal';
 import CertificateModal from '../CertificateModal';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import LessonCelebration from './LessonCelebration';
+import Lottie from 'lottie-react';
+import { DotLottiePlayer } from '@dotlottie/react-player';
+import lottieEye from '../../assets/lottie_eye.json';
+import sandyLoading from '../../assets/SandyLoading.lottie';
 
 const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, onClick }) => {
     const isFAQ = chapter.number === 10;
@@ -398,13 +402,16 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                 setActiveImageModal({ type: 'text', value: content });
                             }
                         }}
-                        className="inline-flex items-center justify-center w-8 h-8 mx-1 bg-orange-100 dark:bg-orange-900/40 rounded-full text-orange-600 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/60 transition-all animate-blink border border-orange-200 dark:border-orange-800/50 align-middle"
+                        className="inline-flex items-center justify-center w-8 h-8 mx-1 bg-orange-100 dark:bg-orange-900/40 rounded-full text-orange-600 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/60 transition-all border border-orange-200 dark:border-orange-800/50 align-middle shadow-sm hover:shadow-md"
                         title={isImage ? "Click to view image" : "Click to read more"}
                     >
-                        <svg className="w-5 h-5 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
+                        <div className="w-8 h-8 pointer-events-none">
+                            <Lottie
+                                animationData={lottieEye}
+                                loop={true}
+                                autoplay={true}
+                            />
+                        </div>
                     </button>
                 );
             } else if (part.startsWith('[[') && part.endsWith(']]')) {
@@ -813,9 +820,17 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
             {/* Main Content Area */}
             {trainingLoading ? (
-                <div className="text-center py-12">
-                    <div className="inline-block w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="mt-4 text-slate-500">Loading training content...</p>
+                <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
+                    <div className="w-48 h-48 lg:w-64 lg:h-64 mb-4">
+                        <DotLottiePlayer
+                            src={sandyLoading}
+                            autoplay
+                            loop
+                        />
+                    </div>
+                    <p className={`text-slate-500 font-bold ${language === 'bn' ? 'font-bengali text-xl' : 'text-lg tracking-wide'}`}>
+                        {language === 'en' ? 'Preparing your safety lesson...' : 'আপনার সুরক্ষা পাঠ প্রস্তুত করা হচ্ছে...'}
+                    </p>
                 </div>
             ) : !selectedChapter && !trainingContent ? (
                 <>
@@ -824,9 +839,17 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                         // If loading, show spinner
                         if (trainingLoading) {
                             return (
-                                <div className="text-center py-12">
-                                    <div className="inline-block w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
-                                    <p className="mt-4 text-slate-500">Loading your journey...</p>
+                                <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
+                                    <div className="w-48 h-48 lg:w-64 lg:h-64 mb-4">
+                                        <DotLottiePlayer
+                                            src={sandyLoading}
+                                            autoplay
+                                            loop
+                                        />
+                                    </div>
+                                    <p className={`text-slate-500 font-bold ${language === 'bn' ? 'font-bengali text-xl' : 'text-lg tracking-wide'}`}>
+                                        {language === 'en' ? 'Building your journey...' : 'আপনার সুরক্ষা পথ তৈরি করা হচ্ছে...'}
+                                    </p>
                                 </div>
                             );
                         }

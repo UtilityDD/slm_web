@@ -5,6 +5,8 @@ import { getBadgeByLevel } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
 import { storageUtils } from '../utils/storageUtils';
 import { requestManager } from '../utils/requestManager';
+import { DotLottiePlayer } from '@dotlottie/react-player';
+import sandyLoading from '../assets/SandyLoading.lottie';
 
 const LiveIndicator = () => (
     <div className="live-pulse" title="Live Now">
@@ -855,7 +857,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     };
 
     const handleAbortQuiz = () => {
-        if (activeQuiz && !quizSubmitted) {
+        if (activeQuiz && !quizSubmitted && !reviewMode) {
             const warning = language === 'en'
                 ? 'Exiting now will result in 0 points for this hour. Are you sure?'
                 : 'এখন বেরিয়ে গেলে আপনি এই ঘণ্টার জন্য ০ পয়েন্ট পাবেন। আপনি কি নিশ্চিত?';
@@ -1410,8 +1412,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                                                     </div>
                                                 ) : isNextChallenge ? (
-                                                    <div className="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-500 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                    <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center border border-amber-200 dark:border-amber-800 overflow-hidden">
+                                                        <DotLottiePlayer
+                                                            src={sandyLoading}
+                                                            autoplay
+                                                            loop
+                                                        />
                                                     </div>
                                                 ) : (
                                                     <div className="w-10 h-10 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 flex items-center justify-center text-slate-300 dark:text-slate-700 border border-slate-200 dark:border-slate-800">

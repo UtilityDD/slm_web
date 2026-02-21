@@ -840,6 +840,7 @@ export default function SmartLinemanUI() {
         case 'accident-stories':
           return <AwarenessStories
             setCurrentView={setCurrentView}
+            language={language}
           />;
         case 'video-guide':
           return <VideoGuide
