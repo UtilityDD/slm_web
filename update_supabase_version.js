@@ -10,18 +10,18 @@ async function updateVersion() {
         .from('app_versions')
         .insert([
             {
-                version_code: 27,
-                version_name: '1.3.27',
+                version_code: 28,
+                version_name: '1.3.28',
                 force_update: false,
                 update_url: 'https://github.com/UtilityDD/slm_web/releases',
-                release_notes: 'Version bump and performance optimizations for localized competition cards.'
+                release_notes: 'Integrated mail.lottie animation for the Survival Tip card in the Home screen.'
             }
         ]);
 
     if (error) {
         console.error('Error updating version:', error);
     } else {
-        console.log('Successfully updated Supabase to 1.3.27');
+        console.log('Successfully updated Supabase to 1.3.28');
     }
 }
 
