@@ -114,6 +114,7 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
 });
 
 export default function Training({ language = 'en', user, onProgressUpdate, setCurrentView }) {
+    const [showWelcome, setShowWelcome] = useState(true);
     const [trainingChapters, setTrainingChapters] = useState([]);
     const [selectedChapter, setSelectedChapter] = useState(null);
     const [selectedSubchapter, setSelectedSubchapter] = useState(null); // Keep if needed for deeper nesting or legacy reasons
@@ -320,9 +321,11 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                     hours.forEach(h => hourCounts[h] = (hourCounts[h] || 0) + 1);
                     const peakHour = Object.keys(hourCounts).reduce((a, b) => hourCounts[a] > hourCounts[b] ? a : b, 0);
 
-                    // 3. Weekly Momentum
+                    // 3. Weekly Momentum & Days
                     const lastWeek = new Date(Date.now() - 7 * 86400000);
-                    const weeklyCons = data.filter(d => new Date(d.created_at) > lastWeek).length;
+                    const weeklyLessons = data.filter(d => new Date(d.created_at) > lastWeek);
+                    const weeklyCons = weeklyLessons.length;
+                    const weeklyDays = [...new Set(weeklyLessons.map(d => new Date(d.created_at).toDateString()))].length;
 
                     // --- NEW: Descriptive Feedback & Ratings ---
 
@@ -378,6 +381,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                         peakHour: parseInt(peakHour, 10),
                         isRandom,
                         weeklyMomentum: weeklyCons,
+                        weeklyDays,
                         totalLessons: data.length,
                         habitRating,
                         habitFeedback,
@@ -887,75 +891,6 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                 <div className="hidden lg:block absolute top-[40%] -right-64 w-96 h-96 bg-blue-200/20 dark:bg-blue-900/10 rounded-full blur-[120px] pointer-events-none"></div>
                                 <div className="hidden lg:block absolute top-[70%] -left-64 w-96 h-96 bg-emerald-200/20 dark:bg-emerald-900/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-                                {/* Insights Welcome Hero Section */}
-                                {learningInsights && learningInsights.totalLessons > 0 && !isInsightsLoading && (
-                                    <div className="mb-12 animate-fade-in group">
-                                        <div className="relative overflow-hidden bg-gradient-to-br from-orange-500/10 via-blue-500/5 to-slate-500/5 dark:from-orange-500/20 dark:via-blue-500/10 dark:to-slate-900/40 p-6 lg:p-8 rounded-[2.5rem] border border-white/50 dark:border-slate-700/50 shadow-2xl backdrop-blur-xl">
-                                            {/* Decorative Background Elements */}
-                                            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                                            <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4"></div>
-
-                                            <div className="relative z-10">
-                                                <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
-                                                    {/* User Avatar/Icon Circle */}
-                                                    <div className="relative">
-                                                        <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-tr from-orange-100 to-white dark:from-orange-950/50 dark:to-slate-800 rounded-full flex items-center justify-center text-4xl shadow-xl border-4 border-white dark:border-slate-700 group-hover:scale-105 transition-transform duration-500">
-                                                            👋
-                                                        </div>
-                                                        <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800 shadow-lg">
-                                                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2 .712V17a1 1 0 001 1z" />
-                                                            </svg>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex-1 text-center md:text-left">
-                                                        <h2 className={`text-2xl md:text-3xl font-black text-slate-800 dark:text-white mb-2 leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                            {language === 'en' ? `Welcome back, Explorer!` : `স্বাগতম! আপনি কেমন শিখছেন?`}
-                                                        </h2>
-                                                        <div className="flex flex-col gap-2">
-                                                            <div className="flex items-center gap-2 justify-center md:justify-start">
-                                                                <div className="flex gap-0.5">
-                                                                    {[...Array(5)].map((_, i) => (
-                                                                        <svg key={i} className={`w-3.5 h-3.5 ${i < learningInsights.habitRating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-300 dark:text-slate-600'}`} viewBox="0 0 20 20">
-                                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                                                        </svg>
-                                                                    ))}
-                                                                </div>
-                                                                <span className={`text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                    {language === 'en' ? 'Daily Goal Rating' : 'আপনার রেটিং'}
-                                                                </span>
-                                                            </div>
-                                                            <p className={`text-slate-600 dark:text-slate-300 font-bold ${language === 'bn' ? 'font-bengali text-lg' : 'text-md'}`}>
-                                                                {learningInsights.habitFeedback}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Summary Stats Row */}
-                                                <div className="mt-8 pt-6 border-t border-slate-200/50 dark:border-slate-700/50 grid grid-cols-2 md:grid-cols-3 gap-4">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{language === 'en' ? 'Current Streak' : 'টানা শিখন'}</span>
-                                                        <span className="text-xl font-black text-orange-600 dark:text-orange-400">{learningInsights.streak} {language === 'en' ? 'Days' : 'দিন'}</span>
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{language === 'en' ? 'Peak Timing' : 'পড়ার প্রিয় সময়'}</span>
-                                                        <span className={`text-sm font-bold text-blue-600 dark:text-blue-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                            {learningInsights.isRandom ? (language === 'en' ? 'Variable Focus' : 'সময়ের কোনো ঠিক নেই') : (learningInsights.peakHour === 0 ? '12 AM' : learningInsights.peakHour > 12 ? `${learningInsights.peakHour - 12} PM` : `${learningInsights.peakHour} AM`)}
-                                                        </span>
-                                                    </div>
-                                                    <div className="hidden md:flex flex-col">
-                                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{language === 'en' ? 'Momentum' : 'সাপ্তাহিক গতি'}</span>
-                                                        <p className={`text-xs font-bold text-slate-500 dark:text-slate-400 italic line-clamp-1 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                            {learningInsights.weeklyFeedback}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
 
                                 {/* Header */}
                                 <div className="text-center mb-16 pt-4">
@@ -1194,110 +1129,6 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                         );
                     })()}
 
-                    {/* Learning Insights Section */}
-                    {learningInsights && (
-                        <div className="mt-12 animate-fade-in px-4 lg:px-0">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-1.5 h-8 bg-orange-600 rounded-full"></div>
-                                <h3 className={`text-2xl font-black text-slate-800 dark:text-white tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                    {language === 'en' ? 'How are you learning?' : 'আপনি কেমন শিখছেন?'}
-                                </h3>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                {/* Streak / Habit Card */}
-                                <div className="group relative bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-500">
-                                    <div className="flex flex-col h-full">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">
-                                                🔥
-                                            </div>
-                                            <div className="flex gap-0.5">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <svg key={i} className={`w-4 h-4 ${i < learningInsights.habitRating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-200 dark:text-slate-600'}`} viewBox="0 0 20 20">
-                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                                    </svg>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <h4 className="font-bold text-slate-800 dark:text-white mb-2 uppercase text-xs tracking-widest">
-                                            {language === 'en' ? 'Your Habit' : 'শেখার আগ্রহ'}
-                                        </h4>
-                                        <p className={`text-slate-600 dark:text-slate-400 font-bold leading-tight ${language === 'bn' ? 'font-bengali text-base' : 'text-sm'}`}>
-                                            {learningInsights.habitFeedback}
-                                        </p>
-                                        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
-                                            <span className="text-[10px] uppercase font-black text-slate-400">{language === 'en' ? 'Current Streak' : 'টানা শিখন'}</span>
-                                            <span className="text-sm font-black text-orange-600">{learningInsights.streak} {language === 'en' ? 'Days' : 'দিন'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Timing Card */}
-                                <div className="group relative bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-500">
-                                    <div className="flex flex-col h-full">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">
-                                                {learningInsights.peakHour >= 6 && learningInsights.peakHour < 18 ? '☀️' : '🌙'}
-                                            </div>
-                                            <div className="flex gap-0.5">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <svg key={i} className={`w-4 h-4 ${i < learningInsights.timingRating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-200 dark:text-slate-600'}`} viewBox="0 0 20 20">
-                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                                    </svg>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <h4 className="font-bold text-slate-800 dark:text-white mb-2 uppercase text-xs tracking-widest">
-                                            {language === 'en' ? 'Peak Time' : 'পড়ার প্রিয় সময়'}
-                                        </h4>
-                                        <p className={`text-slate-600 dark:text-slate-400 font-bold leading-tight ${language === 'bn' ? 'font-bengali text-base' : 'text-sm'}`}>
-                                            {learningInsights.timingFeedback}
-                                        </p>
-                                        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
-                                            <span className="text-[10px] uppercase font-black text-slate-400">{language === 'en' ? 'Active at' : 'সক্রিয়'}</span>
-                                            <span className="text-sm font-black text-blue-600">
-                                                {learningInsights.isRandom ? (language === 'en' ? 'Variable' : 'অনিশ্চিত') : (learningInsights.peakHour === 0 ? '12 AM' : learningInsights.peakHour > 12 ? `${learningInsights.peakHour - 12} PM` : `${learningInsights.peakHour} AM`)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Weekly Momentum Card */}
-                                <div className="group relative bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-500">
-                                    <div className="flex flex-col h-full">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform overflow-hidden">
-                                                <DotLottiePlayer
-                                                    src={calendarLottie}
-                                                    autoplay
-                                                    loop
-                                                    className="w-14 h-14"
-                                                />
-                                            </div>
-                                            <div className="flex gap-0.5">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <svg key={i} className={`w-4 h-4 ${i < learningInsights.weeklyRating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-200 dark:text-slate-600'}`} viewBox="0 0 20 20">
-                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                                    </svg>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <h4 className="font-bold text-slate-800 dark:text-white mb-2 uppercase text-xs tracking-widest">
-                                            {language === 'en' ? 'Weekly Speed' : 'সাপ্তাহিক গতি'}
-                                        </h4>
-                                        <p className={`text-slate-600 dark:text-slate-400 font-bold leading-tight ${language === 'bn' ? 'font-bengali text-base' : 'text-sm'}`}>
-                                            {learningInsights.weeklyFeedback}
-                                        </p>
-                                        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
-                                            <span className="text-[10px] uppercase font-black text-slate-400">{language === 'en' ? 'Last 7 Days' : 'গত ৭ দিনে'}</span>
-                                            <span className="text-sm font-black text-emerald-600">{learningInsights.weeklyMomentum} {language === 'en' ? 'Lessons' : 'পাঠ'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                     {/* Video Library CTA */}
                     <div className="mt-12 group">
                         <button
@@ -2085,6 +1916,107 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                     document.body
                 )
             }
+            {/* Welcome Modal Overlay */}
+            {showWelcome && createPortal(
+                <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-50 dark:bg-slate-900 animate-fade-in">
+                    {/* Background Decorative Elements */}
+                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-[100px] animate-pulse"></div>
+                        <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] animate-pulse-slow"></div>
+                    </div>
+
+                    <div className="relative w-full max-w-lg px-6 flex flex-col items-center text-center space-y-4 md:space-y-6">
+                        <div className="w-full flex flex-col items-center space-y-4 md:space-y-6">
+                            {/* Lottie Animation */}
+                            <div className="w-full aspect-square max-w-[120px] md:max-w-[180px] mx-auto filter drop-shadow-2xl">
+                                <DotLottiePlayer
+                                    src={readingLottie}
+                                    autoplay
+                                    loop
+                                    className="w-full h-full"
+                                />
+                            </div>
+
+                            {/* User Rating Indicator */}
+                            {learningInsights && (
+                                <div className="flex flex-col items-center gap-1.5 animate-fade-in-up">
+                                    <div className="flex gap-1">
+                                        {[...Array(5)].map((_, i) => (
+                                            <svg key={i} className={`w-4 h-4 md:w-5 md:h-5 ${i < learningInsights.habitRating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-300 dark:text-slate-700'}`} viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                        ))}
+                                    </div>
+                                    <span className={`text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en' ? 'Your Skill Rating' : 'আপনার রেটিং'}
+                                    </span>
+                                </div>
+                            )}
+
+                            {/* Welcome Text */}
+                            <div className="space-y-1.5 md:space-y-3 animate-fade-in-up">
+                                <h1 className={`text-2xl md:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    {language === 'en' ? 'Welcome!' : 'স্বাগতম!'}
+                                </h1>
+                                <p className={`text-base md:text-xl font-bold text-slate-600 dark:text-slate-400 ${language === 'bn' ? 'font-bengali opacity-90' : ''}`}>
+                                    {language === 'en' ? 'How are you learning?' : 'আপনি কেমন শিখছেন?'}
+                                </p>
+                            </div>
+
+                            {/* Learning Insights Block */}
+                            {learningInsights && (
+                                <div className="grid grid-cols-1 gap-3 md:gap-4 animate-fade-in-up text-left w-full max-w-md">
+                                    {/* Habit Card */}
+                                    <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-md p-3.5 md:p-5 rounded-2xl md:rounded-3xl border border-white/20 dark:border-slate-700/50 flex gap-3 md:gap-4 items-center">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl shrink-0">
+                                            🔥
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className={`text-slate-800 dark:text-white font-black leading-snug mb-0.5 md:mb-1 ${language === 'bn' ? 'font-bengali text-base md:text-lg' : 'text-xs md:text-sm'}`}>
+                                                {learningInsights.habitFeedback}
+                                            </p>
+                                            <p className="text-[9px] md:text-[10px] uppercase font-bold text-slate-400">
+                                                {language === 'en' ? `You read ${learningInsights.weeklyDays} days this week!` : `এই সপ্তাহে ${learningInsights.weeklyDays} দিন পড়েছেন!`}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Timing Card */}
+                                    <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-md p-3.5 md:p-5 rounded-2xl md:rounded-3xl border border-white/20 dark:border-slate-700/50 flex gap-3 md:gap-4 items-center">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl shrink-0">
+                                            {learningInsights.peakHour >= 6 && learningInsights.peakHour < 18 ? '☀️' : '🌙'}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className={`text-slate-800 dark:text-white font-black leading-snug mb-0.5 md:mb-1 ${language === 'bn' ? 'font-bengali text-base md:text-lg' : 'text-xs md:text-sm'}`}>
+                                                {learningInsights.timingFeedback}
+                                            </p>
+                                            <p className="text-[9px] md:text-[10px] uppercase font-bold text-slate-400">
+                                                {language === 'en' ? 'Peak Time' : 'পড়ার প্রিয় সময়'}: {learningInsights.isRandom ? (language === 'en' ? 'Variable' : 'অনিশ্চিত') : (learningInsights.peakHour === 0 ? '12 AM' : learningInsights.peakHour > 12 ? `${learningInsights.peakHour - 12} PM` : `${learningInsights.peakHour} AM`)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Proceed Button */}
+                        <div className="w-full max-w-sm pt-0 md:pt-2 animate-bounce-in">
+                            <button
+                                onClick={() => setShowWelcome(false)}
+                                className="w-full material-button-primary py-4 md:py-5 text-xl md:text-2xl font-black shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/40 active:scale-95 transition-all group"
+                            >
+                                <span className="flex items-center justify-center gap-3">
+                                    {language === 'en' ? 'Proceed' : 'এগিয়ে যান'}
+                                    <svg className="w-7 h-7 group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
         </div >
     );
 }
