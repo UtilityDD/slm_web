@@ -10,18 +10,18 @@ async function updateVersion() {
         .from('app_versions')
         .insert([
             {
-                version_code: 46,
-                version_name: '1.3.46',
+                version_code: 55,
+                version_name: '1.3.55',
                 force_update: false,
                 update_url: 'https://github.com/UtilityDD/slm_web/releases',
-                release_notes: 'Fixed feedback readability: Removed text truncation from welcome modal cards to ensure full visibility of learning insights.'
+                release_notes: 'Major Visual Update: Integrated dynamic Lottie animations for both Pro-Tips and Myth-Busters sections in lessons. Refined layouts for a more seamless and professional reading experience.'
             }
         ]);
 
     if (error) {
         console.error('Error updating version:', error);
     } else {
-        console.log('Successfully updated Supabase to 1.3.46');
+        console.log('Successfully updated Supabase to 1.3.55');
     }
 }
 

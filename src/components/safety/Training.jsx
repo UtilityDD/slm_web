@@ -17,6 +17,8 @@ import lottieEye from '../../assets/lottie_eye.json';
 import sandyLoading from '../../assets/SandyLoading.lottie';
 import calendarLottie from '../../assets/calendar.lottie';
 import readingLottie from '../../assets/readding.lottie';
+import protipLottie from '../../assets/protip.lottie';
+import mythLottie from '../../assets/myth.lottie';
 
 const PPE_MAP = {
     1: { name: "Safety Helmet", icon: "🪖", image: "/quizzes/faq_images/Safety_Helmet.webp" },
@@ -143,6 +145,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
     const [pendingSubchapter, setPendingSubchapter] = useState(null);
     const [userPPEData, setUserPPEData] = useState([]);
     const galleryRef = useRef(null);
+    const lessonScrollRef = useRef(null);
 
     const scrollGallery = (direction) => {
         if (galleryRef.current) {
@@ -188,18 +191,21 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
     const slides = getSlides(trainingContent);
     const isFirstSlide = activeSectionIndex === 0;
     const isLastSlide = activeSectionIndex === slides.length - 1;
-
     const nextSlide = () => {
         if (!isLastSlide) {
             setActiveSectionIndex(prev => prev + 1);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (lessonScrollRef.current) {
+                lessonScrollRef.current.scrollTo({ top: 0, behavior: 'instant' });
+            }
         }
     };
 
     const prevSlide = () => {
         if (!isFirstSlide) {
             setActiveSectionIndex(prev => prev - 1);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (lessonScrollRef.current) {
+                lessonScrollRef.current.scrollTo({ top: 0, behavior: 'instant' });
+            }
         }
     };
 
@@ -1546,7 +1552,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                         </div>
 
                         {/* Slide Content Area */}
-                        <div className="flex-1 overflow-y-auto relative bg-mimic-pattern">
+                        <div ref={lessonScrollRef} className="flex-1 overflow-y-auto relative bg-mimic-pattern">
                             <div key={activeSectionIndex} className="max-w-2xl mx-auto px-6 py-8 animate-fade-in mb-24">
                                 {slides[activeSectionIndex]?.type === 'hero' && (
                                     <div className="space-y-8">
@@ -1642,13 +1648,20 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                     <div className="bg-emerald-600 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden group">
                                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
                                         <div className="relative z-10 space-y-6">
-                                            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-4xl shadow-xl">
-                                                💡
-                                            </div>
                                             <div className="space-y-4">
-                                                <h3 className={`text-2xl font-bold ${language === 'bn' ? 'font-bengali text-3xl' : ''}`}>
-                                                    {slides[activeSectionIndex].title}
-                                                </h3>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-12 h-12 flex-shrink-0 -ml-2">
+                                                        <DotLottiePlayer
+                                                            src={protipLottie}
+                                                            autoplay
+                                                            loop
+                                                            className="w-full h-full scale-150"
+                                                        />
+                                                    </div>
+                                                    <h3 className={`text-2xl font-bold ${language === 'bn' ? 'font-bengali text-3xl' : ''}`}>
+                                                        {slides[activeSectionIndex].title}
+                                                    </h3>
+                                                </div>
                                                 <div className="space-y-4">
                                                     {slides[activeSectionIndex].content?.map((tip, idx) => (
                                                         <div key={idx} className="flex gap-4 items-start">
@@ -1666,11 +1679,16 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
                                 {slides[activeSectionIndex]?.type === 'myth_buster' && (
                                     <div className="space-y-6">
-                                        <div className="flex items-center gap-4 mb-2">
-                                            <div className="w-12 h-12 rounded-2xl bg-red-500 flex items-center justify-center text-2xl shadow-lg shadow-red-500/20 text-white">
-                                                ⚠️
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <div className="w-12 h-12 flex-shrink-0 -ml-2">
+                                                <DotLottiePlayer
+                                                    src={mythLottie}
+                                                    autoplay
+                                                    loop
+                                                    className="w-full h-full scale-150"
+                                                />
                                             </div>
-                                            <h3 className={`text-2xl font-bold text-red-600 dark:text-red-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            <h3 className={`text-2xl font-bold text-red-600 dark:text-red-400 ${language === 'bn' ? 'font-bengali text-3xl' : ''}`}>
                                                 {slides[activeSectionIndex].title}
                                             </h3>
                                         </div>
@@ -1939,7 +1957,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
                             {/* User Rating Indicator */}
                             {learningInsights && (
-                                <div className="flex flex-col items-center gap-1.5 animate-fade-in-up">
+                                <div className="flex flex-col items-center gap-1.5 animate-entrance-pop">
                                     <div className="flex gap-1">
                                         {[...Array(5)].map((_, i) => (
                                             <svg key={i} className={`w-4 h-4 md:w-5 md:h-5 ${i < learningInsights.habitRating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-300 dark:text-slate-700'}`} viewBox="0 0 20 20">
@@ -1954,7 +1972,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                             )}
 
                             {/* Welcome Text */}
-                            <div className="space-y-1.5 md:space-y-3 animate-fade-in-up">
+                            <div className="space-y-1.5 md:space-y-3 animate-entrance-pop" style={{ animationDelay: '100ms' }}>
                                 <h1 className={`text-2xl md:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {language === 'en' ? 'Welcome!' : 'স্বাগতম!'}
                                 </h1>
@@ -1965,7 +1983,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
                             {/* Learning Insights Block */}
                             {learningInsights && (
-                                <div className="grid grid-cols-1 gap-3 md:gap-4 animate-fade-in-up text-left w-full max-w-md">
+                                <div className="grid grid-cols-1 gap-3 md:gap-4 animate-entrance-pop text-left w-full max-w-md" style={{ animationDelay: '200ms' }}>
                                     {/* Habit Card */}
                                     <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-md p-3.5 md:p-5 rounded-2xl md:rounded-3xl border border-white/20 dark:border-slate-700/50 flex gap-3 md:gap-4 items-center">
                                         <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl shrink-0">
@@ -2000,7 +2018,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                         </div>
 
                         {/* Proceed Button */}
-                        <div className="w-full max-w-sm pt-0 md:pt-2 animate-bounce-in">
+                        <div className="w-full max-w-sm pt-0 md:pt-2 animate-entrance-pop" style={{ animationDelay: '300ms' }}>
                             <button
                                 onClick={() => setShowWelcome(false)}
                                 className="w-full material-button-primary py-4 md:py-5 text-xl md:text-2xl font-black shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/40 active:scale-95 transition-all group"
