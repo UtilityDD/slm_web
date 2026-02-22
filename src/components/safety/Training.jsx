@@ -16,11 +16,12 @@ import { DotLottiePlayer } from '@dotlottie/react-player';
 import lottieEye from '../../assets/lottie_eye.json';
 import sandyLoading from '../../assets/SandyLoading.lottie';
 import calendarLottie from '../../assets/calendar.lottie';
+import readingLottie from '../../assets/readding.lottie';
 
 const PPE_MAP = {
     1: { name: "Safety Helmet", icon: "🪖", image: "/quizzes/faq_images/Safety_Helmet.webp" },
-    2: { name: "Safety Shoes/Boots", icon: "🥾" },
-    3: { name: "Insulated Gloves", icon: "🧤" },
+    2: { name: "Safety Shoes/Boots", icon: "🥾", image: "/quizzes/faq_images/safety_shoe_1.webp" },
+    3: { name: "Insulated Gloves", icon: "🧤", image: "/quizzes/faq_images/Electrical_Gloves.webp" },
     4: { name: "Reflective Jacket", icon: "🦺" },
     5: { name: "Safety Belt", icon: "🧗" },
     6: { name: "Full Body Harness", icon: "🧗‍♂️" },
@@ -1887,54 +1888,59 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                 )}
 
                                 {slides[activeSectionIndex]?.type === 'completion' && (
-                                    <div className="flex flex-col items-center justify-center space-y-8 py-12 text-center">
-                                        <div className="relative">
-                                            <div className="w-32 h-32 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-6xl animate-bounce-in">
-                                                🏆
-                                            </div>
-                                            <div className="absolute -top-2 -right-2 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold border-4 border-white dark:border-slate-800 shadow-lg animate-bounce">
-                                                ✓
+                                    <div className="flex flex-col items-center justify-center space-y-10 py-8 text-center max-w-sm mx-auto">
+                                        {/* Simplified Reward Visual */}
+                                        <div className="relative w-full aspect-square max-w-[280px] mx-auto">
+                                            <DotLottiePlayer
+                                                src={readingLottie}
+                                                autoplay
+                                                loop
+                                                className="w-full h-full"
+                                            />
+                                            {/* Minimal floating success badge */}
+                                            <div className="absolute top-4 right-4 w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-emerald-500/20 rotate-12 animate-bounce-in">
+                                                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                                </svg>
                                             </div>
                                         </div>
-                                        <div className="space-y-3">
-                                            <h3 className={`text-3xl font-extrabold text-slate-900 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
+
+                                        <div className="space-y-4">
+                                            <h3 className={`text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                 {language === 'en' ? 'Session Complete!' : 'সেশন সম্পন্ন হয়েছে!'}
                                             </h3>
-                                            <p className="text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
+                                            <p className={`text-lg text-slate-500 dark:text-slate-400 font-medium leading-relaxed px-2 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                 {language === 'en' ? 'You have successfully completed this safety mission. Ready to test your knowledge?' : 'আপনি সফলভাবে এই সুরক্ষা মিশনটি সম্পন্ন করেছেন। আপনার জ্ঞান পরীক্ষা করতে প্রস্তুত?'}
                                             </p>
                                         </div>
 
-                                        <div className="w-full max-w-sm space-y-4 pt-4">
+                                        <div className="w-full space-y-4 pt-2">
                                             {!completedLessons.includes(trainingContent.level_id) ? (
                                                 <button
                                                     onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                                    className="w-full material-button-primary py-4 text-lg"
+                                                    className="w-full material-button-primary py-5 text-xl font-black shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 active:scale-[0.98] transition-all"
                                                 >
-                                                    {language === 'en' ? 'Claim Rewards & Start Quiz' : 'পুরস্কার সংগ্রহ এবং কুইজ শুরু করুন'}
+                                                    {language === 'en' ? 'Start Challenge' : 'চ্যালেঞ্জ শুরু করুন'}
                                                 </button>
                                             ) : (
-                                                <div className="space-y-4">
-                                                    <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-100 dark:border-emerald-800 flex items-center justify-center gap-2">
-                                                        <span>✅</span>
-                                                        {language === 'en' ? 'Lesson Completed' : 'পাঠ সম্পন্ন হয়েছে'}
-                                                    </div>
+                                                <div className="grid grid-cols-1 gap-4">
                                                     <button
                                                         onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                                        className="w-full material-button-primary py-4 text-lg"
+                                                        className="w-full material-button-primary py-5 text-xl font-black shadow-lg shadow-orange-500/30 active:scale-[0.98] transition-all"
                                                     >
-                                                        {language === 'en' ? 'Retry Practice Quiz' : 'প্র্যাকটিস কুইজ খেলুন'}
+                                                        {language === 'en' ? 'Practice Quiz' : 'প্র্যাকটিস কুইজ'}
                                                     </button>
                                                 </div>
                                             )}
+
                                             <button
                                                 onClick={() => {
                                                     setTrainingContent(null);
                                                     setIsJournalMode(false);
                                                 }}
-                                                className="w-full p-4 rounded-2xl font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-colors"
+                                                className="w-full p-5 rounded-2xl font-bold bg-slate-200/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-[0.98]"
                                             >
-                                                {language === 'en' ? 'Back to Training List' : 'তালিকা ফিরে যান'}
+                                                {language === 'en' ? 'Close Mission' : 'মিশন শেষ করুন'}
                                             </button>
                                         </div>
                                     </div>

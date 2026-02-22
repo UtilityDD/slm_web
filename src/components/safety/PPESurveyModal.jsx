@@ -4,8 +4,8 @@ import { supabase } from '../../supabaseClient';
 
 const PPE_MAP = {
     1: { name: "Safety Helmet", icon: "🪖", image: "/quizzes/faq_images/Safety_Helmet.webp" },
-    2: { name: "Safety Shoes/Boots", icon: "🥾" },
-    3: { name: "Insulated Gloves", icon: "🧤" },
+    2: { name: "Safety Shoes/Boots", icon: "🥾", image: "/quizzes/faq_images/safety_shoe_1.webp" },
+    3: { name: "Insulated Gloves", icon: "🧤", image: "/quizzes/faq_images/Electrical_Gloves.webp" },
     4: { name: "Reflective Jacket", icon: "🦺" },
     5: { name: "Safety Belt", icon: "🧗" },
     6: { name: "Full Body Harness", icon: "🧗‍♂️" },
