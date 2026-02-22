@@ -10,18 +10,18 @@ async function updateVersion() {
         .from('app_versions')
         .insert([
             {
-                version_code: 29,
-                version_name: '1.3.29',
+                version_code: 37,
+                version_name: '1.3.37',
                 force_update: false,
                 update_url: 'https://github.com/UtilityDD/slm_web/releases',
-                release_notes: 'Integrated calendar.lottie animation for the Weekly Momentum card in the Training screen.'
+                release_notes: 'Integrated high-quality "Safety Helmet" imagery into the PPE survey flow for a more professional UX.'
             }
         ]);
 
     if (error) {
         console.error('Error updating version:', error);
     } else {
-        console.log('Successfully updated Supabase to 1.3.29');
+        console.log('Successfully updated Supabase to 1.3.37');
     }
 }
 

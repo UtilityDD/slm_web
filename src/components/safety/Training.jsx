@@ -10,11 +10,25 @@ import ChapterQuizModal from '../ChapterQuizModal';
 import CertificateModal from '../CertificateModal';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import LessonCelebration from './LessonCelebration';
+import PPESurveyModal from './PPESurveyModal';
 import Lottie from 'lottie-react';
 import { DotLottiePlayer } from '@dotlottie/react-player';
 import lottieEye from '../../assets/lottie_eye.json';
 import sandyLoading from '../../assets/SandyLoading.lottie';
 import calendarLottie from '../../assets/calendar.lottie';
+
+const PPE_MAP = {
+    1: { name: "Safety Helmet", icon: "🪖", image: "/quizzes/faq_images/Safety_Helmet.webp" },
+    2: { name: "Safety Shoes/Boots", icon: "🥾" },
+    3: { name: "Insulated Gloves", icon: "🧤" },
+    4: { name: "Reflective Jacket", icon: "🦺" },
+    5: { name: "Safety Belt", icon: "🧗" },
+    6: { name: "Full Body Harness", icon: "🧗‍♂️" },
+    7: { name: "Voltage Detector", icon: "🔌" },
+    8: { name: "Discharge Rod", icon: "🦯" },
+    9: { name: "Safety Goggles", icon: "🥽" },
+    10: { name: "Torch/Emergency Light", icon: "🔦" }
+};
 
 const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, onClick }) => {
     const isFAQ = chapter.number === 10;
@@ -122,6 +136,10 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
     const [showAllChapters, setShowAllChapters] = useState(false);
     const [learningInsights, setLearningInsights] = useState(null);
     const [isInsightsLoading, setIsInsightsLoading] = useState(false);
+    const [showPPESurvey, setShowPPESurvey] = useState(false);
+    const [surveyPPEItem, setSurveyPPEItem] = useState(null);
+    const [pendingSubchapter, setPendingSubchapter] = useState(null);
+    const [userPPEData, setUserPPEData] = useState([]);
     const galleryRef = useRef(null);
 
     const scrollGallery = (direction) => {
@@ -436,6 +454,26 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
             }
             return part;
         });
+    };
+
+    useEffect(() => {
+        if (user?.id) {
+            fetchUserPPEData();
+        }
+    }, [user?.id]);
+
+    const fetchUserPPEData = async () => {
+        if (!user?.id) return;
+        try {
+            const { data, error } = await supabase
+                .from('user_ppe')
+                .select('id, name, details')
+                .eq('user_id', user.id);
+            if (error) throw error;
+            setUserPPEData(data || []);
+        } catch (error) {
+            console.error('Error fetching PPE data for survey:', error);
+        }
     };
 
     // Fetch Training Chapters
@@ -1477,6 +1515,39 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                             key={subchapter.level_id}
                                             onClick={() => {
                                                 if (!user || !isUnlocked) return;
+
+                                                // PPE Survey Logic for Chapter 1
+                                                if (subchapter.chapterNum === 1) {
+                                                    const ppeItem = PPE_MAP[subchapter.subchapterNum];
+                                                    if (ppeItem) {
+                                                        const existingRecord = userPPEData.find(p => p.name === ppeItem.name);
+                                                        const hasUsageDetail = existingRecord?.details?.startsWith('Usage:');
+
+                                                        // Frequency Logic:
+                                                        const visitKey = `ppe_visit_count_${user.id}_${ppeItem.name.replace(/\s+/g, '_')}`;
+                                                        let visitCount = parseInt(localStorage.getItem(visitKey) || '0');
+
+                                                        // 1. Missing data? Always show.
+                                                        if (!existingRecord || !hasUsageDetail) {
+                                                            setSurveyPPEItem(ppeItem);
+                                                            setPendingSubchapter(subchapter);
+                                                            setShowPPESurvey(true);
+                                                            return;
+                                                        }
+
+                                                        // 2. Data exists? Every alternate visit (count % 2 === 0)
+                                                        visitCount++;
+                                                        localStorage.setItem(visitKey, visitCount.toString());
+
+                                                        if (visitCount % 2 === 0) {
+                                                            setSurveyPPEItem({ ...ppeItem, isReview: true });
+                                                            setPendingSubchapter(subchapter);
+                                                            setShowPPESurvey(true);
+                                                            return;
+                                                        }
+                                                    }
+                                                }
+
                                                 setTrainingContent(subchapter);
                                                 setActiveSectionIndex(0);
                                                 setIsJournalMode(true);
@@ -1555,6 +1626,35 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                             </div>
                         </div>
                     )}
+                    {/* PPE Survey Modal */}
+                    <PPESurveyModal
+                        isOpen={showPPESurvey}
+                        onClose={() => setShowPPESurvey(false)}
+                        ppeItem={surveyPPEItem}
+                        user={user}
+                        existingId={userPPEData.find(p => p.name === surveyPPEItem?.name)?.id}
+                        language={language}
+                        onComplete={(ppeResult) => {
+                            // 1. Optimistic UI Update: Update local state instantly
+                            if (ppeResult) {
+                                setUserPPEData(prev => {
+                                    const filtered = prev.filter(p => p.name !== ppeResult.name);
+                                    return [...filtered, ppeResult];
+                                });
+                            }
+                            // 2. Refresh from DB silently in background (already handled by modal's internal fetch if needed, 
+                            // but we refresh here to be sure of IDs etc later)
+                            fetchUserPPEData();
+
+                            // 3. Instant Transition: Proceed to lesson without waiting
+                            if (pendingSubchapter) {
+                                setTrainingContent(pendingSubchapter);
+                                setActiveSectionIndex(0);
+                                setIsJournalMode(true);
+                                setPendingSubchapter(null);
+                            }
+                        }}
+                    />
                 </div>
             ) : null
             }
