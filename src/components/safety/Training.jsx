@@ -147,6 +147,13 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
     const galleryRef = useRef(null);
     const lessonScrollRef = useRef(null);
 
+    const toBengaliNumber = (num, lang) => {
+        if (!num) return '';
+        if (lang !== 'bn') return num;
+        const bnNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        return num.toString().split('').map(digit => bnNumbers[digit] || digit).join('');
+    };
+
     const scrollGallery = (direction) => {
         if (galleryRef.current) {
             const scrollAmount = direction === 'left' ? -300 : 300;
@@ -411,8 +418,6 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
     const renderTextWithImages = (text) => {
         if (!text) return null;
 
-        // Pattern for ((path)) -> Blinking eye icon to open modal
-        // Pattern for [[path]] -> Inline embedded image
         const parts = text.split(/(\(\(.*?\)\)|\[\[.*?\]\])/g);
 
         return parts.map((part, index) => {
@@ -432,32 +437,39 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                 setActiveImageModal({ type: 'text', value: content });
                             }
                         }}
-                        className="inline-flex items-center justify-center w-8 h-8 mx-1 bg-orange-100 dark:bg-orange-900/40 rounded-full text-orange-600 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/60 transition-all border border-orange-200 dark:border-orange-800/50 align-middle shadow-sm hover:shadow-md"
+                        className="inline-flex items-center justify-center w-10 h-10 mx-1.5 bg-white dark:bg-slate-800 rounded-2xl text-orange-600 dark:text-orange-400 hover:scale-110 active:scale-90 transition-all border border-orange-100 dark:border-slate-700 align-middle shadow-md hover:shadow-orange-500/10 group relative"
                         title={isImage ? "Click to view image" : "Click to read more"}
                     >
-                        <div className="w-8 h-8 pointer-events-none">
+                        <div className="w-10 h-10 pointer-events-none p-1">
                             <Lottie
                                 animationData={lottieEye}
                                 loop={true}
                                 autoplay={true}
                             />
                         </div>
+                        <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-white text-[8px] font-black rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none uppercase tracking-widest z-50">
+                            {isImage ? 'View Insight' : 'Read Info'}
+                        </span>
                     </button>
                 );
             } else if (part.startsWith('[[') && part.endsWith(']]')) {
                 const imgPath = part.slice(2, -2);
                 return (
-                    <div key={index} className="my-6 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-lg group relative cursor-pointer" onClick={() => setActiveImageModal({ type: 'image', value: `/quizzes/${imgPath}` })}>
-                        <img
-                            src={`/quizzes/${imgPath}`}
-                            alt="Inline lesson helper"
-                            className="w-full h-auto object-cover max-h-[400px] transition-transform duration-500 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                            <div className="bg-black/50 backdrop-blur-md rounded-full p-3 text-white opacity-0 group-hover:opacity-100 transition-all transform scale-75 group-hover:scale-100">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
+                    <div key={index} className="my-10 group relative cursor-pointer" onClick={() => setActiveImageModal({ type: 'image', value: `/quizzes/${imgPath}` })}>
+                        <div className="absolute inset-0 bg-orange-500/20 blur-3xl rounded-[3rem] scale-90 group-hover:scale-100 transition-transform duration-700 opacity-0 group-hover:opacity-30"></div>
+                        <div className="relative rounded-[2.5rem] overflow-hidden border-4 border-white dark:border-slate-800 shadow-2xl transition-all duration-500 group-hover:scale-[1.02]">
+                            <img
+                                src={`/quizzes/${imgPath}`}
+                                alt="Inline lesson helper"
+                                className="w-full h-auto object-cover max-h-[500px] transition-transform duration-700 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-end pb-8">
+                                <div className="bg-white/20 backdrop-blur-md rounded-full px-6 py-2.5 text-white text-xs font-black uppercase tracking-widest flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    Enlarge Insight
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -831,8 +843,8 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 md:mb-6 animate-slide-down">
             <div className="mb-6">
-                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                    {language === 'en' ? '90 Days Training Program' : '৯০ দিনের প্রশিক্ষণ কর্মসূচি'}
+                <h1 className={`text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                    {language === 'en' ? 'Training' : 'প্রশিক্ষণ'}
                 </h1>
             </div>
 
@@ -899,15 +911,12 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
 
                                 {/* Header */}
-                                <div className="text-center mb-16 pt-4">
-                                    <div className="inline-block px-4 py-1.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-xs font-bold uppercase tracking-widest mb-4">
-                                        {language === 'en' ? 'Interactive Curriculum' : 'ইন্টারঅ্যাক্টিভ পাঠ্যক্রম'}
-                                    </div>
-                                    <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">
-                                        {language === 'en' ? 'Safety Roadmap' : 'সেফটি রোডম্যাপ'}
+                                <div className="text-center mb-16 pt-4 space-y-3">
+                                    <h1 className={`text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en' ? 'Learn' : 'শিখুন'}
                                     </h1>
-                                    <p className="text-slate-500 dark:text-slate-400 font-medium max-w-lg mx-auto">
-                                        {language === 'en' ? 'Complete each module to unlock the next step in your professional development.' : 'আপনার পেশাগত উন্নয়নের পরবর্তী ধাপ আনলক করতে প্রতিটি মডিউল সম্পূর্ণ করুন।'}
+                                    <p className={`text-xl text-slate-500 dark:text-slate-400 font-bold max-w-lg mx-auto ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en' ? 'Master your safety skills' : 'আপনার পেশাগত জ্ঞান বাড়ান'}
                                     </p>
                                 </div>
 
@@ -1501,172 +1510,206 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
             {
                 trainingContent && createPortal(
                     <div className="fixed inset-0 z-[100] bg-slate-50 dark:bg-slate-900 overflow-hidden flex flex-col safe-area-inset-top animate-fade-in-up">
-                        {/* Progress Header */}
-                        <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 pt-2 shadow-sm">
-                            <div className="flex items-center justify-between px-4 pb-2">
-                                <button
-                                    onClick={() => {
-                                        stop();
-                                        setTrainingContent(null);
-                                        setIsJournalMode(false);
-                                    }}
-                                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-500 transition-colors"
-                                >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-
-                                <div className="text-center flex-1 mx-4">
-                                    <span className="text-[10px] uppercase font-bold text-orange-500 tracking-widest block mb-0.5">
-                                        {trainingContent.badge_name || "Safety Journal"}
-                                    </span>
-                                    <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
-                                        {trainingContent.level_title}
-                                    </h2>
-                                </div>
-
-                                <div className="flex items-center gap-1">
+                        <div className="flex flex-col h-full overflow-hidden bg-white dark:bg-slate-900">
+                            {/* Premium Header */}
+                            <div className="sticky top-0 z-[100] bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border-b border-slate-100 dark:border-slate-800">
+                                <div className="px-5 py-4 flex items-center h-20">
                                     <button
-                                        onClick={handleReadLesson}
-                                        className={`p-2 rounded-full transition-all ${isPlaying ? 'text-orange-600 bg-orange-50' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
+                                        onClick={() => {
+                                            stop();
+                                            setTrainingContent(null);
+                                            setIsJournalMode(false);
+                                        }}
+                                        className="w-12 h-12 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl text-slate-500 transition-all active:scale-95"
                                     >
-                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                            {isPlaying ? (
-                                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                                            ) : (
-                                                <path d="M8 5v14l11-7z" />
-                                            )}
+                                        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
+
+                                    <div className="text-center flex-1 mx-4 min-w-0">
+                                        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 rounded-full text-[9px] font-black uppercase tracking-[0.2em] mb-1 border border-orange-200 dark:border-orange-900/30">
+                                            {trainingContent.badge_name || "Safety Journal"}
+                                        </div>
+                                        <h2 className="text-lg font-black text-slate-900 dark:text-slate-100 truncate tracking-tight flex items-center justify-center gap-2">
+                                            <span className="text-orange-600 bg-orange-50 dark:bg-orange-900/30 px-2 py-0.5 rounded-lg text-sm border border-orange-100 dark:border-orange-900/40">
+                                                {toBengaliNumber(trainingContent.level_id, language)}
+                                            </span>
+                                            {trainingContent.level_title}
+                                        </h2>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={handleReadLesson}
+                                            className={`relative w-12 h-12 flex items-center justify-center rounded-2xl transition-all duration-500 ${isPlaying ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/40 scale-110' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-orange-500'}`}
+                                        >
+                                            <div className={`absolute inset-0 rounded-2xl bg-orange-500 animate-ping opacity-20 ${isPlaying ? 'block' : 'hidden'}`}></div>
+                                            <svg className="w-8 h-8 relative z-10" fill="currentColor" viewBox="0 0 24 24">
+                                                {isPlaying ? (
+                                                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                                                ) : (
+                                                    <path d="M8 5v14l11-7z" />
+                                                )}
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Modern Progress Bar */}
+                                <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 relative z-20">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-orange-400 to-rose-500 transition-all duration-1000 ease-out relative shadow-[0_0_15px_rgba(249,115,22,0.5)]"
+                                        style={{ width: `${((activeSectionIndex + 1) / slides.length) * 100}%` }}
+                                    >
+                                        <div className="absolute top-0 right-0 w-4 h-full bg-white/40 skew-x-12 opacity-50"></div>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Progress Bar */}
-                            <div className="h-1 w-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
-                                <div
-                                    className="h-full bg-orange-500 transition-all duration-500 ease-out"
-                                    style={{ width: `${((activeSectionIndex + 1) / slides.length) * 100}%` }}
-                                ></div>
-                            </div>
-                        </div>
-
-                        {/* Slide Content Area */}
-                        <div ref={lessonScrollRef} className="flex-1 overflow-y-auto relative bg-mimic-pattern">
-                            <div key={activeSectionIndex} className="max-w-2xl mx-auto px-6 py-8 animate-fade-in mb-24">
-                                {slides[activeSectionIndex]?.type === 'hero' && (
-                                    <div className="space-y-8">
-                                        <div className="aspect-[4/3] rounded-3xl overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-xl border border-white/20">
-                                            <div className="w-full h-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-6xl shadow-inner">
-                                                📔
-                                            </div>
-                                        </div>
-                                        <div className="space-y-4">
-                                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full text-xs font-bold uppercase tracking-wider">
-                                                <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
-                                                Mission Objective
-                                            </div>
-                                            <h3 className={`text-3xl font-extrabold text-slate-900 dark:text-slate-100 leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                {trainingContent.level_title}
-                                            </h3>
-                                            <p className={`text-lg text-slate-600 dark:text-slate-400 leading-relaxed reading-content ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                {renderTextWithImages(trainingContent.mission_briefing)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {slides[activeSectionIndex]?.type === 'section' && (
-                                    <div className="space-y-8">
-                                        <div className="flex items-center gap-4 mb-4">
-                                            <div className="w-12 h-12 rounded-2xl bg-orange-500 flex items-center justify-center text-2xl shadow-lg shadow-orange-500/20 text-white font-bold">
-                                                {activeSectionIndex}
-                                            </div>
-                                            <h3 className={`text-2xl font-bold text-slate-900 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                {slides[activeSectionIndex].title}
-                                            </h3>
-                                        </div>
-
-                                        <div className="space-y-8">
-                                            {slides[activeSectionIndex].points?.map((point, pIdx) => (
-                                                <div key={pIdx} className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700/50 space-y-4">
-                                                    <h4 className={`text-xl font-bold text-slate-900 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                        {point.item_name}
-                                                    </h4>
-                                                    {point.image_name && (
-                                                        <div
-                                                            className="rounded-2xl overflow-hidden cursor-zoom-in"
-                                                            onClick={() => setActiveImageModal({ type: 'image', value: `/quizzes/${point.image_name}` })}
-                                                        >
-                                                            <img
-                                                                src={`/quizzes/${point.image_name}`}
-                                                                alt={point.item_name}
-                                                                className="w-full h-auto object-cover max-h-80"
-                                                                loading="lazy"
-                                                            />
+                            {/* Slide Content Area */}
+                            <div ref={lessonScrollRef} className="flex-1 overflow-y-auto relative bg-mimic-pattern scroll-smooth">
+                                <div key={activeSectionIndex} className="max-w-3xl mx-auto px-6 py-10 animate-fade-in-up mb-32">
+                                    {slides[activeSectionIndex]?.type === 'hero' && (
+                                        <div className="space-y-10">
+                                            <div className="relative group perspective-1000">
+                                                <div className="aspect-[16/10] rounded-[3rem] overflow-hidden bg-gradient-to-br from-orange-400 to-rose-500 shadow-2xl border-4 border-white dark:border-slate-800 transition-transform duration-700 group-hover:rotate-1">
+                                                    <div className="absolute inset-0 bg-black/10 mix-blend-overlay"></div>
+                                                    <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center text-white">
+                                                        <div className="text-8xl mb-6 animate-float-y">📔</div>
+                                                        <div className="space-y-2">
+                                                            <div className="px-5 py-2 bg-white/20 backdrop-blur-md rounded-2xl text-xs font-black uppercase tracking-[0.2em] border border-white/30 shadow-lg">
+                                                                {language === 'en' ? `Lesson ${trainingContent.level_id}` : `পাঠ ${toBengaliNumber(trainingContent.level_id, language)}`}
+                                                            </div>
+                                                            <h2 className={`text-title-hero drop-shadow-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                {trainingContent.level_title}
+                                                            </h2>
                                                         </div>
-                                                    )}
-                                                    <div className="space-y-3">
-                                                        {point.specifications && (
-                                                            <div className="flex gap-3">
-                                                                <span className="text-orange-500 font-bold">📋</span>
-                                                                <p className={`text-slate-700 dark:text-slate-300 leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                    {renderTextWithImages(point.specifications)}
-                                                                </p>
-                                                            </div>
-                                                        )}
-                                                        {point.importance && (
-                                                            <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/20">
-                                                                <div className="flex items-center gap-2 mb-1 text-amber-700 dark:text-amber-400 font-bold text-xs uppercase tracking-wider">
-                                                                    <span>💡</span>
-                                                                    {language === 'en' ? 'Why it matters' : 'কেন গুরুত্বপূর্ণ'}
-                                                                </div>
-                                                                <p className={`text-slate-800 dark:text-slate-200 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                    {renderTextWithImages(point.importance)}
-                                                                </p>
-                                                            </div>
-                                                        )}
-                                                        {point.daily_check && (
-                                                            <div className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/20">
-                                                                <div className="flex items-center gap-2 mb-1 text-emerald-700 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider">
-                                                                    <span>✓</span>
-                                                                    {language === 'en' ? 'Pro Action' : 'করণীয় কাজ'}
-                                                                </div>
-                                                                <p className={`text-slate-800 dark:text-slate-200 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                    {renderTextWithImages(point.daily_check)}
-                                                                </p>
-                                                            </div>
-                                                        )}
                                                     </div>
+                                                    {/* Decorative floating elements */}
+                                                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/20 rounded-full blur-3xl"></div>
+                                                    <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-orange-600/30 rounded-full blur-3xl"></div>
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
+                                            </div>
 
-                                {slides[activeSectionIndex]?.type === 'pro_tip' && (
-                                    <div className="bg-emerald-600 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden group">
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-                                        <div className="relative z-10 space-y-6">
-                                            <div className="space-y-4">
+                                            <div className="space-y-6 pt-2">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-12 h-12 flex-shrink-0 -ml-2">
+                                                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-orange-500/30 to-transparent"></div>
+                                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 rounded-full text-xs font-black uppercase tracking-widest border border-orange-100 dark:border-orange-900/30">
+                                                        <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                                                        Mission Objective
+                                                    </div>
+                                                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-orange-500/30 to-transparent"></div>
+                                                </div>
+
+                                                <p className={`text-title-card text-slate-700 dark:text-slate-300 leading-relaxed font-medium reading-content text-center px-4 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    {renderTextWithImages(trainingContent.mission_briefing)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {slides[activeSectionIndex]?.type === 'section' && (
+                                        <div className="space-y-10">
+                                            <header className="space-y-4 text-center mb-12">
+                                                <div className="inline-flex items-center justify-center px-6 py-2 rounded-2xl bg-gradient-to-br from-orange-500 to-rose-600 text-white text-xl font-black shadow-xl shadow-orange-500/20 mb-4 transform -rotate-1 hover:rotate-0 transition-transform border-4 border-white dark:border-slate-800">
+                                                    {toBengaliNumber(activeSectionIndex, language)}
+                                                </div>
+                                                <h3 className={`text-title-section text-slate-900 dark:text-slate-100 tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    {slides[activeSectionIndex].title}
+                                                </h3>
+                                                <div className="h-1.5 w-24 bg-orange-500/20 rounded-full mx-auto">
+                                                    <div className="h-full w-12 bg-orange-500 rounded-full"></div>
+                                                </div>
+                                            </header>
+
+                                            <div className="grid grid-cols-1 gap-10">
+                                                {slides[activeSectionIndex].points?.map((point, pIdx) => (
+                                                    <div key={pIdx} className="group bg-white dark:bg-slate-800/50 backdrop-blur-sm rounded-[2.5rem] p-4 md:p-8 shadow-sm border border-slate-100 dark:border-slate-800/50 hover:shadow-2xl hover:shadow-orange-500/5 transition-all duration-500">
+                                                        <h4 className={`text-title-card text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-3 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            <span className="w-2 h-8 bg-orange-500 rounded-full"></span>
+                                                            {point.item_name}
+                                                        </h4>
+
+                                                        {point.image_name && (
+                                                            <div
+                                                                className="mb-8 rounded-[2rem] overflow-hidden cursor-zoom-in border-4 border-slate-50 dark:border-slate-800 shadow-inner group-hover:scale-[1.01] transition-transform duration-500"
+                                                                onClick={() => setActiveImageModal({ type: 'image', value: `/quizzes/${point.image_name}` })}
+                                                            >
+                                                                <img
+                                                                    src={`/quizzes/${point.image_name}`}
+                                                                    alt={point.item_name}
+                                                                    className="w-full h-auto object-cover max-h-80"
+                                                                    loading="lazy"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        <div className="space-y-5">
+                                                            {point.specifications && (
+                                                                <div className="flex gap-4 p-5 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                                                                    <span className="text-2xl mt-1">📋</span>
+                                                                    <p className={`text-slate-700 dark:text-slate-300 text-body leading-relaxed reading-content ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                        {renderTextWithImages(point.specifications)}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                {point.importance && (
+                                                                    <div className="bg-blue-50/50 dark:bg-blue-900/10 p-6 rounded-[2rem] border border-blue-100/50 dark:border-blue-900/20 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20 transition-colors">
+                                                                        <div className="flex items-center gap-2 mb-3 text-blue-700 dark:text-blue-400 font-black text-xs uppercase tracking-widest pt-1">
+                                                                            <span className="w-6 h-6 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">💡</span>
+                                                                            {language === 'en' ? 'Strategy' : 'কৌশল'}
+                                                                        </div>
+                                                                        <p className={`text-slate-800 dark:text-slate-200 font-medium leading-relaxed ${language === 'bn' ? 'font-bengali text-lg' : ''}`}>
+                                                                            {renderTextWithImages(point.importance)}
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                                {point.daily_check && (
+                                                                    <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-6 rounded-[2rem] border border-emerald-100/50 dark:border-emerald-900/20 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20 transition-colors">
+                                                                        <div className="flex items-center gap-2 mb-3 text-emerald-700 dark:text-emerald-400 font-black text-xs uppercase tracking-widest pt-1">
+                                                                            <span className="w-6 h-6 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">✓</span>
+                                                                            {language === 'en' ? 'Pro Action' : 'প্রো অ্যাকশন'}
+                                                                        </div>
+                                                                        <p className={`text-slate-800 dark:text-slate-200 font-medium leading-relaxed ${language === 'bn' ? 'font-bengali text-lg' : ''}`}>
+                                                                            {renderTextWithImages(point.daily_check)}
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {slides[activeSectionIndex]?.type === 'pro_tip' && (
+                                        <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-[3.5rem] p-10 text-white shadow-2xl relative overflow-hidden group border-4 border-white/10">
+                                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full -mr-32 -mt-32 blur-3xl animate-pulse"></div>
+                                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/20 rounded-full -ml-32 -mb-32 blur-3xl"></div>
+
+                                            <div className="relative z-10 space-y-8">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-3xl flex items-center justify-center p-2 shadow-inner">
                                                         <DotLottiePlayer
                                                             src={protipLottie}
                                                             autoplay
                                                             loop
-                                                            className="w-full h-full scale-150"
+                                                            className="w-full h-full scale-125"
                                                         />
                                                     </div>
-                                                    <h3 className={`text-2xl font-bold ${language === 'bn' ? 'font-bengali text-3xl' : ''}`}>
+                                                    <h3 className={`text-title-section ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                         {slides[activeSectionIndex].title}
                                                     </h3>
                                                 </div>
-                                                <div className="space-y-4">
+
+                                                <div className="space-y-6">
                                                     {slides[activeSectionIndex].content?.map((tip, idx) => (
-                                                        <div key={idx} className="flex gap-4 items-start">
-                                                            <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs flex-shrink-0 mt-1">✓</span>
-                                                            <p className={`text-emerald-50 text-lg leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                        <div key={idx} className="flex gap-5 items-start p-6 bg-white/10 backdrop-blur-md rounded-[2rem] border border-white/20 transform hover:scale-[1.02] transition-transform">
+                                                            <span className="w-10 h-10 rounded-2xl bg-white text-emerald-600 flex items-center justify-center text-xl font-black flex-shrink-0">★</span>
+                                                            <p className={`text-title-card leading-relaxed font-medium ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                                 {renderTextWithImages(tip)}
                                                             </p>
                                                         </div>
@@ -1674,164 +1717,175 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
 
-                                {slides[activeSectionIndex]?.type === 'myth_buster' && (
-                                    <div className="space-y-6">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <div className="w-12 h-12 flex-shrink-0 -ml-2">
+                                    {slides[activeSectionIndex]?.type === 'myth_buster' && (
+                                        <div className="space-y-10">
+                                            <div className="flex items-center gap-6 mb-12">
+                                                <div className="w-24 h-24 bg-red-100 dark:bg-red-950/40 rounded-[2.5rem] p-3 shadow-inner flex items-center justify-center border-2 border-red-500/20">
+                                                    <DotLottiePlayer
+                                                        src={mythLottie}
+                                                        autoplay
+                                                        loop
+                                                        className="w-full h-full scale-110"
+                                                    />
+                                                </div>
+                                                <h3 className={`text-title-section text-red-600 dark:text-red-400 tracking-tighter ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    {slides[activeSectionIndex].title}
+                                                </h3>
+                                            </div>
+
+                                            <div className="space-y-8">
+                                                {slides[activeSectionIndex].myths?.map((item, idx) => (
+                                                    <div key={idx} className="group relative bg-white dark:bg-slate-800/50 backdrop-blur-md rounded-[3rem] overflow-hidden border border-red-100 dark:border-red-900/20 shadow-xl transition-all duration-500 hover:shadow-2xl hover:shadow-red-500/10">
+                                                        <div className="p-8 pb-4">
+                                                            <div className="flex items-center gap-3 mb-4">
+                                                                <div className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full text-[10px] font-black uppercase tracking-widest border border-red-200 dark:border-red-900/40">
+                                                                    {language === 'en' ? 'Common Myth' : 'ভুল ধারণা'}
+                                                                </div>
+                                                                <div className="h-px flex-1 bg-red-100 dark:bg-red-900/20"></div>
+                                                            </div>
+                                                            <p className={`text-title-card text-slate-800 dark:text-slate-200 italic leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                "{renderTextWithImages(item.myth)}"
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="p-8 pt-6 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-t border-emerald-500/10">
+                                                            <div className="flex items-center gap-3 mb-4">
+                                                                <div className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-200 dark:border-emerald-900/40">
+                                                                    {language === 'en' ? 'The Truth' : 'সঠিক তথ্য'}
+                                                                </div>
+                                                                <div className="h-px flex-1 bg-emerald-100 dark:bg-emerald-900/20"></div>
+                                                            </div>
+                                                            <p className={`text-title-card text-emerald-700 dark:text-emerald-400 leading-snug transform group-hover:translate-x-1 transition-transform ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                {renderTextWithImages(item.reality || item.fact)}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {slides[activeSectionIndex]?.type === 'advanced' && (
+                                        <div className="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-[3.5rem] p-10 text-white shadow-2xl space-y-12 relative overflow-hidden border-4 border-indigo-500/20">
+                                            <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full -mr-48 -mt-48 blur-[100px]"></div>
+                                            <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-500/10 rounded-full -ml-48 -mb-48 blur-[100px]"></div>
+
+                                            <div className="flex items-center gap-6 relative z-10">
+                                                <div className="w-20 h-20 rounded-[2rem] bg-indigo-500 flex items-center justify-center text-4xl shadow-2xl text-white font-black transform hover:scale-110 transition-transform">
+                                                    ⚛
+                                                </div>
+                                                <h3 className={`text-title-section tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    {slides[activeSectionIndex].title}
+                                                </h3>
+                                            </div>
+
+                                            <div className="space-y-8 relative z-10">
+                                                {slides[activeSectionIndex].facts?.map((fact, idx) => (
+                                                    <div key={idx} className="space-y-4 p-8 bg-white/5 backdrop-blur-md rounded-[2.5rem] border border-white/10 group hover:bg-white/10 transition-all duration-300">
+                                                        <h4 className="text-indigo-400 font-black text-xl flex items-center gap-3">
+                                                            <span className="w-3 h-3 bg-indigo-500 rounded-full group-hover:scale-150 transition-transform"></span>
+                                                            {fact.title}
+                                                        </h4>
+                                                        <p className={`text-title-card text-slate-300 leading-relaxed font-medium reading-content ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            {renderTextWithImages(fact.content)}
+                                                        </p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {slides[activeSectionIndex]?.type === 'completion' && (
+                                        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-sm mx-auto animate-fade-in">
+                                            {/* Immersive Celebration Visual */}
+                                            <div className="relative w-72 h-72 mb-8">
+                                                <div className="absolute inset-0 bg-orange-500/10 dark:bg-orange-500/5 blur-[80px] rounded-full animate-pulse"></div>
                                                 <DotLottiePlayer
-                                                    src={mythLottie}
+                                                    src={readingLottie}
                                                     autoplay
                                                     loop
-                                                    className="w-full h-full scale-150"
+                                                    className="w-full h-full relative z-10"
                                                 />
-                                            </div>
-                                            <h3 className={`text-2xl font-bold text-red-600 dark:text-red-400 ${language === 'bn' ? 'font-bengali text-3xl' : ''}`}>
-                                                {slides[activeSectionIndex].title}
-                                            </h3>
-                                        </div>
-                                        <div className="space-y-4">
-                                            {slides[activeSectionIndex].myths?.map((item, idx) => (
-                                                <div key={idx} className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden border border-red-100 dark:border-red-900/20 shadow-sm">
-                                                    <div className="p-5 bg-red-50/50 dark:bg-red-900/10 border-b border-red-100 dark:border-red-900/20">
-                                                        <p className="text-xs font-bold text-red-600 uppercase tracking-widest mb-1">{language === 'en' ? 'Common Myth' : 'ভুল ধারণা'}</p>
-                                                        <p className={`text-slate-800 dark:text-slate-200 font-medium italic ${language === 'bn' ? 'font-bengali text-lg' : ''}`}>
-                                                            "{renderTextWithImages(item.myth)}"
-                                                        </p>
-                                                    </div>
-                                                    <div className="p-5 bg-emerald-50/50 dark:bg-emerald-900/10">
-                                                        <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1">{language === 'en' ? 'The Truth' : 'সঠিক তথ্য'}</p>
-                                                        <p className={`text-slate-800 dark:text-slate-200 font-bold ${language === 'bn' ? 'font-bengali text-lg' : ''}`}>
-                                                            {renderTextWithImages(item.reality || item.fact)}
-                                                        </p>
-                                                    </div>
+                                                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-emerald-500 rounded-3xl flex items-center justify-center text-white shadow-2xl rotate-6 animate-entrance-pop">
+                                                    <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3.5" d="M5 13l4 4L19 7" />
+                                                    </svg>
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {slides[activeSectionIndex]?.type === 'advanced' && (
-                                    <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl space-y-8">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-14 h-14 rounded-2xl bg-orange-500 flex items-center justify-center text-3xl shadow-lg text-white font-bold">
-                                                🧪
                                             </div>
-                                            <h3 className={`text-2xl font-bold ${language === 'bn' ? 'font-bengali text-3xl' : ''}`}>
-                                                {slides[activeSectionIndex].title}
-                                            </h3>
-                                        </div>
-                                        <div className="space-y-6">
-                                            {slides[activeSectionIndex].facts?.map((fact, idx) => (
-                                                <div key={idx} className="space-y-2 border-l-2 border-orange-500 pl-6">
-                                                    <h4 className="text-orange-400 font-bold text-lg">{fact.title}</h4>
-                                                    <p className={`text-slate-300 leading-relaxed ${language === 'bn' ? 'font-bengali text-lg' : ''}`}>
-                                                        {renderTextWithImages(fact.content)}
-                                                    </p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
 
-                                {slides[activeSectionIndex]?.type === 'completion' && (
-                                    <div className="flex flex-col items-center justify-center space-y-10 py-8 text-center max-w-sm mx-auto">
-                                        {/* Simplified Reward Visual */}
-                                        <div className="relative w-full aspect-square max-w-[280px] mx-auto">
-                                            <DotLottiePlayer
-                                                src={readingLottie}
-                                                autoplay
-                                                loop
-                                                className="w-full h-full"
-                                            />
-                                            {/* Minimal floating success badge */}
-                                            <div className="absolute top-4 right-4 w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-emerald-500/20 rotate-12 animate-bounce-in">
-                                                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                                                </svg>
+                                            <div className="space-y-3 mb-12">
+                                                <h3 className={`text-title-section text-slate-900 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    {language === 'en' ? 'Session Complete!' : 'সেশন সম্পন্ন হয়েছে!'}
+                                                </h3>
+                                                <p className={`text-lg text-slate-500 dark:text-slate-400 font-medium px-4 ${language === 'bn' ? 'font-bengali leading-relaxed' : ''}`}>
+                                                    {language === 'en' ? 'You have successfully completed this safety mission.' : 'আপনি সফলভাবে এই সুরক্ষা মিশনটি সম্পন্ন করেছেন।'}
+                                                </p>
                                             </div>
-                                        </div>
 
-                                        <div className="space-y-4">
-                                            <h3 className={`text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                {language === 'en' ? 'Session Complete!' : 'সেশন সম্পন্ন হয়েছে!'}
-                                            </h3>
-                                            <p className={`text-lg text-slate-500 dark:text-slate-400 font-medium leading-relaxed px-2 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                {language === 'en' ? 'You have successfully completed this safety mission. Ready to test your knowledge?' : 'আপনি সফলভাবে এই সুরক্ষা মিশনটি সম্পন্ন করেছেন। আপনার জ্ঞান পরীক্ষা করতে প্রস্তুত?'}
-                                            </p>
-                                        </div>
-
-                                        <div className="w-full space-y-4 pt-2">
-                                            {!completedLessons.includes(trainingContent.level_id) ? (
+                                            <div className="w-full space-y-4">
                                                 <button
                                                     onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                                    className="w-full material-button-primary py-5 text-xl font-black shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 active:scale-[0.98] transition-all"
+                                                    className="w-full material-button-primary py-5 text-xl font-black shadow-xl shadow-orange-500/20 active:scale-95 transition-all flex items-center justify-center gap-3"
                                                 >
                                                     {language === 'en' ? 'Start Challenge' : 'চ্যালেঞ্জ শুরু করুন'}
+                                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                                    </svg>
                                                 </button>
-                                            ) : (
-                                                <div className="grid grid-cols-1 gap-4">
-                                                    <button
-                                                        onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                                        className="w-full material-button-primary py-5 text-xl font-black shadow-lg shadow-orange-500/30 active:scale-[0.98] transition-all"
-                                                    >
-                                                        {language === 'en' ? 'Practice Quiz' : 'প্র্যাকটিস কুইজ'}
-                                                    </button>
-                                                </div>
-                                            )}
 
-                                            <button
-                                                onClick={() => {
-                                                    setTrainingContent(null);
-                                                    setIsJournalMode(false);
-                                                }}
-                                                className="w-full p-5 rounded-2xl font-bold bg-slate-200/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-[0.98]"
-                                            >
-                                                {language === 'en' ? 'Close Mission' : 'মিশন শেষ করুন'}
-                                            </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setTrainingContent(null);
+                                                        setIsJournalMode(false);
+                                                    }}
+                                                    className="w-full py-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold transition-colors"
+                                                >
+                                                    {language === 'en' ? 'Maybe Later' : 'মিশন শেষ করুন'}
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Navigation Footer */}
-                        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-t border-slate-200 dark:border-slate-700 px-6 py-4 pb-8 flex items-center justify-between shadow-2xl relative z-10 transition-all duration-300">
-                            <button
-                                onClick={prevSlide}
-                                disabled={isFirstSlide}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${isFirstSlide ? 'opacity-0 pointer-events-none' : 'text-slate-500 hover:text-orange-500 active:scale-95'}`}
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                                </svg>
-                                <span className="font-bold">{language === 'en' ? 'PREV' : 'আগের'}</span>
-                            </button>
-
-                            <div className="flex gap-1.5 h-1.5">
-                                {slides.map((_, i) => (
-                                    <div
-                                        key={i}
-                                        className={`h-1.5 rounded-full transition-all duration-300 ${i === activeSectionIndex ? 'w-6 bg-orange-500' : 'w-1.5 bg-slate-200 dark:bg-slate-700'}`}
-                                    />
-                                ))}
+                                    )}
+                                </div>
                             </div>
 
-                            {!isLastSlide ? (
+                            {/* Navigation Footer */}
+                            <div className="fixed bottom-0 left-0 right-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-3xl border-t border-white/20 dark:border-white/5 px-6 py-6 pb-10 flex items-center justify-between shadow-2xl relative z-10 transition-all duration-300 animate-slide-up">
                                 <button
-                                    onClick={nextSlide}
-                                    className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-2xl font-bold shadow-lg shadow-orange-500/20 active:scale-95 hover:bg-orange-600 transition-all animate-bounce-in"
+                                    onClick={prevSlide}
+                                    disabled={isFirstSlide}
+                                    className={`group flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300 ${isFirstSlide ? 'opacity-0 pointer-events-none' : 'bg-white/30 dark:bg-slate-800/50 backdrop-blur-md text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700 active:scale-90 border border-white/20 shadow-lg'}`}
+                                    title={language === 'en' ? 'Back' : 'আগের'}
                                 >
-                                    <span className="font-bold">{language === 'en' ? 'NEXT' : 'পরের'}</span>
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                                    <svg className="w-8 h-8 group-hover:-translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
                                     </svg>
                                 </button>
-                            ) : (
-                                <div className="w-20"></div> /* Placeholder for balance */
-                            )}
+
+                                <div className="flex gap-2.5">
+                                    {slides.map((_, i) => (
+                                        <div
+                                            key={i}
+                                            className={`h-2 rounded-full transition-all duration-500 ${i === activeSectionIndex ? 'w-10 bg-orange-500 shadow-lg shadow-orange-500/50' : 'w-2 bg-slate-300 dark:bg-slate-700 opacity-50'}`}
+                                        />
+                                    ))}
+                                </div>
+
+                                {!isLastSlide ? (
+                                    <button
+                                        onClick={nextSlide}
+                                        className="group flex items-center justify-center w-14 h-14 bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-2xl shadow-2xl shadow-orange-500/40 active:scale-90 hover:shadow-orange-500/60 transition-all border border-white/20"
+                                        title={language === 'en' ? 'Next' : 'পরে'}
+                                    >
+                                        <svg className="w-8 h-8 group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                        </svg>
+                                    </button>
+                                ) : (
+                                    <div className="w-14"></div> /* Consistent spacing */
+                                )}
+                            </div>
                         </div>
                     </div>,
                     document.body

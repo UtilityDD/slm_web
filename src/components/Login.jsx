@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { storageUtils } from '../utils/storageUtils';
+import { DotLottiePlayer } from '@dotlottie/react-player';
+import noInternetLottie from '../assets/no_internet.lottie';
 
 export default function Login({ onLogin, showNotification, setCurrentView }) {
     const [phone, setPhone] = useState('');
@@ -13,6 +15,7 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(true);
     const [emotionalImageIndex, setEmotionalImageIndex] = useState(0);
+    const [connectionError, setConnectionError] = useState(false);
 
     const emotionalImages = [
         '/assets/emotional/lineman.png',
@@ -58,6 +61,7 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
         setLoading(true);
 
         try {
+            setConnectionError(false);
             // Validate inputs
             if (phone.length !== 10) {
                 throw new Error('Phone number must be 10 digits');
@@ -71,7 +75,16 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                 p_password: password
             });
 
-            if (error) throw error;
+            if (error) {
+                // Check if it's a network error
+                if (error.message?.toLowerCase().includes('network') ||
+                    error.message?.toLowerCase().includes('fetch') ||
+                    !navigator.onLine) {
+                    setConnectionError(true);
+                    return;
+                }
+                throw error;
+            }
 
             if (!data || data.length === 0) {
                 throw new Error('Invalid phone number or password');
@@ -111,7 +124,13 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
             }
         } catch (error) {
             console.error('Login error:', error);
-            showNotification(error.message, 'error');
+            if (error.message?.toLowerCase().includes('network') ||
+                error.message?.toLowerCase().includes('fetch') ||
+                !navigator.onLine) {
+                setConnectionError(true);
+            } else {
+                showNotification(error.message, 'error');
+            }
         } finally {
             setLoading(false);
         }
@@ -232,6 +251,52 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                                 ) : 'Secure Account & Log In'}
                             </button>
                         </form>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (connectionError) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 relative overflow-hidden">
+                <div className="absolute inset-0 z-0">
+                    <img
+                        src={emotionalImages[emotionalImageIndex]}
+                        alt="Background"
+                        className="w-full h-full object-cover opacity-30 transition-all duration-1000 scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-slate-950/50 to-orange-950/80"></div>
+                </div>
+
+                <div className="w-full max-w-md relative z-10 animate-slideUp">
+                    <div className="bg-white/10 dark:bg-black/20 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl p-10 text-center border border-white/10">
+                        <div className="mb-8 inline-flex p-4 rounded-3xl bg-orange-500/10 border border-orange-500/20">
+                            <DotLottiePlayer
+                                src={noInternetLottie}
+                                autoplay
+                                loop
+                                className="w-40 h-40"
+                            />
+                        </div>
+
+                        <h2 className="text-3xl font-black text-white mb-3 tracking-tight">Connection Error</h2>
+                        <p className="text-slate-400 mb-10 font-medium px-4">
+                            Oops! It seems you are offline or having trouble connecting to our servers.
+                        </p>
+
+                        <button
+                            onClick={() => {
+                                setConnectionError(false);
+                                setLoading(false);
+                            }}
+                            className="w-full py-5 px-6 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-bold rounded-2xl shadow-xl shadow-orange-950/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-3 cursor-pointer"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Retry Login
+                        </button>
                     </div>
                 </div>
             </div>

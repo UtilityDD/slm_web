@@ -289,7 +289,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                     <div className="flex-1 min-w-0">
                                         {/* Line 1: Username + Training Badge */}
                                         <div className="flex items-center gap-2 mb-1.5 min-w-0">
-                                            <h1 className="text-lg sm:text-xl lg:text-3xl font-bold text-white truncate">
+                                            <h1 className="text-title-card text-white truncate">
                                                 {(fullName && !fullName.includes('@')) ? fullName : (user ? 'Guest' : visitorName)}
                                             </h1>
                                             {trainingLevel > 0 && getBadgeByLevel(trainingLevel) && (
@@ -299,7 +299,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                             )}
                                         </div>
                                         {/* Line 2: Member ID */}
-                                        <p className="text-orange-50 text-xs lg:text-sm font-medium tracking-wide uppercase opacity-90 mb-0.5">
+                                        <p className="text-orange-50 text-[10px] lg:text-xs font-black tracking-[0.2em] uppercase opacity-90 mb-0.5">
                                             ID: {slmId || user?.id?.slice(0, 8).toUpperCase() || 'LINEMAN001'}
                                         </p>
                                         {/* Line 3: Role */}
@@ -335,7 +335,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                                 <div className="text-orange-100 text-[10px] uppercase tracking-wider font-semibold opacity-80 mb-1">
                                                     {language === 'en' ? 'Continue Reading' : 'পড়া চালিয়ে যান'}
                                                 </div>
-                                                <div className="text-white text-xl font-bold mb-0.5">
+                                                <div className="text-white text-title-card mb-0.5">
                                                     {language === 'en' ? `Chapter ${currentChapter}` : `অধ্যায় ${currentChapter}`}
                                                 </div>
                                                 <div className="text-orange-100 text-xs opacity-90">
@@ -413,10 +413,10 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                             {/* Content container - shifted right to avoid covering the face too much */}
                             <div className="relative p-7 sm:p-10 min-h-[180px] flex flex-col justify-center">
                                 <div className="max-w-[70%] ml-auto text-right">
-                                    <h3 className="text-white text-xl sm:text-3xl font-black leading-tight mb-2 drop-shadow-xl tracking-tight uppercase italic">
+                                    <h3 className="text-white text-title-section mb-2 drop-shadow-xl italic">
                                         {language === 'bn' ? 'করুণ কাহিনী!' : 'A Tragic Story'}
                                     </h3>
-                                    <p className="text-red-100 text-sm sm:text-base font-bold leading-relaxed opacity-95 drop-shadow-md italic mb-5">
+                                    <p className="text-red-100 text-body font-bold leading-relaxed opacity-95 drop-shadow-md italic mb-5">
                                         {language === 'bn'
                                             ? 'উদাসীনতা আর অবহেলার নির্মম বলি হয়ে অকালে হারিয়ে যাচ্ছে কত প্রাণ!'
                                             : 'Countless lives are lost prematurely as victims of indifference and negligence!'}
