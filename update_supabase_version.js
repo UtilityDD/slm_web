@@ -10,18 +10,18 @@ async function updateVersion() {
         .from('app_versions')
         .insert([
             {
-                version_code: 59,
-                version_name: '1.3.59',
+                version_code: 60,
+                version_name: '1.3.60',
                 force_update: false,
                 update_url: 'https://github.com/UtilityDD/slm_web/releases',
-                release_notes: 'Typography & Dark Mode Sync: Calibrated font sizes for a more professional look and ensured consistent dark theme visibility with slide-specific backgrounds.'
+                release_notes: 'Dynamic Lesson Completion: Each lesson now shows a specific completion message (e.g., 1.1 পাঠ শেষ হয়েছে!) instead of generic text.'
             }
         ]);
 
     if (error) {
         console.error('Error updating version:', error);
     } else {
-        console.log('Successfully updated Supabase to 1.3.59');
+        console.log('Successfully updated Supabase to 1.3.60');
     }
 }
 

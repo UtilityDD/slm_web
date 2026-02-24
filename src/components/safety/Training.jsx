@@ -1821,7 +1821,9 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
                                                     <div className="space-y-3 mb-12">
                                                         <h3 className={`text-title-section text-slate-900 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                            {language === 'en' ? 'Session Complete!' : 'সেশন সম্পন্ন হয়েছে!'}
+                                                            {language === 'en'
+                                                                ? `Session ${trainingContent.level_id} Complete!`
+                                                                : `${toBengaliNumber(trainingContent.level_id, language)} পাঠ শেষ হয়েছে!`}
                                                         </h3>
                                                         <p className={`text-lg text-slate-500 dark:text-slate-400 font-medium px-4 ${language === 'bn' ? 'font-bengali leading-relaxed' : ''}`}>
                                                             {language === 'en' ? 'You have successfully completed this safety mission.' : 'আপনি সফলভাবে এই সুরক্ষা মিশনটি সম্পন্ন করেছেন।'}
