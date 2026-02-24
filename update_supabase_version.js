@@ -10,18 +10,18 @@ async function updateVersion() {
         .from('app_versions')
         .insert([
             {
-                version_code: 58,
-                version_name: '1.3.58',
+                version_code: 59,
+                version_name: '1.3.59',
                 force_update: false,
                 update_url: 'https://github.com/UtilityDD/slm_web/releases',
-                release_notes: 'UI Refinement: Simplified lesson UI with uniform typography, cleaner headers, and slide-specific background colors for better navigation.'
+                release_notes: 'Typography & Dark Mode Sync: Calibrated font sizes for a more professional look and ensured consistent dark theme visibility with slide-specific backgrounds.'
             }
         ]);
 
     if (error) {
         console.error('Error updating version:', error);
     } else {
-        console.log('Successfully updated Supabase to 1.3.58');
+        console.log('Successfully updated Supabase to 1.3.59');
     }
 }
 
