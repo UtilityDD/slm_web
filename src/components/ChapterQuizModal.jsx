@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], language = 'en', isPractice = false }) => {
+const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions = [], language = 'en', isPractice = false }) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [userAnswers, setUserAnswers] = useState({});
     const [showResult, setShowResult] = useState(false);
@@ -312,7 +312,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, questions = [], languag
                                                     {t.tryAgain}
                                                 </button>
                                                 <button
-                                                    onClick={onClose}
+                                                    onClick={onReadAgain || onClose}
                                                     className="w-full py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all hover:bg-slate-200 dark:hover:bg-slate-600"
                                                 >
                                                     {t.readAgain}

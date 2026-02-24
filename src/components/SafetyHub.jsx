@@ -729,6 +729,11 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         }
     };
 
+    const handleReadAgain = () => {
+        setActiveSectionIndex(0);
+        setShowQuizModal(false);
+    };
+
     const handleQuizComplete = (score) => {
         // Here you could add logic to require a minimum score
         // For now, we just accept completion
@@ -2378,6 +2383,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                     <ChapterQuizModal
                         isOpen={showQuizModal}
                         onClose={() => setShowQuizModal(false)}
+                        onReadAgain={handleReadAgain}
                         onComplete={handleQuizComplete}
                         questions={currentQuizQuestions}
                         language={language}

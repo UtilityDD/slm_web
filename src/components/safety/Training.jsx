@@ -834,6 +834,11 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
         }
     };
 
+    const handleReadAgain = () => {
+        setActiveSectionIndex(0);
+        setShowQuizModal(false);
+    };
+
     const handleQuizComplete = (score) => {
         if (pendingLessonId) {
             finalizeLessonCompletion(pendingLessonId);
@@ -1917,6 +1922,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                     <ChapterQuizModal
                         isOpen={showQuizModal}
                         onClose={() => setShowQuizModal(false)}
+                        onReadAgain={handleReadAgain}
                         questions={currentQuizQuestions}
                         onComplete={handleQuizComplete}
                         chapterTitle={trainingContent?.level_title}
