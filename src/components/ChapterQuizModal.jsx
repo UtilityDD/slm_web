@@ -255,69 +255,123 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                     </button>
                                 </div>
                             ) : showResult ? (
-                                <div className="text-center py-8">
-                                    <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl ${isPassed ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600'}`}>
-                                        {isPassed ? '🏆' : '⚠️'}
-                                    </div>
-                                    <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-                                        {isPassed ? t.completed : t.failed}
-                                    </h2>
-                                    <p className="text-slate-600 dark:text-slate-400 mb-2">
-                                        {t.score} <span className={`font-bold text-xl ${isPassed ? 'text-green-600' : 'text-amber-600'}`}>{score} / {totalQuestions}</span>
-                                    </p>
-                                    {!isPassed && (
-                                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-                                            {t.required}
-                                        </p>
-                                    )}
+                                <div className="text-center py-6 animate-fade-in-up">
+                                    {/* Premium Radial Progress Indicator */}
+                                    <div className="relative w-48 h-48 mx-auto mb-8 flex items-center justify-center">
+                                        {/* Background Track */}
+                                        <svg className="absolute w-full h-full -rotate-90">
+                                            <circle
+                                                cx="96"
+                                                cy="96"
+                                                r="80"
+                                                fill="transparent"
+                                                stroke="currentColor"
+                                                strokeWidth="12"
+                                                className="text-slate-100 dark:text-slate-700/50"
+                                            />
+                                            <circle
+                                                cx="96"
+                                                cy="96"
+                                                r="80"
+                                                fill="transparent"
+                                                stroke="currentColor"
+                                                strokeWidth="14"
+                                                strokeDasharray={2 * Math.PI * 80}
+                                                strokeDashoffset={2 * Math.PI * 80 * (1 - score / totalQuestions)}
+                                                strokeLinecap="round"
+                                                className={`transition-all duration-[1500ms] ease-out-expo ${isPassed ? 'text-emerald-500' : 'text-orange-500'
+                                                    }`}
+                                                style={{ filter: `drop-shadow(0 0 8px ${isPassed ? 'rgba(16,185,129,0.3)' : 'rgba(249,115,22,0.3)'})` }}
+                                            />
+                                        </svg>
 
-                                    <div className="space-y-3 mt-6">
+                                        {/* Central Content */}
+                                        <div className="z-10 flex flex-col items-center">
+                                            <div className="text-5xl font-black tracking-tighter text-slate-900 dark:text-white">
+                                                {Math.round((score / totalQuestions) * 100)}%
+                                            </div>
+                                            <div className={`text-[10px] font-black uppercase tracking-widest mt-1 ${isPassed ? 'text-emerald-500' : 'text-orange-500'}`}>
+                                                {isPassed ? (language === 'en' ? 'PASSED' : 'উত্তীর্ণ') : (language === 'en' ? 'RETRY' : 'আবার চেষ্টা')}
+                                            </div>
+                                        </div>
+
+                                        {/* Status Icon Badge */}
+                                        <div className={`absolute -bottom-2 -right-2 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-2xl border-4 border-white dark:border-slate-800 animate-entrance-pop ${isPassed ? 'bg-emerald-500 text-white' : 'bg-orange-500 text-white'
+                                            }`} style={{ animationDelay: '500ms' }}>
+                                            {isPassed ? '🏆' : '🔥'}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2 mb-10 px-4">
+                                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-tight">
+                                            {isPassed ? t.completed : t.failed}
+                                        </h2>
+                                        <p className="text-slate-500 dark:text-slate-400 font-bold">
+                                            {t.score} <span className="text-slate-900 dark:text-white">{score}</span> / {totalQuestions}
+                                        </p>
+                                        {!isPassed && (
+                                            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded-full text-[10px] font-black uppercase tracking-wider border border-orange-100 dark:border-orange-500/20">
+                                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                                </svg>
+                                                {t.required}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-4 px-2">
                                         {isPractice ? (
                                             /* Practice Mode Options */
-                                            <>
+                                            <div className="grid grid-cols-2 gap-3">
                                                 <button
                                                     onClick={() => setIsReviewMode(true)}
-                                                    className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-orange-600/20"
+                                                    className="col-span-2 py-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-black rounded-2xl transition-all uppercase tracking-wider text-xs"
                                                 >
                                                     {t.review}
                                                 </button>
                                                 <button
                                                     onClick={handleTryAgain}
-                                                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20"
+                                                    className="py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl transition-all shadow-xl shadow-blue-500/20 uppercase tracking-widest text-xs"
                                                 >
                                                     {t.tryAgain}
                                                 </button>
                                                 <button
                                                     onClick={onClose}
-                                                    className="w-full py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all hover:bg-slate-200 dark:hover:bg-slate-600"
+                                                    className="py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl transition-all shadow-xl uppercase tracking-widest text-xs"
                                                 >
                                                     {t.close}
                                                 </button>
-                                            </>
+                                            </div>
                                         ) : isPassed ? (
                                             /* Normal Completion */
                                             <button
                                                 onClick={handleFinish}
-                                                className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-green-600/20"
+                                                className="w-full py-5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-[2rem] transition-all shadow-2xl shadow-emerald-500/30 active:scale-95 flex items-center justify-center gap-3 text-lg"
                                             >
                                                 {t.continue}
+                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                                </svg>
                                             </button>
                                         ) : (
                                             /* Normal Failure */
-                                            <>
+                                            <div className="grid grid-cols-1 gap-3">
                                                 <button
                                                     onClick={handleTryAgain}
-                                                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20"
+                                                    className="w-full py-5 bg-orange-600 hover:bg-orange-500 text-white font-black rounded-[2rem] transition-all shadow-2xl shadow-orange-500/30 active:scale-95 flex items-center justify-center gap-3 text-lg"
                                                 >
                                                     {t.tryAgain}
+                                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6 0 3.31-2.69 6-6 6-3.31 0-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
+                                                    </svg>
                                                 </button>
                                                 <button
                                                     onClick={onReadAgain || onClose}
-                                                    className="w-full py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all hover:bg-slate-200 dark:hover:bg-slate-600"
+                                                    className="w-full py-4 text-slate-500 dark:text-slate-400 font-bold hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
                                                 >
                                                     {t.readAgain}
                                                 </button>
-                                            </>
+                                            </div>
                                         )}
                                     </div>
                                 </div>

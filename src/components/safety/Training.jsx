@@ -33,6 +33,34 @@ const PPE_MAP = {
     10: { name: "Torch/Emergency Light", icon: "🔦" }
 };
 
+const toBengaliNumber = (num, lang) => {
+    if (!num) return '';
+    if (lang !== 'bn') return num;
+    const bnNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    return num.toString().split('').map(digit => bnNumbers[digit] || digit).join('');
+};
+
+const TrainingSkeleton = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+        {[...Array(6)].map((_, i) => (
+            <div key={i} className="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700/50 shadow-sm">
+                <div className="flex items-center gap-4 mb-4">
+                    <div className="w-14 h-14 bg-slate-200 dark:bg-slate-700 rounded-2xl"></div>
+                    <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
+                        <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+                    </div>
+                </div>
+                <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full mb-2"></div>
+                <div className="flex justify-between">
+                    <div className="h-3 bg-slate-100 dark:bg-slate-700 rounded w-1/4"></div>
+                    <div className="h-3 bg-slate-100 dark:bg-slate-700 rounded w-1/4"></div>
+                </div>
+            </div>
+        ))}
+    </div>
+);
+
 const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, onClick }) => {
     const isFAQ = chapter.number === 10;
     const completedCount = completedLessons.filter(id => id && id.toString().startsWith(`${chapter.number}.`)).length;
@@ -41,75 +69,139 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
     return (
         <div
             onClick={() => onClick(chapter)}
-            className={`p-5 rounded-xl border transition-all duration-300 cursor-pointer group relative overflow-hidden lg:hover:-translate-y-2 lg:hover:shadow-2xl ${isFAQ
-                ? 'bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-900/20 dark:to-fuchsia-900/20 border-violet-200 dark:border-violet-700 hover:border-violet-400 dark:hover:border-violet-500 shadow-sm hover:shadow-md lg:shadow-lg'
-                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-orange-400 dark:hover:border-orange-600 hover:shadow-md lg:shadow-lg lg:hover:shadow-orange-500/20'
+            className={`p-6 rounded-[2rem] border transition-all duration-500 cursor-pointer group relative overflow-hidden active:scale-95 animate-entrance-pop ${isFAQ
+                ? 'bg-gradient-to-br from-violet-50/50 to-fuchsia-100/30 dark:from-violet-900/10 dark:to-fuchsia-900/10 border-violet-100 dark:border-violet-800/40 hover:border-violet-400 dark:hover:border-violet-500 shadow-sm hover:shadow-xl lg:hover:-translate-y-2'
+                : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700/50 hover:border-orange-200 dark:hover:border-orange-800 hover:shadow-2xl lg:hover:-translate-y-2'
                 }`}
         >
-            <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 lg:w-14 lg:h-14 rounded-lg lg:rounded-2xl flex items-center justify-center text-lg lg:text-2xl font-bold border lg:shadow-md lg:group-hover:scale-110 transition-transform duration-300 ${isFAQ
+            {/* Background Accent */}
+            <div className={`absolute top-0 right-0 w-32 h-32 blur-3xl rounded-full transition-opacity duration-500 opacity-0 group-hover:opacity-20 pointer-events-none ${isFAQ ? 'bg-violet-500' : 'bg-orange-500'}`}></div>
+
+            <div className="flex items-center justify-between mb-4 relative z-10">
+                <div className="flex items-center gap-4">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-black border transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 ${isFAQ
                         ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 border-violet-200 dark:border-violet-800'
-                        : 'bg-gradient-to-br from-orange-400 to-orange-600 text-white border-orange-500 dark:border-orange-700'
+                        : 'bg-gradient-to-br from-orange-400 to-orange-600 text-white border-orange-500 shadow-lg shadow-orange-500/20'
                         }`}>
                         {isFAQ ? '?' : chapter.number}
                     </div>
                     <div>
-                        <h3 className={`font-bold leading-tight lg:text-xl transition-colors ${language === 'bn' ? 'font-bengali' : ''} ${isFAQ
+                        <h3 className={`font-black tracking-tight leading-tight text-lg lg:text-xl transition-colors ${language === 'bn' ? 'font-bengali' : ''} ${isFAQ
                             ? 'text-violet-900 dark:text-violet-100 group-hover:text-violet-700 dark:group-hover:text-violet-300'
                             : 'text-slate-900 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400'
                             }`}>
                             {chapter.title}
                         </h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1.5">
+                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
                             {isFAQ ? (
-                                language === 'en' ? 'Always Unlocked' : 'সবার জন্য উন্মুক্ত'
+                                language === 'en' ? 'Reference Guide' : 'রেফারেন্স গাইড'
                             ) : (
                                 language === 'en' ? (
-                                    `${chapter.count} Days • ${chapter.count} Lessons`
+                                    `${chapter.count} Lessons`
                                 ) : (
-                                    `${chapter.count === 10 ? '১০' : chapter.count} দিন - ${chapter.count === 10 ? '১০' : chapter.count} পাঠ`
+                                    `${toBengaliNumber(chapter.count, 'bn')}টি পাঠ`
                                 )
                             )}
                         </p>
                     </div>
                 </div>
-                {!isFAQ && progress === 100 && (
-                    <div className="text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
-                        {language === 'en' ? 'Done' : 'সম্পন্ন'}
-                    </div>
-                )}
-                {isFAQ && (
-                    <div className="text-violet-500 bg-violet-50 dark:bg-violet-900/20 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
-                        FAQ
-                    </div>
-                )}
             </div>
 
-            {/* Progress Bar - Hide for FAQ */}
+            {/* Progress Bar Area */}
             {!isFAQ && (
-                <>
-                    <div className="w-full h-2 lg:h-2.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mt-2 shadow-inner">
+                <div className="space-y-3 relative z-10">
+                    <div className="w-full h-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-full overflow-hidden shadow-inner border border-slate-100 dark:border-slate-800">
                         <div
-                            className={`h-full rounded-full transition-all duration-500 lg:group-hover:shadow-lg ${progress === 100 ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' : 'bg-gradient-to-r from-orange-400 to-orange-600'}`}
+                            className={`h-full rounded-full transition-all duration-1000 ease-out relative ${progress === 100 ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' : 'bg-gradient-to-r from-orange-400 to-orange-600'}`}
                             style={{ width: `${progress}%` }}
-                        ></div>
+                        >
+                            <div className="absolute inset-0 shimmer opacity-30"></div>
+                        </div>
                     </div>
-                    <div className="flex items-center justify-between mt-2">
-                        <p className="text-[10px] lg:text-xs text-slate-400 font-semibold">
-                            {completedCount}/{chapter.count} {language === 'en' ? 'Lessons' : 'পাঠ'}
-                        </p>
-                        <p className="text-[10px] lg:text-xs font-bold ${progress === 100 ? 'text-emerald-600' : 'text-orange-600'}">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                            {completedCount}/{chapter.count} {language === 'en' ? 'Complete' : 'সম্পন্ন'}
+                        </span>
+                        <span className={`text-xs font-black ${progress === 100 ? 'text-emerald-500' : 'text-orange-500'}`}>
                             {progress}%
-                        </p>
+                        </span>
                     </div>
-                </>
+                </div>
             )}
 
             {isFAQ && (
-                <p className="text-[10px] text-violet-400 dark:text-violet-500 mt-2 italic">
-                    {language === 'en' ? 'Reference Guide' : 'রেফারেন্স গাইড'}
-                </p>
+                <div className="mt-4 flex items-center gap-1.5 text-violet-500 font-black text-[10px] uppercase tracking-wider">
+                    {language === 'en' ? 'Access Knowledge' : 'জ্ঞান অন্বেষণ করুন'} <span>→</span>
+                </div>
+            )}
+        </div>
+    );
+});
+
+const TrainingSubChapterCard = React.memo(({ subchapter, isUnlocked, isCompleted, isNext, language, onClick }) => {
+    return (
+        <div
+            onClick={onClick}
+            className={`flex-shrink-0 w-[240px] sm:w-[280px] snap-center relative aspect-[3/4] rounded-[2.5rem] overflow-hidden transition-all duration-500 group ${isUnlocked ? 'cursor-pointer hover:scale-[1.02] hover:-translate-y-2' : 'cursor-not-allowed grayscale'
+                }`}
+        >
+            {/* Book Background Gradient */}
+            <div className={`absolute inset-0 bg-gradient-to-br transition-all duration-700 ${isCompleted
+                ? 'from-emerald-400 via-emerald-500 to-teal-600'
+                : isUnlocked
+                    ? 'from-orange-400 via-orange-500 to-rose-500'
+                    : 'from-slate-400 to-slate-600'
+                } ${isNext ? 'animate-pulse-slow' : ''}`} />
+
+            {/* Decorative Patterns */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -mr-16 -mt-16 blur-3xl" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-black rounded-full -ml-16 -mb-16 blur-3xl" />
+            </div>
+
+            {/* Glass Overlay */}
+            <div className="absolute inset-0 bg-white/10 dark:bg-black/20 backdrop-blur-[2px] border border-white/20" />
+
+            {/* Content Layout */}
+            <div className="absolute inset-0 p-8 flex flex-col items-center text-center">
+                {/* Status Badge */}
+                <div className={`self-end px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md border ${isCompleted
+                    ? 'bg-emerald-500/20 text-white border-emerald-400/30'
+                    : isUnlocked
+                        ? 'bg-white/20 text-white border-white/30'
+                        : 'bg-black/20 text-slate-300 border-white/10'
+                    }`}>
+                    {isCompleted ? (language === 'en' ? 'Done' : 'সম্পন্ন') : (isUnlocked ? (language === 'en' ? 'Ready' : 'শুরু করুন') : (language === 'en' ? 'Locked' : 'লক'))}
+                </div>
+
+                {/* Center Icon/Number */}
+                <div className="flex-1 flex flex-col items-center justify-center">
+                    <div className={`w-20 h-20 rounded-3xl flex items-center justify-center text-3xl mb-4 shadow-2xl transition-transform duration-500 group-hover:rotate-6 ${isCompleted ? 'bg-white/30' : 'bg-white/20'
+                        }`}>
+                        {isCompleted ? '⭐' : (isUnlocked ? '📖' : '🔒')}
+                    </div>
+                    <div className="text-[10px] font-black text-white/60 tracking-[0.2em] uppercase mb-1">
+                        {language === 'en' ? 'Lesson' : 'পাঠ'} {subchapter.level_id}
+                    </div>
+                </div>
+
+                {/* Title Section */}
+                <div className="w-full">
+                    <h4 className={`text-xl font-black text-white leading-tight mb-2 drop-shadow-lg ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        {subchapter.level_title}
+                    </h4>
+                    <div className="h-1 w-12 bg-white/30 rounded-full mx-auto" />
+                </div>
+            </div>
+
+            {/* Next Indicator */}
+            {isNext && (
+                <div className="absolute top-4 left-4">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white rounded-full shadow-lg">
+                        <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                        <span className="text-[9px] font-black text-slate-900 uppercase tracking-tighter">Next Up</span>
+                    </div>
+                </div>
             )}
         </div>
     );
@@ -124,6 +216,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
     const [trainingLoading, setTrainingLoading] = useState(false);
     const [completedLessons, setCompletedLessons] = useState([]);
     const [faqSearchQuery, setFaqSearchQuery] = useState('');
+    const [isFaqTagsExpanded, setIsFaqTagsExpanded] = useState(false);
     const [showCertificateModal, setShowCertificateModal] = useState(false);
     const [fetchError, setFetchError] = useState(false);
     const [readingPoints, setReadingPoints] = useState(0);
@@ -147,12 +240,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
     const galleryRef = useRef(null);
     const lessonScrollRef = useRef(null);
 
-    const toBengaliNumber = (num, lang) => {
-        if (!num) return '';
-        if (lang !== 'bn') return num;
-        const bnNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-        return num.toString().split('').map(digit => bnNumbers[digit] || digit).join('');
-    };
+
 
     const scrollGallery = (direction) => {
         if (galleryRef.current) {
@@ -214,6 +302,18 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                 lessonScrollRef.current.scrollTo({ top: 0, behavior: 'instant' });
             }
         }
+    };
+
+    const chapterGridRef = useRef(null);
+
+    // Dynamic background styles for different slide types
+    const slideTypeStyles = {
+        hero: 'bg-slate-50 dark:bg-slate-950',
+        section: 'bg-orange-50/40 dark:bg-orange-950/10',
+        pro_tip: 'bg-emerald-50/40 dark:bg-emerald-950/10',
+        myth_buster: 'bg-red-50/40 dark:bg-red-950/10 dark:text-red-200',
+        advanced: 'bg-indigo-50/40 dark:bg-indigo-950/10',
+        completion: 'bg-slate-50 dark:bg-slate-950'
     };
 
     const { speak, pause, resume, stop, isPlaying, isPaused } = useTextToSpeech(language);
@@ -847,11 +947,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 md:mb-6 animate-slide-down">
-            <div className="mb-6">
-                <h1 className={`text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                    {language === 'en' ? 'Training' : 'প্রশিক্ষণ'}
-                </h1>
-            </div>
+
 
             {fetchError && (
                 <div className="max-w-md mx-auto mb-8 p-6 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-800 rounded-2xl text-center animate-fade-in">
@@ -887,17 +983,24 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
             {/* Main Content Area */}
             {trainingLoading ? (
-                <div className="loading-container-fixed animate-fade-in">
-                    <div className="w-48 h-48 lg:w-64 lg:h-64 mb-4">
-                        <DotLottiePlayer
-                            src={sandyLoading}
-                            autoplay
-                            loop
-                        />
-                    </div>
-                    <p className={`text-slate-500 font-bold ${language === 'bn' ? 'font-bengali text-xl' : 'text-lg tracking-wide'}`}>
-                        {language === 'en' ? 'Preparing your safety journey...' : 'আপনার সুরক্ষা পথ প্রস্তুত করা হচ্ছে...'}
-                    </p>
+                <div className="animate-fade-in relative z-10">
+                    {/* Only show Lottie if we're not loading subchapters within a main chapter */}
+                    {!selectedChapter ? (
+                        <div className="loading-container-fixed">
+                            <div className="w-48 h-48 lg:w-64 lg:h-64 mb-4">
+                                <DotLottiePlayer
+                                    src={sandyLoading}
+                                    autoplay
+                                    loop
+                                />
+                            </div>
+                            <p className={`text-slate-500 font-black animate-pulse ${language === 'bn' ? 'font-bengali text-xl' : 'text-lg tracking-widest uppercase opacity-70'}`}>
+                                {language === 'en' ? 'Preparing Lesson...' : 'পাঠ প্রস্তুত করা হচ্ছে...'}
+                            </p>
+                        </div>
+                    ) : (
+                        <TrainingSkeleton />
+                    )}
                 </div>
             ) : !selectedChapter && !trainingContent ? (
                 <div className="animate-fade-in-up">
@@ -923,6 +1026,66 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                     <p className={`text-xl text-slate-500 dark:text-slate-400 font-bold max-w-lg mx-auto ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {language === 'en' ? 'Master your safety skills' : 'আপনার পেশাগত জ্ঞান বাড়ান'}
                                     </p>
+
+                                    {/* Global Progress Dashboard */}
+                                    {(() => {
+                                        const totalLessons = journeyChapters.reduce((acc, c) => acc + (c.count || 0), 0);
+                                        const totalCompleted = completedLessons.filter(id => {
+                                            if (!id) return false;
+                                            const chapterNum = parseInt(id.toString().split('.')[0]);
+                                            return chapterNum >= 1 && chapterNum < 10;
+                                        }).length;
+                                        const overallProgressPercentage = totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0;
+                                        const daysToPro = totalLessons - totalCompleted;
+
+                                        if (totalLessons === 0) return null;
+
+                                        return (
+                                            <div className="max-w-md mx-auto mt-8 p-5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-[2rem] border border-slate-200/50 dark:border-slate-700/50 shadow-2xl animate-entrance-pop">
+                                                <div className="flex items-center justify-between mb-3 px-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-8 h-8 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-lg">
+                                                            🏆
+                                                        </div>
+                                                        <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                                                            {language === 'en' ? 'Just 30 min daily' : 'মাত্র ৩০ মিনিট প্রতিদিন'}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-xs font-black text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 px-2 py-1 rounded-lg border border-orange-100 dark:border-orange-900 text-[10px]">
+                                                        {toBengaliNumber(totalCompleted, language)} / {toBengaliNumber(totalLessons, language)} {language === 'en' ? 'STEPS' : 'ধাপ'}
+                                                    </span>
+                                                </div>
+
+                                                <div className="relative h-5 w-full bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden border border-slate-200/50 dark:border-slate-800 mb-4 shadow-inner">
+                                                    <div
+                                                        className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-400 via-orange-500 to-rose-500 shadow-[0_0_15px_rgba(249,115,22,0.4)] transition-all duration-1000 ease-out z-0"
+                                                        style={{ width: `${overallProgressPercentage}%` }}
+                                                    >
+                                                        <div className="absolute inset-0 shimmer-fast opacity-30"></div>
+                                                    </div>
+                                                    {/* Percentage Indicator Inside Bar */}
+                                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                                                        <span className="text-[10px] font-black text-slate-700 dark:text-slate-200 drop-shadow-sm">
+                                                            {toBengaliNumber(overallProgressPercentage, language)}%
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="text-center">
+                                                    <p className={`text-xs font-bold text-slate-600 dark:text-slate-300 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                        {language === 'en'
+                                                            ? (daysToPro > 0
+                                                                ? <>You need <span className="text-orange-600 dark:text-orange-400 font-black">{daysToPro}</span> more days to become a pro!</>
+                                                                : "You're a Safety Pro! Keep exploring.")
+                                                            : (daysToPro > 0
+                                                                ? <>প্রো হওয়ার জন্য আপনার আরও <span className="text-orange-600 dark:text-orange-400 font-black">{toBengaliNumber(daysToPro, 'bn')}</span> দিন প্রয়োজন!</>
+                                                                : "আপনি একজন সেফটি প্রো! আরও জ্ঞান অন্বেষণ করুন।")
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
 
                                 {/* Journey Container */}
@@ -1121,12 +1284,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                         </div>
 
                                                         {/* Mobile Label popup (if needed) or simple number */}
-                                                        {!isLocked && isActive && (
-                                                            <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 whitespace-nowrap px-4 py-1.5 bg-orange-600 text-white text-xs font-bold rounded-full shadow-lg animate-bounce-subtle z-30">
-                                                                {language === 'en' ? 'START HERE' : 'এখানে শুরু করুন'}
-                                                                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-orange-600 rotate-45"></div>
-                                                            </div>
-                                                        )}
+
 
                                                         {/* Chapter Title for Mobile (Below node) */}
                                                         <div className="md:hidden absolute top-28 w-40 text-center">
@@ -1242,93 +1400,178 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                     </button>
 
                     {selectedChapter.isFAQ ? (
-                        /* FAQ View */
-                        <div className="space-y-4">
-                            <div className="bg-gradient-to-r from-violet-100 to-fuchsia-100 dark:from-violet-900/30 dark:to-fuchsia-900/30 p-6 rounded-2xl mb-6 border border-violet-200 dark:border-violet-700">
-                                <h2 className="text-2xl font-bold text-violet-900 dark:text-violet-100 mb-2">{selectedChapter.content.title}</h2>
-                                <p className="text-violet-700 dark:text-violet-300 mb-4">{selectedChapter.content.subtitle}</p>
+                        /* Redesigned FAQ View */
+                        <div className="space-y-6 animate-fade-in">
+                            <div className="bg-gradient-to-br from-violet-100/40 via-violet-50/20 to-fuchsia-100/30 dark:from-violet-900/40 dark:via-slate-800/40 dark:to-fuchsia-900/30 p-6 sm:p-8 rounded-[2.5rem] mb-8 border border-violet-200/50 dark:border-violet-700/50 backdrop-blur-3xl shadow-2xl relative overflow-hidden">
+                                {/* Decorative elements */}
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-violet-400/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                                <div className="absolute bottom-0 left-0 w-48 h-48 bg-fuchsia-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
 
-                                {/* Search Input */}
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        placeholder={language === 'en' ? 'Search questions, answers, or tags...' : 'প্রশ্ন, উত্তর বা ট্যাগ খুঁজুন...'}
-                                        value={faqSearchQuery}
-                                        onChange={(e) => setFaqSearchQuery(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-violet-200 dark:border-violet-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none shadow-sm"
-                                    />
-                                    <div className="absolute left-3 top-3.5 text-violet-400">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                        </svg>
+                                <div className="relative z-10">
+                                    <h2 className="text-3xl font-black text-slate-800 dark:text-violet-100 mb-2 tracking-tight">
+                                        {selectedChapter.content.title}
+                                    </h2>
+                                    <p className="text-slate-500 dark:text-violet-300/70 mb-8 font-bold">
+                                        {selectedChapter.content.subtitle}
+                                    </p>
+
+                                    {/* Modernized Search Input */}
+                                    <div className="relative group max-w-2xl">
+                                        <div className="absolute inset-0 bg-violet-500/10 blur-xl group-focus-within:bg-violet-500/20 transition-all rounded-2xl"></div>
+                                        <div className="relative flex items-center bg-white dark:bg-slate-900/80 backdrop-blur-xl border-2 border-slate-100 dark:border-violet-900/30 rounded-2xl overflow-hidden transition-all group-focus-within:border-violet-500 group-focus-within:ring-4 ring-violet-500/10">
+                                            <div className="pl-5 text-violet-400">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                                </svg>
+                                            </div>
+                                            <input
+                                                type="text"
+                                                placeholder={language === 'en' ? 'Search topics, questions, or tags...' : 'বিষয়, প্রশ্ন বা ট্যাগ খুঁজুন...'}
+                                                value={faqSearchQuery}
+                                                onChange={(e) => setFaqSearchQuery(e.target.value)}
+                                                className={`w-full px-4 py-4 bg-transparent text-slate-900 dark:text-slate-100 font-bold outline-none placeholder:text-slate-300 dark:placeholder:text-slate-600 ${language === 'bn' ? 'font-bengali text-lg' : ''}`}
+                                            />
+                                            {faqSearchQuery && (
+                                                <button
+                                                    onClick={() => setFaqSearchQuery('')}
+                                                    className="pr-4 text-slate-400 hover:text-violet-500 transition-colors"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                                    </svg>
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Keyword Discovery Hub - Innovative Ribbon Layout */}
+                                    <div className="mt-8">
+                                        <div className="flex items-center justify-between gap-4 mb-4">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[10px] font-black text-violet-500 dark:text-violet-400 uppercase tracking-widest pl-2">Popular Keywords</span>
+                                                <div className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse"></div>
+                                            </div>
+                                            <button
+                                                onClick={() => setIsFaqTagsExpanded(!isFaqTagsExpanded)}
+                                                className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-violet-50 dark:bg-violet-900/30 text-[10px] font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest hover:bg-violet-600 hover:text-white transition-all border border-violet-100 dark:border-violet-800"
+                                            >
+                                                {isFaqTagsExpanded ? (
+                                                    <><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 15l7-7 7 7" /></svg> Collapse</>
+                                                ) : (
+                                                    <><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg> View All</>
+                                                )}
+                                            </button>
+                                        </div>
+
+                                        <div className={`relative ${!isFaqTagsExpanded ? 'after:absolute after:top-0 after:right-0 after:h-full after:w-20 after:bg-gradient-to-l after:from-violet-50/50 dark:after:from-slate-800/50 after:to-transparent after:pointer-events-none' : ''}`}>
+                                            <div className={`${isFaqTagsExpanded ? 'flex flex-wrap' : 'flex overflow-x-auto scrollbar-hide pb-2 px-1'} gap-2 transition-all duration-500`}>
+                                                {Array.from(new Set(selectedChapter.content.questions.flatMap(q => q.tags || []))).sort().map(tag => {
+                                                    const isActive = faqSearchQuery.toLowerCase() === tag.toLowerCase();
+                                                    return (
+                                                        <button
+                                                            key={tag}
+                                                            onClick={() => setFaqSearchQuery(isActive ? '' : tag)}
+                                                            className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-black transition-all duration-300 border ${isActive
+                                                                ? 'bg-violet-600 border-violet-600 text-white shadow-lg shadow-violet-600/30 scale-105'
+                                                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-violet-300 dark:hover:border-violet-600 hover:text-violet-600 active:scale-95'
+                                                                }`}
+                                                        >
+                                                            #{tag}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {selectedChapter.content.questions
-                                .filter(q => {
-                                    if (!faqSearchQuery) return true;
-                                    const query = faqSearchQuery.toLowerCase();
-                                    return (
-                                        q.question.toLowerCase().includes(query) ||
-                                        q.answer.toLowerCase().includes(query) ||
-                                        q.tags.some(tag => tag.toLowerCase().includes(query))
-                                    );
-                                })
-                                .map((q, idx) => (
-                                    <div key={q.id} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-all">
-                                        <details className="group">
-                                            <summary className="flex items-center justify-between p-4 cursor-pointer list-none">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold text-sm shrink-0">
-                                                        {q.id.replace('q', '')}
-                                                    </div>
-                                                    <span className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
-                                                        {q.question}
-                                                    </span>
-                                                </div>
-                                                <span className="transition group-open:rotate-180">
-                                                    <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                                                </span>
-                                            </summary>
-                                            <div className="px-4 pb-4 pl-[3.25rem] text-slate-600 dark:text-slate-400 text-sm leading-relaxed border-t border-slate-100 dark:border-slate-700 pt-4 bg-slate-50/50 dark:bg-slate-900/30">
-                                                <div>{renderTextWithImages(q.answer)}</div>
-                                                {q.image && (
-                                                    <div className="mt-4 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm max-w-md">
-                                                        <img
-                                                            src={`/quizzes/faq_images/${q.image}`}
-                                                            alt={q.question}
-                                                            className="w-full h-auto object-cover"
-                                                            loading="lazy"
-                                                        />
-                                                    </div>
-                                                )}
-                                                <div className="mt-3 flex flex-wrap gap-2">
-                                                    {q.tags.map(tag => (
-                                                        <span key={tag} className="px-2 py-1 rounded-md bg-slate-200 dark:bg-slate-700 text-xs text-slate-600 dark:text-slate-400 font-medium">
-                                                            #{tag}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </details>
-                                    </div>
-                                ))}
+                            {/* Question List */}
+                            <div className="grid gap-4">
+                                {selectedChapter.content.questions
+                                    .filter(q => {
+                                        if (!faqSearchQuery) return true;
+                                        const query = faqSearchQuery.toLowerCase();
+                                        return (
+                                            q.question.toLowerCase().includes(query) ||
+                                            q.answer.toLowerCase().includes(query) ||
+                                            (q.tags && q.tags.some(tag => tag.toLowerCase().includes(query)))
+                                        );
+                                    })
+                                    .map((q, idx) => {
+                                        const isOpen = faqSearchQuery && q.question.toLowerCase().includes(faqSearchQuery.toLowerCase());
+                                        return (
+                                            <div
+                                                key={q.id}
+                                                className="bg-white dark:bg-slate-800/80 backdrop-blur-xl rounded-[2rem] border border-slate-200/60 dark:border-slate-700/60 overflow-hidden hover:shadow-2xl hover:border-violet-300 dark:hover:border-violet-500/50 transition-all duration-500 group shadow-lg shadow-slate-200/20 dark:shadow-none"
+                                            >
+                                                <details
+                                                    className="group/details"
+                                                    open={isOpen}
+                                                >
+                                                    <summary className="flex items-center justify-between p-4 sm:p-6 cursor-pointer list-none select-none">
+                                                        <div className="flex items-start sm:items-center gap-3 sm:gap-5">
+                                                            <div className="mt-1 sm:mt-0 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white flex items-center justify-center font-black text-xs sm:text-sm shadow-lg shadow-violet-500/20 transition-all duration-500 group-hover/details:rotate-6 group-hover/details:scale-110 shrink-0">
+                                                                Q{toBengaliNumber(idx + 1, language)}
+                                                            </div>
+                                                            <span className={`font-black text-slate-800 dark:text-slate-100 leading-snug transition-colors group-hover/details:text-violet-600 dark:group-hover/details:text-violet-400 ${language === 'bn' ? 'font-bengali text-lg sm:text-xl' : 'text-base sm:text-lg'}`}>
+                                                                {q.question}
+                                                            </span>
+                                                        </div>
+                                                        <div className="ml-4 w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-400 shrink-0 transition-all duration-500 group-open/details:rotate-180 group-open/details:bg-violet-600 group-open/details:text-white">
+                                                            <svg fill="none" height="20" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" viewBox="0 0 24 24" width="20"><path d="M6 9l6 6 6-6"></path></svg>
+                                                        </div>
+                                                    </summary>
+                                                    <div className="px-4 sm:px-8 pb-6 sm:pb-8 pt-0 sm:pt-2">
+                                                        <div className="flex gap-3 sm:gap-5">
+                                                            <div className="hidden sm:flex w-12 flex-col items-center shrink-0">
+                                                                <div className="w-px h-full bg-gradient-to-b from-violet-200 to-transparent dark:from-violet-800/50"></div>
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <div className="flex items-center gap-2 mb-4">
+                                                                    <span className="text-[10px] font-black text-violet-500 uppercase tracking-[0.2em] bg-violet-50 dark:bg-violet-900/30 px-2 py-0.5 rounded-md">Answer</span>
+                                                                    <div className="flex-1 h-px bg-slate-100 dark:bg-slate-700/50"></div>
+                                                                </div>
 
-                            {selectedChapter.content.questions.filter(q => {
-                                if (!faqSearchQuery) return true;
-                                const query = faqSearchQuery.toLowerCase();
-                                return (
-                                    q.question.toLowerCase().includes(query) ||
-                                    q.answer.toLowerCase().includes(query) ||
-                                    q.tags.some(tag => tag.toLowerCase().includes(query))
-                                );
-                            }).length === 0 && (
-                                    <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-                                        <div className="text-4xl mb-3">🔍</div>
-                                        <p>{language === 'en' ? 'No results found' : 'কোন ফলাফল পাওয়া যায়নি'}</p>
-                                    </div>
-                                )}
+                                                                <div className={`text-slate-600 dark:text-slate-300 leading-relaxed ${language === 'bn' ? 'font-bengali text-lg' : 'font-medium'}`}>
+                                                                    {renderTextWithImages(q.answer)}
+                                                                </div>
+
+                                                                {q.image && (
+                                                                    <div className="mt-6 rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden border-2 sm:border-8 border-white dark:border-slate-800 shadow-2xl max-w-full sm:max-w-lg transform hover:scale-[1.01] transition-transform duration-500">
+                                                                        <img
+                                                                            src={`/quizzes/faq_images/${q.image}`}
+                                                                            alt={q.question}
+                                                                            className="w-full h-auto object-cover"
+                                                                            loading="lazy"
+                                                                        />
+                                                                    </div>
+                                                                )}
+
+                                                                <div className="mt-8 flex flex-wrap gap-2">
+                                                                    {q.tags && q.tags.map(tag => (
+                                                                        <button
+                                                                            key={tag}
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault();
+                                                                                setFaqSearchQuery(tag);
+                                                                            }}
+                                                                            className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-wider hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-all border border-slate-100 dark:border-slate-700"
+                                                                        >
+                                                                            #{tag}
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </details>
+                                            </div>
+                                        );
+                                    })}
+
+
+                            </div>
                         </div>
                     ) : (
                         /* Regular Subchapter List - Redesigned as a Gallery */
@@ -1354,7 +1597,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
                             <div
                                 ref={galleryRef}
-                                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-8 -mx-4 px-4 gap-6 scroll-smooth"
+                                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-12 -mx-4 px-4 gap-6 scroll-smooth pt-4"
                             >
                                 {selectedChapter.subchapters.map((subchapter, index) => {
                                     const isUnlocked = isLessonUnlocked(subchapter.chapterNum, subchapter.subchapterNum);
@@ -1363,8 +1606,13 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                         (index === 0 || completedLessons.includes(selectedChapter.subchapters[index - 1]?.level_id));
 
                                     return (
-                                        <div
+                                        <TrainingSubChapterCard
                                             key={subchapter.level_id}
+                                            subchapter={subchapter}
+                                            isUnlocked={isUnlocked}
+                                            isCompleted={isCompleted}
+                                            isNext={isNext}
+                                            language={language}
                                             onClick={() => {
                                                 if (!user || !isUnlocked) return;
 
@@ -1404,68 +1652,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                 setActiveSectionIndex(0);
                                                 setIsJournalMode(true);
                                             }}
-                                            className={`flex-shrink-0 w-[240px] sm:w-[280px] snap-center relative aspect-[3/4] rounded-[2.5rem] overflow-hidden transition-all duration-500 group ${isUnlocked ? 'cursor-pointer hover:scale-[1.02] hover:-translate-y-2' : 'cursor-not-allowed grayscale'
-                                                }`}
-                                        >
-                                            {/* Book Background Gradient */}
-                                            <div className={`absolute inset-0 bg-gradient-to-br transition-all duration-700 ${isCompleted
-                                                ? 'from-emerald-400 via-emerald-500 to-teal-600'
-                                                : isUnlocked
-                                                    ? 'from-orange-400 via-orange-500 to-rose-500'
-                                                    : 'from-slate-400 to-slate-600'
-                                                } ${isNext ? 'animate-pulse-slow' : ''}`} />
-
-                                            {/* Decorative Patterns */}
-                                            <div className="absolute inset-0 opacity-10 pointer-events-none">
-                                                <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -mr-16 -mt-16 blur-3xl" />
-                                                <div className="absolute bottom-0 left-0 w-32 h-32 bg-black rounded-full -ml-16 -mb-16 blur-3xl" />
-                                            </div>
-
-                                            {/* Glass Overlay */}
-                                            <div className="absolute inset-0 bg-white/10 dark:bg-black/20 backdrop-blur-[2px] border border-white/20" />
-
-                                            {/* Content Layout */}
-                                            <div className="absolute inset-0 p-8 flex flex-col items-center text-center">
-                                                {/* Status Badge */}
-                                                <div className={`self-end px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md border ${isCompleted
-                                                    ? 'bg-emerald-500/20 text-white border-emerald-400/30'
-                                                    : isUnlocked
-                                                        ? 'bg-white/20 text-white border-white/30'
-                                                        : 'bg-black/20 text-slate-300 border-white/10'
-                                                    }`}>
-                                                    {isCompleted ? (language === 'en' ? 'Done' : 'সম্পন্ন') : (isUnlocked ? (language === 'en' ? 'Ready' : 'শুরু করুন') : (language === 'en' ? 'Locked' : 'লক'))}
-                                                </div>
-
-                                                {/* Center Icon/Number */}
-                                                <div className="flex-1 flex flex-col items-center justify-center">
-                                                    <div className={`w-20 h-20 rounded-3xl flex items-center justify-center text-3xl mb-4 shadow-2xl transition-transform duration-500 group-hover:rotate-6 ${isCompleted ? 'bg-white/30' : 'bg-white/20'
-                                                        }`}>
-                                                        {isCompleted ? '⭐' : (isUnlocked ? '📖' : '🔒')}
-                                                    </div>
-                                                    <div className="text-[10px] font-black text-white/60 tracking-[0.2em] uppercase mb-1">
-                                                        {language === 'en' ? 'Lesson' : 'পাঠ'} {subchapter.level_id}
-                                                    </div>
-                                                </div>
-
-                                                {/* Title Section */}
-                                                <div className="w-full">
-                                                    <h4 className={`text-xl font-black text-white leading-tight mb-2 drop-shadow-lg ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                        {subchapter.level_title}
-                                                    </h4>
-                                                    <div className="h-1 w-12 bg-white/30 rounded-full mx-auto" />
-                                                </div>
-                                            </div>
-
-                                            {/* Next Indicator */}
-                                            {isNext && (
-                                                <div className="absolute top-4 left-4">
-                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white rounded-full shadow-lg">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                                                        <span className="text-[9px] font-black text-slate-900 uppercase tracking-tighter">Next Up</span>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
+                                        />
                                     );
                                 })}
                             </div>
@@ -2003,106 +2190,108 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                 )
             }
             {/* Welcome Modal Overlay */}
-            {showWelcome && createPortal(
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-50 dark:bg-slate-900 animate-fade-in">
-                    {/* Background Decorative Elements */}
-                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-[100px] animate-pulse"></div>
-                        <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] animate-pulse-slow"></div>
-                    </div>
+            {
+                showWelcome && createPortal(
+                    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-50 dark:bg-slate-900 animate-fade-in">
+                        {/* Background Decorative Elements */}
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                            <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-[100px] animate-pulse"></div>
+                            <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] animate-pulse-slow"></div>
+                        </div>
 
-                    <div className="relative w-full max-w-lg px-6 flex flex-col items-center text-center space-y-4 md:space-y-6">
-                        <div className="w-full flex flex-col items-center space-y-4 md:space-y-6">
-                            {/* Lottie Animation */}
-                            <div className="w-full aspect-square max-w-[120px] md:max-w-[180px] mx-auto filter drop-shadow-2xl">
-                                <DotLottiePlayer
-                                    src={readingLottie}
-                                    autoplay
-                                    loop
-                                    className="w-full h-full"
-                                />
+                        <div className="relative w-full max-w-lg px-6 flex flex-col items-center text-center space-y-4 md:space-y-6">
+                            <div className="w-full flex flex-col items-center space-y-4 md:space-y-6">
+                                {/* Lottie Animation */}
+                                <div className="w-full aspect-square max-w-[120px] md:max-w-[180px] mx-auto filter drop-shadow-2xl">
+                                    <DotLottiePlayer
+                                        src={readingLottie}
+                                        autoplay
+                                        loop
+                                        className="w-full h-full"
+                                    />
+                                </div>
+
+                                {/* User Rating Indicator */}
+                                {learningInsights && (
+                                    <div className="flex flex-col items-center gap-1.5 animate-entrance-pop">
+                                        <div className="flex gap-1">
+                                            {[...Array(5)].map((_, i) => (
+                                                <svg key={i} className={`w-4 h-4 md:w-5 md:h-5 ${i < learningInsights.habitRating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-300 dark:text-slate-700'}`} viewBox="0 0 20 20">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                </svg>
+                                            ))}
+                                        </div>
+                                        <span className={`text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {language === 'en' ? 'Your Skill Rating' : 'আপনার রেটিং'}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Welcome Text */}
+                                <div className="space-y-1.5 md:space-y-3 animate-entrance-pop" style={{ animationDelay: '100ms' }}>
+                                    <h1 className={`text-2xl md:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en' ? 'Welcome!' : 'স্বাগতম!'}
+                                    </h1>
+                                    <p className={`text-base md:text-xl font-bold text-slate-600 dark:text-slate-400 ${language === 'bn' ? 'font-bengali opacity-90' : ''}`}>
+                                        {language === 'en' ? 'How are you learning?' : 'আপনি কেমন শিখছেন?'}
+                                    </p>
+                                </div>
+
+                                {/* Learning Insights Block */}
+                                {learningInsights && (
+                                    <div className="grid grid-cols-1 gap-3 md:gap-4 animate-entrance-pop text-left w-full max-w-md" style={{ animationDelay: '200ms' }}>
+                                        {/* Habit Card */}
+                                        <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-md p-3.5 md:p-5 rounded-2xl md:rounded-3xl border border-white/20 dark:border-slate-700/50 flex gap-3 md:gap-4 items-center">
+                                            <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl shrink-0">
+                                                🔥
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className={`text-slate-800 dark:text-white font-black leading-snug mb-0.5 md:mb-1 ${language === 'bn' ? 'font-bengali text-base md:text-lg' : 'text-xs md:text-sm'}`}>
+                                                    {learningInsights.habitFeedback}
+                                                </p>
+                                                <p className="text-[9px] md:text-[10px] uppercase font-bold text-slate-400">
+                                                    {language === 'en' ? `You read ${learningInsights.weeklyDays} days this week!` : `এই সপ্তাহে ${learningInsights.weeklyDays} দিন পড়েছেন!`}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Timing Card */}
+                                        <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-md p-3.5 md:p-5 rounded-2xl md:rounded-3xl border border-white/20 dark:border-slate-700/50 flex gap-3 md:gap-4 items-center">
+                                            <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl shrink-0">
+                                                {learningInsights.peakHour >= 6 && learningInsights.peakHour < 18 ? '☀️' : '🌙'}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className={`text-slate-800 dark:text-white font-black leading-snug mb-0.5 md:mb-1 ${language === 'bn' ? 'font-bengali text-base md:text-lg' : 'text-xs md:text-sm'}`}>
+                                                    {learningInsights.timingFeedback}
+                                                </p>
+                                                <p className="text-[9px] md:text-[10px] uppercase font-bold text-slate-400">
+                                                    {language === 'en' ? 'Peak Time' : 'পড়ার প্রিয় সময়'}: {learningInsights.isRandom ? (language === 'en' ? 'Variable' : 'অনিশ্চিত') : (learningInsights.peakHour === 0 ? '12 AM' : learningInsights.peakHour > 12 ? `${learningInsights.peakHour - 12} PM` : `${learningInsights.peakHour} AM`)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
-                            {/* User Rating Indicator */}
-                            {learningInsights && (
-                                <div className="flex flex-col items-center gap-1.5 animate-entrance-pop">
-                                    <div className="flex gap-1">
-                                        {[...Array(5)].map((_, i) => (
-                                            <svg key={i} className={`w-4 h-4 md:w-5 md:h-5 ${i < learningInsights.habitRating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-300 dark:text-slate-700'}`} viewBox="0 0 20 20">
-                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                            </svg>
-                                        ))}
-                                    </div>
-                                    <span className={`text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {language === 'en' ? 'Your Skill Rating' : 'আপনার রেটিং'}
+                            {/* Proceed Button */}
+                            <div className="w-full max-w-sm pt-0 md:pt-2 animate-entrance-pop" style={{ animationDelay: '300ms' }}>
+                                <button
+                                    onClick={() => setShowWelcome(false)}
+                                    className="w-full material-button-primary py-4 md:py-5 text-xl md:text-2xl font-black shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/40 active:scale-95 transition-all group"
+                                >
+                                    <span className="flex items-center justify-center gap-3">
+                                        {language === 'en' ? 'Proceed' : 'এগিয়ে যান'}
+                                        <svg className="w-7 h-7 group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                        </svg>
                                     </span>
-                                </div>
-                            )}
-
-                            {/* Welcome Text */}
-                            <div className="space-y-1.5 md:space-y-3 animate-entrance-pop" style={{ animationDelay: '100ms' }}>
-                                <h1 className={`text-2xl md:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                    {language === 'en' ? 'Welcome!' : 'স্বাগতম!'}
-                                </h1>
-                                <p className={`text-base md:text-xl font-bold text-slate-600 dark:text-slate-400 ${language === 'bn' ? 'font-bengali opacity-90' : ''}`}>
-                                    {language === 'en' ? 'How are you learning?' : 'আপনি কেমন শিখছেন?'}
-                                </p>
+                                </button>
                             </div>
-
-                            {/* Learning Insights Block */}
-                            {learningInsights && (
-                                <div className="grid grid-cols-1 gap-3 md:gap-4 animate-entrance-pop text-left w-full max-w-md" style={{ animationDelay: '200ms' }}>
-                                    {/* Habit Card */}
-                                    <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-md p-3.5 md:p-5 rounded-2xl md:rounded-3xl border border-white/20 dark:border-slate-700/50 flex gap-3 md:gap-4 items-center">
-                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl shrink-0">
-                                            🔥
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className={`text-slate-800 dark:text-white font-black leading-snug mb-0.5 md:mb-1 ${language === 'bn' ? 'font-bengali text-base md:text-lg' : 'text-xs md:text-sm'}`}>
-                                                {learningInsights.habitFeedback}
-                                            </p>
-                                            <p className="text-[9px] md:text-[10px] uppercase font-bold text-slate-400">
-                                                {language === 'en' ? `You read ${learningInsights.weeklyDays} days this week!` : `এই সপ্তাহে ${learningInsights.weeklyDays} দিন পড়েছেন!`}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Timing Card */}
-                                    <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-md p-3.5 md:p-5 rounded-2xl md:rounded-3xl border border-white/20 dark:border-slate-700/50 flex gap-3 md:gap-4 items-center">
-                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl shrink-0">
-                                            {learningInsights.peakHour >= 6 && learningInsights.peakHour < 18 ? '☀️' : '🌙'}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className={`text-slate-800 dark:text-white font-black leading-snug mb-0.5 md:mb-1 ${language === 'bn' ? 'font-bengali text-base md:text-lg' : 'text-xs md:text-sm'}`}>
-                                                {learningInsights.timingFeedback}
-                                            </p>
-                                            <p className="text-[9px] md:text-[10px] uppercase font-bold text-slate-400">
-                                                {language === 'en' ? 'Peak Time' : 'পড়ার প্রিয় সময়'}: {learningInsights.isRandom ? (language === 'en' ? 'Variable' : 'অনিশ্চিত') : (learningInsights.peakHour === 0 ? '12 AM' : learningInsights.peakHour > 12 ? `${learningInsights.peakHour - 12} PM` : `${learningInsights.peakHour} AM`)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                         </div>
-
-                        {/* Proceed Button */}
-                        <div className="w-full max-w-sm pt-0 md:pt-2 animate-entrance-pop" style={{ animationDelay: '300ms' }}>
-                            <button
-                                onClick={() => setShowWelcome(false)}
-                                className="w-full material-button-primary py-4 md:py-5 text-xl md:text-2xl font-black shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/40 active:scale-95 transition-all group"
-                            >
-                                <span className="flex items-center justify-center gap-3">
-                                    {language === 'en' ? 'Proceed' : 'এগিয়ে যান'}
-                                    <svg className="w-7 h-7 group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                    </svg>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>,
-                document.body
-            )}
+                    </div>,
+                    document.body
+                )
+            }
         </div >
     );
 }
