@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import secureStorage from '../../utils/secureStorage';
 import { supabase } from '../../supabaseClient';
@@ -277,6 +277,16 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
 
 
+    // Helper function to check if a lesson is unlocked
+    const isLessonUnlocked = useCallback((chapterNum, subchapterNum) => {
+        // Original logic: First lesson of any chapter is always unlocked
+        if (subchapterNum === 1) return true;
+
+        // Subsequent lessons: Check if previous lesson in same chapter is completed
+        const previousLessonId = `${chapterNum}.${subchapterNum - 1}`;
+        return completedLessons.includes(previousLessonId);
+    }, [completedLessons]);
+
     useEffect(() => {
         return () => {
             if (audioRef.current) {
@@ -285,6 +295,81 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
             }
         };
     }, []);
+
+    // roadmapData memoization for optimization and scrolling support
+    const roadmapData = useMemo(() => {
+        if (!trainingChapters || trainingChapters.length === 0) return { items: [], height: 0, maxPath: 0, journeyChapters: [] };
+
+        const journeyChapters = trainingChapters.filter(c => c.number !== 10);
+        const items = [];
+
+        const badgeLevels = [
+            { level: 1, en: "Trainee", bn: "ট্রেইনি", color: "bg-slate-500", count: 0 },
+            { level: 2, en: "Junior", bn: "জুনিয়র", color: "bg-blue-600", count: 2 },
+            { level: 3, en: "Technician", bn: "টেকনিশিয়ান", color: "bg-cyan-600", count: 5 },
+            { level: 4, en: "Skilled", bn: "স্কিলড", color: "bg-emerald-600", count: 10 },
+            { level: 5, en: "Advanced", bn: "অ্যাডভান্সড", color: "bg-indigo-600", count: 20 },
+            { level: 6, en: "Senior", bn: "সিনিয়র", color: "bg-violet-600", count: 35 },
+            { level: 7, en: "Supervisor", bn: "সুপারভাইজার", color: "bg-purple-600", count: 50 },
+            { level: 8, en: "Specialist", bn: "স্পেশালিস্ট", color: "bg-rose-600", count: 70 },
+            { level: 9, en: "Expert", bn: "এক্সপার্ট", color: "bg-orange-600", count: 100 }
+        ];
+
+        const getBadgeByLevel = (lvl) => badgeLevels.find(b => b.level === lvl) || badgeLevels[0];
+
+        journeyChapters.forEach((chapter) => {
+            const badge = getBadgeByLevel(chapter.number);
+            const isChapterUnlocked = isLessonUnlocked(chapter.number, 1);
+            items.push({
+                type: 'milestone',
+                isUnlocked: isChapterUnlocked,
+                chapter: chapter,
+                badge: badge,
+                index: items.length
+            });
+
+            for (let i = 1; i <= chapter.count; i++) {
+                const lessonId = `${chapter.number}.${i}`;
+                items.push({
+                    type: 'lesson',
+                    id: lessonId,
+                    chapterNumber: chapter.number,
+                    lessonNumber: i,
+                    isCompleted: completedLessons.includes(lessonId),
+                    isUnlocked: isLessonUnlocked(chapter.number, i),
+                    badge: badge,
+                    title: `Lesson ${lessonId}`,
+                    index: items.length
+                });
+            }
+        });
+
+        const maxPath = items.reduce((max, item, idx) => {
+            return (item.isCompleted || item.isUnlocked) ? idx : max;
+        }, 0);
+
+        const nodeVerticalGap = 120;
+        const height = items.length * nodeVerticalGap + 200;
+
+        return { items, height, maxPath, nodeVerticalGap, journeyChapters };
+    }, [trainingChapters, completedLessons, isLessonUnlocked]);
+
+    // Auto-scroll to current reading position
+    useEffect(() => {
+        if (!selectedChapter && !trainingContent && !trainingLoading && roadmapData.items.length > 0) {
+            const nextLesson = roadmapData.items.find(item => item.type === 'lesson' && !item.isCompleted && item.isUnlocked);
+
+            if (nextLesson) {
+                const timer = setTimeout(() => {
+                    const scrollTarget = document.getElementById(`roadmap-node-${nextLesson.id}`);
+                    if (scrollTarget) {
+                        scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 800);
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [selectedChapter, trainingContent, trainingLoading, roadmapData.items]);
 
     const scrollGallery = (direction) => {
         if (galleryRef.current) {
@@ -675,15 +760,6 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
         fetchTrainingChapters();
     }, [language]);
 
-    // Helper function to check if a lesson is unlocked
-    const isLessonUnlocked = (chapterNum, subchapterNum) => {
-        // Original logic: First lesson of any chapter is always unlocked
-        if (subchapterNum === 1) return true;
-
-        // Subsequent lessons: Check if previous lesson in same chapter is completed
-        const previousLessonId = `${chapterNum}.${subchapterNum - 1}`;
-        return completedLessons.includes(previousLessonId);
-    };
 
     const handleChapterClick = async (chapter, targetLessonNum = null) => {
         // Local access to badge levels for enrichment
@@ -1091,64 +1167,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                     {/* Gamified Journey Map Logic */}
                     {(() => {
                         const isMobile = window.innerWidth < 768;
-                        const journeyChapters = trainingChapters.filter(c => c.number !== 10);
-
-                        // Local access to badge levels for color-coding
-                        const badgeLevels = [
-                            { level: 1, en: "Trainee", bn: "ট্রেইনি", color: "bg-slate-500", count: 0 },
-                            { level: 2, en: "Junior", bn: "জুনিয়র", color: "bg-blue-600", count: 2 },
-                            { level: 3, en: "Technician", bn: "টেকনিশিয়ান", color: "bg-cyan-600", count: 5 },
-                            { level: 4, en: "Skilled", bn: "স্কিলড", color: "bg-emerald-600", count: 10 },
-                            { level: 5, en: "Advanced", bn: "অ্যাডভান্সড", color: "bg-indigo-600", count: 20 },
-                            { level: 6, en: "Senior", bn: "সিনিয়র", color: "bg-violet-600", count: 35 },
-                            { level: 7, en: "Supervisor", bn: "সুপারভাইজার", color: "bg-purple-600", count: 50 },
-                            { level: 8, en: "Specialist", bn: "স্পেশালিস্ট", color: "bg-rose-600", count: 70 },
-                            { level: 9, en: "Expert", bn: "এক্সপার্ট", color: "bg-orange-600", count: 100 }
-                        ];
-
-                        const getBadgeByLevel = (lvl) => badgeLevels.find(b => b.level === lvl) || badgeLevels[0];
-
-                        // 1. Flatten into detailed roadmap items (Milestones + Lessons)
-                        const roadmapItems = [];
-                        journeyChapters.forEach((chapter, chapIdx) => {
-                            const badge = getBadgeByLevel(chapter.number);
-
-                            // Milestone (Chapter Start)
-                            const isChapterUnlocked = isLessonUnlocked(chapter.number, 1);
-                            roadmapItems.push({
-                                type: 'milestone',
-                                isUnlocked: isChapterUnlocked,
-                                chapter: chapter,
-                                badge: badge,
-                                index: roadmapItems.length
-                            });
-
-                            // Lessons
-                            for (let i = 1; i <= chapter.count; i++) {
-                                const lessonId = `${chapter.number}.${i}`;
-                                const isCompleted = completedLessons.includes(lessonId);
-                                const isUnlocked = isLessonUnlocked(chapter.number, i);
-
-                                roadmapItems.push({
-                                    type: 'lesson',
-                                    id: lessonId,
-                                    chapterNumber: chapter.number,
-                                    lessonNumber: i,
-                                    isCompleted,
-                                    isUnlocked,
-                                    badge: badge,
-                                    title: `Lesson ${lessonId}`,
-                                    index: roadmapItems.length
-                                });
-                            }
-                        });
-
-                        const maxPathIndex = roadmapItems.reduce((max, item, idx) => {
-                            return (item.isCompleted || item.isUnlocked) ? idx : max;
-                        }, 0);
-
-                        const nodeVerticalGap = 120;
-                        const roadmapHeight = roadmapItems.length * nodeVerticalGap + 100;
+                        const { items: roadmapItems, height: roadmapHeight, maxPath: maxPathIndex, nodeVerticalGap, journeyChapters } = roadmapData;
 
                         // Main Journey View
                         return (
@@ -1298,6 +1317,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                             return (
                                                 <div
                                                     key={`lesson-${item.id}`}
+                                                    id={`roadmap-node-${item.id}`}
                                                     onClick={() => {
                                                         if (item.isUnlocked) {
                                                             handleChapterClick(journeyChapters.find(c => c.number === item.chapterNumber), item.lessonNumber);
@@ -2078,11 +2098,19 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                         <button
                                                             onClick={() => {
                                                                 setTrainingContent(null);
+                                                                setSelectedChapter(null);
                                                                 setIsJournalMode(false);
                                                             }}
-                                                            className="w-full py-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold transition-colors"
+                                                            className="w-full py-5 flex items-center justify-center gap-4 text-slate-400 hover:text-orange-500 dark:hover:text-orange-400 font-black transition-all group mt-2"
                                                         >
-                                                            {language === 'en' ? 'Maybe Later' : 'মিশন শেষ করুন'}
+                                                            <div className="w-12 h-12 rounded-full border-2 border-slate-100 dark:border-slate-800 flex items-center justify-center group-hover:border-orange-500/50 group-hover:bg-orange-50 dark:group-hover:bg-orange-900/20 transition-all shadow-sm">
+                                                                <svg className="w-6 h-6 transform group-hover:-translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                                                                </svg>
+                                                            </div>
+                                                            <span className="text-lg tracking-tight">
+                                                                {language === 'en' ? 'Back to Roadmap' : 'রোডম্যাপে ফিরে যান'}
+                                                            </span>
                                                         </button>
                                                     </div>
                                                 </div>
