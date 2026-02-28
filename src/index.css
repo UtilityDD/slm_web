@@ -800,16 +800,34 @@ body,
 
   0%,
   100% {
-    transform: translateY(0px);
+    transform: translate(-50%, -50%);
   }
 
   50% {
-    transform: translateY(-10px);
+    transform: translate(-50%, calc(-50% - 12px));
   }
 }
 
 .animate-float-y {
   animation: float-y 3s ease-in-out infinite;
+}
+
+@keyframes node-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 15px currentColor;
+    border-color: rgba(255, 255, 255, 0.8);
+  }
+
+  50% {
+    box-shadow: 0 0 30px currentColor;
+    border-color: rgba(255, 255, 255, 1);
+  }
+}
+
+.animate-node-glow {
+  animation: node-glow 3s ease-in-out infinite;
 }
 
 @keyframes glow-pulse {
@@ -828,6 +846,7 @@ body,
   animation: glow-pulse 2s infinite;
 }
 
+
 .path-connector-dash {
   stroke-dasharray: 10;
   animation: dash-flow 30s linear infinite;
@@ -837,4 +856,28 @@ body,
   to {
     stroke-dashoffset: -1000;
   }
+}
+
+@keyframes audio-bar {
+
+  0%,
+  100% {
+    height: 4px;
+  }
+
+  50% {
+    height: 16px;
+  }
+}
+
+.animate-audio-bar-1 {
+  animation: audio-bar 0.8s ease-in-out infinite;
+}
+
+.animate-audio-bar-2 {
+  animation: audio-bar 0.8s ease-in-out infinite 0.2s;
+}
+
+.animate-audio-bar-3 {
+  animation: audio-bar 0.8s ease-in-out infinite 0.4s;
 }
