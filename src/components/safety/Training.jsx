@@ -2066,11 +2066,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                             loop
                                                             className="w-full h-full relative z-10"
                                                         />
-                                                        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-emerald-500 rounded-3xl flex items-center justify-center text-white shadow-2xl rotate-6 animate-entrance-pop">
-                                                            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3.5" d="M5 13l4 4L19 7" />
-                                                            </svg>
-                                                        </div>
+
                                                     </div>
 
                                                     <div className="space-y-3 mb-12">
@@ -2079,9 +2075,6 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                                 ? `Session ${trainingContent.level_id} Complete!`
                                                                 : `${toBengaliNumber(trainingContent.level_id, language)} পাঠ শেষ হয়েছে!`}
                                                         </h3>
-                                                        <p className={`text-lg text-slate-500 dark:text-slate-400 font-medium px-4 ${language === 'bn' ? 'font-bengali leading-relaxed' : ''}`}>
-                                                            {language === 'en' ? 'You have successfully completed this safety mission.' : 'আপনি সফলভাবে এই সুরক্ষা মিশনটি সম্পন্ন করেছেন।'}
-                                                        </p>
                                                     </div>
 
                                                     <div className="w-full space-y-4">
@@ -2101,16 +2094,13 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                                 setSelectedChapter(null);
                                                                 setIsJournalMode(false);
                                                             }}
-                                                            className="w-full py-5 flex items-center justify-center gap-4 text-slate-400 hover:text-orange-500 dark:hover:text-orange-400 font-black transition-all group mt-2"
+                                                            className="w-full py-4 flex items-center justify-center text-slate-400 hover:text-orange-500 dark:hover:text-orange-400 font-black transition-all group mt-2"
                                                         >
-                                                            <div className="w-12 h-12 rounded-full border-2 border-slate-100 dark:border-slate-800 flex items-center justify-center group-hover:border-orange-500/50 group-hover:bg-orange-50 dark:group-hover:bg-orange-900/20 transition-all shadow-sm">
-                                                                <svg className="w-6 h-6 transform group-hover:-translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                                                            <div className="w-14 h-14 rounded-full border-2 border-slate-100 dark:border-slate-800 flex items-center justify-center group-hover:border-orange-500/50 group-hover:bg-orange-50 dark:group-hover:bg-orange-900/20 transition-all shadow-sm">
+                                                                <svg className="w-7 h-7 transform group-hover:-translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
                                                                 </svg>
                                                             </div>
-                                                            <span className="text-lg tracking-tight">
-                                                                {language === 'en' ? 'Back to Roadmap' : 'রোডম্যাপে ফিরে যান'}
-                                                            </span>
                                                         </button>
                                                     </div>
                                                 </div>
