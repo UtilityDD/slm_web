@@ -74,7 +74,7 @@ export default function Sidebar({
           }`}
       >
         {/* Sidebar Header - Enhanced */}
-        <div className="px-6 py-6 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-br from-orange-50 to-white dark:from-slate-800 dark:to-slate-900 shrink-0">
+        <div className="px-6 pt-12 pb-6 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-br from-orange-50 to-white dark:from-slate-800 dark:to-slate-900 shrink-0">
           {/* User Profile Section */}
           <div className="flex items-center gap-3 mb-4">
             <div className="relative">
@@ -93,25 +93,34 @@ export default function Sidebar({
               <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate mb-0.5">
                 {(userProfile?.full_name && !userProfile.full_name.includes('@')) ? userProfile.full_name : 'Guest'}
               </p>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 rounded">
-                  {userProfile?.role || 'lineman'}
-                </span>
+              <div className="flex flex-col gap-2 transform transition-all duration-300">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 rounded">
+                    {userProfile?.role || 'lineman'}
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">
+                    Lvl {userProfile?.training_level || 1}
+                  </span>
+                </div>
+                {/* User Stats Integration */}
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm px-2 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
+                    <span className="text-xs">💎</span>
+                    <span className="text-[11px] font-black text-slate-700 dark:text-slate-200">
+                      {userProfile?.points || 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm px-2 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
+                    <span className="text-xs">📖</span>
+                    <span className="text-[11px] font-black text-slate-700 dark:text-slate-200">
+                      {userProfile?.reading_points || 0}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Quick Stats - Desktop Only */}
-          <div className="hidden md:grid grid-cols-2 gap-2">
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-2.5 border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 transition-colors">
-              <div className="text-[9px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-0.5">Points</div>
-              <div className="text-lg font-black text-orange-600 dark:text-orange-400">{userProfile?.points || 0}</div>
-            </div>
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-2.5 border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 transition-colors">
-              <div className="text-[9px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-0.5">Level</div>
-              <div className="text-lg font-black text-orange-600 dark:text-orange-400">{userProfile?.training_level || 1}</div>
-            </div>
-          </div>
         </div>
 
         {/* Navigation Items - Enhanced */}

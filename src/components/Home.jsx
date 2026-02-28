@@ -75,6 +75,7 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
     const [shareUrl, setShareUrl] = useState("https://github.com/UtilityDD/slm_web/releases/latest");
     const [emotionalImageIndex, setEmotionalImageIndex] = useState(0);
     const [currentChapter, setCurrentChapter] = useState('1.1');
+    const [isProfileCollapsed, setIsProfileCollapsed] = useState(false);
 
     const emotionalImages = [
         '/assets/emotional/lineman.png',
@@ -204,8 +205,19 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
         fetchDailyTip();
         fetchLatestShareUrl();
 
+        // Auto-collapse logic: wait 3 seconds after loading finishes
+        if (!loading) {
+            const collapseTimer = setTimeout(() => {
+                setIsProfileCollapsed(true);
+            }, 3000);
+            return () => {
+                clearInterval(imageInterval);
+                clearTimeout(collapseTimer);
+            };
+        }
+
         return () => clearInterval(imageInterval);
-    }, [userProfile, user, language]);
+    }, [userProfile, user, language, loading]);
 
     const fetchProfile = async () => {
         if (!user) return;
@@ -269,13 +281,13 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
             ) : (
                 <>
                     {/* Integrated Safety Orange Hero Section - Desktop Optimized - Compact */}
-                    <div className="bg-[#ea580c] dark:bg-[#d64a0a] pt-4 pb-6 lg:pb-8 rounded-b-3xl shadow-lg shadow-orange-900/10 dark:shadow-black/20">
+                    <div className={`bg-[#ea580c] dark:bg-[#d64a0a] transition-all duration-700 ease-in-out rounded-b-3xl shadow-lg shadow-orange-900/10 dark:shadow-black/20 ${isProfileCollapsed ? 'h-0 py-0 opacity-0 pointer-events-none overflow-hidden' : 'pt-4 pb-6 lg:pb-8'}`}>
                         <div className="max-w-7xl mx-auto mobile-container">
                             {/* Desktop: Two-column layout, Mobile: Stacked */}
                             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-8">
                                 {/* Left Column: Profile Info */}
-                                <div className="flex items-center gap-4 lg:flex-1">
-                                    <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-4 border-white/30 p-1 shrink-0 bg-white/10 backdrop-blur-sm overflow-hidden shadow-2xl">
+                                <div className={`flex items-center gap-4 lg:flex-1 transition-all duration-700 ${isProfileCollapsed ? 'scale-90 origin-left opacity-0 pointer-events-none' : ''}`}>
+                                    <div className={`rounded-full border-4 border-white/30 p-1 shrink-0 bg-white/10 backdrop-blur-sm overflow-hidden shadow-2xl transition-all duration-700 ${isProfileCollapsed ? 'w-0 h-0 opacity-0 border-0 p-0' : 'w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28'}`}>
                                         <div className="w-full h-full rounded-full bg-orange-100 flex items-center justify-center text-4xl overflow-hidden">
                                             {avatarUrl ? (
                                                 <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
@@ -286,35 +298,44 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
                                             )}
                                         </div>
                                     </div>
-                                    <div className="flex-1 min-w-0">
+                                    <div className="flex-1 min-w-0" onClick={() => isProfileCollapsed && setIsProfileCollapsed(false)}>
                                         {/* Line 1: Username + Training Badge */}
                                         <div className="flex items-center gap-2 mb-1.5 min-w-0">
-                                            <h1 className="text-title-card text-white truncate">
+                                            <h1 className={`text-white transition-all duration-700 truncate ${isProfileCollapsed ? 'text-lg lg:text-xl font-bold' : 'text-title-card'}`}>
                                                 {(fullName && !fullName.includes('@')) ? fullName : (user ? 'Guest' : visitorName)}
                                             </h1>
                                             {trainingLevel > 0 && getBadgeByLevel(trainingLevel) && (
-                                                <div className={`px-2 py-0.5 lg:px-2.5 lg:py-0.5 rounded-lg text-[9px] lg:text-[10px] font-bold border uppercase tracking-tight shadow-sm shrink-0 ${getBadgeByLevel(trainingLevel).color}`}>
+                                                <div className={`px-2 py-0.5 lg:px-2.5 lg:py-0.5 rounded-lg font-bold border uppercase tracking-tight shadow-sm shrink-0 transition-all duration-700 ${getBadgeByLevel(trainingLevel).color} ${isProfileCollapsed ? 'text-[7px]' : 'text-[9px] lg:text-[10px]'}`}>
                                                     {language === 'en' ? getBadgeByLevel(trainingLevel).en : getBadgeByLevel(trainingLevel).bn}
                                                 </div>
                                             )}
+                                            {isProfileCollapsed && (
+                                                <button className="ml-auto w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:bg-white/20 transition-colors animate-pulse-slow">
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
+                                                </button>
+                                            )}
                                         </div>
-                                        {/* Line 2: Member ID */}
-                                        <p className="text-orange-50 text-[10px] lg:text-xs font-black tracking-[0.2em] uppercase opacity-90 mb-0.5">
-                                            ID: {slmId || user?.id?.slice(0, 8).toUpperCase() || 'LINEMAN001'}
-                                        </p>
-                                        {/* Line 3: Role */}
-                                        <p className="text-orange-50 text-xs lg:text-sm font-medium opacity-90 capitalize mb-2">
-                                            {role}-Member
-                                        </p>
-                                        {/* Line 4: Total Score + Reading Rewards */}
-                                        <div className="flex items-center gap-2">
-                                            <div className="px-2.5 py-1 lg:px-3 lg:py-1.5 bg-white/10 backdrop-blur-xl rounded-full text-white text-[9px] lg:text-xs font-bold uppercase tracking-wider border border-white/30 shadow-sm flex items-center gap-1">
-                                                <span className="opacity-80 text-sm lg:text-base">💎</span>
-                                                {loading ? '...' : <CountUp end={score} start={!showTipModal && !!dailyTip} />}
-                                            </div>
-                                            <div className="px-2.5 py-1 lg:px-3 lg:py-1.5 bg-white/10 backdrop-blur-xl rounded-full text-white text-[9px] lg:text-xs font-bold uppercase tracking-wider border border-white/30 shadow-sm flex items-center gap-1">
-                                                <span className="opacity-80 text-sm lg:text-base">📖</span>
-                                                {loading ? '...' : <CountUp end={readingPoints} start={!showTipModal && !!dailyTip} />}
+
+                                        {/* Collapsible Content */}
+                                        <div className={`transition-all duration-700 ease-in-out overflow-hidden ${isProfileCollapsed ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-40 opacity-100'}`}>
+                                            {/* Line 2: Member ID */}
+                                            <p className="text-orange-50 text-[10px] lg:text-xs font-black tracking-[0.2em] uppercase opacity-90 mb-0.5">
+                                                ID: {slmId || user?.id?.slice(0, 8).toUpperCase() || 'LINEMAN001'}
+                                            </p>
+                                            {/* Line 3: Role */}
+                                            <p className="text-orange-50 text-xs lg:text-sm font-medium opacity-90 capitalize mb-2">
+                                                {role}-Member
+                                            </p>
+                                            {/* Line 4: Total Score + Reading Rewards */}
+                                            <div className="flex items-center gap-2">
+                                                <div className="px-2.5 py-1 lg:px-3 lg:py-1.5 bg-white/10 backdrop-blur-xl rounded-full text-white text-[9px] lg:text-xs font-bold uppercase tracking-wider border border-white/30 shadow-sm flex items-center gap-1">
+                                                    <span className="opacity-80 text-sm lg:text-base">💎</span>
+                                                    {loading ? '...' : <CountUp end={score} start={!showTipModal && !!dailyTip} />}
+                                                </div>
+                                                <div className="px-2.5 py-1 lg:px-3 lg:py-1.5 bg-white/10 backdrop-blur-xl rounded-full text-white text-[9px] lg:text-xs font-bold uppercase tracking-wider border border-white/30 shadow-sm flex items-center gap-1">
+                                                    <span className="opacity-80 text-sm lg:text-base">📖</span>
+                                                    {loading ? '...' : <CountUp end={readingPoints} start={!showTipModal && !!dailyTip} />}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

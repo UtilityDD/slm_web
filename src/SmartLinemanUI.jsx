@@ -211,14 +211,8 @@ export default function SmartLinemanUI() {
 
     try {
       await fetchProfile(user);
-      // Also refresh notifications
-      const { data: notifs } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(20);
-      if (notifs) setNotificationsHistory(notifs);
+      // Also refresh notifications using the optimized fetcher
+      await fetchNotifications(true);
 
       showNotification(language === 'en' ? 'Updated' : 'আপডেট করা হয়েছে', 'success');
     } catch (err) {
@@ -381,26 +375,35 @@ export default function SmartLinemanUI() {
     }
   }, [user, userProfile, completedLessons]);
 
-  // Fetch Notifications History
+  // Optimized Notifications Fetcher
+  const fetchNotifications = async (forceRefresh = false) => {
+    setNotifFetchError(false);
+    try {
+      const data = await requestManager.fetch(
+        'notifications_list',
+        async () => {
+          const { data, error } = await supabase
+            .from('notifications')
+            .select('*')
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+          if (error) throw error;
+          return data || [];
+        },
+        { ttl: 2, forceRefresh, swr: true }
+      );
+
+      if (data) setNotificationsHistory(data);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      setNotifFetchError(true);
+    }
+  };
+
+  // Fetch Notifications History on mount
   useEffect(() => {
-    const fetchNotifications = async () => {
-      setNotifFetchError(false);
-      try {
-        const { data, error } = await supabase
-          .from('notifications')
-          .select('*')
-          .eq('is_active', true)
-          .order('created_at', { ascending: false })
-          .limit(20);
-
-        if (error) throw error;
-        setNotificationsHistory(data || []);
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-        setNotifFetchError(true);
-      }
-    };
-
     fetchNotifications();
   }, []);
 
@@ -1137,8 +1140,16 @@ export default function SmartLinemanUI() {
                           </div>
                           <div className="max-h-96 overflow-y-auto">
                             {notifFetchError ? (
-                              <div className="p-8 text-center text-slate-500">
-                                {language === 'en' ? 'Failed to load notifications' : 'বিজ্ঞপ্তি লোড করতে ব্যর্থ হয়েছে'}
+                              <div className="p-8 text-center space-y-3">
+                                <p className="text-slate-500 text-sm">
+                                  {language === 'en' ? 'Failed to load notifications' : 'বিজ্ঞপ্তি লোড করতে ব্যর্থ হয়েছে'}
+                                </p>
+                                <button
+                                  onClick={() => fetchNotifications(true)}
+                                  className="text-xs font-bold text-orange-600 hover:text-orange-700 underline underline-offset-4"
+                                >
+                                  {language === 'en' ? 'Try Again' : 'আবার চেষ্টা করুন'}
+                                </button>
                               </div>
                             ) : notificationsHistory.length > 0 ? (
                               <div className="divide-y divide-slate-100 dark:divide-slate-700">
