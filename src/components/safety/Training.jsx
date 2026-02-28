@@ -1762,10 +1762,10 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
             {
                 trainingContent && createPortal(
                     <div className="fixed inset-0 z-[100] bg-slate-50 dark:bg-slate-900 overflow-hidden flex flex-col safe-area-inset-top animate-fade-in-up">
-                        <div className="flex flex-col h-full overflow-hidden bg-white dark:bg-slate-900">
-                            {/* Premium Header */}
-                            <div className="sticky top-0 z-[100] bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border-b border-slate-100 dark:border-slate-800">
-                                <div className="px-5 py-4 flex items-center h-20">
+                        <div className="flex flex-col h-full overflow-hidden book-page-texture">
+                            {/* Simple Book-like Header */}
+                            <div className="sticky top-0 z-[100] bg-white/40 dark:bg-black/20 backdrop-blur-md border-b border-black/5 dark:border-white/5">
+                                <div className="px-5 py-3 flex items-center h-16">
                                     <button
                                         onClick={() => {
                                             stop();
@@ -1774,21 +1774,15 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                             setSelectedChapter(null);
                                             setSelectedLesson(null);
                                         }}
-                                        className="w-12 h-12 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl text-slate-500 transition-all active:scale-95"
+                                        className="w-10 h-10 flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 rounded-full text-slate-500 transition-all active:scale-90"
                                     >
-                                        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
 
                                     <div className="text-center flex-1 mx-4 min-w-0">
-                                        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 rounded-full text-[9px] font-black uppercase tracking-[0.2em] mb-1 border border-orange-200 dark:border-orange-900/30">
-                                            {trainingContent.badge_name || "Safety Journal"}
-                                        </div>
-                                        <h2 className="text-lg font-black text-slate-900 dark:text-slate-100 truncate tracking-tight flex items-center justify-center gap-2">
-                                            <span className="text-orange-600 bg-orange-50 dark:bg-orange-900/30 px-2 py-0.5 rounded-lg text-sm border border-orange-100 dark:border-orange-900/40">
-                                                {toBengaliNumber(trainingContent.level_id, language)}
-                                            </span>
+                                        <h2 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] truncate">
                                             {trainingContent.level_title}
                                         </h2>
                                     </div>
@@ -1796,10 +1790,10 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={handleReadLesson}
-                                            className={`relative w-12 h-12 flex items-center justify-center rounded-2xl transition-all duration-500 ${isPlaying ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/40 scale-110' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-orange-500'}`}
+                                            className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-500 ${isPlaying ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/40 scale-105' : 'text-slate-400 hover:text-orange-500'}`}
                                         >
-                                            <div className={`absolute inset-0 rounded-2xl bg-orange-500 animate-ping opacity-20 ${isPlaying ? 'block' : 'hidden'}`}></div>
-                                            <svg className="w-8 h-8 relative z-10" fill="currentColor" viewBox="0 0 24 24">
+                                            <div className={`absolute inset-0 rounded-full bg-orange-500 animate-ping opacity-20 ${isPlaying ? 'block' : 'hidden'}`}></div>
+                                            <svg className="w-6 h-6 relative z-10" fill="currentColor" viewBox="0 0 24 24">
                                                 {isPlaying ? (
                                                     <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                                                 ) : (
@@ -1824,135 +1818,109 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                             {/* Slide Content Area */}
                             {(() => {
                                 const activeSlide = slides[activeSectionIndex];
-                                const getSlideBg = (type) => {
-                                    switch (type) {
-                                        case 'hero': return 'bg-slate-50 dark:bg-slate-950';
-                                        case 'section': return 'bg-orange-50/40 dark:bg-orange-950/10';
-                                        case 'pro_tip': return 'bg-emerald-50/40 dark:bg-emerald-950/10';
-                                        case 'myth_buster': return 'bg-red-50/40 dark:bg-red-950/10';
-                                        case 'advanced': return 'bg-indigo-50/40 dark:bg-indigo-950/10';
-                                        default: return 'bg-slate-50 dark:bg-slate-950';
-                                    }
-                                };
                                 return (
-                                    <div ref={lessonScrollRef} className={`flex-1 overflow-y-auto relative ${getSlideBg(activeSlide?.type)} scroll-smooth transition-colors duration-700`}>
-                                        <div key={activeSectionIndex} className="max-w-3xl mx-auto px-4 md:px-6 py-10 animate-fade-in-up mb-32">
+                                    <div ref={lessonScrollRef} className={`flex-1 overflow-y-auto relative book-page-texture book-gutter scroll-smooth transition-colors duration-700`}>
+                                        <div key={activeSectionIndex} className="max-w-2xl mx-auto px-6 md:px-10 py-12 animate-fade-in-up mb-32">
                                             {activeSlide?.type === 'hero' && (
-                                                <div className="space-y-10 py-10">
-                                                    <div className="text-center space-y-5">
-                                                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-orange-100 dark:bg-orange-900/40 mb-2 shadow-inner border border-orange-200/50 dark:border-orange-800/30">
-                                                            <span className="text-5xl">📖</span>
+                                                <div className="flex flex-col items-center justify-center py-20 space-y-12">
+                                                    <div className="w-full space-y-8 text-center">
+                                                        <div className="space-y-4">
+                                                            <p className="text-sm font-black uppercase tracking-[0.4em] text-slate-400 dark:text-slate-600">
+                                                                {language === 'en' ? `Session ${trainingContent.level_id}` : `পাঠ ${toBengaliNumber(trainingContent.level_id, language)}`}
+                                                            </p>
+                                                            <div className="h-px w-24 bg-slate-200 dark:bg-slate-800 mx-auto"></div>
                                                         </div>
-                                                        <div className="space-y-3">
-                                                            <div className="inline-block px-4 py-1 bg-orange-600 text-white rounded-full text-[9px] font-black uppercase tracking-[0.2em] shadow-lg shadow-orange-500/20">
-                                                                {language === 'en' ? `Mission ${trainingContent.level_id}` : `মিশন ${toBengaliNumber(trainingContent.level_id, language)}`}
-                                                            </div>
-                                                            <h2 className={`text-4xl md:text-5xl font-black text-slate-900 dark:text-slate-100 leading-tight tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                {trainingContent.level_title}
-                                                            </h2>
-                                                        </div>
+
+                                                        <h1 className={`text-2xl md:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight tracking-tight px-4 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            {trainingContent.level_title}
+                                                        </h1>
                                                     </div>
 
-                                                    <div className="bg-white dark:bg-slate-900/60 rounded-2xl md:rounded-[2rem] p-6 md:p-8 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-slate-100 dark:border-slate-800/60 backdrop-blur-xl">
-                                                        <div className="flex items-center gap-3 mb-6">
-                                                            <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
-                                                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Mission Briefing</span>
-                                                            <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
-                                                        </div>
-                                                        <p className={`text-xl text-slate-700 dark:text-slate-300 leading-[1.7] font-medium text-center ${language === 'bn' ? 'font-bengali text-2xl' : ''}`}>
+                                                    <div className="max-w-md w-full relative">
+                                                        <div className="absolute inset-0 bg-slate-100 dark:bg-slate-800/30 blur-2xl -z-10 rounded-full"></div>
+                                                        <p className={`text-lg text-slate-700 dark:text-slate-400 leading-[1.8] font-serif italic text-center px-6 ${language === 'bn' ? 'font-bengali text-xl' : ''}`}>
                                                             {renderTextWithImages(trainingContent.mission_briefing)}
                                                         </p>
+                                                    </div>
+
+                                                    <div className="pt-20">
+                                                        <div className="flex flex-col items-center gap-4 text-slate-300 dark:text-slate-700">
+                                                            <div className="h-16 w-px bg-current"></div>
+                                                            <span className="text-[10px] uppercase font-black tracking-widest">Start Journey</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
 
                                             {slides[activeSectionIndex]?.type === 'section' && (
-                                                <div className="space-y-12">
-                                                    <header className="space-y-5 text-center mb-14">
-                                                        <div className="inline-flex items-center justify-center px-6 py-2 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-[10px] font-black tracking-widest uppercase shadow-2xl mb-2 border border-white/10 dark:border-slate-800/10">
-                                                            Section {activeSectionIndex}
-                                                        </div>
-                                                        <h3 className={`text-3xl md:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                <div className="space-y-16">
+                                                    <header className="text-center mb-16 px-4">
+                                                        <h3 className={`text-3xl md:text-5xl font-black text-slate-800 dark:text-slate-100 leading-tight tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                             {slides[activeSectionIndex].title}
                                                         </h3>
-                                                        <div className="flex justify-center gap-1.5">
-                                                            <div className="h-1 w-10 bg-orange-500 rounded-full"></div>
-                                                            <div className="h-1 w-10 bg-orange-500/20 rounded-full"></div>
-                                                        </div>
                                                     </header>
 
-                                                    <div className="space-y-14">
+                                                    <div className="space-y-20">
                                                         {slides[activeSectionIndex].points?.map((point, pIdx) => (
                                                             <div key={pIdx} className="group relative">
-                                                                <div className="absolute -left-4 top-0 w-1 h-10 bg-orange-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                                                <div className="flex flex-col space-y-8">
+                                                                    <div className="flex items-baseline gap-4">
+                                                                        <span className="text-4xl md:text-5xl font-serif italic text-orange-500/20 select-none leading-none">
+                                                                            {(pIdx + 1).toString().padStart(2, '0')}
+                                                                        </span>
+                                                                        <h4 className={`text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-200 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                            {point.item_name}
+                                                                        </h4>
+                                                                    </div>
 
-                                                                <h4 className={`text-xl font-black text-slate-900 dark:text-slate-100 mb-6 flex items-baseline gap-4 ${language === 'bn' ? 'font-bengali text-2xl' : ''}`}>
-                                                                    <span className="text-orange-500 font-serif italic text-3xl opacity-20 select-none">
-                                                                        {(pIdx + 1).toString().padStart(2, '0')}
-                                                                    </span>
-                                                                    {point.item_name}
-                                                                </h4>
-
-                                                                <div className="bg-white dark:bg-slate-900/60 rounded-2xl md:rounded-[2rem] p-4 md:p-7 shadow-[0_4px_20px_rgb(0,0,0,0.02)] dark:shadow-none border border-slate-100/50 dark:border-slate-800/40 backdrop-blur-xl transition-all duration-500 hover:shadow-xl hover:border-orange-500/20">
-
-                                                                    {point.image_name && (
-                                                                        <div
-                                                                            className="mb-8 rounded-[2rem] overflow-hidden cursor-zoom-in group-hover:scale-[1.01] transition-transform duration-700 shadow-2xl"
-                                                                            onClick={() => setActiveImageModal({ type: 'image', value: `/quizzes/${point.image_name}` })}
-                                                                        >
-                                                                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
-                                                                            <img
-                                                                                src={`/quizzes/${point.image_name}`}
-                                                                                alt={point.item_name}
-                                                                                className="w-full h-auto object-cover"
-                                                                                loading="lazy"
-                                                                            />
-                                                                        </div>
-                                                                    )}
-
-                                                                    <div className="space-y-6">
-                                                                        {point.specifications && (
-                                                                            <div className="relative">
-                                                                                <p className={`text-lg text-slate-700 dark:text-slate-300 leading-[1.7] font-medium tracking-tight ${language === 'bn' ? 'font-bengali text-xl leading-[1.5]' : ''}`}>
-                                                                                    {renderTextWithImages(point.specifications)}
-                                                                                </p>
+                                                                    <div className="relative pl-0 md:pl-12 transition-all duration-500">
+                                                                        {point.image_name && (
+                                                                            <div
+                                                                                className="mb-10 rounded-[2.5rem] overflow-hidden cursor-zoom-in shadow-2xl shadow-black/5"
+                                                                                onClick={() => setActiveImageModal({ type: 'image', value: `/quizzes/${point.image_name}` })}
+                                                                            >
+                                                                                <img
+                                                                                    src={`/quizzes/${point.image_name}`}
+                                                                                    alt={point.item_name}
+                                                                                    className="w-full h-auto object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-700"
+                                                                                    loading="lazy"
+                                                                                />
                                                                             </div>
                                                                         )}
 
-                                                                        <div className="grid grid-cols-1 gap-5">
-                                                                            {point.importance && (
-                                                                                <div className="bg-blue-50/40 dark:bg-blue-900/10 p-5 md:p-6 rounded-2xl md:rounded-[2rem] border border-blue-100/50 dark:border-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all">
-                                                                                    <div className="flex items-center gap-3 mb-3">
-                                                                                        <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600">
-                                                                                            💡
-                                                                                        </div>
-                                                                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-600/60">
-                                                                                            {language === 'en' ? 'Core Strategy' : 'মূল কৌশল'}
-                                                                                        </span>
-                                                                                    </div>
-                                                                                    <p className={`text-base md:text-lg text-slate-800 dark:text-slate-200 font-bold leading-relaxed ${language === 'bn' ? 'font-bengali text-lg leading-relaxed' : ''}`}>
-                                                                                        {renderTextWithImages(point.importance)}
-                                                                                    </p>
-                                                                                </div>
+                                                                        <div className="space-y-8">
+                                                                            {point.specifications && (
+                                                                                <p className={`text-xl text-slate-700 dark:text-slate-300 leading-[1.8] font-medium tracking-tight ${language === 'bn' ? 'font-bengali text-2xl leading-[1.6]' : ''}`}>
+                                                                                    {renderTextWithImages(point.specifications)}
+                                                                                </p>
                                                                             )}
-                                                                            {point.daily_check && (
-                                                                                <div className="bg-emerald-50/40 dark:bg-emerald-900/10 p-5 md:p-6 rounded-2xl md:rounded-[2rem] border border-emerald-100/50 dark:border-emerald-900/20 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all">
-                                                                                    <div className="flex items-center gap-3 mb-3">
-                                                                                        <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
-                                                                                            ✓
+
+                                                                            <div className="grid grid-cols-1 gap-6">
+                                                                                {point.importance && (
+                                                                                    <div className="bg-blue-500/5 dark:bg-blue-400/5 p-8 rounded-[2rem] border border-blue-500/10 backdrop-blur-sm">
+                                                                                        <div className="flex items-center gap-3 mb-4">
+                                                                                            <span className="text-xs font-black uppercase tracking-widest text-blue-500/60">Strategy</span>
                                                                                         </div>
-                                                                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-600/60">
-                                                                                            {language === 'en' ? 'Professional Action' : 'পেশাদার অ্যাকশন'}
-                                                                                        </span>
+                                                                                        <p className={`text-lg md:text-xl text-slate-800 dark:text-slate-200 font-bold leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                                            {renderTextWithImages(point.importance)}
+                                                                                        </p>
                                                                                     </div>
-                                                                                    <p className={`text-base md:text-lg text-slate-800 dark:text-slate-200 font-bold leading-relaxed ${language === 'bn' ? 'font-bengali text-lg leading-relaxed' : ''}`}>
-                                                                                        {renderTextWithImages(point.daily_check)}
-                                                                                    </p>
-                                                                                </div>
-                                                                            )}
+                                                                                )}
+                                                                                {point.daily_check && (
+                                                                                    <div className="bg-emerald-500/5 dark:bg-emerald-400/5 p-8 rounded-[2rem] border border-emerald-500/10 backdrop-blur-sm">
+                                                                                        <div className="flex items-center gap-3 mb-4">
+                                                                                            <span className="text-xs font-black uppercase tracking-widest text-emerald-500/60">Action Plan</span>
+                                                                                        </div>
+                                                                                        <p className={`text-lg md:text-xl text-slate-800 dark:text-slate-200 font-bold leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                                            {renderTextWithImages(point.daily_check)}
+                                                                                        </p>
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
+                                                                <div className="h-px w-full bg-slate-100 dark:bg-slate-800/50 mt-20 opacity-50"></div>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -1960,21 +1928,18 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                             )}
 
                                             {activeSlide?.type === 'pro_tip' && (
-                                                <div className="space-y-12">
-                                                    <header className="space-y-5 text-center mb-14">
-                                                        <div className="inline-flex items-center justify-center px-6 py-2 rounded-full bg-emerald-600 text-white text-[10px] font-black tracking-widest uppercase shadow-xl mb-2">
-                                                            Pro Advice
-                                                        </div>
-                                                        <h3 className={`text-3xl md:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                            {activeSlide.title}
+                                                <div className="space-y-16 py-10">
+                                                    <header className="text-center mb-8">
+                                                        <h3 className={`text-3xl md:text-4xl font-black text-slate-800 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            {language === 'en' ? activeSlide.title : 'মনে রাখবেন'}
                                                         </h3>
                                                     </header>
 
-                                                    <div className="grid grid-cols-1 gap-7">
+                                                    <div className="grid grid-cols-1 gap-8">
                                                         {activeSlide.content?.map((tip, idx) => (
-                                                            <div key={idx} className="bg-white dark:bg-slate-900/60 rounded-2xl md:rounded-[2rem] p-5 md:p-7 shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-emerald-100 dark:border-emerald-900/40 backdrop-blur-xl flex gap-5 items-start">
-                                                                <span className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xl font-black flex-shrink-0 shadow-lg shadow-emerald-500/20">★</span>
-                                                                <p className={`text-xl text-slate-700 dark:text-slate-300 leading-[1.7] font-medium tracking-tight ${language === 'bn' ? 'font-bengali text-2xl leading-[1.5]' : ''}`}>
+                                                            <div key={idx} className="relative p-8 rounded-[2.5rem] bg-emerald-100/5 dark:bg-emerald-900/5 border border-emerald-500/10 backdrop-blur-md shadow-sm overflow-hidden">
+                                                                <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500/30"></div>
+                                                                <p className={`text-xl md:text-2xl text-slate-700 dark:text-slate-300 leading-[1.7] font-medium tracking-tight ${language === 'bn' ? 'font-bengali text-2xl md:text-3xl leading-[1.6]' : ''}`}>
                                                                     {renderTextWithImages(tip)}
                                                                 </p>
                                                             </div>
@@ -1984,39 +1949,30 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                             )}
 
                                             {activeSlide?.type === 'myth_buster' && (
-                                                <div className="space-y-12">
-                                                    <header className="space-y-5 text-center mb-14">
-                                                        <div className="inline-flex items-center justify-center px-6 py-2 rounded-full bg-red-600 text-white text-[10px] font-black tracking-widest uppercase shadow-xl mb-2">
-                                                            Myth vs Reality
-                                                        </div>
-                                                        <h3 className={`text-3xl md:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                            {activeSlide.title}
+                                                <div className="space-y-16 py-10">
+                                                    <header className="text-center mb-8">
+                                                        <h3 className={`text-3xl md:text-4xl font-black text-slate-800 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            {language === 'en' ? activeSlide.title : 'ভুল ধারণা মুছে ফেলুন'}
                                                         </h3>
                                                     </header>
 
-                                                    <div className="space-y-9">
+                                                    <div className="space-y-12">
                                                         {activeSlide.myths?.map((item, idx) => (
-                                                            <div key={idx} className="bg-white dark:bg-slate-900/60 rounded-2xl md:rounded-[2rem] overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-red-100 dark:border-red-900/40 backdrop-blur-xl transition-all duration-500 hover:shadow-xl">
-                                                                <div className="p-5 md:p-7 space-y-4">
-                                                                    <div className="flex items-center gap-3">
-                                                                        <span className="px-3 py-1 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-[9px] font-black uppercase tracking-widest border border-red-100 dark:border-red-900/20">
-                                                                            {language === 'en' ? 'Common Myth' : 'ভুল ধারণা'}
-                                                                        </span>
-                                                                        <div className="h-px flex-1 bg-red-50 dark:bg-red-900/20"></div>
-                                                                    </div>
-                                                                    <p className={`text-xl text-slate-600 dark:text-slate-400 italic font-medium leading-[1.7] ${language === 'bn' ? 'font-bengali text-2xl leading-[1.5]' : ''}`}>
+                                                            <div key={idx} className="space-y-4">
+                                                                <div className="p-8 rounded-[2rem] bg-red-500/[0.03] dark:bg-red-900/[0.03] border border-red-500/10">
+                                                                    <span className="text-[10px] uppercase font-black tracking-widest text-red-500/50 mb-3 block">
+                                                                        {language === 'en' ? 'Perspective' : 'ভুল ধারণা'}
+                                                                    </span>
+                                                                    <p className={`text-xl text-slate-600 dark:text-slate-400 italic font-medium leading-[1.7] ${language === 'bn' ? 'font-bengali text-2xl' : ''}`}>
                                                                         "{renderTextWithImages(item.myth)}"
                                                                     </p>
                                                                 </div>
 
-                                                                <div className="p-5 md:p-7 bg-emerald-500/5 dark:bg-emerald-500/10 border-t border-emerald-500/10 space-y-4">
-                                                                    <div className="flex items-center gap-3">
-                                                                        <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-[9px] font-black uppercase tracking-widest border border-emerald-100 dark:border-emerald-900/20">
-                                                                            {language === 'en' ? 'The Truth' : 'সঠিক তথ্য'}
-                                                                        </span>
-                                                                        <div className="h-px flex-1 bg-emerald-50 dark:bg-emerald-900/20"></div>
-                                                                    </div>
-                                                                    <p className={`text-xl text-slate-800 dark:text-slate-200 font-bold leading-[1.7] ${language === 'bn' ? 'font-bengali text-2xl leading-[1.5]' : ''}`}>
+                                                                <div className="p-8 rounded-[2rem] bg-emerald-500/[0.03] dark:bg-emerald-900/[0.03] border border-emerald-500/10 shadow-sm">
+                                                                    <span className="text-[10px] uppercase font-black tracking-widest text-emerald-500/50 mb-3 block">
+                                                                        {language === 'en' ? 'Verdict' : 'আসল কথা'}
+                                                                    </span>
+                                                                    <p className={`text-xl text-slate-800 dark:text-slate-200 font-bold leading-[1.7] ${language === 'bn' ? 'font-bengali text-2xl' : ''}`}>
                                                                         {renderTextWithImages(item.reality || item.fact)}
                                                                     </p>
                                                                 </div>
@@ -2027,28 +1983,25 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                             )}
 
                                             {activeSlide?.type === 'advanced' && (
-                                                <div className="space-y-12">
-                                                    <header className="space-y-5 text-center mb-14">
-                                                        <div className="inline-flex items-center justify-center px-6 py-2 rounded-full bg-indigo-600 text-white text-[10px] font-black tracking-widest uppercase shadow-xl mb-2">
-                                                            Science Insight
-                                                        </div>
-                                                        <h3 className={`text-3xl md:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                <div className="space-y-16 py-10">
+                                                    <header className="text-center mb-8">
+                                                        <h3 className={`text-3xl md:text-4xl font-black text-slate-800 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                             {activeSlide.title}
                                                         </h3>
                                                     </header>
 
-                                                    <div className="grid grid-cols-1 gap-7">
+                                                    <div className="grid grid-cols-1 gap-10">
                                                         {activeSlide.facts?.map((fact, idx) => (
-                                                            <div key={idx} className="bg-white dark:bg-slate-900/60 rounded-2xl md:rounded-[2rem] p-7 md:p-9 shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-indigo-200 dark:border-indigo-900/40 backdrop-blur-xl group hover:shadow-xl transition-all duration-500">
-                                                                <div className="flex items-center gap-4 mb-5">
-                                                                    <div className="w-3 h-10 bg-indigo-500 rounded-full"></div>
-                                                                    <h4 className="text-xl font-black text-indigo-600 dark:text-indigo-400">
-                                                                        {fact.title}
-                                                                    </h4>
+                                                            <div key={idx} className="group">
+                                                                <h4 className={`text-2xl font-black text-indigo-600 dark:text-indigo-400 mb-6 flex items-center gap-3 ${language === 'bn' ? 'font-bengali text-3xl' : ''}`}>
+                                                                    <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                                                                    {fact.title}
+                                                                </h4>
+                                                                <div className="p-8 rounded-[2.5rem] bg-indigo-500/[0.02] dark:bg-indigo-400/[0.02] border border-indigo-500/10 shadow-sm backdrop-blur-sm">
+                                                                    <p className={`text-xl text-slate-700 dark:text-slate-300 leading-[1.8] font-medium tracking-tight ${language === 'bn' ? 'font-bengali text-2xl leading-[1.6]' : ''}`}>
+                                                                        {renderTextWithImages(fact.content)}
+                                                                    </p>
                                                                 </div>
-                                                                <p className={`text-xl text-slate-700 dark:text-slate-300 leading-[1.7] font-medium tracking-tight ${language === 'bn' ? 'font-bengali text-2xl leading-[1.5]' : ''}`}>
-                                                                    {renderTextWithImages(fact.content)}
-                                                                </p>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -2056,36 +2009,32 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                             )}
 
                                             {slides[activeSectionIndex]?.type === 'completion' && (
-                                                <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-sm mx-auto animate-fade-in">
-                                                    {/* Immersive Celebration Visual */}
-                                                    <div className="relative w-72 h-72 mb-8">
-                                                        <div className="absolute inset-0 bg-orange-500/10 dark:bg-orange-500/5 blur-[80px] rounded-full animate-pulse"></div>
+                                                <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-sm mx-auto animate-fade-in py-10">
+                                                    <div className="relative w-64 h-64 mb-10">
+                                                        <div className="absolute inset-0 bg-orange-500/5 dark:bg-orange-500/5 blur-[60px] rounded-full"></div>
                                                         <DotLottiePlayer
                                                             src={readingLottie}
                                                             autoplay
                                                             loop
-                                                            className="w-full h-full relative z-10"
+                                                            className="w-full h-full relative z-10 grayscale-[0.3] hover:grayscale-0 transition-all duration-700"
                                                         />
-
                                                     </div>
 
-                                                    <div className="space-y-3 mb-12">
-                                                        <h3 className={`text-title-section text-slate-900 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    <div className="space-y-4 mb-14">
+                                                        <h3 className={`text-3xl md:text-4xl font-black text-slate-800 dark:text-white ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                             {language === 'en'
-                                                                ? `Session ${trainingContent.level_id} Complete!`
-                                                                : `${toBengaliNumber(trainingContent.level_id, language)} পাঠ শেষ হয়েছে!`}
+                                                                ? `Mission Complete`
+                                                                : `মিশন সম্পন্ন`}
                                                         </h3>
+                                                        <div className="h-px w-16 bg-slate-200 dark:bg-slate-800 mx-auto"></div>
                                                     </div>
 
-                                                    <div className="w-full space-y-4">
+                                                    <div className="w-full space-y-6">
                                                         <button
                                                             onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                                            className="w-full material-button-primary py-5 text-xl font-black shadow-xl shadow-orange-500/20 active:scale-95 transition-all flex items-center justify-center gap-3"
+                                                            className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 py-5 rounded-[2rem] text-xl font-black shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
                                                         >
                                                             {language === 'en' ? 'Start Challenge' : 'চ্যালেঞ্জ শুরু করুন'}
-                                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                                            </svg>
                                                         </button>
 
                                                         <button
@@ -2094,11 +2043,11 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                                 setSelectedChapter(null);
                                                                 setIsJournalMode(false);
                                                             }}
-                                                            className="w-full py-4 flex items-center justify-center text-slate-400 hover:text-orange-500 dark:hover:text-orange-400 font-black transition-all group mt-2"
+                                                            className="w-full py-4 flex flex-col items-center gap-2 group"
                                                         >
-                                                            <div className="w-14 h-14 rounded-full border-2 border-slate-100 dark:border-slate-800 flex items-center justify-center group-hover:border-orange-500/50 group-hover:bg-orange-50 dark:group-hover:bg-orange-900/20 transition-all shadow-sm">
-                                                                <svg className="w-7 h-7 transform group-hover:-translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                                                            <div className="w-12 h-12 rounded-full border border-slate-200 dark:border-slate-800 flex items-center justify-center group-hover:border-slate-400 transition-all">
+                                                                <svg className="w-6 h-6 text-slate-400 group-hover:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
                                                                 </svg>
                                                             </div>
                                                         </button>
@@ -2110,40 +2059,35 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                 );
                             })()}
 
-                            {/* Navigation Footer */}
-                            <div className="fixed bottom-0 left-0 right-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-3xl border-t border-white/20 dark:border-white/5 px-6 py-6 pb-10 flex items-center justify-between shadow-2xl relative z-10 transition-all duration-300 animate-slide-up">
+                            {/* Minimal Paper-like Footer Navigation */}
+                            <div className="fixed bottom-0 left-0 right-0 bg-transparent px-6 py-6 pb-12 flex items-center justify-between safe-area-inset-bottom">
                                 <button
                                     onClick={prevSlide}
                                     disabled={isFirstSlide}
-                                    className={`group flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300 ${isFirstSlide ? 'opacity-0 pointer-events-none' : 'bg-white/30 dark:bg-slate-800/50 backdrop-blur-md text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700 active:scale-90 border border-white/20 shadow-lg'}`}
-                                    title={language === 'en' ? 'Back' : 'আগের'}
+                                    className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${isFirstSlide ? 'opacity-0 pointer-events-none' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-75 hover:bg-black/5 dark:hover:bg-white/5'}`}
                                 >
-                                    <svg className="w-8 h-8 group-hover:-translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
                                     </svg>
                                 </button>
 
-                                <div className="flex gap-2.5">
-                                    {slides.map((_, i) => (
-                                        <div
-                                            key={i}
-                                            className={`h-2 rounded-full transition-all duration-500 ${i === activeSectionIndex ? 'w-10 bg-orange-500 shadow-lg shadow-orange-500/50' : 'w-2 bg-slate-300 dark:bg-slate-700 opacity-50'}`}
-                                        />
-                                    ))}
+                                <div className="flex items-center gap-1.5 px-4 py-2 bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-full">
+                                    <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase">
+                                        {activeSectionIndex + 1} / {slides.length}
+                                    </span>
                                 </div>
 
                                 {!isLastSlide ? (
                                     <button
                                         onClick={nextSlide}
-                                        className="group flex items-center justify-center w-14 h-14 bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-2xl shadow-2xl shadow-orange-500/40 active:scale-90 hover:shadow-orange-500/60 transition-all border border-white/20"
-                                        title={language === 'en' ? 'Next' : 'পরে'}
+                                        className="flex items-center justify-center w-12 h-12 rounded-full text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-75 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
                                     >
-                                        <svg className="w-8 h-8 group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
                                         </svg>
                                     </button>
                                 ) : (
-                                    <div className="w-14"></div> /* Consistent spacing */
+                                    <div className="w-12"></div>
                                 )}
                             </div>
                         </div>

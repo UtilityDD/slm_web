@@ -60,6 +60,38 @@ body,
     letter-spacing: 0;
     font-size: 1.1em;
   }
+
+  .book-page-texture {
+    background-color: #fcfaf2;
+    background-image:
+      url("https://www.transparenttextures.com/patterns/natural-paper.png"),
+      radial-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 0);
+    background-size: auto, 30px 30px;
+    position: relative;
+    color: #1a202c;
+    /* Ink black */
+    font-variant-ligatures: common-ligatures;
+  }
+
+  .dark .book-page-texture {
+    background-color: #121417;
+    background-image:
+      url("https://www.transparenttextures.com/patterns/dark-matter.png"),
+      radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 0);
+    color: #e2e8f0;
+  }
+
+  .book-gutter {
+    box-shadow:
+      inset 30px 0 50px -25px rgba(0, 0, 0, 0.08),
+      inset -30px 0 50px -25px rgba(0, 0, 0, 0.08);
+  }
+
+  .ink-text {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+  }
 }
 
 @layer utilities {
