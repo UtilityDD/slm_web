@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions = [], language = 'en', isPractice = false }) => {
+const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions = [], language = 'en', isPractice = false, lessonId = '' }) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [userAnswers, setUserAnswers] = useState({});
     const [showResult, setShowResult] = useState(false);
@@ -186,9 +186,16 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                     <>
                         {/* Header */}
                         <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-                            <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">
-                                {isReviewMode ? t.reviewTitle : showResult ? t.result : `${t.question} ${currentQuestionIndex + 1}/${totalQuestions}`}
-                            </h3>
+                            <div className="flex items-center gap-2 min-w-0">
+                                {lessonId && (
+                                    <span className="text-xs font-black text-orange-500 bg-orange-50 dark:bg-orange-500/10 px-2.5 py-1 rounded-lg border border-orange-100 dark:border-orange-500/20 shrink-0">
+                                        {lessonId}
+                                    </span>
+                                )}
+                                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200 truncate">
+                                    {isReviewMode ? t.reviewTitle : showResult ? t.result : `${t.question} ${currentQuestionIndex + 1}/${totalQuestions}`}
+                                </h3>
+                            </div>
                             {(!showResult || isReviewMode) && (
                                 <button
                                     onClick={onClose}

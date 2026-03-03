@@ -277,15 +277,27 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
 
 
-    // Helper function to check if a lesson is unlocked
+    // Helper function to check if a lesson is unlocked (GLOBALLY SEQUENTIAL — FULL CHAIN)
     const isLessonUnlocked = useCallback((chapterNum, subchapterNum) => {
-        // Original logic: First lesson of any chapter is always unlocked
-        if (subchapterNum === 1) return true;
+        // Very first lesson is always unlocked
+        if (chapterNum === 1 && subchapterNum === 1) return true;
 
-        // Subsequent lessons: Check if previous lesson in same chapter is completed
-        const previousLessonId = `${chapterNum}.${subchapterNum - 1}`;
-        return completedLessons.includes(previousLessonId);
-    }, [completedLessons]);
+        // ALL previous chapters must be fully completed
+        for (let c = 1; c < chapterNum; c++) {
+            const chapter = trainingChapters.find(ch => ch.number === c);
+            if (!chapter) return false;
+            for (let i = 1; i <= chapter.count; i++) {
+                if (!completedLessons.includes(`${c}.${i}`)) return false;
+            }
+        }
+
+        // All previous lessons in the current chapter must be completed
+        for (let i = 1; i < subchapterNum; i++) {
+            if (!completedLessons.includes(`${chapterNum}.${i}`)) return false;
+        }
+
+        return true;
+    }, [completedLessons, trainingChapters]);
 
     useEffect(() => {
         return () => {
@@ -702,6 +714,40 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                             </div>
                         </div>
                     </div>
+                );
+            }
+            // Handle plain text: detect bullets, numbered lists, and newlines
+            if (typeof part === 'string' && part.length > 0) {
+                const lines = part.split('\n');
+                if (lines.length <= 1) return part;
+
+                return (
+                    <span key={index}>
+                        {lines.map((line, lineIdx) => {
+                            const trimmed = line.trim();
+                            if (!trimmed) return <br key={`br-${index}-${lineIdx}`} />;
+
+                            // Detect bullet patterns: •, ●, ◦, ▪, -, *, ➤, ✓, ✔, ☑
+                            const bulletMatch = trimmed.match(/^([•●◦▪\-\*➤✓✔☑]\s*)(.*)/);
+
+                            if (bulletMatch) {
+                                return (
+                                    <span key={`line-${index}-${lineIdx}`} className="flex items-start gap-2 mt-2.5">
+                                        <span className="text-orange-500/70 shrink-0 mt-0.5 select-none">{bulletMatch[1].trim()}</span>
+                                        <span className="flex-1">{bulletMatch[2]}</span>
+                                    </span>
+                                );
+                            }
+
+                            // Regular line - just add a line break before it
+                            return (
+                                <React.Fragment key={`line-${index}-${lineIdx}`}>
+                                    {lineIdx > 0 && <br />}
+                                    {line}
+                                </React.Fragment>
+                            );
+                        })}
+                    </span>
                 );
             }
             return part;
@@ -1322,7 +1368,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                         if (item.isUnlocked) {
                                                             handleChapterClick(journeyChapters.find(c => c.number === item.chapterNumber), item.lessonNumber);
                                                         } else {
-                                                            showNotification(language === 'en' ? 'Complete previous lessons first!' : 'আগের পাঠগুলো আগে শেষ করুন!', 'error');
+                                                            alert(language === 'en' ? 'Complete previous lessons first!' : 'আগের পাঠগুলো আগে শেষ করুন!');
                                                         }
                                                     }}
                                                     className={`absolute w-16 h-16 sm:w-20 sm:h-20 rounded-3xl flex flex-col items-center justify-center cursor-pointer transition-all duration-500 z-20 group ${item.isCompleted ? 'bg-gradient-to-br from-emerald-500 to-teal-600 border-4 border-emerald-100 dark:border-emerald-500/30 text-white shadow-xl hover:scale-110' : item.isUnlocked ? `${item.badge.color} border-4 border-white dark:border-slate-700 text-slate-900 dark:text-white shadow-xl hover:scale-110 active:scale-95` : 'bg-slate-200/50 dark:bg-slate-800/80 border-4 border-slate-300/50 dark:border-slate-700/50 text-slate-400 dark:text-slate-500 shadow-inner grayscale cursor-not-allowed opacity-80'} ${isNext ? 'animate-float-y ring-4 ring-orange-500/30' : ''}`}
@@ -1782,7 +1828,9 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                     </button>
 
                                     <div className="text-center flex-1 mx-4 min-w-0">
-                                        <h2 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] truncate">
+                                        <h2 className={`text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] truncate ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
+                                            <span className="text-orange-500/80 font-black">{language === 'en' ? `${trainingContent.level_id}` : toBengaliNumber(trainingContent.level_id, language)}</span>
+                                            <span className="mx-1.5 text-slate-300 dark:text-slate-600">·</span>
                                             {trainingContent.level_title}
                                         </h2>
                                     </div>
@@ -1820,9 +1868,9 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                 const activeSlide = slides[activeSectionIndex];
                                 return (
                                     <div ref={lessonScrollRef} className={`flex-1 overflow-y-auto relative book-page-texture book-gutter scroll-smooth transition-colors duration-700`}>
-                                        <div key={activeSectionIndex} className="max-w-2xl mx-auto px-6 md:px-10 py-12 animate-fade-in-up mb-32">
+                                        <div key={activeSectionIndex} className="max-w-2xl mx-auto px-7 sm:px-10 md:px-14 py-14 animate-fade-in-up mb-32">
                                             {activeSlide?.type === 'hero' && (
-                                                <div className="flex flex-col items-center justify-center py-20 space-y-12">
+                                                <div className="flex flex-col items-center justify-center pt-6 pb-20 space-y-12">
                                                     <div className="w-full space-y-8 text-center">
                                                         <div className="space-y-4">
                                                             <p className="text-sm font-black uppercase tracking-[0.4em] text-slate-400 dark:text-slate-600">
@@ -1831,14 +1879,14 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                             <div className="h-px w-24 bg-slate-200 dark:bg-slate-800 mx-auto"></div>
                                                         </div>
 
-                                                        <h1 className={`text-2xl md:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight tracking-tight px-4 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                        <h1 className={`text-3xl md:text-5xl font-black text-slate-900 dark:text-slate-100 leading-snug tracking-tight px-4 ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
                                                             {trainingContent.level_title}
                                                         </h1>
                                                     </div>
 
                                                     <div className="max-w-md w-full relative">
                                                         <div className="absolute inset-0 bg-slate-100 dark:bg-slate-800/30 blur-2xl -z-10 rounded-full"></div>
-                                                        <p className={`text-lg text-slate-700 dark:text-slate-400 leading-[1.8] font-serif italic text-center px-6 ${language === 'bn' ? 'font-bengali text-xl' : ''}`}>
+                                                        <p className={`text-lg text-slate-700 dark:text-slate-400 leading-[2] font-serif italic text-center px-4 ${language === 'bn' ? 'font-bengali text-[1.35rem] leading-[2.2]' : ''}`}>
                                                             {renderTextWithImages(trainingContent.mission_briefing)}
                                                         </p>
                                                     </div>
@@ -1854,21 +1902,21 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
                                             {slides[activeSectionIndex]?.type === 'section' && (
                                                 <div className="space-y-16">
-                                                    <header className="text-center mb-16 px-4">
-                                                        <h3 className={`text-3xl md:text-5xl font-black text-slate-800 dark:text-slate-100 leading-tight tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    <header className="text-center mb-12 sm:mb-16 px-2">
+                                                        <h3 className={`text-2xl sm:text-3xl md:text-5xl font-black text-slate-800 dark:text-slate-100 leading-snug tracking-tight ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
                                                             {slides[activeSectionIndex].title}
                                                         </h3>
                                                     </header>
 
-                                                    <div className="space-y-20">
+                                                    <div className="space-y-16 sm:space-y-20">
                                                         {slides[activeSectionIndex].points?.map((point, pIdx) => (
                                                             <div key={pIdx} className="group relative">
-                                                                <div className="flex flex-col space-y-8">
-                                                                    <div className="flex items-baseline gap-4">
-                                                                        <span className="text-4xl md:text-5xl font-serif italic text-orange-500/20 select-none leading-none">
+                                                                <div className="flex flex-col space-y-6 sm:space-y-8">
+                                                                    <div className="flex items-baseline gap-3 sm:gap-4">
+                                                                        <span className="text-3xl sm:text-4xl md:text-5xl font-serif italic text-orange-500/20 select-none leading-none">
                                                                             {(pIdx + 1).toString().padStart(2, '0')}
                                                                         </span>
-                                                                        <h4 className={`text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-200 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                        <h4 className={`text-xl sm:text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-200 leading-snug ${language === 'bn' ? 'font-bengali leading-[1.5]' : ''}`}>
                                                                             {point.item_name}
                                                                         </h4>
                                                                     </div>
@@ -1876,7 +1924,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                                     <div className="relative pl-0 md:pl-12 transition-all duration-500">
                                                                         {point.image_name && (
                                                                             <div
-                                                                                className="mb-10 rounded-[2.5rem] overflow-hidden cursor-zoom-in shadow-2xl shadow-black/5"
+                                                                                className="mb-8 sm:mb-10 rounded-2xl sm:rounded-[2.5rem] overflow-hidden cursor-zoom-in shadow-2xl shadow-black/5"
                                                                                 onClick={() => setActiveImageModal({ type: 'image', value: `/quizzes/${point.image_name}` })}
                                                                             >
                                                                                 <img
@@ -1888,30 +1936,30 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                                             </div>
                                                                         )}
 
-                                                                        <div className="space-y-8">
+                                                                        <div className="space-y-6 sm:space-y-8">
                                                                             {point.specifications && (
-                                                                                <p className={`text-xl text-slate-700 dark:text-slate-300 leading-[1.8] font-medium tracking-tight ${language === 'bn' ? 'font-bengali text-2xl leading-[1.6]' : ''}`}>
+                                                                                <p className={`text-lg sm:text-xl text-slate-700 dark:text-slate-300 leading-[1.9] font-medium ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl leading-[2.1]' : ''}`}>
                                                                                     {renderTextWithImages(point.specifications)}
                                                                                 </p>
                                                                             )}
 
                                                                             <div className="grid grid-cols-1 gap-6">
                                                                                 {point.importance && (
-                                                                                    <div className="bg-blue-500/5 dark:bg-blue-400/5 p-8 rounded-[2rem] border border-blue-500/10 backdrop-blur-sm">
-                                                                                        <div className="flex items-center gap-3 mb-4">
-                                                                                            <span className="text-xs font-black uppercase tracking-widest text-blue-500/60">Strategy</span>
+                                                                                    <div className="bg-blue-500/5 dark:bg-blue-400/5 p-6 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-blue-500/10 backdrop-blur-sm">
+                                                                                        <div className="flex items-center gap-3 mb-3 sm:mb-4">
+                                                                                            <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-blue-500/60">{language === 'en' ? 'Strategy' : 'কৌশল'}</span>
                                                                                         </div>
-                                                                                        <p className={`text-lg md:text-xl text-slate-800 dark:text-slate-200 font-bold leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                                        <p className={`text-base sm:text-lg md:text-xl text-slate-800 dark:text-slate-200 font-bold leading-[1.8] ${language === 'bn' ? 'font-bengali leading-[2.0]' : ''}`}>
                                                                                             {renderTextWithImages(point.importance)}
                                                                                         </p>
                                                                                     </div>
                                                                                 )}
                                                                                 {point.daily_check && (
-                                                                                    <div className="bg-emerald-500/5 dark:bg-emerald-400/5 p-8 rounded-[2rem] border border-emerald-500/10 backdrop-blur-sm">
-                                                                                        <div className="flex items-center gap-3 mb-4">
-                                                                                            <span className="text-xs font-black uppercase tracking-widest text-emerald-500/60">Action Plan</span>
+                                                                                    <div className="bg-emerald-500/5 dark:bg-emerald-400/5 p-6 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-emerald-500/10 backdrop-blur-sm">
+                                                                                        <div className="flex items-center gap-3 mb-3 sm:mb-4">
+                                                                                            <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-emerald-500/60">{language === 'en' ? 'Action Plan' : 'কর্মপরিকল্পনা'}</span>
                                                                                         </div>
-                                                                                        <p className={`text-lg md:text-xl text-slate-800 dark:text-slate-200 font-bold leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                                        <p className={`text-base sm:text-lg md:text-xl text-slate-800 dark:text-slate-200 font-bold leading-[1.8] ${language === 'bn' ? 'font-bengali leading-[2.0]' : ''}`}>
                                                                                             {renderTextWithImages(point.daily_check)}
                                                                                         </p>
                                                                                     </div>
@@ -1939,7 +1987,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                         {activeSlide.content?.map((tip, idx) => (
                                                             <div key={idx} className="relative p-8 rounded-[2.5rem] bg-emerald-100/5 dark:bg-emerald-900/5 border border-emerald-500/10 backdrop-blur-md shadow-sm overflow-hidden">
                                                                 <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500/30"></div>
-                                                                <p className={`text-xl md:text-2xl text-slate-700 dark:text-slate-300 leading-[1.7] font-medium tracking-tight ${language === 'bn' ? 'font-bengali text-2xl md:text-3xl leading-[1.6]' : ''}`}>
+                                                                <p className={`text-lg sm:text-xl md:text-2xl text-slate-700 dark:text-slate-300 leading-[1.9] font-medium ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl md:text-[1.7rem] leading-[2.1]' : ''}`}>
                                                                     {renderTextWithImages(tip)}
                                                                 </p>
                                                             </div>
@@ -1963,7 +2011,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                                     <span className="text-[10px] uppercase font-black tracking-widest text-red-500/50 mb-3 block">
                                                                         {language === 'en' ? 'Perspective' : 'ভুল ধারণা'}
                                                                     </span>
-                                                                    <p className={`text-xl text-slate-600 dark:text-slate-400 italic font-medium leading-[1.7] ${language === 'bn' ? 'font-bengali text-2xl' : ''}`}>
+                                                                    <p className={`text-lg sm:text-xl text-slate-600 dark:text-slate-400 italic font-medium leading-[1.9] ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl leading-[2.1]' : ''}`}>
                                                                         "{renderTextWithImages(item.myth)}"
                                                                     </p>
                                                                 </div>
@@ -1972,7 +2020,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                                     <span className="text-[10px] uppercase font-black tracking-widest text-emerald-500/50 mb-3 block">
                                                                         {language === 'en' ? 'Verdict' : 'আসল কথা'}
                                                                     </span>
-                                                                    <p className={`text-xl text-slate-800 dark:text-slate-200 font-bold leading-[1.7] ${language === 'bn' ? 'font-bengali text-2xl' : ''}`}>
+                                                                    <p className={`text-lg sm:text-xl text-slate-800 dark:text-slate-200 font-bold leading-[1.9] ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl leading-[2.1]' : ''}`}>
                                                                         {renderTextWithImages(item.reality || item.fact)}
                                                                     </p>
                                                                 </div>
@@ -1998,7 +2046,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                                     {fact.title}
                                                                 </h4>
                                                                 <div className="p-8 rounded-[2.5rem] bg-indigo-500/[0.02] dark:bg-indigo-400/[0.02] border border-indigo-500/10 shadow-sm backdrop-blur-sm">
-                                                                    <p className={`text-xl text-slate-700 dark:text-slate-300 leading-[1.8] font-medium tracking-tight ${language === 'bn' ? 'font-bengali text-2xl leading-[1.6]' : ''}`}>
+                                                                    <p className={`text-lg sm:text-xl text-slate-700 dark:text-slate-300 leading-[1.9] font-medium ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl leading-[2.1]' : ''}`}>
                                                                         {renderTextWithImages(fact.content)}
                                                                     </p>
                                                                 </div>
@@ -2117,6 +2165,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                         questions={currentQuizQuestions}
                         onComplete={handleQuizComplete}
                         chapterTitle={trainingContent?.level_title}
+                        lessonId={trainingContent?.level_id}
                         language={language}
                     />,
                     document.body

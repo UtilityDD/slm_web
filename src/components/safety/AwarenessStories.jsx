@@ -161,20 +161,6 @@ const AwarenessStories = ({ setCurrentView, language = 'en' }) => {
             }
         },
         {
-            id: 'grieving-mother',
-            image: '/assets/emotional/mother.png',
-            category: { en: 'Human Cost', bn: 'মানবিক মূল্য' },
-            title: { en: 'A Mother\'s Empty Arms', bn: 'মায়ের শূন্য কোল' },
-            excerpt: {
-                en: 'Raju was his mother\'s only support. A fatal shock in a distribution box turned her world cold.',
-                bn: 'রাজু ছিল তার মায়ের একমাত্র ভরসা। একটি ডিস্ট্রিবিউশন বক্সে মারাত্মক বিদ্যুৎস্পৃষ্ট হওয়া তার মায়ের পৃথিবীকে স্থবির করে দিয়েছে।'
-            },
-            fullContent: {
-                en: "In a small village in Bengal, a mother still waits by the door at 6 PM. Her son, Raju, never returned from his shift. He was working on a pole that wasn't properly isolated. The lack of Tag-Out procedures cost a young life and left a mother with nothing but shadows and tears.",
-                bn: "বাংলার একটি ছোট্ট গ্রামে, এক মা এখনও বিকেল ৬টায় দরজায় বসে অপেক্ষা করেন। তার ছেলে রাজু ডিউটি থেকে আর ফেরেনি। তিনি এমন একটি পোলে কাজ করছিলেন যা সঠিকভাবে আইসোলেটেড ছিল না। ট্যাগ-আউট পদ্ধতির অভাব একটি তরুণ প্রাণ কেড়ে নিয়েছে এবং এক মাকে শুধু ছায়া আর অশ্রু দিয়ে রেখে গেছে।"
-            }
-        },
-        {
             id: 'verbal-order-tragedy',
             image: '/assets/emotional/lineman.png',
             category: { en: 'Operational Error', bn: 'অপারেশনাল ভুল' },
