@@ -19,6 +19,7 @@ import calendarLottie from '../../assets/calendar.lottie';
 import readingLottie from '../../assets/readding.lottie';
 import protipLottie from '../../assets/protip.lottie';
 import mythLottie from '../../assets/myth.lottie';
+import clockLottie from '../../assets/clock.lottie';
 
 const PPE_MAP = {
     1: { name: "Safety Helmet", icon: "🪖", image: "/quizzes/faq_images/Safety_Helmet.webp" },
@@ -208,7 +209,11 @@ const TrainingSubChapterCard = React.memo(({ subchapter, isUnlocked, isCompleted
 });
 
 export default function Training({ language = 'en', user, onProgressUpdate, setCurrentView }) {
-    const [showWelcome, setShowWelcome] = useState(true);
+    const [showWelcome, setShowWelcome] = useState(() => {
+        // Only show once per session. Use sessionStorage so it resets when browser closes or tab reloads fully.
+        const hasSeenWelcome = sessionStorage.getItem('hasSeenTrainingWelcome');
+        return !hasSeenWelcome;
+    });
     const [trainingChapters, setTrainingChapters] = useState([]);
     const [selectedChapter, setSelectedChapter] = useState(null);
     const [selectedLesson, setSelectedLesson] = useState(null);
@@ -242,6 +247,80 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
     const audioRef = useRef(null);
     const [isAudioPlaying, setIsAudioPlaying] = useState(false);
     const [activeAudioChapter, setActiveAudioChapter] = useState(null);
+    const [isHourlyPending, setIsHourlyPending] = useState(false);
+    const [userRank, setUserRank] = useState(null);
+
+    // Fetch user rank for leaderboard preview
+    useEffect(() => {
+        const fetchRank = async () => {
+            if (!user) return;
+            try {
+                const rankData = await requestManager.fetch(
+                    `user_rank_${user.id}`,
+                    async () => {
+                        const { data: myData, error: myError } = await supabase
+                            .from('leaderboard_view')
+                            .select('score')
+                            .eq('user_id', user.id)
+                            .maybeSingle();
+
+                        if (myError || !myData) return null;
+
+                        const { count, error: countError } = await supabase
+                            .from('leaderboard_view')
+                            .select('*', { count: 'exact', head: true })
+                            .gt('score', myData.score);
+
+                        if (countError) throw countError;
+
+                        return { rank: count + 1, score: myData.score };
+                    },
+                    { ttl: 5, swr: true, forceRefresh: false }
+                );
+
+                if (rankData) {
+                    setUserRank(rankData);
+                }
+            } catch (error) {
+                console.error('Error fetching rank in training:', error);
+            }
+        };
+
+        fetchRank();
+    }, [user]);
+
+    useEffect(() => {
+        const checkHourlyEligibility = async () => {
+            if (!user) return;
+            try {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hour = String(now.getHours()).padStart(2, '0');
+                const quizId = `hourly-challenge-${year}-${month}-${day}-${hour}`;
+
+                const { data, error } = await supabase
+                    .from('quiz_attempts')
+                    .select('id')
+                    .eq('user_id', user.id)
+                    .eq('quiz_id', quizId)
+                    .limit(1);
+
+                if (!error) {
+                    setIsHourlyPending(data.length === 0);
+                }
+            } catch (err) {
+                console.error("Error checking hourly challenge:", err);
+            }
+        };
+
+        checkHourlyEligibility();
+
+        // Setup an interval to check this every 5 minutes in case the hour rolls over while they are just sitting on the page
+        const intervalId = setInterval(checkHourlyEligibility, 5 * 60 * 1000);
+        return () => clearInterval(intervalId);
+    }, [user]);
 
     const toggleChapterAudio = (chapterNum) => {
         if (activeAudioChapter === chapterNum && isAudioPlaying) {
@@ -1227,6 +1306,33 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                         {language === 'en' ? 'Master your safety skills' : 'আপনার পেশাগত জ্ঞান বাড়ান'}
                                     </p>
 
+                                    {/* Minimal Leaderboard Stats */}
+                                    {userRank && (
+                                        <button
+                                            onClick={() => setCurrentView('leaderboard')}
+                                            className="mx-auto mt-6 px-6 py-2.5 bg-white/70 dark:bg-slate-800/70 backdrop-blur-2xl rounded-full border border-slate-200/60 dark:border-slate-700/60 shadow-sm hover:shadow-lg hover:bg-white/90 dark:hover:bg-slate-800/90 hover:scale-105 active:scale-95 transition-all flex items-center justify-between gap-5 text-slate-700 dark:text-slate-300 animate-fade-in-up"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xl inline-block drop-shadow-sm">🏆</span>
+                                                <div className="flex flex-col items-start translate-y-[1px]">
+                                                    <span className="text-[10px] uppercase tracking-widest text-slate-400 font-black leading-none mb-0.5">{language === 'en' ? 'Global Rank' : 'অবস্থান'}</span>
+                                                    <span className="text-base font-black leading-none">#{(userRank.rank || 0).toLocaleString('en-US')}</span>
+                                                </div>
+                                            </div>
+                                            <div className="w-px h-8 bg-slate-200 dark:bg-slate-700"></div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xl text-orange-500 inline-block drop-shadow-sm">⚡</span>
+                                                <div className="flex flex-col items-start translate-y-[1px]">
+                                                    <span className="text-[10px] uppercase tracking-widest text-slate-400 font-black leading-none mb-0.5">{language === 'en' ? 'Total Score' : 'মোট স্কোর'}</span>
+                                                    <span className="text-base font-black leading-none">{(userRank.score || 0).toLocaleString('en-US')}</span>
+                                                </div>
+                                            </div>
+                                            <svg className="w-4 h-4 ml-1 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    )}
+
                                     {/* Global Progress Dashboard */}
                                     {(() => {
                                         const totalLessons = journeyChapters.reduce((acc, c) => acc + (c.count || 0), 0);
@@ -1249,7 +1355,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                         </span>
                                                     </div>
                                                     <span className="text-xs font-black text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 px-3 py-1.5 rounded-xl border border-orange-100 dark:border-orange-900 text-[10px] shadow-sm">
-                                                        {toBengaliNumber(totalCompleted, language)} / {toBengaliNumber(totalLessons, language)} {language === 'en' ? 'STEPS' : 'ধাপ'}
+                                                        {totalCompleted} / {totalLessons} {language === 'en' ? 'STEPS' : 'ধাপ'}
                                                     </span>
                                                 </div>
 
@@ -1262,7 +1368,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                                     </div>
                                                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                                                         <span className="text-[10px] font-black text-slate-700 dark:text-slate-200 drop-shadow-sm">
-                                                            {toBengaliNumber(overallProgressPercentage, language)}%
+                                                            {overallProgressPercentage}%
                                                         </span>
                                                     </div>
                                                 </div>
@@ -2316,7 +2422,10 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                             {/* Proceed Button */}
                             <div className="w-full max-w-sm pt-0 md:pt-2 animate-entrance-pop" style={{ animationDelay: '300ms' }}>
                                 <button
-                                    onClick={() => setShowWelcome(false)}
+                                    onClick={() => {
+                                        sessionStorage.setItem('hasSeenTrainingWelcome', 'true');
+                                        setShowWelcome(false);
+                                    }}
                                     className="w-full material-button-primary py-4 md:py-5 text-xl md:text-2xl font-black shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/40 active:scale-95 transition-all group"
                                 >
                                     <span className="flex items-center justify-center gap-3">
@@ -2329,6 +2438,35 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                             </div>
                         </div>
                     </div>,
+                    document.body
+                )
+            }
+
+            {/* Floating Challenge Button */}
+            {
+                !selectedChapter && !trainingContent && !showWelcome && !trainingLoading && createPortal(
+                    <button
+                        onClick={() => setCurrentView('competitions')}
+                        className="fixed bottom-24 right-4 sm:bottom-6 sm:right-6 z-[90] hover:scale-110 active:scale-95 transition-transform duration-300 drop-shadow-2xl animate-entrance-pop focus:outline-none"
+                        title={language === 'en' ? 'Hourly Challenge' : 'প্রতি ঘণ্টার চ্যালেঞ্জ'}
+                    >
+                        <div className="relative">
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-xl">
+                                <DotLottiePlayer
+                                    src={clockLottie}
+                                    autoplay
+                                    loop
+                                    className="w-full h-full filter saturate-150 contrast-125"
+                                />
+                            </div>
+                            {isHourlyPending && (
+                                <span className="absolute top-2 right-2 flex h-3 w-3 sm:h-3.5 sm:w-3.5">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-full w-full bg-emerald-500 border border-white dark:border-slate-800 shadow-sm"></span>
+                                </span>
+                            )}
+                        </div>
+                    </button>,
                     document.body
                 )
             }

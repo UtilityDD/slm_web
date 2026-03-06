@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { DotLottiePlayer } from '@dotlottie/react-player';
+import shareAnimation from '../assets/share.lottie';
 
 const CommunitySkeleton = () => (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 animate-pulse">
@@ -26,68 +28,52 @@ export default function Community({ language = 'en', setCurrentView }) {
 
     const t = {
         en: {
-            title: "Community",
+            title: "Share & Learn",
             subtitle: "Connect with fellow linemen",
-            banner: {
-                title: "Share & Learn",
-                subtitle: "Help others grow and win rewards"
-            },
             comingSoon: "Coming Soon!",
             cards: {
                 facebook: {
                     title: "Facebook Group",
-                    desc: "Join our official discussion group",
                     action: "Join"
                 },
                 facebookPage: {
                     title: "Facebook Page",
-                    desc: "Follow official updates & news",
                     action: "Follow",
                     url: "https://www.facebook.com/smartlineman"
                 },
                 whatsapp: {
                     title: "WhatsApp Alerts",
-                    desc: "Get real-time safety updates",
                     action: "Join",
                     url: "https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t"
                 },
                 youtube: {
                     title: "Training Videos",
-                    desc: "Watch tutorials & safety guides",
                     action: "Watch"
                 }
             },
             footer: "Official SmartLineman Channels"
         },
         bn: {
-            title: "কমিউনিটি",
+            title: "শেয়ার করুন ও শিখুন",
             subtitle: "সহকর্মী লাইনম্যানদের সাথে যুক্ত হন",
-            banner: {
-                title: "শেয়ার করুন ও শিখুন",
-                subtitle: "অন্যদের সাহায্য করুন এবং পুরস্কার জিতুন"
-            },
             comingSoon: "শীঘ্রই আসছে!",
             cards: {
                 facebook: {
                     title: "ফেসবুক গ্রুপ",
-                    desc: "মতামত ও অভিজ্ঞতা শেয়ার করুন",
                     action: "যোগ দিন"
                 },
                 facebookPage: {
                     title: "ফেসবুক পেজ",
-                    desc: "অফিসিয়াল আপডেট ও খবর দেখুন",
                     action: "ফলো করুন",
                     url: "https://www.facebook.com/smartlineman"
                 },
                 whatsapp: {
                     title: "হোয়াটসঅ্যাপ গ্রুপ",
-                    desc: "সমস্যা সঙ্গে সঙ্গে জানান",
                     action: "যোগ দিন",
                     url: "https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t"
                 },
                 youtube: {
                     title: "ট্রেনিং ভিডিও",
-                    desc: "আপনারই কোন সহকর্মীর তৈরি ট্রেনিং ভিডিও!",
                     action: "দেখুন"
                 }
             },
@@ -155,23 +141,15 @@ export default function Community({ language = 'en', setCurrentView }) {
                 </div>
             </div>
 
-            {/* Premium Banner */}
-            <div className="mb-10 animate-slide-up">
-                <div className="relative overflow-hidden bg-gradient-to-br from-orange-600 to-orange-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-orange-500/20">
-                    <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6">
-                        <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-4xl backdrop-blur-md shadow-inner animate-float">
-                            💡
-                        </div>
-                        <div className="text-center sm:text-left">
-                            <h2 className="text-xl sm:text-2xl font-black mb-1">{t.banner.title}</h2>
-                            <p className="text-orange-50 text-xs sm:text-sm font-medium opacity-90 leading-relaxed max-w-sm">
-                                {t.banner.subtitle}
-                            </p>
-                        </div>
-                    </div>
-                    {/* Decorative Elements */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
-                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-2xl -ml-12 -mb-12"></div>
+            {/* Modern Lottie Banner */}
+            <div className="mb-12 flex justify-center animate-slide-up">
+                <div className="relative w-full max-w-lg flex items-center justify-center group">
+                    <DotLottiePlayer
+                        src={shareAnimation}
+                        autoplay
+                        loop
+                        className="w-full max-w-[280px] sm:max-w-[340px] transition-transform duration-700 ease-out group-hover:scale-105 drop-shadow-2xl"
+                    />
                 </div>
             </div>
 
@@ -196,12 +174,9 @@ export default function Community({ language = 'en', setCurrentView }) {
                                 {card.icon}
                             </div>
                             <div>
-                                <h3 className="text-base font-black text-slate-800 dark:text-slate-100 group-hover:text-orange-600 transition-colors">
+                                <h3 className="text-base font-black text-slate-800 dark:text-slate-100 group-hover:text-orange-600 transition-colors py-1">
                                     {card.data.title}
                                 </h3>
-                                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-tight">
-                                    {card.data.desc}
-                                </p>
                             </div>
                         </div>
                         <div className="h-8 w-8 rounded-full bg-slate-50 dark:bg-slate-700 flex items-center justify-center text-slate-400 group-hover:bg-orange-600 group-hover:text-white transition-all transform group-hover:translate-x-1">

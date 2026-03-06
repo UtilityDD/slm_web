@@ -11,7 +11,9 @@ export default function Sidebar({
   language,
   t,
   onToggleSidebar,
-  onToggleLanguageModal
+  onToggleLanguageModal,
+  onToggleNotifications,
+  unreadNotificationsCount
 }) {
   const [currentTab, setCurrentTab] = useState(null);
 
@@ -30,6 +32,7 @@ export default function Sidebar({
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
   const menuItems = [
+    { id: 'notifications', label: language === 'en' ? 'Notifications' : 'বিজ্ঞপ্তি', icon: '🔔', show: true, badge: unreadNotificationsCount > 0 ? unreadNotificationsCount : null, highlight: unreadNotificationsCount > 0 },
     { id: 'training', label: language === 'en' ? '90 Days Training' : '৯০ দিনের প্রশিক্ষণ', icon: '📚', show: true },
     { id: 'video-guide', label: language === 'en' ? 'Video Guide' : 'ভিডিও গাইড', icon: '📺', show: true },
     { id: 'community', label: language === 'en' ? 'Community' : 'কমিউনিটি', icon: '👥', show: true },
@@ -45,6 +48,11 @@ export default function Sidebar({
   ];
 
   const handleNavClick = (item) => {
+    if (item.id === 'notifications') {
+      if (onToggleNotifications) onToggleNotifications();
+      onClose();
+      return;
+    }
     if (item.url) {
       window.open(item.url, '_system');
       onClose();
@@ -103,17 +111,17 @@ export default function Sidebar({
                   </span>
                 </div>
                 {/* User Stats Integration */}
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm px-2 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
-                    <span className="text-xs">💎</span>
-                    <span className="text-[11px] font-black text-slate-700 dark:text-slate-200">
-                      {userProfile?.points || 0}
+                <div className="flex items-center gap-2 mt-0.5">
+                  <div className="flex items-center gap-1.5 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm px-2 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm transition-all hover:bg-white dark:hover:bg-slate-800">
+                    <span className="text-sm drop-shadow-sm text-orange-500">🏆</span>
+                    <span className="text-[12px] font-black text-slate-800 dark:text-slate-100">
+                      {(userProfile?.points || 0).toLocaleString('en-US')}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm px-2 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
-                    <span className="text-xs">📖</span>
-                    <span className="text-[11px] font-black text-slate-700 dark:text-slate-200">
-                      {userProfile?.reading_points || 0}
+                  <div className="flex items-center gap-1.5 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm px-2 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm transition-all hover:bg-white dark:hover:bg-slate-800">
+                    <span className="text-sm drop-shadow-sm">📖</span>
+                    <span className="text-[12px] font-black text-slate-800 dark:text-slate-100">
+                      {(userProfile?.reading_points || 0).toLocaleString('en-US')}
                     </span>
                   </div>
                 </div>
@@ -151,7 +159,12 @@ export default function Sidebar({
                 <span className="text-sm font-medium">
                   {item.label}
                 </span>
-                {isActive && (
+                {item.badge && (
+                  <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    {item.badge}
+                  </span>
+                )}
+                {isActive && !item.badge && (
                   <span className="ml-auto">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />

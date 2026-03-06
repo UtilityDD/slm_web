@@ -44,10 +44,10 @@ export default function SmartLinemanUI() {
   });
   const [language, setLanguage] = useState('bn');
   const [theme, setTheme] = useState(() => {
-    const savedTheme = storageUtils.getItem('appTheme');
+    // Check if user has explicit preference, otherwise default to dark
+    const savedTheme = localStorage.getItem('theme');
     if (savedTheme) return savedTheme;
-    const hour = new Date().getHours();
-    return (hour >= 6 && hour < 18) ? 'light' : 'dark';
+    return 'dark'; // CHANGED: Default theme is now dark
   });
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [user, setUser] = useState(null);
@@ -894,6 +894,7 @@ export default function SmartLinemanUI() {
           t={translations[language]}
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
           onToggleLanguageModal={() => setShowLanguageModal(true)}
+          onToggleNotifications={() => setCurrentView('notifications')}
         />
       )}
 
@@ -1015,8 +1016,8 @@ export default function SmartLinemanUI() {
 
         {/* Notification Toast */}
         {notification && (
-          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xs px-4 animate-toast-in">
-            <div className={`flex items-center gap-3 p-4 rounded-2xl shadow-2xl border ${notification.type === 'success'
+          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xs px-4 animate-toast-in pointer-events-none">
+            <div className={`flex items-center gap-3 p-4 rounded-2xl shadow-2xl border pointer-events-auto ${notification.type === 'success'
               ? 'bg-green-600 border-green-500 text-white'
               : 'bg-red-600 border-red-500 text-white'
               }`}>
@@ -1098,86 +1099,6 @@ export default function SmartLinemanUI() {
                 <div className="flex-grow"></div>
 
                 <div className="flex items-center gap-1 sm:gap-2">
-                  {/* Notification Bell */}
-                  <div className="relative">
-                    <button
-                      onClick={() => {
-                        setShowHistory(!showHistory);
-                        if (notificationsHistory.length > 0) {
-                          const latestId = notificationsHistory[0].id;
-                          setLastSeenNotificationId(latestId);
-                          localStorage.setItem('lastSeenNotificationId', latestId);
-                        }
-                      }}
-                      className={`flex items-center justify-center p-2 ${currentView === 'home' ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200'} rounded-lg transition-all touch-target relative`}
-                      title="Notifications"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                      </svg>
-                      {notificationsHistory.length > 0 && notificationsHistory[0].id !== lastSeenNotificationId && (
-                        <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-800 rounded-full"></span>
-                      )}
-                    </button>
-
-                    {/* Notifications Dropdown */}
-                    {showHistory && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-40"
-                          onClick={() => setShowHistory(false)}
-                        ></div>
-                        <div className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-16 sm:top-full sm:mt-2 w-auto sm:w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-50 overflow-hidden animate-slide-down">
-                          <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
-                            <h3 className="font-bold text-slate-900 dark:text-slate-100">
-                              {language === 'en' ? 'Notifications' : 'বিজ্ঞপ্তি'}
-                            </h3>
-                            {notificationsHistory.length > 0 && (
-                              <span className="text-[10px] font-bold bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 px-2 py-0.5 rounded-full">
-                                {notificationsHistory.length}
-                              </span>
-                            )}
-                          </div>
-                          <div className="max-h-96 overflow-y-auto">
-                            {notifFetchError ? (
-                              <div className="p-8 text-center space-y-3">
-                                <p className="text-slate-500 text-sm">
-                                  {language === 'en' ? 'Failed to load notifications' : 'বিজ্ঞপ্তি লোড করতে ব্যর্থ হয়েছে'}
-                                </p>
-                                <button
-                                  onClick={() => fetchNotifications(true)}
-                                  className="text-xs font-bold text-orange-600 hover:text-orange-700 underline underline-offset-4"
-                                >
-                                  {language === 'en' ? 'Try Again' : 'আবার চেষ্টা করুন'}
-                                </button>
-                              </div>
-                            ) : notificationsHistory.length > 0 ? (
-                              <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                                {notificationsHistory.map((notif) => (
-                                  <div key={notif.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group relative">
-                                    <div className="flex gap-3">
-                                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${notif.type === 'alert' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'}`}>
-                                        {notif.type === 'alert' ? '🚨' : '📢'}
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-0.5">{notif.title}</p>
-                                        <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">{notif.message}</p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <div className="p-12 text-center text-slate-500">
-                                {language === 'en' ? 'No notifications' : 'কোনো বিজ্ঞপ্তি নেই'}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-
                   {/* Theme Toggle */}
                   <button
                     onClick={handleThemeToggle}
@@ -1189,22 +1110,24 @@ export default function SmartLinemanUI() {
 
                   {/* Profile / Login */}
                   {user ? (
-                    <div className={`flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2 border-l ${currentView === 'home' ? 'border-white/20' : 'border-slate-200 dark:border-slate-700'}`}>
-                      <div className="flex flex-col items-end hidden sm:flex">
-                        <span className={`text-xs font-bold ${currentView === 'home' ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>
-                          {(userProfile?.full_name && !userProfile.full_name.includes('@')) ? userProfile.full_name : 'Guest'}
-                        </span>
-                        <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          {userProfile?.role || 'Lineman'}
-                        </span>
-                      </div>
+                    <div className="flex items-center gap-2 pl-1 sm:pl-2">
                       <button
                         onClick={handleLogout}
-                        className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-all touch-target"
+                        className="flex items-center font-bold gap-2 pl-1 pr-3 sm:pr-4 py-1 bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-all touch-target border border-slate-200 dark:border-slate-600 shadow-sm"
                         title="Logout"
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white shrink-0 overflow-hidden shadow-sm">
+                          {userProfile?.avatar_url ? (
+                            <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                          ) : (
+                            <UserIcon className="w-5 h-5 text-white" />
+                          )}
+                        </div>
+                        <span className={`text-xs md:text-sm font-bold truncate max-w-[90px] md:max-w-xs ${currentView === 'home' ? 'text-white md:text-slate-800 md:dark:text-slate-200' : 'text-slate-800 dark:text-slate-200'}`}>
+                          {(userProfile?.full_name && !userProfile.full_name.includes('@')) ? userProfile.full_name.split(' ')[0] : 'Guest'}
+                        </span>
+                        <svg className="w-4 h-4 ml-1 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
                       </button>
                     </div>
@@ -1238,54 +1161,56 @@ export default function SmartLinemanUI() {
         <NetworkStatusListener language={language} />
 
         {/* Language Selection Modal */}
-        {showLanguageModal && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-700 animate-scale-in">
-              <div className="p-6 text-center border-b border-slate-100 dark:border-slate-700">
-                <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
-                  🌐
+        {
+          showLanguageModal && (
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+              <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-700 animate-scale-in">
+                <div className="p-6 text-center border-b border-slate-100 dark:border-slate-700">
+                  <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
+                    🌐
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                    Choose Language
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    ভাষা নির্বাচন করুন
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-                  Choose Language
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                  ভাষা নির্বাচন করুন
-                </p>
-              </div>
-              <div className="p-4 grid grid-cols-1 gap-3">
-                <button
-                  onClick={() => handleLanguageSelect('en')}
-                  className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${language === 'en' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-100 dark:border-slate-700 hover:border-orange-200'}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">🇺🇸</span>
-                    <span className="font-bold text-slate-900 dark:text-slate-100">English</span>
-                  </div>
-                  {language === 'en' && <span className="text-orange-600">✓</span>}
-                </button>
-                <button
-                  onClick={() => handleLanguageSelect('bn')}
-                  className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${language === 'bn' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-100 dark:border-slate-700 hover:border-orange-200'}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">🇮🇳</span>
-                    <span className="font-bold text-slate-900 dark:text-slate-100">বাংলা (Bengali)</span>
-                  </div>
-                  {language === 'bn' && <span className="text-orange-600">✓</span>}
-                </button>
-              </div>
-              <div className="p-4 bg-slate-50 dark:bg-slate-800/50">
-                <button
-                  onClick={() => setShowLanguageModal(false)}
-                  className="w-full py-3 font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
-                >
-                  Cancel / বাতিল করুন
-                </button>
+                <div className="p-4 grid grid-cols-1 gap-3">
+                  <button
+                    onClick={() => handleLanguageSelect('en')}
+                    className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${language === 'en' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-100 dark:border-slate-700 hover:border-orange-200'}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">🇺🇸</span>
+                      <span className="font-bold text-slate-900 dark:text-slate-100">English</span>
+                    </div>
+                    {language === 'en' && <span className="text-orange-600">✓</span>}
+                  </button>
+                  <button
+                    onClick={() => handleLanguageSelect('bn')}
+                    className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${language === 'bn' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-100 dark:border-slate-700 hover:border-orange-200'}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">🇮🇳</span>
+                      <span className="font-bold text-slate-900 dark:text-slate-100">বাংলা (Bengali)</span>
+                    </div>
+                    {language === 'bn' && <span className="text-orange-600">✓</span>}
+                  </button>
+                </div>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/50">
+                  <button
+                    onClick={() => setShowLanguageModal(false)}
+                    className="w-full py-3 font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                  >
+                    Cancel / বাতিল করুন
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )
+        }
+      </div >
     </div >
   );
 }
