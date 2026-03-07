@@ -8,6 +8,8 @@ import EditUserModal from './EditUserModal';
 import SaveSuccessModal from './SaveSuccessModal';
 import AdminAnalytics from './AdminAnalytics';
 import DeleteUserConfirmationModal from './DeleteUserConfirmationModal';
+import MyPPE from './safety/MyPPE';
+import MyTools from './safety/MyTools';
 
 const UserTableSkeleton = () => (
   <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
@@ -61,14 +63,10 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
 
   /* PPE Management State */
-  const [editingPPEUser, setEditingPPEUser] = useState(null);
-  const [ppeChecklist, setPpeChecklist] = useState([]);
-  const [isSavingPPE, setIsSavingPPE] = useState(false);
+  const [selectedUserForPPE, setSelectedUserForPPE] = useState(null);
 
   /* Tools Management State */
-  const [editingToolsUser, setEditingToolsUser] = useState(null);
-  const [toolsChecklist, setToolsChecklist] = useState([]);
-  const [isSavingTools, setIsSavingTools] = useState(false);
+  const [selectedUserForTools, setSelectedUserForTools] = useState(null);
 
   /* Notification State */
   const [notificationForm, setNotificationForm] = useState({
@@ -85,6 +83,10 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [isInviting, setIsInviting] = useState(false);
   const [tempPasswordResult, setTempPasswordResult] = useState(null);
   const [showInviteHelp, setShowInviteHelp] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetTarget, setResetTarget] = useState(null); // { id, name } or null for 'all'
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetConfirmInput, setResetConfirmInput] = useState('');
 
   useEffect(() => {
     fetchUsers(currentPage);
@@ -161,35 +163,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     }
   };
 
-  /* PPE Logic */
-  const PPE_ITEMS = [
-    { name: "Safety Helmet", icon: "🪖" },
-    { name: "Safety Shoes/Boots", icon: "🥾" },
-    { name: "Insulated Gloves", icon: "🧤" },
-    { name: "Reflective Jacket", icon: "🦺" },
-    { name: "Safety Belt", icon: "🧗" },
-    { name: "Full Body Harness", icon: "🧗‍♂️" },
-    { name: "Voltage Detector", icon: "🔌" },
-    { name: "Discharge Rod", icon: "🦯" },
-    { name: "Safety Goggles", icon: "🥽" },
-    { name: "Raincoat", icon: "🧥" },
-    { name: "Torch/Emergency Light", icon: "🔦" }
-  ];
-
-  const TOOLS_ITEMS = [
-    { name: "Pliers", icon: "🔧" },
-    { name: "Screwdriver Set", icon: "🪛" },
-    { name: "Wrench", icon: "🔧" },
-    { name: "Hammer", icon: "🔨" },
-    { name: "Tester", icon: "⚡" },
-    { name: "Multimeter", icon: "📟" },
-    { name: "Wire Stripper", icon: "✂️" },
-    { name: "Rope", icon: "🪢" },
-    { name: "Drill Machine", icon: "🔫" },
-    { name: "Ladder", icon: "🪜" }
-  ];
-
-  const handleEditPPE = async (targetUser) => {
+  /* PPE & Tools Logic */
+  const handleEditPPE = (targetUser) => {
     // Authorization check
     const canEdit =
       userProfile?.role === 'admin' ||
@@ -197,112 +172,13 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       (userProfile?.role === 'safety mitra' && targetUser.supervisor_id === user.id);
 
     if (!canEdit) {
-      alert('You do not have permission to edit this user\'s PPE.');
+      alert('You do not have permission to view this user\'s PPE.');
       return;
     }
-
-    setEditingPPEUser(targetUser);
-    setPpeChecklist([]); // Reset while loading
-
-    try {
-      const { data: fetchedData, error } = await supabase
-        .from('user_ppe')
-        .select('*')
-        .eq('user_id', targetUser.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      const data = fetchedData || [];
-
-      // Initialize checklist based on fetched data
-      const checklist = PPE_ITEMS.map(item => {
-        const existing = data.find(p => p.name === item.name);
-        return {
-          ...item,
-          available: !!existing,
-          id: existing?.id || null,
-          count: existing?.count || 1,
-          condition: existing?.condition || 'Good',
-          age: existing?.age_months ?
-            (existing.age_months <= 6 ? '<6m' :
-              existing.age_months <= 12 ? '6-12m' :
-                existing.age_months <= 24 ? '1-2y' : '>2y') : '<6m',
-          usage: existing?.details?.includes('Usage:') ?
-            existing.details.split('Usage:')[1].trim() : 'Personal'
-        };
-      });
-      setPpeChecklist(checklist);
-
-    } catch (error) {
-      console.error('Error fetching user PPE:', error);
-      alert('Failed to fetch PPE data');
-    }
+    setSelectedUserForPPE(targetUser);
   };
 
-  const handlePPEChecklistChange = (index, field, value) => {
-    const updated = [...ppeChecklist];
-    updated[index] = { ...updated[index], [field]: value };
-    setPpeChecklist(updated);
-  };
-
-  const handleSaveUserPPE = async () => {
-    if (!editingPPEUser) return;
-    setIsSavingPPE(true);
-
-    try {
-      for (const item of ppeChecklist) {
-        const ageMonths = item.age === '<6m' ? 3 :
-          item.age === '6-12m' ? 9 :
-            item.age === '1-2y' ? 18 : 36;
-
-        const details = `Usage: ${item.usage}`;
-
-        if (item.available) {
-          if (item.id) {
-            // Update
-            await supabase.from('user_ppe').update({
-              count: parseInt(item.count),
-              condition: item.condition,
-              age_months: ageMonths,
-              details: details
-            }).eq('id', item.id);
-          } else {
-            // Insert
-            await supabase.from('user_ppe').insert([{
-              user_id: editingPPEUser.id,
-              name: item.name,
-              count: parseInt(item.count),
-              condition: item.condition,
-              age_months: ageMonths,
-              details: details
-            }]);
-          }
-        } else if (item.id) {
-          // Delete if it was available but now unchecked
-          await supabase.from('user_ppe').delete().eq('id', item.id);
-        }
-      }
-
-      // Clear cache for this user so they see updates immediately
-      cacheHelper.clear(`user_ppe_${editingPPEUser.id}`);
-
-      setSuccessMessage({
-        title: language === 'en' ? 'PPE Updated' : 'পিপিই আপডেট করা হয়েছে',
-        message: language === 'en' ? 'PPE Status updated successfully!' : 'পিপিই স্ট্যাটাস সফলভাবে আপডেট করা হয়েছে!'
-      });
-      setShowSuccessModal(true);
-      setEditingPPEUser(null);
-      setEditingPPEUser(null);
-    } catch (error) {
-      console.error('Error saving user PPE:', error);
-      alert('Failed to save PPE status');
-    } finally {
-      setIsSavingPPE(false);
-    }
-  };
-
-  /* Tools Management Logic */
-  const handleEditTools = async (targetUser) => {
+  const handleEditTools = (targetUser) => {
     // Authorization check
     const canEdit =
       userProfile?.role === 'admin' ||
@@ -310,107 +186,10 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       (userProfile?.role === 'safety mitra' && targetUser.supervisor_id === user.id);
 
     if (!canEdit) {
-      alert('You do not have permission to edit this user\'s Tools.');
+      alert('You do not have permission to view this user\'s Tools.');
       return;
     }
-
-    setEditingToolsUser(targetUser);
-    setToolsChecklist([]); // Reset while loading
-
-    try {
-      const { data: fetchedData, error } = await supabase
-        .from('user_tools')
-        .select('*')
-        .eq('user_id', targetUser.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      const data = fetchedData || [];
-
-      // Initialize checklist based on fetched data
-      const checklist = TOOLS_ITEMS.map(item => {
-        const existing = data.find(p => p.name === item.name);
-        return {
-          ...item,
-          available: !!existing,
-          id: existing?.id || null,
-          count: existing?.count || 1,
-          condition: existing?.condition || 'Good',
-          age: existing?.age_months ?
-            (existing.age_months <= 6 ? '<6m' :
-              existing.age_months <= 12 ? '6-12m' :
-                existing.age_months <= 24 ? '1-2y' : '>2y') : '<6m',
-          usage: existing?.details?.includes('Usage:') ?
-            existing.details.split('Usage:')[1].trim() : 'Personal'
-        };
-      });
-      setToolsChecklist(checklist);
-
-    } catch (error) {
-      console.error('Error fetching user Tools:', error);
-      alert('Failed to fetch Tools data');
-    }
-  };
-
-  const handleToolsChecklistChange = (index, field, value) => {
-    const updated = [...toolsChecklist];
-    updated[index] = { ...updated[index], [field]: value };
-    setToolsChecklist(updated);
-  };
-
-  const handleSaveUserTools = async () => {
-    if (!editingToolsUser) return;
-    setIsSavingTools(true);
-
-    try {
-      for (const item of toolsChecklist) {
-        const ageMonths = item.age === '<6m' ? 3 :
-          item.age === '6-12m' ? 9 :
-            item.age === '1-2y' ? 18 : 36;
-
-        const details = `Usage: ${item.usage}`;
-
-        if (item.available) {
-          if (item.id) {
-            // Update
-            await supabase.from('user_tools').update({
-              count: parseInt(item.count),
-              condition: item.condition,
-              age_months: ageMonths,
-              details: details
-            }).eq('id', item.id);
-          } else {
-            // Insert
-            await supabase.from('user_tools').insert([{
-              user_id: editingToolsUser.id,
-              name: item.name,
-              count: parseInt(item.count),
-              condition: item.condition,
-              age_months: ageMonths,
-              details: details
-            }]);
-          }
-        } else if (item.id) {
-          // Delete
-          await supabase.from('user_tools').delete().eq('id', item.id);
-        }
-      }
-
-      // Clear cache
-      cacheHelper.clear(`user_tools_${editingToolsUser.id}`);
-
-      setSuccessMessage({
-        title: language === 'en' ? 'Tools Updated' : 'সরঞ্জাম আপডেট করা হয়েছে',
-        message: language === 'en' ? 'Tools Status updated successfully!' : 'সরঞ্জাম স্ট্যাটাস সফলভাবে আপডেট করা হয়েছে!'
-      });
-      setShowSuccessModal(true);
-      setEditingToolsUser(null);
-    } catch (error) {
-      console.error('Error saving user Tools:', error);
-      alert('Failed to save Tools status');
-    } finally {
-      setIsSavingTools(false);
-    }
+    setSelectedUserForTools(targetUser);
   };
 
   const handleSendNotification = async (e) => {
@@ -717,6 +496,49 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     }
   };
 
+  const handleResetScore = async () => {
+    // 1. Double check target
+    const targetName = resetTarget === 'all' ? 'EVERYONE' : resetTarget.name;
+    const expectedInput = resetTarget === 'all' ? 'RESET ALL' : 'RESET';
+
+    if (resetConfirmInput !== expectedInput) {
+      alert(`Please type "${expectedInput}" to confirm.`);
+      return;
+    }
+
+    setIsResetting(true);
+    try {
+      const { error } = await supabase.rpc('admin_reset_score', {
+        p_target_user_id: resetTarget === 'all' ? null : resetTarget.id
+      });
+
+      if (error) throw error;
+
+      // 2. Clear cache to reflect changes
+      cacheHelper.clearAll(); // Broad clear for leaderboards and user lists
+
+      // 3. Refresh local list
+      await fetchUsers(currentPage);
+
+      setShowResetConfirm(false);
+      setResetTarget(null);
+      setResetConfirmInput('');
+
+      setSuccessMessage({
+        title: language === 'en' ? 'Scores Reset' : 'স্কোর রিসেট করা হয়েছে',
+        message: language === 'en'
+          ? `Successfully reset scores for ${targetName}.`
+          : `${targetName}-এর স্কোর সফলভাবে রিসেট করা হয়েছে।`
+      });
+      setShowSuccessModal(true);
+    } catch (err) {
+      console.error('Error resetting scores:', err);
+      alert(`Failed to reset score: ${err.message}`);
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -742,6 +564,20 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
         {setCurrentView && (
           <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => handleEditPPE(user)}
+              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2 text-sm"
+            >
+              <span>🦺</span>
+              {language === 'en' ? 'My PPE' : 'আমার পিপিই'}
+            </button>
+            <button
+              onClick={() => handleEditTools(user)}
+              className="px-5 py-2.5 bg-slate-600 hover:bg-slate-700 text-white rounded-xl font-bold shadow-lg shadow-slate-500/20 transition-all flex items-center gap-2 text-sm"
+            >
+              <span>🛠️</span>
+              {language === 'en' ? 'My Tools' : 'আমার সরঞ্জাম'}
+            </button>
             {userProfile?.role === 'admin' && (
               <button
                 onClick={() => setShowNotificationModal(true)}
@@ -797,6 +633,20 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 Services
+              </button>
+            )}
+            {userProfile?.role === 'admin' && (
+              <button
+                onClick={() => {
+                  setResetTarget('all');
+                  setResetConfirmInput('');
+                  setShowResetConfirm(true);
+                }}
+                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold shadow-lg shadow-rose-500/20 transition-all flex items-center gap-2 text-sm"
+                title="Reset All User Scores (Admin Only)"
+              >
+                <span>⚠️</span>
+                {language === 'en' ? 'Reset All Scores' : 'সব স্কোর রিসেট'}
               </button>
             )}
           </div>
@@ -920,6 +770,19 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                         </svg>
                         Edit
                       </button>
+                      {userProfile?.role === 'admin' && (
+                        <button
+                          onClick={() => {
+                            setResetTarget({ id: targetUser.id, name: targetUser.full_name });
+                            setResetConfirmInput('');
+                            setShowResetConfirm(true);
+                          }}
+                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/30 rounded-lg transition-all border border-rose-200 dark:border-rose-800"
+                        >
+                          <span>🎯</span>
+                          Reset
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -988,6 +851,19 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                             >
                               ✏️ Edit
                             </button>
+                            {userProfile?.role === 'admin' && (
+                              <button
+                                onClick={() => {
+                                  setResetTarget({ id: targetUser.id, name: targetUser.full_name });
+                                  setResetConfirmInput('');
+                                  setShowResetConfirm(true);
+                                }}
+                                className="text-rose-600 hover:text-rose-900 dark:text-rose-400 dark:hover:text-rose-300 border border-rose-200 dark:border-rose-800 px-3 py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all font-medium text-xs"
+                                title="Reset Score & Progress"
+                              >
+                                🎯 Reset
+                              </button>
+                            )}
                           </div>
                         )}
                       </td>
@@ -1217,259 +1093,33 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
         onOpenDeleteConfirm={handleOpenDeleteConfirm}
       />
 
-      {/* Edit PPE Modal */}
-      {
-        editingPPEUser && createPortal(
-          <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in safe-area-inset-top">
-            <div className="bg-white dark:bg-slate-800 w-full h-full sm:h-auto sm:min-h-0 sm:max-h-[90vh] sm:rounded-2xl sm:max-w-5xl shadow-2xl flex flex-col animate-scale-in overflow-hidden pt-4 sm:pt-0">
-              <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
-                <div className="flex items-center gap-3">
-                  {/* Mobile Back Button */}
-                  <button
-                    onClick={() => setEditingPPEUser(null)}
-                    className="sm:hidden p-2 -ml-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
-                  </button>
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Manage PPE</h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{editingPPEUser.full_name}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setEditingPPEUser(null)}
-                  className="hidden sm:block text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-              </div>
+      {/* PPE Wizard Overlay */}
+      {selectedUserForPPE && createPortal(
+        <div className="fixed inset-0 z-[300] bg-white dark:bg-slate-900 overflow-y-auto animate-fade-in custom-scrollbar">
+          <div className="max-w-4xl mx-auto py-6">
+            <MyPPE
+              user={selectedUserForPPE}
+              language={language}
+              onClose={() => setSelectedUserForPPE(null)}
+            />
+          </div>
+        </div>,
+        document.body
+      )}
 
-              <div className="p-6 overflow-y-auto custom-scrollbar grow pb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {ppeChecklist.map((item, index) => (
-                    <div key={item.name} className={`relative p-4 rounded-xl border-2 transition-all ${item.available ? 'border-indigo-500 bg-indigo-50/10 dark:bg-indigo-900/10 shadow-sm' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 opacity-80'}`}>
-                      {/* Checkbox Overlay */}
-                      <div className="absolute top-3 right-3">
-                        <input
-                          type="checkbox"
-                          checked={item.available || false}
-                          onChange={(e) => handlePPEChecklistChange(index, 'available', e.target.checked)}
-                          className="w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
-                        />
-                      </div>
-
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="text-3xl filter drop-shadow-sm">{item.icon}</span>
-                        <h3 className={`font-bold leading-tight ${item.available ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-500 dark:text-slate-400'}`}>{item.name}</h3>
-                      </div>
-
-                      {item.available && (
-                        <div className="space-y-3 mt-4 animate-fade-in">
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Count</label>
-                              <input
-                                type="number"
-                                min="1"
-                                value={item.count}
-                                onChange={(e) => handlePPEChecklistChange(index, 'count', e.target.value)}
-                                className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Condition</label>
-                              <select
-                                value={item.condition}
-                                onChange={(e) => handlePPEChecklistChange(index, 'condition', e.target.value)}
-                                className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
-                              >
-                                <option>Good</option>
-                                <option>Worn</option>
-                                <option>Damaged</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Age</label>
-                              <select
-                                value={item.age}
-                                onChange={(e) => handlePPEChecklistChange(index, 'age', e.target.value)}
-                                className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
-                              >
-                                <option>{'<'}6m</option>
-                                <option>6-12m</option>
-                                <option>1-2y</option>
-                                <option>{'>'}2y</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Usage</label>
-                              <select
-                                value={item.usage}
-                                onChange={(e) => handlePPEChecklistChange(index, 'usage', e.target.value)}
-                                className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
-                              >
-                                <option>Personal</option>
-                                <option>Team</option>
-                                <option>Spare</option>
-                              </select>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-3 p-4 sm:p-6 border-t dark:border-slate-700 bg-white dark:bg-slate-800 sticky bottom-0 z-10 shrink-0 sm:rounded-b-2xl">
-                <button
-                  onClick={() => setEditingPPEUser(null)}
-                  className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveUserPPE}
-                  disabled={isSavingPPE}
-                  className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-2"
-                >
-                  {isSavingPPE ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )
-      }
-
-      {/* Edit Tools Modal */}
-      {
-        editingToolsUser && createPortal(
-          <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in safe-area-inset-top">
-            <div className="bg-white dark:bg-slate-800 w-full h-full sm:h-auto sm:min-h-0 sm:max-h-[90vh] sm:rounded-2xl sm:max-w-5xl shadow-2xl flex flex-col animate-scale-in overflow-hidden pt-4 sm:pt-0">
-              <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700 shrink-0">
-                <div className="flex items-center gap-3">
-                  {/* Mobile Back Button */}
-                  <button
-                    onClick={() => setEditingToolsUser(null)}
-                    className="sm:hidden p-2 -ml-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
-                  </button>
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Manage Tools</h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{editingToolsUser.full_name}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setEditingToolsUser(null)}
-                  className="hidden sm:block text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-              </div>
-
-              <div className="p-6 overflow-y-auto custom-scrollbar grow pb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {toolsChecklist.map((item, index) => (
-                    <div key={item.name} className={`relative p-4 rounded-xl border-2 transition-all ${item.available ? 'border-indigo-500 bg-indigo-50/10 dark:bg-indigo-900/10 shadow-sm' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 opacity-80'}`}>
-                      {/* Checkbox Overlay */}
-                      <div className="absolute top-3 right-3">
-                        <input
-                          type="checkbox"
-                          checked={item.available || false}
-                          onChange={(e) => handleToolsChecklistChange(index, 'available', e.target.checked)}
-                          className="w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
-                        />
-                      </div>
-
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="text-3xl filter drop-shadow-sm">{item.icon}</span>
-                        <h3 className={`font-bold leading-tight ${item.available ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-500 dark:text-slate-400'}`}>{item.name}</h3>
-                      </div>
-
-                      {item.available && (
-                        <div className="space-y-3 mt-4 animate-fade-in">
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Count</label>
-                              <input
-                                type="number"
-                                min="1"
-                                value={item.count}
-                                onChange={(e) => handleToolsChecklistChange(index, 'count', e.target.value)}
-                                className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Condition</label>
-                              <select
-                                value={item.condition}
-                                onChange={(e) => handleToolsChecklistChange(index, 'condition', e.target.value)}
-                                className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
-                              >
-                                <option>Good</option>
-                                <option>Worn</option>
-                                <option>Damaged</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Age</label>
-                              <select
-                                value={item.age}
-                                onChange={(e) => handleToolsChecklistChange(index, 'age', e.target.value)}
-                                className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
-                              >
-                                <option>{'<'}6m</option>
-                                <option>6-12m</option>
-                                <option>1-2y</option>
-                                <option>{'>'}2y</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Usage</label>
-                              <select
-                                value={item.usage}
-                                onChange={(e) => handleToolsChecklistChange(index, 'usage', e.target.value)}
-                                className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 focus:border-indigo-500 outline-none"
-                              >
-                                <option>Personal</option>
-                                <option>Team</option>
-                                <option>Spare</option>
-                              </select>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-3 p-4 sm:p-6 border-t dark:border-slate-700 bg-white dark:bg-slate-800 sticky bottom-0 z-10 shrink-0 sm:rounded-b-2xl">
-                <button
-                  onClick={() => setEditingToolsUser(null)}
-                  className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveUserTools}
-                  disabled={isSavingTools}
-                  className="flex-1 sm:flex-none px-5 py-3 sm:py-2.5 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-2"
-                >
-                  {isSavingTools ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )
-      }
+      {/* Tools Wizard Overlay */}
+      {selectedUserForTools && createPortal(
+        <div className="fixed inset-0 z-[300] bg-white dark:bg-slate-900 overflow-y-auto animate-fade-in custom-scrollbar">
+          <div className="max-w-4xl mx-auto py-6">
+            <MyTools
+              user={selectedUserForTools}
+              language={language}
+              onClose={() => setSelectedUserForTools(null)}
+            />
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Success Modal - Uses the reusable SaveSuccessModal */}
       <SaveSuccessModal
@@ -1535,9 +1185,9 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                       key={type.id}
                       type="button"
                       onClick={() => setNotificationForm({ ...notificationForm, type: type.id })}
-                      className={`py-2.5 px-4 rounded-xl text-sm font-bold border-2 transition-all ${notificationForm.type === type.id
-                        ? `bg-${type.color}-500/10 border-${type.color}-500 text-${type.color}-600 dark:text-${type.color}-400`
-                        : 'border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 grayscale opacity-60'
+                      className={`py-3 px-4 rounded-xl font-bold text-sm transition-all border-2 ${notificationForm.type === type.id
+                        ? `border-${type.color}-500 bg-${type.color}-50 text-${type.color}-700 dark:bg-${type.color}-900/20 dark:text-${type.color}-400`
+                        : 'border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'
                         }`}
                     >
                       {type.label}
@@ -1545,42 +1195,92 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                   ))}
                 </div>
               </div>
-            </form>
 
-            <div className="p-6 border-t dark:border-slate-700 flex flex-col sm:flex-row gap-3 bg-gray-50/50 dark:bg-slate-900/20 shrink-0">
-              <button
-                type="button"
-                onClick={() => setShowNotificationModal(false)}
-                className="order-2 sm:order-1 flex-1 py-4 px-4 rounded-2xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              >
-                Cancel
-              </button>
               <button
                 type="submit"
-                onClick={handleSendNotification}
                 disabled={isSendingNotification}
-                className="order-1 sm:order-2 flex-1 py-4 px-4 rounded-2xl font-bold bg-orange-600 text-white hover:bg-orange-700 shadow-xl shadow-orange-500/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
+                className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-2xl shadow-xl shadow-orange-500/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
               >
-                {isSendingNotification ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : 'Broadcast Now'}
+                {isSendingNotification ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : 'Send Broadcast'}
               </button>
-            </div>
+            </form>
           </div>
         </div>,
         document.body
       )}
 
-      {/* Delete User Confirmation Modal */}
-      {showDeleteConfirm && (
-        <DeleteUserConfirmationModal
-          onConfirm={handleDeleteUser}
-          onCancel={() => {
-            setShowDeleteConfirm(false);
-            setUserToDelete(null);
-          }}
-          targetUser={userToDelete}
-          language={language}
-          loading={isDeleting}
-        />
+      {/* DELETE USER CONFIRMATION MODAL */}
+      <DeleteUserConfirmationModal
+        isOpen={showDeleteConfirm}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setUserToDelete(null);
+        }}
+        onConfirm={handleDeleteUser}
+        targetUser={userToDelete}
+        loading={isDeleting}
+        language={language}
+      />
+
+      {/* RESET SCORE CONFIRMATION MODAL */}
+      {showResetConfirm && createPortal(
+        <div className="fixed inset-0 z-[10000] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-rose-100 dark:border-rose-900/20 animate-scale-in">
+            <div className="p-8 text-center">
+              <div className="w-20 h-20 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-inner animate-pulse">
+                ⚠️
+              </div>
+              <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">
+                {language === 'en' ? 'Are you absolutely sure?' : 'আপনি কি নিশ্চিত?'}
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400 font-bold mb-8 leading-relaxed">
+                {resetTarget === 'all'
+                  ? (language === 'en' ? 'This will permanently erase scores and training progress for EVERYONE in the organization.' : 'এটি সংস্থার প্রত্যেকের স্কোর এবং প্রশিক্ষণের অগ্রগতি স্থায়ীভাবে মুছে ফেলবে।')
+                  : (language === 'en' ? `This will permanently reset all points and progress for ${resetTarget?.name}.` : `এটি ${resetTarget?.name}-এর সমস্ত পয়েন্ট এবং অগ্রগতি স্থায়ীভাবে রিসেট করবে।`)
+                }
+              </p>
+
+              <div className="space-y-4">
+                <div className="text-left space-y-2">
+                  <label className="text-[10px] font-black text-rose-500 uppercase tracking-widest ml-1">
+                    {language === 'en' ? `Type "${resetTarget === 'all' ? 'RESET ALL' : 'RESET'}" to confirm` : `নিশ্চিত করতে "${resetTarget === 'all' ? 'RESET ALL' : 'RESET'}" টাইপ করুন`}
+                  </label>
+                  <input
+                    type="text"
+                    value={resetConfirmInput}
+                    onChange={(e) => setResetConfirmInput(e.target.value.toUpperCase())}
+                    placeholder="..."
+                    className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-2 border-rose-100 dark:border-rose-900/30 rounded-2xl focus:border-rose-500 outline-none text-center font-black transition-all"
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => { setShowResetConfirm(false); setResetTarget(null); setResetConfirmInput(''); }}
+                    className="flex-1 py-4 px-6 rounded-2xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-all"
+                  >
+                    {language === 'en' ? 'Cancel' : 'বাতিল'}
+                  </button>
+                  <button
+                    disabled={isResetting || resetConfirmInput !== (resetTarget === 'all' ? 'RESET ALL' : 'RESET')}
+                    onClick={handleResetScore}
+                    className="flex-[2] py-4 px-6 rounded-2xl font-black bg-rose-600 text-white hover:bg-rose-700 shadow-xl shadow-rose-500/30 transition-all active:scale-95 disabled:opacity-30 disabled:scale-100 flex items-center justify-center gap-2"
+                  >
+                    {isResetting ? (
+                      <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    ) : (
+                      <>
+                        <span>🎯</span>
+                        {language === 'en' ? 'Reset Now' : 'এখনই রিসেট'}
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* Invite Guideline Modal */}
@@ -1650,7 +1350,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
       {/* Uniform bottom spacing for all roles to prevent content cut-off by sticky navs or safe areas */}
       <div className="h-24 sm:h-12 w-full"></div>
-    </div >
+    </div>
   );
 }
 

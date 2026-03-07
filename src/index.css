@@ -592,6 +592,41 @@ body,
       transform: translateY(-8px);
     }
   }
+
+  /* Live Card Specifics */
+  .live-card-glow {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .live-card-glow::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(45deg, transparent, rgba(244, 63, 94, 0.1), transparent);
+    background-size: 200% 200%;
+    animation: shimmer 3s infinite linear;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes pulse-rose {
+
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    50% {
+      opacity: 0.7;
+      transform: scale(0.95);
+    }
+  }
+
+  .animate-pulse-rose {
+    animation: pulse-rose 2s infinite ease-in-out;
+  }
 }
 
 .animate-fadeIn {

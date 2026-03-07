@@ -155,9 +155,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             perfectScore: "Perfect Score!",
             liveNow: "LIVE NOW",
             nextChallengeLabel: "NEXT CHALLENGE",
-            upcomingPowerPlay: "Upcoming Power Play",
-            startsIn: "Starts in",
-            closingIn: "Closing in",
+            upcomingPowerPlay: "Power Play",
+            startsIn: "Starts",
+            closingIn: "Ends in",
+            timeLeft: "Time Left",
             topPlayersToday: "Top Players Today",
             viewAll: "View All"
         },
@@ -196,9 +197,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             perfectScore: "চমৎকার স্কোর!",
             liveNow: "এখন লাইভ",
             nextChallengeLabel: "পরবর্তী চ্যালেঞ্জ",
-            upcomingPowerPlay: "পরবর্তী চ্যালেঞ্জ আসছে",
-            startsIn: "শুরু হবে",
-            closingIn: "শেষ হবে",
+            upcomingPowerPlay: "পাওয়ার প্লে",
+            startsIn: "শুরু",
+            closingIn: "শেষ হতে বাকি",
+            timeLeft: "সময় বাকি",
             topPlayersToday: "আজকের সেরা খেলোয়াড়",
             viewAll: "সব দেখুন"
         }
@@ -1419,7 +1421,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             else if (isPlayed) startReview();
                                         }}
                                         className={`w-full overflow-hidden rounded-2xl border-2 relative group text-left transition-all active:scale-[0.98]
-                                            ${isLive ? 'bg-white dark:bg-slate-900 border-orange-500 shadow-[0_10px_30px_-10px_rgba(249,115,22,0.3)] dark:shadow-none' :
+                                            ${isLive ? 'bg-white dark:bg-slate-900 border-rose-500 shadow-[0_10px_40px_-10px_rgba(244,63,94,0.3)] dark:shadow-none live-card-glow animate-pulse-rose' :
                                                 isPlayed ? 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-green-300 dark:hover:border-green-800' :
                                                     isNextChallenge ? 'bg-white dark:bg-slate-900 border-amber-400 shadow-[0_8px_20px_-8px_rgba(245,158,11,0.2)]' :
                                                         isMissed ? 'bg-slate-50/50 dark:bg-slate-900/30 border-slate-100 dark:border-slate-800 opacity-70 grayscale' :
@@ -1428,17 +1430,17 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         <div className="p-4 sm:p-5 flex items-center justify-between gap-4">
                                             <div className="flex-1">
                                                 {isLive ? (
-                                                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                                        <div className="flex items-center gap-2 mb-1">
-                                                            <LiveIndicator />
-                                                            <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest">{t.liveNow}</span>
-                                                        </div>
-                                                        <div className="text-xl font-black text-slate-900 dark:text-white leading-tight mb-1">
-                                                            {activeQuiz?.title || (language === 'en' ? 'Hourly Challenge' : 'সুরক্ষা চ্যালেঞ্জ')}
+                                                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 flex flex-col items-start gap-1">
+                                                        <div className="flex items-center gap-2 mb-1 px-2.5 py-1 bg-rose-500/10 dark:bg-rose-500/20 rounded-full border border-rose-500/20">
+                                                            <div className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.6)]"></div>
+                                                            <span className="text-[10px] font-black text-rose-600 dark:text-rose-400 tracking-tighter uppercase">{t.liveNow}</span>
                                                         </div>
                                                         {timeLeft && (
-                                                            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                                                                <span className="text-[10px]">⏳</span> {t.closingIn} <span className="text-orange-600 dark:text-orange-400 font-mono">{timeLeft}</span>
+                                                            <div className="flex items-baseline gap-2">
+                                                                <span className="text-3xl font-black text-slate-900 dark:text-white tabular-nums tracking-tighter">
+                                                                    {timeLeft}
+                                                                </span>
+                                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.timeLeft}</span>
                                                             </div>
                                                         )}
                                                     </div>
@@ -1460,17 +1462,17 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         </div>
                                                     </div>
                                                 ) : isNextChallenge ? (
-                                                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                                        <div className="flex items-center gap-2 mb-1">
-                                                            <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
-                                                            <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">{t.nextChallengeLabel}</span>
-                                                        </div>
-                                                        <div className="text-xl font-black text-slate-900 dark:text-white leading-tight mb-1">
-                                                            {t.upcomingPowerPlay}
+                                                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 flex flex-col items-start gap-1">
+                                                        <div className="flex items-center gap-2 mb-1 px-2 py-0.5 bg-amber-500/10 rounded-full border border-amber-500/20">
+                                                            <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce"></div>
+                                                            <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-tighter">{t.nextChallengeLabel}</span>
                                                         </div>
                                                         {timeLeft && (
-                                                            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                                                                <span className="text-[10px]">⏰</span> {t.startsIn} <span className="text-amber-600 dark:text-amber-400 font-mono italic">{timeLeft}</span>
+                                                            <div className="flex items-baseline gap-2">
+                                                                <span className="text-2xl font-black text-slate-400/80 dark:text-slate-500/80 tabular-nums tracking-tighter">
+                                                                    {timeLeft}
+                                                                </span>
+                                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest lowercase">{t.startsIn}</span>
                                                             </div>
                                                         )}
                                                     </div>

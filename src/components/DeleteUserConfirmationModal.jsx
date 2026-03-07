@@ -1,7 +1,9 @@
 import React from "react";
 import { createPortal } from "react-dom";
 
-export default function DeleteUserConfirmationModal({ onConfirm, onCancel, targetUser, language, loading }) {
+export default function DeleteUserConfirmationModal({ isOpen, onConfirm, onCancel, targetUser, language, loading }) {
+    if (!isOpen) return null;
+
     const translations = {
         en: {
             title: "Confirm Permanant Deletion",

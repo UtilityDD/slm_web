@@ -1925,139 +1925,22 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
                     {
                         activeTab === 'my_tools' && (
-                            <div className="w-full animate-fade-in">
-                                <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-                                    <div className="p-6 sm:p-8 border-b border-slate-50 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                        <div>
-                                            <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 leading-tight">{t.my_tools.title}</h2>
-                                            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Keep your toolbox sharp</p>
-                                        </div>
-                                        <button
-                                            onClick={() => {
-                                                if (isEditMode) {
-                                                    handleSaveTools();
-                                                } else {
-                                                    setIsEditMode(true);
-                                                }
-                                            }}
-                                            className={`px-6 py-2.5 rounded-2xl text-sm font-black transition-all shadow-sm active:scale-95 flex items-center gap-2 ${isEditMode
-                                                ? 'bg-orange-600 text-white shadow-orange-900/20'
-                                                : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:border-orange-300'
-                                                }`}
-                                        >
-                                            {isEditMode ? (
-                                                <><span>✓</span> {language === 'en' ? 'Finish Editing' : 'সম্পন্ন করুন'}</>
-                                            ) : (
-                                                <><span>🛠️</span> {language === 'en' ? 'Manage Tools' : 'ম্যানেজ করুন'}</>
-                                            )}
-                                        </button>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 divide-y divide-slate-50 dark:divide-slate-700/50">
-                                        {loading ? (
-                                            <div className="p-20 text-center animate-pulse">
-                                                <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-2xl mx-auto mb-4"></div>
-                                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Loading Tools...</p>
-                                            </div>
-                                        ) : (
-                                            toolsChecklist.map((item, idx) => (
-                                                <div key={item.name} className={`p-5 sm:p-6 transition-all duration-300 ${item.available ? 'bg-orange-50/10 dark:bg-orange-900/5' : 'opacity-40'}`}>
-                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-                                                        {/* Availability Switch */}
-                                                        {isEditMode ? (
-                                                            <div className="flex items-center gap-3">
-                                                                <button
-                                                                    onClick={() => handleToolsChecklistChange(idx, 'available', !item.available)}
-                                                                    className={`w-12 h-6 rounded-full transition-all relative ${item.available ? 'bg-orange-600' : 'bg-slate-300 dark:bg-slate-600'}`}
-                                                                >
-                                                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${item.available ? 'left-7' : 'left-1'}`}></div>
-                                                                </button>
-                                                                <span className="text-[10px] font-black uppercase text-slate-400">Available</span>
-                                                            </div>
-                                                        ) : (
-                                                            <div className={`w-3 h-3 rounded-full ${item.available ? 'bg-orange-500 shadow-lg shadow-orange-500/50' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
-                                                        )}
-
-                                                        {/* Icon & Name */}
-                                                        <div className="flex items-center gap-4 flex-1">
-                                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-sm border ${item.available ? 'bg-white dark:bg-slate-700 border-slate-100 dark:border-slate-600' : 'bg-slate-50 dark:bg-slate-800 border-transparent'}`}>
-                                                                {item.icon}
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <h3 className={`font-black text-base sm:text-lg leading-tight ${item.available ? 'text-slate-800 dark:text-slate-100' : 'text-slate-400'}`}>
-                                                                    {language === 'bn' ? t.my_tools.items[item.name] : item.name}
-                                                                </h3>
-                                                                {!item.available && !isEditMode && <span className="text-[10px] font-bold text-slate-400 uppercase">Not in toolbox</span>}
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Stats Container */}
-                                                        {item.available && (
-                                                            <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 sm:mt-0">
-                                                                {isEditMode ? (
-                                                                    <div className="grid grid-cols-2 sm:flex sm:items-center gap-3 w-full sm:w-auto">
-                                                                        {/* Qty */}
-                                                                        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-xl p-2 flex items-center gap-2">
-                                                                            <span className="text-[9px] font-black uppercase text-slate-400">Qty</span>
-                                                                            <input
-                                                                                type="number"
-                                                                                min="1"
-                                                                                value={item.count}
-                                                                                onChange={(e) => handleToolsChecklistChange(idx, 'count', e.target.value)}
-                                                                                className="w-10 bg-transparent text-sm font-black focus:outline-none"
-                                                                            />
-                                                                        </div>
-
-                                                                        {/* Condition */}
-                                                                        <select
-                                                                            value={item.condition}
-                                                                            onChange={(e) => handleToolsChecklistChange(idx, 'condition', e.target.value)}
-                                                                            className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-xl p-2 text-xs font-black focus:outline-none"
-                                                                        >
-                                                                            <option value="Good">Good</option>
-                                                                            <option value="Fair">Fair</option>
-                                                                            <option value="Damaged">Damaged</option>
-                                                                        </select>
-
-                                                                        {/* Age */}
-                                                                        <select
-                                                                            value={item.age}
-                                                                            onChange={(e) => handleToolsChecklistChange(idx, 'age', e.target.value)}
-                                                                            className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-xl p-2 text-xs font-black focus:outline-none"
-                                                                        >
-                                                                            <option value="<6m">&lt;6m</option>
-                                                                            <option value="6-12m">6-12m</option>
-                                                                            <option value="1-2y">1-2y</option>
-                                                                            <option value=">2y">&gt;2y</option>
-                                                                        </select>
-                                                                    </div>
-                                                                ) : (
-                                                                    <div className="flex items-center gap-4">
-                                                                        <div className="flex flex-col items-end">
-                                                                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">Inventory</span>
-                                                                            <span className="text-sm font-black text-slate-800 dark:text-slate-100">{item.count} Units</span>
-                                                                        </div>
-                                                                        <div className="h-8 w-px bg-slate-100 dark:bg-slate-700"></div>
-                                                                        <div className="flex flex-col items-end">
-                                                                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">Condition</span>
-                                                                            <span className={`text-sm font-black ${item.condition === 'Good' ? 'text-emerald-500' : item.condition === 'Fair' ? 'text-amber-500' : 'text-red-500'}`}>
-                                                                                {item.condition}
-                                                                            </span>
-                                                                        </div>
-                                                                        <div className="h-8 w-px bg-slate-100 dark:bg-slate-700"></div>
-                                                                        <div className="flex flex-col items-end">
-                                                                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">Age</span>
-                                                                            <span className="text-sm font-black text-slate-800 dark:text-slate-100">{item.age}</span>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
+                            <div className="w-full animate-fade-in py-12 flex flex-col items-center justify-center text-center">
+                                <div className="w-24 h-24 bg-indigo-100 dark:bg-indigo-900/30 rounded-[2rem] flex items-center justify-center text-5xl mb-6 shadow-xl shadow-indigo-500/10 animate-pulse">
+                                    🏗️
+                                </div>
+                                <h3 className="text-3xl font-black text-slate-800 dark:text-slate-100 mb-2">
+                                    {language === 'en' ? 'Coming Soon!' : 'শীঘ্রই আসছে!'}
+                                </h3>
+                                <p className="text-slate-500 dark:text-slate-400 font-medium max-w-sm">
+                                    {language === 'en'
+                                        ? 'We are polishing a brand new interactive experience for your toolbox. Stay tuned!'
+                                        : 'আমরা আপনার টুলবক্সের জন্য একটি নতুন ইন্টারেক্টিভ অভিজ্ঞতা তৈরি করছি। সাথেই থাকুন!'}
+                                </p>
+                                <div className="mt-8 flex gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-indigo-600 animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                    <div className="w-2 h-2 rounded-full bg-indigo-600 animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                    <div className="w-2 h-2 rounded-full bg-indigo-600 animate-bounce" style={{ animationDelay: '300ms' }}></div>
                                 </div>
                             </div>
                         )

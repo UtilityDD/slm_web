@@ -33,7 +33,7 @@ const AGE_OPTIONS = [
 ];
 
 // Phase: 'welcome' | 'wizard' | 'summary'
-const MyPPE = ({ user, language = 'bn' }) => {
+const MyPPE = ({ user, language = 'bn', onClose }) => {
     const [phase, setPhase] = useState('welcome');
     const [currentStep, setCurrentStep] = useState(0);
     const [answers, setAnswers] = useState([]); // {name, available, count, condition, age_months, usage}
@@ -171,78 +171,90 @@ const MyPPE = ({ user, language = 'bn' }) => {
     };
 
     const handleSave = async () => {
-        console.log('🔧 handleSave called. user:', user?.id || 'NO USER');
+        console.log('🔧 [MyPPE] Starting handleSave. user:', user?.id || 'NO USER');
         setIsSaving(true);
         setPhase('summary');
 
         if (!user) {
-            console.warn('⚠️ No user logged in — skipping save');
+            console.warn('⚠️ [MyPPE] No user logged in — cannot save');
             setIsSaving(false);
             return;
         }
 
         try {
-            const itemsToUpdate = [];
-            const itemsToInsert = [];
+            const upsertItems = [];
             const deleteIds = [];
 
             for (const a of answers) {
                 const details = `Usage: ${a.usage}`;
+
                 if (a.available) {
-                    const payload = {
+                    upsertItems.push({
+                        id: a.id || undefined, // Use undefined for new items
                         user_id: user.id,
                         name: a.name,
-                        count: parseInt(a.count),
+                        count: parseInt(a.count) || 1,
                         condition: a.condition,
-                        age_months: parseInt(a.age_months),
-                        details
-                    };
-                    if (a.id) {
-                        itemsToUpdate.push({ ...payload, id: a.id });
-                    } else {
-                        itemsToInsert.push(payload);
-                    }
+                        age_months: parseInt(a.age_months) || 3,
+                        details: details
+                    });
                 } else if (a.id) {
                     deleteIds.push(a.id);
                 }
             }
 
-            console.log('📦 PPE Save — Insert:', itemsToInsert.length, 'Update:', itemsToUpdate.length, 'Delete:', deleteIds.length);
+            console.log('📦 [MyPPE] Saving data:', {
+                upsertCount: upsertItems.length,
+                deleteCount: deleteIds.length,
+                table: 'user_ppe'
+            });
 
-            const results = [];
+            const operations = [];
+
+            if (upsertItems.length > 0) {
+                operations.push(
+                    supabase
+                        .from('user_ppe')
+                        .upsert(upsertItems, {
+                            onConflict: 'id',
+                            ignoreDuplicates: false
+                        })
+                );
+            }
 
             if (deleteIds.length > 0) {
-                const res = await supabase.from('user_ppe').delete().in('id', deleteIds);
-                if (res.error) console.error('❌ PPE Delete failed:', res.error);
-                else console.log('✅ PPE Delete success:', deleteIds.length, 'items');
-                results.push(res);
-            }
-            if (itemsToUpdate.length > 0) {
-                const res = await supabase.from('user_ppe').upsert(itemsToUpdate, { onConflict: 'id' });
-                if (res.error) console.error('❌ PPE Update failed:', res.error);
-                else console.log('✅ PPE Update success:', itemsToUpdate.map(i => i.name));
-                results.push(res);
-            }
-            if (itemsToInsert.length > 0) {
-                const res = await supabase.from('user_ppe').insert(itemsToInsert);
-                if (res.error) console.error('❌ PPE Insert failed:', res.error);
-                else console.log('✅ PPE Insert success:', itemsToInsert.map(i => i.name));
-                results.push(res);
+                operations.push(
+                    supabase
+                        .from('user_ppe')
+                        .delete()
+                        .in('id', deleteIds)
+                );
             }
 
-            const hasError = results.some(r => r.error);
-            if (hasError) {
-                console.error('⚠️ PPE Save completed with errors');
+            const results = await Promise.all(operations);
+
+            let failed = false;
+            results.forEach((res, idx) => {
+                if (res.error) {
+                    failed = true;
+                    console.error(`❌ [MyPPE] Operation ${idx} failed:`, res.error);
+                }
+            });
+
+            if (failed) {
+                alert(language === 'en'
+                    ? 'Failed to save some PPE items. Check console.'
+                    : 'কিছু পিপিই সেভ করা যায়নি। কনসোল দেখুন।');
             } else {
-                console.log('🎉 PPE Save — All operations completed successfully!');
+                console.log('🎉 [MyPPE] PPE updated successfully!');
+                cacheHelper.clear(`user_ppe_${user.id}`);
+                await fetchExistingData();
+                setShowConfetti(true);
+                setTimeout(() => setShowConfetti(false), 3000);
             }
 
-            cacheHelper.clear(`user_ppe_${user.id}`);
-
-            setShowConfetti(true);
-            setTimeout(() => setShowConfetti(false), 3000);
         } catch (err) {
-            console.error('💥 PPE Save — Exception:', err);
+            console.error('💥 [MyPPE] Save error:', err);
         } finally {
             setIsSaving(false);
         }
@@ -340,7 +352,16 @@ const MyPPE = ({ user, language = 'bn' }) => {
                             onClick={() => setPhase('summary')}
                             className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
                         >
-                            {language === 'en' ? 'View My Current Status' : 'আমার বর্তমান অবস্থা দেখুন'} →
+                            {language === 'en' ? 'View Current Status' : 'বর্তমান অবস্থা দেখুন'} →
+                        </button>
+                    )}
+
+                    {onClose && (
+                        <button
+                            onClick={onClose}
+                            className="w-full py-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors font-bold text-sm"
+                        >
+                            {language === 'en' ? '← Back to List' : '← তালিকায় ফিরে যান'}
                         </button>
                     )}
                 </div>
@@ -757,8 +778,17 @@ const MyPPE = ({ user, language = 'bn' }) => {
                         className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl font-black text-sm shadow-lg shadow-orange-600/20 active:scale-95 transition-all flex items-center justify-center gap-2"
                     >
                         <span>🔄</span>
-                        {language === 'en' ? 'Update My PPE' : 'আমার পিপিই আপডেট করুন'}
+                        {language === 'en' ? 'Update PPE' : 'পিপিই আপডেট করুন'}
                     </button>
+
+                    {onClose && (
+                        <button
+                            onClick={onClose}
+                            className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                        >
+                            {language === 'en' ? '← Done, Back to List' : '← সম্পন্ন, তালিকায় ফিরে যান'}
+                        </button>
+                    )}
 
                     {isSaving && (
                         <div className="text-center text-sm text-orange-600 font-bold animate-pulse">
