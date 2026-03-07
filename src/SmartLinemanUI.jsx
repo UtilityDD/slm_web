@@ -10,7 +10,9 @@ import { requestManager } from './utils/requestManager';
 import LogoutConfirmationModal from "./components/LogoutConfirmationModal";
 import Sidebar from "./components/Sidebar";
 import NetworkStatusListener from "./components/NetworkStatusListener";
-import { APP_NAME, CURRENT_APP_VERSION } from "./config";
+import { UserIcon } from "./components/icons";
+import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from "./config";
+import { preloadSafetyLibraryAssets } from "./utils/assetPreloader";
 
 // Lazy load heavy components for code splitting
 const Competitions = lazy(() => import("./components/Competitions"));
@@ -29,6 +31,7 @@ const VerificationView = lazy(() => import("./components/VerificationView"));
 const Notifications = lazy(() => import("./components/Notifications"));
 const AwarenessStories = lazy(() => import("./components/safety/AwarenessStories"));
 const VideoGuide = lazy(() => import("./components/safety/VideoGuide"));
+const SafetyLibrary = lazy(() => import("./components/safety/SafetyLibrary"));
 
 export default function SmartLinemanUI() {
   const [globalLoading, setGlobalLoading] = useState(false);
@@ -143,6 +146,15 @@ export default function SmartLinemanUI() {
         });
       }, 500); // Give React 500ms to settle
     }
+  }, []);
+
+  // Background Preloading for Safety Library
+  useEffect(() => {
+    // Wait 2 seconds before starting background download to prioritize initial app load
+    const timer = setTimeout(() => {
+      preloadSafetyLibraryAssets();
+    }, 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   // Pull to refresh state
@@ -847,6 +859,11 @@ export default function SmartLinemanUI() {
           />;
         case 'video-guide':
           return <VideoGuide
+            language={language}
+            setCurrentView={setCurrentView}
+          />;
+        case 'safety-library':
+          return <SafetyLibrary
             language={language}
             setCurrentView={setCurrentView}
           />;

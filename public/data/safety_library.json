@@ -1,0 +1,131 @@
+[
+    {
+        "id": "helmet",
+        "category": "PPE",
+        "name_en": "Safety Helmet",
+        "name_bn": "সেফটি হেলমেট",
+        "function_en": "Protects the head from falling objects and accidental impacts.",
+        "function_bn": "মাথাকে উপর থেকে পড়া বস্তু এবং আকস্মিক আঘাত থেকে রক্ষা করে।",
+        "images": [
+            "/assets/safety/helmet.webp"
+        ],
+        "approx_price_inr": 450,
+        "guide_en": "Always wear with the chin strap fastened. Inspect for cracks before use. Replace after any major impact.",
+        "guide_bn": "সবসময় চিন স্ট্র্যাপ (চিবুকের ফিতা) লাগিয়ে ব্যবহার করুন। ব্যবহারের আগে চির ধরেছে কিনা পরীক্ষা করুন।"
+    },
+    {
+        "id": "gloves",
+        "category": "PPE",
+        "name_en": "Insulated Gloves",
+        "name_bn": "ইনসুলেটেড গ্লাভস",
+        "function_en": "Provides electrical insulation when working on live lines.",
+        "function_bn": "লাইভ লাইনে কাজ করার সময় বৈদ্যুতিক নিরোধক সরবরাহ করে।",
+        "images": [
+            "/assets/safety/gloves.webp",
+            "/assets/safety/gloves1.webp"
+        ],
+        "approx_price_inr": 3200,
+        "guide_en": "Perform air-leak test before every use. Use with leather protectors. Store in a cool, dry bag.",
+        "guide_bn": "প্রতিবার ব্যবহারের আগে এয়ার-লিক টেস্ট (বাতাস দিয়ে পরীক্ষা) করুন। চামড়ার প্রোটেক্টর সহ ব্যবহার করুন।"
+    },
+    {
+        "id": "harness",
+        "category": "PPE",
+        "name_en": "Safety Harness",
+        "name_bn": "সেফটি হারনেস",
+        "function_en": "Prevents falls from heights during pole or tower work.",
+        "function_bn": "পোল বা টাওয়ারে কাজ করার সময় উচ্চতা থেকে পড়ে যাওয়া রোধ করে।",
+        "images": [
+            "/assets/safety/full_body_harness.webp",
+            "/assets/safety/Full_Body_Harness1.webp"
+        ],
+        "approx_price_inr": 2400,
+        "guide_en": "Ensure all buckles are tight. Anchoring point must be above shoulder level. Check webbing for fraying.",
+        "guide_bn": "সবগুলো বাকল শক্তভাবে আটকানো নিশ্চিত করুন। অ্যাঙ্করিং পয়েন্ট অবশ্যই কাঁধের উপরে হতে হবে।"
+    },
+    {
+        "id": "tester",
+        "category": "Tools",
+        "name_en": "Voltage Tester",
+        "name_bn": "ভোল্টেজ টেস্টার",
+        "function_en": "Safely detects the presence of electrical voltage without contact.",
+        "function_bn": "স্পর্শ ছাড়াই নিরাপদে বৈদ্যুতিক ভোল্টেজের উপস্থিতি শনাক্ত করে।",
+        "images": [
+            "/assets/safety/tester.webp"
+        ],
+        "approx_price_inr": 850,
+        "guide_en": "Test on a known live source first. Keep fingers behind the guard. Use only for rated voltage range.",
+        "guide_bn": "প্রথমে একটি পরিচিত সোর্স দিয়ে পরীক্ষা করে নিন। আঙুল সবসময় সুরক্ষা গার্ডের পিছনে রাখুন।"
+    },
+    {
+        "id": "pliers",
+        "category": "Tools",
+        "name_en": "Insulated Pliers",
+        "name_bn": "ইনসুলেটেড প্লায়ার্স",
+        "function_en": "Used for cutting and gripping wires with high-voltage insulation.",
+        "function_bn": "উচ্চ-ভোল্টেজ নিরোধক সহ তার কাটার এবং ধরার জন্য ব্যবহৃত হয়।",
+        "images": [
+            "/assets/safety/pliers.webp"
+        ],
+        "approx_price_inr": 550,
+        "guide_en": "Check handle insulation for cuts or wear. Do not use for prying. Keep away from excessive heat.",
+        "guide_bn": "হ্যান্ডেলের ইনসুলেশন বা আবরণ অক্ষত আছে কিনা পরীক্ষা করুন। এটি দিয়ে কোনো কিছু খোলার চেষ্টা করবেন না।"
+    },
+    {
+        "id": "boots",
+        "category": "PPE",
+        "name_en": "Safety Boots",
+        "name_bn": "সেফটি বুট",
+        "function_en": "Slip-resistant and electrically insulated footwear for site safety.",
+        "function_bn": "সাইট সুরক্ষার জন্য পিচ্ছিল-রোধী এবং বৈদ্যুতিকভাবে নিরোধক জুতো।",
+        "images": [
+            "/assets/safety/boots.webp",
+            "/assets/safety/boots1.webp"
+        ],
+        "approx_price_inr": 1800,
+        "guide_en": "Keep dry for maximum electrical safety. Clean soles regularly for grip. Replace if sole is worn thin.",
+        "guide_bn": "বৈদ্যুতিক নিরাপত্তার জন্য সবসময় শুকনো রাখুন। সোলে কাদা বা তেল জমলে তা ভালো করে পরিষ্কার করুন।"
+    },
+    {
+        "id": "bamboo_ladder",
+        "category": "Tools",
+        "name_en": "Bamboo Ladder",
+        "name_bn": "বাম্বু ল্যাডার",
+        "function_en": "Lightweight and non-conductive access tool for climbing poles.",
+        "function_bn": "পোল এ ওঠার জন্য হালকা এবং বিদ্যুৎ অপরিবাহী সরঞ্জাম।",
+        "images": [
+            "/assets/safety/Bamboo_Ladder.webp"
+        ],
+        "approx_price_inr": 1200,
+        "guide_en": "Inspect for cracks or insect damage. Ensure firm footing before climbing.",
+        "guide_bn": "ফাটল বা পোকা ধরা আছে কিনা পরীক্ষা করুন। ওঠার আগে শক্ত ভূমি নিশ্চিত করুন।"
+    },
+    {
+        "id": "shorting_chain",
+        "category": "Tools",
+        "name_en": "Copper Shorting Chain",
+        "name_bn": "কপার শর্টিং চেইন",
+        "function_en": "Used to ground the power lines after disconnection for safety.",
+        "function_bn": "বিদ্যুৎ সংযোগ বিচ্ছিন্ন করার পর নিরাপত্তার জন্য লাইন গ্রাউন্ডিং করতে ব্যবহৃত হয়।",
+        "images": [
+            "/assets/safety/Copper_Shorting_Chain.webp"
+        ],
+        "approx_price_inr": 1500,
+        "guide_en": "Ensure solid contact with earth and line. Check for corrosion on clips.",
+        "guide_bn": "মাটি এবং লাইনের সাথে শক্ত সংযোগ নিশ্চিত করুন। ক্লিপগুলোতে ক্ষয় আছে কিনা পরীক্ষা করুন।"
+    },
+    {
+        "id": "vest",
+        "category": "PPE",
+        "name_en": "High Visibility Vest",
+        "name_bn": "হাই ভিজিবিলিটি ভেস্ট",
+        "function_en": "Makes the wearer clearly visible to others in low light or traffic.",
+        "function_bn": "স্বল্প আলোতে বা ট্রাফিকের মধ্যে ব্যবহারকারীকে অন্যদের কাছে স্পষ্টভাবে দৃশ্যমান করে তোলে।",
+        "images": [
+            "/assets/safety/High_Visibility_Vest_2.webp"
+        ],
+        "approx_price_inr": 350,
+        "guide_en": "Ensure the reflective strips are clean. Wear over outward clothing.",
+        "guide_bn": "রিফ্লেক্টিভ স্ট্রিপগুলো পরিষ্কার কিনা নিশ্চিত করুন। সাধারণ পোশাকের উপরে এটি পরুন।"
+    }
+]

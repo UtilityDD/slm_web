@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UserIcon } from './icons';
-import { APP_NAME, CURRENT_APP_VERSION } from '../config';
+import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../config';
 
 export default function Sidebar({
   isOpen,
@@ -41,6 +41,7 @@ export default function Sidebar({
     { id: 'sops', label: language === 'en' ? 'SOP' : 'এসওপি', icon: '📋', show: true },
     { id: 'my_ppe', label: language === 'en' ? 'My PPE' : 'আমার পিপিই', icon: '👷', show: true },
     { id: 'my_tools', label: language === 'en' ? 'My Tools' : 'আমার সরঞ্জাম', icon: '🔧', show: true },
+    { id: 'safety-library', label: language === 'en' ? 'Safety Library' : 'সুরক্ষা লাইব্রেরি', icon: '🛡️', show: true },
     { id: 'emergency', label: language === 'en' ? 'Emergency' : 'জরুরি', icon: '🚨', show: true, color: 'text-red-600' },
     { id: 'admin', label: language === 'en' ? 'Admin' : 'অ্যাডমিন', icon: '⚙️', show: true },
     { id: 'guide', label: language === 'en' ? 'Handbook' : 'হ্যান্ডবুক', icon: '📖', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
@@ -191,8 +192,14 @@ export default function Sidebar({
 
           {/* Version Display */}
           <div className="px-4 py-2 text-center border-t border-slate-200 dark:border-slate-700 mt-2">
-            <p className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase">
-              {APP_NAME} <span className="text-orange-500">v{CURRENT_APP_VERSION}</span>
+            <p className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase flex flex-col gap-1 items-center">
+              <span>{APP_NAME} <span className="text-orange-500">v{CURRENT_APP_VERSION}</span></span>
+              <a href={WEBSITE_URL} target="_blank" rel="noopener noreferrer" className="text-orange-500/60 hover:text-orange-500 transition-colors lowercase tracking-normal font-medium mt-1">
+                {WEBSITE_URL.replace('https://', '')}
+              </a>
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-slate-500/60 hover:text-slate-400 transition-colors lowercase tracking-normal font-medium">
+                {SUPPORT_EMAIL}
+              </a>
             </p>
           </div>
         </div>

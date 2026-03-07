@@ -413,6 +413,20 @@ body,
     }
   }
 
+  .animate-rotate-y {
+    animation: rotateY 3s linear infinite;
+  }
+
+  @keyframes rotateY {
+    from {
+      transform: rotateY(0deg);
+    }
+
+    to {
+      transform: rotateY(360deg);
+    }
+  }
+
   .animate-glow {
     animation: glow 3s ease-in-out infinite;
   }

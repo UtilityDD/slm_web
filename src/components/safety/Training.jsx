@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom';
 import secureStorage from '../../utils/secureStorage';
 import { supabase } from '../../supabaseClient';
+import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../../config';
+import HomeSkeleton from '../loaders/HomeSkeleton';
 import { calculateLevelFromProgress, getBadgeByLevel } from '../../utils/badgeUtils';
 import { cacheHelper } from '../../utils/cacheHelper';
 import { storageUtils } from '../../utils/storageUtils';
@@ -1585,6 +1587,34 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                             </button>
                         </div>
                     )}
+
+                    {/* Professional Branding Footer */}
+                    <div className="mt-20 mb-32 text-center relative z-10 animate-fade-in-up">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-slate-100 dark:bg-white/5 rounded-full border border-slate-200 dark:border-white/10">
+                                <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Official Platform</span>
+                            </div>
+                            <a
+                                href={WEBSITE_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-2xl font-black text-slate-900 dark:text-white tracking-tight hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
+                            >
+                                {WEBSITE_URL.replace('https://', '')}
+                            </a>
+                            <div className="flex flex-col gap-1 items-center">
+                                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">For support and inquiries:</p>
+                                <a href={`mailto:${SUPPORT_EMAIL}`} className="text-sm font-bold text-orange-600 dark:text-orange-400 hover:text-orange-500 transition-colors">
+                                    {SUPPORT_EMAIL}
+                                </a>
+                            </div>
+                            <div className="mt-4 w-40 h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent"></div>
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                {APP_NAME} v{CURRENT_APP_VERSION}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             ) : selectedLesson ? (
                 /* Full Page Book Preview Overlay */
@@ -1941,7 +1971,38 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                         </h2>
                                     </div>
 
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={() => {
+                                                stop();
+                                                setTrainingContent(null);
+                                                setIsJournalMode(false);
+                                                setSelectedChapter(null);
+                                                setSelectedLesson(null);
+                                                setCurrentView('safety-library');
+                                            }}
+                                            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-900/30 hover:bg-orange-100 transition-all shadow-sm"
+                                        >
+                                            <span className="text-sm animate-rotate-y inline-block">🛡️</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest">{language === 'en' ? 'Library' : 'লাইব্রেরি'}</span>
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                stop();
+                                                setTrainingContent(null);
+                                                setIsJournalMode(false);
+                                                setSelectedChapter(null);
+                                                setSelectedLesson(null);
+                                                setCurrentView('safety-library');
+                                            }}
+                                            className="sm:hidden w-10 h-10 flex items-center justify-center rounded-full text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-slate-800 transition-all"
+                                        >
+                                            <span className="text-xl animate-rotate-y inline-block">🛡️</span>
+                                        </button>
+
+                                        <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-1 hidden sm:block opacity-50"></div>
+
                                         <button
                                             onClick={handleReadLesson}
                                             className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-500 ${isPlaying ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/40 scale-105' : 'text-slate-400 hover:text-orange-500'}`}
