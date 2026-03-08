@@ -51,7 +51,7 @@ export default function Community({ language = 'en', setCurrentView }) {
                     action: "Watch"
                 }
             },
-            footer: "Official SmartLineman Channels"
+            footer: "Official SmartLineman.in Channels"
         },
         bn: {
             title: "শেয়ার করুন ও শিখুন",

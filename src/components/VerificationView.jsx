@@ -65,7 +65,7 @@ const VerificationView = ({ language, certificateId }) => {
             level: "Training Level",
             issued: "Issued On",
             status: "Status",
-            official: "This is an official SmartLineman certificate.",
+            official: "This is an official SmartLineman.in certificate.",
             warning: "The certificate ID provided does not match our records.",
             tryAgain: "Please check the ID and try again.",
             back: "Back to Home"

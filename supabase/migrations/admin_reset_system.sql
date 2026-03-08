@@ -1,7 +1,7 @@
 -- 1. Create Backup Tables if they don't exist
 CREATE TABLE IF NOT EXISTS backup_quiz_attempts (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    original_id bigint,
+    original_id uuid,
     user_id uuid,
     quiz_id text,
     score int,

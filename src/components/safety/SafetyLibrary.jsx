@@ -61,7 +61,9 @@ const getGoogleDriveDirectLink = (url) => {
     if (!url.includes('drive.google.com')) return url;
     const match = url.match(/\/d\/(.+?)\/|id=(.+?)(&|$)/);
     const id = match ? (match[1] || match[2]) : '';
-    return id ? `https://lh3.googleusercontent.com/u/0/d/${id}` : url;
+    // Add a daily cache buster to force refresh if Google Drive content changes
+    const today = new Date().toISOString().split('T')[0];
+    return id ? `https://lh3.googleusercontent.com/u/0/d/${id}?v=${today}` : url;
 };
 
 const ImageSlider = ({ images, alt }) => {
@@ -87,6 +89,14 @@ const ImageSlider = ({ images, alt }) => {
         setValidImages(updated);
         if (currentIndex >= updated.length && updated.length > 0) {
             setCurrentIndex(0);
+        }
+    };
+
+    const onImageLoad = (e, url) => {
+        // Detect "Zombie" images (Google Drive error placeholders often have naturalWidth < 40)
+        if (e.target.naturalWidth < 40 && e.target.naturalHeight < 40) {
+            console.warn(`🕵️ Detected placeholder/broken image: ${url}`);
+            handleImageError(url);
         }
     };
 
@@ -117,8 +127,9 @@ const ImageSlider = ({ images, alt }) => {
                 key={currentIndex}
                 src={getGoogleDriveDirectLink(validImages[currentIndex])}
                 alt={`${alt} view ${currentIndex + 1}`}
+                onLoad={(e) => onImageLoad(e, validImages[currentIndex])}
                 onError={() => handleImageError(validImages[currentIndex])}
-                className="max-h-full object-contain drop-shadow-2xl group-hover:scale-110 transition-all duration-500 animate-in fade-in zoom-in-95 duration-300"
+                className="max-h-full object-contain filter drop-shadow-2xl group-hover:scale-110 transition-all duration-500 animate-in fade-in zoom-in-95 duration-300"
             />
             {validImages.length > 1 && (
                 <>

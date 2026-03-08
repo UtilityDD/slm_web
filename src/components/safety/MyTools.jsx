@@ -45,7 +45,7 @@ const MyTools = ({ user, language = 'bn', onClose }) => {
 
             <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800 w-full max-w-xs">
                 <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                    {language === 'en' ? 'SmartLineman Toolbox v2.0' : 'স্মার্টলাইনম্যান টুলবক্স ২.০'}
+                    {language === 'en' ? 'SmartLineman.in Toolbox' : 'স্মার্টলাইনম্যান ডট ইন টুলবক্স'}
                 </p>
             </div>
         </div>

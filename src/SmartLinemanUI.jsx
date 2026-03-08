@@ -677,7 +677,7 @@ export default function SmartLinemanUI() {
         safetyMitra: "Safety Mitra"
       },
       hero: {
-        title: "SmartLineman",
+        title: "SmartLineman.in",
         subtitle: "Empowering West Bengal's electrical linemen through safety, community & recognition",
         stats: {
           linemen: "Active Linemen",
@@ -1107,8 +1107,13 @@ export default function SmartLinemanUI() {
                     className="flex items-center gap-2 group cursor-pointer px-2 py-1 -ml-1 transition-all active:scale-95"
                     onClick={() => setCurrentView('home')}
                   >
-                    <div className={`text-xl sm:text-2xl logo-text ${currentView === 'home' ? 'logo-text-home' : 'logo-text-default'}`}>
-                      SmartLineMan
+                    <div className="flex items-baseline gap-0.5 select-none">
+                      <span className={`text-xl sm:text-2xl logo-text ${currentView === 'home' ? 'logo-text-home' : 'logo-text-default'}`}>
+                        SmartLineMan
+                      </span>
+                      <span className="text-[10px] sm:text-xs font-black bg-orange-500/10 text-orange-500 px-1.5 py-0.5 rounded-md border border-orange-500/20 shadow-sm ml-0.5 transform -translate-y-1">
+                        .in
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -1130,7 +1135,7 @@ export default function SmartLinemanUI() {
                     <div className="flex items-center gap-2 pl-1 sm:pl-2">
                       <button
                         onClick={handleLogout}
-                        className="flex items-center font-bold gap-2 pl-1 pr-3 sm:pr-4 py-1 bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-all touch-target border border-slate-200 dark:border-slate-600 shadow-sm"
+                        className="flex items-center justify-center p-1 bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-all touch-target border border-slate-200 dark:border-slate-600 shadow-sm"
                         title="Logout"
                       >
                         <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white shrink-0 overflow-hidden shadow-sm">
@@ -1140,12 +1145,7 @@ export default function SmartLinemanUI() {
                             <UserIcon className="w-5 h-5 text-white" />
                           )}
                         </div>
-                        <span className={`text-xs md:text-sm font-bold truncate max-w-[90px] md:max-w-xs ${currentView === 'home' ? 'text-white md:text-slate-800 md:dark:text-slate-200' : 'text-slate-800 dark:text-slate-200'}`}>
-                          {(userProfile?.full_name && !userProfile.full_name.includes('@')) ? userProfile.full_name.split(' ')[0] : 'Guest'}
-                        </span>
-                        <svg className="w-4 h-4 ml-1 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-white dark:border-slate-800 rounded-full"></div>
                       </button>
                     </div>
                   ) : (

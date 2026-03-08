@@ -12,12 +12,12 @@ export default function ShareModal({ isOpen, onClose, shareUrl, language }) {
     const handleNativeShare = async () => {
         try {
             await Share.share({
-                title: 'SmartLineMan App',
+                title: 'SmartLineman.in App',
                 text: language === 'en'
-                    ? '🛡️ Join SmartLineMan - The ultimate safety platform for linemen!'
-                    : '🛡️ স্মার্ট লাইনম্যান অ্যাপে যোগ দিন - লাইনম্যানদের জন্য সেরা সুরক্ষা প্ল্যাটফর্ম!',
+                    ? '🛡️ Join SmartLineman.in - The ultimate safety platform for linemen!'
+                    : '🛡️ স্মার্ট লাইনম্যান ডট ইন অ্যাপে যোগ দিন - লাইনম্যানদের জন্য সেরা সুরক্ষা প্ল্যাটফর্ম!',
                 url: shareUrl,
-                dialogTitle: language === 'en' ? 'Share SmartLineMan' : 'স্মার্ট লাইনম্যান শেয়ার করুন',
+                dialogTitle: language === 'en' ? 'Share SmartLineman.in' : 'স্মার্ট লাইনম্যান ডট ইন শেয়ার করুন',
             });
         } catch (error) {
             console.error('Error sharing:', error);

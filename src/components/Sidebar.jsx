@@ -16,6 +16,7 @@ export default function Sidebar({
   unreadNotificationsCount
 }) {
   const [currentTab, setCurrentTab] = useState(null);
+  const [isMoreExpanded, setIsMoreExpanded] = useState(false);
 
   // Listen for hash changes to update highlighted tab
   useEffect(() => {
@@ -32,21 +33,25 @@ export default function Sidebar({
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
   const menuItems = [
+    { id: 'training', label: language === 'en' ? '90 Days Training' : '৯০ দিনের প্রশিক্ষণ', icon: '📚', show: true, primary: true },
+    { id: 'competitions', label: language === 'en' ? 'Competitions' : 'প্রতিযোগিতা', icon: '🎯', show: true, primary: true },
+    { id: 'leaderboard', label: language === 'en' ? 'Leaderboard' : 'লিডারবোর্ড', icon: '🏆', show: true, primary: true },
+    { id: 'safety-library', label: language === 'en' ? 'Safety Library' : 'সুরক্ষা লাইব্রেরি', icon: '🛡️', show: true, primary: true },
+    // Secondary Items (Hidden under "More")
     { id: 'notifications', label: language === 'en' ? 'Notifications' : 'বিজ্ঞপ্তি', icon: '🔔', show: true, badge: unreadNotificationsCount > 0 ? unreadNotificationsCount : null, highlight: unreadNotificationsCount > 0 },
-    { id: 'training', label: language === 'en' ? '90 Days Training' : '৯০ দিনের প্রশিক্ষণ', icon: '📚', show: true },
     { id: 'video-guide', label: language === 'en' ? 'Video Guide' : 'ভিডিও গাইড', icon: '📺', show: true },
     { id: 'community', label: language === 'en' ? 'Community' : 'কমিউনিটি', icon: '👥', show: true },
-    { id: 'leaderboard', label: language === 'en' ? 'Leaderboard' : 'লিডারবোর্ড', icon: '🏆', show: true },
-    { id: 'competitions', label: language === 'en' ? 'Competitions' : 'প্রতিযোগিতা', icon: '🎯', show: true },
     { id: 'sops', label: language === 'en' ? 'SOP' : 'এসওপি', icon: '📋', show: true },
     { id: 'my_ppe', label: language === 'en' ? 'My PPE' : 'আমার পিপিই', icon: '👷', show: true },
     { id: 'my_tools', label: language === 'en' ? 'My Tools' : 'আমার সরঞ্জাম', icon: '🔧', show: true },
-    { id: 'safety-library', label: language === 'en' ? 'Safety Library' : 'সুরক্ষা লাইব্রেরি', icon: '🛡️', show: true },
-    { id: 'emergency', label: language === 'en' ? 'Emergency' : 'জরুরি', icon: '🚨', show: true, color: 'text-red-600' },
-    { id: 'admin', label: language === 'en' ? 'Admin' : 'অ্যাডমিন', icon: '⚙️', show: true },
+    { id: 'emergency', label: language === 'en' ? 'Emergency' : 'জরুরি', icon: '🚨', show: true, color: 'text-red-600 font-bold' },
+    { id: 'admin', label: language === 'en' ? 'Admin' : 'অ্যাডমিন', icon: '⚙️', show: userProfile?.role === 'admin' },
     { id: 'guide', label: language === 'en' ? 'Handbook' : 'হ্যান্ডবুক', icon: '📖', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
-    { id: 'admin-services', label: language === 'en' ? 'Services Update' : 'সার্ভিস আপডেট', icon: '🔄', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
+    { id: 'admin-services', label: language === 'en' ? 'Services' : 'সার্ভিস', icon: '🔄', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
   ];
+
+  const primaryItems = menuItems.filter(item => item.primary && item.show);
+  const secondaryItems = menuItems.filter(item => !item.primary && item.show);
 
   const handleNavClick = (item) => {
     if (item.id === 'notifications') {
@@ -133,48 +138,66 @@ export default function Sidebar({
         </div>
 
         {/* Navigation Items - Enhanced */}
-        <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5">
-          {menuItems.map((item) => {
-            if (!item.show) return null;
+        <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5 custom-scrollbar">
+          {primaryItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => handleNavClick(item)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-left group ${currentView === item.id
+                ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold shadow-lg shadow-orange-500/25'
+                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:translate-x-1'
+                }`}
+            >
+              <span className={`text-xl shrink-0 transition-transform duration-200 ${currentView === item.id ? '' : 'group-hover:scale-110'}`}>
+                {item.icon}
+              </span>
+              <span className="text-sm font-medium">{item.label}</span>
+            </button>
+          ))}
 
-            let isActive = currentView === item.id;
+          {/* More Toggle Button */}
+          <button
+            onClick={() => setIsMoreExpanded(!isMoreExpanded)}
+            className="w-full flex items-center justify-center p-3 rounded-xl transition-all duration-300 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 group border border-dashed border-slate-200 dark:border-slate-700/50 mt-2"
+            title={isMoreExpanded ? (language === 'en' ? 'Show Less' : 'কম দেখুন') : (language === 'en' ? 'More Items' : 'আরও দেখুন')}
+          >
+            <div className={`transform transition-all duration-500 ${isMoreExpanded ? 'rotate-180 scale-110 text-orange-500' : 'rotate-0'}`}>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </button>
 
-            // For items that redirect, check if we're on safety view and the tab matches
-            if (item.redirectTo && item.tab) {
-              isActive = currentView === item.redirectTo && currentTab === item.tab;
-            }
-
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-left group ${isActive
-                  ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold shadow-lg shadow-orange-500/25'
-                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:translate-x-1'
-                  }`}
-                title={item.label}
-              >
-                <span className={`text-xl shrink-0 transition-transform duration-200 ${isActive ? '' : 'group-hover:scale-110'}`}>
-                  {item.icon}
-                </span>
-                <span className="text-sm font-medium">
-                  {item.label}
-                </span>
-                {item.badge && (
-                  <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    {item.badge}
-                  </span>
-                )}
-                {isActive && !item.badge && (
-                  <span className="ml-auto">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </span>
-                )}
-              </button>
-            );
-          })}
+          {/* Secondary Items (Animated expansion) */}
+          <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isMoreExpanded ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+            <div className="space-y-0.5 pt-1 border-t border-slate-100 dark:border-slate-800/50">
+              {secondaryItems.map((item) => {
+                const isActive = currentView === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleNavClick(item)}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 text-left group ${isActive
+                      ? 'bg-slate-100 dark:bg-slate-800 text-orange-600 dark:text-orange-400 font-bold'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                      }`}
+                  >
+                    <span className="text-lg shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
+                      {item.icon}
+                    </span>
+                    <span className="text-xs font-semibold uppercase tracking-tight">
+                      {item.label}
+                    </span>
+                    {item.badge && (
+                      <span className="ml-auto bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full ring-2 ring-white dark:ring-slate-900">
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </nav>
 
         {/* Sidebar Footer - Enhanced */}
@@ -193,7 +216,11 @@ export default function Sidebar({
           {/* Version Display */}
           <div className="px-4 py-2 text-center border-t border-slate-200 dark:border-slate-700 mt-2">
             <p className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase flex flex-col gap-1 items-center">
-              <span>{APP_NAME} <span className="text-orange-500">v{CURRENT_APP_VERSION}</span></span>
+              <span className="flex items-center gap-1">
+                <span>{APP_NAME}</span>
+                <span className="text-[9px] font-black bg-orange-500/10 text-orange-500 px-1 py-0.5 rounded border border-orange-500/20 lowercase tracking-normal -translate-y-0.5">.in</span>
+                <span className="ml-1 text-orange-500">v{CURRENT_APP_VERSION}</span>
+              </span>
               <a href={WEBSITE_URL} target="_blank" rel="noopener noreferrer" className="text-orange-500/60 hover:text-orange-500 transition-colors lowercase tracking-normal font-medium mt-1">
                 {WEBSITE_URL.replace('https://', '')}
               </a>

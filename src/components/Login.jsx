@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import { storageUtils } from '../utils/storageUtils';
 import { DotLottiePlayer } from '@dotlottie/react-player';
 import noInternetLottie from '../assets/no_internet.lottie';
+import { SUPPORT_EMAIL } from '../config';
 
 export default function Login({ onLogin, showNotification, setCurrentView }) {
     const [phone, setPhone] = useState('');
@@ -327,14 +328,16 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                 <div className="bg-white/10 dark:bg-black/20 backdrop-blur-2xl rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-8 sm:p-12 border border-white/10">
                     <div className="text-center mb-10">
                         <div className="flex justify-center mb-6">
-                            <div className="w-32 sm:w-40 relative group">
-                                <img
-                                    src="/icons/logo.png"
-                                    alt="SmartLineMan Logo"
-                                    className="w-full h-auto drop-shadow-2xl brightness-110"
-                                    style={{ mixBlendMode: 'lighten' }}
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-orange-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
+                            <div className="flex flex-col items-center group select-none">
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-3xl sm:text-4xl logo-text logo-text-home drop-shadow-lg transition-transform group-hover:scale-105 duration-300">
+                                        SmartLineMan
+                                    </span>
+                                    <span className="text-xs sm:text-sm font-black bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-lg border border-orange-500/30 shadow-lg ml-1 transform -translate-y-2">
+                                        .in
+                                    </span>
+                                </div>
+                                <div className="h-1 w-12 bg-gradient-to-r from-transparent via-orange-500/40 to-transparent mt-2 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
                             </div>
                         </div>
                         <p className="text-orange-100/60 text-xs font-medium tracking-[0.2em] uppercase">Safety Starts With You</p>
@@ -421,13 +424,27 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                 </div>
 
                 <div
-                    className="mt-12 text-center group cursor-pointer"
-                    onClick={() => setCurrentView('accident-stories')}
+                    className="mt-12 text-center group"
                 >
-                    <p className="text-orange-400 group-hover:text-orange-300 text-sm font-bold transition-all">
-                        করুণ কাহিনী
-                    </p>
-                    <div className="mt-1 w-12 h-0.5 bg-orange-500/20 mx-auto group-hover:w-16 transition-all"></div>
+                    <div
+                        className="cursor-pointer mb-4"
+                        onClick={() => setCurrentView('accident-stories')}
+                    >
+                        <p className="text-orange-400 group-hover:text-orange-300 text-sm font-bold transition-all">
+                            করুণ কাহিনী
+                        </p>
+                        <div className="mt-1 w-12 h-0.5 bg-orange-500/20 mx-auto group-hover:w-16 transition-all"></div>
+                    </div>
+
+                    <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Contact Support</p>
+                        <a
+                            href="mailto:support@smartlineman.in"
+                            className="text-xs font-medium text-slate-400 hover:text-orange-400 transition-colors"
+                        >
+                            support@smartlineman.in
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

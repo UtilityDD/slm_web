@@ -90,7 +90,7 @@ const Guide = ({ hideHeader = false, userRole = 'lineman' }) => {
                                     {tabs.find(t => t.id === activeTab).label}
                                 </h1>
                                 <p className="text-lg font-medium opacity-90 text-white/90">
-                                    {activeTab === 'intro' && 'SMARTLINEMAN ভলান্টিয়ার হ্যান্ডবুক'}
+                                    {activeTab === 'intro' && 'SmartLineman.in ভলান্টিয়ার হ্যান্ডবুক'}
                                     {activeTab === 'day1' && 'Building Trust & Confidence'}
                                     {activeTab === 'day2' && 'Community Engagement & Learning'}
                                     {activeTab === 'data-collection' && 'Effective Data Collection'}
@@ -123,7 +123,7 @@ const Guide = ({ hideHeader = false, userRole = 'lineman' }) => {
                     {/* Footer for all tabs */}
                     <div className="bg-slate-50 dark:bg-slate-900/50 p-6 text-center border-t border-slate-100 dark:border-slate-700">
                         <p className="text-slate-500 dark:text-slate-400 text-sm">
-                            SmartLineman Volunteer Handbook • v2.0
+                            SmartLineman.in Volunteer Handbook
                         </p>
                     </div>
                 </div >

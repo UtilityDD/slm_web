@@ -5,7 +5,9 @@ const getGoogleDriveDirectLink = (url) => {
     if (!url.includes('drive.google.com')) return url;
     const match = url.match(/\/d\/(.+?)\/|id=(.+?)(&|$)/);
     const id = match ? (match[1] || match[2]) : '';
-    return id ? `https://lh3.googleusercontent.com/u/0/d/${id}` : url;
+    // Add a daily cache buster to force refresh if Google Drive content changes
+    const today = new Date().toISOString().split('T')[0];
+    return id ? `https://lh3.googleusercontent.com/u/0/d/${id}?v=${today}` : url;
 };
 
 export const preloadSafetyLibraryAssets = async () => {
@@ -40,7 +42,12 @@ export const preloadSafetyLibraryAssets = async () => {
             await Promise.all(batch.map(link => {
                 return new Promise((resolve) => {
                     const img = new Image();
-                    img.onload = resolve;
+                    img.onload = () => {
+                        if (img.naturalWidth < 40 && img.naturalHeight < 40) {
+                            console.warn(`🕵️ Preloader detected placeholder/broken image: ${link}`);
+                        }
+                        resolve();
+                    };
                     img.onerror = resolve; // Continue even on error
                     img.src = link;
                 });

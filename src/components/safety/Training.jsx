@@ -9,10 +9,10 @@ import { cacheHelper } from '../../utils/cacheHelper';
 import { storageUtils } from '../../utils/storageUtils';
 import { requestManager } from '../../utils/requestManager';
 import ChapterQuizModal from '../ChapterQuizModal';
-import CertificateModal from '../CertificateModal';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import LessonCelebration from './LessonCelebration';
 import PPESurveyModal from './PPESurveyModal';
+import OnboardingSequence from './OnboardingSequence';
 import Lottie from 'lottie-react';
 import { DotLottiePlayer } from '@dotlottie/react-player';
 import lottieEye from '../../assets/lottie_eye.json';
@@ -211,7 +211,17 @@ const TrainingSubChapterCard = React.memo(({ subchapter, isUnlocked, isCompleted
 });
 
 export default function Training({ language = 'en', user, onProgressUpdate, setCurrentView }) {
+    const [showOnboarding, setShowOnboarding] = useState(() => {
+        const today = new Date().toDateString();
+        const lastSeenDate = localStorage.getItem('lastOnboardingDate');
+        return lastSeenDate !== today;
+    });
     const [showWelcome, setShowWelcome] = useState(() => {
+        // Defer welcome if onboarding is active
+        const today = new Date().toDateString();
+        const lastSeenDate = localStorage.getItem('lastOnboardingDate');
+        if (lastSeenDate !== today) return false;
+
         // Only show once per session. Use sessionStorage so it resets when browser closes or tab reloads fully.
         const hasSeenWelcome = sessionStorage.getItem('hasSeenTrainingWelcome');
         return !hasSeenWelcome;
@@ -224,7 +234,6 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
     const [completedLessons, setCompletedLessons] = useState([]);
     const [faqSearchQuery, setFaqSearchQuery] = useState('');
     const [isFaqTagsExpanded, setIsFaqTagsExpanded] = useState(false);
-    const [showCertificateModal, setShowCertificateModal] = useState(false);
     const [fetchError, setFetchError] = useState(false);
     const [readingPoints, setReadingPoints] = useState(0);
 
@@ -1571,22 +1580,6 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                         </button>
                     </div>
 
-                    {/* Certificate Button */}
-                    {user && (
-                        <div className="mt-12 flex justify-center pb-8">
-                            <button
-                                onClick={() => setShowCertificateModal(true)}
-                                className="group relative inline-flex items-center justify-center px-8 py-3.5 lg:px-12 lg:py-5 font-bold text-white transition-all duration-300 bg-slate-900 dark:bg-white dark:text-slate-900 rounded-xl lg:rounded-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 dark:focus:ring-white shadow-xl hover:shadow-2xl lg:hover:shadow-slate-900/40 dark:lg:hover:shadow-white/40 hover:scale-[1.02] lg:hover:scale-105 active:scale-95 border border-slate-800 dark:border-slate-200"
-                            >
-                                <span className="relative flex items-center gap-3 lg:gap-4">
-                                    <svg className="w-6 h-6 lg:w-8 lg:h-8 text-yellow-400 lg:group-hover:rotate-12 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2 .712V17a1 1 0 001 1z" />
-                                    </svg>
-                                    <span className="text-lg lg:text-2xl tracking-tight">View Achievement Certificate</span>
-                                </span>
-                            </button>
-                        </div>
-                    )}
 
                     {/* Professional Branding Footer */}
                     <div className="mt-20 mb-32 text-center relative z-10 animate-fade-in-up">
@@ -2339,28 +2332,6 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                 )
             }
 
-            {
-                showCertificateModal && createPortal(
-                    (() => {
-                        const currentLevel = calculateLevelFromProgress(completedLessons, trainingChapters);
-                        const badge = getBadgeByLevel(currentLevel);
-                        const badgeName = badge ? (language === 'en' ? badge.en : badge.bn) : (language === 'en' ? "Safety Trainee" : "সুরক্ষা প্রশিক্ষণার্থী");
-
-                        return (
-                            <CertificateModal
-                                isOpen={showCertificateModal}
-                                onClose={() => setShowCertificateModal(false)}
-                                userName={user?.user_metadata?.full_name || 'Lineman'}
-                                completionDate={new Date().toLocaleDateString()}
-                                level={currentLevel}
-                                badgeName={badgeName}
-                                certificateId={`CERT-${user?.id?.slice(0, 8)}-${Date.now().toString().slice(-6)}`}
-                            />
-                        );
-                    })(),
-                    document.body
-                )
-            }
 
             {/* Image Preview Modal */}
             {
@@ -2529,6 +2500,24 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                         </div>
                     </button>,
                     document.body
+                )
+            }
+            {
+                showOnboarding && (
+                    <OnboardingSequence
+                        language={language}
+                        onComplete={() => {
+                            const today = new Date().toDateString();
+                            localStorage.setItem('lastOnboardingDate', today);
+                            localStorage.setItem('hasSeenOnboarding', 'true');
+                            setShowOnboarding(false);
+                            // After onboarding, show the welcome modal if not seen in session
+                            const hasSeenWelcome = sessionStorage.getItem('hasSeenTrainingWelcome');
+                            if (!hasSeenWelcome) {
+                                setShowWelcome(true);
+                            }
+                        }}
+                    />
                 )
             }
         </div >
