@@ -10,7 +10,9 @@ select
   avatar_url,
   training_level,
   completed_lessons,
-  total_penalties
+  total_penalties,
+  reading_points,
+  quiz_points
 from profiles
 where points > 0;
 

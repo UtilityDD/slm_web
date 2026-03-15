@@ -45,7 +45,7 @@ export default function Sidebar({
     { id: 'my_ppe', label: language === 'en' ? 'My PPE' : 'আমার পিপিই', icon: '👷', show: true },
     { id: 'my_tools', label: language === 'en' ? 'My Tools' : 'আমার সরঞ্জাম', icon: '🔧', show: true },
     { id: 'emergency', label: language === 'en' ? 'Emergency' : 'জরুরি', icon: '🚨', show: true, color: 'text-red-600 font-bold' },
-    { id: 'admin', label: language === 'en' ? 'Admin' : 'অ্যাডমিন', icon: '⚙️', show: userProfile?.role === 'admin' },
+    { id: 'admin', label: language === 'en' ? 'Admin' : 'অ্যাডমিন', icon: '⚙️', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
     { id: 'guide', label: language === 'en' ? 'Handbook' : 'হ্যান্ডবুক', icon: '📖', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
     { id: 'admin-services', label: language === 'en' ? 'Services' : 'সার্ভিস', icon: '🔄', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
   ];
@@ -217,7 +217,7 @@ export default function Sidebar({
           <div className="px-4 py-2 text-center border-t border-slate-200 dark:border-slate-700 mt-2">
             <p className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase flex flex-col gap-1 items-center">
               <span className="flex items-center gap-1">
-                <span>{APP_NAME}</span>
+                <span>{APP_NAME.replace('.in', '')}</span>
                 <span className="text-[9px] font-black bg-orange-500/10 text-orange-500 px-1 py-0.5 rounded border border-orange-500/20 lowercase tracking-normal -translate-y-0.5">.in</span>
                 <span className="ml-1 text-orange-500">v{CURRENT_APP_VERSION}</span>
               </span>

@@ -778,9 +778,11 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                 autoplay={true}
                             />
                         </div>
-                        <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-white text-[8px] font-black rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none uppercase tracking-widest z-50">
-                            {isImage ? 'View Insight' : 'Read Info'}
-                        </span>
+                        {isImage && (
+                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-white text-[8px] font-black rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none uppercase tracking-widest z-50">
+                                View Insight
+                            </span>
+                        )}
                     </button>
                 );
             } else if (part.startsWith('[[') && part.endsWith(']]')) {
@@ -2363,12 +2365,11 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                     />
                                 ) : (
                                     <div className="max-w-xl w-full bg-slate-800 p-6 sm:p-8 rounded-3xl border border-white/10 shadow-2xl animate-scale-in">
-                                        <h3 className="text-lg font-bold text-orange-400 mb-4 flex items-center gap-2">
-                                            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <div className="mb-4">
+                                            <svg className="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
-                                            Details
-                                        </h3>
+                                        </div>
                                         <p className="text-base sm:text-lg text-slate-200 leading-relaxed whitespace-pre-line text-left font-medium">
                                             {activeImageModal.value}
                                         </p>

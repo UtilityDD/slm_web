@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../supabaseClient';
+import { CapacitorHttp } from '@capacitor/core';
 
 const SearchIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -61,7 +61,8 @@ const getGoogleDriveDirectLink = (url) => {
     if (!url.includes('drive.google.com')) return url;
     const match = url.match(/\/d\/(.+?)\/|id=(.+?)(&|$)/);
     const id = match ? (match[1] || match[2]) : '';
-    // Add a daily cache buster to force refresh if Google Drive content changes
+    // Use the lh3 format for stable direct embedding
+    // Use a daily cache-buster instead of sub-second to avoid rate limiting/security triggers
     const today = new Date().toISOString().split('T')[0];
     return id ? `https://lh3.googleusercontent.com/u/0/d/${id}?v=${today}` : url;
 };
@@ -93,7 +94,6 @@ const ImageSlider = ({ images, alt }) => {
     };
 
     const onImageLoad = (e, url) => {
-        // Detect "Zombie" images (Google Drive error placeholders often have naturalWidth < 40)
         if (e.target.naturalWidth < 40 && e.target.naturalHeight < 40) {
             console.warn(`🕵️ Detected placeholder/broken image: ${url}`);
             handleImageError(url);
@@ -144,10 +144,84 @@ const ImageSlider = ({ images, alt }) => {
     );
 };
 
+// Robust CSV parser using regex to handle quoted fields with commas correctly
+const splitCSVLine = (line) => {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            result.push(current.trim().replace(/^"|"$/g, ''));
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    result.push(current.trim().replace(/^"|"$/g, ''));
+    return result;
+};
+
+const parseCSV = (text) => {
+    const lines = text.split(/\r?\n/).filter(line => line.trim());
+    if (lines.length < 2) return [];
+
+    const headers = splitCSVLine(lines[0]);
+
+    const rows = lines.slice(1).map(line => {
+        const values = splitCSVLine(line);
+        const obj = {};
+        headers.forEach((header, i) => {
+            obj[header] = values[i] || '';
+        });
+        return obj;
+    });
+
+    const formatNameFallback = (fileName) => {
+        if (!fileName) return '';
+        return fileName.split('.')[0]
+            .replace(/_\d+$/, '')
+            .split('_')
+            .join(' ')
+            .replace(/\b\w/g, l => l.toUpperCase());
+    };
+
+    const groups = {};
+    rows.forEach(row => {
+        const category = row['Folder Name'];
+        const fileName = row['File Name'];
+        const nameBnFromSheet = row['Name_BN'];
+
+        const baseName = nameBnFromSheet || formatNameFallback(fileName);
+        const key = `${category}:${baseName}`;
+
+        if (!groups[key]) {
+            groups[key] = {
+                id: key,
+                category: category === 'Insulators' ? 'Insulators' : category,
+                name_bn: nameBnFromSheet || baseName,
+                function_bn: row['Function_BN'] || '',
+                images: [],
+                approx_price_inr: row['Price'] || '---',
+                guide_bn: row['Guide_BN'] || 'ব্যবহারের নির্দেশাবলী...'
+            };
+        }
+        if (row['File Link']) {
+            groups[key].images.push(row['File Link']);
+        }
+    });
+
+    return Object.values(groups);
+};
+
 export default function SafetyLibrary({ language, setCurrentView }) {
     const [items, setItems] = useState([]);
     const [filteredItems, setFilteredItems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
 
@@ -163,44 +237,72 @@ export default function SafetyLibrary({ language, setCurrentView }) {
     const t = {
         en: {
             title: 'Safety Library',
-            subtitle: 'Visual equipment guide for power professionals',
+            subtitle: 'Visual equipment guide (Bengali Content Focus)',
             searchPlaceholder: 'Search equipment...',
             noResults: 'No items found',
-            priceLabel: 'Approx. Price:',
-            guideLabel: 'User Guide',
-            aboutLabel: 'About'
+            priceLabel: 'Price:',
+            guideLabel: 'Usage Guide',
+            aboutLabel: 'About',
+            retry: 'Retry'
         },
         bn: {
             title: 'সুরক্ষা লাইব্রেরি',
-            subtitle: 'বিদ্যুৎ কর্মীদের জন্য ভিজ্যুয়াল সরঞ্জাম গাইড',
+            subtitle: 'ভিজ্যুয়াল সরঞ্জাম গাইড',
             searchPlaceholder: 'সরঞ্জাম খুঁজুন...',
             noResults: 'কিছু পাওয়া যায়নি',
-            priceLabel: 'আনুমানিক মূল্য:',
-            guideLabel: 'ইউজার গাইড',
-            aboutLabel: 'সম্পর্কে'
+            priceLabel: 'মূল্য:',
+            guideLabel: 'ব্যবহারের নির্দেশিকা',
+            aboutLabel: 'সম্পর্কে',
+            retry: 'আবার চেষ্টা করুন'
         }
     }[language];
 
-    useEffect(() => {
-        const fetchLibrary = async () => {
-            try {
-                const { data, error } = await supabase.from('safety_library').select('*').order('created_at', { ascending: true });
-                if (error) throw error;
-                setItems(data || []);
-                setFilteredItems(data || []);
-            } catch (error) {
-                console.error('Error loading safety library:', error);
-            } finally {
-                setLoading(false);
+    const fetchLibrary = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const dynamicUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vTjxPeFNRSNfOgc80sT-WLmqf0bQqN-YjjSbQoE6i432tL-sK1zg1zHfaQxv4l1YMThgwa1DyreVgCk/pub?gid=0&single=true&output=csv&v=${Date.now()}`;
+
+            // Use CapacitorHttp to bypass CORS and redirect issues on Android
+            const response = await CapacitorHttp.get({
+                url: dynamicUrl,
+                responseType: 'text' // Force text to prevent premature JSON parsing
+            });
+
+            if (response.status !== 200) {
+                throw new Error(`HTTP ${response.status}: ${typeof response.data}`);
             }
-        };
+
+            let csvText = response.data;
+
+            // On some platforms, if the redirect is handled uniquely, data might be an object
+            if (typeof csvText !== 'string') {
+                csvText = JSON.stringify(csvText);
+            }
+
+            const data = parseCSV(csvText);
+            if (!data || data.length === 0) throw new Error("Parsed data is empty");
+
+            setItems(data);
+            setFilteredItems(data);
+        } catch (error) {
+            console.error('Error loading safety library:', error);
+            setError({
+                message: error.message,
+                technical: error.stack?.split('\n')[0] || 'Unknown Error'
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchLibrary();
     }, []);
 
     useEffect(() => {
         const filtered = items.filter(item => {
-            const matchesSearch = (item.name_en || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (item.name_bn || '').toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesSearch = (item.name_bn || '').toLowerCase().includes(searchQuery.toLowerCase());
             const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
             return matchesSearch && matchesCategory;
         });
@@ -210,7 +312,6 @@ export default function SafetyLibrary({ language, setCurrentView }) {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
-                {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                     <div>
                         <button onClick={() => setCurrentView('training')} className="text-orange-500 hover:text-orange-600 font-medium mb-4 flex items-center gap-2 group transition-all">
@@ -232,7 +333,6 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                     </div>
                 </div>
 
-                {/* Categories */}
                 <div className="flex flex-wrap gap-2 mb-10 pb-2 overflow-x-auto no-scrollbar">
                     {categories.map((cat) => (
                         <button
@@ -249,19 +349,44 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                     ))}
                 </div>
 
-                {/* Grid */}
                 {loading ? (
                     <div className="flex items-center justify-center min-h-[400px]">
                         <div className="w-12 h-12 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin"></div>
                     </div>
+                ) : error ? (
+                    <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-8">
+                        <div className="w-20 h-20 bg-red-50 dark:bg-red-900/10 rounded-full flex items-center justify-center mb-6 text-red-500">
+                            <InfoIcon className="w-10 h-10" />
+                        </div>
+                        <p className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                            {language === 'en' ? 'Unable to load Library' : 'লাইব্রেরি লোড করা যাচ্ছে না'}
+                        </p>
+                        <p className="text-slate-500 dark:text-slate-400 mb-2 max-w-xs">
+                            {language === 'en' ? 'Please check your internet connection' : 'আপনার ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় চেষ্টা করুন'}
+                        </p>
+                        <p className="text-[10px] font-mono text-slate-400 dark:text-slate-600 mb-8 max-w-xs break-all opacity-50 uppercase tracking-tighter">
+                            Debug: {error.message || 'No Error Msg'} | {error.technical || 'No Technical Info'}
+                        </p>
+                        <button
+                            onClick={fetchLibrary}
+                            className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/25 transition-all active:scale-95"
+                        >
+                            {t.retry}
+                        </button>
+                    </div>
                 ) : filteredItems.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {filteredItems.map((item) => {
-                            const isStructured = ['PPE', 'Tools'].includes(item.category);
+                            const isStructured = ['PPE', 'Tools', 'Insulators'].includes(item.category);
+                            const isChart = item.category === 'Charts';
                             return (
-                                <div key={item.id} className="group bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/15 transition-all duration-500 flex flex-col">
+                                <div key={item.id} className={`group bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/15 transition-all duration-500 flex flex-col ${isChart ? 'md:col-span-2 lg:col-span-3' : ''}`}>
                                     <div className="relative">
-                                        <ImageSlider images={item.images || [item.image_url]} alt={language === 'en' ? item.name_en : item.name_bn} />
+                                        <ImageSlider
+                                            images={item.images}
+                                            alt={item.name_bn}
+                                            aspect={isChart ? 'aspect-video' : 'aspect-[4/3]'}
+                                        />
                                         <div className="absolute top-4 left-4">
                                             <span className="px-3 py-1.5 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-full text-xs font-bold text-orange-600 dark:text-orange-400 shadow-lg border border-orange-100/20">
                                                 {item.category}
@@ -270,12 +395,14 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                     </div>
 
                                     <div className="p-8 flex flex-col flex-grow">
-                                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-orange-500 transition-colors">
-                                            {language === 'en' ? item.name_en : item.name_bn}
+                                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-orange-500 transition-colors">
+                                            {item.name_bn}
                                         </h3>
-                                        <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-6 font-medium">
-                                            {language === 'en' ? item.function_en : item.function_bn}
-                                        </p>
+                                        {item.function_bn && (
+                                            <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-6 font-medium">
+                                                {item.function_bn}
+                                            </p>
+                                        )}
 
                                         {isStructured && (
                                             <div className="mt-auto space-y-6 pt-6 border-t border-slate-100 dark:border-slate-800/50">
@@ -290,25 +417,12 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                                         {t.guideLabel}
                                                     </div>
                                                     <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-                                                        {language === 'en' ? item.guide_en : item.guide_bn}
+                                                        {item.guide_bn}
                                                     </p>
                                                 </div>
                                             </div>
                                         )}
 
-                                        {!isStructured && (
-                                            <div className="mt-auto pt-6 border-t border-slate-100 dark:border-slate-800/50">
-                                                <div className="flex items-center gap-2 mb-2 text-slate-500 dark:text-slate-500 font-bold text-sm">
-                                                    <InfoIcon className="w-4 h-4" />
-                                                    {t.aboutLabel}
-                                                </div>
-                                                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed italic">
-                                                    {item.category === 'Charts'
-                                                        ? (language === 'en' ? 'Technical Reference Resource' : 'কারিগরি রেফারেন্স রিসোর্স')
-                                                        : (language === 'en' ? 'General Information & Support' : 'সাধারণ তথ্য এবং সহায়তা')}
-                                                </p>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             );

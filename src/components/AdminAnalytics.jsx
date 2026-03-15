@@ -38,7 +38,10 @@ const ProgressBar = ({ label, percentage, color, icon }) => (
     </div>
 );
 
-export default function AdminAnalytics({ language }) {
+export default function AdminAnalytics({ language, userRole }) {
+    if (!['admin', 'safety mitra'].includes(userRole)) {
+        return <div className="p-8 text-center font-bold text-red-500">Access Restricted</div>;
+    }
     const [stats, setStats] = useState({
         admins: 0,
         safetyMitras: 0,

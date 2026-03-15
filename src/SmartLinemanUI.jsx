@@ -837,10 +837,22 @@ export default function SmartLinemanUI() {
             setCurrentView={setCurrentView}
           />;
         case 'admin':
+          if (!['admin', 'safety mitra'].includes(userProfile?.role)) {
+            setCurrentView('home');
+            return null;
+          }
           return <Admin language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;
         case 'admin-services':
+          if (!['admin', 'safety mitra'].includes(userProfile?.role)) {
+            setCurrentView('home');
+            return null;
+          }
           return <AdminServices language={language} userProfile={userProfile} />;
         case 'guide':
+          if (!['admin', 'safety mitra'].includes(userProfile?.role)) {
+            setCurrentView('home');
+            return null;
+          }
           return <Guide userRole={userProfile?.role} />;
         case 'verify': {
           const certId = window.location.hash.split('/').pop();

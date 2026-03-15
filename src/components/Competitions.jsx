@@ -1263,10 +1263,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 <span className={`text-xs font-black tabular-nums ${isMe ? 'text-orange-600 dark:text-orange-400' : 'text-slate-700 dark:text-slate-200'}`}>
                                                                     {item.points.toLocaleString()}
                                                                 </span>
-                                                                {(item.completed_lessons?.length || 0) > 0 && (
+                                                                {(item.reading_points > 0) && (
                                                                     <span className="text-[8px] font-bold text-orange-500 flex items-center gap-0.5 leading-tight">
                                                                         <span>📖</span>
-                                                                        {(item.completed_lessons.length * 20).toLocaleString()}
+                                                                        {item.reading_points.toLocaleString()}
                                                                     </span>
                                                                 )}
                                                             </div>

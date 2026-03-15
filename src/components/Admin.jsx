@@ -673,7 +673,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
           </button>
         </div>
       ) : showAnalytics ? (
-        <AdminAnalytics language={language} />
+        <AdminAnalytics language={language} userRole={userProfile?.role} />
       ) : (
         users.length === 0 ? (
           <div className="bg-white dark:bg-slate-800 shadow rounded-lg p-12 text-center border border-slate-200 dark:border-slate-700">
