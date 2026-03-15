@@ -47,10 +47,8 @@ export default function SmartLinemanUI() {
   });
   const [language, setLanguage] = useState('bn');
   const [theme, setTheme] = useState(() => {
-    // Check if user has explicit preference, otherwise default to dark
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) return savedTheme;
-    return 'dark'; // CHANGED: Default theme is now dark
+    // Default to dark unless user has an explicit preference
+    return storageUtils.getItem('appTheme') || 'dark';
   });
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [user, setUser] = useState(null);
@@ -593,18 +591,10 @@ export default function SmartLinemanUI() {
     updateStatusBar();
   }, [currentView, theme]);
 
-  // Check LocalStorage or Time for Theme on mount
+  // Check LocalStorage for Theme on mount (redundancy check)
   useEffect(() => {
-    const savedTheme = storageUtils.getItem('appTheme');
-    let currentTheme = theme;
-
-    if (savedTheme) {
-      currentTheme = savedTheme;
-    } else {
-      const hour = new Date().getHours();
-      currentTheme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
-    }
-
+    const currentTheme = storageUtils.getItem('appTheme') || 'dark';
+    
     setTheme(currentTheme);
     if (currentTheme === 'dark') {
       document.documentElement.classList.add('dark');
