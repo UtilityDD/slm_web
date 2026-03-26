@@ -2,8 +2,40 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.local
 .idea
 .vscode
 android/app/build
 android/build
 local.properties
+
+# Logs and Errors
+*.log
+*.err
+report_summary.txt
+
+# Temp script outputs
+ai_fix.*
+enhance_chapters.*
+analyze_report.js
+bump_version.js
+check_columns.js
+debug_mijanur.js
+extract_chapters.js
+extract_dictionary.js
+extract_questions.js
+find_foreign_scripts.js
+find_quiz_foreign_scripts.js
+find_test_user.js
+fix_mijanur_data.js
+fix_with_ai.js
+rectify_foreign.js
+rectify_quiz_foreign.js
+update_chapters_supabase.js
+update_supabase.js
+update_top10.js
+tmp_check_images.cjs
+
+# Media and Large Files
+public/smartlineman.apk
