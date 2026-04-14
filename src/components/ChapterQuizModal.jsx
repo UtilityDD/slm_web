@@ -213,7 +213,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                         </div>
 
                         {/* Content */}
-                        <div className="p-6 overflow-y-auto flex-1">
+                        <div className={`p-6 overflow-y-auto flex-1 ${showResult || isReviewMode ? 'pb-24' : ''}`}>
                             {isReviewMode ? (
                                 /* Review Mode View */
                                 <div className="space-y-8">
@@ -272,19 +272,21 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                             </div>
                                         );
                                     })}
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <button
-                                            onClick={() => setIsReviewMode(false)}
-                                            className="w-full py-3 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl border border-slate-200 dark:border-slate-600 transition-all hover:bg-slate-100 dark:hover:bg-slate-600"
-                                        >
-                                            {t.backToResult}
-                                        </button>
-                                        <button
-                                            onClick={onClose}
-                                            className="w-full py-3 bg-slate-800 text-white font-bold rounded-xl transition-all hover:bg-slate-700"
-                                        >
-                                            {t.close}
-                                        </button>
+                                    <div className="sticky bottom-0 -mx-6 mt-6 border-t border-slate-200/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-800/95 backdrop-blur px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button
+                                                onClick={() => setIsReviewMode(false)}
+                                                className="w-full py-3 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl border border-slate-200 dark:border-slate-600 transition-all hover:bg-slate-100 dark:hover:bg-slate-600"
+                                            >
+                                                {t.backToResult}
+                                            </button>
+                                            <button
+                                                onClick={onClose}
+                                                className="w-full py-3 bg-slate-800 text-white font-bold rounded-xl transition-all hover:bg-slate-700"
+                                            >
+                                                {t.close}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ) : showResult ? (
@@ -352,60 +354,62 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                         )}
                                     </div>
 
-                                    <div className="space-y-4 px-2">
-                                        <button
-                                            onClick={() => setIsReviewMode(true)}
-                                            className="w-full py-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-black rounded-2xl transition-all uppercase tracking-wider text-xs"
-                                        >
-                                            {t.review}
-                                        </button>
-                                        {isPractice ? (
-                                            /* Practice Mode Options */
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <button
-                                                    onClick={handleTryAgain}
-                                                    className="py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl transition-all shadow-xl shadow-blue-500/20 uppercase tracking-widest text-xs"
-                                                >
-                                                    {t.tryAgain}
-                                                </button>
-                                                <button
-                                                    onClick={onClose}
-                                                    className="py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl transition-all shadow-xl uppercase tracking-widest text-xs"
-                                                >
-                                                    {t.close}
-                                                </button>
-                                            </div>
-                                        ) : isPassed ? (
-                                            /* Normal Completion */
+                                    <div className="sticky bottom-0 -mx-6 mt-6 border-t border-slate-200/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-800/95 backdrop-blur px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+                                        <div className="space-y-4 px-2">
                                             <button
-                                                onClick={handleFinish}
-                                                className="w-full py-5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-[2rem] transition-all shadow-2xl shadow-emerald-500/30 active:scale-95 flex items-center justify-center gap-3 text-lg"
+                                                onClick={() => setIsReviewMode(true)}
+                                                className="w-full py-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-black rounded-2xl transition-all uppercase tracking-wider text-xs"
                                             >
-                                                {t.continue}
-                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                                </svg>
+                                                {t.review}
                                             </button>
-                                        ) : (
-                                            /* Normal Failure */
-                                            <div className="grid grid-cols-1 gap-3">
+                                            {isPractice ? (
+                                                /* Practice Mode Options */
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <button
+                                                        onClick={handleTryAgain}
+                                                        className="py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl transition-all shadow-xl shadow-blue-500/20 uppercase tracking-widest text-xs"
+                                                    >
+                                                        {t.tryAgain}
+                                                    </button>
+                                                    <button
+                                                        onClick={onClose}
+                                                        className="py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl transition-all shadow-xl uppercase tracking-widest text-xs"
+                                                    >
+                                                        {t.close}
+                                                    </button>
+                                                </div>
+                                            ) : isPassed ? (
+                                                /* Normal Completion */
                                                 <button
-                                                    onClick={handleTryAgain}
-                                                    className="w-full py-5 bg-orange-600 hover:bg-orange-500 text-white font-black rounded-[2rem] transition-all shadow-2xl shadow-orange-500/30 active:scale-95 flex items-center justify-center gap-3 text-lg"
+                                                    onClick={handleFinish}
+                                                    className="w-full py-5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-[2rem] transition-all shadow-2xl shadow-emerald-500/30 active:scale-95 flex items-center justify-center gap-3 text-lg"
                                                 >
-                                                    {t.tryAgain}
-                                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6 0 3.31-2.69 6-6 6-3.31 0-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
+                                                    {t.continue}
+                                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                                     </svg>
                                                 </button>
-                                                <button
-                                                    onClick={onReadAgain || onClose}
-                                                    className="w-full py-4 text-slate-500 dark:text-slate-400 font-bold hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
-                                                >
-                                                    {t.readAgain}
-                                                </button>
-                                            </div>
-                                        )}
+                                            ) : (
+                                                /* Normal Failure */
+                                                <div className="grid grid-cols-1 gap-3">
+                                                    <button
+                                                        onClick={handleTryAgain}
+                                                        className="w-full py-5 bg-orange-600 hover:bg-orange-500 text-white font-black rounded-[2rem] transition-all shadow-2xl shadow-orange-500/30 active:scale-95 flex items-center justify-center gap-3 text-lg"
+                                                    >
+                                                        {t.tryAgain}
+                                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6 0 3.31-2.69 6-6 6-3.31 0-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
+                                                        </svg>
+                                                    </button>
+                                                    <button
+                                                        onClick={onReadAgain || onClose}
+                                                        className="w-full py-4 text-slate-500 dark:text-slate-400 font-bold hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
+                                                    >
+                                                        {t.readAgain}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
@@ -455,7 +459,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
 
                         {/* Footer */}
                         {(!showResult && !isReviewMode) && (
-                            <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                            <div className="sticky bottom-0 z-10 border-t border-slate-100 dark:border-slate-700 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                                 <button
                                     onClick={handleNext}
                                     disabled={userAnswers[currentQuestionIndex] === undefined}
