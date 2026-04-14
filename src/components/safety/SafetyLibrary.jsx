@@ -67,7 +67,7 @@ const getGoogleDriveDirectLink = (url) => {
     return id ? `https://lh3.googleusercontent.com/u/0/d/${id}?v=${today}` : url;
 };
 
-const ImageSlider = ({ images, alt }) => {
+const ImageSlider = ({ images, alt, aspect = 'aspect-[4/3]' }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [validImages, setValidImages] = useState(images || []);
 
@@ -102,7 +102,7 @@ const ImageSlider = ({ images, alt }) => {
 
     if (!validImages || validImages.length === 0) {
         return (
-            <div className="aspect-[4/3] bg-slate-100 dark:bg-slate-900/50 flex flex-col items-center justify-center p-8 text-slate-400 text-center">
+            <div className={`${aspect} bg-slate-100 dark:bg-slate-900/50 flex flex-col items-center justify-center p-8 text-slate-400 text-center`}>
                 <svg className="w-12 h-12 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
@@ -122,7 +122,7 @@ const ImageSlider = ({ images, alt }) => {
     };
 
     return (
-        <div className="aspect-[4/3] bg-slate-50 dark:bg-slate-900/50 relative overflow-hidden flex items-center justify-center p-8 group/slider">
+        <div className={`${aspect} bg-slate-50 dark:bg-slate-900/50 relative overflow-hidden flex items-center justify-center p-8 group/slider`}>
             <img
                 key={currentIndex}
                 src={getGoogleDriveDirectLink(validImages[currentIndex])}
@@ -224,6 +224,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
+    const [selectedItem, setSelectedItem] = useState(null);
 
     const categories = [
         { id: 'All', label: language === 'en' ? 'All' : 'সবগুলো', icon: null },
@@ -243,7 +244,9 @@ export default function SafetyLibrary({ language, setCurrentView }) {
             priceLabel: 'Price:',
             guideLabel: 'Usage Guide',
             aboutLabel: 'About',
-            retry: 'Retry'
+            retry: 'Retry',
+            tapToEnlarge: 'Tap to enlarge',
+            closePreview: 'Close Preview'
         },
         bn: {
             title: 'সুরক্ষা লাইব্রেরি',
@@ -253,7 +256,9 @@ export default function SafetyLibrary({ language, setCurrentView }) {
             priceLabel: 'মূল্য:',
             guideLabel: 'ব্যবহারের নির্দেশিকা',
             aboutLabel: 'সম্পর্কে',
-            retry: 'আবার চেষ্টা করুন'
+            retry: 'আবার চেষ্টা করুন',
+            tapToEnlarge: 'বড় করে দেখতে ট্যাপ করুন',
+            closePreview: 'প্রিভিউ বন্ধ করুন'
         }
     }[language];
 
@@ -380,7 +385,11 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                             const isStructured = ['PPE', 'Tools', 'Insulators'].includes(item.category);
                             const isChart = item.category === 'Charts';
                             return (
-                                <div key={item.id} className={`group bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/15 transition-all duration-500 flex flex-col ${isChart ? 'md:col-span-2 lg:col-span-3' : ''}`}>
+                                <div
+                                    key={item.id}
+                                    onClick={() => setSelectedItem(item)}
+                                    className={`group bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/15 transition-all duration-500 flex flex-col cursor-zoom-in ${isChart ? 'md:col-span-2 lg:col-span-3' : ''}`}
+                                >
                                     <div className="relative">
                                         <ImageSlider
                                             images={item.images}
@@ -398,6 +407,9 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                         <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-orange-500 transition-colors">
                                             {item.name_bn}
                                         </h3>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-3">
+                                            {t.tapToEnlarge}
+                                        </p>
                                         {item.function_bn && (
                                             <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-6 font-medium">
                                                 {item.function_bn}
@@ -432,6 +444,49 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                     <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-400">
                         <LineChartIcon className="w-16 h-16 mb-4 opacity-20" />
                         <p className="text-xl font-medium">{t.noResults}</p>
+                    </div>
+                )}
+
+                {selectedItem && (
+                    <div
+                        className="fixed inset-0 z-[1000] bg-black/75 backdrop-blur-sm p-0 md:p-2 flex items-center justify-center animate-fade-in"
+                        onClick={() => setSelectedItem(null)}
+                    >
+                        <button
+                            onClick={() => setSelectedItem(null)}
+                            aria-label={t.closePreview}
+                            className="fixed right-4 z-[1010] w-12 h-12 rounded-full bg-black/75 text-white hover:bg-black/90 transition-colors flex items-center justify-center shadow-2xl border border-white/20"
+                            style={{ top: 'calc(env(safe-area-inset-top, 0px) + 4.25rem)' }}
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        <div
+                            className="relative w-full h-full md:w-[98vw] md:h-[98vh] bg-white dark:bg-slate-900 md:rounded-[1.25rem] border-0 md:border md:border-slate-200 dark:md:border-slate-800 shadow-2xl flex flex-col"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                onClick={() => setSelectedItem(null)}
+                                aria-label={t.closePreview}
+                                className="absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-black/55 text-white hover:bg-black/70 backdrop-blur-md transition-colors flex items-center justify-center shadow-lg"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+
+                            <div className="px-5 pt-4 pb-2 pr-16">
+                                <h3 className="text-xs md:text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider truncate">
+                                    {selectedItem.name_bn}
+                                </h3>
+                            </div>
+
+                            <div className="px-0 pb-0 flex-1 min-h-0">
+                                <ImageSlider images={selectedItem.images} alt={selectedItem.name_bn} aspect="h-full" />
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
