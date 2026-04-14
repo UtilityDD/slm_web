@@ -28,9 +28,12 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
             noQuestions: 'No quiz questions available.',
             close: 'Close',
             review: 'Review Answers',
+            backToResult: 'Back to Result',
             reviewTitle: 'Review Your Answers',
-            correct: 'Correct Answer',
-            yourAns: 'Your Answer'
+            yourAns: 'Your Answer',
+            right: 'Correct',
+            wrong: 'Wrong',
+            notAnswered: 'Not answered'
         },
         bn: {
             title: 'অধ্যায় কুইজ',
@@ -50,9 +53,12 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
             noQuestions: 'কোন কুইজ প্রশ্ন পাওয়া যায়নি।',
             close: 'বন্ধ করুন',
             review: 'উত্তরগুলো দেখুন',
+            backToResult: 'ফলাফলে ফিরে যান',
             reviewTitle: 'আপনার উত্তরগুলো দেখুন',
-            correct: 'সঠিক উত্তর',
-            yourAns: 'আপনার উত্তর'
+            yourAns: 'আপনার উত্তর',
+            right: 'সঠিক',
+            wrong: 'ভুল',
+            notAnswered: 'উত্তর দেওয়া হয়নি'
         }
     }[language] || { en: {} };
 
@@ -213,37 +219,49 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                 <div className="space-y-8">
                                     {shuffledQuestions.map((q, idx) => {
                                         const userAnswer = userAnswers[idx];
-                                        const isCorrect = userAnswer === q.correctAnswerIndex;
+                                        const isAnswered = userAnswer !== undefined;
+                                        const isCorrect = isAnswered && userAnswer === q.correctAnswerIndex;
                                         return (
                                             <div key={idx} className={`p-4 rounded-xl border-2 ${isCorrect ? 'border-green-100 bg-green-50/50 dark:border-green-900 dark:bg-green-900/10' : 'border-red-100 bg-red-50/50 dark:border-red-900 dark:bg-red-900/10'}`}>
                                                 <div className="flex gap-3 mb-3">
                                                     <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                                         {idx + 1}
                                                     </span>
-                                                    <p className="font-medium text-slate-800 dark:text-slate-200">{q.questionText}</p>
+                                                    <div className="min-w-0">
+                                                        <p className="font-medium text-slate-800 dark:text-slate-200">{q.questionText}</p>
+                                                        <div className={`mt-1 inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${isCorrect ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}`}>
+                                                            {isCorrect ? t.right : t.wrong}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 {q.image && (
                                                     <div className="mb-4 ml-9 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 max-w-[200px]">
                                                         <img src={q.image} alt="Question" className="w-full h-auto" />
                                                     </div>
                                                 )}
+                                                {!isAnswered && (
+                                                    <div className="ml-9 mb-3 text-xs font-semibold text-red-600 dark:text-red-400">
+                                                        {t.notAnswered}
+                                                    </div>
+                                                )}
                                                 <div className="space-y-2 pl-9">
                                                     {q.options.map((opt, optIdx) => {
                                                         const isSelected = userAnswer === optIdx;
-                                                        const isTheCorrectAnswer = q.correctAnswerIndex === optIdx;
-                                                        let optionClass = "text-slate-500 dark:text-slate-400";
-                                                        if (isTheCorrectAnswer) optionClass = "text-green-600 dark:text-green-400 font-bold";
-                                                        else if (isSelected && !isCorrect) optionClass = "text-red-500 dark:text-red-400 line-through";
+                                                        const optionClass = isSelected
+                                                            ? isCorrect
+                                                                ? 'text-green-700 dark:text-green-300 font-semibold'
+                                                                : 'text-red-600 dark:text-red-400 font-semibold'
+                                                            : 'text-slate-500 dark:text-slate-400';
 
                                                         const isOptionImage = typeof opt === 'string' && (opt.startsWith('/') || opt.includes('.jpg') || opt.includes('.png') || opt.includes('.webp'));
 
                                                         return (
                                                             <div key={optIdx} className="flex items-start gap-2 text-sm">
                                                                 <span className="mt-1">
-                                                                    {isTheCorrectAnswer ? '✅' : isSelected ? '❌' : '⚪'}
+                                                                    {isSelected ? (isCorrect ? '✓' : '✗') : '○'}
                                                                 </span>
                                                                 {isOptionImage ? (
-                                                                    <img src={opt} alt="Option" className="w-16 h-16 object-cover rounded-lg border border-slate-200 dark:border-slate-700" />
+                                                                    <img src={opt} alt="Option" className={`w-16 h-16 object-cover rounded-lg border ${isSelected ? (isCorrect ? 'border-green-400' : 'border-red-400') : 'border-slate-200 dark:border-slate-700'}`} />
                                                                 ) : (
                                                                     <span className={optionClass}>{opt}</span>
                                                                 )}
@@ -254,12 +272,20 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                             </div>
                                         );
                                     })}
-                                    <button
-                                        onClick={onClose}
-                                        className="w-full py-3 bg-slate-800 text-white font-bold rounded-xl transition-all hover:bg-slate-700"
-                                    >
-                                        {t.close}
-                                    </button>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button
+                                            onClick={() => setIsReviewMode(false)}
+                                            className="w-full py-3 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl border border-slate-200 dark:border-slate-600 transition-all hover:bg-slate-100 dark:hover:bg-slate-600"
+                                        >
+                                            {t.backToResult}
+                                        </button>
+                                        <button
+                                            onClick={onClose}
+                                            className="w-full py-3 bg-slate-800 text-white font-bold rounded-xl transition-all hover:bg-slate-700"
+                                        >
+                                            {t.close}
+                                        </button>
+                                    </div>
                                 </div>
                             ) : showResult ? (
                                 <div className="text-center py-6 animate-fade-in-up">
@@ -327,15 +353,15 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                     </div>
 
                                     <div className="space-y-4 px-2">
+                                        <button
+                                            onClick={() => setIsReviewMode(true)}
+                                            className="w-full py-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-black rounded-2xl transition-all uppercase tracking-wider text-xs"
+                                        >
+                                            {t.review}
+                                        </button>
                                         {isPractice ? (
                                             /* Practice Mode Options */
                                             <div className="grid grid-cols-2 gap-3">
-                                                <button
-                                                    onClick={() => setIsReviewMode(true)}
-                                                    className="col-span-2 py-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-black rounded-2xl transition-all uppercase tracking-wider text-xs"
-                                                >
-                                                    {t.review}
-                                                </button>
                                                 <button
                                                     onClick={handleTryAgain}
                                                     className="py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl transition-all shadow-xl shadow-blue-500/20 uppercase tracking-widest text-xs"
