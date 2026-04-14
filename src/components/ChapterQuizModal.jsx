@@ -170,20 +170,20 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
 
     return createPortal(
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] animate-scale-in">
+            <div className="bg-token-bg-surface rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-token-border flex flex-col max-h-[90vh] animate-scale-in">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center p-20 space-y-4">
                         <svg className="w-12 h-12 text-orange-500 animate-pulse" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        <p className="text-slate-500 dark:text-slate-400 font-medium">{t.loadingText}</p>
+                        <p className="text-token-text-muted font-medium">{t.loadingText}</p>
                     </div>
                 ) : totalQuestions === 0 ? (
                     <div className="p-8 text-center">
-                        <p className="text-slate-600 dark:text-slate-400 mb-6">{t.noQuestions}</p>
+                        <p className="text-token-text-secondary mb-6">{t.noQuestions}</p>
                         <button
                             onClick={onClose}
-                            className="px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all hover:bg-slate-300 dark:hover:bg-slate-600"
+                            className="px-6 py-2 bg-token-border text-token-text-secondary font-bold rounded-xl transition-all hover:bg-token-border-strong"
                         >
                             {t.close}
                         </button>
@@ -191,21 +191,21 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                 ) : (
                     <>
                         {/* Header */}
-                        <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                        <div className="p-4 border-b border-token-border flex justify-between items-center bg-token-bg-page/80">
                             <div className="flex items-center gap-2 min-w-0">
                                 {lessonId && (
                                     <span className="text-xs font-black text-orange-500 bg-orange-50 dark:bg-orange-500/10 px-2.5 py-1 rounded-lg border border-orange-100 dark:border-orange-500/20 shrink-0">
                                         {lessonId}
                                     </span>
                                 )}
-                                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200 truncate">
+                                <h3 className="font-bold text-lg text-token-text-primary truncate">
                                     {isReviewMode ? t.reviewTitle : showResult ? t.result : `${t.question} ${currentQuestionIndex + 1}/${totalQuestions}`}
                                 </h3>
                             </div>
                             {(!showResult || isReviewMode) && (
                                 <button
                                     onClick={onClose}
-                                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                                    className="text-token-text-muted hover:text-token-text-secondary transition-colors"
                                 >
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
@@ -228,7 +228,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                         {idx + 1}
                                                     </span>
                                                     <div className="min-w-0">
-                                                        <p className="font-medium text-slate-800 dark:text-slate-200">{q.questionText}</p>
+                                                        <p className="font-medium text-token-text-primary">{q.questionText}</p>
                                                         <div className={`mt-1 inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${isCorrect ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}`}>
                                                             {isCorrect ? t.right : t.wrong}
                                                         </div>
@@ -251,7 +251,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                             ? isCorrect
                                                                 ? 'text-green-700 dark:text-green-300 font-semibold'
                                                                 : 'text-red-600 dark:text-red-400 font-semibold'
-                                                            : 'text-slate-500 dark:text-slate-400';
+                                                            : 'text-token-text-muted';
 
                                                         const isOptionImage = typeof opt === 'string' && (opt.startsWith('/') || opt.includes('.jpg') || opt.includes('.png') || opt.includes('.webp'));
 
@@ -272,11 +272,11 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                             </div>
                                         );
                                     })}
-                                    <div className="sticky bottom-0 -mx-6 mt-6 border-t border-slate-200/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-800/95 backdrop-blur px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+                                    <div className="sticky bottom-0 -mx-6 mt-6 border-t border-token-border bg-token-bg-surface/95 backdrop-blur px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
                                         <div className="grid grid-cols-2 gap-3">
                                             <button
                                                 onClick={() => setIsReviewMode(false)}
-                                                className="w-full py-3 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl border border-slate-200 dark:border-slate-600 transition-all hover:bg-slate-100 dark:hover:bg-slate-600"
+                                                className="w-full py-3 bg-token-bg-surface text-token-text-secondary font-bold rounded-xl border border-token-border transition-all hover:bg-token-bg-page"
                                             >
                                                 {t.backToResult}
                                             </button>
@@ -322,7 +322,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
 
                                         {/* Central Content */}
                                         <div className="z-10 flex flex-col items-center">
-                                            <div className="text-5xl font-black tracking-tighter text-slate-900 dark:text-white">
+                                            <div className="text-5xl font-black tracking-tighter text-token-text-primary">
                                                 {Math.round((score / totalQuestions) * 100)}%
                                             </div>
                                             <div className={`text-[10px] font-black uppercase tracking-widest mt-1 ${isPassed ? 'text-emerald-500' : 'text-orange-500'}`}>
@@ -338,11 +338,11 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                     </div>
 
                                     <div className="space-y-2 mb-10 px-4">
-                                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-tight">
+                                        <h2 className="text-2xl md:text-3xl font-black text-token-text-primary tracking-tight leading-tight">
                                             {isPassed ? t.completed : t.failed}
                                         </h2>
-                                        <p className="text-slate-500 dark:text-slate-400 font-bold">
-                                            {t.score} <span className="text-slate-900 dark:text-white">{score}</span> / {totalQuestions}
+                                        <p className="text-token-text-muted font-bold">
+                                            {t.score} <span className="text-token-text-primary">{score}</span> / {totalQuestions}
                                         </p>
                                         {!isPassed && (
                                             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded-full text-[10px] font-black uppercase tracking-wider border border-orange-100 dark:border-orange-500/20">
@@ -354,11 +354,11 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                         )}
                                     </div>
 
-                                    <div className="sticky bottom-0 -mx-6 mt-6 border-t border-slate-200/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-800/95 backdrop-blur px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+                                    <div className="sticky bottom-0 -mx-6 mt-6 border-t border-token-border bg-token-bg-surface/95 backdrop-blur px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
                                         <div className="space-y-4 px-2">
                                             <button
                                                 onClick={() => setIsReviewMode(true)}
-                                                className="w-full py-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-black rounded-2xl transition-all uppercase tracking-wider text-xs"
+                                                className="w-full py-4 bg-token-bg-page hover:bg-token-border text-token-text-secondary font-black rounded-2xl transition-all uppercase tracking-wider text-xs"
                                             >
                                                 {t.review}
                                             </button>
@@ -373,7 +373,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                     </button>
                                                     <button
                                                         onClick={onClose}
-                                                        className="py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl transition-all shadow-xl uppercase tracking-widest text-xs"
+                                                        className="py-4 bg-token-text-primary text-token-bg-surface font-black rounded-2xl transition-all shadow-xl uppercase tracking-widest text-xs"
                                                     >
                                                         {t.close}
                                                     </button>
@@ -403,7 +403,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                     </button>
                                                     <button
                                                         onClick={onReadAgain || onClose}
-                                                        className="w-full py-4 text-slate-500 dark:text-slate-400 font-bold hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
+                                                        className="w-full py-4 text-token-text-muted font-bold hover:text-token-action-primary transition-colors"
                                                     >
                                                         {t.readAgain}
                                                     </button>
@@ -414,7 +414,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                 </div>
                             ) : (
                                 <div className="space-y-6">
-                                    <div className="text-lg font-medium text-slate-800 dark:text-slate-200 leading-relaxed">
+                                    <div className="text-lg font-medium text-token-text-primary leading-relaxed">
                                         {currentQuestion?.questionText}
                                     </div>
 
@@ -438,7 +438,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                     onClick={() => handleOptionSelect(idx)}
                                                     className={`relative rounded-2xl transition-all border-2 flex group ${userAnswers[currentQuestionIndex] === idx
                                                         ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300'
-                                                        : 'border-slate-100 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400'
+                                                        : 'border-token-border hover:border-orange-200 dark:hover:border-orange-800 hover:bg-token-bg-page text-token-text-secondary'
                                                         } ${isImage
                                                             ? 'aspect-square flex-col items-center justify-center p-3'
                                                             : 'w-full py-4 px-5 items-center justify-start text-left'
@@ -459,13 +459,13 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
 
                         {/* Footer */}
                         {(!showResult && !isReviewMode) && (
-                            <div className="sticky bottom-0 z-10 border-t border-slate-100 dark:border-slate-700 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+                            <div className="sticky bottom-0 z-10 border-t border-token-border bg-token-bg-page/95 backdrop-blur p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                                 <button
                                     onClick={handleNext}
                                     disabled={userAnswers[currentQuestionIndex] === undefined}
                                     className={`w-full py-3 rounded-xl font-bold transition-all ${userAnswers[currentQuestionIndex] !== undefined
-                                        ? 'bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/20'
-                                        : 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                                        ? 'bg-token-action-primary hover:bg-orange-700 text-token-action-primary-fg shadow-lg shadow-orange-600/20'
+                                        : 'bg-token-border text-token-text-muted cursor-not-allowed'
                                         }`}
                                 >
                                     {currentQuestionIndex === totalQuestions - 1 ? t.submit : t.next}
