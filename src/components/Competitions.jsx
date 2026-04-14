@@ -1140,25 +1140,30 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 </div>
                                 <div className="text-center font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-300 truncate w-full max-w-[100px] hover:text-orange-600 cursor-pointer mb-0.5">{fullLeaderboard[1].full_name?.split(' ')[0] || 'Anonymous'}</div>
                                 <div className="text-xs sm:text-sm font-black text-slate-500 dark:text-slate-400 leading-none">{fullLeaderboard[1].points.toLocaleString()} <span className="hidden sm:inline text-[9px] uppercase font-bold text-slate-400">pts</span></div>
-                                <div className="flex items-center gap-1.5 mt-1">
-                                    <span className="text-[9px] font-bold text-orange-500/70 dark:text-orange-400/60 flex items-center gap-0.5">
-                                        <span>📖</span>
-                                        {(fullLeaderboard[1].reading_points || 0).toLocaleString()}
-                                    </span>
-                                    {(fullLeaderboard[1].total_penalties > 0) && (
-                                        <span className="text-[8px] font-black text-red-500 flex items-center gap-0.5" title="Penalties">
-                                            <span>🚩</span>
-                                            {fullLeaderboard[1].total_penalties.toLocaleString()}
-                                        </span>
-                                    )}
+                                <div className="flex flex-col items-center gap-1 mt-1 w-full">
+                                    {/* Badge Row - Dedicated row on mobile */}
                                     {(() => {
                                         const b = getBadgeByLevel(fullLeaderboard[1].training_level || 0);
                                         return b && (
-                                            <span className={`px-1 rounded-[3px] text-[7px] font-bold border ${b.color}`}>
+                                            <span className={`px-1 rounded-[3px] text-[7px] sm:text-[8px] font-bold border shadow-sm ${b.color}`}>
                                                 {language === 'en' ? b.en : b.bn}
                                             </span>
                                         );
                                     })()}
+                                    
+                                    {/* Stats Row */}
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-[9px] font-bold text-orange-500/70 dark:text-orange-400/60 flex items-center gap-0.5">
+                                            <span>📖</span>
+                                            {(fullLeaderboard[1].reading_points || 0).toLocaleString()}
+                                        </span>
+                                        {(fullLeaderboard[1].total_penalties > 0) && (
+                                            <span className="text-[8px] font-black text-red-500 flex items-center gap-0.5" title="Penalties">
+                                                <span>🚩</span>
+                                                {fullLeaderboard[1].total_penalties.toLocaleString()}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 {fullLeaderboard[1].last_login_at && (
                                     <div className="flex items-center gap-1 mt-0.5">
@@ -1200,25 +1205,30 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 </div>
                                 <div className="text-center font-black text-sm sm:text-base text-yellow-600 dark:text-yellow-500 truncate w-full max-w-[120px] hover:text-orange-500 cursor-pointer mb-0.5">{fullLeaderboard[0].full_name?.split(' ')[0] || 'Anonymous'}</div>
                                 <div className="text-sm sm:text-base font-black text-yellow-700 dark:text-yellow-400 leading-none" style={{ textShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>{fullLeaderboard[0].points.toLocaleString()} <span className="hidden sm:inline text-[10px] sm:text-xs uppercase font-bold text-yellow-600/70">pts</span></div>
-                                <div className="flex items-center gap-2 mt-1.5">
-                                    <span className="text-[10px] font-bold text-yellow-600 dark:text-yellow-500 flex items-center gap-0.5">
-                                        <span>📖</span>
-                                        {(fullLeaderboard[0].reading_points || 0).toLocaleString()}
-                                    </span>
-                                    {(fullLeaderboard[0].total_penalties > 0) && (
-                                        <span className="text-[10px] font-black text-red-600 dark:text-red-500 flex items-center gap-0.5 px-1 py-0.5 bg-red-50 dark:bg-red-900/20 rounded border border-red-100 dark:border-red-900/30">
-                                            <span>🚩</span>
-                                            {fullLeaderboard[0].total_penalties.toLocaleString()}
-                                        </span>
-                                    )}
+                                <div className="flex flex-col items-center gap-1.5 mt-1.5 w-full">
+                                    {/* Badge Row */}
                                     {(() => {
                                         const b = getBadgeByLevel(fullLeaderboard[0].training_level || 0);
                                         return b && (
-                                            <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-black border shadow-sm ${b.color}`}>
+                                            <span className={`px-1.5 py-0.5 rounded-md text-[8px] sm:text-[9px] font-black border shadow-sm ${b.color}`}>
                                                 {language === 'en' ? b.en : b.bn}
                                             </span>
                                         );
                                     })()}
+
+                                    {/* Stats Row */}
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] sm:text-xs font-bold text-yellow-600 dark:text-yellow-500 flex items-center gap-0.5">
+                                            <span>📖</span>
+                                            {(fullLeaderboard[0].reading_points || 0).toLocaleString()}
+                                        </span>
+                                        {(fullLeaderboard[0].total_penalties > 0) && (
+                                            <span className="text-[10px] sm:text-xs font-black text-red-600 dark:text-red-500 flex items-center gap-0.5 px-1 py-0.5 bg-red-50 dark:bg-red-900/20 rounded border border-red-100 dark:border-red-900/30">
+                                                <span>🚩</span>
+                                                {fullLeaderboard[0].total_penalties.toLocaleString()}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 {fullLeaderboard[0].last_login_at && (
                                     <div className="flex items-center gap-1 mt-1 justify-center">
@@ -1260,25 +1270,30 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 </div>
                                 <div className="text-center font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-300 truncate w-full max-w-[100px] hover:text-amber-700 cursor-pointer mb-0.5">{fullLeaderboard[2].full_name?.split(' ')[0] || 'Anonymous'}</div>
                                 <div className="text-xs sm:text-sm font-black text-amber-700 dark:text-amber-600 leading-none">{fullLeaderboard[2].points.toLocaleString()} <span className="hidden sm:inline text-[10px] uppercase font-bold text-amber-600/70">pts</span></div>
-                                <div className="flex items-center gap-1 mt-1">
-                                    <span className="text-[9px] font-bold text-amber-600/70 dark:text-amber-500/60 flex items-center gap-0.5">
-                                        <span>📖</span>
-                                        {(fullLeaderboard[2].reading_points || 0).toLocaleString()}
-                                    </span>
-                                    {(fullLeaderboard[2].total_penalties > 0) && (
-                                        <span className="text-[8px] font-black text-red-500 flex items-center gap-0.5" title="Penalties">
-                                            <span>🚩</span>
-                                            {fullLeaderboard[2].total_penalties.toLocaleString()}
-                                        </span>
-                                    )}
+                                <div className="flex flex-col items-center gap-1 mt-1 w-full">
+                                    {/* Badge Row */}
                                     {(() => {
                                         const b = getBadgeByLevel(fullLeaderboard[2].training_level || 0);
                                         return b && (
-                                            <span className={`px-1 rounded-[3px] text-[7px] font-bold border ${b.color}`}>
+                                            <span className={`px-1 rounded-[3px] text-[7px] sm:text-[8px] font-bold border shadow-sm ${b.color}`}>
                                                 {language === 'en' ? b.en : b.bn}
                                             </span>
                                         );
                                     })()}
+
+                                    {/* Stats Row */}
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-[9px] font-bold text-amber-600/70 dark:text-amber-500/60 flex items-center gap-0.5">
+                                            <span>📖</span>
+                                            {(fullLeaderboard[2].reading_points || 0).toLocaleString()}
+                                        </span>
+                                        {(fullLeaderboard[2].total_penalties > 0) && (
+                                            <span className="text-[8px] font-black text-red-500 flex items-center gap-0.5" title="Penalties">
+                                                <span>🚩</span>
+                                                {fullLeaderboard[2].total_penalties.toLocaleString()}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 {fullLeaderboard[2].last_login_at && (
                                     <div className="flex items-center gap-1 mt-0.5">

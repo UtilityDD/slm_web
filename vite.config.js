@@ -27,7 +27,6 @@ export default defineConfig(({ mode }) => ({
     drop: ['console', 'debugger'],
   },
   server: {
-    port: 5173,
-    host: true
+    // Port and host removed to use Vite defaults for better compatibility
   }
 }))
