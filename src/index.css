@@ -5,6 +5,25 @@
 @tailwind utilities;
 
 :root {
+  /* Color primitives */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  --color-orange-500: #f97316;
+  --color-orange-600: #ea580c;
+  --color-green-500: #22c55e;
+  --color-red-500: #ef4444;
+
+  /* Existing semantic safety colors */
   --color-safety-red: #ef4444;
   /* Emergency / Danger / Stop */
   --color-safety-orange: #f97316;
@@ -13,6 +32,73 @@
   /* Caution / Alert */
   --color-safety-green: #22c55e;
   /* Success / Safe / Confirm */
+
+  /* Semantic color tokens (light) */
+  --bg-page: var(--color-slate-50);
+  --bg-surface: var(--color-white);
+  --bg-surface-elevated: #ffffff;
+  --text-primary: var(--color-slate-900);
+  --text-secondary: var(--color-slate-600);
+  --text-muted: var(--color-slate-500);
+  --border-default: var(--color-slate-200);
+  --border-strong: var(--color-slate-300);
+  --action-primary-bg: var(--color-orange-600);
+  --action-primary-fg: var(--color-white);
+  --state-success-bg: #ecfdf5;
+  --state-success-fg: #166534;
+  --state-danger-bg: #fef2f2;
+  --state-danger-fg: #b91c1c;
+
+  /* Spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+
+  /* Radius scale */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+
+  /* Shadow scale */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 6px 16px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.12);
+
+  /* Motion tokens */
+  --motion-fast: 150ms;
+  --motion-base: 220ms;
+  --motion-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Layering */
+  --z-overlay: 90;
+  --z-modal: 200;
+  --z-toast: 300;
+}
+
+.dark {
+  /* Semantic color tokens (dark) */
+  --bg-page: var(--color-slate-900);
+  --bg-surface: var(--color-slate-800);
+  --bg-surface-elevated: #111827;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-default: #334155;
+  --border-strong: #475569;
+  --action-primary-bg: var(--color-orange-500);
+  --action-primary-fg: var(--color-white);
+  --state-success-bg: #052e1f;
+  --state-success-fg: #86efac;
+  --state-danger-bg: #450a0a;
+  --state-danger-fg: #fca5a5;
 }
 
 html,
