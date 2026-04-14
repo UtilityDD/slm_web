@@ -8,6 +8,20 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['react', 'react-dom'],
+          'supabase': ['@supabase/supabase-js'],
+          'lottie': ['@dotlottie/react-player', 'lottie-react'],
+          'pdf-utils': ['jspdf', 'html2canvas', 'html2pdf.js'],
+          'crypto': ['crypto-js']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000 // Increasing limit as we have heavy assets
+  },
   assetsInclude: ['**/*.lottie'],
   esbuild: {
     drop: ['console', 'debugger'],

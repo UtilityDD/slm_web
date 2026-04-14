@@ -577,7 +577,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
             try {
                 const { data, error } = await supabase
                     .from('profiles')
-                    .select('completed_lessons, reading_points')
+                    .select('completed_lessons, reading_points, points')
                     .eq('id', user.id)
                     .single();
 
@@ -586,6 +586,20 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                 }
 
                 if (data) {
+                    // 🛡️ DETECT ADMIN RESET: 
+                    // If server total points and lessons are both ZERO, 
+                    // but we have local data, it means an Admin Reset occurred.
+                    // We must respect the server and wipe local progress.
+                    const isServerReset = (data.points === 0) && (!data.completed_lessons || data.completed_lessons.length === 0);
+
+                    if (isServerReset && localProgress.length > 0) {
+                        console.log('⚠️ Admin reset detected on server. Purging local progress...');
+                        storageUtils.removeItem(`training_progress_${user.id}`);
+                        setCompletedLessons([]);
+                        setReadingPoints(0);
+                        return; // Exit, everything is now reset to 0
+                    }
+
                     console.log('✅ Lessons fetched from Supabase:', {
                         completed_lessons: data.completed_lessons?.length || 0,
                         reading_points: data.reading_points || 0,

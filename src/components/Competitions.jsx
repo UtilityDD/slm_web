@@ -36,6 +36,30 @@ const stringToSeed = (str) => {
     return Math.abs(hash);
 };
 
+// Utility to format last active date
+const formatLastActive = (dateString, language) => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    const isBn = language === 'bn';
+
+    if (diffInSeconds < 60) return isBn ? 'এইমাত্র' : 'Just now';
+    if (diffInMinutes < 60) return isBn ? `${diffInMinutes} মিনিট আগে` : `${diffInMinutes}m ago`;
+    if (diffInHours < 24) {
+        if (date.getDate() === now.getDate()) return isBn ? 'আজ' : 'Today';
+        return isBn ? 'গতকাল' : 'Yesterday';
+    }
+    if (diffInDays < 7) return isBn ? `${diffInDays} দিন আগে` : `${diffInDays}d ago`;
+    
+    // Default to short date
+    return date.toLocaleDateString(isBn ? 'bn-BD' : 'en-US', { day: 'numeric', month: 'short' });
+};
+
 export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile }) {
     const [loading, setLoading] = useState(true);
     const [activeQuiz, setActiveQuiz] = useState(null);
@@ -1056,7 +1080,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 </div>
 
                 {/* Leaderboard Content */}
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-4">
+                <div className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-3">
                     {user && userRank && !loadingFull && (() => {
                         const userBadge = getBadgeByLevel(userProfile?.training_level || 0);
                         return (
@@ -1096,9 +1120,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                     {/* Podium Section */}
                     {!loadingFull && fullLeaderboard.length >= 3 && (
-                        <div className="flex items-end justify-center gap-2 sm:gap-8 pt-6 pb-10 sm:pb-12 px-2">
+                        <div className="flex items-end justify-center gap-2 sm:gap-6 pt-2 pb-12 sm:pb-20 px-2">
                             {/* 2nd Place */}
-                            <div className="flex flex-col items-center w-[30%] sm:w-32 translate-y-4 sm:translate-y-8 animate-fade-in" style={{ animationDelay: '200ms' }}>
+                            <div className="flex flex-col items-center w-[30%] sm:w-32 translate-y-3 sm:translate-y-6 animate-fade-in" style={{ animationDelay: '200ms' }}>
                                 <div className="relative mb-2 sm:mb-3 group cursor-pointer" onClick={() => {
                                     const newSet = new Set(expandedRows);
                                     if (newSet.has(fullLeaderboard[1].user_id)) newSet.delete(fullLeaderboard[1].user_id);
@@ -1114,8 +1138,46 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                     <div className="absolute -bottom-2 right-0 sm:-right-2 w-8 h-8 bg-slate-300 dark:bg-slate-600 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800 shadow-sm text-[10px] sm:text-xs font-bold text-slate-700 dark:text-white">2ND</div>
                                 </div>
-                                <div className="text-center font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-300 truncate w-full max-w-[100px] hover:text-orange-600 cursor-pointer">{fullLeaderboard[1].full_name?.split(' ')[0] || 'Anonymous'}</div>
-                                <div className="text-xs sm:text-sm font-black text-slate-500 dark:text-slate-400 mt-0.5">{fullLeaderboard[1].points.toLocaleString()} <span className="text-[10px] uppercase font-bold text-slate-400">pts</span></div>
+                                <div className="text-center font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-300 truncate w-full max-w-[100px] hover:text-orange-600 cursor-pointer mb-0.5">{fullLeaderboard[1].full_name?.split(' ')[0] || 'Anonymous'}</div>
+                                <div className="text-xs sm:text-sm font-black text-slate-500 dark:text-slate-400 leading-none">{fullLeaderboard[1].points.toLocaleString()} <span className="hidden sm:inline text-[9px] uppercase font-bold text-slate-400">pts</span></div>
+                                <div className="flex items-center gap-1.5 mt-1">
+                                    <span className="text-[9px] font-bold text-orange-500/70 dark:text-orange-400/60 flex items-center gap-0.5">
+                                        <span>📖</span>
+                                        {(fullLeaderboard[1].reading_points || 0).toLocaleString()}
+                                    </span>
+                                    {(fullLeaderboard[1].total_penalties > 0) && (
+                                        <span className="text-[8px] font-black text-red-500 flex items-center gap-0.5" title="Penalties">
+                                            <span>🚩</span>
+                                            {fullLeaderboard[1].total_penalties.toLocaleString()}
+                                        </span>
+                                    )}
+                                    {(() => {
+                                        const b = getBadgeByLevel(fullLeaderboard[1].training_level || 0);
+                                        return b && (
+                                            <span className={`px-1 rounded-[3px] text-[7px] font-bold border ${b.color}`}>
+                                                {language === 'en' ? b.en : b.bn}
+                                            </span>
+                                        );
+                                    })()}
+                                </div>
+                                {fullLeaderboard[1].last_login_at && (
+                                    <div className="flex items-center gap-1 mt-0.5">
+                                        {(() => {
+                                            const date = new Date(fullLeaderboard[1].last_login_at);
+                                            const now = new Date();
+                                            const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+                                            return isToday && (
+                                                <span className="relative flex h-1.5 w-1.5">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                                                </span>
+                                            );
+                                        })()}
+                                        <span className="text-[7px] text-slate-400 lowercase">
+                                            {formatLastActive(fullLeaderboard[1].last_login_at, language).replace('Active ', '').replace('সক্রিয় ', '')}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* 1st Place */}
@@ -1136,12 +1198,51 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                     <div className="absolute -bottom-4 right-2 w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800 shadow-[0_4px_12px_rgba(250,204,21,0.6)] z-20 text-[14px] font-black text-white">1ST</div>
                                 </div>
-                                <div className="text-center font-black text-sm sm:text-lg text-yellow-600 dark:text-yellow-500 truncate w-full max-w-[120px] shadow-sm hover:text-orange-500 cursor-pointer">{fullLeaderboard[0].full_name?.split(' ')[0] || 'Anonymous'}</div>
-                                <div className="text-sm sm:text-base font-black text-yellow-700 dark:text-yellow-400 mt-0.5" style={{ textShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>{fullLeaderboard[0].points.toLocaleString()} <span className="text-[10px] sm:text-xs uppercase font-bold text-yellow-600/70">pts</span></div>
+                                <div className="text-center font-black text-sm sm:text-base text-yellow-600 dark:text-yellow-500 truncate w-full max-w-[120px] hover:text-orange-500 cursor-pointer mb-0.5">{fullLeaderboard[0].full_name?.split(' ')[0] || 'Anonymous'}</div>
+                                <div className="text-sm sm:text-base font-black text-yellow-700 dark:text-yellow-400 leading-none" style={{ textShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>{fullLeaderboard[0].points.toLocaleString()} <span className="hidden sm:inline text-[10px] sm:text-xs uppercase font-bold text-yellow-600/70">pts</span></div>
+                                <div className="flex items-center gap-2 mt-1.5">
+                                    <span className="text-[10px] font-bold text-yellow-600 dark:text-yellow-500 flex items-center gap-0.5">
+                                        <span>📖</span>
+                                        {(fullLeaderboard[0].reading_points || 0).toLocaleString()}
+                                    </span>
+                                    {(fullLeaderboard[0].total_penalties > 0) && (
+                                        <span className="text-[10px] font-black text-red-600 dark:text-red-500 flex items-center gap-0.5 px-1 py-0.5 bg-red-50 dark:bg-red-900/20 rounded border border-red-100 dark:border-red-900/30">
+                                            <span>🚩</span>
+                                            {fullLeaderboard[0].total_penalties.toLocaleString()}
+                                        </span>
+                                    )}
+                                    {(() => {
+                                        const b = getBadgeByLevel(fullLeaderboard[0].training_level || 0);
+                                        return b && (
+                                            <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-black border shadow-sm ${b.color}`}>
+                                                {language === 'en' ? b.en : b.bn}
+                                            </span>
+                                        );
+                                    })()}
+                                </div>
+                                {fullLeaderboard[0].last_login_at && (
+                                    <div className="flex items-center gap-1 mt-1 justify-center">
+                                        {(() => {
+                                            const date = new Date(fullLeaderboard[0].last_login_at);
+                                            const now = new Date();
+                                            const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+                                            return isToday && (
+                                                <span className="relative flex h-2 w-2">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                                </span>
+                                            );
+                                        })()}
+                                        <span className="text-[8px] text-yellow-600/60 dark:text-yellow-500/50 font-bold uppercase tracking-tighter">
+                                            <span className="hidden sm:inline">{language === 'en' ? 'Active: ' : 'সক্রিয়: '}</span>
+                                            {formatLastActive(fullLeaderboard[0].last_login_at, language).replace('Active ', '').replace('সক্রিয় ', '')}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* 3rd Place */}
-                            <div className="flex flex-col items-center w-[30%] sm:w-32 translate-y-8 sm:translate-y-12 animate-fade-in" style={{ animationDelay: '400ms' }}>
+                            <div className="flex flex-col items-center w-[30%] sm:w-32 translate-y-6 sm:translate-y-10 animate-fade-in" style={{ animationDelay: '400ms' }}>
                                 <div className="relative mb-2 sm:mb-3 group cursor-pointer" onClick={() => {
                                     const newSet = new Set(expandedRows);
                                     if (newSet.has(fullLeaderboard[2].user_id)) newSet.delete(fullLeaderboard[2].user_id);
@@ -1157,8 +1258,46 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                     <div className="absolute -bottom-2 right-0 sm:-right-2 w-7 h-7 bg-amber-600 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800 shadow-sm text-[9px] sm:text-[10px] font-bold text-white" style={{ filter: "grayscale(20%) sepia(50%) hue-rotate(-20deg) brightness(85%)" }}>3RD</div>
                                 </div>
-                                <div className="text-center font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-300 truncate w-full max-w-[100px] hover:text-amber-700 cursor-pointer">{fullLeaderboard[2].full_name?.split(' ')[0] || 'Anonymous'}</div>
-                                <div className="text-xs sm:text-sm font-black text-amber-700 dark:text-amber-600 mt-0.5">{fullLeaderboard[2].points.toLocaleString()} <span className="text-[10px] uppercase font-bold text-amber-600/70">pts</span></div>
+                                <div className="text-center font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-300 truncate w-full max-w-[100px] hover:text-amber-700 cursor-pointer mb-0.5">{fullLeaderboard[2].full_name?.split(' ')[0] || 'Anonymous'}</div>
+                                <div className="text-xs sm:text-sm font-black text-amber-700 dark:text-amber-600 leading-none">{fullLeaderboard[2].points.toLocaleString()} <span className="hidden sm:inline text-[10px] uppercase font-bold text-amber-600/70">pts</span></div>
+                                <div className="flex items-center gap-1 mt-1">
+                                    <span className="text-[9px] font-bold text-amber-600/70 dark:text-amber-500/60 flex items-center gap-0.5">
+                                        <span>📖</span>
+                                        {(fullLeaderboard[2].reading_points || 0).toLocaleString()}
+                                    </span>
+                                    {(fullLeaderboard[2].total_penalties > 0) && (
+                                        <span className="text-[8px] font-black text-red-500 flex items-center gap-0.5" title="Penalties">
+                                            <span>🚩</span>
+                                            {fullLeaderboard[2].total_penalties.toLocaleString()}
+                                        </span>
+                                    )}
+                                    {(() => {
+                                        const b = getBadgeByLevel(fullLeaderboard[2].training_level || 0);
+                                        return b && (
+                                            <span className={`px-1 rounded-[3px] text-[7px] font-bold border ${b.color}`}>
+                                                {language === 'en' ? b.en : b.bn}
+                                            </span>
+                                        );
+                                    })()}
+                                </div>
+                                {fullLeaderboard[2].last_login_at && (
+                                    <div className="flex items-center gap-1 mt-0.5">
+                                        {(() => {
+                                            const date = new Date(fullLeaderboard[2].last_login_at);
+                                            const now = new Date();
+                                            const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+                                            return isToday && (
+                                                <span className="relative flex h-1.5 w-1.5">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                                                </span>
+                                            );
+                                        })()}
+                                        <span className="text-[7px] text-amber-600/50 lowercase">
+                                            {formatLastActive(fullLeaderboard[2].last_login_at, language).replace('Active ', '').replace('সক্রিয় ', '')}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -1168,16 +1307,16 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             <table className="w-full">
                                 <thead className="sticky top-0 bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700 z-10">
                                     <tr>
-                                        <th className="px-3 sm:px-4 py-2 text-left text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-10">
+                                        <th className="px-3 sm:px-4 py-1 text-left text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-10">
                                             {language === 'en' ? 'Rank' : 'র‍্যাঙ্ক'}
                                         </th>
-                                        <th className="px-3 sm:px-4 py-2 text-left text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                        <th className="px-3 sm:px-4 py-1 text-left text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                             {language === 'en' ? 'Player' : 'খেলোয়াড়'}
                                         </th>
-                                        <th className="hidden sm:table-cell px-3 sm:px-4 py-2 text-left text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                        <th className="hidden sm:table-cell px-3 sm:px-4 py-1 text-left text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                             {language === 'en' ? 'Level' : 'স্তর'}
                                         </th>
-                                        <th className="px-3 sm:px-4 py-2 text-right text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                        <th className="px-3 sm:px-4 py-1 text-right text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                             {language === 'en' ? 'Points' : 'পয়েন্ট'}
                                         </th>
                                     </tr>
@@ -1218,7 +1357,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         onClick={toggleExpand}
                                                         className={`transition-colors border-b border-slate-50 dark:border-slate-700/50 cursor-pointer ${isMe ? 'bg-orange-50/50 dark:bg-orange-900/10' : 'hover:bg-slate-50/30 dark:hover:bg-slate-700/10'}`}
                                                     >
-                                                        <td className="px-3 sm:px-4 py-2">
+                                                        <td className="px-3 sm:px-4 py-1.5">
                                                             <div className="flex items-center gap-1.5 text-xs">
                                                                 {getMedalIcon(index + 1) && (
                                                                     <span className="text-sm">{getMedalIcon(index + 1)}</span>
@@ -1228,7 +1367,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 </span>
                                                             </div>
                                                         </td>
-                                                        <td className="px-3 sm:px-4 py-2">
+                                                        <td className="px-3 sm:px-4 py-1.5">
                                                             <div className="flex items-center gap-2 min-w-0">
                                                                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex-shrink-0 overflow-hidden border border-slate-300/50 dark:border-slate-600/50 shadow-sm">
                                                                     {item.avatar_url ? (
@@ -1239,9 +1378,30 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 </div>
                                                                 <div className="min-w-0 flex-1">
                                                                     <div className="flex items-center gap-1.5 flex-wrap">
-                                                                        <p className={`text-xs font-bold truncate ${isMe ? 'text-orange-700 dark:text-orange-400' : 'text-slate-800 dark:text-slate-200'}`}>
-                                                                            {isMe ? (language === 'en' ? 'You' : 'আপনি') : (item.full_name || 'Anonymous')}
-                                                                        </p>
+                                                                        <div className="flex flex-col">
+                                                                            <p className={`text-xs font-bold truncate ${isMe ? 'text-orange-700 dark:text-orange-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                                                                                {isMe ? (language === 'en' ? 'You' : 'আপনি') : (item.full_name || 'Anonymous')}
+                                                                            </p>
+                                                                            {item.last_login_at && (
+                                                                                <div className="flex items-center gap-1 mt-0.5">
+                                                                                    {(() => {
+                                                                                        const date = new Date(item.last_login_at);
+                                                                                        const now = new Date();
+                                                                                        const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+                                                                                        return isToday && (
+                                                                                            <span className="relative flex h-1.5 w-1.5 mr-0.5">
+                                                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                                                                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                                                                                            </span>
+                                                                                        );
+                                                                                    })()}
+                                                                                    <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium">
+                                                                                        {language === 'en' ? 'Active: ' : 'সক্রিয়: '}
+                                                                                        {formatLastActive(item.last_login_at, language)}
+                                                                                    </span>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
                                                                         {badge && (
                                                                             <span className={`sm:hidden inline-flex px-1.5 py-0.5 rounded text-[8px] font-bold border shrink-0 ${badge.color}`}>
                                                                                 {language === 'en' ? badge.en : badge.bn}
@@ -1258,17 +1418,15 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 </span>
                                                             )}
                                                         </td>
-                                                        <td className="px-3 sm:px-4 py-2 text-right">
+                                                        <td className="px-3 sm:px-4 py-1.5 text-right">
                                                             <div className="flex flex-col items-end">
                                                                 <span className={`text-xs font-black tabular-nums ${isMe ? 'text-orange-600 dark:text-orange-400' : 'text-slate-700 dark:text-slate-200'}`}>
                                                                     {item.points.toLocaleString()}
                                                                 </span>
-                                                                {(item.reading_points > 0) && (
-                                                                    <span className="text-[8px] font-bold text-orange-500 flex items-center gap-0.5 leading-tight">
-                                                                        <span>📖</span>
-                                                                        {item.reading_points.toLocaleString()}
-                                                                    </span>
-                                                                )}
+                                                                <span className="text-[8px] font-bold text-orange-500 flex items-center gap-0.5 leading-tight">
+                                                                    <span>📖</span>
+                                                                    {(item.reading_points || 0).toLocaleString()}
+                                                                </span>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -1277,18 +1435,27 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         <tr className={`${isMe ? 'bg-orange-50/50 dark:bg-orange-900/5' : 'bg-slate-50/50 dark:bg-slate-700/10'}`}>
                                                             <td colSpan="4" className="px-4 sm:px-6 py-2">
                                                                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-[10px] text-slate-600 dark:text-slate-400 animate-fade-in py-1">
+                                                                    {item.last_login_at && (
+                                                                        <div className="flex items-center gap-1.5 min-w-[120px]">
+                                                                            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                            </svg>
+                                                                            <span className="font-bold">{language === 'en' ? 'Last Active:' : 'সর্বশেষ সক্রিয়:'}</span>
+                                                                            <span>{formatLastActive(item.last_login_at, language)}</span>
+                                                                        </div>
+                                                                    )}
                                                                     <div className="flex items-center gap-1.5">
                                                                         <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                                                         </svg>
                                                                         <span className="font-bold">{language === 'en' ? 'District:' : 'জেলা:'}</span>
-                                                                        <span>{item.district || (language === 'en' ? 'West Bengal' : 'পশ্চিমবঙ্গ')}</span>
+                                                                        <span>{item.district || (language === 'en' ? 'Not Updated' : 'আপডেট করা হয়নি')}</span>
                                                                     </div>
                                                                     {(item.total_penalties > 0) && (
-                                                                        <div className="flex items-center gap-1.5 text-red-500 dark:text-red-400 font-bold">
-                                                                            <span className="text-xs">🔥</span>
-                                                                            <span>{language === 'en' ? 'Total Points Lost:' : 'মোট পয়েন্ট হারানো:'}</span>
+                                                                        <div className="flex items-center gap-1.5 text-red-500 dark:text-red-400 font-bold bg-red-50 dark:bg-red-900/10 px-1.5 py-0.5 rounded-md">
+                                                                            <span className="text-[10px]">🚩</span>
+                                                                            <span className="text-[9px] uppercase tracking-tighter">{language === 'en' ? 'Lost:' : 'পয়েন্ট হারানো:'}</span>
                                                                             <span>{item.total_penalties.toLocaleString()}</span>
                                                                         </div>
                                                                     )}

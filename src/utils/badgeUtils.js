@@ -11,8 +11,9 @@ export const badgeLevels = [
 ];
 
 export const getBadgeByLevel = (level) => {
-    if (!level || level < 1) return null;
-    return badgeLevels.find(b => b.level === level) || badgeLevels[0];
+    // Treat level 0 or null as Level 1 (Trainee)
+    const effectiveLevel = (!level || level < 1) ? 1 : level;
+    return badgeLevels.find(b => b.level === effectiveLevel) || badgeLevels[0];
 };
 
 // Default lesson counts per chapter based on the training manifest
