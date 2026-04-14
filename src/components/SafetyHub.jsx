@@ -257,7 +257,7 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
             onClick={() => onClick(chapter)}
             className={`p-6 rounded-[2.5rem] border transition-all duration-500 cursor-pointer group relative overflow-hidden active:scale-[0.98] ${isFAQ
                 ? 'bg-gradient-to-br from-violet-600/10 to-fuchsia-600/10 dark:from-violet-900/20 dark:to-fuchsia-900/30 border-violet-200 dark:border-violet-700 hover:border-violet-400 dark:hover:border-violet-500 shadow-sm hover:shadow-2xl'
-                : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700/50 hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-2xl'
+                : 'bg-token-bg-surface border-token-border hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-2xl'
                 } animate-slide-up shadow-sm`}
         >
             {/* Background floating glass elements */}
@@ -275,13 +275,13 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
                         <div>
                             <h3 className={`font-black text-xl leading-tight transition-colors ${isFAQ
                                 ? 'text-violet-900 dark:text-violet-100 group-hover:text-violet-600 dark:group-hover:text-violet-400'
-                                : 'text-slate-800 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400'
+                                : 'text-token-text-primary group-hover:text-orange-600 dark:group-hover:text-orange-400'
                                 }`}>
                                 {chapter.title}
                             </h3>
                             <div className="flex items-center gap-2 mt-2">
                                 <span className={`w-2 h-2 rounded-full ${isFAQ ? 'bg-violet-400' : 'bg-orange-400'}`}></span>
-                                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
+                                <p className="text-[10px] font-black text-token-text-muted uppercase tracking-[0.2em]">
                                     {isFAQ ? (
                                         language === 'en' ? 'Reference' : 'রেফারেন্স'
                                     ) : (
@@ -296,12 +296,12 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
                 {!isFAQ ? (
                     <div className="mt-8">
                         <div className="flex justify-between items-end mb-3">
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Mastery</span>
+                            <span className="text-[10px] font-black text-token-text-muted uppercase tracking-widest">Mastery</span>
                             <span className={`text-sm font-black ${progress === 100 ? 'text-emerald-500' : 'text-orange-600'}`}>
                                 {progress}%
                             </span>
                         </div>
-                        <div className="w-full h-3 bg-slate-50 dark:bg-slate-900 shadow-inner rounded-full overflow-hidden border border-slate-100 dark:border-slate-800">
+                        <div className="w-full h-3 bg-token-bg-page shadow-inner rounded-full overflow-hidden border border-token-border">
                             <div
                                 className={`h-full rounded-full transition-all duration-1000 ease-out relative ${progress === 100 ? 'bg-emerald-500' : 'bg-gradient-to-r from-orange-400 to-orange-600'}`}
                                 style={{ width: `${progress}%` }}
@@ -1547,10 +1547,10 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                     <div className="mb-10 bg-gradient-to-br from-orange-500/5 to-orange-600/5 dark:from-orange-500/10 dark:to-orange-900/5 rounded-[2.5rem] p-8 border border-orange-100 dark:border-orange-800/30 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6 overflow-hidden relative group">
                                         <div className="absolute top-0 right-0 w-32 h-32 bg-orange-400/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none group-hover:bg-orange-400/20 transition-colors duration-1000"></div>
                                         <div className="relative z-10">
-                                            <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight mb-2">
+                                            <h2 className="text-2xl font-black text-token-text-primary tracking-tight mb-2">
                                                 {language === 'en' ? 'Training Progress' : 'প্রশিক্ষণ অগ্রগতি'}
                                             </h2>
-                                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                                            <p className="text-sm font-medium text-token-text-secondary">
                                                 {language === 'en'
                                                     ? `You have mastered ${completedLessons.length} out of 91 daily safety lessons.`
                                                     : `আপনি ৯১টি দৈনিক সেফটি পাঠের মধ্যে ${completedLessons.length}টি সম্পন্ন করেছেন।`}
@@ -1561,7 +1561,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                 <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Completion</span>
                                                 <span className="text-sm font-black text-orange-600">{Math.round((completedLessons.length / 91) * 100)}%</span>
                                             </div>
-                                            <div className="w-full h-4 bg-white dark:bg-slate-900 shadow-inner rounded-full overflow-hidden border border-slate-100 dark:border-slate-700">
+                                            <div className="w-full h-4 bg-token-bg-surface shadow-inner rounded-full overflow-hidden border border-token-border">
                                                 <div
                                                     className="h-full bg-gradient-to-r from-orange-400 via-orange-600 to-orange-700 rounded-full transition-all duration-1000 ease-out relative"
                                                     style={{ width: `${Math.round((completedLessons.length / 91) * 100)}%` }}
@@ -1709,8 +1709,8 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                         }}
                                                         style={{ animationDelay: `${index * 0.05}s` }}
                                                         className={`p-5 rounded-[2rem] border transition-all duration-500 flex flex-col gap-4 relative overflow-hidden animate-slide-up active:scale-[0.98] ${isUnlocked
-                                                            ? 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700/50 hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-2xl cursor-pointer hover:-translate-y-1'
-                                                            : 'bg-slate-50/50 dark:bg-slate-900/30 border-slate-100 dark:border-slate-800/50 opacity-60 cursor-not-allowed'
+                                                            ? 'bg-token-bg-surface border-token-border hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-2xl cursor-pointer hover:-translate-y-1'
+                                                            : 'bg-token-bg-page/60 border-token-border opacity-60 cursor-not-allowed'
                                                             } ${isCompleted ? 'ring-2 ring-emerald-500/20' : ''} group`}
                                                     >
                                                         {/* Status Badge */}
@@ -1719,7 +1719,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                                 ? 'bg-emerald-500 text-white border-emerald-400 dark:border-emerald-600 shadow-lg shadow-emerald-500/20'
                                                                 : isUnlocked
                                                                     ? 'bg-gradient-to-br from-orange-600 to-orange-500 text-white border-orange-400 dark:border-orange-800/50 shadow-lg shadow-orange-500/20'
-                                                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700'
+                                                                    : 'bg-token-bg-page text-token-text-muted border-token-border'
                                                                 }`}>
                                                                 {isCompleted ? '✓' : subchapter.level_id}
                                                             </div>
@@ -1728,7 +1728,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                                     {language === 'en' ? 'Mastered' : 'সম্পন্ন'}
                                                                 </span>
                                                             ) : !isUnlocked ? (
-                                                                <span className="text-slate-400 bg-slate-100 dark:bg-slate-900/50 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border border-slate-200 dark:border-slate-800 flex items-center gap-1">
+                                                                <span className="text-token-text-muted bg-token-bg-page px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border border-token-border flex items-center gap-1">
                                                                     <span>🔒</span> {language === 'en' ? 'Locked' : 'অপ্রাপ্য'}
                                                                 </span>
                                                             ) : (
@@ -1739,10 +1739,10 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                         </div>
 
                                                         <div className="flex-1">
-                                                            <span className="text-[10px] uppercase font-black text-slate-400 tracking-[0.2em] mb-1 block">
+                                                            <span className="text-[10px] uppercase font-black text-token-text-muted tracking-[0.2em] mb-1 block">
                                                                 {subchapter.badge_name}
                                                             </span>
-                                                            <h4 className={`font-black text-base leading-tight line-clamp-2 transition-colors ${isUnlocked ? 'text-slate-800 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400' : 'text-slate-400'
+                                                            <h4 className={`font-black text-base leading-tight line-clamp-2 transition-colors ${isUnlocked ? 'text-token-text-primary group-hover:text-orange-600 dark:group-hover:text-orange-400' : 'text-token-text-muted'
                                                                 }`}>
                                                                 {subchapter.level_title}
                                                             </h4>

@@ -46,7 +46,7 @@ const toBengaliNumber = (num, lang) => {
 const TrainingSkeleton = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
         {[...Array(6)].map((_, i) => (
-            <div key={i} className="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700/50 shadow-sm">
+            <div key={i} className="p-6 rounded-3xl bg-token-bg-surface border border-token-border shadow-sm">
                 <div className="flex items-center gap-4 mb-4">
                     <div className="w-14 h-14 bg-slate-200 dark:bg-slate-700 rounded-2xl"></div>
                     <div className="flex-1 space-y-2">
@@ -74,7 +74,7 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
             onClick={() => onClick(chapter)}
             className={`p-6 rounded-[2rem] border transition-all duration-500 cursor-pointer group relative overflow-hidden active:scale-95 animate-entrance-pop ${isFAQ
                 ? 'bg-gradient-to-br from-violet-50/50 to-fuchsia-100/30 dark:from-violet-900/10 dark:to-fuchsia-900/10 border-violet-100 dark:border-violet-800/40 hover:border-violet-400 dark:hover:border-violet-500 shadow-sm hover:shadow-xl lg:hover:-translate-y-2'
-                : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700/50 hover:border-orange-200 dark:hover:border-orange-800 hover:shadow-2xl lg:hover:-translate-y-2'
+                : 'bg-token-bg-surface border-token-border hover:border-orange-200 dark:hover:border-orange-800 hover:shadow-2xl lg:hover:-translate-y-2'
                 }`}
         >
             {/* Background Accent */}
@@ -91,11 +91,11 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
                     <div>
                         <h3 className={`font-black tracking-tight leading-tight text-lg lg:text-xl transition-colors ${language === 'bn' ? 'font-bengali' : ''} ${isFAQ
                             ? 'text-violet-900 dark:text-violet-100 group-hover:text-violet-700 dark:group-hover:text-violet-300'
-                            : 'text-slate-900 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400'
+                            : 'text-token-text-primary group-hover:text-orange-600 dark:group-hover:text-orange-400'
                             }`}>
                             {chapter.title}
                         </h3>
-                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
+                        <p className="text-[11px] font-bold text-token-text-muted uppercase tracking-widest mt-1">
                             {isFAQ ? (
                                 language === 'en' ? 'Reference Guide' : 'রেফারেন্স গাইড'
                             ) : (
@@ -113,7 +113,7 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
             {/* Progress Bar Area */}
             {!isFAQ && (
                 <div className="space-y-3 relative z-10">
-                    <div className="w-full h-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-full overflow-hidden shadow-inner border border-slate-100 dark:border-slate-800">
+                    <div className="w-full h-2.5 bg-token-bg-page rounded-full overflow-hidden shadow-inner border border-token-border">
                         <div
                             className={`h-full rounded-full transition-all duration-1000 ease-out relative ${progress === 100 ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' : 'bg-gradient-to-r from-orange-400 to-orange-600'}`}
                             style={{ width: `${progress}%` }}
@@ -122,7 +122,7 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
                         </div>
                     </div>
                     <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-token-text-muted">
                             {completedCount}/{chapter.count} {language === 'en' ? 'Complete' : 'সম্পন্ন'}
                         </span>
                         <span className={`text-xs font-black ${progress === 100 ? 'text-emerald-500' : 'text-orange-500'}`}>
@@ -202,7 +202,7 @@ const TrainingSubChapterCard = React.memo(({ subchapter, isUnlocked, isCompleted
                 <div className="absolute top-4 left-4">
                     <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white rounded-full shadow-lg">
                         <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                        <span className="text-[9px] font-black text-slate-900 uppercase tracking-tighter">Next Up</span>
+                        <span className="text-[9px] font-black text-token-text-primary uppercase tracking-tighter">Next Up</span>
                     </div>
                 </div>
             )}
