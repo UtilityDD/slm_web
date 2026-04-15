@@ -2,6 +2,12 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { Capacitor } from '@capacitor/core';
 
+let webSessionCounter = 0;
+let nativeChunks = [];
+let nativeChunkIndex = 0;
+let nativePaused = false;
+let nativePlaybackToken = 0;
+
 /**
  * Custom hook for Text-to-Speech functionality with enhanced platform safety
  * Uses @capacitor-community/text-to-speech for Native Android/iOS (with chunking)
@@ -69,8 +75,67 @@ export const useTextToSpeech = (language = 'bn') => {
             .trim();
     };
 
+    const splitIntoChunks = (text) => {
+        if (!text) return [];
+
+        // Split by Bengali danda and common punctuation while preserving boundaries.
+        const sentences = text
+            .split(/(?<=[।.!?])\s+/)
+            .map(s => s.trim())
+            .filter(Boolean);
+
+        const maxLen = 220;
+        const chunks = [];
+
+        sentences.forEach((sentence) => {
+            if (sentence.length <= maxLen) {
+                chunks.push(sentence);
+                return;
+            }
+
+            // Fallback split for very long sentences
+            const words = sentence.split(/\s+/);
+            let current = '';
+            words.forEach((w) => {
+                const next = current ? `${current} ${w}` : w;
+                if (next.length > maxLen) {
+                    if (current) chunks.push(current);
+                    current = w;
+                } else {
+                    current = next;
+                }
+            });
+            if (current) chunks.push(current);
+        });
+
+        return chunks;
+    };
+
+    const pickBestWebVoice = (voices) => {
+        if (!voices || voices.length === 0) return null;
+
+        if (language === 'bn') {
+            return (
+                voices.find(v => /google.*bangla|google.*bengali|bangla|bengali|বাংলা/i.test(v.name)) ||
+                voices.find(v => /^bn(-|_)bd/i.test(v.lang)) ||
+                voices.find(v => /^bn(-|_)in/i.test(v.lang)) ||
+                voices.find(v => /^bn(-|_)/i.test(v.lang)) ||
+                voices.find(v => /^hi(-|_)/i.test(v.lang)) ||
+                voices.find(v => /^en(-|_)/i.test(v.lang)) ||
+                null
+            );
+        }
+
+        return voices.find(v => /^en(-|_)/i.test(v.lang)) || null;
+    };
+
     const stop = useCallback(async () => {
         stopSignal.current = true; // Signal native loop to break
+        webSessionCounter += 1; // Invalidate active web session callbacks
+        nativePlaybackToken += 1;
+        nativeChunks = [];
+        nativeChunkIndex = 0;
+        nativePaused = false;
         if (!isSupported) return;
 
         try {
@@ -94,12 +159,12 @@ export const useTextToSpeech = (language = 'bn') => {
             window.speechSynthesis.pause();
             setIsPaused(true);
         } else {
-            // Native interface often lacks pause, so we stop.
+            // Native pause/resume is emulated by stopping current chunk and resuming from saved index.
+            nativePaused = true;
             stopSignal.current = true;
             await TextToSpeech.stop();
-            setIsPaused(false);
+            setIsPaused(true);
             setIsPlaying(false);
-            setActiveId(null);
         }
     }, [isSupported, isNative]);
 
@@ -108,9 +173,45 @@ export const useTextToSpeech = (language = 'bn') => {
         if (!isNative) {
             window.speechSynthesis.resume();
             setIsPaused(false);
+            return;
         }
-        // Native resume is complex with chunking (requires tracking index), 
-        // for now we treat it as stop/start in UI usually.
+
+        if (!nativePaused || nativeChunkIndex >= nativeChunks.length) return;
+
+        stopSignal.current = false;
+        nativePaused = false;
+        const myToken = ++nativePlaybackToken;
+        setIsPaused(false);
+        setIsPlaying(true);
+
+        while (!stopSignal.current && !nativePaused && nativeChunkIndex < nativeChunks.length && myToken === nativePlaybackToken) {
+            const chunk = nativeChunks[nativeChunkIndex];
+            try {
+                await TextToSpeech.speak({
+                    text: chunk,
+                    lang: language === 'bn' ? 'bn-IN' : 'en-US',
+                    rate: 1.0,
+                    pitch: 1.0,
+                    volume: 1.0,
+                    category: 'ambient',
+                });
+                nativeChunkIndex += 1;
+            } catch (speakErr) {
+                if (stopSignal.current || nativePaused || myToken !== nativePlaybackToken) {
+                    break;
+                }
+                console.warn('Native resume chunk failed', speakErr);
+                nativeChunkIndex += 1;
+            }
+        }
+
+        if (!stopSignal.current && !nativePaused && nativeChunkIndex >= nativeChunks.length && myToken === nativePlaybackToken) {
+            setIsPlaying(false);
+            setIsPaused(false);
+            setActiveId(null);
+            nativeChunks = [];
+            nativeChunkIndex = 0;
+        }
     }, [isSupported, isNative]);
 
     const speak = useCallback(async (text, id = null) => {
@@ -123,72 +224,179 @@ export const useTextToSpeech = (language = 'bn') => {
 
             setActiveId(id);
             setIsPlaying(true);
+            setIsPaused(false);
 
             const cleaned = cleanText(text);
-            if (!cleaned) return;
+            if (!cleaned) {
+                setIsPlaying(false);
+                setActiveId(null);
+                return;
+            }
 
             if (isNative) {
                 // --- Native Chunking Logic ---
-                // Split by common sentence delimiters, keeping the delimiter
-                // This creates a smoother flow than sending one massive block
-                const sentences = cleaned.match(/[^।\.!\?]+[।\.!\?]+/g) || [cleaned];
+                // Keep progress so pause/resume can continue from current chunk.
+                nativeChunks = splitIntoChunks(cleaned);
+                nativeChunkIndex = 0;
+                nativePaused = false;
+                const myToken = ++nativePlaybackToken;
 
-                for (const chunk of sentences) {
-                    if (stopSignal.current) break; // Check interrupt
+                if (nativeChunks.length === 0) {
+                    setIsPlaying(false);
+                    setActiveId(null);
+                    return;
+                }
+
+                while (!stopSignal.current && !nativePaused && nativeChunkIndex < nativeChunks.length && myToken === nativePlaybackToken) {
+                    const chunk = nativeChunks[nativeChunkIndex];
 
                     try {
                         await TextToSpeech.speak({
-                            text: chunk.trim(),
+                            text: chunk,
                             lang: language === 'bn' ? 'bn-IN' : 'en-US',
                             rate: 1.0,
                             pitch: 1.0,
                             volume: 1.0,
                             category: 'ambient',
                         });
+                        nativeChunkIndex += 1;
                     } catch (speakErr) {
-                        // If stopped, we might get an error, just ignore and break
-                        if (stopSignal.current) break;
+                        // pause/stop interruption is expected and should not be treated as hard failure
+                        if (stopSignal.current || nativePaused || myToken !== nativePlaybackToken) break;
                         console.warn("Chunk speak failed", speakErr);
+                        nativeChunkIndex += 1;
                     }
                 }
 
-                // Only reset if we finished naturally (not stopped manually)
-                if (!stopSignal.current) {
+                // Only reset if we finished naturally (not paused/stopped manually)
+                if (!stopSignal.current && !nativePaused && nativeChunkIndex >= nativeChunks.length && myToken === nativePlaybackToken) {
                     setIsPlaying(false);
+                    setIsPaused(false);
                     setActiveId(null);
+                    nativeChunks = [];
+                    nativeChunkIndex = 0;
                 }
             } else {
-                // --- Web Implementation (Fallback) ---
-                const utterance = new SpeechSynthesisUtterance(cleaned);
-                currentUtterance.current = utterance;
-
-                utterance.lang = language === 'bn' ? 'bn-IN' : 'en-US';
-                utterance.rate = 0.95;
-
-                const voices = window.speechSynthesis.getVoices();
-                let selectedVoice = null;
-                if (language === 'bn') {
-                    selectedVoice = voices.find(v => v.lang.includes('bn'));
-                } else {
-                    selectedVoice = voices.find(v => v.lang.includes('en'));
-                }
-                if (selectedVoice) utterance.voice = selectedVoice;
-
-                utterance.onend = () => {
+                // --- Web Implementation with chunk queue (more stable for long chapter text) ---
+                const chunks = splitIntoChunks(cleaned);
+                if (chunks.length === 0) {
                     setIsPlaying(false);
                     setActiveId(null);
-                    currentUtterance.current = null;
+                    return;
+                }
+
+                // Some browsers load voices lazily; one short wait improves first-run reliability.
+                let voices = window.speechSynthesis.getVoices();
+                if (!voices || voices.length === 0) {
+                    await new Promise((resolve) => setTimeout(resolve, 150));
+                    voices = window.speechSynthesis.getVoices();
+                }
+                const selectedVoice = pickBestWebVoice(voices);
+                let chunkIndex = 0;
+                const mySession = ++webSessionCounter;
+                const langFallbacks = language === 'bn' ? ['bn-BD', 'bn-IN', 'hi-IN', 'en-IN'] : ['en-US'];
+
+                const speakNextChunk = (retryCount = 0) => {
+                    if (mySession !== webSessionCounter) return;
+
+                    if (stopSignal.current) {
+                        setIsPlaying(false);
+                        setIsPaused(false);
+                        setActiveId(null);
+                        currentUtterance.current = null;
+                        return;
+                    }
+
+                    if (chunkIndex >= chunks.length) {
+                        setIsPlaying(false);
+                        setIsPaused(false);
+                        setActiveId(null);
+                        currentUtterance.current = null;
+                        return;
+                    }
+
+                    const utterance = new SpeechSynthesisUtterance(chunks[chunkIndex]);
+                    currentUtterance.current = utterance;
+                    let started = false;
+
+                    utterance.lang = selectedVoice?.lang || langFallbacks[Math.min(retryCount, langFallbacks.length - 1)] || (language === 'bn' ? 'bn-BD' : 'en-US');
+                    utterance.rate = language === 'bn' ? 0.86 : 0.95;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 1.0;
+                    // On retry, do not force voice binding; let engine choose best available fallback.
+                    if (selectedVoice && retryCount === 0) utterance.voice = selectedVoice;
+
+                    const startWatchdog = setTimeout(() => {
+                        if (mySession !== webSessionCounter || stopSignal.current) return;
+                        if (!started) {
+                            // No start event means engine likely failed silently; retry/fallback.
+                            if (retryCount < 3) {
+                                speakNextChunk(retryCount + 1);
+                            } else {
+                                chunkIndex += 1;
+                                speakNextChunk(0);
+                            }
+                        }
+                    }, 700);
+
+                    utterance.onstart = () => {
+                        if (mySession !== webSessionCounter) return;
+                        started = true;
+                        setIsPaused(false);
+                        clearTimeout(startWatchdog);
+                    };
+                    utterance.onpause = () => {
+                        if (mySession !== webSessionCounter) return;
+                        setIsPaused(true);
+                    };
+                    utterance.onresume = () => {
+                        if (mySession !== webSessionCounter) return;
+                        setIsPaused(false);
+                    };
+                    utterance.onend = () => {
+                        if (mySession !== webSessionCounter) return;
+                        clearTimeout(startWatchdog);
+                        chunkIndex += 1;
+                        speakNextChunk();
+                    };
+                    utterance.onerror = (e) => {
+                        if (mySession !== webSessionCounter) return;
+                        clearTimeout(startWatchdog);
+                        console.error('Web TTS Error:', e);
+                        const errorType = e?.error || '';
+
+                        // On web, 'interrupted' often occurs transiently; retry same chunk once.
+                        if (errorType === 'interrupted' && !stopSignal.current && retryCount < 3) {
+                            setTimeout(() => speakNextChunk(retryCount + 1), 140);
+                            return;
+                        }
+
+                        // Skip failed chunk and continue; this prevents full-stop on one bad chunk.
+                        chunkIndex += 1;
+                        if (chunkIndex < chunks.length) {
+                            speakNextChunk(0);
+                            return;
+                        }
+
+                        setIsPlaying(false);
+                        setIsPaused(false);
+                        setActiveId(null);
+                        currentUtterance.current = null;
+                    };
+
+                    window.speechSynthesis.speak(utterance);
                 };
 
-                utterance.onerror = (e) => {
-                    console.error("Web TTS Error:", e);
-                    setIsPlaying(false);
-                    currentUtterance.current = null;
-                };
-
-                window.speechSynthesis.cancel();
-                window.speechSynthesis.resume();
-                window.speechSynthesis.speak(utterance);
+                // Cancel only when needed; aggressive cancel can trigger immediate interruption on desktop.
+                if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+                    window.speechSynthesis.cancel();
+                }
+                // Small delay after cancel helps desktop browsers avoid immediate interruption.
+                setTimeout(() => {
+                    if (mySession === webSessionCounter && !stopSignal.current) {
+                        speakNextChunk();
+                    }
+                }, 80);
             }
 
         } catch (err) {

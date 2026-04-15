@@ -1100,42 +1100,86 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
     };
 
     // TTS Logic: Compile full lesson text
-    const handleReadLesson = () => {
+    const normalizeNarrationPart = (value) => {
+        if (value === null || value === undefined) return '';
+        if (typeof value === 'string') return value.trim();
+        if (typeof value === 'number') return String(value);
+        if (Array.isArray(value)) {
+            return value
+                .map(normalizeNarrationPart)
+                .filter(Boolean)
+                .join('. ');
+        }
+        if (typeof value === 'object') {
+            const candidateKeys = ['text', 'title', 'content', 'value', 'description', 'item_name', 'importance', 'daily_check', 'specifications'];
+            const values = candidateKeys
+                .map((k) => normalizeNarrationPart(value[k]))
+                .filter(Boolean);
+            return values.join('. ');
+        }
+        return '';
+    };
+
+    const getCurrentSlideNarrationText = () => {
         const currentSlide = slides[activeSectionIndex];
-        if (!currentSlide) return;
+        if (!currentSlide) return '';
 
         let parts = [];
 
         if (currentSlide.type === 'hero') {
-            parts.push(currentSlide.level_title);
-            parts.push(currentSlide.mission_briefing);
+            parts.push(normalizeNarrationPart(currentSlide.level_title));
+            parts.push(normalizeNarrationPart(currentSlide.mission_briefing));
         } else if (currentSlide.type === 'section') {
-            parts.push(currentSlide.title);
+            parts.push(normalizeNarrationPart(currentSlide.title));
             currentSlide.points?.forEach(point => {
-                parts.push(point.item_name);
-                if (point.specifications) parts.push(point.specifications);
-                if (point.importance) parts.push(point.importance);
-                if (point.daily_check) parts.push(point.daily_check);
+                // Read entire point object first to support varying payload shapes from content sources.
+                parts.push(normalizeNarrationPart(point));
+                parts.push(normalizeNarrationPart(point.item_name));
+                if (point.specifications) parts.push(normalizeNarrationPart(point.specifications));
+                if (point.importance) parts.push(normalizeNarrationPart(point.importance));
+                if (point.daily_check) parts.push(normalizeNarrationPart(point.daily_check));
             });
         } else if (currentSlide.type === 'pro_tip') {
             parts.push("Pro Tip");
-            currentSlide.content?.forEach(tip => parts.push(tip));
+            currentSlide.content?.forEach(tip => parts.push(normalizeNarrationPart(tip)));
         } else if (currentSlide.type === 'myth_buster') {
-            parts.push(currentSlide.title);
+            parts.push(normalizeNarrationPart(currentSlide.title));
             currentSlide.myths?.forEach(item => {
-                parts.push((language === 'en' ? "Myth: " : "ভুল ধারণা: ") + item.myth);
-                parts.push((language === 'en' ? "Reality: " : "সঠিক তথ্য: ") + (item.reality || item.fact));
+                parts.push((language === 'en' ? "Myth: " : "ভুল ধারণা: ") + normalizeNarrationPart(item.myth));
+                parts.push((language === 'en' ? "Reality: " : "সঠিক তথ্য: ") + normalizeNarrationPart(item.reality || item.fact));
             });
         } else if (currentSlide.type === 'advanced') {
-            parts.push(currentSlide.title);
+            parts.push(normalizeNarrationPart(currentSlide.title));
             currentSlide.facts?.forEach(fact => {
-                parts.push(fact.title);
-                parts.push(fact.content);
+                parts.push(normalizeNarrationPart(fact.title));
+                parts.push(normalizeNarrationPart(fact.content));
             });
         }
 
-        const fullText = parts.join(". ");
-        speak(fullText);
+        // Final fallback for any slide shape where specific keys were not enough.
+        if (parts.filter(Boolean).length === 0) {
+            parts.push(normalizeNarrationPart(currentSlide));
+        }
+
+        return parts.filter(Boolean).join('. ');
+    };
+
+    const handleReadLesson = async () => {
+        const fullText = getCurrentSlideNarrationText();
+        if (!fullText) return;
+
+        // Professional media-style toggle behavior
+        if (isPlaying && !isPaused) {
+            await pause();
+            return;
+        }
+
+        if (isPaused) {
+            await resume();
+            return;
+        }
+
+        await speak(fullText, `lesson-slide-${activeSectionIndex}`);
     };
 
     const finalizeLessonCompletion = async (lessonId) => {
@@ -2014,11 +2058,14 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
 
                                         <button
                                             onClick={handleReadLesson}
-                                            className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-500 ${isPlaying ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/40 scale-105' : 'text-slate-400 hover:text-orange-500'}`}
+                                            title={isPlaying && !isPaused
+                                                ? (language === 'en' ? 'Pause reading' : 'পড়া থামান')
+                                                : (language === 'en' ? 'Read aloud' : 'উচ্চস্বরে পড়ুন')}
+                                            className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-500 ${isPlaying && !isPaused ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/40 scale-105' : 'text-slate-400 hover:text-orange-500'}`}
                                         >
-                                            <div className={`absolute inset-0 rounded-full bg-orange-500 animate-ping opacity-20 ${isPlaying ? 'block' : 'hidden'}`}></div>
+                                            <div className={`absolute inset-0 rounded-full bg-orange-500 animate-ping opacity-20 ${isPlaying && !isPaused ? 'block' : 'hidden'}`}></div>
                                             <svg className="w-6 h-6 relative z-10" fill="currentColor" viewBox="0 0 24 24">
-                                                {isPlaying ? (
+                                                {isPlaying && !isPaused ? (
                                                     <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                                                 ) : (
                                                     <path d="M8 5v14l11-7z" />
