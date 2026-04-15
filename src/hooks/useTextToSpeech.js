@@ -7,6 +7,8 @@ let nativeChunks = [];
 let nativeChunkIndex = 0;
 let nativePaused = false;
 let nativePlaybackToken = 0;
+let nativeStatus = 'idle';
+let nativeActiveSpeechId = null;
 
 /**
  * Custom hook for Text-to-Speech functionality with enhanced platform safety
@@ -136,6 +138,8 @@ export const useTextToSpeech = (language = 'bn') => {
         nativeChunks = [];
         nativeChunkIndex = 0;
         nativePaused = false;
+        nativeStatus = 'idle';
+        nativeActiveSpeechId = null;
         if (!isSupported) return;
 
         try {
@@ -161,6 +165,7 @@ export const useTextToSpeech = (language = 'bn') => {
         } else {
             // Native pause/resume is emulated by stopping current chunk and resuming from saved index.
             nativePaused = true;
+            nativeStatus = 'paused';
             stopSignal.current = true;
             await TextToSpeech.stop();
             setIsPaused(true);
@@ -180,6 +185,7 @@ export const useTextToSpeech = (language = 'bn') => {
 
         stopSignal.current = false;
         nativePaused = false;
+        nativeStatus = 'playing';
         const myToken = ++nativePlaybackToken;
         setIsPaused(false);
         setIsPlaying(true);
@@ -211,11 +217,25 @@ export const useTextToSpeech = (language = 'bn') => {
             setActiveId(null);
             nativeChunks = [];
             nativeChunkIndex = 0;
+            nativeStatus = 'idle';
+            nativeActiveSpeechId = null;
         }
     }, [isSupported, isNative]);
 
     const speak = useCallback(async (text, id = null) => {
         if (!text || !isSupported) return;
+
+        // Native guard: if same content is already active, treat subsequent taps as toggle, not restart.
+        if (isNative && id && nativeActiveSpeechId === id) {
+            if (nativeStatus === 'playing') {
+                await pause();
+                return;
+            }
+            if (nativeStatus === 'paused') {
+                await resume();
+                return;
+            }
+        }
 
         try {
             // Stop any previous speech
@@ -230,6 +250,8 @@ export const useTextToSpeech = (language = 'bn') => {
             if (!cleaned) {
                 setIsPlaying(false);
                 setActiveId(null);
+                nativeStatus = 'idle';
+                nativeActiveSpeechId = null;
                 return;
             }
 
@@ -239,11 +261,15 @@ export const useTextToSpeech = (language = 'bn') => {
                 nativeChunks = splitIntoChunks(cleaned);
                 nativeChunkIndex = 0;
                 nativePaused = false;
+                nativeStatus = 'playing';
+                nativeActiveSpeechId = id;
                 const myToken = ++nativePlaybackToken;
 
                 if (nativeChunks.length === 0) {
                     setIsPlaying(false);
                     setActiveId(null);
+                    nativeStatus = 'idle';
+                    nativeActiveSpeechId = null;
                     return;
                 }
 
@@ -275,6 +301,8 @@ export const useTextToSpeech = (language = 'bn') => {
                     setActiveId(null);
                     nativeChunks = [];
                     nativeChunkIndex = 0;
+                    nativeStatus = 'idle';
+                    nativeActiveSpeechId = null;
                 }
             } else {
                 // --- Web Implementation with chunk queue (more stable for long chapter text) ---
@@ -403,8 +431,12 @@ export const useTextToSpeech = (language = 'bn') => {
             console.error("TTS Speak failed:", err);
             setIsPlaying(false);
             setActiveId(null);
+            if (isNative) {
+                nativeStatus = 'idle';
+                nativeActiveSpeechId = null;
+            }
         }
-    }, [language, isSupported, isNative, stop]);
+    }, [language, isSupported, isNative, stop, pause, resume]);
 
     // Cleanup
     useEffect(() => {
