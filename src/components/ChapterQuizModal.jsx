@@ -180,6 +180,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
     const totalQuestions = shuffledQuestions.length;
     const passThreshold = Math.ceil(totalQuestions * 0.9);
     const isPassed = score >= passThreshold;
+    const isFullscreenScreen = showResult || isReviewMode;
 
     useEffect(() => {
         if (showResult && totalQuestions > 0) {
@@ -253,21 +254,21 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-token-bg-surface rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-token-border flex flex-col max-h-[90vh] animate-scale-in">
+        <div className={`fixed inset-0 z-[200] animate-fade-in ${isFullscreenScreen ? 'bg-slate-950/95 backdrop-blur-xl' : 'flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm'}`}>
+            <div className={`overflow-hidden border border-token-border shadow-2xl animate-scale-in ${isFullscreenScreen ? 'w-full h-full rounded-none border-0 bg-transparent flex flex-col' : 'bg-token-bg-surface rounded-2xl w-full max-w-lg flex flex-col max-h-[90vh]'}`}>
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center p-20 space-y-4">
-                        <svg className="w-12 h-12 text-orange-500 animate-pulse" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <div className={`flex flex-col items-center justify-center space-y-4 ${isFullscreenScreen ? 'flex-1 px-6 py-16 text-white' : 'p-20'}`}>
+                        <svg className={`w-12 h-12 animate-pulse ${isFullscreenScreen ? 'text-orange-300' : 'text-orange-500'}`} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        <p className="text-token-text-muted font-medium">{t.loadingText}</p>
+                        <p className={`font-medium ${isFullscreenScreen ? 'text-white/80' : 'text-token-text-muted'}`}>{t.loadingText}</p>
                     </div>
                 ) : totalQuestions === 0 ? (
-                    <div className="p-8 text-center">
-                        <p className="text-token-text-secondary mb-6">{t.noQuestions}</p>
+                    <div className={`text-center ${isFullscreenScreen ? 'flex h-full flex-col items-center justify-center px-6 py-12 text-white' : 'p-8'}`}>
+                        <p className={`${isFullscreenScreen ? 'text-white/80' : 'text-token-text-secondary'} mb-6`}>{t.noQuestions}</p>
                         <button
                             onClick={onClose}
-                            className="px-6 py-2 bg-token-border text-token-text-secondary font-bold rounded-xl transition-all hover:bg-token-border-strong"
+                            className={`px-6 py-2 font-bold rounded-xl transition-all ${isFullscreenScreen ? 'bg-white text-slate-950 hover:bg-white/90' : 'bg-token-border text-token-text-secondary hover:bg-token-border-strong'}`}
                         >
                             {t.close}
                         </button>
@@ -275,21 +276,21 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                 ) : (
                     <>
                         {/* Header */}
-                        <div className="p-4 border-b border-token-border flex justify-between items-center gap-3 bg-token-bg-page/80">
+                        <div className={`p-4 flex justify-between items-center gap-3 ${isFullscreenScreen ? 'border-b border-white/10 bg-slate-950/70 text-white backdrop-blur-xl' : 'border-b border-token-border bg-token-bg-page/80'}`}>
                             <div className="flex items-center gap-2 min-w-0">
                                 {lessonId && (
-                                    <span className="text-xs font-black text-orange-500 bg-orange-50 dark:bg-orange-500/10 px-2.5 py-1 rounded-lg border border-orange-100 dark:border-orange-500/20 shrink-0">
+                                    <span className={`text-xs font-black px-2.5 py-1 rounded-lg border shrink-0 ${isFullscreenScreen ? 'text-orange-200 bg-white/10 border-white/10' : 'text-orange-500 bg-orange-50 dark:bg-orange-500/10 border-orange-100 dark:border-orange-500/20'}`}>
                                         {lessonId}
                                     </span>
                                 )}
-                                <h3 className="font-bold text-lg text-token-text-primary truncate">
+                                <h3 className={`font-bold text-lg truncate ${isFullscreenScreen ? 'text-white' : 'text-token-text-primary'}`}>
                                     {isReviewMode ? t.reviewTitle : showResult ? t.result : `${t.question} ${currentQuestionIndex + 1}/${totalQuestions}`}
                                 </h3>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                                 <button
                                     onClick={() => setSoundEnabled(prev => !prev)}
-                                    className={`inline-flex items-center justify-center w-9 h-9 rounded-full transition-colors ${soundEnabled ? 'text-token-text-secondary hover:bg-black/5 dark:hover:bg-white/10' : 'text-token-text-muted hover:bg-black/5 dark:hover:bg-white/10'}`}
+                                    className={`inline-flex items-center justify-center w-9 h-9 rounded-full transition-colors ${isFullscreenScreen ? 'text-white/80 hover:bg-white/10' : soundEnabled ? 'text-token-text-secondary hover:bg-black/5 dark:hover:bg-white/10' : 'text-token-text-muted hover:bg-black/5 dark:hover:bg-white/10'}`}
                                     aria-label={soundEnabled ? (language === 'en' ? 'Disable sound' : 'সাউন্ড বন্ধ করুন') : (language === 'en' ? 'Enable sound' : 'সাউন্ড চালু করুন')}
                                     title={soundEnabled ? (language === 'en' ? 'Disable sound' : 'সাউন্ড বন্ধ করুন') : (language === 'en' ? 'Enable sound' : 'সাউন্ড চালু করুন')}
                                 >
@@ -306,10 +307,22 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                         </svg>
                                     )}
                                 </button>
-                                {(!showResult || isReviewMode) && (
+                                {isReviewMode ? (
+                                    <button
+                                        onClick={() => setIsReviewMode(false)}
+                                        className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold transition-colors ${isFullscreenScreen ? 'text-white/85 hover:bg-white/10' : 'text-token-text-secondary hover:bg-black/5 dark:hover:bg-white/10'}`}
+                                        aria-label={language === 'en' ? 'Back to result' : 'ফলাফলে ফিরে যান'}
+                                        title={language === 'en' ? 'Back to result' : 'ফলাফলে ফিরে যান'}
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                        <span className="hidden sm:inline">{t.backToResult}</span>
+                                    </button>
+                                ) : (
                                     <button
                                         onClick={onClose}
-                                        className="text-token-text-muted hover:text-token-text-secondary transition-colors"
+                                        className={`transition-colors ${isFullscreenScreen ? 'text-white/80 hover:text-white' : 'text-token-text-muted hover:text-token-text-secondary'}`}
                                     >
                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                                     </button>
@@ -318,34 +331,40 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                         </div>
 
                         {/* Content */}
-                        <div className={`p-6 overflow-y-auto flex-1 ${showResult || isReviewMode ? 'pb-24' : ''}`}>
+                        <div className={`overflow-y-auto flex-1 ${isFullscreenScreen ? 'px-4 sm:px-6 lg:px-8 py-6 sm:py-10 text-white' : `p-6 ${showResult || isReviewMode ? 'pb-24' : ''}`}`}>
                             {isReviewMode ? (
                                 /* Review Mode View */
-                                <div className="space-y-8">
-                                    {shuffledQuestions.map((q, idx) => {
+                                <div className="relative min-h-full">
+                                    <div className="absolute inset-0 bg-white/5" />
+                                    <div className="relative mx-auto flex min-h-full w-full max-w-5xl flex-col justify-between gap-8">
+                                        <div className="flex flex-1 items-center justify-center">
+                                            <div className="w-full max-w-3xl space-y-5">
+                                                {shuffledQuestions.map((q, idx) => {
                                         const userAnswer = userAnswers[idx];
                                         const isAnswered = userAnswer !== undefined;
                                         const isCorrect = isAnswered && userAnswer === q.correctAnswerIndex;
                                         return (
-                                            <div key={idx} className={`p-4 rounded-xl border-2 ${isCorrect ? 'border-green-100 bg-green-50/50 dark:border-green-900 dark:bg-green-900/10' : 'border-red-100 bg-red-50/50 dark:border-red-900 dark:bg-red-900/10'}`}>
+                                            <div key={idx} className={`p-4 rounded-2xl border backdrop-blur-xl ${isCorrect ? 'border-emerald-400/20 bg-emerald-400/10' : 'border-rose-400/20 bg-rose-400/10'}`}>
                                                 <div className="flex gap-3 mb-3">
-                                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${isCorrect ? 'bg-emerald-400 text-slate-950' : 'bg-rose-400 text-slate-950'}`}>
                                                         {idx + 1}
                                                     </span>
                                                     <div className="min-w-0">
-                                                        <p className="font-medium text-token-text-primary">{q.questionText}</p>
-                                                        <div className={`mt-1 inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${isCorrect ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}`}>
+                                                        <p className="text-sm sm:text-base lg:text-lg font-medium leading-relaxed text-white break-words">
+                                                            {q.questionText}
+                                                        </p>
+                                                        <div className={`mt-1 inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${isCorrect ? 'bg-emerald-400/15 text-emerald-200' : 'bg-rose-400/15 text-rose-200'}`}>
                                                             {isCorrect ? t.right : t.wrong}
                                                         </div>
                                                     </div>
                                                 </div>
                                                 {q.image && (
-                                                    <div className="mb-4 ml-9 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 max-w-[200px]">
+                                                    <div className="mb-4 ml-9 rounded-xl overflow-hidden border border-white/10 max-w-[200px]">
                                                         <img src={q.image} alt="Question" className="w-full h-auto" />
                                                     </div>
                                                 )}
                                                 {!isAnswered && (
-                                                    <div className="ml-9 mb-3 text-xs font-semibold text-red-600 dark:text-red-400">
+                                                    <div className="ml-9 mb-3 text-xs font-semibold text-rose-200">
                                                         {t.notAnswered}
                                                     </div>
                                                 )}
@@ -354,19 +373,19 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                         const isSelected = userAnswer === optIdx;
                                                         const optionClass = isSelected
                                                             ? isCorrect
-                                                                ? 'text-green-700 dark:text-green-300 font-semibold'
-                                                                : 'text-red-600 dark:text-red-400 font-semibold'
-                                                            : 'text-token-text-muted';
+                                                                ? 'text-emerald-200 font-semibold'
+                                                                : 'text-rose-200 font-semibold'
+                                                            : 'text-white/70';
 
                                                         const isOptionImage = typeof opt === 'string' && (opt.startsWith('/') || opt.includes('.jpg') || opt.includes('.png') || opt.includes('.webp'));
 
                                                         return (
                                                             <div key={optIdx} className="flex items-start gap-2 text-sm">
-                                                                <span className="mt-1">
+                                                                <span className="mt-1 text-white/70">
                                                                     {isSelected ? (isCorrect ? '✓' : '✗') : '○'}
                                                                 </span>
                                                                 {isOptionImage ? (
-                                                                    <img src={opt} alt="Option" className={`w-16 h-16 object-cover rounded-lg border ${isSelected ? (isCorrect ? 'border-green-400' : 'border-red-400') : 'border-slate-200 dark:border-slate-700'}`} />
+                                                                    <img src={opt} alt="Option" className={`w-16 h-16 object-cover rounded-lg border ${isSelected ? (isCorrect ? 'border-emerald-400' : 'border-rose-400') : 'border-white/10'}`} />
                                                                 ) : (
                                                                     <span className={optionClass}>{opt}</span>
                                                                 )}
@@ -377,114 +396,122 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                             </div>
                                         );
                                     })}
-                                    <div className="sticky bottom-0 -mx-6 mt-6 border-t border-token-border bg-token-bg-surface/95 backdrop-blur px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <button
-                                                onClick={() => setIsReviewMode(false)}
-                                                className="w-full py-3 bg-token-bg-surface text-token-text-secondary font-bold rounded-xl border border-token-border transition-all hover:bg-token-bg-page"
-                                            >
-                                                {t.backToResult}
-                                            </button>
-                                            <button
-                                                onClick={onClose}
-                                                className="w-full py-3 bg-slate-800 text-white font-bold rounded-xl transition-all hover:bg-slate-700"
-                                            >
-                                                {t.close}
-                                            </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="sticky bottom-0 border-t border-white/10 bg-slate-950/70 backdrop-blur-xl px-0 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
+                                            <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-4 sm:px-0">
+                                                <button
+                                                    onClick={() => setIsReviewMode(false)}
+                                                    className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3.5 font-bold text-white transition-colors hover:bg-white/15"
+                                                >
+                                                    {t.backToResult}
+                                                </button>
+                                                <button
+                                                    onClick={onClose}
+                                                    className="w-full rounded-2xl bg-white px-4 py-3.5 font-bold text-slate-950 transition-colors hover:bg-white/90"
+                                                >
+                                                    {t.close}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             ) : showResult ? (
-                                <div className="py-4 animate-fade-in-up">
-                                    <div className="mx-auto max-w-md rounded-3xl border border-token-border bg-token-bg-page/70 p-6 sm:p-7 shadow-sm">
-                                        <div className="text-center space-y-4">
-                                            <div className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-wider ${isPassed
-                                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
-                                                : 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300'
-                                                }`}>
-                                                {isPassed ? (language === 'en' ? 'Passed' : 'উত্তীর্ণ') : (language === 'en' ? 'Retry' : 'আবার চেষ্টা')}
-                                            </div>
-                                            <h2 className="text-2xl sm:text-3xl font-black text-token-text-primary tracking-tight leading-tight">
-                                                {isPassed ? t.completed : t.failed}
-                                            </h2>
-                                            <div className="space-y-2">
-                                                <p className="text-4xl sm:text-5xl font-black text-token-text-primary tracking-tight">
-                                                    {Math.round((score / totalQuestions) * 100)}%
-                                                </p>
-                                                <p className="text-sm text-token-text-muted font-semibold">
-                                                    {t.score} <span className="text-token-text-primary">{score}</span> / {totalQuestions}
-                                                </p>
-                                            </div>
-                                            <div className="pt-1">
-                                                <div className="h-2.5 w-full rounded-full bg-token-border overflow-hidden">
-                                                    <div
-                                                        className={`h-full rounded-full transition-all duration-700 ${isPassed ? 'bg-emerald-500' : 'bg-orange-500'}`}
-                                                        style={{ width: `${Math.max(0, Math.min(100, (score / totalQuestions) * 100))}%` }}
-                                                    />
+                                <div className="relative min-h-full">
+                                    <div className={`absolute inset-0 ${isPassed ? 'bg-emerald-500/10' : 'bg-orange-500/10'}`} />
+                                    <div className="relative mx-auto flex min-h-full w-full max-w-5xl flex-col justify-between gap-8">
+                                        <div className="flex flex-1 items-center justify-center">
+                                            <div className="w-full max-w-2xl space-y-8 text-center">
+                                                <div className="space-y-4">
+                                                    <div className={`mx-auto inline-flex items-center rounded-full px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.3em] ${isPassed ? 'bg-emerald-400/15 text-emerald-200' : 'bg-orange-400/15 text-orange-200'}`}>
+                                                        {isPassed ? (language === 'en' ? 'Passed' : 'উত্তীর্ণ') : (language === 'en' ? 'Retry' : 'আবার চেষ্টা')}
+                                                    </div>
+                                                    <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
+                                                        {isPassed ? t.completed : t.failed}
+                                                    </h2>
+                                                    <p className="text-sm sm:text-base text-white/70 font-medium leading-relaxed max-w-xl mx-auto">
+                                                        {t.score} <span className="text-white font-bold">{score}</span> / {totalQuestions}
+                                                    </p>
+                                                </div>
+
+                                                <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-4 rounded-[2rem] border border-white/10 bg-white/5 px-6 py-6 backdrop-blur-xl shadow-2xl">
+                                                    <div className="text-6xl sm:text-7xl font-black tracking-tight text-white">
+                                                        {Math.round((score / totalQuestions) * 100)}%
+                                                    </div>
+                                                    <div className="w-full">
+                                                        <div className="h-2.5 w-full rounded-full bg-white/10 overflow-hidden">
+                                                            <div
+                                                                className={`h-full rounded-full transition-all duration-700 ${isPassed ? 'bg-emerald-400' : 'bg-orange-400'}`}
+                                                                style={{ width: `${Math.max(0, Math.min(100, (score / totalQuestions) * 100))}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    {!isPassed && (
+                                                        <p className="text-xs font-semibold text-white/65">
+                                                            {t.required}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
-                                            {!isPassed && (
-                                                <p className="text-xs text-token-text-muted font-semibold">
-                                                    {t.required}
-                                                </p>
-                                            )}
                                         </div>
-                                    </div>
-                                    <div className="sticky bottom-0 -mx-6 mt-6 border-t border-token-border bg-token-bg-surface/95 backdrop-blur px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-                                        <div className="space-y-3">
-                                            <button
-                                                onClick={() => setIsReviewMode(true)}
-                                                className="w-full py-3.5 bg-token-bg-page hover:bg-token-border text-token-text-secondary font-bold rounded-xl transition-colors"
-                                            >
-                                                {t.review}
-                                            </button>
-                                            {isPractice ? (
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    <button
-                                                        onClick={handleTryAgain}
-                                                        className="py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors"
-                                                    >
-                                                        {t.tryAgain}
-                                                    </button>
-                                                    <button
-                                                        onClick={onClose}
-                                                        className="py-3.5 bg-token-text-primary text-token-bg-surface font-bold rounded-xl transition-colors"
-                                                    >
-                                                        {t.close}
-                                                    </button>
-                                                </div>
-                                            ) : isPassed ? (
+
+                                        <div className="sticky bottom-0 border-t border-white/10 bg-slate-950/70 backdrop-blur-xl px-0 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
+                                            <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-4 sm:px-0">
                                                 <button
-                                                    onClick={handleFinish}
-                                                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl transition-all active:scale-[0.99] flex items-center justify-center gap-2"
+                                                    onClick={() => setIsReviewMode(true)}
+                                                    className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3.5 font-bold text-white transition-colors hover:bg-white/15"
                                                 >
-                                                    <span>{t.continue}</span>
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                                    </svg>
+                                                    {t.review}
                                                 </button>
-                                            ) : (
-                                                <div className="grid grid-cols-1 gap-2">
+                                                {isPractice ? (
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <button
+                                                            onClick={handleTryAgain}
+                                                            className="rounded-2xl bg-blue-600 px-4 py-3.5 font-bold text-white transition-colors hover:bg-blue-500"
+                                                        >
+                                                            {t.tryAgain}
+                                                        </button>
+                                                        <button
+                                                            onClick={onClose}
+                                                            className="rounded-2xl bg-white px-4 py-3.5 font-bold text-slate-950 transition-colors hover:bg-white/90"
+                                                        >
+                                                            {t.close}
+                                                        </button>
+                                                    </div>
+                                                ) : isPassed ? (
                                                     <button
-                                                        onClick={handleTryAgain}
-                                                        className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white font-black rounded-2xl transition-all active:scale-[0.99]"
+                                                        onClick={handleFinish}
+                                                        className="w-full rounded-2xl bg-emerald-500 px-4 py-4 font-black text-white transition-all hover:bg-emerald-400 active:scale-[0.99] flex items-center justify-center gap-2"
                                                     >
-                                                        {t.tryAgain}
+                                                        <span>{t.continue}</span>
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                                        </svg>
                                                     </button>
-                                                    <button
-                                                        onClick={onReadAgain || onClose}
-                                                        className="w-full py-3 text-token-text-muted font-semibold hover:text-token-action-primary transition-colors"
-                                                    >
-                                                        {t.readAgain}
-                                                    </button>
-                                                </div>
-                                            )}
+                                                ) : (
+                                                    <div className="grid grid-cols-1 gap-2">
+                                                        <button
+                                                            onClick={handleTryAgain}
+                                                            className="w-full rounded-2xl bg-orange-500 px-4 py-4 font-black text-white transition-all hover:bg-orange-400 active:scale-[0.99]"
+                                                        >
+                                                            {t.tryAgain}
+                                                        </button>
+                                                        <button
+                                                            onClick={onReadAgain || onClose}
+                                                            className="w-full rounded-2xl px-4 py-3 font-semibold text-white/70 transition-colors hover:text-white"
+                                                        >
+                                                            {t.readAgain}
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="space-y-6">
-                                    <div className="text-lg font-medium text-token-text-primary leading-relaxed">
+                                    <div className="text-sm sm:text-base lg:text-lg font-medium text-token-text-primary leading-relaxed break-words">
                                         {currentQuestion?.questionText}
                                     </div>
 
