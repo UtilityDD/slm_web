@@ -167,7 +167,11 @@ export const useTextToSpeech = (language = 'bn') => {
             nativePaused = true;
             nativeStatus = 'paused';
             stopSignal.current = true;
-            await TextToSpeech.stop();
+            try {
+                await TextToSpeech.stop();
+            } catch (err) {
+                console.warn('Native pause stop failed:', err);
+            }
             setIsPaused(true);
             setIsPlaying(false);
         }
@@ -189,6 +193,8 @@ export const useTextToSpeech = (language = 'bn') => {
         const myToken = ++nativePlaybackToken;
         setIsPaused(false);
         setIsPlaying(true);
+        // Some native engines need a tiny settle delay after stop before next speak.
+        await new Promise((resolve) => setTimeout(resolve, 120));
 
         while (!stopSignal.current && !nativePaused && nativeChunkIndex < nativeChunks.length && myToken === nativePlaybackToken) {
             const chunk = nativeChunks[nativeChunkIndex];
@@ -207,7 +213,22 @@ export const useTextToSpeech = (language = 'bn') => {
                     break;
                 }
                 console.warn('Native resume chunk failed', speakErr);
-                nativeChunkIndex += 1;
+                // Retry current chunk once before skipping.
+                try {
+                    await new Promise((resolve) => setTimeout(resolve, 120));
+                    await TextToSpeech.speak({
+                        text: chunk,
+                        lang: language === 'bn' ? 'bn-IN' : 'en-US',
+                        rate: 1.0,
+                        pitch: 1.0,
+                        volume: 1.0,
+                        category: 'ambient',
+                    });
+                    nativeChunkIndex += 1;
+                } catch (retryErr) {
+                    console.warn('Native resume retry failed', retryErr);
+                    nativeChunkIndex += 1;
+                }
             }
         }
 

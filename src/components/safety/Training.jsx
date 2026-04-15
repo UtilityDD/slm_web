@@ -547,7 +547,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
         completion: 'bg-slate-50 dark:bg-slate-950'
     };
 
-    const { speak, pause, resume, stop, isPlaying, isPaused } = useTextToSpeech(language);
+    const { speak, pause, resume, stop, isPlaying, isPaused, activeId } = useTextToSpeech(language);
 
     // Body scroll locking when full-page training is open
     useEffect(() => {
@@ -1167,19 +1167,21 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
     const handleReadLesson = async () => {
         const fullText = getCurrentSlideNarrationText();
         if (!fullText) return;
+        const currentSpeechId = `lesson-slide-${activeSectionIndex}`;
 
         // Professional media-style toggle behavior
-        if (isPlaying && !isPaused) {
+        if (activeId === currentSpeechId && isPlaying && !isPaused) {
             await pause();
             return;
         }
 
-        if (isPaused) {
+        // Resume same slide when paused or in a transient stopped-but-active state.
+        if (activeId === currentSpeechId && (isPaused || !isPlaying)) {
             await resume();
             return;
         }
 
-        await speak(fullText, `lesson-slide-${activeSectionIndex}`);
+        await speak(fullText, currentSpeechId);
     };
 
     const finalizeLessonCompletion = async (lessonId) => {
