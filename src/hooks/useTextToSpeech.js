@@ -187,14 +187,25 @@ export const useTextToSpeech = (language = 'bn') => {
 
         if (!nativePaused || nativeChunkIndex >= nativeChunks.length) return;
 
+        // Ensure we resume from the beginning of the current chunk/line.
+        nativeChunkIndex = Math.max(0, Math.min(nativeChunkIndex, nativeChunks.length - 1));
+
         stopSignal.current = false;
         nativePaused = false;
         nativeStatus = 'playing';
         const myToken = ++nativePlaybackToken;
         setIsPaused(false);
         setIsPlaying(true);
+
+        // Reset native engine state before resuming to avoid silent no-op resumes.
+        try {
+            await TextToSpeech.stop();
+        } catch (err) {
+            console.warn('Native resume pre-stop failed:', err);
+        }
+
         // Some native engines need a tiny settle delay after stop before next speak.
-        await new Promise((resolve) => setTimeout(resolve, 120));
+        await new Promise((resolve) => setTimeout(resolve, 180));
 
         while (!stopSignal.current && !nativePaused && nativeChunkIndex < nativeChunks.length && myToken === nativePlaybackToken) {
             const chunk = nativeChunks[nativeChunkIndex];
@@ -213,9 +224,16 @@ export const useTextToSpeech = (language = 'bn') => {
                     break;
                 }
                 console.warn('Native resume chunk failed', speakErr);
-                // Retry current chunk once before skipping.
+
+                // Retry current chunk once with a slightly longer settle delay.
                 try {
-                    await new Promise((resolve) => setTimeout(resolve, 120));
+                    await TextToSpeech.stop();
+                } catch (stopErr) {
+                    console.warn('Native resume retry pre-stop failed:', stopErr);
+                }
+
+                try {
+                    await new Promise((resolve) => setTimeout(resolve, 220));
                     await TextToSpeech.speak({
                         text: chunk,
                         lang: language === 'bn' ? 'bn-IN' : 'en-US',
@@ -227,7 +245,14 @@ export const useTextToSpeech = (language = 'bn') => {
                     nativeChunkIndex += 1;
                 } catch (retryErr) {
                     console.warn('Native resume retry failed', retryErr);
-                    nativeChunkIndex += 1;
+
+                    // Keep the same chunk index so next tap retries this exact line.
+                    nativePaused = true;
+                    nativeStatus = 'paused';
+                    stopSignal.current = true;
+                    setIsPlaying(false);
+                    setIsPaused(true);
+                    return;
                 }
             }
         }
