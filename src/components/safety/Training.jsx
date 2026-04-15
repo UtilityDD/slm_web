@@ -255,6 +255,8 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
     const [userPPEData, setUserPPEData] = useState([]);
     const galleryRef = useRef(null);
     const lessonScrollRef = useRef(null);
+    const touchStartXRef = useRef(0);
+    const touchStartYRef = useRef(0);
     const audioRef = useRef(null);
     const [isAudioPlaying, setIsAudioPlaying] = useState(false);
     const [activeAudioChapter, setActiveAudioChapter] = useState(null);
@@ -532,6 +534,30 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
             if (lessonScrollRef.current) {
                 lessonScrollRef.current.scrollTo({ top: 0, behavior: 'instant' });
             }
+        }
+    };
+
+    const handleReaderTouchStart = (event) => {
+        const touch = event.touches?.[0];
+        if (!touch) return;
+        touchStartXRef.current = touch.clientX;
+        touchStartYRef.current = touch.clientY;
+    };
+
+    const handleReaderTouchEnd = (event) => {
+        const touch = event.changedTouches?.[0];
+        if (!touch) return;
+
+        const deltaX = touch.clientX - touchStartXRef.current;
+        const deltaY = touch.clientY - touchStartYRef.current;
+        const isHorizontalSwipe = Math.abs(deltaX) > 55 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25;
+
+        if (!isHorizontalSwipe) return;
+
+        if (deltaX < 0) {
+            nextSlide();
+        } else {
+            prevSlide();
         }
     };
 
@@ -2107,8 +2133,13 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                             {(() => {
                                 const activeSlide = slides[activeSectionIndex];
                                 return (
-                                    <div ref={lessonScrollRef} className={`flex-1 overflow-y-auto relative book-page-texture book-gutter scroll-smooth transition-colors duration-700`}>
-                                        <div key={activeSectionIndex} className="max-w-2xl mx-auto px-7 sm:px-10 md:px-14 py-14 animate-fade-in-up mb-32">
+                                    <div
+                                        ref={lessonScrollRef}
+                                        className={`flex-1 overflow-y-auto relative book-page-texture book-gutter scroll-smooth transition-colors duration-700`}
+                                        onTouchStart={handleReaderTouchStart}
+                                        onTouchEnd={handleReaderTouchEnd}
+                                    >
+                                        <div key={activeSectionIndex} className="max-w-2xl mx-auto px-6 sm:px-10 md:px-14 py-10 sm:py-14 pb-20 sm:pb-24 animate-fade-in-up">
                                             {activeSlide?.type === 'hero' && (
                                                 <div className="flex flex-col items-center justify-center pt-6 pb-20 space-y-12">
                                                     <div className="w-full space-y-8 text-center">
@@ -2252,7 +2283,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                                                                         {language === 'en' ? 'Perspective' : 'ভুল ধারণা'}
                                                                     </span>
                                                                     <p className={`text-lg sm:text-xl text-slate-600 dark:text-slate-400 italic font-medium leading-[1.9] ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl leading-[2.1]' : ''}`}>
-                                                                        "{renderTextWithImages(item.myth)}"
+                                                                        {renderTextWithImages(item.myth)}
                                                                     </p>
                                                                 </div>
 
@@ -2348,19 +2379,19 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                             })()}
 
                             {/* Minimal Paper-like Footer Navigation */}
-                            <div className="fixed bottom-0 left-0 right-0 bg-transparent px-6 py-6 pb-12 flex items-center justify-between safe-area-inset-bottom">
+                            <div className="shrink-0 border-t border-black/5 dark:border-white/5 bg-white/70 dark:bg-black/20 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] flex items-center justify-between shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
                                 <button
                                     onClick={prevSlide}
                                     disabled={isFirstSlide}
-                                    className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${isFirstSlide ? 'opacity-0 pointer-events-none' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-75 hover:bg-black/5 dark:hover:bg-white/5'}`}
+                                    className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-all duration-300 ${isFirstSlide ? 'opacity-0 pointer-events-none' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-75 hover:bg-black/5 dark:hover:bg-white/5'}`}
                                 >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
                                     </svg>
                                 </button>
 
-                                <div className="flex items-center gap-1.5 px-4 py-2 bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-full">
-                                    <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase">
+                                <div className="flex items-center gap-1.5 px-3.5 py-2 bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-full">
+                                    <span className="text-[9px] sm:text-[10px] font-black tracking-widest text-slate-500 uppercase">
                                         {activeSectionIndex + 1} / {slides.length}
                                     </span>
                                 </div>
@@ -2368,14 +2399,14 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                                 {!isLastSlide ? (
                                     <button
                                         onClick={nextSlide}
-                                        className="flex items-center justify-center w-12 h-12 rounded-full text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-75 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                                        className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-75 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
                                     >
-                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
                                         </svg>
                                     </button>
                                 ) : (
-                                    <div className="w-12"></div>
+                                    <div className="w-10 sm:w-12"></div>
                                 )}
                             </div>
                         </div>
