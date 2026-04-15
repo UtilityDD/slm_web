@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 
 const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions = [], language = 'en', isPractice = false, lessonId = '' }) => {
@@ -8,6 +8,71 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
     const [score, setScore] = useState(0);
     const [loading, setLoading] = useState(false);
     const [isReviewMode, setIsReviewMode] = useState(false);
+    const [soundEnabled, setSoundEnabled] = useState(() => {
+        try {
+            return localStorage.getItem('chapterQuizSoundEnabled') !== 'false';
+        } catch (e) {
+            return true;
+        }
+    });
+
+    const playUiSfx = useCallback((type) => {
+        if (!soundEnabled) return;
+
+        try {
+            const AudioContextRef = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextRef) return;
+
+            const ctx = new AudioContextRef();
+            const now = ctx.currentTime;
+
+            const playTone = (frequency, startOffset, duration, gainValue = 0.045, waveType = 'sine') => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = waveType;
+                osc.frequency.setValueAtTime(frequency, now + startOffset);
+
+                gain.gain.setValueAtTime(0, now + startOffset);
+                gain.gain.linearRampToValueAtTime(gainValue, now + startOffset + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + startOffset + duration);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start(now + startOffset);
+                osc.stop(now + startOffset + duration);
+            };
+
+            if (type === 'select') {
+                playTone(880, 0, 0.07, 0.03, 'triangle');
+            } else if (type === 'next') {
+                playTone(660, 0, 0.07, 0.035, 'triangle');
+                playTone(784, 0.05, 0.08, 0.03, 'triangle');
+            } else if (type === 'submit') {
+                playTone(740, 0, 0.08, 0.035, 'triangle');
+                playTone(880, 0.06, 0.1, 0.03, 'sine');
+            } else if (type === 'pass') {
+                playTone(523.25, 0, 0.14, 0.05, 'triangle');
+                playTone(659.25, 0.1, 0.14, 0.045, 'triangle');
+                playTone(783.99, 0.2, 0.24, 0.04, 'sine');
+            } else if (type === 'fail') {
+                playTone(392, 0, 0.12, 0.04, 'sawtooth');
+                playTone(329.63, 0.09, 0.2, 0.03, 'sine');
+            } else if (type === 'retry') {
+                playTone(523.25, 0, 0.08, 0.03, 'triangle');
+            } else if (type === 'continue') {
+                playTone(784, 0, 0.08, 0.035, 'triangle');
+                playTone(988, 0.06, 0.12, 0.03, 'sine');
+            }
+
+            window.setTimeout(() => {
+                ctx.close().catch(() => { });
+            }, 450);
+        } catch (e) {
+            // Non-critical enhancement; ignore audio failures silently.
+        }
+    }, [soundEnabled]);
 
     const t = {
         en: {
@@ -65,6 +130,14 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
     const [shuffledQuestions, setShuffledQuestions] = useState([]);
 
     useEffect(() => {
+        try {
+            localStorage.setItem('chapterQuizSoundEnabled', String(soundEnabled));
+        } catch (e) {
+            // Ignore storage failures.
+        }
+    }, [soundEnabled]);
+
+    useEffect(() => {
         if (isOpen) {
             setLoading(true);
             // Reset states
@@ -103,14 +176,21 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
         }
     }, [isOpen, questions]);
 
-    if (!isOpen) return null;
-
     const currentQuestion = shuffledQuestions[currentQuestionIndex];
     const totalQuestions = shuffledQuestions.length;
     const passThreshold = Math.ceil(totalQuestions * 0.9);
     const isPassed = score >= passThreshold;
 
+    useEffect(() => {
+        if (showResult && totalQuestions > 0) {
+            playUiSfx(isPassed ? 'pass' : 'fail');
+        }
+    }, [showResult, isPassed, totalQuestions, playUiSfx]);
+
+    if (!isOpen) return null;
+
     const handleOptionSelect = (optionIndex) => {
+        playUiSfx('select');
         setUserAnswers(prev => ({
             ...prev,
             [currentQuestionIndex]: optionIndex
@@ -119,8 +199,10 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
 
     const handleNext = () => {
         if (currentQuestionIndex < totalQuestions - 1) {
+            playUiSfx('next');
             setCurrentQuestionIndex(prev => prev + 1);
         } else {
+            playUiSfx('submit');
             handleSubmit();
         }
     };
@@ -138,11 +220,13 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
 
     const handleFinish = () => {
         if (isPassed) {
+            playUiSfx('continue');
             onComplete(score);
         }
     };
 
     const handleTryAgain = () => {
+        playUiSfx('retry');
         setLoading(true);
         setTimeout(() => {
             const reshuffled = shuffledQuestions.map(q => {
@@ -191,7 +275,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                 ) : (
                     <>
                         {/* Header */}
-                        <div className="p-4 border-b border-token-border flex justify-between items-center bg-token-bg-page/80">
+                        <div className="p-4 border-b border-token-border flex justify-between items-center gap-3 bg-token-bg-page/80">
                             <div className="flex items-center gap-2 min-w-0">
                                 {lessonId && (
                                     <span className="text-xs font-black text-orange-500 bg-orange-50 dark:bg-orange-500/10 px-2.5 py-1 rounded-lg border border-orange-100 dark:border-orange-500/20 shrink-0">
@@ -202,14 +286,35 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                     {isReviewMode ? t.reviewTitle : showResult ? t.result : `${t.question} ${currentQuestionIndex + 1}/${totalQuestions}`}
                                 </h3>
                             </div>
-                            {(!showResult || isReviewMode) && (
+                            <div className="flex items-center gap-1.5 shrink-0">
                                 <button
-                                    onClick={onClose}
-                                    className="text-token-text-muted hover:text-token-text-secondary transition-colors"
+                                    onClick={() => setSoundEnabled(prev => !prev)}
+                                    className={`inline-flex items-center justify-center w-9 h-9 rounded-full transition-colors ${soundEnabled ? 'text-token-text-secondary hover:bg-black/5 dark:hover:bg-white/10' : 'text-token-text-muted hover:bg-black/5 dark:hover:bg-white/10'}`}
+                                    aria-label={soundEnabled ? (language === 'en' ? 'Disable sound' : 'সাউন্ড বন্ধ করুন') : (language === 'en' ? 'Enable sound' : 'সাউন্ড চালু করুন')}
+                                    title={soundEnabled ? (language === 'en' ? 'Disable sound' : 'সাউন্ড বন্ধ করুন') : (language === 'en' ? 'Enable sound' : 'সাউন্ড চালু করুন')}
                                 >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                    {soundEnabled ? (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5L6 9H3v6h3l5 4V5z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 9a4 4 0 010 6" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.5 6.5a8 8 0 010 11" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5L6 9H3v6h3l5 4V5z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 5l-14 14" />
+                                        </svg>
+                                    )}
                                 </button>
-                            )}
+                                {(!showResult || isReviewMode) && (
+                                    <button
+                                        onClick={onClose}
+                                        className="text-token-text-muted hover:text-token-text-secondary transition-colors"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         {/* Content */}
@@ -290,120 +395,85 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                     </div>
                                 </div>
                             ) : showResult ? (
-                                <div className="text-center py-6 animate-fade-in-up">
-                                    {/* Premium Radial Progress Indicator */}
-                                    <div className="relative w-48 h-48 mx-auto mb-8 flex items-center justify-center">
-                                        {/* Background Track */}
-                                        <svg className="absolute w-full h-full -rotate-90">
-                                            <circle
-                                                cx="96"
-                                                cy="96"
-                                                r="80"
-                                                fill="transparent"
-                                                stroke="currentColor"
-                                                strokeWidth="12"
-                                                className="text-slate-100 dark:text-slate-700/50"
-                                            />
-                                            <circle
-                                                cx="96"
-                                                cy="96"
-                                                r="80"
-                                                fill="transparent"
-                                                stroke="currentColor"
-                                                strokeWidth="14"
-                                                strokeDasharray={2 * Math.PI * 80}
-                                                strokeDashoffset={2 * Math.PI * 80 * (1 - score / totalQuestions)}
-                                                strokeLinecap="round"
-                                                className={`transition-all duration-[1500ms] ease-out-expo ${isPassed ? 'text-emerald-500' : 'text-orange-500'
-                                                    }`}
-                                                style={{ filter: `drop-shadow(0 0 8px ${isPassed ? 'rgba(16,185,129,0.3)' : 'rgba(249,115,22,0.3)'})` }}
-                                            />
-                                        </svg>
-
-                                        {/* Central Content */}
-                                        <div className="z-10 flex flex-col items-center">
-                                            <div className="text-5xl font-black tracking-tighter text-token-text-primary">
-                                                {Math.round((score / totalQuestions) * 100)}%
+                                <div className="py-4 animate-fade-in-up">
+                                    <div className="mx-auto max-w-md rounded-3xl border border-token-border bg-token-bg-page/70 p-6 sm:p-7 shadow-sm">
+                                        <div className="text-center space-y-4">
+                                            <div className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-wider ${isPassed
+                                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
+                                                : 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300'
+                                                }`}>
+                                                {isPassed ? (language === 'en' ? 'Passed' : 'উত্তীর্ণ') : (language === 'en' ? 'Retry' : 'আবার চেষ্টা')}
                                             </div>
-                                            <div className={`text-[10px] font-black uppercase tracking-widest mt-1 ${isPassed ? 'text-emerald-500' : 'text-orange-500'}`}>
-                                                {isPassed ? (language === 'en' ? 'PASSED' : 'উত্তীর্ণ') : (language === 'en' ? 'RETRY' : 'আবার চেষ্টা')}
+                                            <h2 className="text-2xl sm:text-3xl font-black text-token-text-primary tracking-tight leading-tight">
+                                                {isPassed ? t.completed : t.failed}
+                                            </h2>
+                                            <div className="space-y-2">
+                                                <p className="text-4xl sm:text-5xl font-black text-token-text-primary tracking-tight">
+                                                    {Math.round((score / totalQuestions) * 100)}%
+                                                </p>
+                                                <p className="text-sm text-token-text-muted font-semibold">
+                                                    {t.score} <span className="text-token-text-primary">{score}</span> / {totalQuestions}
+                                                </p>
                                             </div>
-                                        </div>
-
-                                        {/* Status Icon Badge */}
-                                        <div className={`absolute -bottom-2 -right-2 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-2xl border-4 border-white dark:border-slate-800 animate-entrance-pop ${isPassed ? 'bg-emerald-500 text-white' : 'bg-orange-500 text-white'
-                                            }`} style={{ animationDelay: '500ms' }}>
-                                            {isPassed ? '🏆' : '🔥'}
+                                            <div className="pt-1">
+                                                <div className="h-2.5 w-full rounded-full bg-token-border overflow-hidden">
+                                                    <div
+                                                        className={`h-full rounded-full transition-all duration-700 ${isPassed ? 'bg-emerald-500' : 'bg-orange-500'}`}
+                                                        style={{ width: `${Math.max(0, Math.min(100, (score / totalQuestions) * 100))}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                            {!isPassed && (
+                                                <p className="text-xs text-token-text-muted font-semibold">
+                                                    {t.required}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
-
-                                    <div className="space-y-2 mb-10 px-4">
-                                        <h2 className="text-2xl md:text-3xl font-black text-token-text-primary tracking-tight leading-tight">
-                                            {isPassed ? t.completed : t.failed}
-                                        </h2>
-                                        <p className="text-token-text-muted font-bold">
-                                            {t.score} <span className="text-token-text-primary">{score}</span> / {totalQuestions}
-                                        </p>
-                                        {!isPassed && (
-                                            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded-full text-[10px] font-black uppercase tracking-wider border border-orange-100 dark:border-orange-500/20">
-                                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                                </svg>
-                                                {t.required}
-                                            </div>
-                                        )}
-                                    </div>
-
                                     <div className="sticky bottom-0 -mx-6 mt-6 border-t border-token-border bg-token-bg-surface/95 backdrop-blur px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-                                        <div className="space-y-4 px-2">
+                                        <div className="space-y-3">
                                             <button
                                                 onClick={() => setIsReviewMode(true)}
-                                                className="w-full py-4 bg-token-bg-page hover:bg-token-border text-token-text-secondary font-black rounded-2xl transition-all uppercase tracking-wider text-xs"
+                                                className="w-full py-3.5 bg-token-bg-page hover:bg-token-border text-token-text-secondary font-bold rounded-xl transition-colors"
                                             >
                                                 {t.review}
                                             </button>
                                             {isPractice ? (
-                                                /* Practice Mode Options */
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <button
                                                         onClick={handleTryAgain}
-                                                        className="py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl transition-all shadow-xl shadow-blue-500/20 uppercase tracking-widest text-xs"
+                                                        className="py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors"
                                                     >
                                                         {t.tryAgain}
                                                     </button>
                                                     <button
                                                         onClick={onClose}
-                                                        className="py-4 bg-token-text-primary text-token-bg-surface font-black rounded-2xl transition-all shadow-xl uppercase tracking-widest text-xs"
+                                                        className="py-3.5 bg-token-text-primary text-token-bg-surface font-bold rounded-xl transition-colors"
                                                     >
                                                         {t.close}
                                                     </button>
                                                 </div>
                                             ) : isPassed ? (
-                                                /* Normal Completion */
                                                 <button
                                                     onClick={handleFinish}
-                                                    className="w-full py-5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-[2rem] transition-all shadow-2xl shadow-emerald-500/30 active:scale-95 flex items-center justify-center gap-3 text-lg"
+                                                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl transition-all active:scale-[0.99] flex items-center justify-center gap-2"
                                                 >
-                                                    {t.continue}
-                                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                                    <span>{t.continue}</span>
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                                     </svg>
                                                 </button>
                                             ) : (
-                                                /* Normal Failure */
-                                                <div className="grid grid-cols-1 gap-3">
+                                                <div className="grid grid-cols-1 gap-2">
                                                     <button
                                                         onClick={handleTryAgain}
-                                                        className="w-full py-5 bg-orange-600 hover:bg-orange-500 text-white font-black rounded-[2rem] transition-all shadow-2xl shadow-orange-500/30 active:scale-95 flex items-center justify-center gap-3 text-lg"
+                                                        className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white font-black rounded-2xl transition-all active:scale-[0.99]"
                                                     >
                                                         {t.tryAgain}
-                                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                                            <path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6 0 3.31-2.69 6-6 6-3.31 0-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
-                                                        </svg>
                                                     </button>
                                                     <button
                                                         onClick={onReadAgain || onClose}
-                                                        className="w-full py-4 text-token-text-muted font-bold hover:text-token-action-primary transition-colors"
+                                                        className="w-full py-3 text-token-text-muted font-semibold hover:text-token-action-primary transition-colors"
                                                     >
                                                         {t.readAgain}
                                                     </button>

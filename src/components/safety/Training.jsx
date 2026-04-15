@@ -1761,29 +1761,6 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                                             <div className={`w-22 h-22 sm:w-28 sm:h-28 rounded-[2rem] ${selectedLesson.badge?.color || 'bg-orange-500'} flex items-center justify-center text-4xl sm:text-5xl text-white shadow-2xl`}>
                                                 📖
                                             </div>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    toggleChapterAudio(selectedLesson.chapterNum);
-                                                }}
-                                                className={`absolute -bottom-2 -right-2 w-11 h-11 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-300 ${activeAudioChapter === selectedLesson.chapterNum && isAudioPlaying
-                                                    ? 'bg-orange-500 text-white scale-110'
-                                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-200 hover:scale-105'
-                                                    }`}
-                                            >
-                                                {activeAudioChapter === selectedLesson.chapterNum && isAudioPlaying ? (
-                                                    <div className="flex items-end gap-0.5 h-4">
-                                                        <div className="w-1 bg-white animate-audio-bar-1" />
-                                                        <div className="w-1 bg-white animate-audio-bar-2" />
-                                                        <div className="w-1 bg-white animate-audio-bar-3" />
-                                                    </div>
-                                                ) : (
-                                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-                                                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-                                                    </svg>
-                                                )}
-                                            </button>
                                         </div>
                                     </div>
 
