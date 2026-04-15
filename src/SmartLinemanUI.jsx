@@ -194,6 +194,24 @@ export default function SmartLinemanUI() {
       );
 
       if (profileData) {
+        const remoteLessons = Array.isArray(profileData.completed_lessons)
+          ? profileData.completed_lessons
+          : [];
+        const computedLevel = Math.max(1, calculateLevelFromProgress(profileData.completed_lessons || []));
+
+        if (profileData.training_level !== computedLevel) {
+          const { error: levelUpdateError } = await supabase
+            .from('profiles')
+            .update({ training_level: computedLevel })
+            .eq('id', targetUser.id);
+
+          if (levelUpdateError) {
+            console.error('Error reconciling training level:', levelUpdateError);
+          } else {
+            profileData.training_level = computedLevel;
+          }
+        }
+
         // Check for session mismatch
         const localSessionId = storageUtils.getItem('slm_session_id');
         if (profileData.current_session_id && localSessionId && profileData.current_session_id !== localSessionId) {
@@ -201,6 +219,13 @@ export default function SmartLinemanUI() {
           confirmLogout(true);
           return;
         }
+
+        // Server progress is authoritative to prevent stale localStorage from re-promoting users.
+        setCompletedLessons(remoteLessons);
+        if (targetUser?.id) {
+          localStorage.setItem(`training_progress_${targetUser.id}`, JSON.stringify(remoteLessons));
+        }
+
         setUserProfile(profileData);
       }
     } catch (error) {
@@ -364,28 +389,6 @@ export default function SmartLinemanUI() {
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [user]);
-
-  // Sync local progress to Supabase if needed
-  useEffect(() => {
-    if (user && userProfile && completedLessons.length > 0) {
-      const localLevel = calculateLevelFromProgress(completedLessons);
-      const remoteLevel = userProfile.training_level || 0;
-
-      if (localLevel > remoteLevel) {
-        console.log(`Syncing training level: Local (${localLevel}) > Remote (${remoteLevel})`);
-        supabase.from('profiles')
-          .update({ training_level: localLevel })
-          .eq('id', user.id)
-          .then(({ error }) => {
-            if (error) console.error('Error syncing training level:', error);
-            else {
-              // Update local profile state to reflect change
-              setUserProfile(prev => ({ ...prev, training_level: localLevel }));
-            }
-          });
-      }
-    }
-  }, [user, userProfile, completedLessons]);
 
   // Optimized Notifications Fetcher
   const fetchNotifications = async (forceRefresh = false) => {
@@ -833,7 +836,7 @@ export default function SmartLinemanUI() {
               setUserProfile(prev => prev ? {
                 ...prev,
                 completed_lessons: newProgress,
-                training_level: calculateLevelFromProgress(newProgress)
+                training_level: Math.max(1, calculateLevelFromProgress(newProgress))
               } : null);
               fetchProfile(user);
             }}
