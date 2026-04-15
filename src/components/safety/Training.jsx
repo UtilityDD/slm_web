@@ -1697,7 +1697,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                     <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-orange-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
                     <div className="absolute bottom-0 left-0 w-[30rem] h-[30rem] bg-indigo-500/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
 
-                    <div className="relative w-full max-w-2xl aspect-[3/4.5] sm:aspect-[3/4] bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl overflow-hidden border border-white/50 dark:border-slate-700/50 flex flex-col group animate-entrance-pop">
+                    <div className="relative w-full max-w-2xl aspect-[3/4.15] sm:aspect-[3/4] bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl overflow-hidden border border-white/50 dark:border-slate-700/50 flex flex-col group animate-entrance-pop">
                         {/* Top Design Element */}
                         <div className={`h-24 sm:h-32 w-full ${selectedLesson.badge?.color || 'bg-orange-500'} relative overflow-hidden shrink-0`}>
                             <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-transparent" />
@@ -1715,7 +1715,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                         </div>
 
                         {/* Immersive Content */}
-                        <div className="flex-1 p-8 sm:p-12 flex flex-col items-center justify-between text-center">
+                        <div className="flex-1 p-6 sm:p-12 flex flex-col items-center justify-between text-center">
                             <div className="w-full space-y-6">
                                 {/* Rank Badge & Audio */}
                                 <div className="flex flex-col items-center">
@@ -1767,7 +1767,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                                         </span>
                                         <div className="h-px w-10 bg-slate-200 dark:bg-slate-700" />
                                     </div>
-                                    <h2 className={`text-3xl sm:text-5xl font-black text-slate-900 dark:text-white leading-[1.1] tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <h2 className={`text-2xl sm:text-5xl font-black text-slate-900 dark:text-white leading-[1.1] tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {selectedLesson.level_title}
                                     </h2>
                                 </div>
@@ -1782,10 +1782,10 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                                     setIsJournalMode(true);
                                     setSelectedLesson(null);
                                 }}
-                                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 relative group/btn"
+                                className="mt-4 sm:mt-0 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 relative group/btn shrink-0"
                             >
                                 <div className="absolute inset-0 rounded-full border-4 border-slate-900/10 dark:border-white/10 animate-ping opacity-40" />
-                                <svg className="w-10 h-10 sm:w-12 sm:h-12 translate-x-1 group-hover/btn:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-8 h-8 sm:w-12 sm:h-12 translate-x-1 group-hover/btn:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
                                 </svg>
                             </button>
