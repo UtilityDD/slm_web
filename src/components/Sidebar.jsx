@@ -52,6 +52,7 @@ export default function Sidebar({
 
   const primaryItems = menuItems.filter(item => item.primary && item.show);
   const secondaryItems = menuItems.filter(item => !item.primary && item.show);
+  const displayUserId = userProfile?.slm_id || userProfile?.id ? String(userProfile?.slm_id || userProfile?.id) : null;
 
   const handleNavClick = (item) => {
     if (item.id === 'notifications') {
@@ -107,6 +108,17 @@ export default function Sidebar({
               <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate mb-0.5">
                 {(userProfile?.full_name && !userProfile.full_name.includes('@')) ? userProfile.full_name : 'Guest'}
               </p>
+              {displayUserId && (
+                <div className="mb-1">
+                  <span
+                    className="inline-flex max-w-full items-center rounded-full border border-slate-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 px-2 py-0.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate"
+                    title={displayUserId}
+                  >
+                    <span className="mr-1 uppercase tracking-wide text-[10px] text-slate-400 dark:text-slate-500">ID</span>
+                    <span className="truncate">{displayUserId}</span>
+                  </span>
+                </div>
+              )}
               <div className="flex flex-col gap-2 transform transition-all duration-300">
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 rounded">

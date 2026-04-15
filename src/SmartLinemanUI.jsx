@@ -1164,7 +1164,6 @@ export default function SmartLinemanUI() {
                             <UserIcon className="w-5 h-5 text-white" />
                           )}
                         </div>
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-white dark:border-slate-800 rounded-full"></div>
                       </button>
                     </div>
                   ) : (

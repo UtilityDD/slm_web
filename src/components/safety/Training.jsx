@@ -229,6 +229,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
     const [trainingChapters, setTrainingChapters] = useState([]);
     const [selectedChapter, setSelectedChapter] = useState(null);
     const [selectedLesson, setSelectedLesson] = useState(null);
+    const [lockedLessonModal, setLockedLessonModal] = useState(null);
     const [trainingContent, setTrainingContent] = useState(null);
     const [trainingLoading, setTrainingLoading] = useState(false);
     const [completedLessons, setCompletedLessons] = useState([]);
@@ -1444,7 +1445,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                                         className="mx-auto mt-4 px-6 py-2.5 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 backdrop-blur-2xl rounded-full border border-blue-200/60 dark:border-blue-700/60 shadow-sm hover:shadow-lg hover:from-blue-100 hover:to-cyan-100 dark:hover:from-blue-900/40 dark:hover:to-cyan-900/40 hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-3 text-slate-700 dark:text-slate-300 font-bold animate-fade-in-up"
                                     >
                                         <span className="text-lg">📊</span>
-                                        <span>{language === 'en' ? 'My Progress Report' : 'আমার অগ্রগতি রিপোর্ট'}</span>
+                                        <span>{language === 'en' ? 'My Progress Report' : 'আমার প্রোগ্রেস রিপোর্ট'}</span>
                                     </button>
 
                                     {/* Global Progress Dashboard */}
@@ -1588,7 +1589,14 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                                                         if (item.isUnlocked) {
                                                             handleChapterClick(journeyChapters.find(c => c.number === item.chapterNumber), item.lessonNumber);
                                                         } else {
-                                                            alert(language === 'en' ? 'Complete previous lessons first!' : 'আগের পাঠগুলো আগে শেষ করুন!');
+                                                            const chapterInfo = journeyChapters.find(c => c.number === item.chapterNumber);
+                                                            setLockedLessonModal({
+                                                                lessonId: item.id,
+                                                                lessonNumber: item.lessonNumber,
+                                                                chapterNumber: item.chapterNumber,
+                                                                chapterTitle: chapterInfo?.title || '',
+                                                                chapterLabel: language === 'en' ? `Chapter ${item.chapterNumber}` : `অধ্যায় ${toBengaliNumber(item.chapterNumber, language)}`
+                                                            });
                                                         }
                                                     }}
                                                     className={`absolute w-16 h-16 sm:w-20 sm:h-20 rounded-3xl flex flex-col items-center justify-center cursor-pointer transition-all duration-500 z-20 group ${item.isCompleted ? 'bg-gradient-to-br from-emerald-500 to-teal-600 border-4 border-emerald-100 dark:border-emerald-500/30 text-white shadow-xl hover:scale-110' : item.isUnlocked ? `${item.badge.color} border-4 border-white dark:border-slate-700 text-slate-900 dark:text-white shadow-xl hover:scale-110 active:scale-95` : 'bg-slate-200/50 dark:bg-slate-800/80 border-4 border-slate-300/50 dark:border-slate-700/50 text-slate-400 dark:text-slate-500 shadow-inner grayscale cursor-not-allowed opacity-80'} ${isNext ? 'animate-float-y ring-4 ring-orange-500/30' : ''}`}
@@ -2027,6 +2035,54 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                 </div>
             ) : null
             }
+
+            {lockedLessonModal && createPortal(
+                <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xl animate-fade-in">
+                    <div className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-white dark:bg-slate-900 shadow-2xl animate-scale-in">
+                        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-transparent to-violet-500/10" />
+                        <div className="relative p-6 sm:p-7">
+                            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-100 text-3xl text-orange-600 shadow-inner dark:bg-orange-500/10 dark:text-orange-300">
+                                🔒
+                            </div>
+
+                            <div className="text-center space-y-3">
+                                <div className="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.25em] text-orange-600 dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-300">
+                                    {language === 'en' ? 'Locked Level' : 'লক করা পাঠ'}
+                                </div>
+
+                                <h3 className={`text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    {language === 'en' ? 'Complete previous lessons first' : 'আগের পাঠগুলো আগে শেষ করুন'}
+                                </h3>
+
+                                <p className={`text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    {language === 'en'
+                                        ? `Lesson ${lockedLessonModal.lessonId} is locked until you finish the lessons before it.`
+                                        : `${toBengaliNumber(lockedLessonModal.lessonId, language)} নম্বর পাঠটি এর আগের পাঠগুলো শেষ না করা পর্যন্ত লক থাকবে।`}
+                                </p>
+
+                                <div className="mx-auto mt-4 inline-flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-200">
+                                    <span className="rounded-lg bg-white px-2.5 py-1 text-xs font-black text-orange-600 shadow-sm dark:bg-slate-900 dark:text-orange-300">
+                                        {lockedLessonModal.chapterLabel}
+                                    </span>
+                                    <span className="text-slate-500 dark:text-slate-400">
+                                        {lockedLessonModal.chapterTitle || (language === 'en' ? 'Please continue your journey from earlier lessons.' : 'দয়া করে আগের পাঠগুলো শেষ করুন।')}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="mt-6">
+                                <button
+                                    onClick={() => setLockedLessonModal(null)}
+                                    className="w-full rounded-2xl bg-slate-900 px-4 py-3.5 font-bold text-white transition-all hover:bg-slate-800 active:scale-[0.99] dark:bg-white dark:text-slate-950 dark:hover:bg-white/90"
+                                >
+                                    {language === 'en' ? 'Got it' : 'বুঝেছি'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
 
             {/* Safety Journal UI - Immersive Slide-based Experience */}
             {
