@@ -1713,108 +1713,123 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                     </div>
                 </div>
             ) : selectedLesson ? (
-                /* Full Page Book Preview Overlay */
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-10 animate-fade-in overflow-hidden">
-                    {/* Immersive Background */}
-                    <div className={`absolute inset-0 ${selectedLesson.badge?.color || 'bg-slate-900'} opacity-20 dark:opacity-40 animate-pulse-slow`} />
-                    <div className="absolute inset-0 backdrop-blur-3xl bg-white/40 dark:bg-slate-900/60" />
+                /* Full Screen Lesson Preview Overlay */
+                <div className="fixed inset-0 z-[200] flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 animate-fade-in">
+                    <div className={`absolute inset-0 ${selectedLesson.badge?.color || 'bg-orange-500'} opacity-[0.08] dark:opacity-[0.16]`} />
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/85 via-white/70 to-white/90 dark:from-slate-950/90 dark:via-slate-950/80 dark:to-slate-950/95 backdrop-blur-2xl" />
 
-                    {/* Decorative Elements */}
-                    <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-orange-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
-                    <div className="absolute bottom-0 left-0 w-[30rem] h-[30rem] bg-indigo-500/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
+                    <div className="relative z-10 flex h-full flex-col safe-area-inset-top safe-area-inset-bottom">
+                        <header className="sticky top-0 z-20 border-b border-black/5 dark:border-white/5 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl">
+                            <div className="flex items-center justify-between gap-4 px-4 sm:px-6 py-3 sm:py-4">
+                                <button
+                                    onClick={() => {
+                                        stopChapterAudio();
+                                        setSelectedLesson(null);
+                                        setSelectedChapter(null);
+                                    }}
+                                    className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                    <span className="hidden sm:inline">{language === 'en' ? 'Back' : 'ফিরে যান'}</span>
+                                </button>
 
-                    <div className="relative w-full max-w-2xl aspect-[3/4.15] sm:aspect-[3/4] bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl overflow-hidden border border-white/50 dark:border-slate-700/50 flex flex-col group animate-entrance-pop">
-                        {/* Top Design Element */}
-                        <div className={`h-24 sm:h-32 w-full ${selectedLesson.badge?.color || 'bg-orange-500'} relative overflow-hidden shrink-0`}>
-                            <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-transparent" />
-                            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_20%_50%,rgba(255,255,255,0.4),transparent)]" />
-                            <button
-                                onClick={() => {
-                                    stopChapterAudio();
-                                    setSelectedLesson(null);
-                                    setSelectedChapter(null);
-                                }}
-                                className="absolute top-6 left-6 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/40 transition-all z-20"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" /></svg>
-                            </button>
-                        </div>
-
-                        {/* Immersive Content */}
-                        <div className="flex-1 p-6 sm:p-12 flex flex-col items-center justify-between text-center">
-                            <div className="w-full space-y-6">
-                                {/* Rank Badge & Audio */}
-                                <div className="flex flex-col items-center">
-                                    <div className="relative group/audio">
-                                        <div className={`w-24 h-24 sm:w-32 sm:h-32 rounded-[2.5rem] ${selectedLesson.badge?.color || 'bg-orange-500'} flex items-center justify-center text-4xl sm:text-6xl text-white shadow-2xl animate-subtle-float relative`}>
-                                            <div className="absolute inset-0 rounded-[2.5rem] border-4 border-white/30 animate-ping opacity-20" />
-                                            📖
-                                        </div>
-
-                                        {/* Audio Button */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleChapterAudio(selectedLesson.chapterNum);
-                                            }}
-                                            className={`absolute -bottom-2 -right-2 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-300 z-30 ${activeAudioChapter === selectedLesson.chapterNum && isAudioPlaying
-                                                ? 'bg-orange-500 text-white scale-110'
-                                                : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-200 hover:scale-105'
-                                                }`}
-                                        >
-                                            {activeAudioChapter === selectedLesson.chapterNum && isAudioPlaying ? (
-                                                <div className="flex items-end gap-0.5 h-4">
-                                                    <div className="w-1 bg-white animate-audio-bar-1" />
-                                                    <div className="w-1 bg-white animate-audio-bar-2" />
-                                                    <div className="w-1 bg-white animate-audio-bar-3" />
-                                                </div>
-                                            ) : (
-                                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" /><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" /></svg>
-                                            )}
-                                        </button>
-                                    </div>
-
-                                    <div className="mt-6 flex flex-col items-center gap-1">
-                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">
-                                            {language === 'en' ? 'Chapter Status' : 'পদমর্যাদা'}
-                                        </span>
-                                        <h4 className={`text-xl sm:text-2xl font-black ${selectedLesson.badge?.color.replace('bg-', 'text-') || 'text-orange-500'} tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                            {language === 'en' ? selectedLesson.badge?.en : selectedLesson.badge?.bn}
-                                        </h4>
-                                    </div>
+                                <div className="min-w-0 flex-1 text-center px-2">
+                                    <p className={`text-[10px] sm:text-xs font-black uppercase tracking-[0.35em] text-slate-400 ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
+                                        {language === 'en' ? 'Lesson Preview' : 'পাঠের প্রিভিউ'}
+                                    </p>
+                                    <h1 className={`mt-1 truncate text-base sm:text-lg font-black text-slate-900 dark:text-white ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {selectedLesson.level_title}
+                                    </h1>
                                 </div>
 
-                                {/* Title Section */}
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-center gap-2">
-                                        <div className="h-px w-10 bg-slate-200 dark:bg-slate-700" />
-                                        <span className={`text-xs font-black text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                            {language === 'en' ? 'Lesson' : 'পাঠ'} {toBengaliNumber(selectedLesson.level_id || `${selectedLesson.chapterNum}.${selectedLesson.subchapterNum}`, language)}
-                                        </span>
-                                        <div className="h-px w-10 bg-slate-200 dark:bg-slate-700" />
+                                <div className="w-[88px] sm:w-[96px] flex justify-end">
+                                    <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-black uppercase tracking-widest ${selectedLesson.badge?.color || 'bg-orange-500'} text-white shadow-sm`}>
+                                        <span>{language === 'en' ? 'Lesson' : 'পাঠ'}</span>
+                                        <span>{toBengaliNumber(selectedLesson.level_id || `${selectedLesson.chapterNum}.${selectedLesson.subchapterNum}`, language)}</span>
                                     </div>
-                                    <h2 className={`text-2xl sm:text-5xl font-black text-slate-900 dark:text-white leading-[1.1] tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {selectedLesson.level_title}
-                                    </h2>
                                 </div>
                             </div>
+                        </header>
 
-                            {/* Action Button - Next Arrow */}
-                            <button
-                                onClick={() => {
-                                    stopChapterAudio();
-                                    setTrainingContent(selectedLesson);
-                                    setActiveSectionIndex(0);
-                                    setIsJournalMode(true);
-                                    setSelectedLesson(null);
-                                }}
-                                className="mt-4 sm:mt-0 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 relative group/btn shrink-0"
-                            >
-                                <div className="absolute inset-0 rounded-full border-4 border-slate-900/10 dark:border-white/10 animate-ping opacity-40" />
-                                <svg className="w-8 h-8 sm:w-12 sm:h-12 translate-x-1 group-hover/btn:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
+                        <div className="flex-1 overflow-y-auto">
+                            <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-between px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+                                <div className="space-y-8 sm:space-y-10">
+                                    <div className="flex justify-center">
+                                        <div className="relative">
+                                            <div className={`w-22 h-22 sm:w-28 sm:h-28 rounded-[2rem] ${selectedLesson.badge?.color || 'bg-orange-500'} flex items-center justify-center text-4xl sm:text-5xl text-white shadow-2xl`}>
+                                                📖
+                                            </div>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleChapterAudio(selectedLesson.chapterNum);
+                                                }}
+                                                className={`absolute -bottom-2 -right-2 w-11 h-11 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-300 ${activeAudioChapter === selectedLesson.chapterNum && isAudioPlaying
+                                                    ? 'bg-orange-500 text-white scale-110'
+                                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-200 hover:scale-105'
+                                                    }`}
+                                            >
+                                                {activeAudioChapter === selectedLesson.chapterNum && isAudioPlaying ? (
+                                                    <div className="flex items-end gap-0.5 h-4">
+                                                        <div className="w-1 bg-white animate-audio-bar-1" />
+                                                        <div className="w-1 bg-white animate-audio-bar-2" />
+                                                        <div className="w-1 bg-white animate-audio-bar-3" />
+                                                    </div>
+                                                ) : (
+                                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                                                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                                                    </svg>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4 text-center">
+                                        <div className="flex items-center justify-center gap-2 text-slate-400 dark:text-slate-500">
+                                            <div className="h-px w-10 bg-slate-200 dark:bg-slate-800" />
+                                            <span className={`text-xs font-black uppercase tracking-[0.28em] ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
+                                                {language === 'en' ? 'Chapter Status' : 'পদমর্যাদা'}
+                                            </span>
+                                            <div className="h-px w-10 bg-slate-200 dark:bg-slate-800" />
+                                        </div>
+                                        <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white leading-[1.15] tracking-tight ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
+                                            {language === 'en' ? selectedLesson.badge?.en : selectedLesson.badge?.bn}
+                                        </h2>
+                                    </div>
+
+                                    <div className="mx-auto max-w-2xl rounded-[2rem] border border-slate-200/70 dark:border-slate-800 bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl px-5 sm:px-8 py-6 sm:py-8 shadow-xl">
+                                        <p className={`text-sm sm:text-base font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500 text-center ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
+                                            {language === 'en' ? 'Lesson' : 'পাঠ'} {toBengaliNumber(selectedLesson.level_id || `${selectedLesson.chapterNum}.${selectedLesson.subchapterNum}`, language)}
+                                        </p>
+                                        <p className={`mt-3 text-2xl sm:text-4xl font-black text-center text-slate-900 dark:text-white leading-tight ${language === 'bn' ? 'font-bengali leading-[1.45]' : ''}`}>
+                                            {selectedLesson.level_title}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="pt-8 sm:pt-10">
+                                    <button
+                                        onClick={() => {
+                                            stopChapterAudio();
+                                            setTrainingContent(selectedLesson);
+                                            setActiveSectionIndex(0);
+                                            setIsJournalMode(true);
+                                            setSelectedLesson(null);
+                                        }}
+                                        className="w-full sm:w-auto sm:min-w-[280px] mx-auto flex items-center justify-center gap-3 rounded-[1.75rem] bg-slate-900 dark:bg-white px-6 sm:px-8 py-4 sm:py-5 text-white dark:text-slate-900 shadow-2xl hover:scale-[1.01] active:scale-95 transition-all duration-300"
+                                    >
+                                        <span className="text-base sm:text-lg font-black">
+                                            {language === 'en' ? 'Start Reading' : 'পড়া শুরু করুন'}
+                                        </span>
+                                        <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
