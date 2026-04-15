@@ -844,7 +844,7 @@ export default function SmartLinemanUI() {
             setCurrentView={setCurrentView}
           />;
         case 'admin':
-          if (!['admin', 'safety mitra'].includes(userProfile?.role)) {
+          if (!['admin', 'safety mitra', 'lineman'].includes(userProfile?.role)) {
             setCurrentView('home');
             return null;
           }

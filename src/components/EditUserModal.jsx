@@ -17,6 +17,9 @@ export default function EditUserModal({
 }) {
     if (!editingUser) return null;
 
+    const isOwnProfile = userProfile?.id && editingUser?.id === userProfile.id;
+    const canEditSelfProfile = userProfile?.role === 'admin' || isOwnProfile;
+
     return createPortal(
         <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 bg-slate-50 dark:bg-slate-950 sm:bg-slate-900/60 sm:backdrop-blur-sm animate-fade-in safe-area-inset-top">
             {/* Modal Container */}
@@ -116,7 +119,7 @@ export default function EditUserModal({
                                             name="full_name"
                                             value={editingUser.full_name}
                                             onChange={handleChange}
-                                            readOnly={userProfile?.role !== 'admin'}
+                                            readOnly={!canEditSelfProfile}
                                             icon="👤"
                                         />
                                         <InputField label="Email Address" name="email" value={editingUser.email} readOnly icon="📧" />
@@ -126,7 +129,7 @@ export default function EditUserModal({
                                                 name="phone_number"
                                                 value={editingUser.phone_number || editingUser.phone}
                                                 onChange={handleChange}
-                                                readOnly={true}
+                                                readOnly={!canEditSelfProfile}
                                                 icon="📱"
                                             />
                                             <SelectField label="Blood Group" name="blood_group" value={editingUser.blood_group} onChange={handleChange} options={['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']} icon="🩸" />
@@ -146,7 +149,7 @@ export default function EditUserModal({
                                             <SelectField label="Block" name="block" value={editingUser.block} onChange={handleChange} options={editingUser.district ? wbLocations[editingUser.district] : []} disabled={!editingUser.district} icon="🗺️" placeholder="Select Block" />
                                         </div>
                                         <SelectField label="Job Type" name="job" value={editingUser.job} onChange={handleChange} options={['HT-Mobile Van', 'LT-Mobile Van', 'HT-LT Others']} icon="👷" placeholder="Select Job Type" />
-                                        <SelectField label="Role" name="role" value={editingUser.role} onChange={handleChange} options={['lineman', 'safety mitra', ...(userProfile?.role === 'admin' ? ['admin'] : [])]} disabled={userProfile?.role !== 'admin'} icon="🎖️" />
+                                        <SelectField label="Role" name="role" value={editingUser.role} onChange={handleChange} options={['lineman', 'safety mitra', ...(userProfile?.role === 'admin' ? ['admin'] : [])]} disabled={!userProfile || userProfile.role !== 'admin'} icon="🎖️" />
                                         {userProfile?.role === 'admin' && (
                                             <SelectField
                                                 label="Supervisor"
