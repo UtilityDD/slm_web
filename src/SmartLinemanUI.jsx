@@ -29,6 +29,7 @@ const Home = lazy(() => import("./components/Home"));
 const Guide = lazy(() => import("./components/Guide"));
 const VerificationView = lazy(() => import("./components/VerificationView"));
 const Notifications = lazy(() => import("./components/Notifications"));
+const MyProgress = lazy(() => import("./components/MyProgress"));
 const AwarenessStories = lazy(() => import("./components/safety/AwarenessStories"));
 const VideoGuide = lazy(() => import("./components/safety/VideoGuide"));
 const SafetyLibrary = lazy(() => import("./components/safety/SafetyLibrary"));
@@ -67,6 +68,7 @@ export default function SmartLinemanUI() {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [updateInfo, setUpdateInfo] = useState(null);
   const [isForceUpdate, setIsForceUpdate] = useState(false);
+  const [selectedProgressUserId, setSelectedProgressUserId] = useState(null);
 
   // Version Comparison Helper
   const isVersionOlder = (current, min) => {
@@ -786,7 +788,18 @@ export default function SmartLinemanUI() {
             userProfile={userProfile}
             setCurrentView={setCurrentView}
             isFullLeaderboard={true}
+            onOpenUserProgress={(userId) => {
+              setSelectedProgressUserId(userId || user?.id || null);
+              setCurrentView('my-progress');
+            }}
             refreshProfile={fetchProfile}
+          />;
+        case 'my-progress':
+          return <MyProgress
+            language={language}
+            user={user}
+            targetUserId={selectedProgressUserId || user?.id}
+            setCurrentView={setCurrentView}
           />;
         case 'community':
           return <Community language={language} user={user} setCurrentView={setCurrentView} />;
@@ -823,6 +836,10 @@ export default function SmartLinemanUI() {
                 training_level: calculateLevelFromProgress(newProgress)
               } : null);
               fetchProfile(user);
+            }}
+            onOpenUserProgress={() => {
+              setSelectedProgressUserId(user?.id || null);
+              setCurrentView('my-progress');
             }}
             setCurrentView={setCurrentView}
           />;

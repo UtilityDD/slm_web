@@ -60,7 +60,7 @@ const formatLastActive = (dateString, language) => {
     return date.toLocaleDateString(isBn ? 'bn-BD' : 'en-US', { day: 'numeric', month: 'short' });
 };
 
-export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile }) {
+export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile, onOpenUserProgress }) {
     const [loading, setLoading] = useState(true);
     const [activeQuiz, setActiveQuiz] = useState(null);
     const [quizQuestions, setQuizQuestions] = useState([]);
@@ -81,7 +81,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [serverTimeOffset, setServerTimeOffset] = useState(0);
     const [fetchError, setFetchError] = useState(false);
     const [showCompactView, setShowCompactView] = useState(!isFullLeaderboard);
-    const [expandedRows, setExpandedRows] = useState(new Set()); // Track expanded user rows
     const [showHint, setShowHint] = useState(false);
     const [hintViewedQuestions, setHintViewedQuestions] = useState(new Set());
 
@@ -836,6 +835,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         }
     };
 
+    const openUserProgress = (userId) => {
+        if (typeof onOpenUserProgress === 'function') {
+            onOpenUserProgress(userId);
+        }
+    };
+
     const startQuiz = async (quiz) => {
         if (!user) {
             setCurrentView('login');
@@ -1123,12 +1128,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                         <div className="flex items-end justify-center gap-2 sm:gap-6 pt-2 pb-12 sm:pb-20 px-2">
                             {/* 2nd Place */}
                             <div className="flex flex-col items-center w-[30%] sm:w-32 translate-y-3 sm:translate-y-6 animate-fade-in" style={{ animationDelay: '200ms' }}>
-                                <div className="relative mb-2 sm:mb-3 group cursor-pointer" onClick={() => {
-                                    const newSet = new Set(expandedRows);
-                                    if (newSet.has(fullLeaderboard[1].user_id)) newSet.delete(fullLeaderboard[1].user_id);
-                                    else newSet.add(fullLeaderboard[1].user_id);
-                                    setExpandedRows(newSet);
-                                }}>
+                                <div className="relative mb-2 sm:mb-3 group cursor-pointer" onClick={() => openUserProgress(fullLeaderboard[1].user_id)} title={language === 'en' ? 'View progress' : 'অগ্রগতি দেখুন'}>
                                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden border-4 border-slate-300 dark:border-slate-600 shadow-lg group-hover:scale-105 transition-transform">
                                         {fullLeaderboard[1].avatar_url ? (
                                             <img src={fullLeaderboard[1].avatar_url} alt="" className="w-full h-full object-cover" />
@@ -1138,7 +1138,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                     <div className="absolute -bottom-2 right-0 sm:-right-2 w-8 h-8 bg-slate-300 dark:bg-slate-600 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800 shadow-sm text-[10px] sm:text-xs font-bold text-slate-700 dark:text-white">2ND</div>
                                 </div>
-                                <div className="text-center font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-300 truncate w-full max-w-[100px] hover:text-orange-600 cursor-pointer mb-0.5">{fullLeaderboard[1].full_name?.split(' ')[0] || 'Anonymous'}</div>
+                                <div onClick={() => openUserProgress(fullLeaderboard[1].user_id)} className="text-center font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-300 truncate w-full max-w-[100px] hover:text-orange-600 cursor-pointer mb-0.5">{fullLeaderboard[1].full_name?.split(' ')[0] || 'Anonymous'}</div>
                                 <div className="text-xs sm:text-sm font-black text-slate-500 dark:text-slate-400 leading-none">{fullLeaderboard[1].points.toLocaleString()} <span className="hidden sm:inline text-[9px] uppercase font-bold text-slate-400">pts</span></div>
                                 <div className="flex flex-col items-center gap-1 mt-1 w-full">
                                     {/* Badge Row - Dedicated row on mobile */}
@@ -1187,12 +1187,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                             {/* 1st Place */}
                             <div className="flex flex-col items-center w-[36%] sm:w-40 z-10 animate-fade-in" style={{ animationDelay: '0ms' }}>
-                                <div className="relative mb-3 sm:mb-4 group cursor-pointer" onClick={() => {
-                                    const newSet = new Set(expandedRows);
-                                    if (newSet.has(fullLeaderboard[0].user_id)) newSet.delete(fullLeaderboard[0].user_id);
-                                    else newSet.add(fullLeaderboard[0].user_id);
-                                    setExpandedRows(newSet);
-                                }}>
+                                <div className="relative mb-3 sm:mb-4 group cursor-pointer" onClick={() => openUserProgress(fullLeaderboard[0].user_id)} title={language === 'en' ? 'View progress' : 'অগ্রগতি দেখুন'}>
                                     <div className="absolute inset-0 bg-yellow-400 blur-2xl opacity-40 rounded-full"></div>
                                     <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-yellow-100 dark:bg-yellow-900/40 overflow-hidden border-4 border-yellow-400 shadow-[0_0_30px_rgba(250,204,21,0.5)] relative z-10 group-hover:scale-105 transition-transform text-center flex items-center justify-center">
                                         {fullLeaderboard[0].avatar_url ? (
@@ -1203,7 +1198,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                     <div className="absolute -bottom-4 right-2 w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800 shadow-[0_4px_12px_rgba(250,204,21,0.6)] z-20 text-[14px] font-black text-white">1ST</div>
                                 </div>
-                                <div className="text-center font-black text-sm sm:text-base text-yellow-600 dark:text-yellow-500 truncate w-full max-w-[120px] hover:text-orange-500 cursor-pointer mb-0.5">{fullLeaderboard[0].full_name?.split(' ')[0] || 'Anonymous'}</div>
+                                <div onClick={() => openUserProgress(fullLeaderboard[0].user_id)} className="text-center font-black text-sm sm:text-base text-yellow-600 dark:text-yellow-500 truncate w-full max-w-[120px] hover:text-orange-500 cursor-pointer mb-0.5">{fullLeaderboard[0].full_name?.split(' ')[0] || 'Anonymous'}</div>
                                 <div className="text-sm sm:text-base font-black text-yellow-700 dark:text-yellow-400 leading-none" style={{ textShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>{fullLeaderboard[0].points.toLocaleString()} <span className="hidden sm:inline text-[10px] sm:text-xs uppercase font-bold text-yellow-600/70">pts</span></div>
                                 <div className="flex flex-col items-center gap-1.5 mt-1.5 w-full">
                                     {/* Badge Row */}
@@ -1253,12 +1248,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                             {/* 3rd Place */}
                             <div className="flex flex-col items-center w-[30%] sm:w-32 translate-y-6 sm:translate-y-10 animate-fade-in" style={{ animationDelay: '400ms' }}>
-                                <div className="relative mb-2 sm:mb-3 group cursor-pointer" onClick={() => {
-                                    const newSet = new Set(expandedRows);
-                                    if (newSet.has(fullLeaderboard[2].user_id)) newSet.delete(fullLeaderboard[2].user_id);
-                                    else newSet.add(fullLeaderboard[2].user_id);
-                                    setExpandedRows(newSet);
-                                }}>
+                                <div className="relative mb-2 sm:mb-3 group cursor-pointer" onClick={() => openUserProgress(fullLeaderboard[2].user_id)} title={language === 'en' ? 'View progress' : 'অগ্রগতি দেখুন'}>
                                     <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 overflow-hidden border-4 border-amber-600 shadow-md group-hover:scale-105 transition-transform text-center flex items-center justify-center">
                                         {fullLeaderboard[2].avatar_url ? (
                                             <img src={fullLeaderboard[2].avatar_url} alt="" className="w-full h-full object-cover" />
@@ -1268,7 +1258,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                     <div className="absolute -bottom-2 right-0 sm:-right-2 w-7 h-7 bg-amber-600 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800 shadow-sm text-[9px] sm:text-[10px] font-bold text-white" style={{ filter: "grayscale(20%) sepia(50%) hue-rotate(-20deg) brightness(85%)" }}>3RD</div>
                                 </div>
-                                <div className="text-center font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-300 truncate w-full max-w-[100px] hover:text-amber-700 cursor-pointer mb-0.5">{fullLeaderboard[2].full_name?.split(' ')[0] || 'Anonymous'}</div>
+                                <div onClick={() => openUserProgress(fullLeaderboard[2].user_id)} className="text-center font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-300 truncate w-full max-w-[100px] hover:text-amber-700 cursor-pointer mb-0.5">{fullLeaderboard[2].full_name?.split(' ')[0] || 'Anonymous'}</div>
                                 <div className="text-xs sm:text-sm font-black text-amber-700 dark:text-amber-600 leading-none">{fullLeaderboard[2].points.toLocaleString()} <span className="hidden sm:inline text-[10px] uppercase font-bold text-amber-600/70">pts</span></div>
                                 <div className="flex flex-col items-center gap-1 mt-1 w-full">
                                     {/* Badge Row */}
@@ -1354,22 +1344,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 if (rank === 3) return '🥉';
                                                 return null;
                                             };
-                                            const isExpanded = expandedRows.has(item.user_id);
-                                            const toggleExpand = () => {
-                                                setExpandedRows(prev => {
-                                                    const newSet = new Set(prev);
-                                                    if (newSet.has(item.user_id)) {
-                                                        newSet.delete(item.user_id);
-                                                    } else {
-                                                        newSet.add(item.user_id);
-                                                    }
-                                                    return newSet;
-                                                });
-                                            };
                                             return (
                                                 <React.Fragment key={index}>
                                                     <tr
-                                                        onClick={toggleExpand}
+                                                        onClick={() => openUserProgress(item.user_id)}
                                                         className={`transition-colors border-b border-slate-50 dark:border-slate-700/50 cursor-pointer ${isMe ? 'bg-orange-50/50 dark:bg-orange-900/10' : 'hover:bg-slate-50/30 dark:hover:bg-slate-700/10'}`}
                                                     >
                                                         <td className="px-3 sm:px-4 py-1.5">
@@ -1445,39 +1423,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             </div>
                                                         </td>
                                                     </tr>
-                                                    {/* Expanded District Row */}
-                                                    {isExpanded && (
-                                                        <tr className={`${isMe ? 'bg-orange-50/50 dark:bg-orange-900/5' : 'bg-slate-50/50 dark:bg-slate-700/10'}`}>
-                                                            <td colSpan="4" className="px-4 sm:px-6 py-2">
-                                                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-[10px] text-slate-600 dark:text-slate-400 animate-fade-in py-1">
-                                                                    {item.last_login_at && (
-                                                                        <div className="flex items-center gap-1.5 min-w-[120px]">
-                                                                            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                            </svg>
-                                                                            <span className="font-bold">{language === 'en' ? 'Last Active:' : 'সর্বশেষ সক্রিয়:'}</span>
-                                                                            <span>{formatLastActive(item.last_login_at, language)}</span>
-                                                                        </div>
-                                                                    )}
-                                                                    <div className="flex items-center gap-1.5">
-                                                                        <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                        </svg>
-                                                                        <span className="font-bold">{language === 'en' ? 'District:' : 'জেলা:'}</span>
-                                                                        <span>{item.district || (language === 'en' ? 'Not Updated' : 'আপডেট করা হয়নি')}</span>
-                                                                    </div>
-                                                                    {(item.total_penalties > 0) && (
-                                                                        <div className="flex items-center gap-1.5 text-red-500 dark:text-red-400 font-bold bg-red-50 dark:bg-red-900/10 px-1.5 py-0.5 rounded-md">
-                                                                            <span className="text-[10px]">🚩</span>
-                                                                            <span className="text-[9px] uppercase tracking-tighter">{language === 'en' ? 'Lost:' : 'পয়েন্ট হারানো:'}</span>
-                                                                            <span>{item.total_penalties.toLocaleString()}</span>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    )}
                                                 </React.Fragment>
                                             );
                                         })

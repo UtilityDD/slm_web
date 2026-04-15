@@ -210,7 +210,7 @@ const TrainingSubChapterCard = React.memo(({ subchapter, isUnlocked, isCompleted
     );
 });
 
-export default function Training({ language = 'en', user, onProgressUpdate, setCurrentView }) {
+export default function Training({ language = 'en', user, onProgressUpdate, onOpenUserProgress, setCurrentView }) {
     const [showOnboarding, setShowOnboarding] = useState(() => {
         const today = new Date().toDateString();
         const lastSeenDate = localStorage.getItem('lastOnboardingDate');
@@ -1405,6 +1405,21 @@ export default function Training({ language = 'en', user, onProgressUpdate, setC
                                             </svg>
                                         </button>
                                     )}
+
+                                    {/* My Progress Button */}
+                                    <button
+                                        onClick={() => {
+                                            if (onOpenUserProgress) {
+                                                onOpenUserProgress();
+                                                return;
+                                            }
+                                            setCurrentView('my-progress');
+                                        }}
+                                        className="mx-auto mt-4 px-6 py-2.5 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 backdrop-blur-2xl rounded-full border border-blue-200/60 dark:border-blue-700/60 shadow-sm hover:shadow-lg hover:from-blue-100 hover:to-cyan-100 dark:hover:from-blue-900/40 dark:hover:to-cyan-900/40 hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-3 text-slate-700 dark:text-slate-300 font-bold animate-fade-in-up"
+                                    >
+                                        <span className="text-lg">📊</span>
+                                        <span>{language === 'en' ? 'My Progress Report' : 'আমার অগ্রগতি রিপোর্ট'}</span>
+                                    </button>
 
                                     {/* Global Progress Dashboard */}
                                     {(() => {

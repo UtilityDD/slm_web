@@ -1,0 +1,489 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { supabase } from '../supabaseClient';
+import { getBadgeByLevel } from '../utils/badgeUtils';
+import { requestManager } from '../utils/requestManager';
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+const formatDate = (value, language = 'bn') => {
+    if (!value) return language === 'en' ? 'Not available' : 'পাওয়া যায়নি';
+    return new Date(value).toLocaleDateString(language === 'en' ? 'en-US' : 'bn-BD', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+};
+
+const formatDateTime = (value, language = 'bn') => {
+    if (!value) return language === 'en' ? 'Not available' : 'পাওয়া যায়নি';
+    return new Date(value).toLocaleString(language === 'en' ? 'en-US' : 'bn-BD', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+    });
+};
+
+const formatNumber = (value) => Number(value || 0).toLocaleString();
+
+const dateKey = (value) => new Date(value).toDateString();
+
+const getDaysBetween = (startValue, endValue) => {
+    if (!startValue || !endValue) return 0;
+    const start = new Date(startValue);
+    const end = new Date(endValue);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 0;
+    return Math.max(1, Math.ceil((end - start) / MS_PER_DAY) + 1);
+};
+
+const safePhone = (profile) => profile?.phone_number || profile?.phone || '';
+
+const parseLessonId = (quizId = '') => {
+    if (!quizId.startsWith('lesson_bonus_')) return null;
+    return quizId.replace('lesson_bonus_', '').trim();
+};
+
+const getActivityLabel = (quizId = '', language = 'bn') => {
+    if (quizId.startsWith('lesson_bonus_')) return language === 'en' ? 'Lesson' : 'পাঠ';
+    if (quizId.startsWith('hourly-challenge')) return language === 'en' ? 'Hourly Challenge' : 'ঘণ্টাভিত্তিক চ্যালেঞ্জ';
+    return language === 'en' ? 'Quiz' : 'কুইজ';
+};
+
+const MetricCard = ({ label, value, hint, accent = 'slate' }) => {
+    const accents = {
+        slate: 'from-slate-500/10 to-slate-500/5 border-slate-200 dark:border-slate-700',
+        orange: 'from-orange-500/10 to-orange-500/5 border-orange-200 dark:border-orange-800/50',
+        emerald: 'from-emerald-500/10 to-emerald-500/5 border-emerald-200 dark:border-emerald-800/50',
+        blue: 'from-blue-500/10 to-blue-500/5 border-blue-200 dark:border-blue-800/50',
+        rose: 'from-rose-500/10 to-rose-500/5 border-rose-200 dark:border-rose-800/50'
+    };
+
+    return (
+        <div className={`rounded-2xl border bg-gradient-to-br ${accents[accent] || accents.slate} p-4 sm:p-5 shadow-sm`}>
+            <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-2">{label}</p>
+            <div className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100 tabular-nums">{value}</div>
+            {hint && <p className="mt-2 text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 leading-snug">{hint}</p>}
+        </div>
+    );
+};
+
+export default function MyProgress({ language = 'bn', user, targetUserId, setCurrentView }) {
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [profile, setProfile] = useState(null);
+    const [attempts, setAttempts] = useState([]);
+    const [reportGeneratedAt] = useState(() => new Date());
+
+    const resolvedUserId = targetUserId || user?.id;
+
+    useEffect(() => {
+        let active = true;
+
+        const fetchData = async () => {
+            if (!resolvedUserId) return;
+
+            setLoading(true);
+            setError(null);
+
+            try {
+                const profilePromise = requestManager.fetch(
+                    `my_progress_profile_${resolvedUserId}`,
+                    async () => {
+                        const { data, error: profileError } = await supabase
+                            .from('profiles')
+                            .select('id, slm_id, full_name, email, role, district, block, blood_group, avatar_url, phone, phone_number, created_at, last_login_at, training_level, points, reading_points, quiz_points, total_penalties, completed_lessons')
+                            .eq('id', resolvedUserId)
+                            .single();
+
+                        if (profileError) throw profileError;
+                        return data;
+                    },
+                    { ttl: 5, swr: true, forceRefresh: true }
+                );
+
+                const attemptsPromise = requestManager.fetch(
+                    `my_progress_attempts_${resolvedUserId}`,
+                    async () => {
+                        const { data, error: attemptsError } = await supabase
+                            .from('quiz_attempts')
+                            .select('quiz_id, score, penalty, created_at')
+                            .eq('user_id', resolvedUserId)
+                            .order('created_at', { ascending: true });
+
+                        if (attemptsError) throw attemptsError;
+                        return data || [];
+                    },
+                    { ttl: 5, swr: true, forceRefresh: true }
+                );
+
+                const [profileData, attemptsData] = await Promise.all([profilePromise, attemptsPromise]);
+
+                if (!active) return;
+                setProfile(profileData || null);
+                setAttempts(attemptsData || []);
+            } catch (fetchError) {
+                console.error('MyProgress fetch error:', fetchError);
+                if (active) setError(fetchError);
+            } finally {
+                if (active) setLoading(false);
+            }
+        };
+
+        fetchData();
+
+        return () => {
+            active = false;
+        };
+    }, [resolvedUserId]);
+
+    const stats = useMemo(() => {
+        const completedLessons = Array.isArray(profile?.completed_lessons) ? profile.completed_lessons.filter(Boolean) : [];
+        const lessonAttempts = attempts.filter(item => item.quiz_id?.startsWith('lesson_bonus_') && Number(item.score || 0) > 0);
+        const hourlyAttempts = attempts.filter(item => item.quiz_id?.startsWith('hourly-challenge'));
+        const lessonAttemptIds = [...new Set(lessonAttempts.map(item => parseLessonId(item.quiz_id)).filter(Boolean))];
+        const lessonIds = [...new Set([...completedLessons, ...lessonAttemptIds])];
+
+        const hasRewardTimestamps = lessonAttempts.length > 0;
+        const now = new Date();
+        const accountAgeDays = getDaysBetween(profile?.created_at, now);
+        const studyWindowDays = hasRewardTimestamps
+            ? getDaysBetween(lessonAttempts[0]?.created_at, lessonAttempts[lessonAttempts.length - 1]?.created_at)
+            : Math.max(1, accountAgeDays || 1);
+
+        const chapterMap = new Map();
+        lessonIds.forEach((lessonId) => {
+            const chapterNumber = String(lessonId).split('.')[0];
+            if (!chapterNumber) return;
+            chapterMap.set(chapterNumber, (chapterMap.get(chapterNumber) || 0) + 1);
+        });
+
+        const lessonsRead = lessonIds.length;
+        const chaptersRead = chapterMap.size;
+        const readingDays = hasRewardTimestamps
+            ? Math.max(1, [...new Set(lessonAttempts.map(item => dateKey(item.created_at)))].length)
+            : Math.max(1, accountAgeDays || 1);
+
+        const lessonsPerActiveDay = lessonsRead > 0 ? (lessonsRead / readingDays) : 0;
+        const daysPerLesson = lessonsRead > 0 ? (studyWindowDays / lessonsRead) : 0;
+        const daysPerChapter = chaptersRead > 0 ? (studyWindowDays / chaptersRead) : 0;
+        const avgScorePerAttempt = attempts.length > 0 ? attempts.reduce((sum, item) => sum + (Number(item.score) || 0), 0) / attempts.length : 0;
+
+        const totalAttempts = attempts.length;
+        const averagePenalty = totalAttempts > 0 ? attempts.reduce((sum, item) => sum + (Number(item.penalty) || 0), 0) / totalAttempts : 0;
+
+        const paceSource = hasRewardTimestamps
+            ? (language === 'en' ? 'Derived from lesson reward timestamps' : 'পাঠের পুরস্কারের সময় ধরে হিসাব করা হয়েছে')
+            : (language === 'en' ? 'Estimated fallback' : 'আনুমানিক হিসাব');
+
+        return {
+            completedLessons: lessonIds.length,
+            chaptersRead,
+            lessonAttempts: lessonAttempts.length,
+            hourlyAttempts: hourlyAttempts.length,
+            readingDays,
+            lessonsPerActiveDay,
+            daysPerLesson,
+            daysPerChapter,
+            avgScorePerAttempt,
+            averagePenalty,
+            paceSource,
+            chapterBreakdown: Array.from(chapterMap.entries())
+                .map(([chapter, count]) => ({ chapter, count }))
+                .sort((a, b) => Number(a.chapter) - Number(b.chapter)),
+            lessonIds
+        };
+    }, [attempts, profile]);
+
+    const badge = getBadgeByLevel(profile?.training_level || 0);
+    const phone = safePhone(profile);
+    const joinedDate = formatDate(profile?.created_at, language);
+    const lastActive = formatDate(profile?.last_login_at, language);
+    const isCurrentUser = resolvedUserId && user?.id === resolvedUserId;
+
+    const labels = {
+        title: language === 'en' ? 'My Progress' : 'আমার শেখার অগ্রগতি',
+        subtitle: language === 'en' ? 'Learning summary and history' : 'শেখার সারাংশ ও ইতিহাস',
+        back: language === 'en' ? 'Back to leaderboard' : 'লিডারবোর্ডে ফিরুন',
+        joined: language === 'en' ? 'Date of joining' : 'কবে যোগ দিয়েছেন',
+        contact: language === 'en' ? 'Contact number' : 'ফোন নম্বর',
+        district: language === 'en' ? 'District' : 'জেলা',
+        block: language === 'en' ? 'Block' : 'ব্লক',
+        bloodGroup: language === 'en' ? 'Blood group' : 'রক্তের গ্রুপ',
+        badge: language === 'en' ? 'Present reading stage' : 'বর্তমান পড়ার ধাপ',
+        learningPace: language === 'en' ? 'Learning pace' : 'শেখার গতি',
+        chapterBreakdown: language === 'en' ? 'Chapter breakdown' : 'অধ্যায়ভিত্তিক ছক',
+        noData: language === 'en' ? 'No data available yet.' : 'এখনও কোনো তথ্য পাওয়া যায়নি।'
+    };
+
+    if (loading) {
+        return (
+            <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-4 sm:px-6 py-6 sm:py-8">
+                <div className="max-w-6xl mx-auto animate-pulse space-y-4 sm:space-y-6">
+                    <div className="h-44 rounded-[2rem] bg-slate-200 dark:bg-slate-800" />
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {Array.from({ length: 4 }).map((_, idx) => <div key={idx} className="h-28 rounded-2xl bg-slate-200 dark:bg-slate-800" />)}
+                    </div>
+                    <div className="h-80 rounded-[2rem] bg-slate-200 dark:bg-slate-800" />
+                </div>
+            </main>
+        );
+    }
+
+    if (error || !profile) {
+        return (
+            <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-4 sm:px-6 py-8">
+                <div className="max-w-3xl mx-auto rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl p-6 sm:p-8 text-center">
+                    <div className="text-5xl mb-4">📊</div>
+                    <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-2">{labels.title}</h1>
+                    <p className="text-slate-500 dark:text-slate-400">{labels.noData}</p>
+                    <button
+                        onClick={() => setCurrentView('leaderboard')}
+                        className="mt-6 px-5 py-3 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors"
+                    >
+                        {labels.back}
+                    </button>
+                </div>
+            </main>
+        );
+    }
+
+    return (
+        <main className="relative min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50/40 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-4 sm:px-6 py-4 sm:py-8">
+            <div className="pointer-events-none fixed bottom-4 right-4 z-0" aria-hidden="true">
+                <img
+                    src="/icons/logo.png"
+                    alt=""
+                    className="w-40 sm:w-48 object-contain opacity-[0.25] select-none drop-shadow-lg"
+                />
+            </div>
+
+            <div className="relative z-10 max-w-6xl mx-auto space-y-5 sm:space-y-6">
+                <div className="flex items-center justify-between gap-4">
+                    <button
+                        onClick={() => setCurrentView('leaderboard')}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-orange-300 dark:hover:border-orange-700 transition-all"
+                    >
+                        <span>←</span>
+                        {labels.back}
+                    </button>
+
+                    {isCurrentUser && (
+                        <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold uppercase tracking-widest">
+                            {language === 'en' ? 'Your account' : 'আপনার অ্যাকাউন্ট'}
+                        </div>
+                    )}
+                </div>
+
+                <section id="progress-report-content" className="rounded-[2rem] overflow-hidden border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.5)]">
+                    <div className="relative px-5 sm:px-8 py-6 sm:py-8 bg-gradient-to-br from-orange-500 via-orange-600 to-rose-500 text-white">
+                        <div className="absolute inset-0 z-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.24), transparent 22%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.14), transparent 18%), radial-gradient(circle at 70% 70%, rgba(255,255,255,0.08), transparent 22%)' }} />
+                        <div className="relative z-10 flex flex-col lg:flex-row lg:items-end gap-5 lg:gap-8">
+                            <div className="flex items-center gap-4 min-w-0 flex-1">
+                                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-[1.75rem] bg-white/15 border border-white/20 overflow-hidden shrink-0 flex items-center justify-center shadow-lg">
+                                    {profile.avatar_url ? (
+                                        <img src={profile.avatar_url} alt={profile.full_name || 'Avatar'} className="relative z-10 w-full h-full object-cover" />
+                                    ) : (
+                                        <img src="/icons/logo.png" alt="SmartLineman logo" className="relative z-10 w-11 h-11 sm:w-14 sm:h-14 object-contain drop-shadow-md" />
+                                    )}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] text-white/75 mb-1">{labels.title}</p>
+                                    <h1 className="text-2xl sm:text-4xl font-black tracking-tight truncate">{profile.full_name || 'Anonymous'}</h1>
+                                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-white/90">
+                                        <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/15 border border-white/15">🏅 {badge ? (language === 'en' ? badge.en : badge.bn) : (language === 'en' ? 'Trainee' : 'ট্রেইনি')}</span>
+                                        {profile.role && <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/15 border border-white/15">👷 {profile.role}</span>}
+                                        {profile.slm_id && <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/15 border border-white/15">ID {profile.slm_id}</span>}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 lg:min-w-[46%]">
+                                <div className="rounded-2xl bg-white/12 backdrop-blur-md border border-white/15 p-3">
+                                    <p className="text-[9px] font-black uppercase tracking-[0.25em] text-white/70">{language === 'en' ? 'Total Score' : 'মোট স্কোর'}</p>
+                                    <p className="mt-1 text-2xl font-black tabular-nums">{formatNumber(profile.points)}</p>
+                                </div>
+                                <div className="rounded-2xl bg-white/12 backdrop-blur-md border border-white/15 p-3">
+                                    <p className="text-[9px] font-black uppercase tracking-[0.25em] text-white/70">{labels.joined}</p>
+                                    <p className="mt-1 text-sm font-bold">{joinedDate}</p>
+                                </div>
+                                <div className="rounded-2xl bg-white/12 backdrop-blur-md border border-white/15 p-3">
+                                    <p className="text-[9px] font-black uppercase tracking-[0.25em] text-white/70">{labels.contact}</p>
+                                    <a href={phone ? `tel:${phone}` : undefined} className="mt-1 block text-sm font-bold truncate">{phone || '—'}</a>
+                                </div>
+                                <div className="rounded-2xl bg-white/12 backdrop-blur-md border border-white/15 p-3">
+                                    <p className="text-[9px] font-black uppercase tracking-[0.25em] text-white/70">{language === 'en' ? 'Last Active' : 'সর্বশেষ সক্রিয়'}</p>
+                                    <p className="mt-1 text-sm font-bold">{lastActive}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="px-5 sm:px-8 py-5 sm:py-6 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 bg-slate-50/70 dark:bg-slate-950/20">
+                        <MetricCard label={language === 'en' ? 'Rank Stage' : 'পড়ার ধাপ'} value={`Lv ${profile.training_level || 1}`} hint={labels.badge} accent="orange" />
+                        <MetricCard label={language === 'en' ? 'Reading Points' : 'পড়ার পয়েন্ট'} value={formatNumber(profile.reading_points)} hint={language === 'en' ? 'Lesson rewards' : 'পাঠ থেকে পাওয়া পয়েন্ট'} accent="emerald" />
+                        <MetricCard label={language === 'en' ? 'Quiz Points' : 'কুইজ পয়েন্ট'} value={formatNumber(profile.quiz_points)} hint={language === 'en' ? 'Challenge rewards' : 'চ্যালেঞ্জ থেকে পাওয়া পয়েন্ট'} accent="blue" />
+                        <MetricCard label={language === 'en' ? 'Penalties' : 'কাটা পয়েন্ট'} value={formatNumber(profile.total_penalties)} hint={language === 'en' ? 'Losses / deductions' : 'বিয়োগ হওয়া পয়েন্ট'} accent="rose" />
+                        <MetricCard label={language === 'en' ? 'Lessons Read' : 'পড়া পাঠ'} value={formatNumber(stats.completedLessons)} hint={language === 'en' ? 'Unique lessons completed' : 'যতগুলো পাঠ শেষ করেছেন'} accent="slate" />
+                        <MetricCard label={language === 'en' ? 'Chapters Read' : 'পড়া অধ্যায়'} value={formatNumber(stats.chaptersRead)} hint={language === 'en' ? 'Distinct chapters reached' : 'যেসব অধ্যায় পর্যন্ত এগিয়েছেন'} accent="orange" />
+                    </div>
+                </section>
+
+                <section className="grid lg:grid-cols-[1.15fr_0.85fr] gap-5 sm:gap-6">
+                    <div className="space-y-5 sm:space-y-6">
+                        <div className="rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-5 sm:p-6">
+                            <div className="flex items-center justify-between gap-3 mb-4">
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500">{labels.learningPace}</p>
+                                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 mt-1">{language === 'en' ? 'How the learner is progressing' : 'অগ্রগতি কেমন চলছে'}</h2>
+                                </div>
+                                <div className="px-3 py-1.5 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 border border-orange-100 dark:border-orange-800 text-xs font-bold">
+                                    {stats.hourlyAttempts} {language === 'en' ? 'hourly' : 'বার'}
+                                </div>
+                            </div>
+
+                            <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+                                <MetricCard label={language === 'en' ? 'Lessons / Active Day' : 'সক্রিয় দিনে গড় পাঠ'} value={stats.lessonsPerActiveDay ? stats.lessonsPerActiveDay.toFixed(1) : '—'} hint={stats.paceSource} accent="emerald" />
+                                <MetricCard label={language === 'en' ? 'Days / Lesson' : 'একটি পাঠ শেষ করতে গড় দিন'} value={stats.daysPerLesson ? stats.daysPerLesson.toFixed(1) : '—'} hint={stats.paceSource} accent="blue" />
+                                <MetricCard label={language === 'en' ? 'Days / Chapter' : 'একটি অধ্যায় শেষ করতে গড় দিন'} value={stats.daysPerChapter ? stats.daysPerChapter.toFixed(1) : '—'} hint={stats.paceSource} accent="orange" />
+                                <MetricCard label={language === 'en' ? 'Hourly Challenges' : 'ঘণ্টাভিত্তিক চ্যালেঞ্জ'} value={formatNumber(stats.hourlyAttempts)} hint={language === 'en' ? 'Attempts attended' : 'যতবার অংশ নিয়েছেন'} accent="rose" />
+                            </div>
+
+                            <div className="mt-5 grid sm:grid-cols-3 gap-3">
+                                <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 p-4">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">{language === 'en' ? 'Lesson attempts' : 'পাঠে অংশ নেওয়া বার'}</p>
+                                    <p className="text-2xl font-black text-slate-900 dark:text-slate-100 tabular-nums">{formatNumber(stats.lessonAttempts)}</p>
+                                </div>
+                                <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 p-4">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">{language === 'en' ? 'Active reading days' : 'পড়ায় সক্রিয় দিন'}</p>
+                                    <p className="text-2xl font-black text-slate-900 dark:text-slate-100 tabular-nums">{formatNumber(stats.readingDays)}</p>
+                                </div>
+                                <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 p-4">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">{language === 'en' ? 'Avg. score / attempt' : 'প্রতি চেষ্টার গড় স্কোর'}</p>
+                                    <p className="text-2xl font-black text-slate-900 dark:text-slate-100 tabular-nums">{stats.avgScorePerAttempt.toFixed(1)}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-5 sm:p-6">
+                            <div className="flex items-center justify-between gap-3 mb-4">
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500">{labels.chapterBreakdown}</p>
+                                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 mt-1">{language === 'en' ? 'Learning distribution' : 'অধ্যায়ভিত্তিক অগ্রগতি'}</h2>
+                                </div>
+                                <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                                    {stats.chapterBreakdown.length} {language === 'en' ? 'chapters' : 'টি অধ্যায়'}
+                                </div>
+                            </div>
+
+                            {stats.chapterBreakdown.length > 0 ? (
+                                <div className="space-y-3">
+                                    {stats.chapterBreakdown.map((item) => {
+                                        const maxCount = Math.max(...stats.chapterBreakdown.map(row => row.count), 1);
+                                        const width = Math.max(8, (item.count / maxCount) * 100);
+                                        return (
+                                            <div key={item.chapter} className="space-y-1.5">
+                                                <div className="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
+                                                    <span>{language === 'en' ? 'Chapter' : 'অধ্যায়'} {item.chapter}</span>
+                                                    <span>{formatNumber(item.count)} {language === 'en' ? 'lessons' : 'টি পাঠ'}</span>
+                                                </div>
+                                                <div className="h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700">
+                                                    <div className="h-full rounded-full bg-gradient-to-r from-orange-500 to-rose-500" style={{ width: `${width}%` }} />
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-slate-500 dark:text-slate-400">{labels.noData}</p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="space-y-5 sm:space-y-6">
+                        <div className="rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-5 sm:p-6">
+                            <div className="flex items-center justify-between gap-3 mb-4">
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500">{language === 'en' ? 'Profile details' : 'প্রোফাইলের তথ্য'}</p>
+                                    <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-1">{language === 'en' ? 'Identity & contact' : 'পরিচয় ও যোগাযোগের তথ্য'}</h2>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3 text-sm">
+                                <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-3">
+                                    <span className="text-slate-500 dark:text-slate-400 font-medium">{labels.district}</span>
+                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-right">{profile.district || '—'}</span>
+                                </div>
+                                <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-3">
+                                    <span className="text-slate-500 dark:text-slate-400 font-medium">{labels.block}</span>
+                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-right">{profile.block || '—'}</span>
+                                </div>
+                                <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-3">
+                                    <span className="text-slate-500 dark:text-slate-400 font-medium">{labels.bloodGroup}</span>
+                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-right">{profile.blood_group || '—'}</span>
+                                </div>
+                                <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-3">
+                                    <span className="text-slate-500 dark:text-slate-400 font-medium">{labels.contact}</span>
+                                    <a href={phone ? `tel:${phone}` : undefined} className="font-bold text-orange-600 dark:text-orange-400 text-right">{phone || '—'}</a>
+                                </div>
+                                <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-3">
+                                    <span className="text-slate-500 dark:text-slate-400 font-medium">{labels.joined}</span>
+                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-right">{joinedDate}</span>
+                                </div>
+                                <div className="flex items-start justify-between gap-4">
+                                    <span className="text-slate-500 dark:text-slate-400 font-medium">{language === 'en' ? 'Last active' : 'সর্বশেষ সক্রিয়'}</span>
+                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-right">{lastActive}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-5 sm:p-6">
+                            <div className="flex items-center justify-between gap-3 mb-4">
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500">{language === 'en' ? 'Highlights' : 'দেখে নিন'}</p>
+                                    <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-1">{language === 'en' ? 'Score composition' : 'স্কোরের ভাগ'}</h2>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <div className="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
+                                        <span>{language === 'en' ? 'Reading' : 'পড়ার অংশ'}</span>
+                                        <span>{formatNumber(profile.reading_points)} / {formatNumber(profile.points)}</span>
+                                    </div>
+                                    <div className="h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700">
+                                        <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500" style={{ width: `${profile.points ? Math.min(100, (profile.reading_points / Math.max(profile.points, 1)) * 100) : 0}%` }} />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div className="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
+                                        <span>{language === 'en' ? 'Quiz' : 'কুইজের অংশ'}</span>
+                                        <span>{formatNumber(profile.quiz_points)} / {formatNumber(profile.points)}</span>
+                                    </div>
+                                    <div className="h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700">
+                                        <div className="h-full rounded-full bg-gradient-to-r from-orange-500 to-rose-500" style={{ width: `${profile.points ? Math.min(100, (profile.quiz_points / Math.max(profile.points, 1)) * 100) : 0}%` }} />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div className="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
+                                        <span>{language === 'en' ? 'Penalty load' : 'কাটা পয়েন্ট'}</span>
+                                        <span>{formatNumber(profile.total_penalties)}</span>
+                                    </div>
+                                    <div className="h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700">
+                                        <div className="h-full rounded-full bg-gradient-to-r from-red-500 to-rose-600" style={{ width: `${profile.total_penalties ? Math.min(100, (profile.total_penalties / Math.max(profile.points + profile.total_penalties, 1)) * 100) : 0}%` }} />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <footer className="flex items-center justify-between gap-3 border-t border-slate-200/70 dark:border-slate-800/70 pt-4 px-1 sm:px-2 pb-1 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    <span>SmartLineman.in</span>
+                    <span>Generated on {formatDateTime(reportGeneratedAt, language)}</span>
+                </footer>
+            </div>
+        </main>
+    );
+}
