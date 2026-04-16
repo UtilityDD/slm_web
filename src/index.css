@@ -727,6 +727,167 @@ body,
   .animate-pulse-rose {
     animation: pulse-rose 2s infinite ease-in-out;
   }
+
+  /* --- Premium Leaderboard Styles --- */
+  .leaderboard-podium-card {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .leaderboard-podium-card:hover {
+    transform: translateY(-8px) scale(1.02);
+  }
+
+  .medal-glow-1 {
+    box-shadow: 0 0 30px rgba(245, 158, 11, 0.25);
+  }
+
+  .medal-glow-2 {
+    box-shadow: 0 0 30px rgba(148, 163, 184, 0.2);
+  }
+
+  .medal-glow-3 {
+    box-shadow: 0 0 30px rgba(217, 119, 6, 0.15);
+  }
+
+  .gold-gradient {
+    background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 50%, #f59e0b 100%);
+  }
+
+  .dark .gold-gradient {
+    background: linear-gradient(135deg, #451a03 0%, #92400e 50%, #78350f 100%);
+  }
+
+  .silver-gradient {
+    background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 50%, #94a3b8 100%);
+  }
+
+  .dark .silver-gradient {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%);
+  }
+
+  .bronze-gradient {
+    background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 50%, #d97706 100%);
+  }
+
+  .dark .bronze-gradient {
+    background: linear-gradient(135deg, #431407 0%, #7c2d12 50%, #431407 100%);
+  }
+
+  .premium-blur {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  @keyframes crown-float {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-3px) rotate(5deg); }
+  }
+
+  .animate-crown {
+    animation: crown-float 3s ease-in-out infinite;
+  }
+
+  /* --- Certificate Styles --- */
+  .certificate-frame {
+    position: relative;
+    padding: 2.5rem;
+    background: radial-gradient(circle at 50% 50%, #fffbf2 0%, #fff6e0 100%);
+    border: 12px double #d4af37;
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.05), 0 20px 50px rgba(0, 0, 0, 0.1);
+  }
+
+  .dark .certificate-frame {
+    background: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
+    border: 12px double #854d0e;
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.3), 0 20px 50px rgba(0, 0, 0, 0.4);
+  }
+
+  .certificate-pattern {
+    position: absolute;
+    inset: 0;
+    opacity: 0.05;
+    background-image: 
+      radial-gradient(#d4af37 1px, transparent 1px),
+      linear-gradient(to right, #d4af37 0.5px, transparent 0.5px),
+      linear-gradient(to bottom, #d4af37 0.5px, transparent 0.5px);
+    background-size: 20px 20px, 40px 40px, 40px 40px;
+  }
+
+  .gold-seal {
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle at 30% 30%, #fde68a 0%, #f59e0b 50%, #d97706 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(180, 83, 9, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.5);
+    position: relative;
+    z-index: 10;
+  }
+
+  .gold-seal::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border: 2px dashed #f59e0b;
+    border-radius: 50%;
+    animation: rotate 20s linear infinite;
+  }
+
+  @keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .signature-line {
+    border-bottom: 2px solid #94a3b8;
+    width: 200px;
+    font-family: 'Dancing Script', cursive; /* Ideal for signatures, fallback to serif */
+  }
+
+  /* --- Security Features --- */
+  .certificate-security-watermark {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0.035;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 100px,
+      rgba(212, 175, 55, 0.5) 100px,
+      rgba(212, 175, 55, 0.5) 101px
+    );
+  }
+
+  .certificate-security-watermark::after {
+    content: "OFFICIAL • VERIFIED • GENUINE • SMARTLINEMAN • ";
+    position: absolute;
+    inset: -50%;
+    transform: rotate(-30deg);
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 0.5em;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
+    line-height: 80px;
+  }
+
+  .dark .certificate-security-watermark {
+    opacity: 0.08;
+  }
+
+  .cert-serial {
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    color: #94a3b8;
+  }
 }
 
 .animate-fadeIn {

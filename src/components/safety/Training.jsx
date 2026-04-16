@@ -263,6 +263,8 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
     const [activeAudioChapter, setActiveAudioChapter] = useState(null);
     const [isHourlyPending, setIsHourlyPending] = useState(false);
     const [userRank, setUserRank] = useState(null);
+    const [showLessonIndex, setShowLessonIndex] = useState(false);
+    const [expandedChapterIndex, setExpandedChapterIndex] = useState(null);
 
     // Fetch user rank for leaderboard preview
     useEffect(() => {
@@ -1433,20 +1435,32 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                                         </button>
                                     )}
 
-                                    {/* My Progress Button */}
-                                    <button
-                                        onClick={() => {
-                                            if (onOpenUserProgress) {
-                                                onOpenUserProgress();
-                                                return;
-                                            }
-                                            setCurrentView('my-progress');
-                                        }}
-                                        className="mx-auto mt-4 px-6 py-2.5 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 backdrop-blur-2xl rounded-full border border-blue-200/60 dark:border-blue-700/60 shadow-sm hover:shadow-lg hover:from-blue-100 hover:to-cyan-100 dark:hover:from-blue-900/40 dark:hover:to-cyan-900/40 hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-3 text-slate-700 dark:text-slate-300 font-bold animate-fade-in-up"
-                                    >
-                                        <span className="text-lg">📊</span>
-                                        <span>{language === 'en' ? 'My Progress Report' : 'আমার প্রোগ্রেস রিপোর্ট'}</span>
-                                    </button>
+                                    {/* Action Buttons Group */}
+                                    <div className="flex items-center justify-center gap-3 mt-8 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                                        {/* Minimal Progress Button */}
+                                        <button
+                                            onClick={() => {
+                                                if (onOpenUserProgress) {
+                                                    onOpenUserProgress();
+                                                    return;
+                                                }
+                                                setCurrentView('my-progress');
+                                            }}
+                                            className="px-4 py-2 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-bold text-[11px] uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 border border-slate-200 dark:border-slate-700 active:scale-95"
+                                        >
+                                            <span>📊</span>
+                                            {language === 'en' ? 'Progress' : 'প্রোগ্রেস'}
+                                        </button>
+
+                                        {/* Graceful Lessons Index Button */}
+                                        <button
+                                            onClick={() => setShowLessonIndex(true)}
+                                            className="px-4 py-2 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-bold text-[11px] uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 border border-slate-200 dark:border-slate-700 active:scale-95"
+                                        >
+                                            <span>📑</span>
+                                            {language === 'en' ? 'Index' : 'সূচীপত্র'}
+                                        </button>
+                                    </div>
 
                                     {/* Global Progress Dashboard */}
                                     {(() => {
@@ -2678,6 +2692,123 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                     />
                 )
             }
+            {/* Lessons Index Modal */}
+            {showLessonIndex && createPortal(
+                <div className="fixed inset-0 z-[120] flex flex-col bg-white dark:bg-slate-900 animate-slide-in-right overflow-hidden mobile-safe-area">
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 shrink-0">
+                        <div>
+                            <h2 className={`text-xl font-black text-slate-900 dark:text-white ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                {language === 'en' ? 'Learning Index' : 'পাঠের সূচীপত্র'}
+                            </h2>
+                            <p className="text-[10px] uppercase tracking-widest text-orange-500 font-bold mt-0.5">
+                                {language === 'en' ? 'Complete lessons one by one' : 'একের পর এক পাঠ সম্পন্ন করুন'}
+                            </p>
+                        </div>
+                        <button 
+                            onClick={() => setShowLessonIndex(false)}
+                            className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    {/* Scrollable Compact List */}
+                    <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-3 scrollbar-hide pb-24">
+                        {trainingChapters.filter(ch => ch.number !== 10).map((chapter, idx) => {
+                            const isExpanded = expandedChapterIndex === idx;
+                            const totalLessonsInChapter = chapter.count;
+                            const completedInChapter = completedLessons.filter(id => id && id.toString().startsWith(`${chapter.number}.`)).length;
+                            const isUnlocked = isLessonUnlocked(chapter.number, 1);
+                            
+                            // Ordinal Helper
+                            const getOrdinal = (n) => {
+                                if (language === 'bn') {
+                                    const bnOrdinals = ['১ম', '২য়', '৩য়', '৪র্থ', '৫ম', '৬ষ্ঠ', '৭ম', '৮ম', '৯ম', '১০ম'];
+                                    return bnOrdinals[n - 1] || `${toBengaliNumber(n, 'bn')}তম`;
+                                }
+                                const suffixes = ["th", "st", "nd", "rd"];
+                                const v = n % 100;
+                                return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+                            };
+
+                            return (
+                                <div key={chapter.number} className="animate-entrance-pop border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden transition-all duration-300">
+                                    {/* Chapter Row */}
+                                    <button 
+                                        onClick={() => setExpandedChapterIndex(isExpanded ? null : idx)}
+                                        className={`w-full flex items-center justify-between p-3.5 text-left transition-colors ${
+                                            isExpanded ? 'bg-slate-50 dark:bg-slate-800/50' : 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/30'
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0 ${
+                                                isUnlocked ? 'bg-orange-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-400'
+                                            }`}>
+                                                {getOrdinal(chapter.number)}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <h3 className={`text-sm font-black text-slate-900 dark:text-white truncate ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    {chapter.title}
+                                                    <span className="ml-2 text-[10px] font-bold text-slate-400 normal-case tracking-normal">
+                                                        ({totalLessonsInChapter} {language === 'en' ? 'Lessons' : 'টি পাঠ'})
+                                                    </span>
+                                                </h3>
+                                                {completedInChapter > 0 && (
+                                                    <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-0.5">
+                                                        {completedInChapter === totalLessonsInChapter ? (language === 'en' ? 'Chapter Completed' : 'অধ্যায় সম্পন্ন') : `${completedInChapter} ${language === 'en' ? 'Done' : 'সম্পন্ন'}`}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-300 ${isExpanded ? 'rotate-180 bg-orange-100 text-orange-600' : 'text-slate-300'}`}>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </div>
+                                    </button>
+
+                                    {/* Lessons Grid (Accordion Content) */}
+                                    {isExpanded && (
+                                        <div className="p-4 pt-1 bg-slate-50/50 dark:bg-slate-900/30 grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 border-t border-slate-100 dark:border-slate-800/50 animate-fade-in">
+                                            {Array.from({ length: chapter.count }, (_, i) => {
+                                                const lessonNum = i + 1;
+                                                const lessonId = `${chapter.number}.${lessonNum}`;
+                                                const isDone = completedLessons.includes(lessonId);
+                                                const isLessonUnl = isLessonUnlocked(chapter.number, lessonNum);
+
+                                                return (
+                                                    <button
+                                                        key={lessonId}
+                                                        disabled={!isLessonUnl}
+                                                        onClick={() => {
+                                                            setShowLessonIndex(false);
+                                                            handleChapterClick(chapter, lessonNum);
+                                                        }}
+                                                        className={`aspect-square rounded-xl flex items-center justify-center text-[10px] font-black transition-all ${
+                                                            isDone 
+                                                                ? 'bg-emerald-500 text-white shadow-md' 
+                                                                : isLessonUnl 
+                                                                    ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-600 border border-orange-200 dark:border-orange-800 hover:scale-110' 
+                                                                    : 'bg-slate-200 dark:bg-slate-700 text-slate-400 opacity-50 cursor-not-allowed'
+                                                        }`}
+                                                        title={`${language === 'en' ? 'Lesson' : 'পাঠ'} ${lessonId}`}
+                                                    >
+                                                        {isDone ? '✓' : lessonNum}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>,
+                document.body
+            )}
         </div >
     );
 }

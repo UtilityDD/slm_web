@@ -1,7 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
+import html2canvas from 'html2canvas';
+import { QRCodeCanvas } from 'qrcode.react';
+import CryptoJS from 'crypto-js';
 import { supabase } from '../supabaseClient';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 import { requestManager } from '../utils/requestManager';
+import { WEBSITE_URL } from '../config';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -74,6 +78,58 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
     const [profile, setProfile] = useState(null);
     const [attempts, setAttempts] = useState([]);
     const [reportGeneratedAt] = useState(() => new Date());
+    const [isDownloading, setIsDownloading] = useState(false);
+    const certRef = useRef(null);
+
+    const handleDownloadPNG = async () => {
+        const downloadEl = document.getElementById('landscape-certificate-download');
+        if (!downloadEl) return;
+        
+        setIsDownloading(true);
+        try {
+            // Force it to be visible during capture but keep it off-screen
+            downloadEl.style.display = 'block';
+            
+            const canvas = await html2canvas(downloadEl, {
+                scale: 2, // High resolution enough for 1400px content
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false,
+                width: 1400,
+                height: 1000
+            });
+
+            // Hide it again
+            downloadEl.style.display = 'none';
+
+            const link = document.createElement('a');
+            const fileName = `Certificate_${profile?.full_name?.replace(/\s+/g, '_') || 'SmartLineman'}.png`;
+            link.download = fileName;
+            link.href = canvas.toDataURL('image/png', 1.0);
+            link.click();
+        } catch (err) {
+            console.error('Download failed:', err);
+            alert(language === 'en' ? 'Download failed. Please try again.' : 'ডাউনলোড ব্যর্থ হয়েছে। আবার চেষ্টা করুন।');
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
+    const certId = useMemo(() => {
+        if (!profile?.id) return '';
+        // Use static identity factors (ID and created_at) to make the serial number permanent.
+        const raw = `${profile.id}-${profile.created_at}`;
+        return CryptoJS.MD5(raw).toString().substring(0, 12).toUpperCase();
+    }, [profile]);
+
+    const verificationUrl = useMemo(() => {
+        // In local development, we stick to the hash for safety.
+        // In production (Vercel), we use the clean clean 'verify/[ID]' route.
+        const origin = window.location.hostname === 'localhost' || window.location.hostname.startsWith('192.') 
+            ? `${window.location.origin}/#` 
+            : WEBSITE_URL;
+        return `${origin}/verify/${profile?.id}`;
+    }, [profile?.id]);
 
     const resolvedUserId = targetUserId || user?.id;
 
@@ -275,50 +331,179 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                     )}
                 </div>
 
-                <section id="progress-report-content" className="rounded-[2rem] overflow-hidden border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.5)]">
-                    <div className="relative px-5 sm:px-8 py-6 sm:py-8 bg-gradient-to-br from-orange-500 via-orange-600 to-rose-500 text-white">
-                        <div className="absolute inset-0 z-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.24), transparent 22%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.14), transparent 18%), radial-gradient(circle at 70% 70%, rgba(255,255,255,0.08), transparent 22%)' }} />
-                        <div className="relative z-10 flex flex-col lg:flex-row lg:items-end gap-5 lg:gap-8">
-                            <div className="flex items-center gap-4 min-w-0 flex-1">
-                                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-[1.75rem] bg-white/15 border border-white/20 overflow-hidden shrink-0 flex items-center justify-center shadow-lg">
-                                    {profile.avatar_url ? (
-                                        <img src={profile.avatar_url} alt={profile.full_name || 'Avatar'} className="relative z-10 w-full h-full object-cover" />
-                                    ) : (
-                                        <img src="/icons/logo.png" alt="SmartLineman logo" className="relative z-10 w-11 h-11 sm:w-14 sm:h-14 object-contain drop-shadow-md" />
-                                    )}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] text-white/75 mb-1">{labels.title}</p>
-                                    <h1 className="text-2xl sm:text-4xl font-black tracking-tight truncate">{profile.full_name || 'Anonymous'}</h1>
-                                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-white/90">
-                                        <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/15 border border-white/15">🏅 {badge ? (language === 'en' ? badge.en : badge.bn) : (language === 'en' ? 'Trainee' : 'ট্রেইনি')}</span>
-                                        {profile.role && <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/15 border border-white/15">👷 {profile.role}</span>}
-                                        {profile.slm_id && <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/15 border border-white/15">ID {profile.slm_id}</span>}
-                                    </div>
-                                </div>
+                {/* Certificate Section - Only renders when profile data (specifically ID) is ready */}
+                {profile && profile.id && (
+                    <section 
+                        id="progress-report-content" 
+                        ref={certRef}
+                        className="relative rounded-[2.5rem] overflow-hidden certificate-frame"
+                    >
+                    <div className="certificate-pattern pointer-events-none" />
+                    <div className="certificate-security-watermark overflow-hidden pointer-events-none" aria-hidden="true" />
+                    
+                    <div className="relative z-20 flex flex-col items-center text-center">
+                        {/* Certificate Header Text */}
+                        <div className="mb-6">
+                            <h2 className="font-bengali text-2xl sm:text-3xl font-black text-amber-800 dark:text-amber-500 uppercase tracking-[0.2em] mb-1">
+                                {language === 'en' ? 'Certificate of Achievement' : 'সাফল্যের স্বীকৃতিপত্র'}
+                            </h2>
+                            <div className="w-48 h-1 bg-gradient-to-r from-amber-200 via-amber-500 to-amber-200 mx-auto mt-2 rounded-full" />
+                        </div>
+
+                        <p className="font-bengali text-slate-500 dark:text-slate-400 italic mb-8 max-w-lg leading-relaxed">
+                            {language === 'en' 
+                                ? 'This certifies the academic progress and technical proficiency of the following individual in the SmartLineman education program.'
+                                : 'এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, স্মার্টলাইনম্যান শিক্ষা কার্যক্রমে নিম্নলিখিত শিক্ষার্থী তাঁর শিক্ষা ও কারিগরি দক্ষতায় সাফল্য অর্জন করেছেন।'}
+                        </p>
+
+                        {/* Name Section */}
+                        <div className="mb-10 w-full max-w-2xl px-4">
+                            <h1 className="font-bengali text-4xl sm:text-6xl font-black tracking-tight text-slate-900 dark:text-slate-50 mb-4 drop-shadow-sm">
+                                {profile.full_name || 'Anonymous'}
+                            </h1>
+                            <div className="w-full border-b-2 border-slate-200 dark:border-slate-800 relative">
+                                <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 bg-white dark:bg-slate-950 text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400">
+                                    {language === 'en' ? 'Learner Name' : 'শিক্ষার্থীর নাম'}
+                                </span>
                             </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 lg:min-w-[46%]">
-                                <div className="rounded-2xl bg-white/12 backdrop-blur-md border border-white/15 p-3">
-                                    <p className="text-[9px] font-black uppercase tracking-[0.25em] text-white/70">{language === 'en' ? 'Total Score' : 'মোট স্কোর'}</p>
-                                    <p className="mt-1 text-2xl font-black tabular-nums">{formatNumber(profile.points)}</p>
+                        </div>
+
+                        {/* Seal & Badge */}
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-12 sm:gap-24 mb-12">
+                            <div className="flex flex-col items-center">
+                                <div className="gold-seal mb-4">
+                                    <span className="text-4xl">🏅</span>
                                 </div>
-                                <div className="rounded-2xl bg-white/12 backdrop-blur-md border border-white/15 p-3">
-                                    <p className="text-[9px] font-black uppercase tracking-[0.25em] text-white/70">{labels.joined}</p>
-                                    <p className="mt-1 text-sm font-bold">{joinedDate}</p>
+                                <p className="font-black text-amber-700 dark:text-amber-500 text-sm uppercase tracking-widest">
+                                    {badge ? (language === 'en' ? badge.en : badge.bn) : (language === 'en' ? 'Trainee' : 'ট্রেইনি')}
+                                </p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">
+                                    {language === 'en' ? 'Reading Stage' : 'পড়ার ধাপ'}
+                                </p>
+                            </div>
+
+                            <div className="flex flex-col items-center">
+                                <div className="text-5xl sm:text-7xl font-black text-slate-800 dark:text-slate-100 tabular-nums mb-2 tracking-tighter">
+                                    {formatNumber(profile.points)}
                                 </div>
-                                <div className="rounded-2xl bg-white/12 backdrop-blur-md border border-white/15 p-3">
-                                    <p className="text-[9px] font-black uppercase tracking-[0.25em] text-white/70">{labels.contact}</p>
-                                    <a href={phone ? `tel:${phone}` : undefined} className="mt-1 block text-sm font-bold truncate">{phone || '—'}</a>
+                                <p className="font-black text-slate-500 dark:text-slate-400 text-sm uppercase tracking-widest">
+                                    {language === 'en' ? 'Total Credits' : 'মোট ক্রেডিট'}
+                                </p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">
+                                    {language === 'en' ? 'Learning Points' : 'শিক্ষা পয়েন্ট'}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Signatures */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 sm:gap-40 w-full max-w-4xl px-8 mt-4">
+                            <div className="flex flex-col items-center">
+                                <div className="signature-line mb-3 font-bengali text-slate-400 dark:text-slate-600 h-10 flex items-center justify-center overflow-visible">
+                                    <img 
+                                        src="/signature.png" 
+                                        alt="Official Signature" 
+                                        className="h-14 sm:h-16 w-auto object-contain mix-blend-multiply dark:invert dark:brightness-200 opacity-90 transition-all"
+                                        onError={(e) => e.target.style.display = 'none'}
+                                    />
                                 </div>
-                                <div className="rounded-2xl bg-white/12 backdrop-blur-md border border-white/15 p-3">
-                                    <p className="text-[9px] font-black uppercase tracking-[0.25em] text-white/70">{language === 'en' ? 'Last Active' : 'সর্বশেষ সক্রিয়'}</p>
-                                    <p className="mt-1 text-sm font-bold">{lastActive}</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                                    {language === 'en' ? 'Authority, SmartLineman.in' : 'কর্তৃপক্ষ, স্মার্টলাইনম্যান.ইন'}
+                                </p>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <div className="signature-line mb-3 font-bengali text-slate-400 dark:text-slate-600 h-10 flex items-center justify-center text-xl italic font-bold text-slate-800 dark:text-slate-200">
+                                    {(() => {
+                                        const d = reportGeneratedAt;
+                                        const day = String(d.getDate()).padStart(2, '0');
+                                        const month = String(d.getMonth() + 1).padStart(2, '0');
+                                        const year = d.getFullYear();
+                                        return `${day}/${month}/${year}`;
+                                    })()}
+                                </div>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                                    {language === 'en' ? 'Date Issued' : 'ইস্যুর তারিখ'}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Security Footer */}
+                        <div className="mt-12 w-full flex flex-col sm:flex-row items-center justify-between border-t border-slate-200 dark:border-slate-800/60 pt-6 gap-6 sm:gap-4 opacity-80">
+                            <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
+                                <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-400 mb-1">
+                                    {language === 'en' ? 'Certificate Serial Number' : 'সার্টিফিকেট সিরিয়াল নম্বর'}
+                                </p>
+                                <p className="cert-serial text-[11px] sm:text-xs">
+                                    SLM-CERT-{certId.split('').map((c, i) => i > 0 && i % 4 === 0 ? `-${c}` : c).join('')}
+                                </p>
+                                <p className="mt-2 text-[9px] font-bold text-slate-400 max-w-[180px] leading-tight">
+                                    {language === 'en' 
+                                        ? 'Scan QR code or visit smartlineman.in/verify to authenticate this document.' 
+                                        : 'এই নথির সত্যতা যাচাই করতে QR কোড স্ক্যান করুন বা smartlineman.in/verify ভিজিট করুন।'}
+                                </p>
+                            </div>
+                            
+                            <div className="flex flex-col items-center sm:items-end gap-3">
+                                <div className="relative group">
+                                    <div className="absolute -inset-2 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <a 
+                                        href={verificationUrl} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        title={language === 'en' ? 'Open Verification Page' : 'ভেরিফিকেশন পেজ খুলুন'}
+                                        className="relative block p-2 bg-white rounded-lg shadow-sm border border-slate-100 ring-4 ring-slate-50 dark:ring-slate-900/50 cursor-pointer active:scale-95 transition-transform"
+                                    >
+                                        <QRCodeCanvas 
+                                            value={verificationUrl || ""} 
+                                            size={80} 
+                                            level="M"
+                                            includeMargin={true}
+                                            imageSettings={{
+                                                src: "/icons/logo.png",
+                                                height: 16,
+                                                width: 16,
+                                                excavate: true,
+                                            }}
+                                        />
+                                    </a>
+                                </div>
+                                <div className="flex flex-col gap-3 items-center sm:items-end">
+                                    <button 
+                                        onClick={handleDownloadPNG}
+                                        disabled={isDownloading}
+                                        className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-slate-800 dark:hover:bg-slate-600 transition-all disabled:opacity-50"
+                                    >
+                                        {isDownloading ? (
+                                            <>
+                                                <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                                {language === 'en' ? 'Preparing...' : 'প্রস্তুত হচ্ছে...'}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span>📸</span> {language === 'en' ? 'Download PNG' : 'PNG ডাউনলোড করুন'}
+                                            </>
+                                        )}
+                                    </button>
+
+                                    <button 
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(verificationUrl);
+                                            alert(language === 'en' ? 'Link copied to clipboard!' : 'লিঙ্ক কপি করা হয়েছে!');
+                                        }}
+                                        className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest hover:underline flex items-center gap-1 active:opacity-60"
+                                    >
+                                        <span>🔗</span> {language === 'en' ? 'Copy Link' : 'লিঙ্ক কপি করুন'}
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="px-5 sm:px-8 py-5 sm:py-6 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 bg-slate-50/70 dark:bg-slate-950/20">
+                    <div className="absolute top-8 right-8 w-24 sm:w-32 opacity-10 dark:opacity-20 pointer-events-none grayscale contrast-125">
+                        <img src="/icons/logo.png" alt="" className="w-full h-full object-contain" />
+                    </div>
+
+                    {/* Secondary Metrics (Integrated into certificate bottom) */}
+                    <div className="px-5 sm:px-8 py-5 sm:py-6 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 bg-slate-50/70 dark:bg-slate-900/40 border-t border-slate-200 dark:border-slate-800">
                         <MetricCard label={language === 'en' ? 'Rank Stage' : 'পড়ার ধাপ'} value={`Lv ${profile.training_level || 1}`} hint={labels.badge} accent="orange" />
                         <MetricCard label={language === 'en' ? 'Reading Points' : 'পড়ার পয়েন্ট'} value={formatNumber(profile.reading_points)} hint={language === 'en' ? 'Lesson rewards' : 'পাঠ থেকে পাওয়া পয়েন্ট'} accent="emerald" />
                         <MetricCard label={language === 'en' ? 'Quiz Points' : 'কুইজ পয়েন্ট'} value={formatNumber(profile.quiz_points)} hint={language === 'en' ? 'Challenge rewards' : 'চ্যালেঞ্জ থেকে পাওয়া পয়েন্ট'} accent="blue" />
@@ -327,6 +512,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                         <MetricCard label={language === 'en' ? 'Chapters Read' : 'পড়া অধ্যায়'} value={formatNumber(stats.chaptersRead)} hint={language === 'en' ? 'Distinct chapters reached' : 'যেসব অধ্যায় পর্যন্ত এগিয়েছেন'} accent="orange" />
                     </div>
                 </section>
+                )}
 
                 <section className="grid lg:grid-cols-[1.15fr_0.85fr] gap-5 sm:gap-6">
                     <div className="space-y-5 sm:space-y-6">
@@ -483,6 +669,130 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                     <span>SmartLineman.in</span>
                     <span>Generated on {formatDateTime(reportGeneratedAt, language)}</span>
                 </footer>
+
+                {/* HIDDEN LANDSCAPE CERTIFICATE FOR DOWNLOADS */}
+                <div 
+                    id="landscape-certificate-download" 
+                    style={{ 
+                        display: 'none', 
+                        width: '1400px', 
+                        height: '1000px', 
+                        padding: '60px', 
+                        background: '#ffffff',
+                        position: 'fixed',
+                        top: 0,
+                        left: '-2000px'
+                    }}
+                >
+                    <div className="w-full h-full border-[20px] border-double border-amber-600/30 p-16 relative flex flex-col items-center bg-[#faf9f6]">
+                        {/* Background Watermarks */}
+                        <div className="absolute inset-0 opacity-[0.03] pointer-events-none grayscale contrast-125 flex items-center justify-center">
+                            <img src="/icons/logo.png" alt="" className="w-1/2 object-contain" />
+                        </div>
+
+                        {/* Header */}
+                        <div className="mb-10 text-center">
+                            <h2 className="text-4xl font-black text-amber-800 uppercase tracking-[0.2em] mb-4">
+                                {language === 'en' ? 'Certificate of Achievement' : 'সাফল্যের স্বীকৃতিপত্র'}
+                            </h2>
+                            <div className="w-64 h-1.5 bg-gradient-to-r from-amber-200 via-amber-500 to-amber-200 mx-auto rounded-full" />
+                        </div>
+
+                        <p className="text-xl text-slate-500 italic mb-12 max-w-2xl text-center leading-relaxed font-serif">
+                            {language === 'en' 
+                                ? 'This certifies the academic progress and technical proficiency of the following individual in the SmartLineman education program.'
+                                : 'এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, স্মার্টলাইনম্যান শিক্ষা কার্যক্রমে নিম্নলিখিত শিক্ষার্থী তাঁর শিক্ষা ও কারিগরি দক্ষতায় সাফল্য অর্জন করেছেন।'}
+                        </p>
+
+                        {/* Recipient Name */}
+                        <div className="mb-16 w-full text-center">
+                            <h1 className="text-7xl font-black tracking-tight text-slate-900 mb-6 font-serif">
+                                {profile?.full_name || 'Valued Learner'}
+                            </h1>
+                            <div className="w-3/4 mx-auto border-b-4 border-slate-200" />
+                            <p className="mt-4 text-sm font-bold uppercase tracking-[0.4em] text-slate-400">
+                                {language === 'en' ? 'Learner Name' : 'শিক্ষার্থীর নাম'}
+                            </p>
+                        </div>
+
+                        {/* Footer Section: Seal, Signature, and QR */}
+                        <div className="mt-auto w-full grid grid-cols-3 items-end gap-12">
+                            {/* Left: Gold Seal */}
+                            <div className="flex flex-col items-center">
+                                <div className="w-24 h-24 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center shadow-lg border-4 border-amber-200 mb-4 scale-125">
+                                    <span className="text-5xl">🏅</span>
+                                </div>
+                                <p className="font-black text-amber-800 text-lg uppercase tracking-widest">{badge ? (language === 'en' ? badge.en : badge.bn) : 'Trainee'}</p>
+                                <p className="text-xs font-bold text-slate-400 uppercase mt-1">Reading Stage</p>
+                            </div>
+
+                            {/* Center: Live Signature & Points */}
+                            <div className="flex flex-col items-center">
+                                <div className="text-5xl font-black text-slate-800 tabular-nums mb-4 tracking-tighter">
+                                    {profile?.points?.toLocaleString() || '0'}
+                                    <span className="text-sm font-black text-slate-400 uppercase tracking-widest ml-2">Credits</span>
+                                </div>
+                                <div className="flex items-center justify-center gap-8 w-full border-t-2 border-slate-200 pt-4">
+                                    {/* Signature */}
+                                    <div className="flex flex-col items-center">
+                                        <img 
+                                            src="/signature.png" 
+                                            alt="Signature" 
+                                            className="h-14 w-auto object-contain mix-blend-multiply opacity-90 mb-1"
+                                            onError={(e) => e.target.style.display = 'none'}
+                                        />
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                            Authority, SmartLineman.in
+                                        </p>
+                                    </div>
+
+                                    {/* Divider */}
+                                    <div className="w-px h-12 bg-slate-200" />
+
+                                    {/* Date */}
+                                    <div className="flex flex-col items-center">
+                                        <p className="text-xl font-serif italic text-slate-800 tracking-wide leading-none mb-3">
+                                            {(() => {
+                                                const d = reportGeneratedAt;
+                                                const day = String(d.getDate()).padStart(2, '0');
+                                                const month = String(d.getMonth() + 1).padStart(2, '0');
+                                                const year = d.getFullYear();
+                                                return `${day}/${month}/${year}`;
+                                            })()}
+                                        </p>
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                                            {language === 'en' ? 'Date Issued' : 'ইস্যুর তারিখ'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Right: QR Code & Serial */}
+                            <div className="flex flex-col items-end">
+                                <div className="p-2 bg-white rounded-xl shadow-sm border border-slate-100 ring-8 ring-slate-50 mb-6">
+                                    <QRCodeCanvas 
+                                        value={verificationUrl || ""} 
+                                        size={120} 
+                                        level="H"
+                                        includeMargin={true}
+                                        imageSettings={{
+                                            src: "/icons/logo.png",
+                                            height: 24,
+                                            width: 24,
+                                            excavate: true,
+                                        }}
+                                    />
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-1">Certificate Serial Number</p>
+                                    <p className="text-[11px] font-bold text-slate-600 font-mono">
+                                        SLM-CERT-{certId?.split('')?.map((c, i) => i > 0 && i % 4 === 0 ? `-${c}` : c)?.join('')}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     );

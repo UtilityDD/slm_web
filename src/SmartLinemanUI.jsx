@@ -500,7 +500,11 @@ export default function SmartLinemanUI() {
     if (currentView === 'home') {
       window.history.replaceState(null, '', window.location.pathname);
     } else {
-      window.location.hash = `/${currentView}`;
+      // Protect specific routes (like verify) from being overwritten and losing their parameters
+      const hash = window.location.hash.replace('#/', '').split('?')[0];
+      if (!hash.startsWith(currentView + '/')) {
+        window.location.hash = `/${currentView}`;
+      }
     }
   }, [currentView]);
 
@@ -865,7 +869,10 @@ export default function SmartLinemanUI() {
           }
           return <Guide userRole={userProfile?.role} />;
         case 'verify': {
-          const certId = window.location.hash.split('/').pop();
+          // Deep Scan: Look at the entire URL to find the ID after 'verify/'
+          const fullUrl = window.location.href;
+          const segments = fullUrl.split('verify/');
+          const certId = segments.length > 1 ? segments[1].split(/[#\?\/]/)[0] : "";
           return <VerificationView language={language} certificateId={certId} />;
         }
         case 'notifications':
@@ -1107,7 +1114,7 @@ export default function SmartLinemanUI() {
         </div>
 
         {/* Header - Material Design - Hidden on Login & Stories or when forced login */}
-        {((user && !['login', 'accident-stories'].includes(currentView)) || currentView === 'verify') && (
+        {((user && !['login', 'accident-stories', 'verify'].includes(currentView))) && (
           <header className={`${currentView === 'home' ? 'bg-[#ea580c] dark:bg-[#c2410c] border-transparent shadow-none' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 elevation-2'} sticky top-0 z-[80] border-b safe-area-inset-top transition-all duration-300`}>
             <div className="max-w-7xl mx-auto mobile-container">
               <div className="flex justify-between items-center h-14 md:h-16">
