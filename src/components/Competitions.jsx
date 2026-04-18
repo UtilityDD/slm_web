@@ -1196,7 +1196,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 </div>
 
                 {showHallOfFame ? (
-                    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
 
                         {loadingGallery ? (
                             <div className="flex flex-col items-center justify-center py-20 pointer-events-none">
@@ -1204,20 +1204,20 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 <p className="text-slate-400 font-bold mt-4 animate-pulse uppercase tracking-[0.2em] text-[10px]">{language === 'en' ? 'Opening the Gallery...' : 'গ্যালারি খোলা হচ্ছে...'}</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 gap-10 max-w-7xl mx-auto px-4 md:px-8">
+                            <div className="grid grid-cols-1 gap-5 sm:gap-10 max-w-7xl mx-auto px-0 md:px-8">
                                 {hallOfFameData.map((entry, idx) => (
                                     <div 
                                         key={`${entry.year}-${entry.month}`} 
                                         className="award-perspective group animate-slide-up"
                                         style={{ animationDelay: `${idx * 150}ms` }}
                                     >
-                                        <div className="diamond-glass award-tilt rounded-[2rem] p-8 md:p-10 relative overflow-hidden transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.12)]">
+                                        <div className="diamond-glass award-tilt rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-8 md:p-10 relative overflow-hidden transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.12)]">
                                             {/* Refined Background Accents */}
                                             <div className="absolute -top-24 -right-24 w-64 h-64 bg-amber-500/10 dark:bg-amber-400/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-amber-500/20 transition-all duration-1000"></div>
                                             <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/10 dark:bg-indigo-400/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-indigo-500/20 transition-all duration-1000"></div>
                                             
                                             {/* Header Section */}
-                                            <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4 relative z-10 border-b border-slate-200/50 dark:border-white/10 pb-6">
+                                            <div className="flex flex-row items-center justify-between mb-4 sm:mb-10 gap-3 relative z-10 border-b border-slate-200/50 dark:border-white/10 pb-3 sm:pb-6">
                                                 <div>
                                                     <div className="flex items-center gap-3 mb-2">
                                                         <div className="h-px w-8 bg-indigo-500/50"></div>
@@ -1225,11 +1225,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             {language === 'en' ? 'Monthly Stars' : 'মাসের সেরারা'}
                                                         </span>
                                                     </div>
-                                                    <h3 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">
+                                                    <h3 className="text-xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">
                                                         {new Date(entry.year, entry.month - 1).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', { month: 'long', year: 'numeric' })}
                                                     </h3>
                                                 </div>
-                                                <div className="flex items-center gap-4 bg-white/50 dark:bg-black/20 backdrop-blur-md px-6 py-3 rounded-full border border-white/50 dark:border-white/10 shadow-sm">
+                                                <div className="hidden sm:flex items-center gap-4 bg-white/50 dark:bg-black/20 backdrop-blur-md px-6 py-3 rounded-full border border-white/50 dark:border-white/10 shadow-sm">
                                                     <div className="flex -space-x-3">
                                                         {entry.winners.map((w, i) => (
                                                             <div key={i} className="w-8 h-8 rounded-full border-2 border-white dark:border-slate-800 overflow-hidden shadow-sm">
@@ -1244,7 +1244,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             </div>
 
                                             {/* Winners Horizontal Grid */}
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-6 relative z-10">
                                                 {entry.winners.slice(0, 3).map((winner, winIdx) => {
                                                     const isGold = winIdx === 0;
                                                     const metalClass = winIdx === 0 ? 'gold' : winIdx === 1 ? 'silver' : 'bronze';
@@ -1252,23 +1252,23 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     return (
                                                         <div 
                                                             key={winner.user_id} 
-                                                            className={`relative p-6 rounded-[1.8rem] border transition-all duration-500 group/topper 
+                                                            className={`relative p-3 sm:p-6 rounded-2xl sm:rounded-[1.8rem] border transition-all duration-500 group/topper 
                                                                 ${isGold 
                                                                     ? 'bg-gradient-to-br from-amber-50 to-white dark:from-amber-900/10 dark:to-slate-900/50 border-amber-200 dark:border-amber-500/20 shadow-lg shadow-amber-500/5' 
                                                                     : 'bg-white/40 dark:bg-slate-800/40 border-slate-100 dark:border-white/5 hover:border-indigo-500/30'}`}
                                                         >
                                                             {/* Medal Icon (SVG) */}
-                                                            <div className="flex justify-between items-start mb-6">
-                                                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-transform duration-500 group-hover/topper:scale-110 shadow-lg
+                                                            <div className="flex justify-between items-start mb-3 sm:mb-6">
+                                                                <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center transition-transform duration-500 group-hover/topper:scale-110 shadow-lg
                                                                     ${winIdx === 0 ? 'bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900/40 dark:to-amber-900/60 shadow-amber-500/20' :
                                                                        winIdx === 1 ? 'bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 shadow-slate-500/10' :
                                                                        'bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-900/50 shadow-orange-500/10'}`}>
                                                                     {winIdx === 0 ? (
-                                                                        <svg className="w-8 h-8 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+                                                                        <svg className="w-5 h-5 sm:w-8 sm:h-8 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 24 24">
                                                                             <path d="M12 2l2.4 7.4h7.6l-6.2 4.5 2.4 7.4-6.2-4.5-6.2 4.5 2.4-7.4-6.2-4.5h7.6z"/>
                                                                         </svg>
                                                                     ) : (
-                                                                        <svg className="w-8 h-8 text-slate-500 dark:text-slate-400" fill="currentColor" viewBox="0 0 24 24">
+                                                                        <svg className="w-5 h-5 sm:w-8 sm:h-8 text-slate-500 dark:text-slate-400" fill="currentColor" viewBox="0 0 24 24">
                                                                             <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
                                                                         </svg>
                                                                     )}
@@ -1277,14 +1277,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                     <span className={`text-[10px] font-black uppercase tracking-widest ${winIdx === 0 ? 'text-amber-600' : 'text-slate-400'}`}>
                                                                         {winIdx === 0 ? (language === 'en' ? 'Champion' : 'বিজয়ী') : winIdx === 1 ? (language === 'en' ? 'Finalist' : 'রানার আপ') : (language === 'en' ? 'Finalist' : 'তৃতীয়')}
                                                                     </span>
-                                                                    <p className={`text-2xl font-black tabular-nums ${isGold ? 'gold-metallic-text' : winIdx === 1 ? 'silver-metallic-text' : 'bronze-metallic-text'}`}>
+                                                                    <p className={`text-lg sm:text-2xl font-black tabular-nums ${isGold ? 'gold-metallic-text' : winIdx === 1 ? 'silver-metallic-text' : 'bronze-metallic-text'}`}>
                                                                         {(winner.points || 0).toLocaleString()}
                                                                     </p>
                                                                 </div>
                                                             </div>
 
                                                             <div className="flex items-center gap-3 md:gap-4">
-                                                                <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl overflow-hidden border-2 transition-all duration-500 group-hover/topper:rotate-3 shadow-md ${isGold ? 'border-amber-400' : 'border-white dark:border-slate-700'}`}>
+                                                                <div className={`w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl overflow-hidden border-2 transition-all duration-500 group-hover/topper:rotate-3 shadow-md ${isGold ? 'border-amber-400' : 'border-white dark:border-slate-700'}`}>
                                                                     {winner.avatar_url ? (
                                                                         <img src={winner.avatar_url} className="w-full h-full object-cover" />
                                                                     ) : (
@@ -1294,7 +1294,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                     )}
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
-                                                                    <p className={`text-base sm:text-lg font-black tracking-tight leading-tight ${isGold ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-200'}`}>
+                                                                    <p className={`text-sm sm:text-lg font-black tracking-tight leading-tight ${isGold ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-200'}`}>
                                                                         {winner.full_name || 'Anonymous'}
                                                                     </p>
                                                                     <div className="flex items-center gap-2 mt-1">
@@ -1510,7 +1510,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                             </p>
                                                                         )}
                                                                         {badge && (
-                                                                            <span className={`text-[8px] font-black uppercase tracking-tighter transition-colors ${badge.color.split(' ')[1] || 'text-slate-400'}`}>
+                                                                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-tight border ${badge.color}`}>
                                                                                 {language === 'en' ? badge.en : badge.bn}
                                                                             </span>
                                                                         )}
