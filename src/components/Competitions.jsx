@@ -84,6 +84,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [showHint, setShowHint] = useState(false);
     const [hintViewedQuestions, setHintViewedQuestions] = useState(new Set());
     const [showAbortWarningModal, setShowAbortWarningModal] = useState(false);
+    
+    // Hall of Fame Gallery State
+    const [showHallOfFame, setShowHallOfFame] = useState(false);
+    const [hallOfFameData, setHallOfFameData] = useState([]);
+    const [loadingGallery, setLoadingGallery] = useState(false);
 
     // Gamified Ladder state
     const [todayAttempts, setTodayAttempts] = useState([]);
@@ -240,9 +245,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         }
     }[language];
 
-    const loadData = async () => {
+    const currentUserBadge = getBadgeByLevel((userProfile && userProfile.training_level) || 0);
+
+    const loadData = async (forceRefresh = false) => {
         setLoading(true);
         setFetchError(false);
+        
         try {
             // Run fetches in parallel to avoid blocking
             const promises = [
@@ -250,7 +258,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             ];
 
             if (isFullLeaderboard) {
-                promises.push(fetchFullLeaderboard());
+                promises.push(fetchFullLeaderboard(forceRefresh));
             } else {
                 promises.push(fetchHourlyQuiz());
             }
@@ -259,6 +267,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             if (user) {
                 promises.push(fetchLeaderboard());
                 promises.push(fetchTodayAttempts());
+                // Also fetch specific rank for the current view
+                promises.push(fetchUserRank(forceRefresh));
             }
 
             await Promise.all(promises);
@@ -270,8 +280,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     };
 
     useEffect(() => {
-        loadData();
-    }, [language, user]); // Re-run when language or user changes
+        // Passing forceRefresh=true on mount or manual refresh
+        loadData(true); 
+    }, [language, user]); // Re-run when language/user change
 
     useEffect(() => {
         // Timer Logic
@@ -745,31 +756,44 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         if (!user) return;
 
         try {
+            const cacheKey = `user_rank_all_time_${user.id}`;
+
             const rankData = await requestManager.fetch(
-                `user_rank_${user.id}`,
+                cacheKey,
                 async () => {
-                    const { data: myData, error: myError } = await supabase
+                    const query = supabase
                         .from('leaderboard_view')
-                        .select('score')
-                        .eq('user_id', user.id)
-                        .maybeSingle();
+                        .select('score, reading_points') 
+                        .eq('user_id', user.id);
+
+                    const { data: myData, error: myError } = await query.maybeSingle();
 
                     if (myError || !myData) return null;
 
-                    const { count, error: countError } = await supabase
+                    const myScoreValue = myData.score ?? 0;
+
+                    const countQuery = supabase
                         .from('leaderboard_view')
                         .select('*', { count: 'exact', head: true })
-                        .gt('score', myData.score);
+                        .gt('score', myScoreValue);
+
+                    const { count, error: countError } = await countQuery;
 
                     if (countError) throw countError;
 
-                    return { rank: count + 1, score: myData.score };
+                    return { 
+                        rank: count + 1, 
+                        score: myScoreValue,
+                        reading_points: myData.reading_points || 0 
+                    };
                 },
                 { ttl: 5, swr: true, forceRefresh }
             );
 
             if (rankData) {
                 setUserRank(rankData);
+            } else {
+                setUserRank(null);
             }
         } catch (error) {
             console.error('Error fetching rank:', error);
@@ -778,20 +802,25 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
     const fetchLeaderboard = async (forceRefresh = false) => {
         try {
+            const cacheKey = 'leaderboard_top_10_all_time';
+
             const formattedData = await requestManager.fetch(
-                'leaderboard_top_10_v3',
+                cacheKey,
                 async () => {
-                    const { data, error } = await supabase
+                    const query = supabase
                         .from('leaderboard_view')
                         .select('*')
                         .order('score', { ascending: false })
                         .limit(10);
 
+                    const { data, error } = await query;
+
                     if (error) throw error;
 
                     return data.map(item => ({
                         ...item,
-                        points: item.score
+                        points: item.score ?? 0,
+                        reading_points: item.reading_points ?? 0
                     }));
                 },
                 { ttl: 5, swr: true, forceRefresh }
@@ -808,26 +837,31 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         }
     };
 
-    const fetchFullLeaderboard = async () => {
+    const fetchFullLeaderboard = async (forceRefresh = false) => {
         setLoadingFull(true);
+        
         try {
+            const cacheKey = 'leaderboard_full_all_time';
+
             const formattedData = await requestManager.fetch(
-                'leaderboard_full_v3',
+                cacheKey,
                 async () => {
-                    const { data, error } = await supabase
+                    const query = supabase
                         .from('leaderboard_view')
                         .select('*')
-                        .order('score', { ascending: false })
-                        .limit(50);
+                        .order('score', { ascending: false });
+
+                    const { data, error } = await query.limit(50);
 
                     if (error) throw error;
 
                     return data.map(item => ({
                         ...item,
-                        points: item.score
+                        points: item.score ?? 0,
+                        reading_points: item.reading_points ?? 0
                     }));
                 },
-                { ttl: 5, swr: true }
+                { ttl: 5, swr: true, forceRefresh }
             );
 
             if (formattedData) {
@@ -837,6 +871,45 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             console.error('Error fetching full leaderboard:', error);
         } finally {
             setLoadingFull(false);
+        }
+    };
+
+    const fetchHallOfFameGallery = async () => {
+        setLoadingGallery(true);
+        try {
+            const monthsToFetch = 12;
+            const archive = [];
+            const now = new Date();
+            
+            // Fetch past 12 months toppers
+            // We'll do this in a single query by fetching recent records and grouping
+            // or just loop for precision since it's only 12 small queries
+            for (let i = 1; i <= monthsToFetch; i++) {
+                const targetDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const m = targetDate.getMonth() + 1;
+                const y = targetDate.getFullYear();
+                
+                const { data, error } = await supabase
+                    .from('monthly_leaderboard_view')
+                    .select('*')
+                    .eq('month_num', m)
+                    .eq('year_num', y)
+                    .order('points', { ascending: false })
+                    .limit(3);
+                
+                if (!error && data && data.length > 0) {
+                    archive.push({
+                        month: m,
+                        year: y,
+                        winners: data
+                    });
+                }
+            }
+            setHallOfFameData(archive);
+        } catch (error) {
+            console.error('Error fetching gallery:', error);
+        } finally {
+            setLoadingGallery(false);
         }
     };
 
@@ -993,24 +1066,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         setUserAnswers(prev => ({ ...prev, [questionId]: optionIndex }));
     };
 
-    const handleQuizComplete = async (finalScore, userResponses) => {
-        if (!activeQuiz) return;
 
-        const penalty = calculatePenalty(userResponses);
-
-        setScore(finalScore);
-        setQuizSubmitted(true);
-        setActiveQuiz(null);
-
-        // Immediate submission attempt
-        // If logged in, submit immediately
-        if (user) {
-            await submitHourlyQuiz(finalScore, penalty);
-        } else {
-            // Not logged in - just show score and let them login to save if they want (future feature)
-            // For now, we just show the score.
-        }
-    };
 
     const submitQuiz = async () => {
         let calculatedScore = 0;
@@ -1029,16 +1085,26 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         if (activeQuiz && activeQuiz.points_reward && quizQuestions.length > 0) {
             pointsPerQuestion = Math.floor(activeQuiz.points_reward / quizQuestions.length);
         }
-
         calculatedScore = correctCount * pointsPerQuestion;
 
-        // Calculate penalty
-        const penalty = calculatePenalty(userAnswers);
-        calculatedScore -= penalty;
+        // Calculate penalty (Only for High Stakes users > 1000 points)
+        const currentPoints = userProfile?.points || userRank?.score || 0;
+        const isHighStakes = currentPoints > 1000;
+        let penalty = 0;
 
+        if (isHighStakes) {
+            penalty = quizQuestions.reduce((acc, q) => {
+                const answer = userAnswers[q.id];
+                if (answer === undefined || answer !== q.correct_option_index) {
+                    return acc + 15; // 15 points penalty for wrong/skipped
+                }
+                return acc;
+            }, 0);
+        }
+        
+        calculatedScore = Math.max(0, calculatedScore - penalty);
         setScore(calculatedScore);
 
-        // Store individual counts for the results screen
         setQuizResults({
             correct: correctCount,
             wrong: quizQuestions.filter(q => userAnswers[q.id] !== undefined && userAnswers[q.id] !== q.correct_option_index).length,
@@ -1059,16 +1125,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         };
         storageUtils.setItem(`review_${activeQuiz.id}`, JSON.stringify(attemptData));
 
-        // IMMEDIATE LOCK: Update local state before network call to prevent race condition
         if (activeQuiz && activeQuiz.id === hourlyQuiz?.id) {
             setLastAttemptTime(attemptData.timestamp);
             const cacheKey = `last_attempt_${user.id}_${activeQuiz.id}`;
             cacheHelper.set(cacheKey, attemptData.timestamp, 5);
         }
 
-        // Submit immediately if user is logged in
         if (user) {
-            // This now handles Supabase RPC, profile refresh and leaderboard update
             await submitHourlyQuiz(calculatedScore, penalty);
         }
     };
@@ -1079,28 +1142,135 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 {/* Header Section */}
                 <div className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-700">
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-50">
-                                    {language === 'en' ? 'Global Leaderboard' : 'লিডারবোর্ড'}
-                                </h1>
-                                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                    {language === 'en' ? 'Top performers across all regions' : 'সব অঞ্চলের শীর্ষ পারফর্মার'}
-                                </p>
-                            </div>
-                            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                                <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
-                                    {language === 'en' ? 'Updated' : 'আপডেটেড'}
-                                </span>
+                        <div className="flex flex-col gap-6">
+                            <div className="flex items-center justify-between">
+                                <div className="flex flex-col">
+                                    <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3 tracking-tight">
+                                        {showHallOfFame 
+                                            ? <><span className="text-3xl drop-shadow-sm">✨</span> {language === 'en' ? 'Hall of Fame' : 'হল অফ ফেম'}</>
+                                            : <><span className="text-3xl drop-shadow-sm">🌍</span> {language === 'en' ? 'Global Rankings' : 'গ্লোবাল র‍্যাঙ্কিং'}</>
+                                        }
+                                    </h1>
+                                    <p className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mt-1.5 flex items-center gap-2">
+                                        <span className="w-4 h-px bg-slate-300 dark:bg-slate-700"></span>
+                                        {showHallOfFame 
+                                            ? (language === 'en' ? 'Celebrating Excellence' : 'সেরা পারফর্মারদের গ্যালারি') 
+                                            : (language === 'en' ? 'Live Global Leaderboard' : 'লাইভ গ্লোবাল লিডারবোর্ড')}
+                                    </p>
+                                </div>
+                                
+                                <button 
+                                    onClick={() => {
+                                        if (!showHallOfFame) fetchHallOfFameGallery();
+                                        setShowHallOfFame(!showHallOfFame);
+                                    }}
+                                    className={`group relative flex items-center gap-3 px-5 sm:px-6 py-2 sm:py-2.5 rounded-2xl text-[10px] sm:text-xs font-black transition-all hover:scale-105 active:scale-95 shadow-xl ${
+                                        showHallOfFame 
+                                        ? 'bg-slate-800 text-white border-2 border-slate-700 shadow-slate-900/20' 
+                                        : 'bg-gradient-to-br from-indigo-600 via-violet-600 to-indigo-700 text-white border-b-4 border-indigo-900/40 shadow-indigo-500/30'
+                                    }`}
+                                >
+                                    <span className="text-lg sm:text-xl group-hover:rotate-12 transition-transform drop-shadow-sm">
+                                        {showHallOfFame ? '⬅️' : '🏆'}
+                                    </span>
+                                    <div className="flex flex-col items-start leading-tight">
+                                        <span className={showHallOfFame ? 'text-slate-400 text-[9px]' : 'text-indigo-200 text-[9px]'}>
+                                            {showHallOfFame 
+                                                ? (language === 'en' ? 'Return to' : 'ফিরে যান') 
+                                                : (language === 'en' ? 'Hall of Fame' : 'হল অফ ফেম')}
+                                        </span>
+                                        <span className="text-xs sm:text-sm font-black tracking-tight">
+                                            {showHallOfFame 
+                                                ? (language === 'en' ? 'Leaderboard' : 'লিডারবোর্ড') 
+                                                : (language === 'en' ? 'Champions' : 'বিজয়ীরা')}
+                                        </span>
+                                    </div>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Leaderboard Content */}
-                <div className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-3">
-                    {user && userRank && !loadingFull && (() => {
+                {showHallOfFame ? (
+                    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+                        {loadingGallery ? (
+                            <div className="flex flex-col items-center justify-center py-20 pointer-events-none">
+                                <DotLottiePlayer src={sandyLoading} autoplay loop style={{ width: '120px', height: '120px' }} />
+                                <p className="text-slate-400 font-bold mt-4 animate-pulse uppercase tracking-[0.2em] text-[10px]">{language === 'en' ? 'Opening the Gallery...' : 'গ্যালারি খোলা হচ্ছে...'}</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {hallOfFameData.map((entry, idx) => (
+                                    <div 
+                                        key={`${entry.year}-${entry.month}`} 
+                                        className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl rounded-[2.5rem] border border-white dark:border-slate-700/50 p-6 shadow-xl hover:shadow-2xl transition-all group animate-scale-in relative overflow-hidden" 
+                                        style={{ animationDelay: `${idx * 50}ms` }}
+                                    >
+                                        <div className="absolute top-[-20%] right-[-10%] w-40 h-40 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-indigo-500/10 transition-colors"></div>
+                                        <div className="absolute bottom-[-10%] left-[-5%] w-32 h-32 bg-violet-500/5 rounded-full blur-2xl pointer-events-none transition-colors"></div>
+                                        
+                                        {/* Decorative Championship Seal */}
+                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[140px] opacity-[0.03] dark:opacity-[0.05] pointer-events-none select-none grayscale rotate-12 transition-transform group-hover:rotate-0 duration-1000">
+                                            🎖️
+                                        </div>
+                                        
+                                        <div className="flex items-center justify-between mb-8 relative z-10">
+                                            <div>
+                                                <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
+                                                    {new Date(entry.year, entry.month - 1).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', { month: 'long', year: 'numeric' })}
+                                                </h3>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                                                    <p className="text-[10px] font-black text-indigo-500/80 dark:text-indigo-400/80 uppercase tracking-widest">{language === 'en' ? 'CHAMPIONSHIP PODIUM' : 'চ্যাম্পিয়নশিপ পোডিয়াম'}</p>
+                                                </div>
+                                            </div>
+                                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-xl shadow-lg shadow-indigo-500/20 transform group-hover:rotate-12 transition-transform">
+                                                🎖️
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="space-y-4 relative z-10">
+                                            {entry.winners.map((winner, winIdx) => (
+                                                <div key={winner.user_id} className={`flex items-center justify-between p-4 rounded-3xl border transition-all duration-300 group/winner
+                                                    ${winIdx === 0 
+                                                        ? 'bg-gradient-to-r from-amber-500/10 to-amber-500/5 border-amber-500/20 dark:border-amber-500/10' 
+                                                        : 'bg-white/40 dark:bg-white/5 border-slate-100 dark:border-white/5 hover:bg-white/80 dark:hover:bg-white/10'}`}>
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-base font-black shadow-sm transform transition-transform group-hover/winner:scale-110
+                                                            ${winIdx === 0 ? 'bg-gradient-to-br from-amber-300 to-amber-500 text-amber-950 shadow-amber-500/20' :
+                                                               winIdx === 1 ? 'bg-gradient-to-br from-slate-200 to-slate-400 text-slate-800 shadow-slate-400/20' :
+                                                               'bg-gradient-to-br from-orange-300 to-orange-500 text-orange-950 shadow-orange-500/20'}`}>
+                                                            {winIdx === 0 ? '🏆' : winIdx === 1 ? '🥈' : '🥉'}
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`w-11 h-11 rounded-2xl overflow-hidden border-2 transition-transform group-hover/winner:scale-105 shadow-md ${winIdx === 0 ? 'border-amber-400' : 'border-white dark:border-slate-700'}`}>
+                                                                {winner.avatar_url ? <img src={winner.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-base font-black text-slate-400">{(winner.full_name || '?')[0]}</div>}
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className={`text-sm font-black tracking-tight transition-colors ${winIdx === 0 ? 'text-amber-900 dark:text-amber-100' : 'text-slate-800 dark:text-slate-100 group-hover/winner:text-indigo-600 dark:group-hover/winner:text-indigo-400'}`}>{winner.full_name || 'Anonymous'}</span>
+                                                                <span className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">{winIdx === 0 ? (language === 'en' ? 'Grand Champion' : 'বিজয়ী') : winIdx === 1 ? (language === 'en' ? 'Runner Up' : 'দ্বিতীয় স্থান') : (language === 'en' ? 'Finalist' : 'তৃতীয় স্থান')}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex flex-col items-end bg-black/5 dark:bg-white/5 px-3 py-1.5 rounded-2xl border border-black/5 dark:border-white/5">
+                                                        <span className={`text-[9px] font-black uppercase tracking-widest leading-none mb-1 ${winIdx === 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'}`}>{language === 'en' ? 'Score' : 'স্কোর'}</span>
+                                                        <span className={`text-xs sm:text-sm font-black tabular-nums transition-colors ${winIdx === 0 ? 'text-amber-700 dark:text-amber-300' : 'text-slate-700 dark:text-slate-200'}`}>{(winner.points || 0).toLocaleString()}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="h-20"></div>
+                    </div>
+                ) : (
+                    <div className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-3">
+                        {user && userRank && !loadingFull && (() => {
                         const userBadge = getBadgeByLevel(userProfile?.training_level || 0);
                         return (
                             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-4 sm:p-5 mb-2">
@@ -1116,18 +1286,21 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     {language === 'en' ? userBadge.en : userBadge.bn}
                                                 </span>
                                             )}
-                                            {isSyncing ? (
-                                                <div className="ml-1 px-2 py-0.5 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-100 dark:border-orange-800/30 flex items-center gap-1.5 animate-pulse">
-                                                    <svg className="animate-spin h-3 w-3 text-orange-600 dark:text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                    </svg>
-                                                    <span className="text-[10px] font-bold text-orange-700 dark:text-orange-300">Syncing...</span>
-                                                </div>
-                                            ) : (
-                                                <p className="text-sm font-black text-slate-700 dark:text-slate-200 ml-1 tabular-nums">{userRank.score.toLocaleString()} {language === 'en' ? 'pts' : 'পয়েন্ট'}</p>
-                                            )}
+                                                    <div className="flex flex-center gap-2 flex-wrap">
+                                                        <p className="text-sm font-black text-slate-700 dark:text-slate-200 ml-1 tabular-nums">{(userRank.score || 0).toLocaleString()} {language === 'en' ? 'pts' : 'পয়েন্ট'}</p>
+                                                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/10">
+                                                            <span className="text-[10px]">📖</span>
+                                                            <span className="text-[10px] font-black text-orange-700 dark:text-orange-300 tabular-nums">
+                                                                {(userRank.reading_points || 0).toLocaleString()} <span className="text-[8px] opacity-70 ml-0.5">{language === 'en' ? 'RDG' : 'রিডিং'}</span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                         </div>
+                                        {userProfile?.last_login_at && (
+                                            <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-1.5">
+                                                {language === 'en' ? 'Active' : 'সক্রিয়'} {formatLastActive(userProfile.last_login_at, language)}
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-orange-600 dark:text-orange-300 border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
                                         {userProfile?.avatar_url ? <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
@@ -1137,173 +1310,110 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                         );
                     })()}
 
-                    {/* Podium Section */}
-                    {!loadingFull && fullLeaderboard.length >= 3 && (() => {
-                        const top3 = [fullLeaderboard[1], fullLeaderboard[0], fullLeaderboard[2]]; // 2nd, 1st, 3rd
+                    {!loadingFull && fullLeaderboard.length > 0 && (() => {
+                        let topPlayers = [];
+                        if (fullLeaderboard.length === 1) {
+                            topPlayers = [fullLeaderboard[0]];
+                        } else if (fullLeaderboard.length === 2) {
+                            topPlayers = [fullLeaderboard[1], fullLeaderboard[0]];
+                        } else {
+                            topPlayers = [fullLeaderboard[1], fullLeaderboard[0], fullLeaderboard[2]];
+                        }
                         return (
-                            <div className="flex flex-col md:flex-row items-center md:items-end justify-center gap-4 md:gap-6 mt-8 mb-12 px-4 max-w-6xl mx-auto">
-                                {top3.map((item, idx) => {
-                                    // Map back to actual rank
-                                    const rank = item === fullLeaderboard[0] ? 1 : item === fullLeaderboard[1] ? 2 : 3;
-                                    const badge = getBadgeByLevel(item.training_level || 0);
-                                    
-                                    const theme = {
-                                        1: { 
-                                            bg: 'gold-gradient', 
-                                            text: 'text-amber-900 dark:text-amber-100', 
-                                            border: 'border-amber-400/50',
-                                            glow: 'medal-glow-1',
-                                            icon: '👑',
-                                            height: 'md:min-h-[380px]',
-                                            order: 'order-1 md:order-2',
-                                            scale: 'scale-105 md:scale-110 z-10'
-                                        },
-                                        2: { 
-                                            bg: 'silver-gradient', 
-                                            text: 'text-slate-900 dark:text-slate-100', 
-                                            border: 'border-slate-300/50',
-                                            glow: 'medal-glow-2',
-                                            icon: '🥈',
-                                            height: 'md:min-h-[340px]',
-                                            order: 'order-2 md:order-1',
-                                            scale: 'scale-100'
-                                        },
-                                        3: { 
-                                            bg: 'bronze-gradient', 
-                                            text: 'text-orange-950 dark:text-orange-100', 
-                                            border: 'border-orange-300/50',
-                                            glow: 'medal-glow-3',
-                                            icon: '🥉',
-                                            height: 'md:min-h-[320px]',
-                                            order: 'order-3 md:order-3',
-                                            scale: 'scale-95 md:scale-100'
-                                        }
-                                    }[rank];
+                            <div className="flex flex-col items-center gap-4 mt-8 mb-16 max-w-6xl mx-auto px-4 w-full">
+                                <div className={`flex flex-col md:flex-row items-center md:items-end justify-center gap-4 md:gap-6 w-full ${topPlayers.length < 3 ? 'md:max-w-2xl' : ''}`}>
+                                    {topPlayers.map((item) => {
+                                        const rank = item === fullLeaderboard[0] ? 1 : item === fullLeaderboard[1] ? 2 : 3;
+                                        const badge = getBadgeByLevel(item.training_level || 0);
+                                        const theme = {
+                                            1: { bg: 'gold-gradient', text: 'text-amber-900 dark:text-amber-100', border: 'border-amber-400/50 shadow-amber-500/10', glow: 'medal-glow-1', icon: '👑', height: 'md:min-h-[380px]', order: 'order-1 md:order-2', scale: 'scale-105 md:scale-110 z-10' },
+                                            2: { bg: 'silver-gradient', text: 'text-slate-900 dark:text-slate-100', border: 'border-slate-300/50 shadow-slate-400/5', glow: 'medal-glow-2', icon: '🥈', height: 'md:min-h-[340px]', order: 'order-2 md:order-1', scale: 'scale-100' },
+                                            3: { bg: 'bronze-gradient', text: 'text-orange-950 dark:text-orange-100', border: 'border-orange-300/50 shadow-orange-500/5', glow: 'medal-glow-3', icon: '🥉', height: 'md:min-h-[320px]', order: 'order-3 md:order-3', scale: 'scale-95 md:scale-100' }
+                                        }[rank];
 
-                                    const compactLastActive = item.last_login_at
-                                        ? formatLastActive(item.last_login_at, language).replace('Active ', '').replace('সক্রিয় ', '')
-                                        : null;
-
-                                    return (
-                                        <article
-                                            key={item.user_id}
-                                            onClick={() => openUserProgress(item.user_id)}
-                                            className={`${theme.order} ${theme.scale} ${theme.bg} ${theme.border} ${theme.glow} ${theme.height} w-full md:w-1/3 max-w-[320px] rounded-3xl border leaderboard-podium-card p-4 flex flex-col items-center justify-between cursor-pointer relative overflow-hidden`}
-                                        >
-                                            {/* Rank Indicator */}
-                                            <div className="absolute top-0 right-0 p-3">
-                                                <span className={`text-4xl opacity-20 font-black italic`}>#{rank}</span>
-                                            </div>
-
-                                            {/* Top Icon */}
-                                            <div className={`text-4xl mb-2 ${rank === 1 ? 'animate-crown' : ''}`}>
-                                                {theme.icon}
-                                            </div>
-
-                                            {/* Avatar */}
-                                            <div className="relative mb-3">
-                                                <div className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border-4 ${rank === 1 ? 'border-amber-200/50' : 'border-white/30'} shadow-xl`}>
-                                                    {item.avatar_url ? (
-                                                        <img src={item.avatar_url} alt="" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center bg-white/20 text-3xl font-black uppercase">
-                                                            {(item.full_name || '?')[0]}
-                                                        </div>
-                                                    )}
+                                        return (
+                                            <article key={item.user_id} onClick={() => openUserProgress(item.user_id)} className={`${theme.order} ${theme.scale} ${theme.bg} ${theme.border} ${theme.glow} ${theme.height} w-full md:w-1/3 max-w-xs sm:max-w-sm rounded-3xl border leaderboard-podium-card p-3 sm:p-4 flex flex-col items-center justify-between cursor-pointer relative overflow-hidden`}>
+                                                <div className="absolute top-0 right-0 p-2 sm:p-3"><span className="text-2xl sm:text-4xl opacity-20 font-black italic">#{rank}</span></div>
+                                                <div className={`text-3xl sm:text-4xl mb-1.5 sm:mb-2 ${rank === 1 ? 'animate-crown' : ''}`}>{theme.icon}</div>
+                                                <div className="relative mb-2 sm:mb-3">
+                                                    <div className={`w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border-4 ${rank === 1 ? 'border-amber-200/50' : 'border-white/30'} shadow-xl`}>
+                                                        {item.avatar_url ? <img src={item.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-white/20 text-2xl sm:text-3xl font-black uppercase">{(item.full_name || '?')[0]}</div>}
+                                                    </div>
+                                                    {item.last_login_at && (() => {
+                                                        const d = new Date(item.last_login_at);
+                                                        const now = new Date();
+                                                        const isActive = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                                                        return (
+                                                            <span className="absolute -bottom-1 -right-1 flex h-3 w-3 sm:h-4 sm:w-4">
+                                                                <span className={`relative inline-flex rounded-full h-3 w-3 sm:h-4 sm:w-4 border-2 border-white dark:border-slate-900 ${isActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}></span>
+                                                            </span>
+                                                        );
+                                                    })()}
                                                 </div>
-                                                {item.last_login_at && (() => {
-                                                    const d = new Date(item.last_login_at);
-                                                    const now = new Date();
-                                                    const isActive = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                                                    return (
-                                                        <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
-                                                            {isActive && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>}
-                                                            <span className={`relative inline-flex rounded-full h-4 w-4 border-2 border-white dark:border-slate-800 ${isActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}></span>
-                                                        </span>
-                                                    );
-                                                })()}
-                                            </div>
-
-                                            {/* Name & Badge */}
-                                            <div className="text-center mb-4 min-w-0 w-full">
-                                                <p className={`text-lg font-black truncate ${theme.text} px-2`}>
-                                                    {item.full_name || 'Anonymous'}
-                                                </p>
-                                                {badge && (
-                                                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-black border uppercase tracking-wider backdrop-blur-sm bg-white/10 ${badge.color} border-white/20 mt-1 shadow-sm`}>
-                                                        {language === 'en' ? badge.en : badge.bn}
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            {/* Score pill */}
-                                            <div className="w-full bg-white/5 dark:bg-black/20 backdrop-blur-md rounded-2xl px-3 py-4 border border-white/10 flex flex-col items-center">
-                                                <div className="flex flex-col items-center gap-1">
-                                                    <p className={`text-4xl font-black tabular-nums ${theme.text} leading-none tracking-tighter`}>
-                                                        {item.points.toLocaleString()}
-                                                    </p>
-                                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-xl bg-black/10 dark:bg-white/10 mt-3 border border-white/5 shadow-inner">
-                                                        <span className="text-xs">📖</span>
-                                                        <span className={`text-xs font-black ${theme.text} opacity-90 tabular-nums`}>
-                                                            {item.reading_points.toLocaleString()}
-                                                        </span>
+                                                <div className="text-center mb-2.5 sm:mb-4 min-w-0 w-full">
+                                                    <p className={`text-base sm:text-lg font-black truncate ${theme.text} px-2`}>{item.full_name || 'Anonymous'}</p>
+                                                    {badge && <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black border uppercase tracking-wider backdrop-blur-sm bg-white/10 ${badge.color} border-white/20 mt-0.5 sm:mt-1 shadow-sm`}>{language === 'en' ? badge.en : badge.bn}</span>}
+                                                </div>
+                                                <div className="w-full bg-white/5 dark:bg-black/20 backdrop-blur-md rounded-2xl px-2.5 sm:px-3 py-3 sm:py-4 border border-white/10 flex flex-col items-center">
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        <p className={`text-2xl sm:text-4xl font-black tabular-nums ${theme.text} leading-none tracking-tighter`}>{(item.points || 0).toLocaleString()}</p>
+                                                        <div className="flex flex-col items-center gap-0.5 mt-2 sm:mt-3">
+                                                            <div className="flex items-center gap-1 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg sm:rounded-xl bg-black/10 dark:bg-white/10 border border-white/5 shadow-inner">
+                                                                <span className="text-[10px] sm:text-xs">📖</span>
+                                                                <span className={`text-[10px] sm:text-xs font-black ${theme.text} opacity-90 tabular-nums`}>{(item.reading_points || 0).toLocaleString()}</span>
+                                                            </div>
+                                                            <p className={`text-[9px] font-black uppercase tracking-wider opacity-60 ${theme.text}`}>{language === 'en' ? 'Reading Points' : 'রিডিং পয়েন্ট'}</p>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </article>
-                                    );
-                                })}
+                                            </article>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         );
                     })()}
 
+                    {(!loadingFull && fullLeaderboard.length > 0) ? (
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm mb-8">
+                            <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: 'calc(100vh - 240px)' }}>
+                                <table className="w-full">
+                                    <thead className="sticky top-0 z-10 bg-gradient-to-b from-slate-100 to-slate-50 dark:from-slate-800/95 dark:to-slate-800/80 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-700/60 shadow-sm">
+                                        <tr>
+                                            <th className="px-3 sm:px-4 py-2.5 text-left text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.15em]">
+                                                {language === 'en' ? 'Rank' : 'র‍্যাঙ্ক'}
+                                            </th>
+                                            <th className="px-3 sm:px-4 py-2.5 text-left text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.15em]">
+                                                {language === 'en' ? 'User' : 'ব্যবহারকারী'}
+                                            </th>
+                                            <th className="hidden sm:table-cell px-3 sm:px-4 py-2.5 text-right text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.15em]">
+                                                {language === 'en' ? 'Reading' : 'রিডিং'}
+                                            </th>
+                                            <th className="hidden sm:table-cell px-3 sm:px-4 py-2.5 text-right text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.15em]">
+                                                {language === 'en' ? 'Loss' : 'পেনাল্টি'}
+                                            </th>
+                                            <th className="px-3 sm:px-4 py-2.5 text-right text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.15em]">
+                                                {language === 'en' ? 'Points' : 'পয়েন্ট'}
+                                            </th>
+                                        </tr>
+                                    </thead>
 
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm mb-8">
-                        <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: 'calc(100vh - 240px)' }}>
-                            <table className="w-full">
-                                <thead className="sticky top-0 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 z-10">
-                                    <tr>
-                                        <th className="px-3 sm:px-4 py-2 text-left text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.12em] w-12">
-                                            {language === 'en' ? 'Rank' : 'র‍্যাঙ্ক'}
-                                        </th>
-                                        <th className="px-3 sm:px-4 py-2 text-left text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.12em]">
-                                            {language === 'en' ? 'Player' : 'খেলোয়াড়'}
-                                        </th>
-                                        <th className="hidden sm:table-cell px-3 sm:px-4 py-2 text-right text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.12em]">
-                                            {language === 'en' ? 'Reading' : 'রিডিং'}
-                                        </th>
-                                        <th className="hidden sm:table-cell px-3 sm:px-4 py-2 text-right text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.12em]">
-                                            {language === 'en' ? 'Penalty' : 'পেনাল্টি'}
-                                        </th>
-                                        <th className="px-3 sm:px-4 py-2 text-right text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.12em]">
-                                            {language === 'en' ? 'Points' : 'পয়েন্ট'}
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700/30">
-                                    {loadingFull ? (
-                                        Array(12).fill(0).map((_, i) => (
-                                            <tr key={i} className="h-14">
-                                                <td colSpan="5" className="px-4 sm:px-6 py-3"><SkeletonRow /></td>
-                                            </tr>
-                                        ))
-                                    ) : fullLeaderboard.length > 0 ? (
-                                        (fullLeaderboard.length >= 3 ? fullLeaderboard.slice(3) : fullLeaderboard).map((item, idx) => {
-                                            const index = idx + (fullLeaderboard.length >= 3 ? 3 : 0);
-                                            const isMe = item.user_id === user?.id;
-                                            const badge = getBadgeByLevel(item.training_level);
-                                            const isActiveToday = item.last_login_at
-                                                ? (() => {
-                                                    const d = new Date(item.last_login_at);
-                                                    const now = new Date();
-                                                    return d.getDate() === now.getDate()
-                                                        && d.getMonth() === now.getMonth()
-                                                        && d.getFullYear() === now.getFullYear();
-                                                })()
-                                                : false;
-                                            return (
-                                                <React.Fragment key={index}>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700/30">
+                                        {loadingFull ? (
+                                            Array(12).fill(0).map((_, i) => (
+                                                <tr key={i} className="h-14">
+                                                    <td colSpan="5" className="px-4 sm:px-6 py-3"><SkeletonRow /></td>
+                                                </tr>
+                                            ))
+                                        ) : fullLeaderboard.length > 0 ? (
+                                            (fullLeaderboard.length >= 3 ? fullLeaderboard.slice(3) : fullLeaderboard).map((item, idx) => {
+                                                const index = idx + (fullLeaderboard.length >= 3 ? 3 : 0);
+                                                const isMe = item.user_id === user?.id;
+                                                const badge = getBadgeByLevel(item.training_level);
+                                                
+                                                return (
                                                     <tr
+                                                        key={item.user_id}
                                                         onClick={() => openUserProgress(item.user_id)}
                                                         className={`transition-all duration-300 border-b border-slate-100 dark:border-slate-800/40 cursor-pointer group ${isMe ? 'bg-orange-500/[0.03] dark:bg-orange-500/[0.05]' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'}`}
                                                     >
@@ -1374,40 +1484,39 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         <td className="px-3 sm:px-4 py-4 text-right">
                                                             <div className="flex flex-col items-end gap-1.5">
                                                                 <span className={`text-base font-black tabular-nums leading-none ${isMe ? 'text-orange-600 dark:text-orange-400' : 'text-slate-800 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400'}`}>
-                                                                    {item.points.toLocaleString()}
+                                                                    {(item.points || 0).toLocaleString()}
                                                                 </span>
                                                                 <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 leading-none">
-                                                                    <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200/40 dark:border-slate-700/40">
-                                                                        <span>📖</span>
-                                                                        <span>{(item.reading_points || 0).toLocaleString()}</span>
+                                                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-100/50 dark:bg-orange-500/10 border border-orange-200/50 dark:border-orange-500/20 text-orange-700 dark:text-orange-400">
+                                                                        <span className="text-[10px]">📖</span>
+                                                                        <span>{(item.reading_points || 0).toLocaleString()} <span className="text-[8px] opacity-70">{language === 'en' ? 'READING' : 'রিডিং'}</span></span>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </td>
                                                     </tr>
-                                                </React.Fragment>
-                                            );
-                                        })
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="5" className="px-4 sm:px-6 py-12 text-center">
-                                                <div className="text-slate-400">
-                                                    <div className="text-4xl mb-3">🏆</div>
-                                                    <p className="font-medium">{language === 'en' ? 'No rankings yet' : 'এখনও কোনো র‍্যাঙ্কিং নেই'}</p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                                );
+                                            })
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="5" className="px-4 sm:px-6 py-12 text-center">
+                                                    <div className="text-slate-400">
+                                                        <div className="text-4xl mb-3">🏆</div>
+                                                        <p className="font-medium">{language === 'en' ? 'No rankings yet' : 'এখনও কোনো র‍্যাঙ্কিং নেই'}</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* breathing room below list */}
+                            <div className="h-12 sm:h-16"></div>
                         </div>
-                    </div>
-
-                    {/* breathing room below list */}
-                    <div className="h-12 sm:h-16"></div>
+                    ) : null}
                 </div>
-
-                {/* Previously sticky Your Rank card removed in favor of inline placement */}
+                )}
             </main>
         );
     }
@@ -1426,8 +1535,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                         {userRank && (
                             <div className="flex flex-col items-end gap-1">
                                 <div className="flex items-center gap-2">
-                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border shadow-sm ${getBadgeByLevel(userProfile?.training_level || 0).color}`}>
-                                        {language === 'en' ? getBadgeByLevel(userProfile?.training_level || 0).en : getBadgeByLevel(userProfile?.training_level || 0).bn}
+                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border shadow-sm ${currentUserBadge.color}`}>
+                                        {language === 'en' ? currentUserBadge.en : currentUserBadge.bn}
                                     </span>
                                     <span className="text-sm font-black text-slate-800 dark:text-slate-200 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-md">#{userRank.rank}</span>
                                 </div>
