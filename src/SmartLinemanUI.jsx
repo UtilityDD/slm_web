@@ -157,11 +157,16 @@ export default function SmartLinemanUI() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Pull to refresh state
+  // Pull to refresh state — lastRefreshTime is persisted in sessionStorage
+  // so the cooldown survives page reloads (e.g. native pull-to-refresh) and
+  // prevents hammering the DB on every swipe-down.
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [startY, setStartY] = useState(0);
   const [pullDistance, setPullDistance] = useState(0);
-  const [lastRefreshTime, setLastRefreshTime] = useState(0);
+  const [lastRefreshTime, setLastRefreshTime] = useState(() => {
+    const stored = sessionStorage.getItem('slm_last_refresh_ts');
+    return stored ? parseInt(stored, 10) : 0;
+  });
 
   const getChapterBadge = () => {
     const level = calculateLevelFromProgress(completedLessons);
@@ -244,7 +249,9 @@ export default function SmartLinemanUI() {
     }
 
     setIsRefreshing(true);
-    setLastRefreshTime(now);
+    const newTimestamp = now;
+    setLastRefreshTime(newTimestamp);
+    sessionStorage.setItem('slm_last_refresh_ts', String(newTimestamp));
 
     try {
       await fetchProfile(user);
@@ -333,7 +340,54 @@ export default function SmartLinemanUI() {
           // Verify profile but don't block indefinitely
           await fetchProfile(session.user).catch(console.error);
         } else {
-          setUser(null);
+          // --- CUSTOM AUTH FALLBACK ---
+          // Our login uses a custom RPC (not supabase.auth.signIn), so Supabase
+          // has no native session. On page reload we restore from localStorage.
+          const storedUserId = storageUtils.getItem('user_id');
+          const storedToken = storageUtils.getItem('session_token');
+
+          if (storedUserId && storedToken) {
+            try {
+              // Use cache-first: if profile was recently fetched, no DB hit.
+              const profileData = await requestManager.fetch(
+                `profile_${storedUserId}`,
+                async () => {
+                  const { data, error: profileErr } = await supabase
+                    .from('profiles')
+                    .select('id, full_name, role, slm_id')
+                    .eq('id', storedUserId)
+                    .single();
+                  if (profileErr) throw profileErr;
+                  return data;
+                },
+                { ttl: 10, swr: false, forceRefresh: false } // Cache-first, no forced DB hit
+              );
+
+              if (profileData) {
+                const restoredUser = {
+                  id: storedUserId,
+                  full_name: profileData.full_name,
+                  role: profileData.role,
+                  slm_id: profileData.slm_id,
+                };
+                setUser(restoredUser);
+                // Full profile fetch is also cache-first (ttl 10 min)
+                await fetchProfile(restoredUser).catch(console.error);
+              } else {
+                // Profile not found — stale token, clear it
+                console.warn('Stored userId not found in DB, clearing tokens.');
+                storageUtils.removeItem('user_id');
+                storageUtils.removeItem('session_token');
+                setUser(null);
+              }
+            } catch (restoreErr) {
+              console.error('Session restore from localStorage failed:', restoreErr);
+              // Don't logout — could be a transient network error.
+              // Let the user stay on current view without forcing login.
+            }
+          } else {
+            setUser(null);
+          }
         }
       } catch (err) {
         console.error('Session initialization error:', err);
