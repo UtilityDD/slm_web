@@ -236,10 +236,10 @@ export default function SmartLinemanUI() {
   const refreshData = async () => {
     if (!user || isRefreshing) return;
 
-    // Cooldown check: prevent refresh if called within last 3 seconds
+    // Cooldown check: prevent refresh if called within last 10 seconds
     const now = Date.now();
-    if (now - lastRefreshTime < 3000) {
-      console.log('Refresh cooldown active, skipping...');
+    if (now - lastRefreshTime < 10000) {
+      console.log('Refresh cooldown active (10s), skipping database hit...');
       return;
     }
 
@@ -318,27 +318,30 @@ export default function SmartLinemanUI() {
     // Check active session
     // Check active session with fail-safe timeout
     const initSession = async () => {
-      // Force app loading to false after 3s max (fail-safe)
+      // Force app loading to false after 5s max (expanded for reliability)
       const timeoutId = setTimeout(() => {
         console.warn('Session check timed out, forcing app load');
         setAppLoading(false);
-      }, 3000);
+      }, 5000);
 
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;
 
-        setUser(session?.user ?? null);
-
         if (session?.user) {
+          setUser(session.user);
           // Verify profile but don't block indefinitely
           await fetchProfile(session.user).catch(console.error);
+        } else {
+          setUser(null);
         }
       } catch (err) {
         console.error('Session initialization error:', err);
       } finally {
         clearTimeout(timeoutId);
-        setAppLoading(false);
+        // Small delay to ensure React has batched the setUser state update 
+        // before we hide the PageLoader and render content
+        setTimeout(() => setAppLoading(false), 300);
       }
     };
 
@@ -746,7 +749,8 @@ export default function SmartLinemanUI() {
     const isPublic = publicViews.includes(currentView);
 
     // If not logged in and trying to access a private view, force login
-    if (!user && !isPublic) {
+    // Extra safety: only show login if we are CERTAIN appLoading is finished
+    if (!user && !isPublic && !appLoading) {
       return (
         <Suspense fallback={<PageLoader />}>
           <div className="flex-1 flex flex-col min-h-0 w-full animate-slide-up-fade">

@@ -6,6 +6,7 @@
  * 3. Caching: Uses storageUtils/cacheHelper for persistence.
  */
 import { cacheHelper } from './cacheHelper';
+import { storageUtils } from './storageUtils';
 
 const activeRequests = new Map();
 
@@ -20,36 +21,43 @@ export const requestManager = {
     fetch: async (key, fetcherFn, options = { ttl: 5, forceRefresh: false, swr: true }) => {
         const { ttl = 5, forceRefresh = false, swr = true } = options;
 
-        // 1. Check Cache
-        const cachedData = cacheHelper.get(key);
+        // 1. Check Cache Metadata
+        const cachedItem = storageUtils.getItem('slm_cache_' + key);
+        let cachedData = null;
+        let isFresh = false;
 
-        // 2. SWR Strategy: If we have cache and SWR is enabled, return it immediately
-        // BUT also trigger the fetch in background if Cache is "stale" or if we just want to ensure freshness.
-        // For simplicity in this app:
-        // - If cache exists and is valid (not expired per cacheHelper logic), we return it.
-        // - requestManager adds an extra layer: if valid cache exists, we return it.
-        // - If 'forceRefresh' is true, we ignore cache.
-
-        // HOWEVER, standard cacheHelper.get() returns null if expired.
-        // To implement true SWR, we might need to access expired data or just rely on the fact 
-        // that we want to show *something* if possible.
-        // Let's stick to a safe approach:
-
-        if (!forceRefresh && cachedData !== null) {
-            if (swr) {
-                // Return cached data immediately, but trigger background refresh
-                // "Fire and forget" the update, but catch errors to avoid unhandled rejections
-                requestManager._deduplicatedFetch(key, fetcherFn, ttl).catch(err =>
-                    console.warn(`[SWR] Background update failed for ${key}:`, err)
-                );
-                return cachedData;
-            } else {
-                // Just return cache
-                return cachedData;
+        if (cachedItem) {
+            try {
+                const { data, timestamp, expires } = JSON.parse(cachedItem);
+                const now = Date.now();
+                
+                // Is the cache strictly valid (not expired)?
+                if (now < expires) {
+                    cachedData = data;
+                    
+                    // Is it "Fresh" enough to skip background update? (30 second threshold)
+                    const ageInSeconds = (now - (timestamp || 0)) / 1000;
+                    if (ageInSeconds < 30) {
+                        isFresh = true;
+                    }
+                }
+            } catch (e) {
+                storageUtils.removeItem('slm_cache_' + key);
             }
         }
 
-        // 3. If no cache or force refresh, fetch with deduplication
+        // 2. Return immediately if Fresh or if Cache exists without Force Refresh
+        if (!forceRefresh && cachedData !== null) {
+            if (swr && !isFresh) {
+                // Return cached data immediately, but trigger background refresh ONLY if not Fresh
+                requestManager._deduplicatedFetch(key, fetcherFn, ttl).catch(err =>
+                    console.warn(`[SWR] Background update failed for ${key}:`, err)
+                );
+            }
+            return cachedData;
+        }
+
+        // 3. If no cache, force refresh, or cache is missing, fetch with deduplication
         return requestManager._deduplicatedFetch(key, fetcherFn, ttl);
     },
 

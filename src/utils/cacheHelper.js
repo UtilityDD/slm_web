@@ -10,9 +10,11 @@ export const cacheHelper = {
      * @param {number} ttlMinutes - Time to live in minutes
      */
     set: (key, data, ttlMinutes = 5) => {
-        const expires = Date.now() + ttlMinutes * 60 * 1000;
+        const now = Date.now();
+        const expires = now + ttlMinutes * 60 * 1000;
         const cacheData = {
             data,
+            timestamp: now,
             expires
         };
         storageUtils.setItem(CACHE_PREFIX + key, JSON.stringify(cacheData));

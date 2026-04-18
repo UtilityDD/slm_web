@@ -1147,8 +1147,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 <div className="flex flex-col">
                                     <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3 tracking-tight">
                                         {showHallOfFame 
-                                            ? <><span className="text-3xl drop-shadow-sm">✨</span> {language === 'en' ? 'Hall of Fame' : 'হল অফ ফেম'}</>
-                                            : <><span className="text-3xl drop-shadow-sm">🌍</span> {language === 'en' ? 'Global Rankings' : 'গ্লোবাল র‍্যাঙ্কিং'}</>
+                                            ? <><span className="text-3xl drop-shadow-sm">✨</span> {language === 'en' ? 'Monthly Stars' : 'মাসের সেরারা'}</>
+                                            : <><span className="text-3xl drop-shadow-sm inline-block animate-spin-slow">🌍</span> {language === 'en' ? 'Global Rankings' : 'গ্লোবাল র‍্যাঙ্কিং'}</>
                                         }
                                     </h1>
                                     <p className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mt-1.5 flex items-center gap-2">
@@ -1164,26 +1164,30 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         if (!showHallOfFame) fetchHallOfFameGallery();
                                         setShowHallOfFame(!showHallOfFame);
                                     }}
-                                    className={`group relative flex items-center gap-3 px-5 sm:px-6 py-2 sm:py-2.5 rounded-2xl text-[10px] sm:text-xs font-black transition-all hover:scale-105 active:scale-95 shadow-xl ${
+                                    className={`group relative flex items-center justify-center text-center px-4 sm:px-6 py-2 sm:py-2.5 rounded-2xl text-[10px] sm:text-xs font-black transition-all hover:scale-105 active:scale-95 shadow-xl ${
                                         showHallOfFame 
                                         ? 'bg-slate-800 text-white border-2 border-slate-700 shadow-slate-900/20' 
                                         : 'bg-gradient-to-br from-indigo-600 via-violet-600 to-indigo-700 text-white border-b-4 border-indigo-900/40 shadow-indigo-500/30'
                                     }`}
                                 >
-                                    <span className="text-lg sm:text-xl group-hover:rotate-12 transition-transform drop-shadow-sm">
-                                        {showHallOfFame ? '⬅️' : '🏆'}
-                                    </span>
-                                    <div className="flex flex-col items-start leading-tight">
+                                    <div className="flex flex-col items-center leading-tight">
                                         <span className={showHallOfFame ? 'text-slate-400 text-[9px]' : 'text-indigo-200 text-[9px]'}>
                                             {showHallOfFame 
-                                                ? (language === 'en' ? 'Return to' : 'ফিরে যান') 
-                                                : (language === 'en' ? 'Hall of Fame' : 'হল অফ ফেম')}
+                                                ? (language === 'en' ? 'Live' : 'লাইভ') 
+                                                : (language === 'en' ? 'Awards' : 'মাসের সেরা')}
                                         </span>
                                         <span className="text-xs sm:text-sm font-black tracking-tight">
                                             {showHallOfFame 
                                                 ? (language === 'en' ? 'Leaderboard' : 'লিডারবোর্ড') 
                                                 : (language === 'en' ? 'Champions' : 'বিজয়ীরা')}
                                         </span>
+                                    </div>
+
+                                    {/* Pulsating Star Accent */}
+                                    <div className={`absolute -top-1 -right-1 w-6 h-6 flex items-center justify-center pointer-events-none ${showHallOfFame ? 'text-amber-400' : 'text-indigo-200'}`}>
+                                        <svg className="w-full h-full star-pulsate" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2l2.4 7.4h7.6l-6.2 4.5 2.4 7.4-6.2-4.5-6.2 4.5 2.4-7.4-6.2-4.5h7.6z"/>
+                                        </svg>
                                     </div>
                                 </button>
                             </div>
@@ -1200,67 +1204,112 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 <p className="text-slate-400 font-bold mt-4 animate-pulse uppercase tracking-[0.2em] text-[10px]">{language === 'en' ? 'Opening the Gallery...' : 'গ্যালারি খোলা হচ্ছে...'}</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 gap-10 max-w-7xl mx-auto px-4 md:px-8">
                                 {hallOfFameData.map((entry, idx) => (
                                     <div 
                                         key={`${entry.year}-${entry.month}`} 
-                                        className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl rounded-[2.5rem] border border-white dark:border-slate-700/50 p-6 shadow-xl hover:shadow-2xl transition-all group animate-scale-in relative overflow-hidden" 
-                                        style={{ animationDelay: `${idx * 50}ms` }}
+                                        className="award-perspective group animate-slide-up"
+                                        style={{ animationDelay: `${idx * 150}ms` }}
                                     >
-                                        <div className="absolute top-[-20%] right-[-10%] w-40 h-40 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-indigo-500/10 transition-colors"></div>
-                                        <div className="absolute bottom-[-10%] left-[-5%] w-32 h-32 bg-violet-500/5 rounded-full blur-2xl pointer-events-none transition-colors"></div>
-                                        
-                                        {/* Decorative Championship Seal */}
-                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[140px] opacity-[0.03] dark:opacity-[0.05] pointer-events-none select-none grayscale rotate-12 transition-transform group-hover:rotate-0 duration-1000">
-                                            🎖️
-                                        </div>
-                                        
-                                        <div className="flex items-center justify-between mb-8 relative z-10">
-                                            <div>
-                                                <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
-                                                    {new Date(entry.year, entry.month - 1).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', { month: 'long', year: 'numeric' })}
-                                                </h3>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
-                                                    <p className="text-[10px] font-black text-indigo-500/80 dark:text-indigo-400/80 uppercase tracking-widest">{language === 'en' ? 'CHAMPIONSHIP PODIUM' : 'চ্যাম্পিয়নশিপ পোডিয়াম'}</p>
+                                        <div className="diamond-glass award-tilt rounded-[2rem] p-8 md:p-10 relative overflow-hidden transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.12)]">
+                                            {/* Refined Background Accents */}
+                                            <div className="absolute -top-24 -right-24 w-64 h-64 bg-amber-500/10 dark:bg-amber-400/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-amber-500/20 transition-all duration-1000"></div>
+                                            <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/10 dark:bg-indigo-400/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-indigo-500/20 transition-all duration-1000"></div>
+                                            
+                                            {/* Header Section */}
+                                            <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4 relative z-10 border-b border-slate-200/50 dark:border-white/10 pb-6">
+                                                <div>
+                                                    <div className="flex items-center gap-3 mb-2">
+                                                        <div className="h-px w-8 bg-indigo-500/50"></div>
+                                                        <span className="text-[10px] font-black tracking-[0.3em] text-indigo-500 dark:text-indigo-400 uppercase">
+                                                            {language === 'en' ? 'Monthly Stars' : 'মাসের সেরারা'}
+                                                        </span>
+                                                    </div>
+                                                    <h3 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">
+                                                        {new Date(entry.year, entry.month - 1).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', { month: 'long', year: 'numeric' })}
+                                                    </h3>
+                                                </div>
+                                                <div className="flex items-center gap-4 bg-white/50 dark:bg-black/20 backdrop-blur-md px-6 py-3 rounded-full border border-white/50 dark:border-white/10 shadow-sm">
+                                                    <div className="flex -space-x-3">
+                                                        {entry.winners.map((w, i) => (
+                                                            <div key={i} className="w-8 h-8 rounded-full border-2 border-white dark:border-slate-800 overflow-hidden shadow-sm">
+                                                                {w.avatar_url ? <img src={w.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-200 dark:bg-slate-700"></div>}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">
+                                                        {language === 'en' ? 'Platinum Class' : 'প্ল্যাটিনাম ক্লাস'}
+                                                    </p>
                                                 </div>
                                             </div>
-                                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-xl shadow-lg shadow-indigo-500/20 transform group-hover:rotate-12 transition-transform">
-                                                🎖️
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="space-y-4 relative z-10">
-                                            {entry.winners.map((winner, winIdx) => (
-                                                <div key={winner.user_id} className={`flex items-center justify-between p-4 rounded-3xl border transition-all duration-300 group/winner
-                                                    ${winIdx === 0 
-                                                        ? 'bg-gradient-to-r from-amber-500/10 to-amber-500/5 border-amber-500/20 dark:border-amber-500/10' 
-                                                        : 'bg-white/40 dark:bg-white/5 border-slate-100 dark:border-white/5 hover:bg-white/80 dark:hover:bg-white/10'}`}>
-                                                    <div className="flex items-center gap-4">
-                                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-base font-black shadow-sm transform transition-transform group-hover/winner:scale-110
-                                                            ${winIdx === 0 ? 'bg-gradient-to-br from-amber-300 to-amber-500 text-amber-950 shadow-amber-500/20' :
-                                                               winIdx === 1 ? 'bg-gradient-to-br from-slate-200 to-slate-400 text-slate-800 shadow-slate-400/20' :
-                                                               'bg-gradient-to-br from-orange-300 to-orange-500 text-orange-950 shadow-orange-500/20'}`}>
-                                                            {winIdx === 0 ? '🏆' : winIdx === 1 ? '🥈' : '🥉'}
-                                                        </div>
-                                                        <div className="flex items-center gap-3">
-                                                            <div className={`w-11 h-11 rounded-2xl overflow-hidden border-2 transition-transform group-hover/winner:scale-105 shadow-md ${winIdx === 0 ? 'border-amber-400' : 'border-white dark:border-slate-700'}`}>
-                                                                {winner.avatar_url ? <img src={winner.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-base font-black text-slate-400">{(winner.full_name || '?')[0]}</div>}
-                                                            </div>
-                                                            <div className="flex flex-col">
-                                                                <span className={`text-sm font-black tracking-tight transition-colors ${winIdx === 0 ? 'text-amber-900 dark:text-amber-100' : 'text-slate-800 dark:text-slate-100 group-hover/winner:text-indigo-600 dark:group-hover/winner:text-indigo-400'}`}>{winner.full_name || 'Anonymous'}</span>
-                                                                <span className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">{winIdx === 0 ? (language === 'en' ? 'Grand Champion' : 'বিজয়ী') : winIdx === 1 ? (language === 'en' ? 'Runner Up' : 'দ্বিতীয় স্থান') : (language === 'en' ? 'Finalist' : 'তৃতীয় স্থান')}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex flex-col items-end bg-black/5 dark:bg-white/5 px-3 py-1.5 rounded-2xl border border-black/5 dark:border-white/5">
-                                                        <span className={`text-[9px] font-black uppercase tracking-widest leading-none mb-1 ${winIdx === 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'}`}>{language === 'en' ? 'Score' : 'স্কোর'}</span>
-                                                        <span className={`text-xs sm:text-sm font-black tabular-nums transition-colors ${winIdx === 0 ? 'text-amber-700 dark:text-amber-300' : 'text-slate-700 dark:text-slate-200'}`}>{(winner.points || 0).toLocaleString()}</span>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
 
+                                            {/* Winners Horizontal Grid */}
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+                                                {entry.winners.slice(0, 3).map((winner, winIdx) => {
+                                                    const isGold = winIdx === 0;
+                                                    const metalClass = winIdx === 0 ? 'gold' : winIdx === 1 ? 'silver' : 'bronze';
+                                                    
+                                                    return (
+                                                        <div 
+                                                            key={winner.user_id} 
+                                                            className={`relative p-6 rounded-[1.8rem] border transition-all duration-500 group/topper 
+                                                                ${isGold 
+                                                                    ? 'bg-gradient-to-br from-amber-50 to-white dark:from-amber-900/10 dark:to-slate-900/50 border-amber-200 dark:border-amber-500/20 shadow-lg shadow-amber-500/5' 
+                                                                    : 'bg-white/40 dark:bg-slate-800/40 border-slate-100 dark:border-white/5 hover:border-indigo-500/30'}`}
+                                                        >
+                                                            {/* Medal Icon (SVG) */}
+                                                            <div className="flex justify-between items-start mb-6">
+                                                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-transform duration-500 group-hover/topper:scale-110 shadow-lg
+                                                                    ${winIdx === 0 ? 'bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900/40 dark:to-amber-900/60 shadow-amber-500/20' :
+                                                                       winIdx === 1 ? 'bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 shadow-slate-500/10' :
+                                                                       'bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-900/50 shadow-orange-500/10'}`}>
+                                                                    {winIdx === 0 ? (
+                                                                        <svg className="w-8 h-8 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+                                                                            <path d="M12 2l2.4 7.4h7.6l-6.2 4.5 2.4 7.4-6.2-4.5-6.2 4.5 2.4-7.4-6.2-4.5h7.6z"/>
+                                                                        </svg>
+                                                                    ) : (
+                                                                        <svg className="w-8 h-8 text-slate-500 dark:text-slate-400" fill="currentColor" viewBox="0 0 24 24">
+                                                                            <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
+                                                                        </svg>
+                                                                    )}
+                                                                </div>
+                                                                <div className="text-right">
+                                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${winIdx === 0 ? 'text-amber-600' : 'text-slate-400'}`}>
+                                                                        {winIdx === 0 ? (language === 'en' ? 'Champion' : 'বিজয়ী') : winIdx === 1 ? (language === 'en' ? 'Finalist' : 'রানার আপ') : (language === 'en' ? 'Finalist' : 'তৃতীয়')}
+                                                                    </span>
+                                                                    <p className={`text-2xl font-black tabular-nums ${isGold ? 'gold-metallic-text' : winIdx === 1 ? 'silver-metallic-text' : 'bronze-metallic-text'}`}>
+                                                                        {(winner.points || 0).toLocaleString()}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex items-center gap-3 md:gap-4">
+                                                                <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl overflow-hidden border-2 transition-all duration-500 group-hover/topper:rotate-3 shadow-md ${isGold ? 'border-amber-400' : 'border-white dark:border-slate-700'}`}>
+                                                                    {winner.avatar_url ? (
+                                                                        <img src={winner.avatar_url} className="w-full h-full object-cover" />
+                                                                    ) : (
+                                                                        <div className="w-full h-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xl font-black text-slate-400">
+                                                                            {(winner.full_name || '?')[0]}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className={`text-base sm:text-lg font-black tracking-tight leading-tight ${isGold ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-200'}`}>
+                                                                        {winner.full_name || 'Anonymous'}
+                                                                    </p>
+                                                                    <div className="flex items-center gap-2 mt-1">
+                                                                        <span className={`w-2 h-2 rounded-full ${isGold ? 'bg-amber-500 animate-pulse' : 'bg-indigo-500/50'}`}></span>
+                                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter truncate">
+                                                                            {winner.slm_id || 'SLM-MEMBER'}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -1332,8 +1381,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         }[rank];
 
                                         return (
-                                            <article key={item.user_id} onClick={() => openUserProgress(item.user_id)} className={`${theme.order} ${theme.scale} ${theme.bg} ${theme.border} ${theme.glow} ${theme.height} w-full md:w-1/3 max-w-xs sm:max-w-sm rounded-3xl border leaderboard-podium-card p-3 sm:p-4 flex flex-col items-center justify-between cursor-pointer relative overflow-hidden`}>
-                                                <div className="absolute top-0 right-0 p-2 sm:p-3"><span className="text-2xl sm:text-4xl opacity-20 font-black italic">#{rank}</span></div>
+                                            <article key={item.user_id} onClick={() => openUserProgress(item.user_id)} className={`${theme.order} ${theme.scale} ${theme.bg} ${theme.border} ${theme.glow} ${theme.height} w-full md:w-1/3 max-w-xs sm:max-w-sm rounded-[1.5rem] sm:rounded-3xl border leaderboard-podium-card p-4 sm:p-4 flex flex-col items-center justify-between cursor-pointer relative overflow-hidden min-h-[320px] md:h-auto`}>
+                                                <div className="absolute top-0 right-0 p-2 sm:p-3"><span className="text-xl sm:text-4xl opacity-20 font-black italic">#{rank}</span></div>
                                                 <div className={`text-3xl sm:text-4xl mb-1.5 sm:mb-2 ${rank === 1 ? 'animate-crown' : ''}`}>{theme.icon}</div>
                                                 <div className="relative mb-2 sm:mb-3">
                                                     <div className={`w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border-4 ${rank === 1 ? 'border-amber-200/50' : 'border-white/30'} shadow-xl`}>
@@ -1362,7 +1411,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 <span className="text-[10px] sm:text-xs">📖</span>
                                                                 <span className={`text-[10px] sm:text-xs font-black ${theme.text} opacity-90 tabular-nums`}>{(item.reading_points || 0).toLocaleString()}</span>
                                                             </div>
-                                                            <p className={`text-[9px] font-black uppercase tracking-wider opacity-60 ${theme.text}`}>{language === 'en' ? 'Reading Points' : 'রিডিং পয়েন্ট'}</p>
+                                                            <p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-wider opacity-60 ${theme.text}`}>{language === 'en' ? 'Reading' : 'রিডিং'}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1380,11 +1429,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 <table className="w-full">
                                     <thead className="sticky top-0 z-10 bg-gradient-to-b from-slate-100 to-slate-50 dark:from-slate-800/95 dark:to-slate-800/80 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-700/60 shadow-sm">
                                         <tr>
-                                            <th className="px-3 sm:px-4 py-2.5 text-left text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.15em]">
-                                                {language === 'en' ? 'Rank' : 'র‍্যাঙ্ক'}
+                                            <th className="px-2 sm:px-4 py-2 text-left text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.1em]">
+                                                {language === 'en' ? '#' : '#'}
                                             </th>
-                                            <th className="px-3 sm:px-4 py-2.5 text-left text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.15em]">
-                                                {language === 'en' ? 'User' : 'ব্যবহারকারী'}
+                                            <th className="px-2 sm:px-4 py-2 text-left text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.1em]">
+                                                {language === 'en' ? 'User' : 'ইউজার'}
                                             </th>
                                             <th className="hidden sm:table-cell px-3 sm:px-4 py-2.5 text-right text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.15em]">
                                                 {language === 'en' ? 'Reading' : 'রিডিং'}
@@ -1392,8 +1441,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             <th className="hidden sm:table-cell px-3 sm:px-4 py-2.5 text-right text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.15em]">
                                                 {language === 'en' ? 'Loss' : 'পেনাল্টি'}
                                             </th>
-                                            <th className="px-3 sm:px-4 py-2.5 text-right text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.15em]">
-                                                {language === 'en' ? 'Points' : 'পয়েন্ট'}
+                                            <th className="px-2 sm:px-4 py-2 text-right text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.1em]">
+                                                {language === 'en' ? 'Pts' : 'পয়েন্ট'}
                                             </th>
                                         </tr>
                                     </thead>
@@ -1417,14 +1466,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         onClick={() => openUserProgress(item.user_id)}
                                                         className={`transition-all duration-300 border-b border-slate-100 dark:border-slate-800/40 cursor-pointer group ${isMe ? 'bg-orange-500/[0.03] dark:bg-orange-500/[0.05]' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'}`}
                                                     >
-                                                        <td className="px-3 sm:px-4 py-4">
+                                                        <td className="px-1.5 sm:px-4 py-4">
                                                             <div className="flex items-center gap-1.5 text-xs font-black">
                                                                 <span className={`w-6 h-6 rounded-lg flex items-center justify-center ${index < 3 ? 'bg-slate-100 dark:bg-slate-800 text-orange-600' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200'}`}>
                                                                     {index + 1}
                                                                 </span>
                                                             </div>
                                                         </td>
-                                                        <td className="px-3 sm:px-4 py-4">
+                                                        <td className="px-1.5 sm:px-4 py-4">
                                                             <div className="flex items-center gap-3 min-w-0">
                                                                 <div className="relative shrink-0">
                                                                     <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex-shrink-0 overflow-hidden border-2 transition-transform group-hover:scale-110 ${isMe ? 'border-orange-500/20' : 'border-white dark:border-slate-700'} shadow-sm`}>
@@ -1447,23 +1496,21 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 </div>
                                                                 <div className="min-w-0 flex-1">
                                                                     <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                                                                        <p className={`text-sm font-black truncate leading-none ${isMe ? 'text-orange-600 dark:text-orange-400' : 'text-slate-800 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400'}`}>
+                                                                        <p className={`text-[13px] sm:text-sm font-black truncate leading-tight ${isMe ? 'text-orange-600 dark:text-orange-400' : 'text-slate-800 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400'}`}>
                                                                             {item.full_name || 'Anonymous'}
                                                                         </p>
                                                                         {isMe && (
-                                                                            <span className="px-1.5 py-0.5 rounded-md bg-orange-500 text-[8px] font-black text-white uppercase tracking-wider">
-                                                                                {language === 'en' ? 'You' : 'আপনি'}
-                                                                            </span>
+                                                                            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse shrink-0"></span>
                                                                         )}
                                                                     </div>
-                                                                    <div className="flex items-center gap-2 overflow-hidden">
+                                                                    <div className="flex items-center gap-1.5 overflow-hidden">
                                                                         {item.last_login_at && (
-                                                                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 truncate flex items-center gap-1.5">
-                                                                                <span>{formatLastActive(item.last_login_at, language).replace('Active ', '').replace('সক্রিয় ', '')}</span>
+                                                                            <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 truncate">
+                                                                                {formatLastActive(item.last_login_at, language).replace('Active ', '').replace('সক্রিয় ', '')}
                                                                             </p>
                                                                         )}
                                                                         {badge && (
-                                                                            <span className={`sm:hidden inline-flex px-1.5 py-0.5 rounded text-[8px] font-black border shrink-0 ${badge.color}`}>
+                                                                            <span className={`text-[8px] font-black uppercase tracking-tighter transition-colors ${badge.color.split(' ')[1] || 'text-slate-400'}`}>
                                                                                 {language === 'en' ? badge.en : badge.bn}
                                                                             </span>
                                                                         )}
@@ -1481,7 +1528,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 -{(item.total_penalties || 0).toLocaleString()}
                                                             </span>
                                                         </td>
-                                                        <td className="px-3 sm:px-4 py-4 text-right">
+                                                        <td className="px-1.5 sm:px-4 py-4 text-right">
                                                             <div className="flex flex-col items-end gap-1.5">
                                                                 <span className={`text-base font-black tabular-nums leading-none ${isMe ? 'text-orange-600 dark:text-orange-400' : 'text-slate-800 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400'}`}>
                                                                     {(item.points || 0).toLocaleString()}

@@ -749,6 +749,55 @@ body,
     box-shadow: 0 0 30px rgba(217, 119, 6, 0.15);
   }
 
+  /* --- Hall of Fame Diamond Glass --- */
+  .diamond-glass {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.3) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08), inset 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+
+  .dark .diamond-glass {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.4) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.05);
+  }
+
+  .award-perspective {
+    perspective: 1000px;
+  }
+
+  .award-tilt {
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    transform-style: preserve-3d;
+  }
+
+  .award-tilt:hover {
+    transform: rotateX(2deg) rotateY(1deg) translateY(-5px);
+  }
+
+  .gold-metallic-text {
+    background: linear-gradient(180deg, #fde68a 0%, #b45309 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(180, 83, 9, 0.2));
+  }
+
+  .silver-metallic-text {
+    background: linear-gradient(180deg, #f1f5f9 0%, #475569 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(71, 85, 105, 0.2));
+  }
+
+  .bronze-metallic-text {
+    background: linear-gradient(180deg, #fed7aa 0%, #7c2d12 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(124, 45, 18, 0.2));
+  }
+
   .medal-glow-violet {
     box-shadow: 0 0 35px rgba(139, 92, 246, 0.35);
   }
@@ -1277,4 +1326,22 @@ body,
 
 .animate-confetti {
   animation: confetti-fall 3s ease-in forwards;
+}
+
+@keyframes star-twinkle-pulse {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.6; filter: drop-shadow(0 0 2px currentColor); }
+  50% { transform: scale(1.4) rotate(90deg); opacity: 1; filter: drop-shadow(0 0 8px currentColor); }
+}
+
+.star-pulsate {
+  animation: star-twinkle-pulse 2.5s infinite ease-in-out;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 15s linear infinite;
 }
