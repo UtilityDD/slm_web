@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { calculateLevelFromProgress } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
+import secureStorage from '../utils/secureStorage';
 import ChapterQuizModal from './ChapterQuizModal';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 
@@ -561,8 +562,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
     const [trainingLoading, setTrainingLoading] = useState(false);
     const [completedLessons, setCompletedLessons] = useState([]);
     const [faqSearchQuery, setFaqSearchQuery] = useState('');
-
-
+    const [usingOfflineLesson, setUsingOfflineLesson] = useState(false);
 
     // Body scroll locking when full-page training is open
     useEffect(() => {
@@ -620,6 +620,80 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
         loadProgress();
     }, [user]);
+    // Background update for completed lessons - silently replace old static content
+    useEffect(() => {
+        const backgroundUpdateCompletedLessons = async () => {
+            if (!user || completedLessons.length === 0) return;
+
+            try {
+                // Get all unique chapter numbers from completed lessons
+                const completedChapterNumbers = [...new Set(
+                    completedLessons.map(lessonId => {
+                        const match = lessonId.match(/^(\d+)\./);
+                        return match ? parseInt(match[1]) : null;
+                    }).filter(Boolean)
+                )];
+
+                if (completedChapterNumbers.length === 0) return;
+
+                // Check versions for all completed chapters
+                const { data: remoteMetadata, error } = await supabase
+                    .from('training_chapters')
+                    .select('id, version, module_number, chapter_number')
+                    .in('module_number', completedChapterNumbers)
+                    .eq('language', language)
+                    .eq('is_active', true);
+
+                if (error || !remoteMetadata) return;
+
+                // Load current version cache
+                const localVersions = secureStorage.getItem('safety_content_versions') || {};
+                let needsUpdate = false;
+
+                // Check which lessons need updating
+                const lessonsToUpdate = [];
+                for (const meta of remoteMetadata) {
+                    const localVer = localVersions[meta.id];
+                    if (!localVer || localVer < meta.version) {
+                        lessonsToUpdate.push(meta);
+                        needsUpdate = true;
+                    }
+                }
+
+                if (!needsUpdate) return;
+
+                // Fetch updated content for lessons that need it
+                const { data: updatedContent, error: fetchError } = await supabase
+                    .rpc('get_chapters_by_module', {
+                        module_num: completedChapterNumbers,
+                        lang: language
+                    });
+
+                if (fetchError || !updatedContent) return;
+
+                // Update cache with new versions (silent operation)
+                const updatedVersions = { ...localVersions };
+                for (const row of updatedContent) {
+                    secureStorage.setItem(`safety_content_${row.id}`, row.content);
+                    updatedVersions[row.id] = row.version;
+                }
+
+                // Update version tracker
+                secureStorage.setItem('safety_content_versions', updatedVersions);
+
+                console.log(`Silently updated ${lessonsToUpdate.length} completed lessons in background`);
+
+            } catch (err) {
+                // Silent failure - don't disturb user experience
+                console.warn('Background lesson update failed (silent):', err);
+            }
+        };
+
+        // Run background update after a short delay to not interfere with initial load
+        const timeoutId = setTimeout(backgroundUpdateCompletedLessons, 2000);
+
+        return () => clearTimeout(timeoutId);
+    }, [user, completedLessons, language]);
     // Helper function to check if a lesson is unlocked
     const isLessonUnlocked = (chapterNum, subchapterNum) => {
         // First lesson of each chapter is always unlocked
@@ -806,6 +880,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                 if (response.ok) {
                     const data = await response.json();
                     setTrainingChapters(data);
+                    setFetchError(false);
                 } else {
                     throw new Error('Manifest not found');
                 }
@@ -824,41 +899,149 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
     const handleChapterClick = async (chapter) => {
         setTrainingLoading(true);
+        setUsingOfflineLesson(false);
 
-        // Special handling for FAQ Chapter 10
-        if (chapter.number === 10) {
-            try {
-                const response = await fetch('/quizzes/chapter_10_qa.json');
-                if (response.ok) {
-                    const data = await response.json();
-                    setSelectedChapter({ ...chapter, isFAQ: true, content: data });
-                }
-            } catch (err) {
-                console.error("Error loading FAQ chapter:", err);
-            } finally {
-                setTrainingLoading(false);
-            }
-            return;
-        }
-
-        // Lazy load subchapters
+        // Lazy load subchapters with version sync (same pattern as Training.jsx)
         try {
-            const promises = [];
-            for (let s = 1; s <= chapter.count; s++) {
-                promises.push(
-                    fetch(`/quizzes/chapter_${chapter.number}_${s}.json`)
-                        .then(r => r.ok ? r.json() : null)
-                        .catch(() => null)
-                );
-            }
-            const results = await Promise.all(promises);
-            const subchapters = results
-                .map((data, idx) => data ? { ...data, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
-                .filter(Boolean);
+            // 1. Fetch metadata (id and version) for this chapter
+            const { data: remoteMetadata, error: metaError } = await supabase
+                .from('training_chapters')
+                .select('id, version, module_number, chapter_number')
+                .eq('module_number', chapter.number)
+                .eq('language', language)
+                .eq('is_active', true);
 
-            setSelectedChapter({ ...chapter, subchapters });
+            if (metaError) {
+                console.warn('Version check failed, falling back to static files:', metaError);
+                throw new Error('fallback');
+            }
+
+            if (!remoteMetadata || remoteMetadata.length === 0) {
+                throw new Error('fallback');
+            }
+
+            // 2. Load locally stored content and compare versions
+            const subchapters = [];
+            const localVersions = secureStorage.getItem('safety_content_versions') || {};
+            let needsFullFetch = false;
+
+            for (const meta of remoteMetadata) {
+                const localContent = secureStorage.getItem(`safety_content_${meta.id}`);
+                const localVer = localVersions[meta.id];
+
+                if (localContent && localVer === meta.version) {
+                    // Version match - use cached
+                    subchapters.push({
+                        ...localContent,
+                        level_id: meta.id,
+                        chapterNum: meta.module_number,
+                        subchapterNum: meta.chapter_number
+                    });
+                } else {
+                    // Version mismatch - fetch new
+                    needsFullFetch = true;
+                    break;
+                }
+            }
+
+            // 3. If everything is up-to-date locally, we are done
+            if (!needsFullFetch && subchapters.length === remoteMetadata.length) {
+                const sorted = subchapters.sort((a, b) => a.subchapterNum - b.subchapterNum);
+                setSelectedChapter({ ...chapter, subchapters: sorted });
+                setTrainingLoading(false);
+                return;
+            }
+
+            // 4. Fetch full data if any mismatch found
+            const { data: fullData, error: fetchError } = await supabase
+                .rpc('get_chapters_by_module', {
+                    module_num: chapter.number,
+                    lang: language
+                });
+
+            if (fetchError) throw fetchError;
+
+            if (fullData && fullData.length > 0) {
+                const updatedVersions = { ...localVersions };
+                const processed = fullData.map(row => {
+                    // Save to secure storage with new version
+                    secureStorage.setItem(`safety_content_${row.id}`, row.content);
+                    updatedVersions[row.id] = row.version;
+
+                    return {
+                        ...row.content,
+                        level_id: row.id,
+                        chapterNum: row.module_number,
+                        subchapterNum: row.chapter_number
+                    };
+                });
+
+                // Update global version tracker
+                secureStorage.setItem('safety_content_versions', updatedVersions);
+                const sorted = processed.sort((a, b) => a.subchapterNum - b.subchapterNum);
+                setSelectedChapter({ ...chapter, subchapters: sorted });
+            } else {
+                // Fallback to static files if DB returns empty
+                throw new Error('fallback');
+            }
         } catch (err) {
-            console.error("Error loading chapter:", err);
+            console.error('Supabase sync failed, falling back to cached/static files:', err);
+            // Priority fallback: 1) Cached content from background updates, 2) Static files
+            try {
+                const localVersions = secureStorage.getItem('safety_content_versions') || {};
+                const cachedSubchapters = [];
+
+                // First, try to load from cache (background updated content)
+                for (const [lessonId, version] of Object.entries(localVersions)) {
+                    const cachedContent = secureStorage.getItem(`safety_content_${lessonId}`);
+                    if (cachedContent && cachedContent.module_number === chapter.number) {
+                        cachedSubchapters.push({
+                            ...cachedContent,
+                            level_id: lessonId,
+                            chapterNum: cachedContent.module_number,
+                            subchapterNum: cachedContent.chapter_number
+                        });
+                    }
+                }
+
+                // If we have cached content for this chapter, use it (no offline banner)
+                if (cachedSubchapters.length > 0) {
+                    const sorted = cachedSubchapters.sort((a, b) => a.subchapterNum - b.subchapterNum);
+                    setSelectedChapter({ ...chapter, subchapters: sorted });
+                    setTrainingLoading(false);
+                    return;
+                }
+
+                // Only fall back to static files if no cached content exists
+                const promises = [];
+                for (let s = 1; s <= chapter.count; s++) {
+                    promises.push(
+                        fetch(`/quizzes/chapter_${chapter.number}_${s}.json`)
+                            .then(r => r.ok ? r.json() : null)
+                            .catch(() => null)
+                    );
+                }
+                const results = await Promise.all(promises);
+                const processed = results
+                    .map((data, idx) => data ? { ...data, chapterNum: chapter.number, subchapterNum: idx + 1 } : null)
+                    .filter(Boolean);
+
+                if (processed.length > 0) {
+                    setSelectedChapter({ ...chapter, subchapters: processed });
+                    setUsingOfflineLesson(true); // Only show banner for truly old static content
+                    showNotification(
+                        language === 'en'
+                            ? 'Using cached lessons (offline mode)'
+                            : 'ক্যাশ করা পাঠ ব্যবহার করছি (অফলাইন মোড)',
+                        'info'
+                    );
+                } else {
+                    setFetchError(true);
+                }
+            } catch (fallbackErr) {
+                console.error('Critical failure loading lessons:', fallbackErr);
+                setFetchError(true);
+            }
         } finally {
             setTrainingLoading(false);
         }
@@ -1967,6 +2150,13 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                         </div>
                         <div className="w-9 flex-shrink-0"></div> {/* Spacer for centering */}
                     </div>
+
+                    {usingOfflineLesson && (
+                        <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center gap-2 text-xs font-semibold text-amber-700 dark:text-amber-400">
+                            <span>📱</span>
+                            {language === 'en' ? 'Using cached lesson (offline mode)' : 'ক্যাশ করা পাঠ ব্যবহার করছি (অফলাইন মোড)'}
+                        </div>
+                    )}
 
                     <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8 pb-16">
                         {/* Hero Header */}

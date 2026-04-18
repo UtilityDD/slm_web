@@ -1762,23 +1762,23 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 )}
             </div>
 
-            {/* 3. MINI LEADERBOARD PREVIEW */}
-            <div className="px-4 mb-20 animate-slide-up-fade" style={{ animationDelay: '200ms' }}>
-                <div className="bg-white/50 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2rem] p-6 border border-slate-200/50 dark:border-slate-700/50 shadow-xl shadow-slate-200/20 dark:shadow-none">
-                    <div className="flex items-center justify-between mb-6">
+            {/* 3. MINI LEADERBOARD PREVIEW - COMPACT MOBILE */}
+            <div className="px-4 mb-16 animate-slide-up-fade" style={{ animationDelay: '200ms' }}>
+                <div className="bg-white/50 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl p-4 border border-slate-200/50 dark:border-slate-700/50 shadow-xl shadow-slate-200/20 dark:shadow-none">
+                    <div className="flex items-center justify-between mb-3">
                         <div>
-                            <h3 className="font-black text-slate-800 dark:text-slate-100 text-base tracking-tight">{t.topPlayersToday}</h3>
-                            <div className="h-1 w-8 bg-orange-500 rounded-full mt-1"></div>
+                            <h3 className="font-black text-slate-800 dark:text-slate-100 text-sm tracking-tight">{t.topPlayersToday}</h3>
+                            <div className="h-0.5 w-6 bg-orange-500 rounded-full mt-0.5"></div>
                         </div>
-                        <button 
-                            onClick={goToGlobalLeaderboard} 
-                            className="px-4 py-1.5 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-xs font-black hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors border border-orange-100 dark:border-orange-800/30"
+                        <button
+                            onClick={goToGlobalLeaderboard}
+                            className="px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-[10px] font-black hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors border border-orange-100 dark:border-orange-800/30"
                         >
                             {t.viewAll}
                         </button>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-2.5">
                         {loading ? (
                             Array(3).fill(0).map((_, i) => <SkeletonRow key={i} />)
                         ) : leaderboard.length > 0 ? (
@@ -1791,20 +1791,20 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 }[rank];
 
                                 return (
-                                    <div 
-                                        key={idx} 
+                                    <div
+                                        key={idx}
                                         onClick={() => openUserProgress(item.user_id)}
-                                        className="flex items-center gap-4 group cursor-pointer"
+                                        className="flex items-center gap-3 group cursor-pointer p-2 rounded-xl hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
                                     >
-                                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black border transition-transform group-hover:scale-110 ${rankColors}`}>
+                                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black border transition-transform group-hover:scale-110 ${rankColors}`}>
                                             {rank}
                                         </div>
-                                        <div className="relative">
-                                            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700 ring-2 ring-transparent group-hover:ring-orange-500/20 transition-all">
+                                        <div className="relative flex-shrink-0">
+                                            <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700 ring-1 ring-transparent group-hover:ring-orange-500/20 transition-all">
                                                 {item.avatar_url ? (
                                                     <img src={item.avatar_url} className="w-full h-full object-cover" alt="" />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold uppercase">{item.full_name?.[0] || 'U'}</div>
+                                                    <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xs uppercase">{item.full_name?.[0] || 'U'}</div>
                                                 )}
                                             </div>
                                             {item.last_login_at && (() => {
@@ -1812,35 +1812,35 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 const now = new Date();
                                                 const isActive = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
                                                 return (
-                                                    <span className="absolute -bottom-1 -right-1 flex h-3 w-3">
-                                                        <span className={`relative inline-flex rounded-full h-3 w-3 border-2 border-white dark:border-slate-900 ${isActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}></span>
+                                                    <span className="absolute -bottom-0.5 -right-0.5 flex h-2 w-2">
+                                                        <span className={`relative inline-flex rounded-full h-2 w-2 border border-white dark:border-slate-900 ${isActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}></span>
                                                     </span>
                                                 );
                                             })()}
-                                            {rank === 1 && <span className="absolute -top-1.5 -left-1.5 text-[10px] animate-bounce">👑</span>}
+                                            {rank === 1 && <span className="absolute -top-1 -left-1 text-[8px] animate-bounce">👑</span>}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="text-sm font-black text-slate-800 dark:text-slate-100 truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                                            <div className="text-xs font-black text-slate-800 dark:text-slate-100 truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors leading-tight">
                                                 {item.full_name}
                                             </div>
-                                            <div className="flex items-center gap-2 mt-0.5">
-                                                <span className="text-[11px] font-black text-slate-900 dark:text-slate-100 tabular-nums leading-none tracking-tight">
+                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                <span className="text-[10px] font-black text-slate-900 dark:text-slate-100 tabular-nums leading-none">
                                                     {item.points.toLocaleString()}
                                                 </span>
-                                                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500">
+                                                <div className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[9px] font-bold text-slate-500">
                                                     <span>📖</span>
                                                     <span className="tabular-nums">{(item.reading_points || 0).toLocaleString()}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="text-slate-300 dark:text-slate-700 transition-transform group-hover:translate-x-1">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
+                                        <div className="text-slate-300 dark:text-slate-700 transition-transform group-hover:translate-x-0.5">
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
                                         </div>
                                     </div>
                                 );
                             })
                         ) : (
-                            <div className="py-4 text-center text-slate-400 text-xs font-medium italic">No activity today</div>
+                            <div className="py-3 text-center text-slate-400 text-xs font-medium italic">No activity today</div>
                         )}
                     </div>
                 </div>
@@ -2108,13 +2108,13 @@ const SkeletonCard = () => (
 );
 
 const SkeletonRow = () => (
-    <div className="flex items-center p-4 border-b border-slate-50 dark:border-slate-700 last:border-0">
-        <div className="w-6 h-4 bg-slate-100 dark:bg-slate-700 rounded shimmer mr-4"></div>
-        <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-full shimmer mr-4"></div>
-        <div className="flex-1 space-y-2">
-            <div className="h-4 w-32 bg-slate-100 dark:bg-slate-700 rounded shimmer"></div>
-            <div className="h-3 w-20 bg-slate-100 dark:bg-slate-700 rounded shimmer"></div>
+    <div className="flex items-center p-2 rounded-xl">
+        <div className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded-lg shimmer mr-3"></div>
+        <div className="w-8 h-8 bg-slate-100 dark:bg-slate-700 rounded-lg shimmer mr-3"></div>
+        <div className="flex-1 space-y-1">
+            <div className="h-3 w-24 bg-slate-100 dark:bg-slate-700 rounded shimmer"></div>
+            <div className="h-2.5 w-16 bg-slate-100 dark:bg-slate-700 rounded shimmer"></div>
         </div>
-        <div className="h-6 w-12 bg-slate-100 dark:bg-slate-700 rounded shimmer"></div>
+        <div className="w-3 h-3 bg-slate-100 dark:bg-slate-700 rounded shimmer"></div>
     </div>
 );
