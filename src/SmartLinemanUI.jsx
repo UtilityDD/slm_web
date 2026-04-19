@@ -40,21 +40,33 @@ export default function SmartLinemanUI() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
-  const getRouteFromLocation = () => {
+
+  // Handle initial routing - convert clean URLs to hash URLs for consistency
+  const getInitialView = () => {
     const hash = window.location.hash.replace('#/', '').split('?')[0];
-    if (hash.includes('access_token=') || hash.includes('type=recovery')) return 'login';
-    if (hash.startsWith('verify/')) return 'verify';
-    if (hash) return hash;
-
     const pathname = window.location.pathname.replace(/^\/+/, '').split('?')[0];
-    if (pathname.includes('access_token=') || pathname.includes('type=recovery')) return 'login';
-    if (pathname.startsWith('verify/')) return 'verify';
-    if (pathname) return pathname;
 
-    return 'home';
+    // Handle auth redirects
+    if (hash.includes('access_token=') || hash.includes('type=recovery') ||
+        pathname.includes('access_token=') || pathname.includes('type=recovery')) {
+      return 'login';
+    }
+
+    // Handle verify routes from both hash and pathname
+    if (hash.startsWith('verify/') || pathname.startsWith('verify/')) {
+      // If it's a clean URL, convert it to hash URL for consistency
+      if (pathname.startsWith('verify/') && !window.location.hash) {
+        const certId = pathname.split('verify/')[1];
+        window.location.hash = `/verify/${certId}`;
+      }
+      return 'verify';
+    }
+
+    // Return hash-based route or default to home
+    return hash || 'home';
   };
 
-  const [currentView, setCurrentView] = useState(getRouteFromLocation);
+  const [currentView, setCurrentView] = useState(getInitialView);
   const [language, setLanguage] = useState('bn');
   const [theme, setTheme] = useState(() => {
     // Default to dark unless user has an explicit preference
@@ -563,23 +575,14 @@ export default function SmartLinemanUI() {
   // Scroll to top when view changes and sync with URL hash
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    const hash = window.location.hash.replace('#/', '').split('?')[0];
-    const pathname = window.location.pathname.replace(/^\/+/, '').split('?')[0];
-
     if (currentView === 'home') {
       window.history.replaceState(null, '', window.location.pathname);
-      return;
-    }
-
-    if (currentView === 'verify') {
-      if (!hash.startsWith('verify/') && !pathname.startsWith('verify')) {
-        window.location.hash = '/verify';
+    } else {
+      // Protect specific routes (like verify) from being overwritten and losing their parameters
+      const hash = window.location.hash.replace('#/', '').split('?')[0];
+      if (!hash.startsWith(currentView + '/')) {
+        window.location.hash = `/${currentView}`;
       }
-      return;
-    }
-
-    if (!hash.startsWith(`${currentView}/`)) {
-      window.location.hash = `/${currentView}`;
     }
   }, [currentView]);
 
