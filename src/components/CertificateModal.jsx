@@ -15,10 +15,27 @@ const CertificateModal = ({ isOpen, onClose, userName, level, badgeName, date, c
 
         try {
             setIsDownloading(true);
+
+            // Force wait for all images to load before capturing
+            const images = certificateRef.current.querySelectorAll('img');
+            const imagePromises = Array.from(images).map(img => {
+                if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
+                return new Promise((resolve) => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                });
+            });
+            
+            await Promise.all(imagePromises);
+            // Small delay to ensure rendering is committed
+            await new Promise(r => setTimeout(r, 100));
+
             const canvas = await html2canvas(certificateRef.current, {
-                scale: 2, // High quality
+                scale: 3, // Ultra high quality
                 useCORS: true,
+                allowTaint: true,
                 backgroundColor: '#ffffff',
+                logging: false,
                 width: 1123,
                 height: 794
             });
@@ -231,11 +248,21 @@ const CertificateModal = ({ isOpen, onClose, userName, level, badgeName, date, c
                             {/* Branded Header Logos */}
                             <div className="absolute top-12 left-12 right-12 flex justify-between items-start pointer-events-none">
                                 <div className="flex flex-col items-start gap-1">
-                                    <img src={`${window.location.origin}/icons/logo.png`} alt="Logo" className="w-24 h-24 object-contain" />
+                                    <img 
+                                        src={`${window.location.origin}/icons/logo.png`} 
+                                        alt="Logo" 
+                                        crossOrigin="anonymous"
+                                        className="w-24 h-24 object-contain" 
+                                    />
                                     <div className="text-[10px] font-black tracking-tighter text-slate-400">SmartLineMan<span className="bg-orange-500 text-white px-0.5 ml-0.5 rounded">.in</span></div>
                                 </div>
                                 <div className="flex flex-col items-end gap-1">
-                                    <img src={`${window.location.origin}/icon-192.png`} alt="Icon" className="w-16 h-16 object-contain rounded-2xl shadow-sm" />
+                                    <img 
+                                        src={`${window.location.origin}/icon-192.png`} 
+                                        alt="Icon" 
+                                        crossOrigin="anonymous"
+                                        className="w-16 h-16 object-contain rounded-2xl shadow-sm" 
+                                    />
                                     <div className="text-[8px] font-bold text-slate-300 uppercase tracking-widest">Official Credential</div>
                                 </div>
                             </div>
