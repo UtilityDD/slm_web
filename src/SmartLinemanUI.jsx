@@ -948,10 +948,12 @@ export default function SmartLinemanUI() {
           }
           return <Guide userRole={userProfile?.role} />;
         case 'verify': {
-          // Deep Scan: Look at the entire URL to find the ID after 'verify/'
+          // Robust Scan: Get the ID after the last 'verify/' occurrence
           const fullUrl = window.location.href;
           const segments = fullUrl.split('verify/');
-          const certId = segments.length > 1 ? segments[1].split(/[#\?\/]/)[0] : "";
+          // Use the last segment if segments exist, and handle trailing slashes/hashes
+          const rawId = segments.length > 1 ? segments[segments.length - 1] : "";
+          const certId = rawId.split(/[#\?\/]/)[0];
           return <VerificationView language={language} certificateId={certId} />;
         }
         case 'notifications':
