@@ -108,7 +108,6 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
 
     const [voices, setVoices] = useState([]);
     const audioRef = useRef(new Audio());
-    const lastRequestIdRef = useRef(0);
 
     // Load voices on mount
     useEffect(() => {
@@ -140,10 +139,14 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
 
     const playAudio = useCallback((text, audioFile = null) => {
         stopAllAudio();
-        const requestId = ++lastRequestIdRef.current;
         
+        let ttsTimeout = null;
+
         const speakWithTTS = () => {
-            if (!window.speechSynthesis || requestId !== lastRequestIdRef.current) return;
+            if (!window.speechSynthesis) return;
+            // Clear any existing speech before starting
+            window.speechSynthesis.cancel();
+            
             const utterance = new SpeechSynthesisUtterance(text);
             if (language === 'bn') {
                 const bnVoice = voices.find(v => v.lang.startsWith('bn')) || voices.find(v => v.name.includes('Bengali'));
@@ -153,12 +156,8 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
                 utterance.lang = 'en-US';
             }
             utterance.rate = 0.85;
-            utterance.onstart = () => {
-                if (requestId === lastRequestIdRef.current) setIsSpeaking(true);
-            };
-            utterance.onend = () => {
-                if (requestId === lastRequestIdRef.current) setIsSpeaking(false);
-            };
+            utterance.onstart = () => setIsSpeaking(true);
+            utterance.onend = () => setIsSpeaking(false);
             window.speechSynthesis.speak(utterance);
         };
 
@@ -167,24 +166,28 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
             const audioPath = `/audio/safety/${audioFile.replace('.mp3', '.wav')}`;
             const testAudio = new Audio(audioPath);
             
+            // Set a safety timeout - if file doesn't load in 3s, only then fallback to TTS
+            // This prevents Android from triggering both at once
             testAudio.addEventListener('canplaythrough', () => {
-                // Critical Check: Only play if this is still the latest request
-                if (requestId !== lastRequestIdRef.current) return;
-
+                if (ttsTimeout) clearTimeout(ttsTimeout);
                 audioRef.current.src = audioPath;
                 audioRef.current.onplay = () => setIsSpeaking(true);
                 audioRef.current.onended = () => setIsSpeaking(false);
-                audioRef.current.play().catch(speakWithTTS);
+                audioRef.current.play().catch(() => {
+                    // Only play TTS if Audio.play truly fails
+                    speakWithTTS();
+                });
             }, { once: true });
 
             testAudio.addEventListener('error', () => {
-                if (requestId === lastRequestIdRef.current) speakWithTTS();
+                if (ttsTimeout) clearTimeout(ttsTimeout);
+                speakWithTTS(); 
             }, { once: true });
             
             return;
         }
 
-        // Priority 2: Standard Fallback
+        // Priority 2: Standard Fallback (No audio file provided)
         speakWithTTS();
     }, [language, voices]);
 
