@@ -1,4 +1,4 @@
-const CACHE_NAME = 'suraksha-sathi-v9';
+const CACHE_NAME = 'suraksha-sathi-v10';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -26,25 +26,33 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      // Use individual add to prevent one missing file from breaking the whole cache
       return Promise.allSettled(
         ASSETS_TO_CACHE.map(url => cache.add(url))
-      ).then(results => {
-        const failed = results.filter(r => r.status === 'rejected');
-        if (failed.length > 0) {
-          console.warn('Some assets failed to cache:', failed);
-        }
-      });
+      );
     })
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    Promise.all([
+      self.clients.claim(),
+      caches.keys().then((keys) => {
+        return Promise.all(
+          keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        );
+      })
+    ])
   );
 });
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+    fetch(event.request).catch(() => {
+      return caches.match(event.request);
     })
   );
 });
