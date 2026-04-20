@@ -28,7 +28,15 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
+      // Use individual add to prevent one missing file from breaking the whole cache
+      return Promise.allSettled(
+        ASSETS_TO_CACHE.map(url => cache.add(url))
+      ).then(results => {
+        const failed = results.filter(r => r.status === 'rejected');
+        if (failed.length > 0) {
+          console.warn('Some assets failed to cache:', failed);
+        }
+      });
     })
   );
 });
