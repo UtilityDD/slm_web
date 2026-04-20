@@ -820,7 +820,7 @@ export default function SmartLinemanUI() {
 
   const renderContent = () => {
     // Define which views are accessible without login
-    const publicViews = ['login', 'update-password', 'verify', 'accident-stories'];
+    const publicViews = ['login', 'update-password', 'verify', 'accident-stories', 'sops'];
     const isPublic = publicViews.includes(currentView);
 
     // If not logged in and trying to access a private view, force login
@@ -1281,6 +1281,23 @@ export default function SmartLinemanUI() {
             {renderContent()}
           </div>
         </div>
+
+        {/* Global Floating Pill for Suraksha Sathi - Public Access */}
+        {currentView !== 'sops' && (
+          <div className="fixed bottom-[72px] left-0 z-[250] animate-slide-up">
+             <button
+                onClick={() => setCurrentView('sops')}
+                className="flex items-center gap-2 bg-emerald-600/90 backdrop-blur-md text-white p-2 pl-2 pr-4 rounded-r-full shadow-2xl hover:pr-6 transition-all active:scale-95 group border-y border-r border-white/20"
+             >
+                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center shrink-0 shadow-inner">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <span className="text-[12px] font-black uppercase tracking-tighter">সুরক্ষা সাথী</span>
+             </button>
+          </div>
+        )}
 
 
         {/* Network Status Listener */}
