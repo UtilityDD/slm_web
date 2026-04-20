@@ -108,6 +108,7 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
 
     const [voices, setVoices] = useState([]);
     const audioRef = useRef(new Audio());
+    const lastRequestIdRef = useRef(0);
 
     // Load voices on mount
     useEffect(() => {
@@ -139,9 +140,10 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
 
     const playAudio = useCallback((text, audioFile = null) => {
         stopAllAudio();
+        const requestId = ++lastRequestIdRef.current;
         
         const speakWithTTS = () => {
-            if (!window.speechSynthesis) return;
+            if (!window.speechSynthesis || requestId !== lastRequestIdRef.current) return;
             const utterance = new SpeechSynthesisUtterance(text);
             if (language === 'bn') {
                 const bnVoice = voices.find(v => v.lang.startsWith('bn')) || voices.find(v => v.name.includes('Bengali'));
@@ -151,8 +153,12 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
                 utterance.lang = 'en-US';
             }
             utterance.rate = 0.85;
-            utterance.onstart = () => setIsSpeaking(true);
-            utterance.onend = () => setIsSpeaking(false);
+            utterance.onstart = () => {
+                if (requestId === lastRequestIdRef.current) setIsSpeaking(true);
+            };
+            utterance.onend = () => {
+                if (requestId === lastRequestIdRef.current) setIsSpeaking(false);
+            };
             window.speechSynthesis.speak(utterance);
         };
 
@@ -162,7 +168,9 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
             const testAudio = new Audio(audioPath);
             
             testAudio.addEventListener('canplaythrough', () => {
-                // Ensure we haven't started playing something else in the meantime
+                // Critical Check: Only play if this is still the latest request
+                if (requestId !== lastRequestIdRef.current) return;
+
                 audioRef.current.src = audioPath;
                 audioRef.current.onplay = () => setIsSpeaking(true);
                 audioRef.current.onended = () => setIsSpeaking(false);
@@ -170,7 +178,7 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
             }, { once: true });
 
             testAudio.addEventListener('error', () => {
-                speakWithTTS(); // Instantly fallback if file missing
+                if (requestId === lastRequestIdRef.current) speakWithTTS();
             }, { once: true });
             
             return;
