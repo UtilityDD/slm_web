@@ -105,36 +105,24 @@ export default function SmartLinemanUI() {
     return false;
   };
 
+  const [isRetiring, setIsRetiring] = useState(false); // To force PWA transition
+
   // Check for App Updates (Native & PWA)
   useEffect(() => {
     const checkForUpdates = async () => {
       try {
-        // 1. Native Force Update Check (Capacitor)
-        if (window.Capacitor) {
-          const { data, error } = await supabase
-            .from('app_versions')
-            .select('version_name, update_url, force_update')
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
-
-          if (data) {
-            const { version_name: latest_version, update_url, force_update } = data;
-            if (isVersionOlder(CURRENT_APP_VERSION, latest_version)) {
-              console.log(`Force update required: ${CURRENT_APP_VERSION} < ${latest_version}`);
-              setUpdateInfo({ version_name: latest_version, update_url });
-              setIsForceUpdate(force_update);
-              setShowUpdateModal(true);
-              return; // Priority: Force update blocks PWA check
-            }
-          }
+        // 1. Force PWA Transition for APK users
+        // Only retire if we are DEFINITELY inside a native shell (android/ios)
+        const isNative = window.Capacitor && window.Capacitor.getPlatform && window.Capacitor.getPlatform() !== 'web';
+        
+        if (isNative) {
+          setIsRetiring(true);
+          return;
         }
 
         // 2. Service Worker Update Listener (PWA)
         if ('serviceWorker' in navigator && !window.Capacitor) {
           const registration = await navigator.serviceWorker.ready;
-
-          // Check for updates periodically
           const interval = setInterval(() => registration.update(), 60 * 60 * 1000);
 
           registration.addEventListener('updatefound', () => {
@@ -151,10 +139,9 @@ export default function SmartLinemanUI() {
           return () => clearInterval(interval);
         }
       } catch (err) {
-        console.error('Update check error:', err);
+        console.error('Update check failed:', err);
       }
     };
-
     checkForUpdates();
   }, []);
 
@@ -999,6 +986,43 @@ export default function SmartLinemanUI() {
       </Suspense>
     );
   };
+
+  if (isRetiring) {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-slate-900 flex items-center justify-center p-6 text-center text-white">
+        <div className="max-w-md w-full space-y-8 animate-fadeIn">
+          <div className="w-24 h-24 bg-orange-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <span className="text-5xl">📲</span>
+          </div>
+          <div className="space-y-4">
+            <h1 className="text-3xl font-black leading-tight">
+              {language === 'bn' ? 'এই অ্যাপটি বন্ধ করা হয়েছে' : 'App Retired'}
+            </h1>
+            <p className="text-slate-400 text-lg leading-relaxed text-center">
+              {language === 'bn' 
+                ? 'আরও উন্নত ফিচারের জন্য আমরা এখন শুধুমাত্র ওয়েব অ্যাপ (PWA) ব্যবহার করছি। দয়া করে নিচের বাটনে ক্লিক করে নতুন অ্যাপটি ব্যবহার করুন।' 
+                : 'For a better experience, we have moved to our official Web App. Please use the button below to switch.'}
+            </p>
+          </div>
+
+          <div className="pt-8">
+            <button 
+              onClick={() => window.open('https://slm-web.vercel.app', '_blank')}
+              className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-5 rounded-2xl shadow-2xl shadow-orange-900/40 transition-all active:scale-95 text-xl tracking-wide uppercase"
+            >
+              {language === 'bn' ? 'ওয়েব অ্যাপ ওপেন করুন' : 'Open Web App'}
+            </button>
+          </div>
+          
+          <p className="text-slate-500 text-sm mt-8 border-t border-slate-800 pt-6">
+            {language === 'bn' 
+              ? 'Chrome ব্রাউজারে গিয়ে "Add to Home Screen" অপশনটি সিলেক্ট করুন।' 
+              : 'Tip: Select "Add to Home Screen" from Chrome menu for easy access.'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (appLoading) return <PageLoader />;
 
