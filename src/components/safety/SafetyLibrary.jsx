@@ -238,7 +238,6 @@ export default function SafetyLibrary({ language, setCurrentView }) {
     const t = {
         en: {
             title: 'Safety Library',
-            subtitle: 'Visual equipment guide (Bengali Content Focus)',
             searchPlaceholder: 'Search equipment...',
             noResults: 'No items found',
             priceLabel: 'Price:',
@@ -250,7 +249,6 @@ export default function SafetyLibrary({ language, setCurrentView }) {
         },
         bn: {
             title: 'সুরক্ষা লাইব্রেরি',
-            subtitle: 'ভিজ্যুয়াল সরঞ্জাম গাইড',
             searchPlaceholder: 'সরঞ্জাম খুঁজুন...',
             noResults: 'কিছু পাওয়া যায়নি',
             priceLabel: 'মূল্য:',
@@ -317,13 +315,18 @@ export default function SafetyLibrary({ language, setCurrentView }) {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-                    <div>
-                        <button onClick={() => setCurrentView('training')} className="text-orange-500 hover:text-orange-600 font-medium mb-4 flex items-center gap-2 group transition-all">
-                            <span className="group-hover:-translate-x-1 transition-transform">←</span> {language === 'en' ? 'Back' : 'ফিরুন'}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <div className="flex items-center gap-3">
+                        <button 
+                            onClick={() => setCurrentView('training')} 
+                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-orange-500 hover:border-orange-500/50 transition-all shadow-sm active:scale-95 group"
+                            title={language === 'en' ? 'Back' : 'ফিরুন'}
+                        >
+                            <ChevronLeftIcon className="w-6 h-6 group-hover:-translate-x-0.5 transition-transform" />
                         </button>
-                        <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">{t.title}</h1>
-                        <p className="text-slate-500 dark:text-slate-400">{t.subtitle}</p>
+                        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                            {t.title}
+                        </h1>
                     </div>
 
                     <div className="relative group max-w-md w-full">
@@ -333,7 +336,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                             placeholder={t.searchPlaceholder}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none text-slate-900 dark:text-white"
+                            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none text-slate-900 dark:text-white text-sm"
                         />
                     </div>
                 </div>
