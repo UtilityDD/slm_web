@@ -1,5 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import html2canvas from 'html2canvas';
+import { Share } from '@capacitor/share';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions = [], language = 'en', isPractice = false, lessonId = '' }) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -15,6 +18,14 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
             return true;
         }
     });
+
+    // Reporting State
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [reportingIndex, setReportingIndex] = useState(null);
+    const [reportComment, setReportComment] = useState('');
+    const [reportImage, setReportImage] = useState(null);
+    const [isSharing, setIsSharing] = useState(false);
+    const reportRef = useRef(null);
 
     const playUiSfx = useCallback((type) => {
         if (!soundEnabled) return;
@@ -98,7 +109,14 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
             yourAns: 'Your Answer',
             right: 'Correct',
             wrong: 'Wrong',
-            notAnswered: 'Not answered'
+            notAnswered: 'Not answered',
+            reportTitle: 'Spotted a mistake?',
+            reportSubtitle: 'Say something about this question...',
+            reportPlaceholder: 'Describe the issue or error you found...',
+            reportAction: 'Send on WhatsApp',
+            reportContext: 'Please mention Lesson ID in the group:',
+            reportSuccess: 'Opening sharing menu...',
+            reportError: 'Failed to capture screenshot. You can still report manually.'
         },
         bn: {
             title: 'অধ্যায় কুইজ',
@@ -123,7 +141,14 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
             yourAns: 'আপনার উত্তর',
             right: 'সঠিক',
             wrong: 'ভুল',
-            notAnswered: 'উত্তর দেওয়া হয়নি'
+            notAnswered: 'উত্তর দেওয়া হয়নি',
+            reportTitle: 'প্রশ্নে কোনো ভুল আছে কি?',
+            reportSubtitle: 'এই প্রশ্ন সম্পর্কে কিছু বলুন...',
+            reportPlaceholder: 'এখানে ভুল বা ত্রুটি লিখুন...',
+            reportAction: 'আমাদের জানান',
+            reportContext: 'গ্রুপে রিপোর্ট করার সময় লেসন আইডি জানান:',
+            reportSuccess: 'শেয়ার মেনু ওপেন হচ্ছে...',
+            reportError: 'স্ক্রিনশট নেওয়া সম্ভব হয়নি। আপনি চাইলে ম্যানুয়ালি গ্রুপে জানাতে পারেন।'
         }
     }[language] || { en: {} };
 
@@ -253,6 +278,93 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
         }, 500);
     };
 
+    const handleStartReport = async (idx) => {
+        setReportingIndex(idx);
+        const prefilledText = language === 'en' 
+            ? `Lesson ID: #${lessonId}\nWrite your comment here: ` 
+            : `লেসন আইডি: #${lessonId}\nআপনার মন্তব্য লিখুন: `;
+        setReportComment(prefilledText);
+        setReportImage(null);
+        
+        try {
+            const element = document.getElementById(`question-card-${idx}`);
+            if (!element) throw new Error('Element not found');
+
+            // Use html2canvas to capture the card
+            // We use a slight delay to ensure UI handles any transitions
+            const canvas = await html2canvas(element, {
+                useCORS: true,
+                scale: 2, // Higher quality
+                backgroundColor: '#0f172a', // Match slate-900 for dark mode context
+            });
+            
+            const imageData = canvas.toDataURL('image/png');
+            setReportImage(imageData);
+            setShowReportModal(true);
+            
+            // Focus and move cursor to end
+            setTimeout(() => {
+                if (reportRef.current) {
+                    reportRef.current.focus();
+                    const length = reportRef.current.value.length;
+                    reportRef.current.setSelectionRange(length, length);
+                }
+            }, 100);
+        } catch (error) {
+            console.error('Capture failed:', error);
+            // Fallback: Show modal even without image
+            setReportImage(null);
+            setShowReportModal(true);
+        }
+    };
+
+    const handleSendReport = async () => {
+        setIsSharing(true);
+        try {
+            const message = `${reportComment}\n\n[Context]\nLesson ID: ${lessonId}\nQuestion: ${shuffledQuestions[reportingIndex]?.questionText}`;
+            
+            // On Mobile/Native using Capacitor
+            if (reportImage) {
+                try {
+                    const fileName = `report_lesson_${lessonId || 'unknown'}_${Date.now()}.png`;
+                    
+                    // 1. Write file to temp storage
+                    // Capacitor Share requires a real file URI
+                    await Filesystem.writeFile({
+                        path: fileName,
+                        data: reportImage.split(',')[1], // Remove Prefix
+                        directory: Directory.Cache
+                    });
+
+                    const fileUri = await Filesystem.getUri({
+                        path: fileName,
+                        directory: Directory.Cache
+                    });
+
+                    // 2. Trigger Share
+                    await Share.share({
+                        title: 'Report Issue',
+                        text: message,
+                        files: [fileUri.uri],
+                        dialogTitle: t.reportAction
+                    });
+                } catch (nativeError) {
+                    console.error('Native share failed, falling back to URL:', nativeError);
+                    window.open(`https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t`, '_blank');
+                }
+            } else {
+                // Fallback for web or if capture failed
+                window.open(`https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t`, '_blank');
+            }
+            
+            setShowReportModal(false);
+        } catch (error) {
+            console.error('Reporting failed:', error);
+        } finally {
+            setIsSharing(false);
+        }
+    };
+
     return createPortal(
         <div className={`fixed inset-0 z-[200] animate-fade-in ${isFullscreenScreen ? 'bg-slate-950/95 backdrop-blur-xl' : 'flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm'}`}>
             <div className={`overflow-hidden border border-token-border shadow-2xl animate-scale-in ${isFullscreenScreen ? 'w-full h-full rounded-none border-0 bg-transparent flex flex-col' : 'bg-token-bg-surface rounded-2xl w-full max-w-lg flex flex-col max-h-[90vh]'}`}>
@@ -344,15 +456,26 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                         const isAnswered = userAnswer !== undefined;
                                         const isCorrect = isAnswered && userAnswer === q.correctAnswerIndex;
                                         return (
-                                            <div key={idx} className={`p-4 rounded-2xl border backdrop-blur-xl ${isCorrect ? 'border-emerald-400/20 bg-emerald-400/10' : 'border-rose-400/20 bg-rose-400/10'}`}>
+                                            <div key={idx} id={`question-card-${idx}`} className={`p-4 rounded-2xl border backdrop-blur-xl ${isCorrect ? 'border-emerald-400/20 bg-emerald-400/10' : 'border-rose-400/20 bg-rose-400/10'}`}>
                                                 <div className="flex gap-3 mb-3">
                                                     <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${isCorrect ? 'bg-emerald-400 text-slate-950' : 'bg-rose-400 text-slate-950'}`}>
                                                         {idx + 1}
                                                     </span>
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm sm:text-base lg:text-lg font-medium leading-relaxed text-white break-words">
-                                                            {q.questionText}
-                                                        </p>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-start justify-between gap-2">
+                                                            <p className="text-sm sm:text-base lg:text-lg font-medium leading-relaxed text-white break-words">
+                                                                {q.questionText}
+                                                            </p>
+                                                            <button
+                                                                onClick={() => handleStartReport(idx)}
+                                                                className="shrink-0 p-2 rounded-xl bg-white/5 hover:bg-white/15 text-white/60 hover:text-orange-300 transition-all active:scale-90"
+                                                                title={t.reportTitle}
+                                                            >
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
                                                         <div className={`mt-1 inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${isCorrect ? 'bg-emerald-400/15 text-emerald-200' : 'bg-rose-400/15 text-rose-200'}`}>
                                                             {isCorrect ? t.right : t.wrong}
                                                         </div>
@@ -572,6 +695,66 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                     </>
                 )}
             </div>
+
+            {/* Report Feedback Modal */}
+            {showReportModal && (
+                <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+                    <div className="bg-slate-900 border border-white/10 rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl animate-scale-in flex flex-col">
+                        <div className="p-6 pb-2">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-xl font-bold text-white tracking-tight">{t.reportTitle}</h3>
+                                <button 
+                                    onClick={() => setShowReportModal(false)}
+                                    className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/60 hover:bg-white/10 transition-colors"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                            <p className="text-sm text-white/70 mb-4">{t.reportSubtitle}</p>
+                            
+                            {/* Screenshot Preview */}
+                            {reportImage ? (
+                                <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 bg-slate-950 mb-6 mx-auto max-w-[280px]">
+                                    <img src={reportImage} alt="Capture" className="w-full h-full object-contain" />
+                                </div>
+                            ) : (
+                                <div className="aspect-video rounded-2xl border border-dashed border-white/10 bg-white/5 mb-6 flex flex-col items-center justify-center text-white/30 gap-2">
+                                    <svg className="w-8 h-8 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">{t.reportError}</span>
+                                </div>
+                            )}
+
+                            {/* Comment Input */}
+                            <div className="space-y-3">
+                                <div className="relative group">
+                                    <textarea
+                                        ref={reportRef}
+                                        value={reportComment}
+                                        onChange={(e) => setReportComment(e.target.value)}
+                                        placeholder={t.reportPlaceholder}
+                                        className="w-full min-h-[140px] px-5 py-4 rounded-3xl bg-white/5 border-2 border-transparent focus:border-orange-500/30 focus:bg-white/10 text-white placeholder-white/30 text-sm transition-all outline-none resize-none"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-6 pt-4 border-t border-white/10 mt-2">
+                            <button
+                                onClick={handleSendReport}
+                                disabled={isSharing}
+                                className={`w-full py-4 rounded-[1.5rem] font-black text-white transition-all active:scale-[0.98] flex items-center justify-center gap-3 shadow-xl ${isSharing ? 'bg-slate-700' : 'bg-[#25D366] hover:bg-[#22c35e] shadow-green-500/20'}`}
+                            >
+                                {isSharing ? (
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
+                                )}
+                                <span>{isSharing ? t.reportSuccess : t.reportAction}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>,
         document.body
     );
