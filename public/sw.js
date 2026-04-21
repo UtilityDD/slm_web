@@ -1,4 +1,4 @@
-const CACHE_NAME = 'suraksha-sathi-v13';
+const CACHE_NAME = 'suraksha-sathi-v14';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

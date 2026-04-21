@@ -278,8 +278,8 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
     const handleStartReport = (idx) => {
         setReportingIndex(idx);
         const prefilledText = language === 'en' 
-            ? `Lesson ID: #${lessonId}\nWrite your comment here: ` 
-            : `লেসন আইডি: #${lessonId}\nআপনার মন্তব্য লিখুন: `;
+            ? `Write your comment here: ` 
+            : `আপনার মন্তব্য লিখুন: `;
         setReportComment(prefilledText);
         setShowReportModal(true);
         
