@@ -366,12 +366,14 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                         <button
                             key={cat.id}
                             onClick={() => setActiveCategory(cat.id)}
-                            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all whitespace-nowrap shadow-sm
+                            className={`flex items-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap shadow-sm border
                                 ${activeCategory === cat.id
-                                    ? 'bg-orange-500 text-white scale-105 shadow-orange-500/20'
-                                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                    ? 'bg-orange-500 text-white border-orange-400 scale-105 shadow-orange-500/25'
+                                    : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-100 dark:border-slate-800 hover:border-orange-200 dark:hover:border-orange-900/30'}`}
                         >
-                            {cat.icon}
+                            <span className={`${activeCategory === cat.id ? 'scale-110' : 'opacity-70'} transition-transform`}>
+                                {cat.icon ? React.cloneElement(cat.icon, { className: 'w-3.5 h-3.5 sm:w-4 sm:h-4' }) : null}
+                            </span>
                             {cat.label}
                         </button>
                     ))}
@@ -411,7 +413,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                 <div
                                     key={item.id}
                                     onClick={() => setSelectedItem(item)}
-                                    className={`group bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/15 transition-all duration-500 flex flex-col cursor-zoom-in ${isChart ? 'md:col-span-2 lg:col-span-3' : ''}`}
+                                    className={`group bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/15 transition-all duration-500 flex flex-col cursor-zoom-in ${isChart ? 'md:col-span-2 lg:col-span-3' : ''} active:scale-[0.98]`}
                                 >
                                     <div className="relative">
                                         <ImageSlider
@@ -426,8 +428,8 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                         </div>
                                     </div>
 
-                                    <div className="p-8 flex flex-col flex-grow">
-                                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-orange-500 transition-colors">
+                                    <div className={`${isChart ? 'p-3 sm:p-6' : 'p-6 sm:p-8'} flex flex-col flex-grow transition-all`}>
+                                        <h3 className={`${isChart ? 'text-lg sm:text-2xl' : 'text-xl sm:text-2xl'} font-bold text-slate-900 dark:text-white mb-2 group-hover:text-orange-500 transition-colors`}>
                                             {item.name_bn}
                                         </h3>
                                         <p className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-3">
