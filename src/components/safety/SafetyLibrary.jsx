@@ -223,22 +223,19 @@ export default function SafetyLibrary({ language, setCurrentView }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeCategory, setActiveCategory] = useState('All');
+    const [activeCategory, setActiveCategory] = useState('');
     const [selectedItem, setSelectedItem] = useState(null);
-    const [categories, setCategories] = useState([
-        { id: 'All', label: language === 'en' ? 'All' : 'সবগুলো', icon: null }
-    ]);
+    const [categories, setCategories] = useState([]);
 
     const getCategoryMetadata = (catId) => {
         const metadata = {
-            'PPE': { label: language === 'en' ? 'PPE' : 'পিপিই', icon: <ShieldCheckIcon className="w-4 h-4" /> },
-            'Tools': { label: language === 'en' ? 'Tools' : 'সরঞ্জাম', icon: <WrenchIcon className="w-4 h-4" /> },
-            'Insulators': { label: language === 'en' ? 'Insulators' : 'ইনসুলেটর', icon: <TreeIcon className="w-4 h-4" /> },
-            'Charts': { label: language === 'en' ? 'Charts' : 'চার্ট', icon: <LineChartIcon className="w-4 h-4" /> },
-            'Others': { label: language === 'en' ? 'Others' : 'অন্যান্য', icon: <InfoIcon className="w-4 h-4" /> }
+            'PPE': { icon: <ShieldCheckIcon className="w-4 h-4" /> },
+            'Tools': { icon: <WrenchIcon className="w-4 h-4" /> },
+            'Insulators': { icon: <TreeIcon className="w-4 h-4" /> },
+            'Charts': { icon: <LineChartIcon className="w-4 h-4" /> },
+            'Others': { icon: <InfoIcon className="w-4 h-4" /> }
         };
         return metadata[catId] || { 
-            label: catId, 
             icon: <InfoIcon className="w-4 h-4" /> 
         };
     };
@@ -299,14 +296,18 @@ export default function SafetyLibrary({ language, setCurrentView }) {
 
             // Dynamically generate categories
             const uniqueCats = [...new Set(data.map(item => item.category))].filter(Boolean);
-            const dynamicCategories = [
-                { id: 'All', label: language === 'en' ? 'All' : 'সবগুলো', icon: null },
-                ...uniqueCats.map(cat => ({
-                    id: cat,
-                    ...getCategoryMetadata(cat)
-                }))
-            ];
+            const dynamicCategories = uniqueCats.map(cat => ({
+                id: cat,
+                label: cat, // Always use the raw name from the spreadsheet as the label
+                ...getCategoryMetadata(cat)
+            }));
+            
             setCategories(dynamicCategories);
+
+            // Set the first category as active if none is selected
+            if (dynamicCategories.length > 0) {
+                setActiveCategory(dynamicCategories[0].id);
+            }
         } catch (error) {
             console.error('Error loading safety library:', error);
             setError({
