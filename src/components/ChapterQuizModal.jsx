@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import html2canvas from 'html2canvas';
 import { Share } from '@capacitor/share';
-import { Filesystem, Directory } from '@capacitor/filesystem';
 
 const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions = [], language = 'en', isPractice = false, lessonId = '' }) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -23,7 +21,6 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
     const [showReportModal, setShowReportModal] = useState(false);
     const [reportingIndex, setReportingIndex] = useState(null);
     const [reportComment, setReportComment] = useState('');
-    const [reportImage, setReportImage] = useState(null);
     const [isSharing, setIsSharing] = useState(false);
     const reportRef = useRef(null);
 
@@ -278,83 +275,48 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
         }, 500);
     };
 
-    const handleStartReport = async (idx) => {
+    const handleStartReport = (idx) => {
         setReportingIndex(idx);
         const prefilledText = language === 'en' 
             ? `Lesson ID: #${lessonId}\nWrite your comment here: ` 
             : `লেসন আইডি: #${lessonId}\nআপনার মন্তব্য লিখুন: `;
         setReportComment(prefilledText);
-        setReportImage(null);
+        setShowReportModal(true);
         
-        try {
-            const element = document.getElementById(`question-card-${idx}`);
-            if (!element) throw new Error('Element not found');
-
-            // Use html2canvas to capture the card
-            // We use a slight delay to ensure UI handles any transitions
-            const canvas = await html2canvas(element, {
-                useCORS: true,
-                scale: 2, // Higher quality
-                backgroundColor: '#0f172a', // Match slate-900 for dark mode context
-            });
-            
-            const imageData = canvas.toDataURL('image/png');
-            setReportImage(imageData);
-            setShowReportModal(true);
-            
-            // Focus and move cursor to end
-            setTimeout(() => {
-                if (reportRef.current) {
-                    reportRef.current.focus();
-                    const length = reportRef.current.value.length;
-                    reportRef.current.setSelectionRange(length, length);
-                }
-            }, 100);
-        } catch (error) {
-            console.error('Capture failed:', error);
-            // Fallback: Show modal even without image
-            setReportImage(null);
-            setShowReportModal(true);
-        }
+        // Focus and move cursor to end
+        setTimeout(() => {
+            if (reportRef.current) {
+                reportRef.current.focus();
+                const length = reportRef.current.value.length;
+                reportRef.current.setSelectionRange(length, length);
+            }
+        }, 100);
     };
 
     const handleSendReport = async () => {
         setIsSharing(true);
         try {
-            const message = `${reportComment}\n\n[Context]\nLesson ID: ${lessonId}\nQuestion: ${shuffledQuestions[reportingIndex]?.questionText}`;
+            const q = shuffledQuestions[reportingIndex];
+            const optionsText = q ? q.options.map((opt, i) => `${String.fromCharCode(65 + i)}) ${opt}`).join('\n') : '';
             
-            // On Mobile/Native using Capacitor
-            if (reportImage) {
-                try {
-                    const fileName = `report_lesson_${lessonId || 'unknown'}_${Date.now()}.png`;
-                    
-                    // 1. Write file to temp storage
-                    // Capacitor Share requires a real file URI
-                    await Filesystem.writeFile({
-                        path: fileName,
-                        data: reportImage.split(',')[1], // Remove Prefix
-                        directory: Directory.Cache
-                    });
+            const reportContent = `🚨 [QUIZ REPORT]\n━━━━━━━━━━━━━━━━\n📖 Lesson: #${lessonId}\n❓ Question: ${q?.questionText || 'General Report'}\n\n📝 Options:\n${optionsText}\n━━━━━━━━━━━━━━━━\n💬 Comment: ${reportComment}`;
+            
+            const waGroupLink = "https://chat.whatsapp.com/Drmeya7EyRlErKGy3VL8DF?mode=gi_t";
 
-                    const fileUri = await Filesystem.getUri({
-                        path: fileName,
-                        directory: Directory.Cache
-                    });
-
-                    // 2. Trigger Share
-                    await Share.share({
-                        title: 'Report Issue',
-                        text: message,
-                        files: [fileUri.uri],
-                        dialogTitle: t.reportAction
-                    });
-                } catch (nativeError) {
-                    console.error('Native share failed, falling back to URL:', nativeError);
-                    window.open(`https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t`, '_blank');
-                }
-            } else {
-                // Fallback for web or if capture failed
-                window.open(`https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t`, '_blank');
+            try {
+                // Try native share first (best for pre-filling text in groups)
+                await Share.share({
+                    title: 'Quiz Report',
+                    text: reportContent,
+                    dialogTitle: t.reportAction
+                });
+            } catch (shareError) {
+                // Fallback: Copy to clipboard and open group link
+                await navigator.clipboard.writeText(reportContent);
+                alert(language === 'en' 
+                    ? 'Report copied to clipboard! Please paste it in the WhatsApp group.' 
+                    : 'রিপোর্ট কপি করা হয়েছে! অনুগ্রহ করে হোয়াটসঅ্যাপ গ্রুপে পেস্ট করুন।');
+                window.open(waGroupLink, '_blank');
             }
             
             setShowReportModal(false);
@@ -710,19 +672,15 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                     ✕
                                 </button>
                             </div>
-                            <p className="text-sm text-white/70 mb-4">{t.reportSubtitle}</p>
+                            <p className="text-sm text-white/70 mb-6">{t.reportSubtitle}</p>
                             
-                            {/* Screenshot Preview */}
-                            {reportImage ? (
-                                <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 bg-slate-950 mb-6 mx-auto max-w-[280px]">
-                                    <img src={reportImage} alt="Capture" className="w-full h-full object-contain" />
-                                </div>
-                            ) : (
-                                <div className="aspect-video rounded-2xl border border-dashed border-white/10 bg-white/5 mb-6 flex flex-col items-center justify-center text-white/30 gap-2">
-                                    <svg className="w-8 h-8 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                    <span className="text-[10px] font-bold uppercase tracking-widest">{t.reportError}</span>
-                                </div>
-                            )}
+                            {/* Question Context Preview */}
+                            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 mb-6">
+                                <p className="text-xs font-black text-orange-400 uppercase tracking-widest mb-2">QUESTION PREVIEW</p>
+                                <p className="text-sm text-white/90 line-clamp-3 leading-relaxed italic">
+                                    "{shuffledQuestions[reportingIndex]?.questionText}"
+                                </p>
+                            </div>
 
                             {/* Comment Input */}
                             <div className="space-y-3">
