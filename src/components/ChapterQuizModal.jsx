@@ -297,7 +297,11 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
         setIsSharing(true);
         try {
             const q = shuffledQuestions[reportingIndex];
-            const optionsText = q ? q.options.map((opt, i) => `${String.fromCharCode(65 + i)}) ${opt}`).join('\n') : '';
+            const optionsText = q ? q.options.map((opt, i) => {
+                const isCorrect = i === q.correctAnswerIndex;
+                const mark = isCorrect ? '✅' : '❌';
+                return `${String.fromCharCode(65 + i)}) ${opt} ${mark}`;
+            }).join('\n') : '';
             
             const reportContent = `🚨 [QUIZ REPORT]\n━━━━━━━━━━━━━━━━\n📖 Lesson: #${lessonId}\n❓ Question: ${q?.questionText || 'General Report'}\n\n📝 Options:\n${optionsText}\n━━━━━━━━━━━━━━━━\n💬 Comment: ${reportComment}`;
             
