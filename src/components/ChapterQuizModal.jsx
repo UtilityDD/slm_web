@@ -9,13 +9,6 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
     const [score, setScore] = useState(0);
     const [loading, setLoading] = useState(false);
     const [isReviewMode, setIsReviewMode] = useState(false);
-    const [soundEnabled, setSoundEnabled] = useState(() => {
-        try {
-            return localStorage.getItem('chapterQuizSoundEnabled') !== 'false';
-        } catch (e) {
-            return true;
-        }
-    });
 
     // Reporting State
     const [showReportModal, setShowReportModal] = useState(false);
@@ -25,8 +18,16 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
     const reportRef = useRef(null);
 
     const playUiSfx = useCallback((type) => {
-        if (!soundEnabled) return;
-
+        const sounds = {
+            select: '/audio/safety/alert_check.wav',
+            next: '/audio/safety/alert_done.wav',
+            submit: '/audio/safety/check_items.wav',
+            pass: '/audio/safety/oath_1.wav',
+            fail: '/audio/safety/isolation_ready.wav',
+            retry: '/audio/safety/start.wav',
+            continue: '/audio/safety/home_safe.wav'
+        };
+        
         try {
             const AudioContextRef = window.AudioContext || window.webkitAudioContext;
             if (!AudioContextRef) return;
@@ -80,7 +81,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
         } catch (e) {
             // Non-critical enhancement; ignore audio failures silently.
         }
-    }, [soundEnabled]);
+    }, []);
 
     const t = {
         en: {
@@ -152,24 +153,14 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
     const [shuffledQuestions, setShuffledQuestions] = useState([]);
 
     useEffect(() => {
-        try {
-            localStorage.setItem('chapterQuizSoundEnabled', String(soundEnabled));
-        } catch (e) {
-            // Ignore storage failures.
-        }
-    }, [soundEnabled]);
-
-    useEffect(() => {
         if (isOpen) {
             setLoading(true);
-            // Reset states
             setShowResult(false);
             setCurrentQuestionIndex(0);
             setUserAnswers({});
             setScore(0);
             setIsReviewMode(false);
 
-            // Using a timeout to ensure the loading animation is visible and to mimic processing time.
             const timer = setTimeout(() => {
                 if (questions.length > 0) {
                     const shuffled = questions.map(q => {
@@ -192,7 +183,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                     setShuffledQuestions([]);
                 }
                 setLoading(false);
-            }, 500); // Artifical delay
+            }, 500);
 
             return () => clearTimeout(timer);
         }
@@ -283,7 +274,6 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
         setReportComment(prefilledText);
         setShowReportModal(true);
         
-        // Focus and move cursor to end
         setTimeout(() => {
             if (reportRef.current) {
                 reportRef.current.focus();
@@ -308,14 +298,12 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
             const waGroupLink = "https://chat.whatsapp.com/Drmeya7EyRlErKGy3VL8DF?mode=gi_t";
 
             try {
-                // Try native share first (best for pre-filling text in groups)
                 await Share.share({
                     title: 'Quiz Report',
                     text: reportContent,
                     dialogTitle: t.reportAction
                 });
             } catch (shareError) {
-                // Fallback: Copy to clipboard and open group link
                 await navigator.clipboard.writeText(reportContent);
                 alert(language === 'en' 
                     ? 'Report copied to clipboard! Please paste it in the WhatsApp group.' 
@@ -329,6 +317,12 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
         } finally {
             setIsSharing(false);
         }
+    };
+
+    const handleGoogleSearch = (text) => {
+        if (!text) return;
+        const query = encodeURIComponent(text);
+        window.open(`https://www.google.com/search?q=${query}`, '_blank');
     };
 
     return createPortal(
@@ -353,7 +347,6 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                     </div>
                 ) : (
                     <>
-                        {/* Header */}
                         <div className={`p-4 flex justify-between items-center gap-3 ${isFullscreenScreen ? 'border-b border-white/10 bg-slate-950/70 text-white backdrop-blur-xl' : 'border-b border-token-border bg-token-bg-page/80'}`}>
                             <div className="flex items-center gap-2 min-w-0">
                                 {lessonId && (
@@ -367,23 +360,16 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                                 <button
-                                    onClick={() => setSoundEnabled(prev => !prev)}
-                                    className={`inline-flex items-center justify-center w-9 h-9 rounded-full transition-colors ${isFullscreenScreen ? 'text-white/80 hover:bg-white/10' : soundEnabled ? 'text-token-text-secondary hover:bg-black/5 dark:hover:bg-white/10' : 'text-token-text-muted hover:bg-black/5 dark:hover:bg-white/10'}`}
-                                    aria-label={soundEnabled ? (language === 'en' ? 'Disable sound' : 'সাউন্ড বন্ধ করুন') : (language === 'en' ? 'Enable sound' : 'সাউন্ড চালু করুন')}
-                                    title={soundEnabled ? (language === 'en' ? 'Disable sound' : 'সাউন্ড বন্ধ করুন') : (language === 'en' ? 'Enable sound' : 'সাউন্ড চালু করুন')}
+                                    onClick={() => handleGoogleSearch(currentQuestion?.questionText)}
+                                    className={`inline-flex items-center justify-center w-9 h-9 rounded-full transition-all group ${isFullscreenScreen ? 'text-white/80 hover:bg-white/10' : 'text-token-text-secondary hover:bg-black/5 dark:hover:bg-white/10'} active:scale-90`}
+                                    title={language === 'en' ? 'Search on Google' : 'গুগল সার্চ করুন'}
                                 >
-                                    {soundEnabled ? (
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5L6 9H3v6h3l5 4V5z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 9a4 4 0 010 6" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.5 6.5a8 8 0 010 11" />
-                                        </svg>
-                                    ) : (
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5L6 9H3v6h3l5 4V5z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 5l-14 14" />
-                                        </svg>
-                                    )}
+                                    <svg className="w-5 h-5 transition-colors group-hover:text-amber-500" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-1 .67-2.28 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                                    </svg>
                                 </button>
                                 {isReviewMode ? (
                                     <button
@@ -408,45 +394,57 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                             </div>
                         </div>
 
-                        {/* Content */}
                         <div className={`overflow-y-auto flex-1 ${isFullscreenScreen ? 'px-4 sm:px-6 lg:px-8 py-6 sm:py-10 text-white' : `p-6 ${showResult || isReviewMode ? 'pb-24' : ''}`}`}>
                             {isReviewMode ? (
-                                /* Review Mode View */
                                 <div className="relative min-h-full">
                                     <div className="absolute inset-0 bg-white/5" />
                                     <div className="relative mx-auto flex min-h-full w-full max-w-5xl flex-col justify-between gap-8">
                                         <div className="flex flex-1 items-center justify-center">
                                             <div className="w-full max-w-3xl space-y-5">
                                                 {shuffledQuestions.map((q, idx) => {
-                                        const userAnswer = userAnswers[idx];
-                                        const isAnswered = userAnswer !== undefined;
-                                        const isCorrect = isAnswered && userAnswer === q.correctAnswerIndex;
-                                        return (
-                                            <div key={idx} id={`question-card-${idx}`} className={`p-4 rounded-2xl border backdrop-blur-xl ${isCorrect ? 'border-emerald-400/20 bg-emerald-400/10' : 'border-rose-400/20 bg-rose-400/10'}`}>
-                                                <div className="flex gap-3 mb-3">
-                                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${isCorrect ? 'bg-emerald-400 text-slate-950' : 'bg-rose-400 text-slate-950'}`}>
-                                                        {idx + 1}
-                                                    </span>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-start justify-between gap-2">
-                                                            <p className="text-sm sm:text-base lg:text-lg font-medium leading-relaxed text-white break-words">
-                                                                {q.questionText}
-                                                            </p>
-                                                            <button
-                                                                onClick={() => handleStartReport(idx)}
-                                                                className="shrink-0 p-2 rounded-xl bg-white/5 hover:bg-white/15 text-white/60 hover:text-orange-300 transition-all active:scale-90"
-                                                                title={t.reportTitle}
-                                                            >
-                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                                                </svg>
-                                                            </button>
-                                                        </div>
-                                                        <div className={`mt-1 inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${isCorrect ? 'bg-emerald-400/15 text-emerald-200' : 'bg-rose-400/15 text-rose-200'}`}>
-                                                            {isCorrect ? t.right : t.wrong}
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                    const userAnswer = userAnswers[idx];
+                                                    const isAnswered = userAnswer !== undefined;
+                                                    const isCorrect = isAnswered && userAnswer === q.correctAnswerIndex;
+                                                    return (
+                                                        <div key={idx} id={`question-card-${idx}`} className={`p-4 rounded-2xl border backdrop-blur-xl ${isCorrect ? 'border-emerald-400/20 bg-emerald-400/10' : 'border-rose-400/20 bg-rose-400/10'}`}>
+                                                            <div className="flex gap-3 mb-3">
+                                                                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${isCorrect ? 'bg-emerald-400 text-slate-950' : 'bg-rose-400 text-slate-950'}`}>
+                                                                    {idx + 1}
+                                                                </span>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="flex items-start justify-between gap-2">
+                                                                        <p className="text-sm sm:text-base lg:text-lg font-medium leading-relaxed text-white break-words">
+                                                                            {q.questionText}
+                                                                        </p>
+                                                                        <div className="flex gap-1.5 shrink-0">
+                                                                            <button
+                                                                                onClick={() => handleGoogleSearch(q.questionText)}
+                                                                                className="p-2 rounded-xl bg-white/5 hover:bg-white/15 text-white/60 hover:text-blue-400 transition-all active:scale-90"
+                                                                                title={language === 'en' ? 'Search Google' : 'গুগল সার্চ'}
+                                                                            >
+                                                                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                                                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                                                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-1 .67-2.28 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                                                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                                                                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                                                                                </svg>
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => handleStartReport(idx)}
+                                                                                className="p-2 rounded-xl bg-white/5 hover:bg-white/15 text-white/60 hover:text-orange-300 transition-all active:scale-90"
+                                                                                title={t.reportTitle}
+                                                                            >
+                                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                                                </svg>
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className={`mt-1 inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${isCorrect ? 'bg-emerald-400/15 text-emerald-200' : 'bg-rose-400/15 text-rose-200'}`}>
+                                                                        {isCorrect ? t.right : t.wrong}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
                                                 {q.image && (
                                                     <div className="mb-4 ml-9 rounded-xl overflow-hidden border border-white/10 max-w-[200px]">
                                                         <img src={q.image} alt="Question" className="w-full h-auto" />
