@@ -182,6 +182,15 @@ export default function SmartLinemanUI() {
     }
   }, [user]);
 
+  // Scroll to Top on View Change
+  useEffect(() => {
+    const mainContent = document.querySelector('.flex-1.overflow-y-auto');
+    if (mainContent) {
+      mainContent.scrollTo(0, 0);
+    }
+    window.scrollTo(0, 0);
+  }, [currentView]);
+
   // Pull to refresh state — lastRefreshTime is persisted in sessionStorage
   // so the cooldown survives page reloads (e.g. native pull-to-refresh) and
   // prevents hammering the DB on every swipe-down.
