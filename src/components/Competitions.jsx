@@ -4,6 +4,7 @@ import { supabase } from '../supabaseClient';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
 import { storageUtils } from '../utils/storageUtils';
+import { leaderboardService } from '../utils/leaderboardService';
 import { requestManager } from '../utils/requestManager';
 import { DotLottiePlayer } from '@dotlottie/react-player';
 import sandyLoading from '../assets/SandyLoading.lottie';
@@ -81,6 +82,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [serverTimeOffset, setServerTimeOffset] = useState(0);
     const [fetchError, setFetchError] = useState(false);
     const [showCompactView, setShowCompactView] = useState(!isFullLeaderboard);
+    const [leaderboardTab, setLeaderboardTab] = useState('all-time'); // 'all-time' or 'monthly'
+    const [monthlyLeaderboard, setMonthlyLeaderboard] = useState([]);
+    const [loadingMonthly, setLoadingMonthly] = useState(false);
     const [showHint, setShowHint] = useState(false);
     const [hintViewedQuestions, setHintViewedQuestions] = useState(new Set());
     const [showAbortWarningModal, setShowAbortWarningModal] = useState(false);
@@ -281,8 +285,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             if (user) {
                 promises.push(fetchLeaderboard());
                 promises.push(fetchTodayAttempts());
-                // Also fetch specific rank for the current view
                 promises.push(fetchUserRank(forceRefresh));
+                
+                // Background Pre-fetching for smoother experience
+                // These won't block the main UI if they take longer
+                fetchMonthlyLeaderboard(forceRefresh);
+                fetchHallOfFameGallery(forceRefresh);
             }
 
             await Promise.all(promises);
@@ -866,36 +874,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         }
     };
 
+
     const fetchFullLeaderboard = async (forceRefresh = false) => {
         setLoadingFull(true);
-        
         try {
-            const cacheKey = 'leaderboard_full_all_time';
-
-            const formattedData = await requestManager.fetch(
-                cacheKey,
-                async () => {
-                    const query = supabase
-                        .from('leaderboard_view')
-                        .select('*')
-                        .order('score', { ascending: false });
-
-                    const { data, error } = await query.limit(50);
-
-                    if (error) throw error;
-
-                    return data.map(item => ({
-                        ...item,
-                        points: item.score ?? 0,
-                        reading_points: item.reading_points ?? 0
-                    }));
-                },
-                { ttl: 5, swr: true, forceRefresh }
-            );
-
-            if (formattedData) {
-                setFullLeaderboard(formattedData);
-            }
+            const data = await leaderboardService.fetchAllTime(forceRefresh);
+            if (data) setFullLeaderboard(data);
         } catch (error) {
             console.error('Error fetching full leaderboard:', error);
         } finally {
@@ -903,38 +887,25 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         }
     };
 
-    const fetchHallOfFameGallery = async () => {
+    const fetchMonthlyLeaderboard = async (forceRefresh = false) => {
+        setLoadingMonthly(true);
+        try {
+            const data = await leaderboardService.fetchMonthly(forceRefresh);
+            if (data) setMonthlyLeaderboard(data);
+        } catch (error) {
+            console.error('Error fetching monthly leaderboard:', error);
+        } finally {
+            setLoadingMonthly(false);
+        }
+    };
+
+    const fetchHallOfFameGallery = async (forceRefresh = false) => {
+        if (!forceRefresh && hallOfFameData.length > 0) return;
+        
         setLoadingGallery(true);
         try {
-            const monthsToFetch = 12;
-            const archive = [];
-            const now = new Date();
-            
-            // Fetch past 12 months toppers
-            // We'll do this in a single query by fetching recent records and grouping
-            // or just loop for precision since it's only 12 small queries
-            for (let i = 1; i <= monthsToFetch; i++) {
-                const targetDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                const m = targetDate.getMonth() + 1;
-                const y = targetDate.getFullYear();
-                
-                const { data, error } = await supabase
-                    .from('monthly_leaderboard_view')
-                    .select('*')
-                    .eq('month_num', m)
-                    .eq('year_num', y)
-                    .order('points', { ascending: false })
-                    .limit(3);
-                
-                if (!error && data && data.length > 0) {
-                    archive.push({
-                        month: m,
-                        year: y,
-                        winners: data
-                    });
-                }
-            }
-            setHallOfFameData(archive);
+            const archive = await leaderboardService.fetchHallOfFame(forceRefresh);
+            if (archive) setHallOfFameData(archive);
         } catch (error) {
             console.error('Error fetching gallery:', error);
         } finally {
@@ -1225,7 +1196,34 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     </div>
                 </div>
 
-                {showHallOfFame ? (
+            {/* Tab Navigation - Added for All-Time vs Monthly */}
+            {!showHallOfFame && (
+                <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+                    <div className="max-w-6xl mx-auto px-4">
+                        <div className="flex gap-8">
+                            <button
+                                onClick={() => setLeaderboardTab('all-time')}
+                                className={`py-4 text-sm font-black transition-all relative ${leaderboardTab === 'all-time' ? 'text-orange-600 dark:text-orange-400' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                {language === 'en' ? 'All-Time' : 'সর্বকালীন'}
+                                {leaderboardTab === 'all-time' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-orange-600 rounded-t-full shadow-[0_-4px_8px_rgba(234,88,12,0.3)]"></div>}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setLeaderboardTab('monthly');
+                                    if (monthlyLeaderboard.length === 0) fetchMonthlyLeaderboard();
+                                }}
+                                className={`py-4 text-sm font-black transition-all relative ${leaderboardTab === 'monthly' ? 'text-orange-600 dark:text-orange-400' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                {language === 'en' ? 'This Month' : 'এই মাস'}
+                                {leaderboardTab === 'monthly' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-orange-600 rounded-t-full shadow-[0_-4px_8px_rgba(234,88,12,0.3)]"></div>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showHallOfFame ? (
                     <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
 
                         {loadingGallery ? (
@@ -1349,14 +1347,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     </div>
                 ) : (
                     <div className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-3">
-                        {user && userRank && !loadingFull && (() => {
+                        {user && userRank && !loadingFull && leaderboardTab === 'all-time' && (() => {
                         const userBadge = getBadgeByLevel(userProfile?.training_level || 0);
                         return (
                             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-4 sm:p-5 mb-2">
                                 <div className="flex items-center justify-between gap-3">
                                     <div className="flex-1 min-w-0">
                                         <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400 mb-1">
-                                            {language === 'en' ? 'Your Standing' : 'আপনার অবস্থান'}
+                                            {language === 'en' ? 'Your All-Time Standing' : 'আপনার সর্বকালীন অবস্থান'}
                                         </p>
                                         <div className="flex items-center gap-2 flex-wrap">
                                             <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">#{userRank.rank}</p>
@@ -1375,11 +1373,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         </div>
                                                     </div>
                                         </div>
-                                        {userProfile?.last_login_at && (
-                                            <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-1.5">
-                                                {language === 'en' ? 'Active' : 'সক্রিয়'} {formatLastActive(userProfile.last_login_at, language)}
-                                            </p>
-                                        )}
                                     </div>
                                     <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-orange-600 dark:text-orange-300 border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
                                         {userProfile?.avatar_url ? <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
@@ -1389,212 +1382,88 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                         );
                     })()}
 
-                    {!loadingFull && fullLeaderboard.length > 0 && (() => {
-                        let topPlayers = [];
-                        if (fullLeaderboard.length === 1) {
-                            topPlayers = [fullLeaderboard[0]];
-                        } else if (fullLeaderboard.length === 2) {
-                            topPlayers = [fullLeaderboard[1], fullLeaderboard[0]];
-                        } else {
-                            topPlayers = [fullLeaderboard[1], fullLeaderboard[0], fullLeaderboard[2]];
-                        }
-                        return (
-                            <div className="flex flex-col items-center gap-4 mt-8 mb-16 max-w-6xl mx-auto px-4 w-full">
-                                <div className={`flex flex-col md:flex-row items-center md:items-end justify-center gap-4 md:gap-6 w-full ${topPlayers.length < 3 ? 'md:max-w-2xl' : ''}`}>
-                                    {topPlayers.map((item) => {
-                                        const rank = item === fullLeaderboard[0] ? 1 : item === fullLeaderboard[1] ? 2 : 3;
-                                        const badge = getBadgeByLevel(item.training_level || 0);
-                                        const theme = {
-                                            1: { bg: 'gold-gradient', text: 'text-amber-900 dark:text-amber-100', border: 'border-amber-400/50 shadow-amber-500/10', glow: 'medal-glow-1', icon: '👑', height: 'md:min-h-[380px]', order: 'order-1 md:order-2', scale: 'scale-105 md:scale-110 z-10' },
-                                            2: { bg: 'silver-gradient', text: 'text-slate-900 dark:text-slate-100', border: 'border-slate-300/50 shadow-slate-400/5', glow: 'medal-glow-2', icon: '🥈', height: 'md:min-h-[340px]', order: 'order-2 md:order-1', scale: 'scale-100' },
-                                            3: { bg: 'bronze-gradient', text: 'text-orange-950 dark:text-orange-100', border: 'border-orange-300/50 shadow-orange-500/5', glow: 'medal-glow-3', icon: '🥉', height: 'md:min-h-[320px]', order: 'order-3 md:order-3', scale: 'scale-95 md:scale-100' }
-                                        }[rank];
-
-                                        return (
-                                            <article key={item.user_id} onClick={() => openUserProgress(item.user_id)} className={`${theme.order} ${theme.scale} ${theme.bg} ${theme.border} ${theme.glow} ${theme.height} w-full md:w-1/3 max-w-xs sm:max-w-sm rounded-[1.5rem] sm:rounded-3xl border leaderboard-podium-card p-4 sm:p-4 flex flex-col items-center justify-between cursor-pointer relative overflow-hidden min-h-[320px] md:h-auto`}>
-                                                <div className="absolute top-0 right-0 p-2 sm:p-3"><span className="text-xl sm:text-4xl opacity-20 font-black italic">#{rank}</span></div>
-                                                <div className={`text-3xl sm:text-4xl mb-1.5 sm:mb-2 ${rank === 1 ? 'animate-crown' : ''}`}>{theme.icon}</div>
-                                                <div className="relative mb-2 sm:mb-3">
-                                                    <div className={`w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border-4 ${rank === 1 ? 'border-amber-200/50' : 'border-white/30'} shadow-xl`}>
-                                                        {item.avatar_url ? <img src={item.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-white/20 text-2xl sm:text-3xl font-black uppercase">{(item.full_name || '?')[0]}</div>}
-                                                    </div>
-                                                    {item.last_login_at && (() => {
-                                                        const d = new Date(item.last_login_at);
-                                                        const now = new Date();
-                                                        const isActive = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                                                        return (
-                                                            <span className="absolute -bottom-1 -right-1 flex h-3 w-3 sm:h-4 sm:w-4">
-                                                                <span className={`relative inline-flex rounded-full h-3 w-3 sm:h-4 sm:w-4 border-2 border-white dark:border-slate-900 ${isActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}></span>
-                                                            </span>
-                                                        );
-                                                    })()}
-                                                </div>
-                                                <div className="text-center mb-2.5 sm:mb-4 min-w-0 w-full">
-                                                    <p className={`text-base sm:text-lg font-black truncate ${theme.text} px-2`}>{item.full_name || 'Anonymous'}</p>
-                                                    {badge && <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black border uppercase tracking-wider backdrop-blur-sm bg-white/10 ${badge.color} border-white/20 mt-0.5 sm:mt-1 shadow-sm`}>{language === 'en' ? badge.en : badge.bn}</span>}
-                                                </div>
-                                                <div className="w-full bg-white/5 dark:bg-black/20 backdrop-blur-md rounded-2xl px-2.5 sm:px-3 py-3 sm:py-4 border border-white/10 flex flex-col items-center">
-                                                    <div className="flex flex-col items-center gap-1">
-                                                        <p className={`text-2xl sm:text-4xl font-black tabular-nums ${theme.text} leading-none tracking-tighter`}>{(item.points || 0).toLocaleString()}</p>
-                                                        <div className="flex flex-col items-center gap-0.5 mt-2 sm:mt-3">
-                                                            <div className="flex items-center gap-1 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg sm:rounded-xl bg-black/10 dark:bg-white/10 border border-white/5 shadow-inner">
-                                                                <span className="text-[10px] sm:text-xs">📖</span>
-                                                                <span className={`text-[10px] sm:text-xs font-black ${theme.text} opacity-90 tabular-nums`}>{(item.reading_points || 0).toLocaleString()}</span>
-                                                            </div>
-                                                            <p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-wider opacity-60 ${theme.text}`}>{language === 'en' ? 'Reading' : 'রিডিং'}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </article>
-                                        );
-                                    })}
-                                </div>
+                    {/* Winners Podium / List Container */}
+                    <div className="space-y-4">
+                        {(leaderboardTab === 'all-time' ? loadingFull : loadingMonthly) ? (
+                            <div className="flex flex-col items-center justify-center py-20">
+                                <div className="w-12 h-12 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin"></div>
+                                <p className="text-xs font-bold text-slate-400 mt-4 uppercase tracking-widest">{t.loadingText || 'Loading Rankings...'}</p>
                             </div>
-                        );
-                    })()}
-
-                    {(!loadingFull && fullLeaderboard.length > 0) ? (
-                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm mb-8">
-                            <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: 'calc(100vh - 240px)' }}>
-                                <table className="w-full">
-                                    <thead className="sticky top-0 z-10 bg-gradient-to-b from-slate-100 to-slate-50 dark:from-slate-800/95 dark:to-slate-800/80 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-700/60 shadow-sm">
-                                        <tr>
-                                            <th className="px-2 sm:px-4 py-2 text-left text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.1em]">
-                                                {language === 'en' ? '#' : '#'}
-                                            </th>
-                                            <th className="px-2 sm:px-4 py-2 text-left text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.1em]">
-                                                {language === 'en' ? 'User' : 'ইউজার'}
-                                            </th>
-                                            <th className="hidden sm:table-cell px-3 sm:px-4 py-2.5 text-right text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.15em]">
-                                                {language === 'en' ? 'Reading' : 'রিডিং'}
-                                            </th>
-                                            <th className="hidden sm:table-cell px-3 sm:px-4 py-2.5 text-right text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.15em]">
-                                                {language === 'en' ? 'Loss' : 'পেনাল্টি'}
-                                            </th>
-                                            <th className="px-2 sm:px-4 py-2 text-right text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.1em]">
-                                                {language === 'en' ? 'Pts' : 'পয়েন্ট'}
-                                            </th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700/30">
-                                        {loadingFull ? (
-                                            Array(12).fill(0).map((_, i) => (
-                                                <tr key={i} className="h-14">
-                                                    <td colSpan="5" className="px-4 sm:px-6 py-3"><SkeletonRow /></td>
-                                                </tr>
-                                            ))
-                                        ) : fullLeaderboard.length > 0 ? (
-                                            (fullLeaderboard.length >= 3 ? fullLeaderboard.slice(3) : fullLeaderboard).map((item, idx) => {
-                                                const index = idx + (fullLeaderboard.length >= 3 ? 3 : 0);
-                                                const isMe = item.user_id === user?.id;
-                                                const badge = getBadgeByLevel(item.training_level);
+                        ) : (leaderboardTab === 'all-time' ? fullLeaderboard : monthlyLeaderboard).length > 0 ? (
+                            <>
+                                {/* Top 3 Podium (Reused logic) */}
+                                {(() => {
+                                    const list = leaderboardTab === 'all-time' ? fullLeaderboard : monthlyLeaderboard;
+                                    let topPlayers = [];
+                                    if (list.length === 1) {
+                                        topPlayers = [list[0]];
+                                    } else if (list.length === 2) {
+                                        topPlayers = [list[1], list[0]];
+                                    } else {
+                                        topPlayers = [list[1], list[0], list[2]];
+                                    }
+                                    
+                                    return (
+                                        <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6 items-end">
+                                            {topPlayers.map((player, idx) => {
+                                                const isWinner = topPlayers.length === 1 ? true : (topPlayers.length === 2 ? idx === 1 : idx === 1);
+                                                const rank = topPlayers.length === 1 ? 1 : (topPlayers.length === 2 ? (idx === 0 ? 2 : 1) : (idx === 0 ? 2 : idx === 1 ? 1 : 3));
                                                 
                                                 return (
-                                                    <tr
-                                                        key={item.user_id}
-                                                        onClick={() => openUserProgress(item.user_id)}
-                                                        className={`transition-all duration-300 border-b border-slate-100 dark:border-slate-800/40 cursor-pointer group ${isMe ? 'bg-orange-500/[0.03] dark:bg-orange-500/[0.05]' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'}`}
-                                                    >
-                                                        <td className="px-1.5 sm:px-4 py-4">
-                                                            <div className="flex items-center gap-1.5 text-xs font-black">
-                                                                <span className={`w-6 h-6 rounded-lg flex items-center justify-center ${index < 3 ? 'bg-slate-100 dark:bg-slate-800 text-orange-600' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200'}`}>
-                                                                    {index + 1}
-                                                                </span>
+                                                    <div key={player.user_id} className={`flex flex-col items-center ${isWinner ? 'scale-110 mb-2' : 'mb-0 opacity-90'}`}>
+                                                        <div className="relative mb-3">
+                                                            <div className={`w-14 h-14 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 shadow-xl ${rank === 1 ? 'border-amber-400 ring-4 ring-amber-400/20' : rank === 2 ? 'border-slate-300 ring-4 ring-slate-300/20' : 'border-orange-300 ring-4 ring-orange-300/20'}`}>
+                                                                {player.avatar_url ? <img src={player.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-xl font-bold text-slate-400">{player.full_name?.[0]}</div>}
                                                             </div>
-                                                        </td>
-                                                        <td className="px-1.5 sm:px-4 py-4">
-                                                            <div className="flex items-center gap-3 min-w-0">
-                                                                <div className="relative shrink-0">
-                                                                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex-shrink-0 overflow-hidden border-2 transition-transform group-hover:scale-110 ${isMe ? 'border-orange-500/20' : 'border-white dark:border-slate-700'} shadow-sm`}>
-                                                                        {item.avatar_url ? (
-                                                                            <img src={item.avatar_url} alt="" className="w-full h-full object-cover" />
-                                                                        ) : (
-                                                                            <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xs uppercase">{item.full_name?.[0] || '?'}</div>
-                                                                        )}
-                                                                    </div>
-                                                                    {item.last_login_at && (() => {
-                                                                        const d = new Date(item.last_login_at);
-                                                                        const now = new Date();
-                                                                        const isActive = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                                                                        return (
-                                                                            <span className="absolute -bottom-1 -right-1 flex h-3 w-3">
-                                                                                <span className={`relative inline-flex rounded-full h-3 w-3 border-2 border-white dark:border-slate-900 ${isActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}></span>
-                                                                            </span>
-                                                                        );
-                                                                    })()}
-                                                                </div>
-                                                                <div className="min-w-0 flex-1">
-                                                                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                                                                        <p className={`text-[13px] sm:text-sm font-black truncate leading-tight ${isMe ? 'text-orange-600 dark:text-orange-400' : 'text-slate-800 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400'}`}>
-                                                                            {item.full_name || 'Anonymous'}
-                                                                        </p>
-                                                                        {isMe && (
-                                                                            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse shrink-0"></span>
-                                                                        )}
-                                                                    </div>
-                                                                    <div className="flex items-center gap-1.5 overflow-hidden">
-                                                                        {item.last_login_at && (
-                                                                            <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 truncate">
-                                                                                {formatLastActive(item.last_login_at, language).replace('Active ', '').replace('সক্রিয় ', '')}
-                                                                            </p>
-                                                                        )}
-                                                                        {badge && (
-                                                                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-tight border ${badge.color}`}>
-                                                                                {language === 'en' ? badge.en : badge.bn}
-                                                                            </span>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
+                                                            <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-black border-2 shadow-lg ${rank === 1 ? 'bg-amber-400 text-amber-900 border-amber-200' : rank === 2 ? 'bg-slate-300 text-slate-800 border-slate-100' : 'bg-orange-300 text-orange-900 border-orange-100'}`}>
+                                                                {rank}
                                                             </div>
-                                                        </td>
-                                                        <td className="hidden sm:table-cell px-3 sm:px-4 py-4 text-right">
-                                                            <span className="text-sm font-black text-slate-600 dark:text-slate-400 tabular-nums">
-                                                                {(item.reading_points || 0).toLocaleString()}
-                                                            </span>
-                                                        </td>
-                                                        <td className="hidden sm:table-cell px-3 sm:px-4 py-4 text-right">
-                                                            <span className="text-sm font-black text-rose-500/80 dark:text-rose-400/80 tabular-nums">
-                                                                -{(item.total_penalties || 0).toLocaleString()}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-1.5 sm:px-4 py-4 text-right">
-                                                            <div className="flex flex-col items-end gap-1.5">
-                                                                <span className={`text-base font-black tabular-nums leading-none ${isMe ? 'text-orange-600 dark:text-orange-400' : 'text-slate-800 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400'}`}>
-                                                                    {(item.points || 0).toLocaleString()}
-                                                                </span>
-                                                                <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 leading-none">
-                                                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-100/50 dark:bg-orange-500/10 border border-orange-200/50 dark:border-orange-500/20 text-orange-700 dark:text-orange-400">
-                                                                        <span className="text-[10px]">📖</span>
-                                                                        <span>{(item.reading_points || 0).toLocaleString()} <span className="text-[8px] opacity-70">{language === 'en' ? 'READING' : 'রিডিং'}</span></span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="5" className="px-4 sm:px-6 py-12 text-center">
-                                                    <div className="text-slate-400">
-                                                        <div className="text-4xl mb-3">🏆</div>
-                                                        <p className="font-medium">{language === 'en' ? 'No rankings yet' : 'এখনও কোনো র‍্যাঙ্কিং নেই'}</p>
+                                                            {rank === 1 && <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-2xl animate-bounce">👑</div>}
+                                                        </div>
+                                                        <p className="text-[10px] sm:text-xs font-black text-slate-900 dark:text-white truncate max-w-full text-center px-1 leading-tight">{player.full_name}</p>
+                                                        <p className="text-[10px] font-bold text-orange-600 dark:text-orange-400 tabular-nums">{(player.points || player.score || 0).toLocaleString()}</p>
                                                     </div>
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })()}
 
-                            {/* breathing room below list */}
-                            <div className="h-12 sm:h-16"></div>
-                        </div>
-                    ) : null}
+                                {/* List View for others */}
+                                <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                                    {(leaderboardTab === 'all-time' ? fullLeaderboard : monthlyLeaderboard).map((item, idx) => (
+                                        <div 
+                                            key={item.user_id}
+                                            onClick={() => openUserProgress(item.user_id)}
+                                            className="flex items-center gap-4 p-4 border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer group"
+                                        >
+                                            <div className="w-8 text-center text-sm font-black text-slate-400 group-hover:text-orange-500 transition-colors">
+                                                {idx + 1}
+                                            </div>
+                                            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0">
+                                                {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{item.full_name}</p>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{item.slm_id || 'SLM-MEMBER'}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-sm font-black text-slate-900 dark:text-white tabular-nums">{(item.points || item.score || 0).toLocaleString()}</p>
+                                                <p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">{language === 'en' ? 'POINTS' : 'পয়েন্ট'}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            <div className="text-center py-20 text-slate-400 italic">
+                                {language === 'en' ? 'No rankings found for this category.' : 'এই বিভাগে কোনো র‍্যাঙ্কিং পাওয়া যায়নি।'}
+                            </div>
+                        )}
+                    </div>
                 </div>
-                )}
-            </main>
+            )}
+        </main>
         );
     }
 

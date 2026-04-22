@@ -13,6 +13,7 @@ import NetworkStatusListener from "./components/NetworkStatusListener";
 import { UserIcon } from "./components/icons";
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from "./config";
 import { preloadSafetyLibraryAssets } from "./utils/assetPreloader";
+import { leaderboardService } from "./utils/leaderboardService";
 
 // Lazy load heavy components for code splitting
 const Competitions = lazy(() => import("./components/Competitions"));
@@ -164,6 +165,19 @@ export default function SmartLinemanUI() {
     }, 2000);
     return () => clearTimeout(timer);
   }, []);
+
+  // Background Pre-fetching for Leaderboard & Monthly Stars
+  useEffect(() => {
+    if (user) {
+      // Delay pre-fetching to prioritize initial UI rendering
+      const timer = setTimeout(() => {
+        leaderboardService.fetchAllTime();
+        leaderboardService.fetchMonthly();
+        leaderboardService.fetchHallOfFame();
+      }, 5000); // 5 second delay
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
 
   // Pull to refresh state — lastRefreshTime is persisted in sessionStorage
   // so the cooldown survives page reloads (e.g. native pull-to-refresh) and
