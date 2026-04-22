@@ -1423,8 +1423,28 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 return (
                                                     <div key={player.user_id} className={`flex flex-col items-center ${isWinner ? 'scale-110 mb-2' : 'mb-0 opacity-90'}`}>
                                                         <div className="relative mb-3">
-                                                            <div className={`w-14 h-14 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 shadow-xl ${rank === 1 ? 'border-amber-400 ring-4 ring-amber-400/20' : rank === 2 ? 'border-slate-300 ring-4 ring-slate-300/20' : 'border-orange-300 ring-4 ring-orange-300/20'}`}>
+                                                            <div className={`w-14 h-14 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 shadow-xl ${rank === 1 ? 'border-amber-400 ring-4 ring-amber-400/20' : rank === 2 ? 'border-slate-300 ring-4 ring-slate-300/20' : 'border-orange-300 ring-4 ring-orange-300/20'} relative`}>
                                                                 {player.avatar_url ? <img src={player.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-xl font-bold text-slate-400">{player.full_name?.[0]}</div>}
+                                                                
+                                                                {/* Status Indicator in Corner */}
+                                                                {(() => {
+                                                                    const lastActiveDate = player.last_active || player.last_login_at;
+                                                                    if (!lastActiveDate) return null;
+                                                                    const date = new Date(lastActiveDate);
+                                                                    const now = new Date();
+                                                                    const diffInSeconds = Math.floor((now - date) / 1000);
+                                                                    const isOnline = diffInSeconds < 300;
+                                                                    const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+                                                                    
+                                                                    if (!isToday) return null;
+
+                                                                    return (
+                                                                        <span className="absolute bottom-1 right-1 flex h-3 w-3 z-20">
+                                                                            {isOnline && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>}
+                                                                            <span className={`relative inline-flex rounded-full h-3 w-3 ${isOnline ? 'bg-green-500' : 'bg-green-500/60'} border-2 border-white dark:border-slate-900`}></span>
+                                                                        </span>
+                                                                    );
+                                                                })()}
                                                             </div>
                                                             <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-black border-2 shadow-lg ${rank === 1 ? 'bg-amber-400 text-amber-900 border-amber-200' : rank === 2 ? 'bg-slate-300 text-slate-800 border-slate-100' : 'bg-orange-300 text-orange-900 border-orange-100'}`}>
                                                                 {rank}
@@ -1432,24 +1452,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             {rank === 1 && <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-2xl animate-bounce">👑</div>}
                                                         </div>
                                                         <p className="text-[10px] sm:text-xs font-black text-slate-900 dark:text-white truncate max-w-full text-center px-1 leading-tight mb-1">{player.full_name}</p>
-                                                            {(() => {
-                                                                const lastActiveDate = player.last_active || player.last_login_at;
-                                                                if (!lastActiveDate) return null;
-                                                                const date = new Date(lastActiveDate);
-                                                                const now = new Date();
-                                                                const diffInSeconds = Math.floor((now - date) / 1000);
-                                                                const isOnline = diffInSeconds < 300;
-                                                                const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-                                                                
-                                                                if (!isToday) return null;
-
-                                                                return (
-                                                                    <span className="absolute -bottom-1 -right-1 flex h-3 w-3 z-20">
-                                                                        {isOnline && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>}
-                                                                        <span className={`relative inline-flex rounded-full h-3 w-3 ${isOnline ? 'bg-green-500' : 'bg-green-500/60'} border-2 border-white dark:border-slate-900`}></span>
-                                                                    </span>
-                                                                );
-                                                            })()}
+                                                        <div className="flex items-center gap-1 mb-1">
                                                             {(() => {
                                                                 const badge = getBadgeByLevel(player.training_level || 0);
                                                                 return badge && (
@@ -1484,9 +1487,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             <div className="w-8 text-center text-sm font-black text-slate-400 group-hover:text-orange-500 transition-colors">
                                                 {idx + 1}
                                             </div>
-                                            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-400 shrink-0 border border-slate-100 dark:border-slate-700 relative">
-                                                {item.avatar_url ? <img src={item.avatar_url} alt="Avatar" className="w-full h-full object-cover rounded-xl" /> : (item.full_name?.[0] || 'U')}
+                                            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0 relative">
+                                                {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
                                                 
+                                                {/* Status Indicator in Corner */}
                                                 {(item.last_active || item.last_login_at) && (() => {
                                                     const lastActiveDate = item.last_active || item.last_login_at;
                                                     const date = new Date(lastActiveDate);
@@ -1495,10 +1499,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     const isOnline = diffInSeconds < 300;
                                                     const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
                                                     
-                                                    return isToday && (
-                                                        <span className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5 z-10">
+                                                    if (!isToday) return null;
+
+                                                    return (
+                                                        <span className="absolute bottom-0 right-0 flex h-2.5 w-2.5 z-10">
                                                             {isOnline && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>}
-                                                            <span className={`relative inline-flex rounded-full h-3.5 w-3.5 ${isOnline ? 'bg-green-500' : 'bg-green-500/60'} border-2 border-white dark:border-slate-900`}></span>
+                                                            <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isOnline ? 'bg-green-500' : 'bg-green-500/60'} border-2 border-white dark:border-slate-900`}></span>
                                                         </span>
                                                     );
                                                 })()}
@@ -1527,12 +1533,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             
                                                             return (
                                                                 <div className="flex items-center gap-1.5">
-                                                                    {isToday && (
-                                                                        <span className="relative flex h-2.5 w-2.5">
-                                                                            {isOnline && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>}
-                                                                            <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isOnline ? 'bg-green-500' : 'bg-green-500/60'} border-2 border-white dark:border-slate-900`}></span>
-                                                                        </span>
-                                                                    )}
                                                                     <span className={`text-[10px] font-bold uppercase tracking-tight ${isOnline ? 'text-green-600 dark:text-green-400' : isToday ? 'text-green-600/70 dark:text-green-400/70' : 'text-slate-400'}`}>
                                                                         {isOnline 
                                                                             ? (language === 'en' ? 'Online' : 'অনলাইন') 
