@@ -44,14 +44,19 @@ export const leaderboardService = {
             async () => {
                 const { data, error } = await supabase
                     .from('monthly_leaderboard_view')
-                    .select('*')
+                    .select('*, profiles(reading_points)')
                     .eq('month_num', m)
                     .eq('year_num', y)
                     .order('points', { ascending: false })
                     .limit(50);
 
                 if (error) throw error;
-                return data;
+                
+                // Flatten the nested profiles data
+                return data.map(item => ({
+                    ...item,
+                    all_time_reading_points: item.profiles?.reading_points || 0
+                }));
             },
             { ttl: 5, swr: true, forceRefresh }
         );

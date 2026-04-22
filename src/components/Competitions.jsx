@@ -1454,7 +1454,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         <p className="text-[10px] sm:text-xs font-black text-slate-900 dark:text-white truncate max-w-full text-center px-1 leading-tight mb-1">{player.full_name}</p>
                                                         <div className="flex items-center gap-1 mb-1">
                                                             {(() => {
-                                                                const badge = getBadgeByLevel(player.training_level || 0, player.reading_points || 0);
+                                                                const badge = getBadgeByLevel(
+                                                                    player.training_level || 0, 
+                                                                    player.all_time_reading_points !== undefined ? player.all_time_reading_points : (player.reading_points || 0)
+                                                                );
                                                                 return badge && (
                                                                     <span className={`text-[8px] px-1.5 py-0.5 rounded border font-black uppercase tracking-tighter ${badge.color}`}>
                                                                         {language === 'en' ? badge.en : badge.bn}
@@ -1515,7 +1518,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 <div className="flex items-center gap-2 mb-0.5">
                                                     <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{item.full_name}</p>
                                                     {(() => {
-                                                        const badge = getBadgeByLevel(item.training_level || 0, item.reading_points || 0);
+                                                        const badge = getBadgeByLevel(
+                                                            item.training_level || 0, 
+                                                            item.all_time_reading_points !== undefined ? item.all_time_reading_points : (item.reading_points || 0)
+                                                        );
                                                         return badge && (
                                                             <span className={`text-[8px] px-1.5 py-0.5 rounded border font-black uppercase tracking-tighter ${badge.color}`}>
                                                                 {language === 'en' ? badge.en : badge.bn}
