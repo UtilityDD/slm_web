@@ -35,6 +35,32 @@ const AwarenessStories = lazy(() => import("./components/safety/AwarenessStories
 const VideoGuide = lazy(() => import("./components/safety/VideoGuide"));
 const SafetyLibrary = lazy(() => import("./components/safety/SafetyLibrary"));
 
+// Smooth transition pre-loader
+const preloadComponent = (factory) => {
+  const component = factory();
+  return component;
+};
+
+// Global PageLoader component moved outside to prevent re-creation
+const PageLoader = () => (
+  <div className="fixed inset-0 z-[9999] bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center animate-in fade-in duration-500">
+    <div className="relative">
+      <div className="w-16 h-16 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin"></div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-8 h-8 bg-orange-500 rounded-full animate-pulse opacity-50"></div>
+      </div>
+    </div>
+    <div className="mt-8 flex flex-col items-center gap-2">
+      <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-widest uppercase">Smart Lineman</h2>
+      <div className="flex gap-1">
+        <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+        <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+        <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce"></div>
+      </div>
+    </div>
+  </div>
+);
+
 import { libraryService } from "./utils/libraryService";
 
 export default function SmartLinemanUI() {
@@ -379,6 +405,10 @@ export default function SmartLinemanUI() {
     // Check active session
     // Check active session with fail-safe timeout
     const initSession = async () => {
+      // Pre-load essential views immediately
+      preloadComponent(() => import("./components/Home"));
+      preloadComponent(() => import("./components/Login"));
+
       // Force app loading to false after 5s max (expanded for reliability)
       const timeoutId = setTimeout(() => {
         console.warn('Session check timed out, forcing app load');
@@ -1070,15 +1100,17 @@ export default function SmartLinemanUI() {
     );
   }
 
-  if (appLoading) return <PageLoader />;
-
   return (
-    <div
-      className={`h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-300 font-sans flex flex-col ${language === 'bn' ? 'font-bengali' : ''}`}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
+    <Suspense fallback={<PageLoader />}>
+      {appLoading ? (
+        <PageLoader />
+      ) : (
+        <div
+          className={`h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-300 font-sans flex flex-col ${language === 'bn' ? 'font-bengali' : ''}`}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
       {/* Sidebar Navigation */}
       {user && (
         <Sidebar
@@ -1423,7 +1455,9 @@ export default function SmartLinemanUI() {
             </div>
           )
         }
+        </div >
       </div >
-    </div >
+      )}
+    </Suspense>
   );
 }
