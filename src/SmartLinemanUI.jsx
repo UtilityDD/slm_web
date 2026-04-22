@@ -177,7 +177,7 @@ export default function SmartLinemanUI() {
         leaderboardService.fetchAllTime();
         leaderboardService.fetchMonthly();
         leaderboardService.fetchHallOfFame();
-      }, 5000); // 5 second delay
+      }, 2000); // 2 second delay
       return () => clearTimeout(timer);
     }
   }, [user]);
