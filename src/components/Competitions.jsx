@@ -1454,7 +1454,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         <p className="text-[10px] sm:text-xs font-black text-slate-900 dark:text-white truncate max-w-full text-center px-1 leading-tight mb-1">{player.full_name}</p>
                                                         <div className="flex items-center gap-1 mb-1">
                                                             {(() => {
-                                                                const badge = getBadgeByLevel(player.training_level || 0);
+                                                                const badge = getBadgeByLevel(player.training_level || 0, player.reading_points || 0);
                                                                 return badge && (
                                                                     <span className={`text-[8px] px-1.5 py-0.5 rounded border font-black uppercase tracking-tighter ${badge.color}`}>
                                                                         {language === 'en' ? badge.en : badge.bn}
