@@ -52,7 +52,7 @@ const formatLastActive = (dateString, language) => {
     if (diffInSeconds < 60) return isBn ? 'এইমাত্র' : 'Just now';
     if (diffInMinutes < 60) return isBn ? `${diffInMinutes} মিনিট আগে` : `${diffInMinutes}m ago`;
     if (diffInHours < 24) {
-        if (date.getDate() === now.getDate()) return isBn ? 'আজ' : 'Today';
+        if (date.getDate() === now.getDate()) return isBn ? `${diffInHours} ঘণ্টা আগে` : `${diffInHours}h ago`;
         return isBn ? 'গতকাল' : 'Yesterday';
     }
     if (diffInDays < 7) return isBn ? `${diffInDays} দিন আগে` : `${diffInDays}d ago`;
