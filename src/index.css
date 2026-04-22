@@ -101,6 +101,11 @@
   --state-danger-fg: #fca5a5;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 html,
 body,
 #root {
@@ -110,13 +115,14 @@ body,
 @layer base {
   body {
     @apply bg-slate-50 text-slate-900 font-sans antialiased dark:bg-slate-900 dark:text-slate-100;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     height: 100%;
     margin: 0;
     padding: 0;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
     overscroll-behavior-y: contain;
   }
 
@@ -439,21 +445,21 @@ body,
   /* Improved mobile specific adjustments */
   @media (max-width: 767px) {
     .text-title-hero {
-      font-size: clamp(2rem, 8vw, 2.5rem);
+      font-size: clamp(1.75rem, 7vw, 2.25rem);
     }
 
     .text-title-section {
-      font-size: clamp(1.75rem, 7vw, 2rem);
+      font-size: clamp(1.5rem, 6vw, 1.75rem);
     }
 
     .text-body {
-      font-size: 15px;
-      line-height: 1.6;
+      font-size: 14.5px;
+      line-height: 1.55;
     }
 
     .reading-content {
-      font-size: 16px;
-      line-height: 1.7;
+      font-size: 15.5px;
+      line-height: 1.65;
     }
 
     .mobile-container {
