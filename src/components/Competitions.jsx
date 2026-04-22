@@ -1378,9 +1378,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    {userProfile?.last_active && (
+                                                    {(userProfile?.last_active || userProfile?.last_login_at) && (
                                                         <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-1.5">
-                                                            {language === 'en' ? 'Active' : 'সক্রিয়'} {formatLastActive(userProfile.last_active, language)}
+                                                            {language === 'en' ? 'Active' : 'সক্রিয়'} {formatLastActive(userProfile.last_active || userProfile.last_login_at, language)}
                                                         </p>
                                                     )}
                                         </div>
@@ -1434,7 +1434,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         <p className="text-[10px] sm:text-xs font-black text-slate-900 dark:text-white truncate max-w-full text-center px-1 leading-tight mb-1">{player.full_name}</p>
                                                         <div className="flex items-center gap-1 mb-1">
                                                             {(() => {
-                                                                const date = new Date(player.last_active);
+                                                                const lastActiveDate = player.last_active || player.last_login_at;
+                                                                if (!lastActiveDate) return null;
+                                                                const date = new Date(lastActiveDate);
                                                                 const now = new Date();
                                                                 const diffInSeconds = Math.floor((now - date) / 1000);
                                                                 const isOnline = diffInSeconds < 300;
@@ -1497,8 +1499,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 </div>
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex items-center gap-1.5 shrink-0">
-                                                        {item.last_active && (() => {
-                                                            const date = new Date(item.last_active);
+                                                        {(item.last_active || item.last_login_at) && (() => {
+                                                            const lastActiveDate = item.last_active || item.last_login_at;
+                                                            const date = new Date(lastActiveDate);
                                                             const now = new Date();
                                                             const diffInSeconds = Math.floor((now - date) / 1000);
                                                             const isOnline = diffInSeconds < 300; // 5 minutes
@@ -1514,7 +1517,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                     <span className={`text-[10px] font-bold uppercase tracking-tight ${isOnline ? 'text-green-600 dark:text-green-400' : 'text-slate-400'}`}>
                                                                         {isOnline 
                                                                             ? (language === 'en' ? 'Online' : 'অনলাইন') 
-                                                                            : formatLastActive(item.last_active, language)
+                                                                            : formatLastActive(lastActiveDate, language)
                                                                         }
                                                                     </span>
                                                                 </div>
@@ -1788,10 +1791,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xs uppercase">{item.full_name?.[0] || 'U'}</div>
                                                 )}
                                             </div>
-                                            {item.last_active && (() => {
-                                                const d = new Date(item.last_active);
+                                            {(item.last_active || item.last_login_at) && (() => {
+                                                const lastActiveDate = item.last_active || item.last_login_at;
+                                                const d = new Date(lastActiveDate);
                                                 const now = new Date();
-                                                const isActive = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                                                const diffInSeconds = Math.floor((now - d) / 1000);
+                                                const isActive = diffInSeconds < 300;
                                                 return (
                                                     <span className="absolute -bottom-0.5 -right-0.5 flex h-2 w-2">
                                                         <span className={`relative inline-flex rounded-full h-2 w-2 border border-white dark:border-slate-900 ${isActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}></span>
@@ -1808,9 +1813,16 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 <span className="text-[10px] font-black text-slate-900 dark:text-slate-100 tabular-nums leading-none">
                                                     {item.points.toLocaleString()}
                                                 </span>
-                                                <div className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[9px] font-bold text-slate-500">
-                                                    <span>📖</span>
-                                                    <span className="tabular-nums">{(item.reading_points || 0).toLocaleString()}</span>
+                                                <div className="flex items-center gap-1 mt-1">
+                                                    {(item.last_active || item.last_login_at) && (
+                                                        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 mr-2">
+                                                            {formatLastActive(item.last_active || item.last_login_at, language)}
+                                                        </span>
+                                                    )}
+                                                    <div className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[9px] font-bold text-slate-500">
+                                                        <span>📖</span>
+                                                        <span className="tabular-nums">{(item.reading_points || 0).toLocaleString()}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
