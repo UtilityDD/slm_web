@@ -1420,8 +1420,22 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             </div>
                                                             {rank === 1 && <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-2xl animate-bounce">👑</div>}
                                                         </div>
-                                                        <p className="text-[10px] sm:text-xs font-black text-slate-900 dark:text-white truncate max-w-full text-center px-1 leading-tight">{player.full_name}</p>
-                                                        <p className="text-[10px] font-bold text-orange-600 dark:text-orange-400 tabular-nums">{(player.points || player.score || 0).toLocaleString()}</p>
+                                                        <p className="text-[10px] sm:text-xs font-black text-slate-900 dark:text-white truncate max-w-full text-center px-1 leading-tight mb-1">{player.full_name}</p>
+                                                        {(() => {
+                                                            const badge = getBadgeByLevel(player.training_level || 0);
+                                                            return badge && (
+                                                                <span className={`text-[8px] px-1.5 py-0.5 rounded border font-black uppercase tracking-tighter mb-1 ${badge.color}`}>
+                                                                    {language === 'en' ? badge.en : badge.bn}
+                                                                </span>
+                                                            );
+                                                        })()}
+                                                        <div className="flex flex-col items-center">
+                                                            <p className="text-[11px] font-black text-orange-600 dark:text-orange-400 tabular-nums">{(player.points || player.score || 0).toLocaleString()}</p>
+                                                            <div className="flex items-center gap-1 mt-0.5 opacity-80 scale-90">
+                                                                <span className="text-[9px]">📖</span>
+                                                                <span className="text-[9px] font-black text-slate-500 dark:text-slate-400">{(player.reading_points || 0).toLocaleString()}</span>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 );
                                             })}
@@ -1444,12 +1458,35 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{item.full_name}</p>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{item.slm_id || 'SLM-MEMBER'}</p>
+                                                <div className="flex items-center gap-2 mb-0.5">
+                                                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{item.full_name}</p>
+                                                    {(() => {
+                                                        const badge = getBadgeByLevel(item.training_level || 0);
+                                                        return badge && (
+                                                            <span className={`text-[8px] px-1.5 py-0.5 rounded border font-black uppercase tracking-tighter ${badge.color}`}>
+                                                                {language === 'en' ? badge.en : badge.bn}
+                                                            </span>
+                                                        );
+                                                    })()}
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter shrink-0">{item.slm_id || 'SLM-MEMBER'}</p>
+                                                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/10 shrink-0">
+                                                        <span className="text-[9px]">📖</span>
+                                                        <span className="text-[9px] font-black text-orange-700 dark:text-orange-300 tabular-nums">
+                                                            {(item.reading_points || 0).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                    {item.last_active && (
+                                                        <span className="text-[9px] text-slate-400 italic hidden sm:inline truncate">
+                                                            • {formatLastActive(item.last_active, language)}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="text-right">
+                                            <div className="text-right shrink-0">
                                                 <p className="text-sm font-black text-slate-900 dark:text-white tabular-nums">{(item.points || item.score || 0).toLocaleString()}</p>
-                                                <p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">{language === 'en' ? 'POINTS' : 'পয়েন্ট'}</p>
+                                                <p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest leading-none">{language === 'en' ? 'POINTS' : 'পয়েন্ট'}</p>
                                             </div>
                                         </div>
                                     ))}
