@@ -1440,11 +1440,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 const now = new Date();
                                                                 const diffInSeconds = Math.floor((now - date) / 1000);
                                                                 const isOnline = diffInSeconds < 300;
+                                                                const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
                                                                 
-                                                                return isOnline && (
-                                                                    <span className="relative flex h-1.5 w-1.5">
-                                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                                                                if (!isToday) return null;
+
+                                                                return (
+                                                                    <span className="relative flex h-2 w-2">
+                                                                        {isOnline && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>}
+                                                                        <span className={`relative inline-flex rounded-full h-2 w-2 ${isOnline ? 'bg-green-500' : 'bg-green-500/50'} border border-white dark:border-slate-900`}></span>
                                                                     </span>
                                                                 );
                                                             })()}
@@ -1504,17 +1507,18 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             const date = new Date(lastActiveDate);
                                                             const now = new Date();
                                                             const diffInSeconds = Math.floor((now - date) / 1000);
-                                                            const isOnline = diffInSeconds < 300; // 5 minutes
+                                                            const isOnline = diffInSeconds < 300;
+                                                            const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
                                                             
                                                             return (
                                                                 <div className="flex items-center gap-1.5">
-                                                                    {isOnline && (
-                                                                        <span className="relative flex h-2 w-2">
-                                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                                                    {isToday && (
+                                                                        <span className="relative flex h-2.5 w-2.5">
+                                                                            {isOnline && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>}
+                                                                            <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isOnline ? 'bg-green-500' : 'bg-green-500/60'} border-2 border-white dark:border-slate-900`}></span>
                                                                         </span>
                                                                     )}
-                                                                    <span className={`text-[10px] font-bold uppercase tracking-tight ${isOnline ? 'text-green-600 dark:text-green-400' : 'text-slate-400'}`}>
+                                                                    <span className={`text-[10px] font-bold uppercase tracking-tight ${isOnline ? 'text-green-600 dark:text-green-400' : isToday ? 'text-green-600/70 dark:text-green-400/70' : 'text-slate-400'}`}>
                                                                         {isOnline 
                                                                             ? (language === 'en' ? 'Online' : 'অনলাইন') 
                                                                             : formatLastActive(lastActiveDate, language)
@@ -1796,10 +1800,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 const d = new Date(lastActiveDate);
                                                 const now = new Date();
                                                 const diffInSeconds = Math.floor((now - d) / 1000);
-                                                const isActive = diffInSeconds < 300;
-                                                return (
-                                                    <span className="absolute -bottom-0.5 -right-0.5 flex h-2 w-2">
-                                                        <span className={`relative inline-flex rounded-full h-2 w-2 border border-white dark:border-slate-900 ${isActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}></span>
+                                                const isOnline = diffInSeconds < 300;
+                                                const isToday = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+
+                                                return isToday && (
+                                                    <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
+                                                        {isOnline && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>}
+                                                        <span className={`relative inline-flex rounded-full h-2.5 w-2.5 border-2 border-white dark:border-slate-900 ${isOnline ? 'bg-green-500' : 'bg-green-500/60'}`}></span>
                                                     </span>
                                                 );
                                             })()}
