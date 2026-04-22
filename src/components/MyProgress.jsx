@@ -251,7 +251,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
         };
     }, [attempts, profile]);
 
-    const badge = getBadgeByLevel(profile?.training_level || 0);
+    const badge = getBadgeByLevel(profile?.training_level || 0, profile?.reading_points || 0);
     const phone = safePhone(profile);
     const joinedDate = formatDate(profile?.created_at, language);
     const lastActive = formatDate(profile?.last_login_at, language);

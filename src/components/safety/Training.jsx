@@ -1248,11 +1248,20 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
 
                 // Sync to Supabase (Level + Detailed Progress)
                 const newLevel = calculateLevelFromProgress(updated, trainingChapters);
+                
+                // Fail-proof: Only update level if it's higher than what we currently have
+                // This prevents old/cached versions from downgrading the user's rank
+                const currentStoredLevel = profile?.training_level || 0;
+                const updatePayload = {
+                    completed_lessons: updated
+                };
+                
+                if (newLevel > currentStoredLevel) {
+                    updatePayload.training_level = newLevel;
+                }
+
                 await supabase.from('profiles')
-                    .update({
-                        training_level: newLevel,
-                        completed_lessons: updated
-                    })
+                    .update(updatePayload)
                     .eq('id', user.id);
             }
             if (onProgressUpdate) {

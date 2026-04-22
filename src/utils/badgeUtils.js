@@ -10,9 +10,23 @@ export const badgeLevels = [
     { level: 9, en: "Expert", bn: "এক্সপার্ট", color: "bg-orange-600 text-white dark:bg-orange-700 border-orange-500 shadow-sm" }
 ];
 
-export const getBadgeByLevel = (level) => {
+export const getBadgeByLevel = (level, readingPoints = 0) => {
     // Treat level 0 or null as Level 1 (Trainee)
-    const effectiveLevel = (!level || level < 1) ? 1 : level;
+    let effectiveLevel = (!level || level < 1) ? 1 : level;
+
+    // Fail-proof Point-based Promotion (Logical Override)
+    // Thresholds based on chapter completion (approx 200 pts per chapter)
+    // We use slightly lower thresholds to account for minor sync latencies
+    if (readingPoints >= 1780) effectiveLevel = Math.max(effectiveLevel, 9);      // Expert
+    else if (readingPoints >= 1580) effectiveLevel = Math.max(effectiveLevel, 8); // Specialist
+    else if (readingPoints >= 1380) effectiveLevel = Math.max(effectiveLevel, 7); // Supervisor
+    else if (readingPoints >= 1180) effectiveLevel = Math.max(effectiveLevel, 6); // Senior (Ch 6 has 11 lessons)
+    else if (readingPoints >= 980) effectiveLevel = Math.max(effectiveLevel, 5);  // Advanced
+    else if (readingPoints >= 780) effectiveLevel = Math.max(effectiveLevel, 4);  // Skilled
+    else if (readingPoints >= 580) effectiveLevel = Math.max(effectiveLevel, 3);  // Technician
+    else if (readingPoints >= 380) effectiveLevel = Math.max(effectiveLevel, 2);  // Junior
+    else if (readingPoints >= 180) effectiveLevel = Math.max(effectiveLevel, 1);  // Trainee
+
     return badgeLevels.find(b => b.level === effectiveLevel) || badgeLevels[0];
 };
 
