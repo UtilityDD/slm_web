@@ -85,7 +85,7 @@ export default function Sidebar({
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:static left-0 top-0 h-screen w-72 md:w-64 bg-white dark:bg-slate-900 shadow-2xl md:shadow-none border-r border-slate-200/50 dark:border-slate-700/50 z-[100] transform transition-all duration-300 md:translate-x-0 flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        className={`fixed left-0 top-0 h-screen w-72 bg-white dark:bg-slate-900 shadow-2xl border-r border-slate-200/50 dark:border-slate-700/50 z-[100] transform transition-all duration-300 flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
       >
         {/* Sidebar Header - Enhanced */}

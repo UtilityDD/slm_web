@@ -2101,11 +2101,19 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
             {/* Safety Journal UI - Immersive Slide-based Experience */}
             {
                 trainingContent && createPortal(
-                    <div className="fixed inset-0 z-[100] bg-slate-50 dark:bg-slate-900 overflow-hidden flex flex-col safe-area-inset-top animate-fade-in-up">
+                    <div className="fixed top-14 inset-x-0 bottom-0 lg:top-16 lg:bottom-6 lg:inset-x-0 lg:mx-auto lg:w-[1000px] lg:max-w-[95vw] lg:rounded-[3rem] lg:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] lg:border lg:border-slate-200 dark:lg:border-white/10 z-[75] bg-slate-50 dark:bg-slate-900 overflow-hidden flex flex-col animate-fade-in-up">
+                        {/* Desktop Backdrop Overlay */}
+                        <div className="hidden lg:block fixed inset-0 -z-10 bg-slate-950/40 backdrop-blur-sm" onClick={() => {
+                            stop();
+                            setTrainingContent(null);
+                            setIsJournalMode(false);
+                            setSelectedChapter(null);
+                            setSelectedLesson(null);
+                        }} />
                         <div className="flex flex-col h-full overflow-hidden book-page-texture">
                             {/* Simple Book-like Header */}
                             <div className="sticky top-0 z-[100] bg-white/40 dark:bg-black/20 backdrop-blur-md border-b border-black/5 dark:border-white/5">
-                                <div className="px-5 py-3 flex items-center h-16">
+                                <div className="max-w-5xl mx-auto w-full px-5 py-3 flex items-center h-16">
                                     <button
                                         onClick={() => {
                                             stop();
@@ -2201,7 +2209,7 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                                         onTouchStart={handleReaderTouchStart}
                                         onTouchEnd={handleReaderTouchEnd}
                                     >
-                                        <div key={activeSectionIndex} className="max-w-2xl mx-auto px-6 sm:px-10 md:px-14 py-10 sm:py-14 pb-20 sm:pb-24 animate-fade-in-up">
+                                        <div key={activeSectionIndex} className="max-w-4xl mx-auto px-6 sm:px-10 md:px-14 py-10 sm:py-14 pb-20 sm:pb-24 animate-fade-in-up">
                                             {activeSlide?.type === 'hero' && (
                                                 <div className="flex flex-col items-center justify-center pt-6 pb-20 space-y-12">
                                                     <div className="w-full space-y-8 text-center">
@@ -2441,35 +2449,37 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                             })()}
 
                             {/* Minimal Paper-like Footer Navigation */}
-                            <div className="shrink-0 border-t border-black/5 dark:border-white/5 bg-white/70 dark:bg-black/20 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] flex items-center justify-between shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
-                                <button
-                                    onClick={prevSlide}
-                                    disabled={isFirstSlide}
-                                    className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-all duration-300 ${isFirstSlide ? 'opacity-0 pointer-events-none' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-75 hover:bg-black/5 dark:hover:bg-white/5'}`}
-                                >
-                                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                </button>
-
-                                <div className="flex items-center gap-1.5 px-3.5 py-2 bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-full">
-                                    <span className="text-[9px] sm:text-[10px] font-black tracking-widest text-slate-500 uppercase">
-                                        {activeSectionIndex + 1} / {slides.length}
-                                    </span>
-                                </div>
-
-                                {!isLastSlide ? (
+                            <div className="shrink-0 border-t border-black/5 dark:border-white/5 bg-white/70 dark:bg-black/20 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+                                <div className="max-w-5xl mx-auto w-full flex items-center justify-between">
                                     <button
-                                        onClick={nextSlide}
-                                        className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-75 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                                        onClick={prevSlide}
+                                        disabled={isFirstSlide}
+                                        className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-all duration-300 ${isFirstSlide ? 'opacity-0 pointer-events-none' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-75 hover:bg-black/5 dark:hover:bg-white/5'}`}
                                     >
                                         <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
                                         </svg>
                                     </button>
-                                ) : (
-                                    <div className="w-10 sm:w-12"></div>
-                                )}
+
+                                    <div className="flex items-center gap-1.5 px-3.5 py-2 bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-full">
+                                        <span className="text-[9px] sm:text-[10px] font-black tracking-widest text-slate-500 uppercase">
+                                            {activeSectionIndex + 1} / {slides.length}
+                                        </span>
+                                    </div>
+
+                                    {!isLastSlide ? (
+                                        <button
+                                            onClick={nextSlide}
+                                            className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-75 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                                        >
+                                            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    ) : (
+                                        <div className="w-10 sm:w-12"></div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>,

@@ -1028,7 +1028,7 @@ export default function SmartLinemanUI() {
 
   return (
     <div
-      className={`h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-300 font-sans flex flex-col md:flex-row ${language === 'bn' ? 'font-bengali' : ''}`}
+      className={`h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-300 font-sans flex flex-col ${language === 'bn' ? 'font-bengali' : ''}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -1228,7 +1228,7 @@ export default function SmartLinemanUI() {
                   {user && (
                     <button
                       onClick={() => setSidebarOpen(!sidebarOpen)}
-                      className={`md:hidden p-2 ${currentView === 'home' ? 'hover:bg-white/10 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'} rounded-lg transition-colors`}
+                      className={`p-2 ${currentView === 'home' ? 'hover:bg-white/10 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'} rounded-lg transition-colors`}
                       title="Menu"
                       aria-label="Toggle menu"
                     >
