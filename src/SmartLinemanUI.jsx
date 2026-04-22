@@ -184,11 +184,11 @@ export default function SmartLinemanUI() {
 
   // Scroll to Top on View Change
   useEffect(() => {
-    const mainContent = document.querySelector('.flex-1.overflow-y-auto');
+    const mainContent = document.getElementById('main-scroll-container');
     if (mainContent) {
-      mainContent.scrollTo(0, 0);
+      mainContent.scrollTo({ top: 0, behavior: 'instant' });
     }
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }, [currentView]);
 
   // Pull to refresh state — lastRefreshTime is persisted in sessionStorage
@@ -1338,7 +1338,7 @@ export default function SmartLinemanUI() {
         )}
 
         {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden relative">
+        <div id="main-scroll-container" className="flex-1 overflow-y-auto overflow-x-hidden relative">
           <div className="h-full relative z-10 w-full view-transition" key={currentView}>
             {renderContent()}
           </div>

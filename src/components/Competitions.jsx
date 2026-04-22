@@ -304,9 +304,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     useEffect(() => {
         // Passing forceRefresh=true on mount or manual refresh
         loadData(true); 
-        window.scrollTo(0, 0);
-        const mainContent = document.querySelector('.overflow-y-auto');
-        if (mainContent) mainContent.scrollTo(0, 0);
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        const mainContent = document.getElementById('main-scroll-container');
+        if (mainContent) mainContent.scrollTo({ top: 0, behavior: 'instant' });
     }, [language, user]); // Re-run when language/user change
 
     useEffect(() => {
