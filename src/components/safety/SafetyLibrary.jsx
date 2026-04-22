@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CapacitorHttp } from '@capacitor/core';
+import { libraryService } from '../../utils/libraryService';
 
 const SearchIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -61,8 +61,6 @@ const getGoogleDriveDirectLink = (url) => {
     if (!url.includes('drive.google.com')) return url;
     const match = url.match(/\/d\/(.+?)\/|id=(.+?)(&|$)/);
     const id = match ? (match[1] || match[2]) : '';
-    // Use the lh3 format for stable direct embedding
-    // Use a daily cache-buster instead of sub-second to avoid rate limiting/security triggers
     const today = new Date().toISOString().split('T')[0];
     return id ? `https://lh3.googleusercontent.com/u/0/d/${id}?v=${today}` : url;
 };
@@ -144,79 +142,6 @@ const ImageSlider = ({ images, alt, aspect = 'aspect-[4/3]' }) => {
     );
 };
 
-// Robust CSV parser using regex to handle quoted fields with commas correctly
-const splitCSVLine = (line) => {
-    const result = [];
-    let current = '';
-    let inQuotes = false;
-
-    for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        if (char === '"') {
-            inQuotes = !inQuotes;
-        } else if (char === ',' && !inQuotes) {
-            result.push(current.trim().replace(/^"|"$/g, ''));
-            current = '';
-        } else {
-            current += char;
-        }
-    }
-    result.push(current.trim().replace(/^"|"$/g, ''));
-    return result;
-};
-
-const parseCSV = (text) => {
-    const lines = text.split(/\r?\n/).filter(line => line.trim());
-    if (lines.length < 2) return [];
-
-    const headers = splitCSVLine(lines[0]);
-
-    const rows = lines.slice(1).map(line => {
-        const values = splitCSVLine(line);
-        const obj = {};
-        headers.forEach((header, i) => {
-            obj[header] = values[i] || '';
-        });
-        return obj;
-    });
-
-    const formatNameFallback = (fileName) => {
-        if (!fileName) return '';
-        return fileName.split('.')[0]
-            .replace(/_\d+$/, '')
-            .split('_')
-            .join(' ')
-            .replace(/\b\w/g, l => l.toUpperCase());
-    };
-
-    const groups = {};
-    rows.forEach(row => {
-        const category = row['Folder Name'];
-        const fileName = row['File Name'];
-        const nameBnFromSheet = row['Name_BN'];
-
-        const baseName = nameBnFromSheet || formatNameFallback(fileName);
-        const key = `${category}:${baseName}`;
-
-        if (!groups[key]) {
-            groups[key] = {
-                id: key,
-                category: category === 'Insulators' ? 'Insulators' : category,
-                name_bn: nameBnFromSheet || baseName,
-                function_bn: row['Function_BN'] || '',
-                images: [],
-                approx_price_inr: row['Price'] || '---',
-                guide_bn: row['Guide_BN'] || 'ব্যবহারের নির্দেশাবলী...'
-            };
-        }
-        if (row['File Link']) {
-            groups[key].images.push(row['File Link']);
-        }
-    });
-
-    return Object.values(groups);
-};
-
 export default function SafetyLibrary({ language, setCurrentView }) {
     const [items, setItems] = useState([]);
     const [filteredItems, setFilteredItems] = useState([]);
@@ -235,9 +160,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
             'Charts': { icon: <LineChartIcon className="w-4 h-4" /> },
             'Others': { icon: <InfoIcon className="w-4 h-4" /> }
         };
-        return metadata[catId] || { 
-            icon: <InfoIcon className="w-4 h-4" /> 
-        };
+        return metadata[catId] || { icon: <InfoIcon className="w-4 h-4" /> };
     };
 
     const t = {
@@ -265,54 +188,34 @@ export default function SafetyLibrary({ language, setCurrentView }) {
         }
     }[language];
 
-    const fetchLibrary = async () => {
+    const fetchLibrary = async (force = false) => {
         try {
             setLoading(true);
             setError(null);
-            const dynamicUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vTjxPeFNRSNfOgc80sT-WLmqf0bQqN-YjjSbQoE6i432tL-sK1zg1zHfaQxv4l1YMThgwa1DyreVgCk/pub?gid=0&single=true&output=csv&v=${Date.now()}`;
-
-            // Use CapacitorHttp to bypass CORS and redirect issues on Android
-            const response = await CapacitorHttp.get({
-                url: dynamicUrl,
-                responseType: 'text' // Force text to prevent premature JSON parsing
-            });
-
-            if (response.status !== 200) {
-                throw new Error(`HTTP ${response.status}: ${typeof response.data}`);
-            }
-
-            let csvText = response.data;
-
-            // On some platforms, if the redirect is handled uniquely, data might be an object
-            if (typeof csvText !== 'string') {
-                csvText = JSON.stringify(csvText);
-            }
-
-            const data = parseCSV(csvText);
-            if (!data || data.length === 0) throw new Error("Parsed data is empty");
+            
+            const data = await libraryService.fetchLibrary(force);
+            
+            if (!data || data.length === 0) throw new Error("No data found");
 
             setItems(data);
             setFilteredItems(data);
 
-            // Dynamically generate categories
             const uniqueCats = [...new Set(data.map(item => item.category))].filter(Boolean);
             const dynamicCategories = uniqueCats.map(cat => ({
                 id: cat,
-                label: cat, // Always use the raw name from the spreadsheet as the label
+                label: cat,
                 ...getCategoryMetadata(cat)
             }));
             
             setCategories(dynamicCategories);
-
-            // Set the first category as active if none is selected
-            if (dynamicCategories.length > 0) {
+            if (dynamicCategories.length > 0 && !activeCategory) {
                 setActiveCategory(dynamicCategories[0].id);
             }
         } catch (error) {
             console.error('Error loading safety library:', error);
             setError({
                 message: error.message,
-                technical: error.stack?.split('\n')[0] || 'Unknown Error'
+                technical: error.stack?.split('\n')[0] || 'Check Internet'
             });
         } finally {
             setLoading(false);

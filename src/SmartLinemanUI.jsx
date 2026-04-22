@@ -35,7 +35,15 @@ const AwarenessStories = lazy(() => import("./components/safety/AwarenessStories
 const VideoGuide = lazy(() => import("./components/safety/VideoGuide"));
 const SafetyLibrary = lazy(() => import("./components/safety/SafetyLibrary"));
 
+import { libraryService } from "./utils/libraryService";
+
 export default function SmartLinemanUI() {
+  // Background Data Pre-fetching
+  useEffect(() => {
+    // Fetch safety library in background to warm up cache
+    libraryService.fetchLibrary().catch(err => console.warn('Background library pre-fetch failed:', err));
+  }, []);
+
   const [globalLoading, setGlobalLoading] = useState(false);
   const [appLoading, setAppLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
