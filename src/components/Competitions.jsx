@@ -1487,12 +1487,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         <div 
                                             key={item.user_id}
                                             onClick={() => openUserProgress(item.user_id)}
-                                            className="flex items-center gap-4 p-4 border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer group"
+                                            className="flex items-center gap-2 sm:gap-4 p-2.5 sm:p-4 border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer group"
                                         >
-                                            <div className="w-8 text-center text-sm font-black text-slate-400 group-hover:text-orange-500 transition-colors">
+                                            <div className="w-6 sm:w-8 text-center text-xs sm:text-sm font-black text-slate-400 group-hover:text-orange-500 transition-colors">
                                                 {idx + 1}
                                             </div>
-                                            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0 relative">
+                                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0 relative">
                                                 {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
                                                 
                                                 {/* Status Indicator in Corner */}
