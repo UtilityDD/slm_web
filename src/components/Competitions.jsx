@@ -1421,14 +1421,29 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             {rank === 1 && <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-2xl animate-bounce">👑</div>}
                                                         </div>
                                                         <p className="text-[10px] sm:text-xs font-black text-slate-900 dark:text-white truncate max-w-full text-center px-1 leading-tight mb-1">{player.full_name}</p>
-                                                        {(() => {
-                                                            const badge = getBadgeByLevel(player.training_level || 0);
-                                                            return badge && (
-                                                                <span className={`text-[8px] px-1.5 py-0.5 rounded border font-black uppercase tracking-tighter mb-1 ${badge.color}`}>
-                                                                    {language === 'en' ? badge.en : badge.bn}
-                                                                </span>
-                                                            );
-                                                        })()}
+                                                        <div className="flex items-center gap-1 mb-1">
+                                                            {(() => {
+                                                                const date = new Date(player.last_active);
+                                                                const now = new Date();
+                                                                const diffInSeconds = Math.floor((now - date) / 1000);
+                                                                const isOnline = diffInSeconds < 300;
+                                                                
+                                                                return isOnline && (
+                                                                    <span className="relative flex h-1.5 w-1.5">
+                                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                                                                    </span>
+                                                                );
+                                                            })()}
+                                                            {(() => {
+                                                                const badge = getBadgeByLevel(player.training_level || 0);
+                                                                return badge && (
+                                                                    <span className={`text-[8px] px-1.5 py-0.5 rounded border font-black uppercase tracking-tighter ${badge.color}`}>
+                                                                        {language === 'en' ? badge.en : badge.bn}
+                                                                    </span>
+                                                                );
+                                                            })()}
+                                                        </div>
                                                         <div className="flex flex-col items-center">
                                                             <p className="text-[11px] font-black text-orange-600 dark:text-orange-400 tabular-nums">{(player.points || player.score || 0).toLocaleString()}</p>
                                                             <div className="flex items-center gap-1 mt-0.5 opacity-80 scale-90">
@@ -1470,18 +1485,37 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     })()}
                                                 </div>
                                                 <div className="flex items-center gap-3">
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter shrink-0">{item.slm_id || 'SLM-MEMBER'}</p>
+                                                    <div className="flex items-center gap-1.5 shrink-0">
+                                                        {item.last_active && (() => {
+                                                            const date = new Date(item.last_active);
+                                                            const now = new Date();
+                                                            const diffInSeconds = Math.floor((now - date) / 1000);
+                                                            const isOnline = diffInSeconds < 300; // 5 minutes
+                                                            
+                                                            return (
+                                                                <div className="flex items-center gap-1.5">
+                                                                    {isOnline && (
+                                                                        <span className="relative flex h-2 w-2">
+                                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                                                        </span>
+                                                                    )}
+                                                                    <span className={`text-[10px] font-bold uppercase tracking-tight ${isOnline ? 'text-green-600 dark:text-green-400' : 'text-slate-400'}`}>
+                                                                        {isOnline 
+                                                                            ? (language === 'en' ? 'Online' : 'অনলাইন') 
+                                                                            : formatLastActive(item.last_active, language)
+                                                                        }
+                                                                    </span>
+                                                                </div>
+                                                            );
+                                                        })()}
+                                                    </div>
                                                     <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/10 shrink-0">
                                                         <span className="text-[9px]">📖</span>
                                                         <span className="text-[9px] font-black text-orange-700 dark:text-orange-300 tabular-nums">
                                                             {(item.reading_points || 0).toLocaleString()}
                                                         </span>
                                                     </div>
-                                                    {item.last_active && (
-                                                        <span className="text-[9px] text-slate-400 italic hidden sm:inline truncate">
-                                                            • {formatLastActive(item.last_active, language)}
-                                                        </span>
-                                                    )}
                                                 </div>
                                             </div>
                                             <div className="text-right shrink-0">
