@@ -525,6 +525,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             fetchLeaderboard(true);
             refreshProfile(user);
 
+            // Update last_active in profiles table to reflect recent activity
+            await supabase
+                .from('profiles')
+                .update({ last_active: now.toISOString() })
+                .eq('id', user.id);
+
         } catch (error) {
             console.error('Submission failed:', error);
             setSyncStatus('failed'); // This will show the "Retry" button
@@ -1372,6 +1378,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             </span>
                                                         </div>
                                                     </div>
+                                                    {userProfile?.last_active && (
+                                                        <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-1.5">
+                                                            {language === 'en' ? 'Active' : 'সক্রিয়'} {formatLastActive(userProfile.last_active, language)}
+                                                        </p>
+                                                    )}
                                         </div>
                                     </div>
                                     <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-orange-600 dark:text-orange-300 border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
@@ -1777,8 +1788,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xs uppercase">{item.full_name?.[0] || 'U'}</div>
                                                 )}
                                             </div>
-                                            {item.last_login_at && (() => {
-                                                const d = new Date(item.last_login_at);
+                                            {item.last_active && (() => {
+                                                const d = new Date(item.last_active);
                                                 const now = new Date();
                                                 const isActive = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
                                                 return (
