@@ -73,7 +73,7 @@ export const leaderboardService = {
                 const now = new Date();
                 const { data, error } = await supabase
                     .from('monthly_leaderboard_view')
-                    .select('*')
+                    .select('*, profiles(slm_id, reading_points)')
                     .order('year_num', { ascending: false })
                     .order('month_num', { ascending: false })
                     .order('points', { ascending: false });
@@ -81,8 +81,15 @@ export const leaderboardService = {
                 if (error) throw error;
                 if (!data) return [];
 
+                // Flatten and add slm_id
+                const processedData = data.map(row => ({
+                    ...row,
+                    slm_id: row.profiles?.slm_id || null,
+                    all_time_reading_points: row.profiles?.reading_points || 0
+                }));
+
                 const grouped = {};
-                data.forEach(row => {
+                processedData.forEach(row => {
                     const key = `${row.year_num}-${row.month_num}`;
                     if (!grouped[key]) grouped[key] = [];
                     if (grouped[key].length < 3) {

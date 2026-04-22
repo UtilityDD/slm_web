@@ -1314,8 +1314,18 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                             {winner.avatar_url ? <img src={winner.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-black text-slate-400">{(winner.full_name || '?')[0]}</div>}
                                                                         </div>
                                                                         <div className="min-w-0">
-                                                                            <p className="text-xs font-black text-slate-900 dark:text-white truncate">{winner.full_name || 'Anonymous'}</p>
-                                                                            <p className="text-[8px] font-bold text-slate-400 uppercase tabular-nums">{winner.slm_id || 'SLM-MEMBER'}</p>
+                                                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                                                <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{winner.full_name || 'Anonymous'}</p>
+                                                                                {(() => {
+                                                                                    const badge = getBadgeByLevel(winner.training_level || 0, winner.all_time_reading_points || 0);
+                                                                                    return badge && (
+                                                                                        <span className={`text-[6px] px-1 py-0 rounded-sm border font-black uppercase tracking-tighter ${badge.color}`}>
+                                                                                            {language === 'en' ? badge.en : badge.bn}
+                                                                                        </span>
+                                                                                    );
+                                                                                })()}
+                                                                            </div>
+                                                                            <p className="text-[8px] font-bold text-slate-400 uppercase tabular-nums">{winner.slm_id || (language === 'en' ? 'SLM-MEMBER' : 'এসএলএম-সদস্য')}</p>
                                                                         </div>
                                                                     </div>
                                                                 </div>
