@@ -1432,7 +1432,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             {rank === 1 && <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-2xl animate-bounce">👑</div>}
                                                         </div>
                                                         <p className="text-[10px] sm:text-xs font-black text-slate-900 dark:text-white truncate max-w-full text-center px-1 leading-tight mb-1">{player.full_name}</p>
-                                                        <div className="flex items-center gap-1 mb-1">
                                                             {(() => {
                                                                 const lastActiveDate = player.last_active || player.last_login_at;
                                                                 if (!lastActiveDate) return null;
@@ -1445,9 +1444,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 if (!isToday) return null;
 
                                                                 return (
-                                                                    <span className="relative flex h-2 w-2">
+                                                                    <span className="absolute -bottom-1 -right-1 flex h-3 w-3 z-20">
                                                                         {isOnline && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>}
-                                                                        <span className={`relative inline-flex rounded-full h-2 w-2 ${isOnline ? 'bg-green-500' : 'bg-green-500/50'} border border-white dark:border-slate-900`}></span>
+                                                                        <span className={`relative inline-flex rounded-full h-3 w-3 ${isOnline ? 'bg-green-500' : 'bg-green-500/60'} border-2 border-white dark:border-slate-900`}></span>
                                                                     </span>
                                                                 );
                                                             })()}
@@ -1485,8 +1484,24 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             <div className="w-8 text-center text-sm font-black text-slate-400 group-hover:text-orange-500 transition-colors">
                                                 {idx + 1}
                                             </div>
-                                            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0">
-                                                {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
+                                            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-400 shrink-0 border border-slate-100 dark:border-slate-700 relative">
+                                                {item.avatar_url ? <img src={item.avatar_url} alt="Avatar" className="w-full h-full object-cover rounded-xl" /> : (item.full_name?.[0] || 'U')}
+                                                
+                                                {(item.last_active || item.last_login_at) && (() => {
+                                                    const lastActiveDate = item.last_active || item.last_login_at;
+                                                    const date = new Date(lastActiveDate);
+                                                    const now = new Date();
+                                                    const diffInSeconds = Math.floor((now - date) / 1000);
+                                                    const isOnline = diffInSeconds < 300;
+                                                    const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+                                                    
+                                                    return isToday && (
+                                                        <span className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5 z-10">
+                                                            {isOnline && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>}
+                                                            <span className={`relative inline-flex rounded-full h-3.5 w-3.5 ${isOnline ? 'bg-green-500' : 'bg-green-500/60'} border-2 border-white dark:border-slate-900`}></span>
+                                                        </span>
+                                                    );
+                                                })()}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 mb-0.5">
