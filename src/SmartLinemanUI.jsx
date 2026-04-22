@@ -169,6 +169,9 @@ export default function SmartLinemanUI() {
   // Background Pre-fetching for Leaderboard & Monthly Stars
   useEffect(() => {
     if (user) {
+      // Update last active status
+      updateLastActive();
+
       // Delay pre-fetching to prioritize initial UI rendering
       const timer = setTimeout(() => {
         leaderboardService.fetchAllTime();
@@ -200,6 +203,18 @@ export default function SmartLinemanUI() {
     setTimeout(() => setNotification(null), 3000);
   };
 
+  const updateLastActive = async () => {
+    if (!user) return;
+    try {
+      await supabase
+        .from('profiles')
+        .update({ last_active: new Date().toISOString() })
+        .eq('id', user.id);
+    } catch (error) {
+      console.error('Error updating last active:', error);
+    }
+  };
+
   const fetchProfile = async (userToFetch) => {
     const targetUser = userToFetch || user;
     if (!targetUser) return;
@@ -210,7 +225,7 @@ export default function SmartLinemanUI() {
         async () => {
           const { data, error } = await supabase
             .from('profiles')
-            .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id')
+            .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id, last_active')
             .eq('id', targetUser.id)
             .single();
 
