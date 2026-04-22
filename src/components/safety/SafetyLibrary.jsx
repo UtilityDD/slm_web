@@ -75,12 +75,12 @@ const ImageSlider = ({ images, alt, aspect = 'aspect-[4/3]', showControls = true
     }, [images]);
 
     useEffect(() => {
-        if (!validImages || validImages.length <= 1) return;
+        if (!validImages || validImages.length <= 1 || !showControls) return;
         const interval = setInterval(() => {
             setCurrentIndex((prev) => (prev + 1) % validImages.length);
         }, 3000);
         return () => clearInterval(interval);
-    }, [validImages]);
+    }, [validImages, showControls]);
 
     const handleImageError = (url) => {
         const updated = validImages.filter(img => img !== url);
@@ -103,6 +103,15 @@ const ImageSlider = ({ images, alt, aspect = 'aspect-[4/3]', showControls = true
 
     return (
         <div className={`${aspect} bg-slate-50 dark:bg-slate-900/50 relative overflow-hidden flex items-center justify-center group/slider`}>
+            {showControls && validImages.length > 1 && (
+                <button 
+                    onClick={(e) => { e.stopPropagation(); setCurrentIndex((prev) => (prev - 1 + validImages.length) % validImages.length); }}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover/slider:opacity-100"
+                >
+                    <ChevronLeftIcon className="w-5 h-5" />
+                </button>
+            )}
+
             <img
                 key={currentIndex}
                 src={getGoogleDriveDirectLink(validImages[currentIndex])}
@@ -110,13 +119,46 @@ const ImageSlider = ({ images, alt, aspect = 'aspect-[4/3]', showControls = true
                 onError={() => handleImageError(validImages[currentIndex])}
                 className="max-h-full w-full object-contain filter drop-shadow-md group-hover:scale-105 transition-all duration-700 animate-in fade-in zoom-in-95 duration-500"
             />
+
             {showControls && validImages.length > 1 && (
                 <>
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); setCurrentIndex((prev) => (prev + 1) % validImages.length); }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover/slider:opacity-100"
+                    >
+                        <ChevronRightIcon className="w-5 h-5" />
+                    </button>
                     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 px-1.5 py-0.5 bg-black/20 dark:bg-white/20 backdrop-blur-md rounded-full">
                         {validImages.map((_, i) => (<div key={i} className={`w-1 h-1 rounded-full transition-all duration-300 ${i === currentIndex ? 'bg-orange-500 w-2' : 'bg-white/50'}`} />))}
                     </div>
                 </>
             )}
+        </div>
+    );
+};
+
+const GridImage = ({ images, alt, aspect = 'aspect-square' }) => {
+    const [randomImage] = useState(() => {
+        if (!images || images.length === 0) return null;
+        const randomIndex = Math.floor(Math.random() * images.length);
+        return images[randomIndex];
+    });
+
+    if (!randomImage) {
+        return (
+            <div className={`${aspect} bg-slate-100 dark:bg-slate-900/50 flex flex-col items-center justify-center p-4 text-slate-400`}>
+                <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">No Image</span>
+            </div>
+        );
+    }
+
+    return (
+        <div className={`${aspect} bg-slate-50 dark:bg-slate-900/50 relative overflow-hidden flex items-center justify-center group-hover:scale-105 transition-transform duration-500`}>
+            <img
+                src={getGoogleDriveDirectLink(randomImage)}
+                alt={alt}
+                className="max-h-full w-full object-contain filter drop-shadow-sm p-2"
+            />
         </div>
     );
 };
@@ -210,7 +252,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                         <div className="flex items-center gap-3">
                             <button 
                                 onClick={() => setCurrentView('training')} 
-                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 active:scale-90 transition-transform"
                             >
                                 <ChevronLeftIcon className="w-5 h-5" />
                             </button>
@@ -225,7 +267,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                 placeholder={t.searchPlaceholder}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800/50 border-none rounded-xl text-xs sm:text-sm outline-none focus:ring-2 focus:ring-orange-500/20"
+                                className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800/50 border-none rounded-xl text-xs sm:text-sm outline-none focus:ring-2 focus:ring-orange-500/20 transition-all"
                             />
                         </div>
                     </div>
@@ -236,10 +278,10 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                             <button
                                 key={cat.id}
                                 onClick={() => setActiveCategory(cat.id)}
-                                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap shadow-sm border
+                                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap border
                                     ${activeCategory === cat.id
                                         ? 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/20'
-                                        : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-100 dark:border-slate-800'}`}
+                                        : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-100 dark:border-slate-800'}`}
                             >
                                 {cat.icon && React.cloneElement(cat.icon, { className: 'w-3 h-3' })}
                                 {cat.label}
@@ -255,17 +297,17 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                         <div className="w-10 h-10 border-3 border-orange-500/20 border-t-orange-500 rounded-full animate-spin"></div>
                     </div>
                 ) : filteredItems.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {filteredItems.map((item) => (
                             <div
                                 key={item.id}
                                 onClick={() => setSelectedItem(item)}
-                                className="group bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 hover:shadow-xl transition-all active:scale-[0.97] flex flex-col"
+                                className="group bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 hover:shadow-xl transition-all active:scale-[0.97] flex flex-col cursor-pointer"
                             >
                                 <div className="relative aspect-square">
-                                    <ImageSlider images={item.images} alt={item.name_bn} aspect="h-full" showControls={false} />
+                                    <GridImage images={item.images} alt={item.name_bn} aspect="h-full" />
                                     <div className="absolute top-2 left-2">
-                                        <span className="px-1.5 py-0.5 bg-black/30 backdrop-blur-md rounded-md text-[8px] font-bold text-white uppercase tracking-tighter">
+                                        <span className="px-1.5 py-0.5 bg-black/40 backdrop-blur-md rounded-md text-[8px] font-bold text-white uppercase tracking-tighter">
                                             {item.category}
                                         </span>
                                     </div>
@@ -296,15 +338,15 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                             
                             <button
                                 onClick={() => setSelectedItem(null)}
-                                className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center backdrop-blur-md"
+                                className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center backdrop-blur-md active:scale-90 transition-transform"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
 
                             <div className="flex-1 overflow-y-auto no-scrollbar">
-                                {/* Maximized Image View */}
+                                {/* Maximized Image Slider for Details */}
                                 <div className="bg-slate-50 dark:bg-slate-800/30 aspect-square sm:aspect-video w-full flex items-center justify-center p-4">
-                                    <ImageSlider images={selectedItem.images} alt={selectedItem.name_bn} aspect="h-full" />
+                                    <ImageSlider images={selectedItem.images} alt={selectedItem.name_bn} aspect="h-full" showControls={true} />
                                 </div>
 
                                 <div className="p-6 sm:p-8 space-y-6">
