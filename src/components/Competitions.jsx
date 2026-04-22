@@ -1467,10 +1467,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         </div>
                                                         <div className="flex flex-col items-center">
                                                             <p className="text-[11px] font-black text-orange-600 dark:text-orange-400 tabular-nums">{(player.points || player.score || 0).toLocaleString()}</p>
-                                                            <div className="flex items-center gap-1 mt-0.5 opacity-80 scale-90">
-                                                                <span className="text-[9px]">📖</span>
-                                                                <span className="text-[9px] font-black text-slate-500 dark:text-slate-400">{(player.reading_points || 0).toLocaleString()}</span>
-                                                            </div>
+                                                            {leaderboardTab === 'all-time' && (
+                                                                <div className="flex items-center gap-1 mt-0.5 opacity-80 scale-90">
+                                                                    <span className="text-[9px]">📖</span>
+                                                                    <span className="text-[9px] font-black text-slate-500 dark:text-slate-400">{(player.reading_points || 0).toLocaleString()}</span>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 );
@@ -1546,12 +1548,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             );
                                                         })()}
                                                     </div>
-                                                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/10 shrink-0">
-                                                        <span className="text-[9px]">📖</span>
-                                                        <span className="text-[9px] font-black text-orange-700 dark:text-orange-300 tabular-nums">
-                                                            {(item.reading_points || 0).toLocaleString()}
-                                                        </span>
-                                                    </div>
+                                                    {leaderboardTab === 'all-time' && (
+                                                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/10 shrink-0">
+                                                            <span className="text-[9px]">📖</span>
+                                                            <span className="text-[9px] font-black text-orange-700 dark:text-orange-300 tabular-nums">
+                                                                {(item.reading_points || 0).toLocaleString()}
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div className="text-right shrink-0">
