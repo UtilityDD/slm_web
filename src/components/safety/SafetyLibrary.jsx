@@ -65,7 +65,7 @@ const getGoogleDriveDirectLink = (url) => {
     return id ? `https://lh3.googleusercontent.com/u/0/d/${id}?v=${today}` : url;
 };
 
-const ImageSlider = ({ images, alt, aspect = 'aspect-[4/3]' }) => {
+const ImageSlider = ({ images, alt, aspect = 'aspect-[4/3]', showControls = true }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [validImages, setValidImages] = useState(images || []);
 
@@ -83,7 +83,6 @@ const ImageSlider = ({ images, alt, aspect = 'aspect-[4/3]' }) => {
     }, [validImages]);
 
     const handleImageError = (url) => {
-        console.warn(`⚠️ Failed to load image: ${url}`);
         const updated = validImages.filter(img => img !== url);
         setValidImages(updated);
         if (currentIndex >= updated.length && updated.length > 0) {
@@ -91,50 +90,30 @@ const ImageSlider = ({ images, alt, aspect = 'aspect-[4/3]' }) => {
         }
     };
 
-    const onImageLoad = (e, url) => {
-        if (e.target.naturalWidth < 40 && e.target.naturalHeight < 40) {
-            console.warn(`🕵️ Detected placeholder/broken image: ${url}`);
-            handleImageError(url);
-        }
-    };
-
     if (!validImages || validImages.length === 0) {
         return (
-            <div className={`${aspect} bg-slate-100 dark:bg-slate-900/50 flex flex-col items-center justify-center p-8 text-slate-400 text-center`}>
-                <svg className="w-12 h-12 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className={`${aspect} bg-slate-100 dark:bg-slate-900/50 flex flex-col items-center justify-center p-4 text-slate-400 text-center`}>
+                <svg className="w-8 h-8 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <span className="text-xs font-bold uppercase tracking-widest opacity-40">Visual reference pending</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">No Image</span>
             </div>
         );
     }
 
-    const nextSlide = (e) => {
-        if (e) e.stopPropagation();
-        setCurrentIndex((prev) => (prev + 1) % validImages.length);
-    };
-
-    const prevSlide = (e) => {
-        if (e) e.stopPropagation();
-        setCurrentIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
-    };
-
     return (
-        <div className={`${aspect} bg-slate-50 dark:bg-slate-900/50 relative overflow-hidden flex items-center justify-center p-8 group/slider`}>
+        <div className={`${aspect} bg-slate-50 dark:bg-slate-900/50 relative overflow-hidden flex items-center justify-center group/slider`}>
             <img
                 key={currentIndex}
                 src={getGoogleDriveDirectLink(validImages[currentIndex])}
-                alt={`${alt} view ${currentIndex + 1}`}
-                onLoad={(e) => onImageLoad(e, validImages[currentIndex])}
+                alt={`${alt} ${currentIndex + 1}`}
                 onError={() => handleImageError(validImages[currentIndex])}
-                className="max-h-full object-contain filter drop-shadow-2xl group-hover:scale-110 transition-all duration-500 animate-in fade-in zoom-in-95 duration-300"
+                className="max-h-full w-full object-contain filter drop-shadow-md group-hover:scale-105 transition-all duration-700 animate-in fade-in zoom-in-95 duration-500"
             />
-            {validImages.length > 1 && (
+            {showControls && validImages.length > 1 && (
                 <>
-                    <button onClick={prevSlide} className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-full text-slate-600 dark:text-slate-300 opacity-0 group-hover/slider:opacity-100 transition-opacity z-10 hover:bg-white dark:hover:bg-slate-700 shadow-lg"><ChevronLeftIcon className="w-5 h-5" /></button>
-                    <button onClick={nextSlide} className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-full text-slate-600 dark:text-slate-300 opacity-0 group-hover/slider:opacity-100 transition-opacity z-10 hover:bg-white dark:hover:bg-slate-700 shadow-lg"><ChevronRightIcon className="w-5 h-5" /></button>
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 px-2 py-1 bg-black/10 dark:bg-white/10 backdrop-blur-md rounded-full opacity-0 group-hover/slider:opacity-100 transition-opacity">
-                        {validImages.map((_, i) => (<div key={i} className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${i === currentIndex ? 'bg-orange-500 w-3' : 'bg-white/50'}`} />))}
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 px-1.5 py-0.5 bg-black/20 dark:bg-white/20 backdrop-blur-md rounded-full">
+                        {validImages.map((_, i) => (<div key={i} className={`w-1 h-1 rounded-full transition-all duration-300 ${i === currentIndex ? 'bg-orange-500 w-2' : 'bg-white/50'}`} />))}
                     </div>
                 </>
             )}
@@ -166,25 +145,23 @@ export default function SafetyLibrary({ language, setCurrentView }) {
     const t = {
         en: {
             title: 'Safety Library',
-            searchPlaceholder: 'Search equipment...',
+            searchPlaceholder: 'Search...',
             noResults: 'No items found',
             priceLabel: 'Price:',
             guideLabel: 'Usage Guide',
             aboutLabel: 'About',
             retry: 'Retry',
-            tapToEnlarge: 'Tap to enlarge',
-            closePreview: 'Close Preview'
+            details: 'Details'
         },
         bn: {
             title: 'সুরক্ষা লাইব্রেরি',
-            searchPlaceholder: 'সরঞ্জাম খুঁজুন...',
+            searchPlaceholder: 'খুঁজুন...',
             noResults: 'কিছু পাওয়া যায়নি',
             priceLabel: 'মূল্য:',
             guideLabel: 'ব্যবহারের নির্দেশিকা',
             aboutLabel: 'সম্পর্কে',
             retry: 'আবার চেষ্টা করুন',
-            tapToEnlarge: 'বড় করে দেখতে ট্যাপ করুন',
-            closePreview: 'প্রিভিউ বন্ধ করুন'
+            details: 'বিস্তারিত'
         }
     }[language];
 
@@ -192,39 +169,28 @@ export default function SafetyLibrary({ language, setCurrentView }) {
         try {
             setLoading(true);
             setError(null);
-            
             const data = await libraryService.fetchLibrary(force);
-            
             if (!data || data.length === 0) throw new Error("No data found");
-
             setItems(data);
             setFilteredItems(data);
-
             const uniqueCats = [...new Set(data.map(item => item.category))].filter(Boolean);
             const dynamicCategories = uniqueCats.map(cat => ({
                 id: cat,
                 label: cat,
                 ...getCategoryMetadata(cat)
             }));
-            
             setCategories(dynamicCategories);
             if (dynamicCategories.length > 0 && !activeCategory) {
                 setActiveCategory(dynamicCategories[0].id);
             }
         } catch (error) {
-            console.error('Error loading safety library:', error);
-            setError({
-                message: error.message,
-                technical: error.stack?.split('\n')[0] || 'Check Internet'
-            });
+            setError({ message: error.message, technical: error.stack?.split('\n')[0] || 'Check Internet' });
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        fetchLibrary();
-    }, []);
+    useEffect(() => { fetchLibrary(); }, []);
 
     useEffect(() => {
         const filtered = items.filter(item => {
@@ -236,183 +202,145 @@ export default function SafetyLibrary({ language, setCurrentView }) {
     }, [searchQuery, activeCategory, items]);
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 md:p-8">
-            <div className="max-w-7xl mx-auto">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                    <div className="flex items-center gap-3">
-                        <button 
-                            onClick={() => setCurrentView('training')} 
-                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-orange-500 hover:border-orange-500/50 transition-all shadow-sm active:scale-95 group"
-                            title={language === 'en' ? 'Back' : 'ফিরুন'}
-                        >
-                            <ChevronLeftIcon className="w-6 h-6 group-hover:-translate-x-0.5 transition-transform" />
-                        </button>
-                        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                            {t.title}
-                        </h1>
-                    </div>
-
-                    <div className="relative group max-w-md w-full">
-                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-orange-500 transition-colors" />
-                        <input
-                            type="text"
-                            placeholder={t.searchPlaceholder}
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none text-slate-900 dark:text-white text-sm"
-                        />
-                    </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2 mb-10 pb-2 overflow-x-auto no-scrollbar">
-                    {categories.map((cat) => (
-                        <button
-                            key={cat.id}
-                            onClick={() => setActiveCategory(cat.id)}
-                            className={`flex items-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap shadow-sm border
-                                ${activeCategory === cat.id
-                                    ? 'bg-orange-500 text-white border-orange-400 scale-105 shadow-orange-500/25'
-                                    : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-100 dark:border-slate-800 hover:border-orange-200 dark:hover:border-orange-900/30'}`}
-                        >
-                            <span className={`${activeCategory === cat.id ? 'scale-110' : 'opacity-70'} transition-transform`}>
-                                {cat.icon ? React.cloneElement(cat.icon, { className: 'w-3.5 h-3.5 sm:w-4 sm:h-4' }) : null}
-                            </span>
-                            {cat.label}
-                        </button>
-                    ))}
-                </div>
-
-                {loading ? (
-                    <div className="flex items-center justify-center min-h-[400px]">
-                        <div className="w-12 h-12 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin"></div>
-                    </div>
-                ) : error ? (
-                    <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-8">
-                        <div className="w-20 h-20 bg-red-50 dark:bg-red-900/10 rounded-full flex items-center justify-center mb-6 text-red-500">
-                            <InfoIcon className="w-10 h-10" />
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20">
+            {/* Sticky Header */}
+            <div className="sticky top-0 z-[100] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 pt-10 pb-4 px-4 sm:px-8">
+                <div className="max-w-7xl mx-auto space-y-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <button 
+                                onClick={() => setCurrentView('training')} 
+                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                            >
+                                <ChevronLeftIcon className="w-5 h-5" />
+                            </button>
+                            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                                {t.title}
+                            </h1>
                         </div>
-                        <p className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                            {language === 'en' ? 'Unable to load Library' : 'লাইব্রেরি লোড করা যাচ্ছে না'}
-                        </p>
-                        <p className="text-slate-500 dark:text-slate-400 mb-2 max-w-xs">
-                            {language === 'en' ? 'Please check your internet connection' : 'আপনার ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় চেষ্টা করুন'}
-                        </p>
-                        <p className="text-[10px] font-mono text-slate-400 dark:text-slate-600 mb-8 max-w-xs break-all opacity-50 uppercase tracking-tighter">
-                            Debug: {error.message || 'No Error Msg'} | {error.technical || 'No Technical Info'}
-                        </p>
-                        <button
-                            onClick={fetchLibrary}
-                            className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/25 transition-all active:scale-95"
-                        >
-                            {t.retry}
-                        </button>
+                        <div className="relative group max-w-[160px] sm:max-w-md w-full">
+                            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder={t.searchPlaceholder}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800/50 border-none rounded-xl text-xs sm:text-sm outline-none focus:ring-2 focus:ring-orange-500/20"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Compact Categories */}
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                        {categories.map((cat) => (
+                            <button
+                                key={cat.id}
+                                onClick={() => setActiveCategory(cat.id)}
+                                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap shadow-sm border
+                                    ${activeCategory === cat.id
+                                        ? 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/20'
+                                        : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-100 dark:border-slate-800'}`}
+                            >
+                                {cat.icon && React.cloneElement(cat.icon, { className: 'w-3 h-3' })}
+                                {cat.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto p-3 sm:p-8">
+                {loading ? (
+                    <div className="flex items-center justify-center min-h-[300px]">
+                        <div className="w-10 h-10 border-3 border-orange-500/20 border-t-orange-500 rounded-full animate-spin"></div>
                     </div>
                 ) : filteredItems.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {filteredItems.map((item) => {
-                            const isStructured = ['PPE', 'Tools', 'Insulators'].includes(item.category);
-                            const isChart = item.category === 'Charts';
-                            return (
-                                <div
-                                    key={item.id}
-                                    onClick={() => setSelectedItem(item)}
-                                    className={`group bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/15 transition-all duration-500 flex flex-col cursor-zoom-in ${isChart ? 'md:col-span-2 lg:col-span-3' : ''} active:scale-[0.98]`}
-                                >
-                                    <div className="relative">
-                                        <ImageSlider
-                                            images={item.images}
-                                            alt={item.name_bn}
-                                            aspect={isChart ? 'aspect-video' : 'aspect-[4/3]'}
-                                        />
-                                        <div className="absolute top-4 left-4">
-                                            <span className="px-3 py-1.5 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-full text-xs font-bold text-orange-600 dark:text-orange-400 shadow-lg border border-orange-100/20">
-                                                {item.category}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div className={`${isChart ? 'p-3 sm:p-6' : 'p-6 sm:p-8'} flex flex-col flex-grow transition-all`}>
-                                        <h3 className={`${isChart ? 'text-lg sm:text-2xl' : 'text-xl sm:text-2xl'} font-bold text-slate-900 dark:text-white mb-2 group-hover:text-orange-500 transition-colors`}>
-                                            {item.name_bn}
-                                        </h3>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-3">
-                                            {t.tapToEnlarge}
-                                        </p>
-                                        {item.function_bn && (
-                                            <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-6 font-medium">
-                                                {item.function_bn}
-                                            </p>
-                                        )}
-
-                                        {isStructured && (
-                                            <div className="mt-auto space-y-6 pt-6 border-t border-slate-100 dark:border-slate-800/50">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wider">{t.priceLabel}</span>
-                                                    <span className="text-xl font-black text-orange-500">₹{item.approx_price_inr}</span>
-                                                </div>
-
-                                                <div className="bg-orange-50/50 dark:bg-orange-500/5 p-4 rounded-2xl border border-orange-100 dark:border-orange-500/10">
-                                                    <div className="flex items-center gap-2 mb-2 text-orange-600 dark:text-orange-400 font-bold text-sm">
-                                                        <InfoIcon className="w-4 h-4" />
-                                                        {t.guideLabel}
-                                                    </div>
-                                                    <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-                                                        {item.guide_bn}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        )}
-
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+                        {filteredItems.map((item) => (
+                            <div
+                                key={item.id}
+                                onClick={() => setSelectedItem(item)}
+                                className="group bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 hover:shadow-xl transition-all active:scale-[0.97] flex flex-col"
+                            >
+                                <div className="relative aspect-square">
+                                    <ImageSlider images={item.images} alt={item.name_bn} aspect="h-full" showControls={false} />
+                                    <div className="absolute top-2 left-2">
+                                        <span className="px-1.5 py-0.5 bg-black/30 backdrop-blur-md rounded-md text-[8px] font-bold text-white uppercase tracking-tighter">
+                                            {item.category}
+                                        </span>
                                     </div>
                                 </div>
-                            );
-                        })}
+                                <div className="p-2.5 sm:p-4 flex-grow flex flex-col justify-center">
+                                    <h3 className="text-[11px] sm:text-sm font-bold text-slate-900 dark:text-white leading-tight line-clamp-2 text-center group-hover:text-orange-500 transition-colors">
+                                        {item.name_bn}
+                                    </h3>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-400">
-                        <LineChartIcon className="w-16 h-16 mb-4 opacity-20" />
-                        <p className="text-xl font-medium">{t.noResults}</p>
+                    <div className="flex flex-col items-center justify-center min-h-[300px] text-slate-400">
+                        <LineChartIcon className="w-12 h-12 mb-2 opacity-10" />
+                        <p className="text-sm font-medium">{t.noResults}</p>
                     </div>
                 )}
 
+                {/* Enhanced Bottom Sheet Detail Modal */}
                 {selectedItem && (
-                    <div
-                        className="fixed inset-0 z-[1000] bg-black/75 backdrop-blur-sm p-0 md:p-2 flex items-center justify-center animate-fade-in"
-                        onClick={() => setSelectedItem(null)}
-                    >
-                        <button
-                            onClick={() => setSelectedItem(null)}
-                            aria-label={t.closePreview}
-                            className="fixed right-4 z-[1010] w-12 h-12 rounded-full bg-black/75 text-white hover:bg-black/90 transition-colors flex items-center justify-center shadow-2xl border border-white/20"
-                            style={{ top: 'calc(env(safe-area-inset-top, 0px) + 4.25rem)' }}
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-
-                        <div
-                            className="relative w-full h-full md:w-[98vw] md:h-[98vh] bg-white dark:bg-slate-900 md:rounded-[1.25rem] border-0 md:border md:border-slate-200 dark:md:border-slate-800 shadow-2xl flex flex-col"
-                            onClick={(e) => e.stopPropagation()}
-                        >
+                    <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+                        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setSelectedItem(null)} />
+                        
+                        <div className="relative w-full h-[92vh] sm:h-auto sm:max-w-2xl bg-white dark:bg-slate-900 rounded-t-[2.5rem] sm:rounded-[2rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up sm:animate-scale-in">
+                            {/* Modal Close Handler bar for mobile */}
+                            <div className="sm:hidden w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto my-4 shrink-0" onClick={() => setSelectedItem(null)} />
+                            
                             <button
                                 onClick={() => setSelectedItem(null)}
-                                aria-label={t.closePreview}
-                                className="absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-black/55 text-white hover:bg-black/70 backdrop-blur-md transition-colors flex items-center justify-center shadow-lg"
+                                className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center backdrop-blur-md"
                             >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
 
-                            <div className="px-5 pt-4 pb-2 pr-16">
-                                <h3 className="text-xs md:text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider truncate">
-                                    {selectedItem.name_bn}
-                                </h3>
-                            </div>
+                            <div className="flex-1 overflow-y-auto no-scrollbar">
+                                {/* Maximized Image View */}
+                                <div className="bg-slate-50 dark:bg-slate-800/30 aspect-square sm:aspect-video w-full flex items-center justify-center p-4">
+                                    <ImageSlider images={selectedItem.images} alt={selectedItem.name_bn} aspect="h-full" />
+                                </div>
 
-                            <div className="px-0 pb-0 flex-1 min-h-0">
-                                <ImageSlider images={selectedItem.images} alt={selectedItem.name_bn} aspect="h-full" />
+                                <div className="p-6 sm:p-8 space-y-6">
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 rounded-md text-[10px] font-black uppercase tracking-tighter border border-orange-200/50">
+                                                {selectedItem.category}
+                                            </span>
+                                            {selectedItem.approx_price_inr !== '---' && (
+                                                <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">₹{selectedItem.approx_price_inr}</span>
+                                            )}
+                                        </div>
+                                        <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">
+                                            {selectedItem.name_bn}
+                                        </h3>
+                                    </div>
+
+                                    {selectedItem.function_bn && (
+                                        <div className="space-y-2">
+                                            <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{t.aboutLabel}</h4>
+                                            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                                                {selectedItem.function_bn}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    <div className="p-4 sm:p-6 bg-orange-50 dark:bg-orange-900/10 rounded-3xl border border-orange-100 dark:border-orange-500/10 space-y-3">
+                                        <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400 font-black text-xs uppercase tracking-wider">
+                                            <InfoIcon className="w-4 h-4" />
+                                            {t.guideLabel}
+                                        </div>
+                                        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed font-medium italic">
+                                            {selectedItem.guide_bn}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
