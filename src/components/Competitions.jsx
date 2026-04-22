@@ -85,6 +85,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [hintViewedQuestions, setHintViewedQuestions] = useState(new Set());
     const [showAbortWarningModal, setShowAbortWarningModal] = useState(false);
     
+    // Search Quota State
+    const [searchCount, setSearchCount] = useState(0);
+    const [showSearchModal, setShowSearchModal] = useState(false);
+    const [hourlySearchText, setHourlySearchText] = useState('');
+    const MAX_SEARCH_QUOTA = 2;
+    
     // Hall of Fame Gallery State
     const [showHallOfFame, setShowHallOfFame] = useState(false);
     const [hallOfFameData, setHallOfFameData] = useState([]);
@@ -194,7 +200,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             antiCheatExitDesc: "Exiting now will submit this hourly challenge with 0 points.",
             antiCheatExitPenalty: "This is an anti-cheating safeguard and cannot be undone.",
             antiCheatStay: "Continue Quiz",
-            antiCheatExitConfirm: "Exit with 0 Points"
+            antiCheatExitConfirm: "Exit with 0 Points",
+            searchLimitTitle: "Search Quota",
+            searchConfirm: "Do you want to search Google? You have 2 searches per session (Used: %s/2).",
+            searchExhausted: "Quota exhausted! You have used all 2 searches.",
+            searchProceed: "Proceed"
         },
         bn: {
             title: "প্রতিযোগিতা",
@@ -241,7 +251,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             antiCheatExitDesc: "এখন বের হলে এই ঘণ্টার চ্যালেঞ্জ ০ পয়েন্টে সাবমিট হবে।",
             antiCheatExitPenalty: "এটি এন্টি-চিট সুরক্ষা এবং পরে পরিবর্তন করা যাবে না।",
             antiCheatStay: "কুইজ চালিয়ে যান",
-            antiCheatExitConfirm: "০ পয়েন্টে বের হোন"
+            antiCheatExitConfirm: "০ পয়েন্টে বের হোন",
+            searchLimitTitle: "সার্চ লিমিট",
+            searchConfirm: "আপনি কি এটি গুগলে খুঁজতে চান? প্রতি সেশনে আপনি মাত্র ২ বার সার্চ করতে পারবেন (ব্যবহৃত: %s/২)।",
+            searchExhausted: "দুঃখিত! আপনার ২টির সার্চের কোটা শেষ হয়ে গেছে।",
+            searchProceed: "সার্চ করুন"
         }
     }[language];
 
@@ -514,6 +528,21 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             }
         } finally {
             setIsSyncing(false);
+        }
+    };
+
+    const handleHourlyGoogleSearch = (text) => {
+        if (!text) return;
+        setHourlySearchText(text);
+        setShowSearchModal(true);
+    };
+
+    const confirmHourlyGoogleSearch = () => {
+        if (searchCount < MAX_SEARCH_QUOTA) {
+            setSearchCount(prev => prev + 1);
+            const query = encodeURIComponent(hourlySearchText);
+            window.open(`https://www.google.com/search?q=${query}`, '_blank');
+            setShowSearchModal(false);
         }
     };
 
@@ -950,6 +979,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         }
 
         setActiveQuiz(quiz);
+        setSearchCount(0);
 
         // Seeded Randomization for Anti-Cheat: User-specific and Hour-specific
         const seed = stringToSeed(user.id + quiz.id);
@@ -1939,9 +1969,25 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         <div className="bg-orange-600 h-1.5 rounded-full transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}></div>
                                     </div>
                                     <div className="flex justify-between items-start gap-4 mb-6">
-                                        <h2 className={`reading-content text-lg sm:text-xl font-bold ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                            {quizQuestions[currentQuestionIndex]?.question_text}
-                                        </h2>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <h2 className={`reading-content text-lg sm:text-xl font-bold ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    {quizQuestions[currentQuestionIndex]?.question_text}
+                                                </h2>
+                                                <button
+                                                    onClick={() => handleHourlyGoogleSearch(quizQuestions[currentQuestionIndex]?.question_text)}
+                                                    className="shrink-0 p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 hover:bg-amber-500/10 hover:border-amber-500/20 text-slate-400 hover:text-amber-500 transition-all active:scale-90"
+                                                    title={language === 'en' ? 'Search Google' : 'গুগল সার্চ'}
+                                                >
+                                                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-1 .67-2.28 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                                                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
                                         <button
                                             onClick={() => {
                                                 const newShowHint = !showHint;
@@ -2084,6 +2130,59 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 </button>
                             </div>
                         )}
+                    </div>
+                </div>,
+                document.body
+            )}
+            {/* Google Search Confirmation Modal */}
+            {showSearchModal && createPortal(
+                <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+                    <div className="bg-slate-900 border border-white/10 rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-[0_32px_64px_rgba(0,0,0,0.5)] animate-scale-in flex flex-col p-8 text-center items-center">
+                        {/* Google Icon Circle */}
+                        <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-6 shadow-xl shadow-white/5 transition-transform">
+                            <svg className="w-9 h-9" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-1 .67-2.28 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                            </svg>
+                        </div>
+
+                        <h3 className="text-xl font-black text-white tracking-tight mb-2">
+                            {searchCount >= MAX_SEARCH_QUOTA ? t.searchExhausted : t.searchLimitTitle}
+                        </h3>
+                        
+                        <p className="text-white/60 text-sm leading-relaxed mb-8">
+                            {searchCount >= MAX_SEARCH_QUOTA 
+                                ? (language === 'en' ? 'Limit reached. Use your skills to finish!' : 'নিজের বুদ্ধি খাটিয়ে চ্যালেঞ্জ শেষ করুন!')
+                                : t.searchConfirm.replace('%s', searchCount)}
+                        </p>
+
+                        {searchCount < MAX_SEARCH_QUOTA && (
+                            <div className="w-full bg-white/5 rounded-full h-1.5 mb-8 overflow-hidden border border-white/5">
+                                <div 
+                                    className="h-full bg-blue-500 rounded-full transition-all duration-700" 
+                                    style={{ width: `${(searchCount / MAX_SEARCH_QUOTA) * 100}%` }}
+                                />
+                            </div>
+                        )}
+
+                        <div className="flex flex-col w-full gap-3">
+                            {searchCount < MAX_SEARCH_QUOTA && (
+                                <button
+                                    onClick={confirmHourlyGoogleSearch}
+                                    className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black text-sm transition-all active:scale-95 shadow-xl shadow-blue-600/20"
+                                >
+                                    {t.searchProceed}
+                                </button>
+                            )}
+                            <button
+                                onClick={() => setShowSearchModal(false)}
+                                className={`w-full py-4 rounded-2xl font-bold text-sm transition-all ${searchCount >= MAX_SEARCH_QUOTA ? 'bg-orange-500 text-white hover:bg-orange-400' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+                            >
+                                {searchCount >= MAX_SEARCH_QUOTA ? (language === 'en' ? 'Got it' : 'বুঝেছি') : t.close}
+                            </button>
+                        </div>
                     </div>
                 </div>,
                 document.body
