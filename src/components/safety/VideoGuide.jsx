@@ -47,7 +47,7 @@ export default function VideoGuide({ language, setCurrentView }) {
             categories: 'Categories'
         },
         bn: {
-            title: 'ভিডিও নির্দেশিকা',
+            title: 'ভিডিও গাইড',
             searchPlaceholder: 'ভিডিও খুঁজুন...',
             noResults: 'কোনো ভিডিও পাওয়া যায়নি',
             retry: 'আবার চেষ্টা করুন',
