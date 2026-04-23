@@ -4,6 +4,26 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html, body {
+    @apply antialiased overflow-x-hidden;
+    touch-action: pan-x pan-y;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  input, textarea, [contenteditable="true"] {
+    user-select: text;
+    -webkit-user-select: text;
+    touch-action: manipulation;
+  }
+
+  button, a, [role="button"] {
+    touch-action: manipulation;
+  }
+}
+
 :root {
   /* Color primitives */
   --color-white: #ffffff;
