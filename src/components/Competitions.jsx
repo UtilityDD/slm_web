@@ -99,6 +99,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [showHallOfFame, setShowHallOfFame] = useState(false);
     const [hallOfFameData, setHallOfFameData] = useState([]);
     const [loadingGallery, setLoadingGallery] = useState(false);
+    const [maximizedAvatar, setMaximizedAvatar] = useState(null);
 
     // Gamified Ladder state
     const [todayAttempts, setTodayAttempts] = useState([]);
@@ -1312,7 +1313,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                     </div>
                                                                     
                                                                     <div className="flex items-center sm:hidden gap-3 flex-1 min-w-0">
-                                                                        <div className={`w-10 h-10 rounded-lg overflow-hidden border shadow-sm ${isGold ? 'border-amber-400' : 'border-slate-200 dark:border-slate-700'}`}>
+                                                                        <div 
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                if (winner.avatar_url) setMaximizedAvatar(winner.avatar_url);
+                                                                            }}
+                                                                            className={`w-10 h-10 rounded-lg overflow-hidden border shadow-sm cursor-zoom-in active:scale-95 transition-transform ${isGold ? 'border-amber-400' : 'border-slate-200 dark:border-slate-700'}`}
+                                                                        >
                                                                             {winner.avatar_url ? <img src={winner.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-black text-slate-400">{(winner.full_name || '?')[0]}</div>}
                                                                         </div>
                                                                         <div className="min-w-0">
@@ -1346,7 +1353,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                                                             {/* Desktop Only Avatar Info */}
                                                             <div className="hidden sm:flex items-center gap-3 mt-4 pt-3 border-t border-slate-100 dark:border-white/5">
-                                                                <div className={`w-10 h-10 rounded-xl overflow-hidden border shadow-sm ${isGold ? 'border-amber-400' : 'border-slate-200 dark:border-slate-700'}`}>
+                                                                <div 
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        if (winner.avatar_url) setMaximizedAvatar(winner.avatar_url);
+                                                                    }}
+                                                                    className={`w-10 h-10 rounded-xl overflow-hidden border shadow-sm cursor-zoom-in active:scale-95 transition-transform ${isGold ? 'border-amber-400' : 'border-slate-200 dark:border-slate-700'}`}
+                                                                >
                                                                     {winner.avatar_url ? <img src={winner.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-black text-slate-400">{(winner.full_name || '?')[0]}</div>}
                                                                 </div>
                                                                 <div className="min-w-0">
@@ -1443,7 +1456,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 return (
                                                     <div key={player.user_id} className={`flex flex-col items-center ${isWinner ? 'scale-110 mb-2' : 'mb-0 opacity-90'}`}>
                                                         <div className="relative mb-3">
-                                                            <div className={`w-14 h-14 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 shadow-xl ${rank === 1 ? 'border-amber-400 ring-4 ring-amber-400/20' : rank === 2 ? 'border-slate-300 ring-4 ring-slate-300/20' : 'border-orange-300 ring-4 ring-orange-300/20'} relative`}>
+                                                            <div 
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (player.avatar_url) setMaximizedAvatar(player.avatar_url);
+                                                                }}
+                                                                className={`w-14 h-14 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 shadow-xl cursor-zoom-in active:scale-95 transition-transform ${rank === 1 ? 'border-amber-400 ring-4 ring-amber-400/20' : rank === 2 ? 'border-slate-300 ring-4 ring-slate-300/20' : 'border-orange-300 ring-4 ring-orange-300/20'} relative`}
+                                                            >
                                                                 {player.avatar_url ? <img src={player.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-xl font-bold text-slate-400">{player.full_name?.[0]}</div>}
                                                                 
                                                                 {/* Status Indicator in Corner */}
@@ -1607,6 +1626,22 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 {language === 'en' ? 'No rankings found for this category.' : 'এই বিভাগে কোনো র‍্যাঙ্কিং পাওয়া যায়নি।'}
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Avatar Viewer Modal */}
+            {maximizedAvatar && (
+                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-10 animate-fade-in">
+                    <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl" onClick={() => setMaximizedAvatar(null)} />
+                    <div className="relative max-w-2xl w-full aspect-square bg-slate-900 rounded-[2rem] overflow-hidden shadow-2xl animate-scale-in border border-white/10">
+                        <button 
+                            onClick={() => setMaximizedAvatar(null)}
+                            className="absolute top-4 right-4 z-50 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                        <img src={maximizedAvatar} className="w-full h-full object-cover" alt="Maximized Avatar" />
                     </div>
                 </div>
             )}
