@@ -1291,7 +1291,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     return (
                                                         <div 
                                                             key={winner.user_id} 
-                                                            className={`relative p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all duration-500 group/topper 
+                                                            onClick={() => openUserProgress(winner.user_id)}
+                                                            className={`relative p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all duration-500 group/topper cursor-pointer
                                                                 ${isGold 
                                                                     ? 'bg-gradient-to-br from-amber-50 to-white dark:from-amber-900/10 dark:to-slate-900/50 border-amber-200 dark:border-amber-500/20 shadow-md shadow-amber-500/5' 
                                                                     : 'bg-white/40 dark:bg-slate-800/40 border-slate-100 dark:border-white/5 hover:border-indigo-500/30'}`}
@@ -1418,7 +1419,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     )}
                                         </div>
                                     </div>
-                                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-orange-600 dark:text-orange-300 border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
+                                    <div 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (userProfile?.avatar_url) setMaximizedAvatar(userProfile.avatar_url);
+                                        }}
+                                        className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-orange-600 dark:text-orange-300 border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0 cursor-zoom-in active:scale-95 transition-transform"
+                                    >
                                         {userProfile?.avatar_url ? <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
                                     </div>
                                 </div>
@@ -1536,7 +1543,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             <div className="w-6 sm:w-8 text-center text-xs sm:text-sm font-black text-slate-400 group-hover:text-orange-500 transition-colors">
                                                 {idx + 1}
                                             </div>
-                                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0 relative">
+                                            <div 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (item.avatar_url) setMaximizedAvatar(item.avatar_url);
+                                                }}
+                                                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0 relative cursor-zoom-in active:scale-95 transition-transform"
+                                            >
                                                 {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
                                                 
                                                 {/* Status Indicator in Corner */}
