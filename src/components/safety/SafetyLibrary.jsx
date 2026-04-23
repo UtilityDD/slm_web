@@ -172,6 +172,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
     const [activeCategory, setActiveCategory] = useState('');
     const [selectedItem, setSelectedItem] = useState(null);
     const [categories, setCategories] = useState([]);
+    const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
     const getCategoryMetadata = (catId) => {
         const metadata = {
@@ -248,28 +249,63 @@ export default function SafetyLibrary({ language, setCurrentView }) {
             {/* Sticky Header */}
             <div className="sticky top-0 z-[100] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 pt-10 pb-4 px-4 sm:px-8">
                 <div className="max-w-7xl mx-auto space-y-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <button 
-                                onClick={() => setCurrentView('training')} 
-                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 active:scale-90 transition-transform"
-                            >
-                                <ChevronLeftIcon className="w-5 h-5" />
-                            </button>
-                            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                                {t.title}
-                            </h1>
-                        </div>
-                        <div className="relative group max-w-[160px] sm:max-w-md w-full">
-                            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <input
-                                type="text"
-                                placeholder={t.searchPlaceholder}
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800/50 border-none rounded-xl text-xs sm:text-sm outline-none focus:ring-2 focus:ring-orange-500/20 transition-all"
-                            />
-                        </div>
+                    <div className="flex items-center justify-between gap-4">
+                        {!isSearchExpanded ? (
+                            <>
+                                <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4 duration-300">
+                                    <button 
+                                        onClick={() => setCurrentView('training')} 
+                                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 active:scale-90 transition-transform"
+                                    >
+                                        <ChevronLeftIcon className="w-5 h-5" />
+                                    </button>
+                                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                                        {t.title}
+                                    </h1>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {/* Mobile Search Trigger */}
+                                    <button 
+                                        onClick={() => setIsSearchExpanded(true)}
+                                        className="sm:hidden w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 active:scale-90 transition-transform"
+                                    >
+                                        <SearchIcon className="w-5 h-5" />
+                                    </button>
+                                    
+                                    {/* Desktop Search Bar */}
+                                    <div className="hidden sm:block relative group max-w-md w-full">
+                                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                        <input
+                                            type="text"
+                                            placeholder={t.searchPlaceholder}
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800/50 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500/20 transition-all"
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex-1 flex items-center gap-2 animate-in slide-in-from-right-4 duration-300">
+                                <div className="relative flex-1">
+                                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <input
+                                        autoFocus
+                                        type="text"
+                                        placeholder={t.searchPlaceholder}
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full pl-9 pr-3 py-2.5 bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500/30 transition-all"
+                                    />
+                                </div>
+                                <button 
+                                    onClick={() => { setIsSearchExpanded(false); setSearchQuery(''); }}
+                                    className="px-3 py-2 text-sm font-bold text-orange-500 dark:text-orange-400 active:scale-95"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {/* Compact Categories */}
