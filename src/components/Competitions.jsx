@@ -208,7 +208,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             searchLimitTitle: "Search Quota",
             searchConfirm: "Do you want to search Google? You have 2 searches per session (Used: %s/2).",
             searchExhausted: "Quota exhausted! You have used all 2 searches.",
-            searchProceed: "Proceed"
+            searchProceed: "Proceed",
+            noDistrict: "No Update"
         },
         bn: {
             title: "প্রতিযোগিতা",
@@ -259,7 +260,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             searchLimitTitle: "সার্চ লিমিট",
             searchConfirm: "আপনি কি এটি গুগলে খুঁজতে চান? প্রতি সেশনে আপনি মাত্র ২ বার সার্চ করতে পারবেন (ব্যবহৃত: %s/২)।",
             searchExhausted: "দুঃখিত! আপনার ২টির সার্চের কোটা শেষ হয়ে গেছে।",
-            searchProceed: "সার্চ করুন"
+            searchProceed: "সার্চ করুন",
+            noDistrict: "আপডেট নেই"
         }
     }[language];
 
@@ -1326,6 +1328,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                                 })()}
                                                                             </div>
                                                                             <p className="text-[8px] font-bold text-slate-400 uppercase tabular-nums">{winner.slm_id || (language === 'en' ? 'SLM-MEMBER' : 'এসএলএম-সদস্য')}</p>
+                                                                            <p className="text-[7px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-tighter mt-0.5">
+                                                                                📍 {winner.district || t.noDistrict}
+                                                                            </p>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -1346,7 +1351,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 </div>
                                                                 <div className="min-w-0">
                                                                     <p className="text-xs font-black text-slate-900 dark:text-white truncate">{winner.full_name || 'Anonymous'}</p>
-                                                                    <p className="text-[8px] font-bold text-slate-400 uppercase tabular-nums">{winner.slm_id || 'SLM-MEMBER'}</p>
+                                                                    <div className="flex items-center justify-between gap-2 mt-0.5">
+                                                                        <p className="text-[8px] font-bold text-slate-400 uppercase tabular-nums">{winner.slm_id || 'SLM-MEMBER'}</p>
+                                                                        <p className="text-[7px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/20 px-1 rounded">
+                                                                            {winner.district || t.noDistrict}
+                                                                        </p>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1462,6 +1472,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             {rank === 1 && <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-2xl animate-bounce">👑</div>}
                                                         </div>
                                                         <p className="text-[10px] sm:text-xs font-black text-slate-900 dark:text-white truncate max-w-full text-center px-1 leading-tight mb-1">{player.full_name}</p>
+                                                        {leaderboardTab === 'monthly' && (
+                                                            <p className="text-[8px] font-black text-orange-500 dark:text-orange-400 uppercase tracking-tighter mb-1 animate-pulse">
+                                                                📍 {player.district || t.noDistrict}
+                                                            </p>
+                                                         )}
                                                         <div className="flex items-center gap-1 mb-1">
                                                             {(() => {
                                                                 const badge = getBadgeByLevel(
@@ -1527,6 +1542,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 mb-0.5">
                                                     <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{item.full_name}</p>
+                                                    {leaderboardTab === 'monthly' && (
+                                                       <span className="text-[9px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-tighter bg-orange-50 dark:bg-orange-950/30 px-1.5 py-0.5 rounded border border-orange-100 dark:border-orange-900/20">
+                                                           {item.district || t.noDistrict}
+                                                       </span>
+                                                    )}
                                                     {(() => {
                                                         const badge = getBadgeByLevel(
                                                             item.training_level || 0, 

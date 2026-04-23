@@ -44,7 +44,7 @@ export const leaderboardService = {
             async () => {
                 const { data, error } = await supabase
                     .from('monthly_leaderboard_view')
-                    .select('*, profiles(reading_points)')
+                    .select('*, profiles(reading_points, district)')
                     .eq('month_num', m)
                     .eq('year_num', y)
                     .order('points', { ascending: false })
@@ -55,7 +55,8 @@ export const leaderboardService = {
                 // Flatten the nested profiles data
                 return data.map(item => ({
                     ...item,
-                    all_time_reading_points: item.profiles?.reading_points || 0
+                    all_time_reading_points: item.profiles?.reading_points || 0,
+                    district: item.profiles?.district || null
                 }));
             },
             { ttl: 5, swr: true, forceRefresh }
@@ -73,7 +74,7 @@ export const leaderboardService = {
                 const now = new Date();
                 const { data, error } = await supabase
                     .from('monthly_leaderboard_view')
-                    .select('*, profiles(slm_id, reading_points)')
+                    .select('*, profiles(slm_id, reading_points, district)')
                     .order('year_num', { ascending: false })
                     .order('month_num', { ascending: false })
                     .order('points', { ascending: false });
@@ -85,7 +86,8 @@ export const leaderboardService = {
                 const processedData = data.map(row => ({
                     ...row,
                     slm_id: row.profiles?.slm_id || null,
-                    all_time_reading_points: row.profiles?.reading_points || 0
+                    all_time_reading_points: row.profiles?.reading_points || 0,
+                    district: row.profiles?.district || null
                 }));
 
                 const grouped = {};
