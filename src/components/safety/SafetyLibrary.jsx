@@ -201,7 +201,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
             searchPlaceholder: 'খুঁজুন...',
             noResults: 'কিছু পাওয়া যায়নি',
             priceLabel: 'মূল্য:',
-            guideLabel: 'ব্যবহারের নির্দেশিকা',
+            guideLabel: 'দরকারি টিপ',
             aboutLabel: 'সম্পর্কে',
             retry: 'আবার চেষ্টা করুন',
             details: 'বিস্তারিত'
@@ -398,29 +398,17 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                 </div>
 
                                 <div className="p-6 sm:p-10 space-y-8">
-                                    {/* Minimalist Info Grid */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {selectedItem.approx_price_inr !== '---' && (
-                                            <div className="p-4 rounded-3xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                                                    <span className="text-xl">₹</span>
+                                    {/* Minimalist Price Section */}
+                                    {selectedItem.approx_price_inr !== '---' && (
+                                        <div className="flex justify-center">
+                                            <div className="px-6 py-3 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/5 border border-emerald-500/20 flex items-center gap-3 shadow-sm">
+                                                <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-black text-lg">
+                                                    ₹
                                                 </div>
-                                                <div>
-                                                    <p className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-widest">{language === 'en' ? 'Price' : 'মূল্য'}</p>
-                                                    <p className="text-sm font-black text-emerald-700 dark:text-emerald-300">₹{selectedItem.approx_price_inr}</p>
-                                                </div>
-                                            </div>
-                                        )}
-                                        <div className="p-4 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-2xl bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center">
-                                                <InfoIcon className="w-5 h-5" />
-                                            </div>
-                                            <div>
-                                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{language === 'en' ? 'Type' : 'ধরণ'}</p>
-                                                <p className="text-sm font-black text-slate-700 dark:text-slate-200">{selectedItem.category}</p>
+                                                <p className="text-lg font-black text-emerald-600 dark:text-emerald-400">₹{selectedItem.approx_price_inr}</p>
                                             </div>
                                         </div>
-                                    </div>
+                                    )}
 
                                     {/* About Section - Clean & Readable */}
                                     {selectedItem.function_bn && (
