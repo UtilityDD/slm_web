@@ -1471,10 +1471,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             </div>
                                                             {rank === 1 && <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-2xl animate-bounce">👑</div>}
                                                         </div>
-                                                        <p className="text-[10px] sm:text-xs font-black text-slate-900 dark:text-white truncate max-w-full text-center px-1 leading-tight mb-1">{player.full_name}</p>
+                                                        <p className="text-[10px] sm:text-xs font-black text-slate-900 dark:text-white truncate max-w-full text-center px-1 leading-tight">{player.full_name}</p>
                                                         {leaderboardTab === 'monthly' && (
-                                                            <p className="text-[8px] font-black text-orange-500 dark:text-orange-400 uppercase tracking-tighter mb-1 animate-pulse">
-                                                                📍 {player.district || t.noDistrict}
+                                                            <p className="text-[7px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-[0.1em] mt-0.5">
+                                                                {player.district || t.noDistrict}
                                                             </p>
                                                          )}
                                                         <div className="flex items-center gap-1 mb-1">
@@ -1540,24 +1540,27 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 })()}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-0.5">
-                                                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{item.full_name}</p>
+                                                <div className="flex flex-col mb-0.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{item.full_name}</p>
+                                                        {(() => {
+                                                            const badge = getBadgeByLevel(
+                                                                item.training_level || 0, 
+                                                                item.all_time_reading_points !== undefined ? item.all_time_reading_points : (item.reading_points || 0)
+                                                            );
+                                                            return badge && (
+                                                                <span className={`text-[7px] px-1 py-0 rounded-sm border font-black uppercase tracking-tighter ${badge.color}`}>
+                                                                    {language === 'en' ? badge.en : badge.bn}
+                                                                </span>
+                                                            );
+                                                        })()}
+                                                    </div>
                                                     {leaderboardTab === 'monthly' && (
-                                                       <span className="text-[9px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-tighter bg-orange-50 dark:bg-orange-950/30 px-1.5 py-0.5 rounded border border-orange-100 dark:border-orange-900/20">
+                                                       <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5 flex items-center gap-1">
+                                                           <span className="w-1 h-1 rounded-full bg-orange-400"></span>
                                                            {item.district || t.noDistrict}
-                                                       </span>
+                                                       </p>
                                                     )}
-                                                    {(() => {
-                                                        const badge = getBadgeByLevel(
-                                                            item.training_level || 0, 
-                                                            item.all_time_reading_points !== undefined ? item.all_time_reading_points : (item.reading_points || 0)
-                                                        );
-                                                        return badge && (
-                                                            <span className={`text-[8px] px-1.5 py-0.5 rounded border font-black uppercase tracking-tighter ${badge.color}`}>
-                                                                {language === 'en' ? badge.en : badge.bn}
-                                                            </span>
-                                                        );
-                                                    })()}
                                                 </div>
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex items-center gap-1.5 shrink-0">
