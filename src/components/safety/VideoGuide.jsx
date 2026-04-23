@@ -226,26 +226,66 @@ export default function VideoGuide({ language, setCurrentView }) {
                 )}
             </div>
 
-            {/* Video Player Modal */}
+            {/* Video Player Modal - Optimized for Portrait & Landscape UX */}
             {selectedVideo && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-10 animate-fade-in">
-                    <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onClick={() => setSelectedVideo(null)} />
+                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-0 sm:p-6 animate-fade-in">
+                    <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-2xl" onClick={() => setSelectedVideo(null)} />
                     
-                    <div className="relative w-full max-w-4xl aspect-video bg-black rounded-[2rem] overflow-hidden shadow-2xl animate-scale-in">
-                        <button 
-                            onClick={() => setSelectedVideo(null)}
-                            className="absolute top-4 right-4 z-50 w-10 h-10 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
+                    <div className="relative w-full max-w-5xl max-h-screen sm:max-h-[90vh] bg-black sm:rounded-[2.5rem] overflow-hidden shadow-2xl animate-scale-in flex flex-col">
+                        {/* Header/Close bar for mobile */}
+                        <div className="absolute top-0 left-0 right-0 z-50 p-4 flex justify-between items-start pointer-events-none">
+                            <div className="bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 pointer-events-auto sm:hidden">
+                                <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">{selectedVideo.category}</span>
+                            </div>
+                            <button 
+                                onClick={() => setSelectedVideo(null)}
+                                className="w-10 h-10 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors pointer-events-auto border border-white/10 shadow-lg"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
                         
-                        <iframe
-                            src={`https://www.youtube.com/embed/${selectedVideo.videoId}?autoplay=1&rel=0`}
-                            title={selectedVideo.title}
-                            className="w-full h-full border-none"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                        ></iframe>
+                        {/* Video Container */}
+                        <div className="w-full aspect-video bg-black flex items-center justify-center">
+                            <iframe
+                                src={`https://www.youtube.com/embed/${selectedVideo.videoId}?autoplay=1&rel=0&modestbranding=1&showinfo=0`}
+                                title={selectedVideo.title}
+                                className="w-full h-full border-none"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            ></iframe>
+                        </div>
+
+                        {/* Metadata Section - Optimized for Portrait reading */}
+                        <div className="flex-1 overflow-y-auto p-6 sm:p-8 bg-gradient-to-b from-slate-900 to-black text-white custom-scrollbar">
+                            <div className="max-w-3xl mx-auto space-y-4">
+                                <div className="space-y-2">
+                                    <span className="hidden sm:inline-block px-3 py-1 bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[10px] font-black uppercase tracking-[0.2em] rounded-full mb-2">
+                                        {selectedVideo.category}
+                                    </span>
+                                    <h2 className="text-lg sm:text-2xl font-black leading-tight tracking-tight text-white/95">
+                                        {selectedVideo.title}
+                                    </h2>
+                                </div>
+                                
+                                {selectedVideo.remarks && (
+                                    <div className="pt-4 border-t border-white/5">
+                                        <p className="text-xs sm:text-sm text-slate-400 font-medium leading-relaxed italic">
+                                            "{selectedVideo.remarks}"
+                                        </p>
+                                    </div>
+                                )}
+
+                                <div className="pt-6 flex items-center gap-4">
+                                    <button 
+                                        onClick={() => setSelectedVideo(null)}
+                                        className="px-6 py-2.5 bg-white text-black text-xs font-black uppercase tracking-widest rounded-xl hover:bg-orange-500 hover:text-white transition-all active:scale-95"
+                                    >
+                                        {t.back}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
