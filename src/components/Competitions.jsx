@@ -1348,7 +1348,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                     <p className={`text-base sm:text-lg font-black tabular-nums ${isGold ? 'text-amber-600' : winIdx === 1 ? 'text-slate-500' : 'text-orange-600'}`}>
                                                                         {(winner.points || 0).toLocaleString()}
                                                                     </p>
-                                                                    <p className="hidden sm:block text-[8px] font-bold text-slate-400 uppercase tracking-widest">{language === 'en' ? 'Points' : 'পয়েন্ট'}</p>
                                                                 </div>
                                                             </div>
 
@@ -1403,8 +1402,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     {language === 'en' ? userBadge.en : userBadge.bn}
                                                 </span>
                                             )}
-                                                    <div className="flex flex-center gap-2 flex-wrap">
-                                                        <p className="text-sm font-black text-slate-700 dark:text-slate-200 ml-1 tabular-nums">{(userRank.score || 0).toLocaleString()} {language === 'en' ? 'pts' : 'পয়েন্ট'}</p>
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <p className="text-sm font-black text-slate-700 dark:text-slate-200 ml-1 tabular-nums">{(userRank.score || 0).toLocaleString()}</p>
                                                         <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/10">
                                                             <span className="text-[10px]">📖</span>
                                                             <span className="text-[10px] font-black text-orange-700 dark:text-orange-300 tabular-nums">
@@ -1628,7 +1627,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             </div>
                                             <div className="text-right shrink-0">
                                                 <p className="text-sm font-black text-slate-900 dark:text-white tabular-nums">{(item.points || item.score || 0).toLocaleString()}</p>
-                                                <p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest leading-none">{language === 'en' ? 'POINTS' : 'পয়েন্ট'}</p>
                                             </div>
                                         </div>
                                     ))}
