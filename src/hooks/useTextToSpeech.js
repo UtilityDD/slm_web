@@ -19,6 +19,7 @@ let nativeActiveSpeechId = null;
 export const useTextToSpeech = (language = 'bn') => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [activeId, setActiveId] = useState(null);
     const [availableVoices, setAvailableVoices] = useState([]); // Web Only
     const [usePremium, setUsePremium] = useState(true); // Default to premium for pro experience
@@ -167,6 +168,7 @@ export const useTextToSpeech = (language = 'bn') => {
 
         setIsPlaying(false);
         setIsPaused(false);
+        setIsLoading(false);
         setActiveId(null);
     }, [isSupported, isNative]);
 
@@ -319,7 +321,8 @@ export const useTextToSpeech = (language = 'bn') => {
                     if (!cleaned) return;
 
                     setActiveId(id);
-                    setIsPlaying(true);
+                    setIsLoading(true);
+                    setIsPlaying(false); // Only true after audio starts
                     setIsPaused(false);
 
                     console.log("Attempting Premium Neural TTS for:", cleaned);
@@ -354,6 +357,12 @@ export const useTextToSpeech = (language = 'bn') => {
                         const audio = new Audio(url);
                         currentUtterance.current = audio;
                         
+                        audio.oncanplaythrough = () => {
+                            setIsLoading(false);
+                            setIsPlaying(true);
+                            audio.play().catch(e => console.error("Play failed:", e));
+                        };
+                        
                         audio.onended = () => {
                             setIsPlaying(false);
                             setActiveId(null);
@@ -362,11 +371,10 @@ export const useTextToSpeech = (language = 'bn') => {
 
                         audio.onerror = (e) => {
                             console.error("Audio playback error:", e);
+                            setIsLoading(false);
                             setIsPlaying(false);
                             setActiveId(null);
                         };
-
-                        await audio.play();
                         return;
                     } else {
                         const errorData = await response.text();
@@ -600,6 +608,7 @@ export const useTextToSpeech = (language = 'bn') => {
         isPlaying,
         isPaused,
         activeId,
+        isLoading,
         voices: availableVoices,
         isSupported
     };

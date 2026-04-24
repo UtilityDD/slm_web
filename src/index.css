@@ -806,6 +806,7 @@ body,
   .gold-metallic-text {
     background: linear-gradient(180deg, #fde68a 0%, #b45309 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     filter: drop-shadow(0 2px 4px rgba(180, 83, 9, 0.2));
   }
@@ -813,6 +814,7 @@ body,
   .silver-metallic-text {
     background: linear-gradient(180deg, #f1f5f9 0%, #475569 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     filter: drop-shadow(0 2px 4px rgba(71, 85, 105, 0.2));
   }
@@ -820,6 +822,7 @@ body,
   .bronze-metallic-text {
     background: linear-gradient(180deg, #fed7aa 0%, #7c2d12 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     filter: drop-shadow(0 2px 4px rgba(124, 45, 18, 0.2));
   }

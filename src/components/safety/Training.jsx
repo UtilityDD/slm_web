@@ -576,7 +576,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
         completion: 'bg-slate-50 dark:bg-slate-950'
     };
 
-    const { speak, pause, resume, stop, isPlaying, isPaused, activeId } = useTextToSpeech(language);
+    const { speak, pause, resume, stop, isPlaying, isPaused, activeId, isLoading } = useTextToSpeech(language);
 
     // Body scroll locking when full-page training is open
     useEffect(() => {
@@ -2227,19 +2227,32 @@ export default function Training({ language = 'en', user, userProfile: profile, 
 
                                         <button
                                             onClick={handleReadLesson}
-                                            title={isPlaying && !isPaused
-                                                ? (language === 'en' ? 'Pause reading' : 'পড়া থামান')
-                                                : (language === 'en' ? 'Read aloud' : 'উচ্চস্বরে পড়ুন')}
-                                            className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-500 ${isPlaying && !isPaused ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/40 scale-105' : 'text-slate-400 hover:text-orange-500'}`}
+                                            disabled={isLoading}
+                                            title={isLoading 
+                                                ? (language === 'en' ? 'Preparing audio...' : 'অডিও তৈরি হচ্ছে...')
+                                                : isPlaying && !isPaused
+                                                    ? (language === 'en' ? 'Pause reading' : 'পড়া থামান')
+                                                    : (language === 'en' ? 'Read aloud' : 'উচ্চস্বরে পড়ুন')}
+                                            className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-500 ${
+                                                isLoading ? 'bg-orange-500/20 text-orange-500 animate-pulse' :
+                                                isPlaying && !isPaused ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/40 scale-105' : 
+                                                'text-slate-400 hover:text-orange-500'
+                                            }`}
                                         >
-                                            <div className={`absolute inset-0 rounded-full bg-orange-500 animate-ping opacity-20 ${isPlaying && !isPaused ? 'block' : 'hidden'}`}></div>
-                                            <svg className="w-6 h-6 relative z-10" fill="currentColor" viewBox="0 0 24 24">
-                                                {isPlaying && !isPaused ? (
-                                                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                                            <div className={`absolute inset-0 rounded-full bg-orange-500 animate-ping opacity-20 ${isPlaying && !isPaused && !isLoading ? 'block' : 'hidden'}`}></div>
+                                            <div className="relative z-10 flex items-center justify-center">
+                                                {isLoading ? (
+                                                    <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                                                ) : isPlaying && !isPaused ? (
+                                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                                                    </svg>
                                                 ) : (
-                                                    <path d="M8 5v14l11-7z" />
+                                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M8 5v14l11-7z" />
+                                                    </svg>
                                                 )}
-                                            </svg>
+                                            </div>
                                         </button>
                                     </div>
                                 </div>
