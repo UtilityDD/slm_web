@@ -34,7 +34,7 @@ const MyProgress = lazy(() => import("./components/MyProgress"));
 const AwarenessStories = lazy(() => import("./components/safety/AwarenessStories"));
 const VideoGuide = lazy(() => import("./components/safety/VideoGuide"));
 const SafetyLibrary = lazy(() => import("./components/safety/SafetyLibrary"));
-const SafetyHero = lazy(() => import("./components/safety/SafetyHero"));
+// const SafetyHero = lazy(() => import("./components/safety/SafetyHero"));
 
 // Smooth transition pre-loader
 const preloadComponent = (factory) => {
