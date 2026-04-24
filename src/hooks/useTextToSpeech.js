@@ -64,12 +64,7 @@ export const useTextToSpeech = (language = 'bn') => {
             cleaned = cleaned.replace(/৫০ শতাংশ/g, 'পঞ্চাশ শতাংশ');
             cleaned = cleaned.replace(/ISI/gi, 'আই এস আই');
             cleaned = cleaned.replace(/PPE/gi, 'পি পি ই');
-
-            const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-            bnDigits.forEach((digit, i) => {
-                const regex = new RegExp(digit, 'g');
-                cleaned = cleaned.replace(regex, i.toString());
-            });
+            // Removed digit conversion - Bengali voices read Bengali digits better
         }
 
         return cleaned
@@ -81,12 +76,13 @@ export const useTextToSpeech = (language = 'bn') => {
         if (!text) return [];
 
         // Split by Bengali danda and common punctuation while preserving boundaries.
+        // Added (?<=...) to split AFTER the punctuation, and added handling for punctuation WITHOUT spaces.
         const sentences = text
-            .split(/(?<=[।.!?])\s+/)
+            .split(/(?<=[।.,!?])\s*/)
             .map(s => s.trim())
             .filter(Boolean);
 
-        const maxLen = 220;
+        const maxLen = 160; // Reduced chunk size for better stability on mobile
         const chunks = [];
 
         sentences.forEach((sentence) => {
@@ -96,13 +92,13 @@ export const useTextToSpeech = (language = 'bn') => {
             }
 
             // Fallback split for very long sentences
-            const words = sentence.split(/\s+/);
+            const parts = sentence.split(/([,;])\s*/);
             let current = '';
-            words.forEach((w) => {
-                const next = current ? `${current} ${w}` : w;
+            parts.forEach((p) => {
+                const next = current ? `${current}${p}` : p;
                 if (next.length > maxLen) {
                     if (current) chunks.push(current);
-                    current = w;
+                    current = p;
                 } else {
                     current = next;
                 }
@@ -118,17 +114,19 @@ export const useTextToSpeech = (language = 'bn') => {
 
         if (language === 'bn') {
             return (
-                voices.find(v => /google.*bangla|google.*bengali|bangla|bengali|বাংলা/i.test(v.name)) ||
+                voices.find(v => /google.*(bangla|bengali)|(bangla|bengali|বাংলা).*google/i.test(v.name)) ||
+                voices.find(v => /(bangla|bengali|বাংলা)/i.test(v.name)) ||
                 voices.find(v => /^bn(-|_)bd/i.test(v.lang)) ||
                 voices.find(v => /^bn(-|_)in/i.test(v.lang)) ||
                 voices.find(v => /^bn(-|_)/i.test(v.lang)) ||
                 voices.find(v => /^hi(-|_)/i.test(v.lang)) ||
-                voices.find(v => /^en(-|_)/i.test(v.lang)) ||
                 null
             );
         }
 
-        return voices.find(v => /^en(-|_)/i.test(v.lang)) || null;
+        return voices.find(v => /google.*english/i.test(v.name)) || 
+               voices.find(v => /^en(-|_)us/i.test(v.lang)) || 
+               voices.find(v => /^en(-|_)/i.test(v.lang)) || null;
     };
 
     const stop = useCallback(async () => {
@@ -404,6 +402,7 @@ export const useTextToSpeech = (language = 'bn') => {
                         if (mySession !== webSessionCounter || stopSignal.current) return;
                         if (!started) {
                             // No start event means engine likely failed silently; retry/fallback.
+                            // Increased timeout to 1200ms as Bengali voices often take longer to warm up.
                             if (retryCount < 3) {
                                 speakNextChunk(retryCount + 1);
                             } else {
@@ -411,7 +410,7 @@ export const useTextToSpeech = (language = 'bn') => {
                                 speakNextChunk(0);
                             }
                         }
-                    }, 700);
+                    }, 1200);
 
                     utterance.onstart = () => {
                         if (mySession !== webSessionCounter) return;

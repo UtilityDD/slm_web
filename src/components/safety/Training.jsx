@@ -1135,18 +1135,22 @@ export default function Training({ language = 'en', user, userProfile: profile, 
         if (value === null || value === undefined) return '';
         if (typeof value === 'string') return value.trim();
         if (typeof value === 'number') return String(value);
+
+        const punctuation = language === 'bn' ? '। ' : '. ';
+
         if (Array.isArray(value)) {
             return value
                 .map(normalizeNarrationPart)
                 .filter(Boolean)
-                .join('. ');
+                .join(punctuation);
         }
         if (typeof value === 'object') {
             const candidateKeys = ['text', 'title', 'content', 'value', 'description', 'item_name', 'importance', 'daily_check', 'specifications'];
-            const values = candidateKeys
+            // For objects, we only take unique values to avoid duplication
+            const values = [...new Set(candidateKeys
                 .map((k) => normalizeNarrationPart(value[k]))
-                .filter(Boolean);
-            return values.join('. ');
+                .filter(Boolean))];
+            return values.join(punctuation);
         }
         return '';
     };
@@ -1156,6 +1160,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
         if (!currentSlide) return '';
 
         let parts = [];
+        const punctuation = language === 'bn' ? '। ' : '. ';
 
         if (currentSlide.type === 'hero') {
             parts.push(normalizeNarrationPart(currentSlide.level_title));
@@ -1163,36 +1168,36 @@ export default function Training({ language = 'en', user, userProfile: profile, 
         } else if (currentSlide.type === 'section') {
             parts.push(normalizeNarrationPart(currentSlide.title));
             currentSlide.points?.forEach(point => {
-                // Read entire point object first to support varying payload shapes from content sources.
+                // normalizeNarrationPart already handles object sub-fields intelligently
                 parts.push(normalizeNarrationPart(point));
-                parts.push(normalizeNarrationPart(point.item_name));
-                if (point.specifications) parts.push(normalizeNarrationPart(point.specifications));
-                if (point.importance) parts.push(normalizeNarrationPart(point.importance));
-                if (point.daily_check) parts.push(normalizeNarrationPart(point.daily_check));
             });
         } else if (currentSlide.type === 'pro_tip') {
-            parts.push("Pro Tip");
+            parts.push(language === 'en' ? "Pro Tip" : "প্রো টিপ");
             currentSlide.content?.forEach(tip => parts.push(normalizeNarrationPart(tip)));
         } else if (currentSlide.type === 'myth_buster') {
             parts.push(normalizeNarrationPart(currentSlide.title));
             currentSlide.myths?.forEach(item => {
-                parts.push((language === 'en' ? "Myth: " : "ভুল ধারণা: ") + normalizeNarrationPart(item.myth));
-                parts.push((language === 'en' ? "Reality: " : "সঠিক তথ্য: ") + normalizeNarrationPart(item.reality || item.fact));
+                // Only push the whole item if it's handled by normalizeNarrationPart, 
+                // but since we want custom "Myth/Reality" labels, we do it manually.
+                const mythText = (language === 'en' ? "Myth: " : "ভুল ধারণা: ") + normalizeNarrationPart(item.myth);
+                const realityText = (language === 'en' ? "Reality: " : "সঠিক তথ্য: ") + normalizeNarrationPart(item.reality || item.fact);
+                parts.push(mythText);
+                parts.push(realityText);
             });
         } else if (currentSlide.type === 'advanced') {
             parts.push(normalizeNarrationPart(currentSlide.title));
             currentSlide.facts?.forEach(fact => {
-                parts.push(normalizeNarrationPart(fact.title));
-                parts.push(normalizeNarrationPart(fact.content));
+                // Read the whole fact object which contains title and content
+                parts.push(normalizeNarrationPart(fact));
             });
         }
 
-        // Final fallback for any slide shape where specific keys were not enough.
+        // Final fallback
         if (parts.filter(Boolean).length === 0) {
             parts.push(normalizeNarrationPart(currentSlide));
         }
 
-        return parts.filter(Boolean).join('. ');
+        return parts.filter(Boolean).join(punctuation);
     };
 
     const handleReadLesson = async () => {

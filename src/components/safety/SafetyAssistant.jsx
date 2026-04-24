@@ -144,20 +144,34 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
 
         const speakWithTTS = () => {
             if (!window.speechSynthesis) return;
-            // Clear any existing speech before starting
             window.speechSynthesis.cancel();
             
-            const utterance = new SpeechSynthesisUtterance(text);
+            // Clean and join text with proper punctuation
+            const cleanedText = text.trim();
+            const utterance = new SpeechSynthesisUtterance(cleanedText);
+            
             if (language === 'bn') {
-                const bnVoice = voices.find(v => v.lang.startsWith('bn')) || voices.find(v => v.name.includes('Bengali'));
+                // Prioritize high-quality Bengali voices
+                const bnVoice = voices.find(v => /google.*(bangla|bengali)|(bangla|bengali|বাংলা).*google/i.test(v.name)) || 
+                               voices.find(v => /(bangla|bengali|বাংলা)/i.test(v.name)) ||
+                               voices.find(v => v.lang.startsWith('bn'));
+                
                 if (bnVoice) utterance.voice = bnVoice;
                 utterance.lang = 'bn-IN';
+                utterance.rate = 0.88; // Slightly faster for natural flow
             } else {
+                const enVoice = voices.find(v => /google.*english/i.test(v.name)) || 
+                               voices.find(v => v.lang.startsWith('en-US'));
+                if (enVoice) utterance.voice = enVoice;
                 utterance.lang = 'en-US';
+                utterance.rate = 0.95;
             }
-            utterance.rate = 0.85;
+            
+            utterance.pitch = 1.0;
             utterance.onstart = () => setIsSpeaking(true);
             utterance.onend = () => setIsSpeaking(false);
+            utterance.onerror = () => setIsSpeaking(false);
+            
             window.speechSynthesis.speak(utterance);
         };
 
