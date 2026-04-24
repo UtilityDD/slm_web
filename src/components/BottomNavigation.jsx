@@ -21,17 +21,17 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
       )
     },
     {
-      id: 'competitions',
-      label: language === 'en' ? 'Play' : 'খেলা',
+      id: 'leaderboard',
+      label: language === 'en' ? 'Rank' : 'র‍্যাঙ্ক',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
       )
     },
     {
       id: 'my-progress',
-      label: language === 'en' ? 'Certificate' : 'সার্টিফিকেট',
+      label: language === 'en' ? 'Cert' : 'সনদ',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a.75.75 0 00-1.185.38L4.5 12.5m11.665-7.803a.75.75 0 011.185.38L19.5 12.5M12 18.75a6.75 6.75 0 116.75-6.75A6.75 6.75 0 0112 18.75z" />
@@ -54,7 +54,10 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
     <nav className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-[100] md:hidden pb-safe-area">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
         {navItems.map((item) => {
-          const isActive = currentView === item.id || (item.id === 'safety-library' && ['safety-library', 'sops', 'my_ppe', 'my_tools'].includes(currentView)) || (item.id === 'training' && currentView === 'home');
+          const isActive = currentView === item.id || 
+                           (item.id === 'safety-library' && ['safety-library', 'sops', 'my_ppe', 'my_tools'].includes(currentView)) || 
+                           (item.id === 'training' && currentView === 'home') ||
+                           (item.id === 'leaderboard' && currentView === 'competitions');
           
           return (
             <button
@@ -79,9 +82,9 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
                 {item.icon}
               </div>
               
-              <span className={`text-[10px] font-black mt-1 uppercase tracking-tighter transition-all ${
+              <span className={`text-[9px] font-black mt-1 uppercase tracking-tighter transition-all ${
                 isActive ? 'opacity-100 translate-y-0' : 'opacity-70'
-              } ${language === 'bn' ? 'font-bengali text-[11px]' : ''}`}>
+              } ${language === 'bn' ? 'font-bengali text-[10px]' : ''}`}>
                 {item.label}
               </span>
 
