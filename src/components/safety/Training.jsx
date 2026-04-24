@@ -2538,16 +2538,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                 );
                             })()}
 
-                            {/* Pure Indicator Footer */}
-                            <div className="shrink-0 border-t border-black/5 dark:border-white/5 bg-white/70 dark:bg-black/20 backdrop-blur-md px-4 py-3 sm:py-4 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] md:pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
-                                <div className="max-w-5xl mx-auto w-full flex items-center justify-center">
-                                    <div className="flex items-center gap-1.5 px-6 py-2 bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-full border border-black/5 dark:border-white/5">
-                                        <span className="text-xs font-black tracking-widest text-slate-500 dark:text-slate-400 uppercase">
-                                            {activeSectionIndex + 1} / {slides.length}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+
                         </div>
                     </div>,
                     document.body
