@@ -1226,9 +1226,9 @@ export default function Training({ language = 'en', user, userProfile: profile, 
 
             if (user) {
                 try {
-                    const { error: rpcError } = await supabase.rpc('submit_quiz_result_v2', {
-                        p_quiz_id: `lesson_bonus_${lessonId}`,
-                        p_score: bonusPoints
+                    const { error: rpcError } = await supabase.rpc('award_training_points', {
+                        input_quiz_id: `lesson_bonus_${lessonId}`,
+                        input_score: bonusPoints
                     });
 
                     if (rpcError) {

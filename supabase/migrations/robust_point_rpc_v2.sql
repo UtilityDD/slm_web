@@ -24,7 +24,11 @@ DECLARE
 BEGIN
   -- 1. Validation
   IF v_user_id IS NULL THEN
-    RAISE EXCEPTION 'Not authenticated';
+    RETURN json_build_object(
+      'success', false,
+      'message', 'Not authenticated',
+      'already_awarded', false
+    );
   END IF;
 
   v_is_lesson_bonus := p_quiz_id LIKE 'lesson_bonus_%';
