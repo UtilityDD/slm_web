@@ -1818,7 +1818,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                         {language === 'en' ? 'Lesson Preview' : 'পাঠের প্রিভিউ'}
                                     </p>
                                     <h1 className={`mt-1 truncate text-base sm:text-lg font-black text-slate-900 dark:text-white ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {selectedLesson.level_title}
+                                        {selectedLesson.chapter?.title || selectedLesson.level_title}
                                     </h1>
                                 </div>
 
