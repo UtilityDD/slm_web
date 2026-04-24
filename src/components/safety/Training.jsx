@@ -2157,7 +2157,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
             {/* Safety Journal UI - Immersive Slide-based Experience */}
             {
                 trainingContent && createPortal(
-                    <div className="fixed top-14 inset-x-0 bottom-0 lg:top-16 lg:bottom-6 lg:inset-x-0 lg:mx-auto lg:w-[1000px] lg:max-w-[95vw] lg:rounded-[3rem] lg:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] lg:border lg:border-slate-200 dark:lg:border-white/10 z-[75] bg-slate-50 dark:bg-slate-900 overflow-hidden flex flex-col animate-fade-in-up">
+                    <div className="fixed top-0 md:top-14 inset-x-0 bottom-0 lg:top-16 lg:bottom-6 lg:inset-x-0 lg:mx-auto lg:w-[1000px] lg:max-w-[95vw] lg:rounded-[3rem] lg:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] lg:border lg:border-slate-200 dark:lg:border-white/10 z-[75] bg-slate-50 dark:bg-slate-900 overflow-hidden flex flex-col animate-fade-in-up">
                         {/* Desktop Backdrop Overlay */}
                         <div className="hidden lg:block fixed inset-0 -z-10 bg-slate-950/40 backdrop-blur-sm" onClick={() => {
                             stop();
