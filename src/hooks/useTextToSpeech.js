@@ -307,8 +307,12 @@ export const useTextToSpeech = (language = 'bn') => {
                     setIsPlaying(true);
                     setIsPaused(false);
 
+                    console.log("Attempting Premium Neural TTS for:", cleaned);
                     const response = await fetch(PREMIUM_TTS_URL, {
                         method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                         body: JSON.stringify({
                             text: cleaned,
                             lang: language === 'bn' ? 'bn-IN' : 'en-US',
@@ -317,11 +321,13 @@ export const useTextToSpeech = (language = 'bn') => {
                     });
 
                     if (response.ok) {
+                        console.log("Premium TTS Success!");
                         const blob = await response.blob();
                         const url = URL.createObjectURL(blob);
                         
                         if (currentUtterance.current instanceof Audio) {
                             currentUtterance.current.pause();
+                            currentUtterance.current.src = "";
                         }
 
                         const audio = new Audio(url);
@@ -330,13 +336,23 @@ export const useTextToSpeech = (language = 'bn') => {
                         audio.onended = () => {
                             setIsPlaying(false);
                             setActiveId(null);
+                            URL.revokeObjectURL(url);
                         };
 
-                        audio.play();
+                        audio.onerror = (e) => {
+                            console.error("Audio playback error:", e);
+                            setIsPlaying(false);
+                            setActiveId(null);
+                        };
+
+                        await audio.play();
                         return;
+                    } else {
+                        const errorData = await response.text();
+                        console.warn("Premium TTS response not OK:", response.status, errorData);
                     }
                 } catch (e) {
-                    console.warn("Premium TTS failed, falling back to system TTS:", e);
+                    console.error("Premium TTS Critical Failure:", e);
                 }
             }
 
