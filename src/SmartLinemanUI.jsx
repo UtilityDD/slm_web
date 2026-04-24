@@ -14,6 +14,7 @@ import { UserIcon } from "./components/icons";
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from "./config";
 import { preloadSafetyLibraryAssets } from "./utils/assetPreloader";
 import { leaderboardService } from "./utils/leaderboardService";
+import BottomNavigation from "./components/BottomNavigation";
 
 // Lazy load heavy components for code splitting
 const Competitions = lazy(() => import("./components/Competitions"));
@@ -1087,7 +1088,7 @@ export default function SmartLinemanUI() {
             </div>
 
             {((user && !['login', 'accident-stories', 'verify'].includes(currentView))) && (
-              <header className={`${currentView === 'home' ? 'bg-[#ea580c] dark:bg-[#c2410c] border-transparent shadow-none' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 elevation-2'} sticky top-0 z-[80] border-b safe-area-inset-top transition-all duration-300`}>
+              <header className={`${currentView === 'home' ? 'bg-[#ea580c] dark:bg-[#c2410c] border-transparent shadow-none' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 elevation-2'} sticky top-0 z-[80] border-b safe-area-inset-top transition-all duration-300 hidden md:block`}>
                 <div className="max-w-7xl mx-auto mobile-container">
                   <div className="flex justify-between items-center h-14 md:h-16">
                     <div className="flex items-center gap-2 relative z-[110]">
@@ -1110,7 +1111,7 @@ export default function SmartLinemanUI() {
               </header>
             )}
 
-            <div id="main-scroll-container" className="flex-1 overflow-y-auto overflow-x-hidden relative">
+            <div id="main-scroll-container" className="flex-1 overflow-y-auto overflow-x-hidden relative pb-20 md:pb-0">
               <div className="h-full relative z-10 w-full view-transition" key={currentView}>
                 {renderContent()}
               </div>
@@ -1137,6 +1138,15 @@ export default function SmartLinemanUI() {
             )}
 
             <NetworkStatusListener language={language} />
+
+            {user && !['login', 'verify'].includes(currentView) && (
+              <BottomNavigation 
+                currentView={currentView} 
+                setCurrentView={setCurrentView} 
+                language={language} 
+                onMenuClick={() => setSidebarOpen(true)}
+              />
+            )}
 
             {showLanguageModal && (
               <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
