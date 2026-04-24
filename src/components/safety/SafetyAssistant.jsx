@@ -146,21 +146,23 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
             if (!window.speechSynthesis) return;
             window.speechSynthesis.cancel();
             
-            // Clean and join text with proper punctuation
             const cleanedText = text.trim();
             const utterance = new SpeechSynthesisUtterance(cleanedText);
             
             if (language === 'bn') {
-                // Prioritize high-quality Bengali voices
-                const bnVoice = voices.find(v => /google.*(bangla|bengali)|(bangla|bengali|বাংলা).*google/i.test(v.name)) || 
-                               voices.find(v => /(bangla|bengali|বাংলা)/i.test(v.name)) ||
+                // Priority: Neural/Online > Google > Native
+                const bnVoice = voices.find(v => /google.*(bangla|bengali).*neural/i.test(v.name)) || 
+                               voices.find(v => /microsoft.*(bangla|bengali).*online/i.test(v.name)) ||
+                               voices.find(v => /google.*(bangla|bengali)/i.test(v.name)) ||
+                               voices.find(v => /(bangla|bengali|বাংলা).*google/i.test(v.name)) ||
                                voices.find(v => v.lang.startsWith('bn'));
                 
                 if (bnVoice) utterance.voice = bnVoice;
                 utterance.lang = 'bn-IN';
-                utterance.rate = 0.88; // Slightly faster for natural flow
+                utterance.rate = 0.88; 
             } else {
-                const enVoice = voices.find(v => /google.*english/i.test(v.name)) || 
+                const enVoice = voices.find(v => /google.*english.*neural/i.test(v.name)) || 
+                               voices.find(v => /microsoft.*english.*online/i.test(v.name)) ||
                                voices.find(v => v.lang.startsWith('en-US'));
                 if (enVoice) utterance.voice = enVoice;
                 utterance.lang = 'en-US';

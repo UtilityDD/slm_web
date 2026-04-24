@@ -113,20 +113,23 @@ export const useTextToSpeech = (language = 'bn') => {
         if (!voices || voices.length === 0) return null;
 
         if (language === 'bn') {
+            // Priority: Neural/Online Voices > Google Voices > Native Voices
             return (
-                voices.find(v => /google.*(bangla|bengali)|(bangla|bengali|বাংলা).*google/i.test(v.name)) ||
+                voices.find(v => /google.*(bangla|bengali).*neural/i.test(v.name)) ||
+                voices.find(v => /microsoft.*(bangla|bengali).*online/i.test(v.name)) ||
+                voices.find(v => /google.*(bangla|bengali)/i.test(v.name)) ||
+                voices.find(v => /(bangla|bengali|বাংলা).*google/i.test(v.name)) ||
                 voices.find(v => /(bangla|bengali|বাংলা)/i.test(v.name)) ||
                 voices.find(v => /^bn(-|_)bd/i.test(v.lang)) ||
                 voices.find(v => /^bn(-|_)in/i.test(v.lang)) ||
-                voices.find(v => /^bn(-|_)/i.test(v.lang)) ||
-                voices.find(v => /^hi(-|_)/i.test(v.lang)) ||
                 null
             );
         }
 
-        return voices.find(v => /google.*english/i.test(v.name)) || 
-               voices.find(v => /^en(-|_)us/i.test(v.lang)) || 
-               voices.find(v => /^en(-|_)/i.test(v.lang)) || null;
+        return voices.find(v => /google.*english.*neural/i.test(v.name)) || 
+               voices.find(v => /microsoft.*english.*online/i.test(v.name)) ||
+               voices.find(v => /google.*english/i.test(v.name)) || 
+               voices.find(v => /^en(-|_)us/i.test(v.lang)) || null;
     };
 
     const stop = useCallback(async () => {
@@ -211,7 +214,7 @@ export const useTextToSpeech = (language = 'bn') => {
                 await TextToSpeech.speak({
                     text: chunk,
                     lang: language === 'bn' ? 'bn-IN' : 'en-US',
-                    rate: 1.0,
+                    rate: language === 'bn' ? 0.88 : 0.95, // Slower for Bengali clarity on mobile
                     pitch: 1.0,
                     volume: 1.0,
                     category: 'ambient',
@@ -235,7 +238,7 @@ export const useTextToSpeech = (language = 'bn') => {
                     await TextToSpeech.speak({
                         text: chunk,
                         lang: language === 'bn' ? 'bn-IN' : 'en-US',
-                        rate: 1.0,
+                        rate: language === 'bn' ? 0.88 : 0.95,
                         pitch: 1.0,
                         volume: 1.0,
                         category: 'ambient',
@@ -324,7 +327,7 @@ export const useTextToSpeech = (language = 'bn') => {
                         await TextToSpeech.speak({
                             text: chunk,
                             lang: language === 'bn' ? 'bn-IN' : 'en-US',
-                            rate: 1.0,
+                            rate: language === 'bn' ? 0.88 : 0.95,
                             pitch: 1.0,
                             volume: 1.0,
                             category: 'ambient',
@@ -430,7 +433,14 @@ export const useTextToSpeech = (language = 'bn') => {
                         if (mySession !== webSessionCounter) return;
                         clearTimeout(startWatchdog);
                         chunkIndex += 1;
-                        speakNextChunk();
+                        
+                        // Human-like pause between sentences (450ms)
+                        // This makes it feel much more professional and less robotic.
+                        if (chunkIndex < chunks.length) {
+                            setTimeout(() => speakNextChunk(), 450);
+                        } else {
+                            speakNextChunk();
+                        }
                     };
                     utterance.onerror = (e) => {
                         if (mySession !== webSessionCounter) return;
