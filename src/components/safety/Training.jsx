@@ -1832,7 +1832,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                         </header>
 
                         <div className="flex-1 overflow-y-auto">
-                            <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-between px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+                            <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-between px-4 sm:px-6 lg:px-8 pt-8 pb-32 sm:pt-10 sm:pb-32">
                                 <div className="space-y-8 sm:space-y-10">
                                     <div className="flex justify-center">
                                         <div className="relative">
