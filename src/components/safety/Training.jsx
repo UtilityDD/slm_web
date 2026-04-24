@@ -2278,7 +2278,28 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                         onTouchStart={handleReaderTouchStart}
                                         onTouchEnd={handleReaderTouchEnd}
                                     >
-                                        <div key={activeSectionIndex} className="max-w-4xl mx-auto px-6 sm:px-10 md:px-14 py-10 sm:py-14 pb-20 sm:pb-24 animate-fade-in-up">
+                                        <div key={activeSectionIndex} className="max-w-4xl mx-auto px-6 sm:px-10 md:px-14 py-10 sm:py-14 pb-20 sm:pb-24 animate-fade-in-up relative">
+                                            {/* Side Navigation Arrows */}
+                                            <div className="hidden md:block">
+                                                {!isFirstSlide && (
+                                                    <button
+                                                        onClick={prevSlide}
+                                                        className="fixed left-8 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/10 dark:bg-black/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-slate-400 hover:text-orange-500 hover:scale-110 active:scale-95 transition-all z-[110] shadow-xl"
+                                                        title="Previous"
+                                                    >
+                                                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
+                                                    </button>
+                                                )}
+                                                {!isLastSlide && (
+                                                    <button
+                                                        onClick={nextSlide}
+                                                        className="fixed right-8 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/10 dark:bg-black/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-slate-400 hover:text-orange-500 hover:scale-110 active:scale-95 transition-all z-[110] shadow-xl"
+                                                        title="Next"
+                                                    >
+                                                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
+                                                    </button>
+                                                )}
+                                            </div>
                                             {activeSlide?.type === 'hero' && (
                                                 <div className="flex flex-col items-center justify-center pt-6 pb-20 space-y-12">
                                                     <div className="w-full space-y-8 text-center">
@@ -2517,21 +2538,22 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                 );
                             })()}
 
-                            {/* Minimal Paper-like Footer Navigation */}
-                            <div className="shrink-0 border-t border-black/5 dark:border-white/5 bg-white/70 dark:bg-black/20 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+                            {/* Simplified Mobile-Friendly Footer Navigation */}
+                            <div className="shrink-0 border-t border-black/5 dark:border-white/5 bg-white/70 dark:bg-black/20 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] md:pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
                                 <div className="max-w-5xl mx-auto w-full flex items-center justify-between">
+                                    {/* Mobile Side Arrows inside footer for better reach */}
                                     <button
                                         onClick={prevSlide}
                                         disabled={isFirstSlide}
-                                        className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-all duration-300 ${isFirstSlide ? 'opacity-0 pointer-events-none' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-75 hover:bg-black/5 dark:hover:bg-white/5'}`}
+                                        className={`md:hidden flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 transition-all duration-300 ${isFirstSlide ? 'opacity-0 pointer-events-none' : 'text-slate-600 dark:text-slate-300 active:scale-75'}`}
                                     >
-                                        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
                                         </svg>
                                     </button>
 
-                                    <div className="flex items-center gap-1.5 px-3.5 py-2 bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-full">
-                                        <span className="text-[9px] sm:text-[10px] font-black tracking-widest text-slate-500 uppercase">
+                                    <div className="flex items-center gap-1.5 px-4 py-2 bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-full">
+                                        <span className="text-xs font-black tracking-widest text-slate-500 uppercase">
                                             {activeSectionIndex + 1} / {slides.length}
                                         </span>
                                     </div>
@@ -2539,14 +2561,14 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                     {!isLastSlide ? (
                                         <button
                                             onClick={nextSlide}
-                                            className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-75 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                                            className="md:hidden flex items-center justify-center w-12 h-12 rounded-2xl bg-orange-500 text-white shadow-lg shadow-orange-500/20 active:scale-75 transition-all"
                                         >
-                                            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
                                             </svg>
                                         </button>
                                     ) : (
-                                        <div className="w-10 sm:w-12"></div>
+                                        <div className="w-12 md:hidden"></div>
                                     )}
                                 </div>
                             </div>
