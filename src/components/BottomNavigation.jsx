@@ -67,7 +67,16 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
                 if (item.id === 'menu') {
                   if (onMenuClick) onMenuClick();
                 } else {
-                  setCurrentView(item.id);
+                  // Close sidebar if any other nav item is clicked
+                  if (onMenuClick) {
+                    // Logic to ensure it closes
+                    const isSidebarOpen = document.body.classList.contains('sidebar-open'); // Hypothetical check if needed, but easier to just force close
+                    // We'll handle the force-close in SmartLinemanUI
+                    setCurrentView(item.id);
+                    onMenuClick(false); // Passing false to indicate "close"
+                  } else {
+                    setCurrentView(item.id);
+                  }
                 }
               }}
               className={`flex flex-col items-center justify-center w-full h-full transition-all duration-300 relative ${
