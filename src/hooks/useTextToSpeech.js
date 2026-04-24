@@ -117,8 +117,9 @@ export const useTextToSpeech = (language = 'bn') => {
         if (!voices || voices.length === 0) return null;
 
         if (language === 'bn') {
-            // Priority: Neural/Online Voices > Google Voices > Native Voices
+            // Priority: Neural Female > Neural Male > Google > Native
             return (
+                voices.find(v => /google.*(bangla|bengali).*neural.*female/i.test(v.name)) ||
                 voices.find(v => /google.*(bangla|bengali).*neural/i.test(v.name)) ||
                 voices.find(v => /microsoft.*(bangla|bengali).*online/i.test(v.name)) ||
                 voices.find(v => /google.*(bangla|bengali)/i.test(v.name)) ||
@@ -130,7 +131,7 @@ export const useTextToSpeech = (language = 'bn') => {
             );
         }
 
-        return voices.find(v => /google.*english.*neural/i.test(v.name)) || 
+        return voices.find(v => /google.*english.*neural.*female/i.test(v.name)) || 
                voices.find(v => /microsoft.*english.*online/i.test(v.name)) ||
                voices.find(v => /google.*english/i.test(v.name)) || 
                voices.find(v => /^en(-|_)us/i.test(v.lang)) || null;
@@ -311,7 +312,7 @@ export const useTextToSpeech = (language = 'bn') => {
                         body: JSON.stringify({
                             text: cleaned,
                             lang: language === 'bn' ? 'bn-IN' : 'en-US',
-                            voice: language === 'bn' ? 'bn-IN-NabayotiNeural' : 'en-US-GuyNeural'
+                            voice: language === 'bn' ? 'bn-IN-TanishaaNeural' : 'en-US-JennyNeural'
                         })
                     });
 
@@ -488,10 +489,10 @@ export const useTextToSpeech = (language = 'bn') => {
                         clearTimeout(startWatchdog);
                         chunkIndex += 1;
                         
-                        // Human-like pause between sentences (450ms)
-                        // This makes it feel much more professional and less robotic.
+                        // Human-like pause between sentences (350ms)
+                        // Optimized for tighter conversational flow
                         if (chunkIndex < chunks.length) {
-                            setTimeout(() => speakNextChunk(), 450);
+                            setTimeout(() => speakNextChunk(), 350);
                         } else {
                             speakNextChunk();
                         }

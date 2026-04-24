@@ -15,7 +15,7 @@ serve(async (req) => {
   }
 
   try {
-    const { text, lang = "bn-IN", voice = "bn-IN-NabayotiNeural" } = await req.json();
+    const { text, lang = "bn-IN", voice = "bn-IN-TanishaaNeural" } = await req.json();
 
     if (!text) {
       return new Response(JSON.stringify({ error: "Text is required" }), { status: 400 });
@@ -31,8 +31,8 @@ serve(async (req) => {
         const configMessage = `Content-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"false"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}`;
         socket.send(configMessage);
 
-        // 2. Send SSML
-        const ssmlMessage = `X-RequestId:${crypto.randomUUID().replace(/-/g, "")}\r\nContent-Type:application/ssml+xml\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${lang}'><voice name='${voice}'><prosody rate='0.9' pitch='0Hz'>${text}</prosody></voice></speak>`;
+        // 2. Send SSML with optimized natural prosody
+        const ssmlMessage = `X-RequestId:${crypto.randomUUID().replace(/-/g, "")}\r\nContent-Type:application/ssml+xml\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${lang}'><voice name='${voice}'><prosody rate='+0%' pitch='0Hz'>${text}</prosody></voice></speak>`;
         socket.send(ssmlMessage);
       };
 

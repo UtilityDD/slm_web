@@ -150,18 +150,19 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
             const utterance = new SpeechSynthesisUtterance(cleanedText);
             
             if (language === 'bn') {
-                // Priority: Neural/Online > Google > Native
-                const bnVoice = voices.find(v => /google.*(bangla|bengali).*neural/i.test(v.name)) || 
+                // Priority: Neural Female > Neural Male > Google > Native
+                const bnVoice = voices.find(v => /google.*(bangla|bengali).*neural.*female/i.test(v.name)) ||
+                               voices.find(v => /google.*(bangla|bengali).*neural/i.test(v.name)) || 
                                voices.find(v => /microsoft.*(bangla|bengali).*online/i.test(v.name)) ||
                                voices.find(v => /google.*(bangla|bengali)/i.test(v.name)) ||
-                               voices.find(v => /(bangla|bengali|বাংলা).*google/i.test(v.name)) ||
                                voices.find(v => v.lang.startsWith('bn'));
                 
                 if (bnVoice) utterance.voice = bnVoice;
                 utterance.lang = 'bn-IN';
-                utterance.rate = 0.88; 
+                utterance.rate = 0.92; // Optimized for Tanishaa/Female flow
             } else {
-                const enVoice = voices.find(v => /google.*english.*neural/i.test(v.name)) || 
+                const enVoice = voices.find(v => /google.*english.*neural.*female/i.test(v.name)) ||
+                               voices.find(v => /google.*english.*neural/i.test(v.name)) || 
                                voices.find(v => /microsoft.*english.*online/i.test(v.name)) ||
                                voices.find(v => v.lang.startsWith('en-US'));
                 if (enVoice) utterance.voice = enVoice;
