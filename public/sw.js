@@ -1,4 +1,4 @@
-const CACHE_NAME = 'suraksha-sathi-v20';
+const CACHE_NAME = 'suraksha-sathi-v21-neural';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
