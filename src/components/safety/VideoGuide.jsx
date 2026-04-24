@@ -89,7 +89,7 @@ export default function VideoGuide({ language, setCurrentView }) {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20">
             {/* Sticky Header */}
-            <div className="sticky top-0 z-[100] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 pt-10 pb-4 px-4 sm:px-8">
+            <div className="sticky top-0 z-[100] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 py-3 px-4 sm:px-8">
                 <div className="max-w-7xl mx-auto space-y-4">
                     <div className="flex items-center justify-between gap-4">
                         {!isSearchExpanded ? (

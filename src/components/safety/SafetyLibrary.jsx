@@ -247,7 +247,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20">
             {/* Sticky Header */}
-            <div className="sticky top-0 z-[100] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 pt-10 pb-4 px-4 sm:px-8">
+            <div className="sticky top-0 z-[100] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 py-4 px-4 sm:px-8">
                 <div className="max-w-7xl mx-auto space-y-4">
                     <div className="flex items-center justify-between gap-4">
                         {!isSearchExpanded ? (
@@ -328,6 +328,26 @@ export default function SafetyLibrary({ language, setCurrentView }) {
             </div>
 
             <div className="max-w-7xl mx-auto p-3 sm:p-8">
+                {/* Elegant Video Guide Banner */}
+                <div 
+                    onClick={() => setCurrentView('video-guide')}
+                    className="mb-4 sm:mb-6 rounded-[1.25rem] bg-gradient-to-r from-orange-500 to-orange-600 p-4 text-white flex items-center justify-between cursor-pointer hover:shadow-lg hover:shadow-orange-500/20 transition-all active:scale-[0.98]"
+                >
+                    <div className="flex items-center gap-3.5">
+                        <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
+                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-sm sm:text-base leading-tight">
+                                {language === 'en' ? 'Watch Video Guides' : 'ভিডিও গাইড দেখুন'}
+                            </h3>
+                        </div>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"/></svg>
+                    </div>
+                </div>
+
                 {loading ? (
                     <div className="flex items-center justify-center min-h-[300px]">
                         <div className="w-10 h-10 border-3 border-orange-500/20 border-t-orange-500 rounded-full animate-spin"></div>
@@ -368,20 +388,20 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                     <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-6 animate-fade-in">
                         <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl" onClick={() => setSelectedItem(null)} />
                         
-                        <div className="relative w-full h-[95vh] sm:h-auto sm:max-w-2xl bg-white dark:bg-slate-900 rounded-t-[3rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up sm:animate-scale-in border-t border-white/10">
-                            {/* Drag Indicator for Mobile */}
-                            <div className="sm:hidden w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto my-4 shrink-0 shadow-inner" onClick={() => setSelectedItem(null)} />
+                        <div className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] sm:max-w-2xl bg-white dark:bg-slate-900 rounded-none sm:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up sm:animate-scale-in border-none sm:border border-white/10 pt-[env(safe-area-inset-top)] sm:pt-0">
+                            {/* Drag Indicator for Mobile (Hidden on full screen, keeping for consistency if needed, but adjusted padding) */}
+                            <div className="sm:hidden w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mt-3 mb-2 shrink-0 shadow-inner" onClick={() => setSelectedItem(null)} />
                             
                             <button
                                 onClick={() => setSelectedItem(null)}
-                                className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 text-white flex items-center justify-center backdrop-blur-md active:scale-90 transition-all border border-white/10"
+                                className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center backdrop-blur-md active:scale-90 transition-all border border-white/20 mt-[env(safe-area-inset-top)] sm:mt-0"
                             >
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
 
                             <div className="flex-1 overflow-y-auto no-scrollbar">
                                 {/* Clean Image Section with minimal Badge */}
-                                <div className="relative w-full aspect-square sm:aspect-video bg-slate-50 dark:bg-slate-800/20 group/modal-img">
+                                <div className={`relative w-full ${selectedItem.category === 'Charts' ? 'aspect-auto min-h-[50vh]' : 'aspect-square sm:aspect-video'} bg-slate-50 dark:bg-slate-800/20 group/modal-img`}>
                                     <ImageSlider images={selectedItem.images} alt={selectedItem.name_bn} aspect="h-full" showControls={true} />
                                     
                                     {/* Minimalist Top Corner Badge */}
@@ -412,7 +432,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                     </div>
 
                                     {/* About Section - Compact & Minimalist */}
-                                    {selectedItem.function_bn && (
+                                    {selectedItem.category !== 'Charts' && selectedItem.function_bn && (
                                         <div className="space-y-2">
                                             <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
                                                 <InfoIcon className="w-3.5 h-3.5" />
@@ -425,7 +445,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                     )}
 
                                     {/* Guide Section - Elegant Minimal Box */}
-                                    {selectedItem.guide_bn && (
+                                    {selectedItem.category !== 'Charts' && selectedItem.guide_bn && (
                                         <div className="p-4 bg-orange-50/50 dark:bg-orange-950/10 rounded-2xl border border-orange-100/50 dark:border-orange-500/5 space-y-2">
                                             <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400 font-black text-[10px] uppercase tracking-wider">
                                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
@@ -437,14 +457,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                         </div>
                                     )}
 
-                                    <div className="pt-2 flex justify-center">
-                                        <button 
-                                            onClick={() => setSelectedItem(null)}
-                                            className="w-full sm:w-auto px-10 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] font-black uppercase tracking-[0.3em] rounded-xl active:scale-95 transition-all"
-                                        >
-                                            {language === 'en' ? 'Close' : 'বন্ধ করুন'}
-                                        </button>
-                                    </div>
+
                                 </div>
                             </div>
                         </div>

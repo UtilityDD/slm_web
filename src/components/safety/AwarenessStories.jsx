@@ -196,7 +196,7 @@ const AwarenessStories = ({ setCurrentView, language = 'en' }) => {
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-slate-800/20 rounded-full blur-[120px] -ml-64 -mb-64" />
 
             {/* Header */}
-            <div className="pt-10 h-24 flex items-center justify-between px-6 z-30 shrink-0">
+            <div className="py-3 flex items-center justify-between px-6 z-30 shrink-0">
                 <button
                     onClick={() => selectedStory ? setSelectedStory(null) : setCurrentView('home')}
                     className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all"

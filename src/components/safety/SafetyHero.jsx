@@ -130,7 +130,7 @@ export default function SafetyHero({ language, user, onBack }) {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
             {/* Header */}
-            <div className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 pt-12 pb-4 px-6 flex items-center justify-between">
+            <div className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 py-3 px-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <button onClick={onBack} className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 active:scale-90 transition-transform">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"/></svg>

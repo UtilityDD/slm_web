@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UserIcon } from './icons';
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../config';
 
@@ -17,7 +17,24 @@ export default function Sidebar({
   onLogout
 }) {
   const [currentTab, setCurrentTab] = useState(null);
-  const [isMoreExpanded, setIsMoreExpanded] = useState(false);
+  const [isMoreExpanded, setIsMoreExpanded] = useState(true);
+  const navRef = useRef(null);
+
+  // Auto-scroll to bottom when sidebar opens
+  useEffect(() => {
+    if (isOpen && navRef.current) {
+      // Add a small delay to allow the sidebar slide-in transition to finish
+      const timeoutId = setTimeout(() => {
+        if (navRef.current) {
+          navRef.current.scrollTo({
+            top: navRef.current.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+      }, 350);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isOpen]);
 
   // Listen for hash changes to update highlighted tab
   useEffect(() => {
@@ -79,18 +96,18 @@ export default function Sidebar({
       {/* Sidebar Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 md:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] md:hidden"
           onClick={onClose}
         ></div>
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen w-72 bg-white dark:bg-slate-900 shadow-2xl border-r border-slate-200/50 dark:border-slate-700/50 z-[100] transform transition-all duration-300 flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed left-0 top-0 h-screen w-72 bg-white dark:bg-slate-900 shadow-2xl border-r border-slate-200/50 dark:border-slate-700/50 z-[210] transform transition-all duration-300 flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
       >
         {/* Sidebar Header - Enhanced */}
-        <div className="px-6 pt-12 pb-6 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-br from-orange-50 to-white dark:from-slate-800 dark:to-slate-900 shrink-0">
+        <div className="p-6 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-br from-orange-50 to-white dark:from-slate-800 dark:to-slate-900 shrink-0">
           {/* User Profile Section */}
           <div className="flex items-center gap-3 mb-4">
             <div className="relative">
@@ -134,13 +151,13 @@ export default function Sidebar({
                   <div className="flex items-center gap-1.5 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm px-2 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm transition-all hover:bg-white dark:hover:bg-slate-800">
                     <span className="text-sm drop-shadow-sm text-orange-500">🏆</span>
                     <span className="text-[12px] font-black text-slate-800 dark:text-slate-100">
-                      {(userProfile?.points || 0).toLocaleString('en-US')}
+                      {userProfile ? (userProfile.points || 0).toLocaleString('en-US') : '...'}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm px-2 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm transition-all hover:bg-white dark:hover:bg-slate-800">
                     <span className="text-sm drop-shadow-sm">📖</span>
                     <span className="text-[12px] font-black text-slate-800 dark:text-slate-100">
-                      {(userProfile?.reading_points || 0).toLocaleString('en-US')}
+                      {userProfile ? (userProfile.reading_points || 0).toLocaleString('en-US') : '...'}
                     </span>
                   </div>
                 </div>
@@ -151,7 +168,7 @@ export default function Sidebar({
         </div>
 
         {/* Navigation Items - Enhanced */}
-        <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5 custom-scrollbar">
+        <nav ref={navRef} className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5 custom-scrollbar">
           {primaryItems.map((item) => (
             <button
               key={item.id}

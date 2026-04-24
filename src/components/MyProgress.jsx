@@ -131,7 +131,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
         return `${origin}/verify/${profile?.id}`;
     }, [profile?.id]);
 
-    const resolvedUserId = targetUserId || user?.id;
+    const resolvedUserId = user?.id;
 
     useEffect(() => {
         let active = true;
@@ -294,10 +294,10 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                     <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-2">{labels.title}</h1>
                     <p className="text-slate-500 dark:text-slate-400">{labels.noData}</p>
                     <button
-                        onClick={() => setCurrentView('leaderboard')}
+                        onClick={() => setCurrentView('home')}
                         className="mt-6 px-5 py-3 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors"
                     >
-                        {labels.back}
+                        {language === 'en' ? 'Back to Home' : 'হোমে ফিরুন'}
                     </button>
                 </div>
             </main>
@@ -316,13 +316,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
 
             <div className="relative z-10 max-w-6xl mx-auto space-y-5 sm:space-y-6">
                 <div className="flex items-center justify-between gap-4">
-                    <button
-                        onClick={() => setCurrentView('leaderboard')}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-orange-300 dark:hover:border-orange-700 transition-all"
-                    >
-                        <span>←</span>
-                        {labels.back}
-                    </button>
+                    <div className="flex-1"></div>
 
                     {isCurrentUser && (
                         <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold uppercase tracking-widest">

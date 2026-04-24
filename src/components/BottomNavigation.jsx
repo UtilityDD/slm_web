@@ -4,10 +4,11 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
   const navItems = [
     {
       id: 'training',
-      label: language === 'en' ? 'Training' : 'প্রশিক্ষণ',
+      label: language === 'en' ? 'Home' : 'হোম',
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[22px] h-[22px]">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
         </svg>
       )
     },
@@ -15,8 +16,9 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
       id: 'safety-library',
       label: language === 'en' ? 'Safety' : 'সুরক্ষা',
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[22px] h-[22px]">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="m9 12 2 2 4-4"/>
         </svg>
       )
     },
@@ -24,18 +26,23 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
       id: 'leaderboard',
       label: language === 'en' ? 'Rank' : 'র‍্যাঙ্ক',
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[22px] h-[22px]">
+          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+          <path d="M4 22h16"/>
+          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+          <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
         </svg>
       )
     },
     {
       id: 'my-progress',
-      label: language === 'en' ? 'Cert' : 'সনদ',
+      label: language === 'en' ? 'Progress' : 'অগ্রগতি',
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a.75.75 0 00-1.185.38L4.5 12.5m11.665-7.803a.75.75 0 011.185.38L19.5 12.5M12 18.75a6.75 6.75 0 116.75-6.75A6.75 6.75 0 0112 18.75z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 12.75l2.25 2.25 4.5-4.5" />
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[22px] h-[22px]">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+          <polyline points="16 7 22 7 22 13"/>
         </svg>
       )
     },
@@ -43,16 +50,19 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
       id: 'menu',
       label: language === 'en' ? 'More' : 'আরও',
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[22px] h-[22px]">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"/>
         </svg>
       )
     }
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-[100] md:hidden pb-safe-area">
-      <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl border-t border-slate-200/50 dark:border-slate-800/50 z-[100] md:hidden pb-safe-area shadow-[0_-15px_40px_-15px_rgba(0,0,0,0.1)]">
+      <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-4">
         {navItems.map((item) => {
           const isActive = currentView === item.id || 
                            (item.id === 'safety-library' && ['safety-library', 'sops', 'my_ppe', 'my_tools'].includes(currentView)) || 
@@ -62,43 +72,29 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
           return (
             <button
               key={item.id}
+              title={item.label}
               onClick={() => {
                 if (navigator.vibrate) navigator.vibrate(5);
                 if (item.id === 'menu') {
                   if (onMenuClick) onMenuClick();
                 } else {
-                  // Close sidebar if any other nav item is clicked
                   if (onMenuClick) {
-                    // Logic to ensure it closes
-                    const isSidebarOpen = document.body.classList.contains('sidebar-open'); // Hypothetical check if needed, but easier to just force close
-                    // We'll handle the force-close in SmartLinemanUI
                     setCurrentView(item.id);
-                    onMenuClick(false); // Passing false to indicate "close"
+                    onMenuClick(false);
                   } else {
                     setCurrentView(item.id);
                   }
                 }
               }}
-              className={`flex flex-col items-center justify-center w-full h-full transition-all duration-300 relative ${
-                isActive ? 'text-orange-500' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+              className={`flex items-center justify-center w-12 h-12 rounded-[18px] transition-all duration-400 relative outline-none ${
+                isActive 
+                ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 scale-110 -translate-y-1' 
+                : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-300 hover:scale-105 active:scale-95'
               }`}
             >
+              {item.icon}
               {isActive && (
-                <span className="absolute top-2 w-12 h-8 bg-orange-500/10 dark:bg-orange-500/20 rounded-full animate-scale-in -z-10"></span>
-              )}
-              
-              <div className={`transition-transform duration-300 ${isActive ? 'scale-110 -translate-y-1' : ''}`}>
-                {item.icon}
-              </div>
-              
-              <span className={`text-[9px] font-black mt-1 uppercase tracking-tighter transition-all ${
-                isActive ? 'opacity-100 translate-y-0' : 'opacity-70'
-              } ${language === 'bn' ? 'font-bengali text-[10px]' : ''}`}>
-                {item.label}
-              </span>
-
-              {isActive && (
-                <span className="absolute bottom-1.5 w-1 h-1 bg-orange-500 rounded-full"></span>
+                <span className="absolute -bottom-2.5 w-1.5 h-1.5 bg-orange-500 rounded-full shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span>
               )}
             </button>
           );

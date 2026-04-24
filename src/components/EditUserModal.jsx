@@ -21,7 +21,7 @@ export default function EditUserModal({
     const canEditSelfProfile = userProfile?.role === 'admin' || isOwnProfile;
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 bg-slate-50 dark:bg-slate-950 sm:bg-slate-900/60 sm:backdrop-blur-sm animate-fade-in safe-area-inset-top">
+        <div className="fixed inset-0 z-[100] flex sm:items-center sm:justify-center p-0 bg-slate-50 dark:bg-slate-950 sm:bg-slate-900/60 sm:backdrop-blur-sm animate-fade-in">
             {/* Modal Container */}
             <div className="bg-white dark:bg-slate-900 w-full h-full sm:h-auto sm:max-h-[92vh] sm:rounded-[32px] sm:max-w-2xl shadow-2xl flex flex-col animate-scale-in overflow-hidden border-none sm:border dark:border-slate-800 pt-4 sm:pt-0">
 
