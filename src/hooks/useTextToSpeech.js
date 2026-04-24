@@ -23,8 +23,8 @@ export const useTextToSpeech = (language = 'bn') => {
     const [availableVoices, setAvailableVoices] = useState([]); // Web Only
     const [usePremium, setUsePremium] = useState(true); // Default to premium for pro experience
     
-    // Replace with your actual Supabase project URL once deployed
-    const PREMIUM_TTS_URL = "https://your-project-ref.supabase.co/functions/v1/edge-tts";
+    // Final Premium TTS URL from deployed function
+    const PREMIUM_TTS_URL = "https://wkunyvomogeazjwtenck.supabase.co/functions/v1/edge-tts";
 
     // Check Platform
     const isNative = Capacitor.isNativePlatform();
