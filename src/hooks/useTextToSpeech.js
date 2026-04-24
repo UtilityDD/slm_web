@@ -308,10 +308,16 @@ export const useTextToSpeech = (language = 'bn') => {
                     setIsPaused(false);
 
                     console.log("Attempting Premium Neural TTS for:", cleaned);
+                    
+                    // Get Supabase credentials
+                    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+                    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
                     const response = await fetch(PREMIUM_TTS_URL, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${supabaseAnonKey}`
                         },
                         body: JSON.stringify({
                             text: cleaned,

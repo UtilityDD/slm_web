@@ -21,6 +21,14 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Text is required" }), { status: 400 });
     }
 
+    // Simple XML escape to prevent SSML errors
+    const escapedText = text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&apos;");
+
     // Connect to Microsoft Edge TTS WebSocket
     const socket = new WebSocket(EDGE_TTS_URL);
     let audioBuffer = new Uint8Array(0);
@@ -32,7 +40,7 @@ serve(async (req) => {
         socket.send(configMessage);
 
         // 2. Send SSML with optimized natural prosody
-        const ssmlMessage = `X-RequestId:${crypto.randomUUID().replace(/-/g, "")}\r\nContent-Type:application/ssml+xml\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${lang}'><voice name='${voice}'><prosody rate='+0%' pitch='0Hz'>${text}</prosody></voice></speak>`;
+        const ssmlMessage = `X-RequestId:${crypto.randomUUID().replace(/-/g, "")}\r\nContent-Type:application/ssml+xml\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${lang}'><voice name='${voice}'><prosody rate='+0%' pitch='0Hz'>${escapedText}</prosody></voice></speak>`;
         socket.send(ssmlMessage);
       };
 
