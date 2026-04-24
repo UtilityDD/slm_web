@@ -696,23 +696,40 @@ export default function SmartLinemanUI() {
     }
   }, []);
 
-  // Dynamic StatusBar Management for Android
+  // Dynamic StatusBar Management for Android & PWA
   useEffect(() => {
     const updateStatusBar = async () => {
-      if (!window.Capacitor) return;
+      const isDark = theme === 'dark';
+      const bgColor = isDark ? '#0F172A' : (currentView === 'home' ? '#0F172A' : '#F8FAFC');
+      
+      // 1. Handle Web/PWA Theme Color
+      let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (!metaThemeColor) {
+        metaThemeColor = document.createElement('meta');
+        metaThemeColor.setAttribute('name', 'theme-color');
+        document.head.appendChild(metaThemeColor);
+      }
+      metaThemeColor.setAttribute('content', bgColor);
+      // console.log(`[Status Bar] Theme: ${theme}, View: ${currentView}, Color: ${bgColor}`);
 
-      try {
-        if (theme === 'dark') {
-          await StatusBar.setStyle({ style: Style.Dark });
-        } else {
-          if (currentView === 'home') {
+      // 2. Handle Native Capacitor StatusBar
+      if (window.Capacitor) {
+        try {
+          if (isDark) {
             await StatusBar.setStyle({ style: Style.Dark });
+            await StatusBar.setBackgroundColor({ color: bgColor });
           } else {
-            await StatusBar.setStyle({ style: Style.Light });
+            if (currentView === 'home') {
+              await StatusBar.setStyle({ style: Style.Dark });
+              await StatusBar.setBackgroundColor({ color: bgColor });
+            } else {
+              await StatusBar.setStyle({ style: Style.Light });
+              await StatusBar.setBackgroundColor({ color: bgColor });
+            }
           }
+        } catch (err) {
+          console.warn('Native StatusBar update failed:', err);
         }
-      } catch (err) {
-        console.warn('StatusBar update failed:', err);
       }
     };
 

@@ -350,8 +350,13 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
 
     return createPortal(
         <>
-            <div className={`fixed inset-0 z-[200] animate-fade-in ${isFullscreenScreen ? 'bg-slate-950/95 backdrop-blur-xl' : 'flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm'}`}>
-            <div className={`overflow-hidden border border-token-border shadow-2xl animate-scale-in ${isFullscreenScreen ? 'w-full h-full rounded-none border-0 bg-transparent flex flex-col' : 'bg-token-bg-surface rounded-2xl w-full max-w-lg flex flex-col max-h-[90vh]'}`}>
+            <div className={`fixed inset-0 z-[200] animate-fade-in ${isFullscreenScreen ? 'bg-slate-950/95 backdrop-blur-xl' : 'flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm'}`}>
+            <div className={`overflow-hidden border-t sm:border border-token-border shadow-2xl animate-slide-up-sheet sm:animate-scale-in ${isFullscreenScreen ? 'w-full h-full rounded-none border-0 bg-transparent flex flex-col' : 'bg-token-bg-surface rounded-t-[2.5rem] sm:rounded-2xl w-full max-w-lg flex flex-col max-h-[95vh]'}`}>
+                {!isFullscreenScreen && (
+                    <div className="flex justify-center pt-3 pb-1 sm:hidden bg-token-bg-surface">
+                        <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full opacity-50"></div>
+                    </div>
+                )}
                 {loading ? (
                     <div className={`flex flex-col items-center justify-center space-y-4 ${isFullscreenScreen ? 'flex-1 px-6 py-16 text-white' : 'p-20'}`}>
                         <svg className={`w-12 h-12 animate-pulse ${isFullscreenScreen ? 'text-orange-300' : 'text-orange-500'}`} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -371,7 +376,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                     </div>
                 ) : (
                     <>
-                        <div className={`p-4 flex justify-between items-center gap-3 ${isFullscreenScreen ? 'border-b border-white/10 bg-slate-950/70 text-white backdrop-blur-xl' : 'border-b border-token-border bg-token-bg-page/80'}`}>
+                        <div className={`p-4 flex justify-between items-center gap-3 ${isFullscreenScreen ? 'border-b border-white/10 bg-slate-950/70 text-white backdrop-blur-xl' : 'border-b border-token-border bg-token-bg-surface'}`}>
                             <div className="flex items-center gap-2 min-w-0">
                                 {lessonId && (
                                     <span className={`text-xs font-black px-2.5 py-1 rounded-lg border shrink-0 ${isFullscreenScreen ? 'text-orange-200 bg-white/10 border-white/10' : 'text-orange-500 bg-orange-50 dark:bg-orange-500/10 border-orange-100 dark:border-orange-500/20'}`}>
@@ -687,8 +692,11 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
 
         {/* Report Feedback Modal */}
         {showReportModal && (
-            <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-                <div className="bg-slate-900 border border-white/10 rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl animate-scale-in flex flex-col">
+            <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+                <div className="bg-slate-900 border-t sm:border border-white/10 rounded-t-[2.5rem] sm:rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl animate-slide-up-sheet sm:animate-scale-in flex flex-col">
+                    <div className="flex justify-center pt-4 sm:hidden">
+                        <div className="w-12 h-1.5 bg-white/10 rounded-full"></div>
+                    </div>
                     <div className="p-6 pb-2">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-xl font-bold text-white tracking-tight">{t.reportTitle}</h3>
@@ -741,8 +749,11 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
 
         {/* Google Search Confirmation Modal */}
         {showSearchModal && (
-            <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-                <div className="bg-slate-900 border border-white/10 rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-2xl animate-scale-in flex flex-col p-8 text-center items-center">
+            <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+                <div className="bg-slate-900 border-t sm:border border-white/10 rounded-t-[2.5rem] sm:rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-2xl animate-slide-up-sheet sm:animate-scale-in flex flex-col p-8 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:pb-8 text-center items-center">
+                    <div className="flex justify-center mb-6 sm:hidden">
+                        <div className="w-12 h-1.5 bg-white/10 rounded-full"></div>
+                    </div>
                     <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-6 shadow-xl">
                         <svg className="w-9 h-9" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Serif+Bengali:wght@300;400;500;600;700&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Serif+Bengali:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -977,7 +977,7 @@ body,
   }
 
   .certificate-security-watermark::after {
-    content: "OFFICIAL • VERIFIED • GENUINE • SMARTLINEMAN • ";
+    content: "OFFICIAL â€¢ VERIFIED â€¢ GENUINE â€¢ SMARTLINEMAN â€¢ ";
     position: absolute;
     inset: -50%;
     transform: rotate(-30deg);
@@ -1456,4 +1456,18 @@ body,
 
 .substation-milestone.active .substation-icon {
     @apply border-orange-500 shadow-2xl shadow-orange-500/30;
+}
+
+
+.animate-slide-up-sheet {
+  animation: slideUpSheet 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+@keyframes slideUpSheet {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }

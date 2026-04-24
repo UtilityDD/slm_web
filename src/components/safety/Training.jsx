@@ -1792,7 +1792,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                 </div>
             ) : selectedLesson ? (
                 /* Full Screen Lesson Preview Overlay */
-                <div className="fixed inset-0 z-[200] flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 animate-fade-in">
+                <div className="fixed inset-0 z-[200] flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 animate-slide-up-sheet">
                     <div className={`absolute inset-0 ${selectedLesson.badge?.color || 'bg-orange-500'} opacity-[0.08] dark:opacity-[0.16]`} />
                     <div className="absolute inset-0 bg-gradient-to-b from-white/85 via-white/70 to-white/90 dark:from-slate-950/90 dark:via-slate-950/80 dark:to-slate-950/95 backdrop-blur-2xl" />
 
@@ -2589,11 +2589,11 @@ export default function Training({ language = 'en', user, userProfile: profile, 
             {
                 activeImageModal && createPortal(
                     <div
-                        className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md animate-fade-in"
+                        className="fixed inset-0 z-[400] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/90 backdrop-blur-md animate-fade-in"
                         onClick={() => setActiveImageModal(null)}
                     >
                         <div
-                            className="relative max-w-5xl w-full bg-slate-800 rounded-3xl overflow-hidden shadow-2xl border border-white/10 animate-scale-in"
+                            className="relative max-w-5xl w-full bg-slate-800 rounded-t-[2.5rem] sm:rounded-3xl overflow-hidden shadow-2xl border-t sm:border border-white/10 animate-slide-up-sheet sm:animate-scale-in"
                             onClick={e => e.stopPropagation()}
                         >
                             {/* Close Button */}
