@@ -1144,7 +1144,7 @@ export default function SmartLinemanUI() {
                 currentView={currentView} 
                 setCurrentView={setCurrentView} 
                 language={language} 
-                onMenuClick={() => setSidebarOpen(true)}
+                onMenuClick={() => setSidebarOpen(prev => !prev)}
               />
             )}
 
