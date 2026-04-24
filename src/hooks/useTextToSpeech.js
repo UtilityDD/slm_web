@@ -172,26 +172,41 @@ export const useTextToSpeech = (language = 'bn') => {
 
     const pause = useCallback(async () => {
         if (!isSupported) return;
-        if (!isNative) {
-            window.speechSynthesis.pause();
-            setIsPaused(true);
-        } else {
-            // Native pause/resume is emulated by stopping current chunk and resuming from saved index.
-            nativePaused = true;
-            nativeStatus = 'paused';
-            stopSignal.current = true;
-            try {
+        
+        try {
+            if (isNative) {
+                // Native pause/resume is emulated by stopping current chunk and resuming from saved index.
+                nativePaused = true;
+                nativeStatus = 'paused';
+                stopSignal.current = true;
                 await TextToSpeech.stop();
-            } catch (err) {
-                console.warn('Native pause stop failed:', err);
+            } else if (currentUtterance.current instanceof Audio) {
+                // Premium Audio pause
+                currentUtterance.current.pause();
+            } else {
+                // Web Speech API pause
+                window.speechSynthesis.pause();
             }
             setIsPaused(true);
-            setIsPlaying(false);
+        } catch (err) {
+            console.warn("Pause failed:", err);
         }
     }, [isSupported, isNative]);
 
     const resume = useCallback(async () => {
         if (!isSupported) return;
+
+        if (currentUtterance.current instanceof Audio) {
+            // Premium Audio resume
+            try {
+                await currentUtterance.current.play();
+                setIsPaused(false);
+            } catch (err) {
+                console.warn("Audio resume failed:", err);
+            }
+            return;
+        }
+
         if (!isNative) {
             window.speechSynthesis.resume();
             setIsPaused(false);

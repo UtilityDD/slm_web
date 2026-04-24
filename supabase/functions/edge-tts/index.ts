@@ -1,9 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-const EDGE_TTS_URL = "wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D318896D85";
+// A short silent MP3 buffer (~0.5s) to create natural pauses between sentences
+const SILENCE_MP3 = new Uint8Array([
+  255, 251, 144, 68, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+]);
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === "OPTIONS") {
     return new Response("ok", {
       headers: {
@@ -15,76 +18,66 @@ serve(async (req) => {
   }
 
   try {
-    const { text, lang = "bn-IN", voice = "bn-IN-TanishaaNeural" } = await req.json();
+    const { text, lang = "bn-IN" } = await req.json();
+    if (!text) return new Response(JSON.stringify({ error: "Text is required" }), { status: 400 });
 
-    if (!text) {
-      return new Response(JSON.stringify({ error: "Text is required" }), { status: 400 });
+    // Split text by punctuation to add natural pauses
+    // Matches Bengali Dari (।), Comma (,), Question Mark (?), and English equivalents
+    const parts = text.split(/([।?,!])/);
+    const chunks = [];
+    let currentPart = "";
+
+    for (let i = 0; i < parts.length; i++) {
+      const p = parts[i].trim();
+      if (!p) continue;
+      
+      // If it's a punctuation mark, attach it to the previous chunk
+      if (/[।?,!]/.test(p)) {
+        if (chunks.length > 0) {
+          chunks[chunks.length - 1] += p;
+        }
+      } else {
+        chunks.push(p);
+      }
     }
 
-    // Simple XML escape to prevent SSML errors
-    const escapedText = text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&apos;");
-
-    // Connect to Microsoft Edge TTS WebSocket
-    const socket = new WebSocket(EDGE_TTS_URL);
-    let audioBuffer = new Uint8Array(0);
-    
-    return new Promise((resolve) => {
-      socket.onopen = () => {
-        // 1. Send Config
-        const configMessage = `Content-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"false"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}`;
-        socket.send(configMessage);
-
-        // 2. Send SSML with optimized natural prosody
-        const ssmlMessage = `X-RequestId:${crypto.randomUUID().replace(/-/g, "")}\r\nContent-Type:application/ssml+xml\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${lang}'><voice name='${voice}'><prosody rate='+0%' pitch='0Hz'>${escapedText}</prosody></voice></speak>`;
-        socket.send(ssmlMessage);
-      };
-
-      socket.onmessage = async (event) => {
-        if (event.data instanceof Blob) {
-          const data = new Uint8Array(await event.data.arrayBuffer());
-          // Find the start of the audio data (after the header)
-          // The header ends with "Path:audio\r\n"
-          const headerEnd = "Path:audio\r\n";
-          const textDecoder = new TextDecoder();
-          const decoded = textDecoder.decode(data.slice(0, 500)); // Header is usually short
-          const index = decoded.indexOf(headerEnd);
-          
-          if (index !== -1) {
-            const audioData = data.slice(index + headerEnd.length);
-            const newBuffer = new Uint8Array(audioBuffer.length + audioData.length);
-            newBuffer.set(audioBuffer);
-            newBuffer.set(audioData, audioBuffer.length);
-            audioBuffer = newBuffer;
+    const audioBuffers = [];
+    for (const chunk of chunks) {
+      if (chunk.length > 180) {
+          // Internal split if chunk is too long for Google
+          const subChunks = chunk.match(/.{1,180}/g) || [];
+          for (const sc of subChunks) {
+              const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(sc)}&tl=${lang}&client=tw-ob`;
+              const res = await fetch(url, { headers: { "Referer": "http://translate.google.com/", "User-Agent": "Mozilla/5.0" } });
+              if (res.ok) audioBuffers.push(new Uint8Array(await res.arrayBuffer()));
           }
-        } else if (typeof event.data === "string" && event.data.includes("Path:turn.end")) {
-          socket.close();
-          resolve(new Response(audioBuffer, {
-            headers: {
-              "Content-Type": "audio/mpeg",
-              "Access-Control-Allow-Origin": "*",
-            },
-          }));
-        }
-      };
+      } else {
+          const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${lang}&client=tw-ob`;
+          const res = await fetch(url, { headers: { "Referer": "http://translate.google.com/", "User-Agent": "Mozilla/5.0" } });
+          if (res.ok) {
+            audioBuffers.push(new Uint8Array(await res.arrayBuffer()));
+            // Add silence after sentence-ending punctuation
+            if (/[।?!]/.test(chunk)) audioBuffers.push(SILENCE_MP3);
+          }
+      }
+    }
 
-      socket.onerror = (err) => {
-        console.error("WebSocket Error:", err);
-        resolve(new Response(JSON.stringify({ error: "TTS generation failed" }), { 
-          status: 500,
-          headers: { "Access-Control-Allow-Origin": "*" }
-        }));
-      };
+    const totalLength = audioBuffers.reduce((acc, buf) => acc + buf.length, 0);
+    const combinedBuffer = new Uint8Array(totalLength);
+    let offset = 0;
+    for (const buf of audioBuffers) {
+      combinedBuffer.set(buf, offset);
+      offset += buf.length;
+    }
+
+    return new Response(combinedBuffer, {
+      headers: {
+        "Content-Type": "audio/mpeg",
+        "Access-Control-Allow-Origin": "*",
+      },
     });
 
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { 
-      status: 500,
-      headers: { "Access-Control-Allow-Origin": "*" }
-    });
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { "Access-Control-Allow-Origin": "*" } });
   }
 })
