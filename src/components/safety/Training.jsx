@@ -1814,19 +1814,13 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                 </button>
 
                                 <div className="min-w-0 flex-1 text-center px-2">
-                                    <p className={`text-[10px] sm:text-xs font-black uppercase tracking-[0.35em] text-slate-400 ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
-                                        {language === 'en' ? 'Lesson Preview' : 'পাঠের প্রিভিউ'}
-                                    </p>
-                                    <h1 className={`mt-1 truncate text-base sm:text-lg font-black text-slate-900 dark:text-white ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <h1 className={`truncate text-base sm:text-lg font-black text-slate-900 dark:text-white ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {selectedLesson.chapter?.title || selectedLesson.level_title}
                                     </h1>
                                 </div>
 
                                 <div className="w-[88px] sm:w-[96px] flex justify-end">
-                                    <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-black uppercase tracking-widest ${selectedLesson.badge?.color || 'bg-orange-500'} text-white shadow-sm`}>
-                                        <span>{language === 'en' ? 'Lesson' : 'পাঠ'}</span>
-                                        <span>{toBengaliNumber(selectedLesson.level_id || `${selectedLesson.chapterNum}.${selectedLesson.subchapterNum}`, language)}</span>
-                                    </div>
+                                    {/* Empty div to balance the flex layout and keep title centered */}
                                 </div>
                             </div>
                         </header>
