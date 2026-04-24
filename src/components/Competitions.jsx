@@ -28,6 +28,16 @@ const seedRandom = (seed) => {
     };
 };
 
+// Fisher-Yates Shuffle for robust deterministic randomization
+const shuffleArray = (array, rng) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+};
+
 const stringToSeed = (str) => {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
@@ -977,13 +987,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 return idA.localeCompare(idB);
             });
 
-            // Deterministically pick 5 questions
-            const shuffledQuestions = [...baseQuestions].sort(() => 0.5 - rng());
+            // Deterministically pick 5 questions using robust shuffle
+            const shuffledQuestions = shuffleArray(baseQuestions, rng);
             const selectedQuestions = shuffledQuestions.slice(0, 5).map(q => {
                 if (!q.options || q.options.length === 0) return q;
 
                 const correctAnswerText = q.options[q.correct_option_index];
-                const shuffledOptions = [...q.options].sort(() => 0.5 - rng());
+                const shuffledOptions = shuffleArray(q.options, rng);
                 const newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
 
                 return {
@@ -1107,33 +1117,35 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
         if (isHighStakes) {
             penalty = quizQuestions.reduce((acc, q) => {
-                const answer = userAnswers[q.id];
-                if (answer === undefined || answer !== q.correct_option_index) {
+                // Use Number() to ensure type-safe comparison against stored string keys
+                const answer = userAnswers[String(q.id)]; 
+                if (answer === undefined || Number(answer) !== Number(q.correct_option_index)) {
                     return acc + 15; // 15 points penalty for wrong/skipped
                 }
                 return acc;
             }, 0);
         }
         
-        calculatedScore = Math.max(0, calculatedScore - penalty);
-        setScore(calculatedScore);
+        // Final score for UI display
+        const netScore = Math.max(0, calculatedScore - penalty);
+        setScore(netScore);
 
         setQuizResults({
             correct: correctCount,
             wrong: quizQuestions.filter(q => userAnswers[q.id] !== undefined && userAnswers[q.id] !== q.correct_option_index).length,
             skipped: quizQuestions.filter(q => userAnswers[q.id] === undefined).length,
             penalty: penalty,
-            score: calculatedScore,
+            score: netScore,
             pointsEarned: correctCount * pointsPerQuestion
         });
         setQuizSubmitted(true);
 
-        // Save for Review (Local Storage)
+        // Save for Review (Local Storage) - Store the final net score for display
         const attemptData = {
             timestamp: new Date().toISOString(),
             questions: quizQuestions,
             answers: userAnswers,
-            score: calculatedScore,
+            score: netScore, // User sees net score in review
             penalty: penalty
         };
         storageUtils.setItem(`review_${activeQuiz.id}`, JSON.stringify(attemptData));
@@ -1145,6 +1157,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         }
 
         if (user) {
+            // Send base score and penalty separately to RPC (which handles the math)
             await submitHourlyQuiz(calculatedScore, penalty);
         }
     };
