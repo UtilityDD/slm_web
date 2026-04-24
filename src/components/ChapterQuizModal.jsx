@@ -125,40 +125,40 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
             searchProceed: 'Proceed'
         },
         bn: {
-            title: 'à¦…à¦§à§à¦¯à¦¾à¦¯à¦¼ à¦•à§à¦‡à¦œ',
-            question: 'à¦ªà§à¦°à¦¶à§à¦¨',
-            result: 'à¦•à§à¦‡à¦œ à¦«à¦²à¦¾à¦«à¦²',
-            completed: 'à¦•à§à¦‡à¦œ à¦¸à¦®à§à¦ªà¦¨à§à¦¨!',
-            failed: 'à¦ªà¦¾à¦¸ à¦®à¦¾à¦°à§à¦• à¦…à¦°à§à¦œà¦¿à¦¤ à¦¹à¦¯à¦¼à¦¨à¦¿',
-            score: 'à¦†à¦ªà¦¨à¦¾à¦° à¦¸à§à¦•à§‹à¦°',
-            outOf: 'à¦à¦° à¦®à¦§à§à¦¯à§‡',
-            required: 'à¦ªà¦¾à¦¸ à¦•à¦°à¦¾à¦° à¦œà¦¨à§à¦¯ à§¯à§¦% à¦¸à¦ à¦¿à¦• à¦‰à¦¤à§à¦¤à¦° à¦ªà§à¦°à¦¯à¦¼à§‹à¦œà¦¨à¥¤',
-            continue: 'à¦ªà¦°à¦¬à¦°à§à¦¤à§€ à¦ªà¦¾à¦ à§‡ à¦¯à¦¾à¦¨',
-            tryAgain: 'à¦†à¦¬à¦¾à¦° à¦šà§‡à¦·à§à¦Ÿà¦¾ à¦•à¦°à§à¦¨',
-            readAgain: 'à¦†à¦¬à¦¾à¦° à¦ªà§œà§à¦¨',
-            submit: 'à¦•à§à¦‡à¦œ à¦œà¦®à¦¾ à¦¦à¦¿à¦¨',
-            next: 'à¦ªà¦°à¦¬à¦°à§à¦¤à§€ à¦ªà§à¦°à¦¶à§à¦¨',
-            loadingText: 'à¦•à§à¦‡à¦œ à¦ªà§à¦°à¦¸à§à¦¤à§à¦¤ à¦•à¦°à¦¾ à¦¹à¦šà§à¦›à§‡...',
-            noQuestions: 'à¦•à§‹à¦¨ à¦•à§à¦‡à¦œ à¦ªà§à¦°à¦¶à§à¦¨ à¦ªà¦¾à¦“à¦¯à¦¼à¦¾ à¦¯à¦¾à¦¯à¦¼à¦¨à¦¿à¥¤',
-            close: 'à¦¬à¦¨à§à¦§ à¦•à¦°à§à¦¨',
-            review: 'à¦‰à¦¤à§à¦¤à¦°à¦—à§à¦²à§‹ à¦¦à§‡à¦–à§à¦¨',
-            backToResult: 'à¦«à¦²à¦¾à¦«à¦²à§‡ à¦«à¦¿à¦°à§‡ à¦¯à¦¾à¦¨',
-            reviewTitle: 'à¦†à¦ªà¦¨à¦¾à¦° à¦‰à¦¤à§à¦¤à¦°à¦—à§à¦²à§‹ à¦¦à§‡à¦–à§à¦¨',
-            yourAns: 'à¦†à¦ªà¦¨à¦¾à¦° à¦‰à¦¤à§à¦¤à¦°',
-            right: 'à¦¸à¦ à¦¿à¦•',
-            wrong: 'à¦­à§à¦²',
-            notAnswered: 'à¦‰à¦¤à§à¦¤à¦° à¦¦à§‡à¦“à§Ÿà¦¾ à¦¹à§Ÿà¦¨à¦¿',
-            reportTitle: 'à¦ªà§à¦°à¦¶à§à¦¨à§‡ à¦•à§‹à¦¨à§‹ à¦­à§à¦² à¦†à¦›à§‡ à¦•à¦¿?',
-            reportSubtitle: 'à¦à¦‡ à¦ªà§à¦°à¦¶à§à¦¨ à¦¸à¦®à§à¦ªà¦°à§à¦•à§‡ à¦•à¦¿à¦›à§ à¦¬à¦²à§à¦¨...',
-            reportPlaceholder: 'à¦à¦–à¦¾à¦¨à§‡ à¦­à§à¦² à¦¬à¦¾ à¦¤à§à¦°à§à¦Ÿà¦¿ à¦²à¦¿à¦–à§à¦¨...',
-            reportAction: 'à¦†à¦®à¦¾à¦¦à§‡à¦° à¦œà¦¾à¦¨à¦¾à¦¨',
-            reportContext: 'à¦—à§à¦°à§à¦ªà§‡ à¦°à¦¿à¦ªà§‹à¦°à§à¦Ÿ à¦•à¦°à¦¾à¦° à¦¸à¦®à§Ÿ à¦²à§‡à¦¸à¦¨ à¦†à¦‡à¦¡à¦¿ à¦œà¦¾à¦¨à¦¾à¦¨:',
-            reportSuccess: 'à¦¶à§‡à¦¯à¦¼à¦¾à¦° à¦®à§‡à¦¨à§ à¦“à¦ªà§‡à¦¨ à¦¹à¦šà§à¦›à§‡...',
-            reportError: 'à¦¸à§à¦•à§à¦°à¦¿à¦¨à¦¶à¦Ÿ à¦¨à§‡à¦“à§Ÿà¦¾ à¦¸à¦®à§à¦­à¦¬ à¦¹à§Ÿà¦¨à¦¿à¥¤ à¦†à¦ªà¦¨à¦¿ à¦šà¦¾à¦‡à¦²à§‡ à¦®à§à¦¯à¦¾à¦¨à§à§Ÿà¦¾à¦²à¦¿ à¦—à§à¦°à§à¦ªà§‡ à¦œà¦¾à¦¨à¦¾à¦¤à§‡ à¦ªà¦¾à¦°à§‡à¦¨à¥¤',
-            searchLimitTitle: 'à¦¸à¦¾à¦°à§à¦š à¦²à¦¿à¦®à¦¿à¦Ÿ',
-            searchConfirm: 'à¦†à¦ªà¦¨à¦¿ à¦•à¦¿ à¦à¦Ÿà¦¿ à¦—à§à¦—à¦²à§‡ à¦–à§à¦à¦œà¦¤à§‡ à¦šà¦¾à¦¨? à¦ªà§à¦°à§‹ à¦•à§à¦‡à¦œà§‡ à¦†à¦ªà¦¨à¦¿ à¦®à¦¾à¦¤à§à¦° à§« à¦¬à¦¾à¦° à¦¸à¦¾à¦°à§à¦š à¦•à¦°à¦¤à§‡ à¦ªà¦¾à¦°à¦¬à§‡à¦¨ (à¦¬à§à¦¯à¦¬à¦¹à§ƒà¦¤: %s/à§«)à¥¤',
-            searchExhausted: 'à¦¦à§à¦ƒà¦–à¦¿à¦¤! à¦†à¦ªà¦¨à¦¾à¦° à§«à¦Ÿà¦¿ à¦¸à¦¾à¦°à§à¦šà§‡à¦° à¦•à§‹à¦Ÿà¦¾ à¦¶à§‡à¦· à¦¹à§Ÿà§‡ à¦—à§‡à¦›à§‡à¥¤ à¦à¦–à¦¨ à¦¥à§‡à¦•à§‡ à¦¨à¦¿à¦œà§‡à¦° à¦¬à§à¦¦à§à¦§à¦¿à¦¤à§‡ à¦‰à¦¤à§à¦¤à¦° à¦¦à¦¿à¦¨!',
-            searchProceed: 'à¦¸à¦¾à¦°à§à¦š à¦•à¦°à§à¦¨'
+            title: 'অধ্যায় কুইজ',
+            question: 'প্রশ্ন',
+            result: 'কুইজ ফলাফল',
+            completed: 'কুইজ সম্পন্ন!',
+            failed: 'পাস মার্ক অর্জিত হয়নি',
+            score: 'আপনার স্কোর',
+            outOf: 'এর মধ্যে',
+            required: 'পাস করার জন্য ৯০% সঠিক উত্তর প্রয়োজন।',
+            continue: 'পরবর্তী পাঠে যান',
+            tryAgain: 'আবার চেষ্টা করুন',
+            readAgain: 'আবার পড়ুন',
+            submit: 'কুইজ জমা দিন',
+            next: 'পরবর্তী প্রশ্ন',
+            loadingText: 'কুইজ প্রস্তুত করা হচ্ছে...',
+            noQuestions: 'কোন কুইজ প্রশ্ন পাওয়া যায়নি।',
+            close: 'বন্ধ করুন',
+            review: 'উত্তরগুলো দেখুন',
+            backToResult: 'ফলাফলে ফিরে যান',
+            reviewTitle: 'আপনার উত্তরগুলো দেখুন',
+            yourAns: 'আপনার উত্তর',
+            right: 'সঠিক',
+            wrong: 'ভুল',
+            notAnswered: 'উত্তর দেওয়া হয়নি',
+            reportTitle: 'প্রশ্নে কোনো ভুল আছে কি?',
+            reportSubtitle: 'এই প্রশ্ন সম্পর্কে কিছু বলুন...',
+            reportPlaceholder: 'এখানে ভুল বা ত্রুটি লিখুন...',
+            reportAction: 'আমাদের জানান',
+            reportContext: 'গ্রুপে রিপোর্ট করার সময় লেসন আইডি জানান:',
+            reportSuccess: 'শেয়ার মেনু ওপেন হচ্ছে...',
+            reportError: 'স্ক্রিনশট নেওয়া সম্ভব হয়নি। আপনি চাইলে ম্যানুয়ালি গ্রুপে জানাতে পারেন।',
+            searchLimitTitle: 'সার্চ লিমিট',
+            searchConfirm: 'আপনি কি এটি গুগলে খুঁজতে চান? পুরো কুইজে আপনি মাত্র ৫ বার সার্চ করতে পারবেন (ব্যবহৃত: %s/৫)।',
+            searchExhausted: 'দুঃখিত! আপনার ৫টি সার্চের কোটা শেষ হয়ে গেছে। এখন থেকে নিজের বুদ্ধিতে উত্তর দিন!',
+            searchProceed: 'সার্চ করুন'
         }
     }[language] || { en: {} };
 
@@ -404,8 +404,8 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                     <button
                                         onClick={() => setIsReviewMode(false)}
                                         className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold transition-colors ${isFullscreenScreen ? 'text-white/85 hover:bg-white/10' : 'text-token-text-secondary hover:bg-black/5 dark:hover:bg-white/10'}`}
-                                        aria-label={language === 'en' ? 'Back to result' : 'à¦«à¦²à¦¾à¦«à¦²à§‡ à¦«à¦¿à¦°à§‡ à¦¯à¦¾à¦¨'}
-                                        title={language === 'en' ? 'Back to result' : 'à¦«à¦²à¦¾à¦«à¦²à§‡ à¦«à¦¿à¦°à§‡ à¦¯à¦¾à¦¨'}
+                                        aria-label={language === 'en' ? 'Back to result' : 'ফলাফলে ফিরে যান'}
+                                        title={language === 'en' ? 'Back to result' : 'ফলাফলে ফিরে যান'}
                                     >
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
@@ -541,7 +541,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                             <div className="w-full max-w-2xl space-y-8 text-center">
                                                 <div className="space-y-4">
                                                     <div className={`mx-auto inline-flex items-center rounded-full px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.3em] ${isPassed ? 'bg-emerald-400/15 text-emerald-200' : 'bg-orange-400/15 text-orange-200'}`}>
-                                                        {isPassed ? (language === 'en' ? 'Passed' : 'à¦‰à¦¤à§à¦¤à§€à¦°à§à¦£') : (language === 'en' ? 'Retry' : 'à¦†à¦¬à¦¾à¦° à¦šà§‡à¦·à§à¦Ÿà¦¾')}
+                                                        {isPassed ? (language === 'en' ? 'Passed' : 'উত্তীর্ণ') : (language === 'en' ? 'Retry' : 'আবার চেষ্টা করুন')}
                                                     </div>
                                                     <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
                                                         {isPassed ? t.completed : t.failed}
@@ -763,7 +763,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                         </svg>
                     </div>
                     <h3 className="text-xl font-black text-white mb-2">{searchCount >= MAX_SEARCH_QUOTA ? t.searchExhausted : t.searchLimitTitle}</h3>
-                    <p className="text-white/60 text-sm mb-8">{searchCount >= MAX_SEARCH_QUOTA ? (language === 'en' ? 'Limit reached!' : 'à¦¨à¦¿à¦œà§‡à¦° à¦¬à§à¦¦à§à¦§à¦¿ à¦–à¦¾à¦Ÿà¦¾à¦¨!') : t.searchConfirm.replace('%s', searchCount)}</p>
+                    <p className="text-white/60 text-sm mb-8">{searchCount >= MAX_SEARCH_QUOTA ? (language === 'en' ? 'Limit reached!' : 'নিজের বুদ্ধি খাটান!') : t.searchConfirm.replace('%s', searchCount)}</p>
                     <div className="flex flex-col w-full gap-3">
                         {searchCount < MAX_SEARCH_QUOTA && (
                             <button onClick={confirmGoogleSearch} className="w-full py-4 rounded-2xl bg-blue-600 text-white font-black">
