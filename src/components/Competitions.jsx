@@ -531,10 +531,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             fetchLeaderboard(true);
             refreshProfile(user);
 
-            // Update last_active in profiles table to reflect recent activity
+            // Update updated_at in profiles table to reflect recent activity
             await supabase
                 .from('profiles')
-                .update({ last_active: now.toISOString() })
+                .update({ updated_at: now.toISOString() })
                 .eq('id', user.id);
 
         } catch (error) {

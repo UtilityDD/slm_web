@@ -210,7 +210,7 @@ const TrainingSubChapterCard = React.memo(({ subchapter, isUnlocked, isCompleted
     );
 });
 
-export default function Training({ language = 'en', user, onProgressUpdate, onOpenUserProgress, setCurrentView }) {
+export default function Training({ language = 'en', user, userProfile: profile, onProgressUpdate, onOpenUserProgress, setCurrentView }) {
     const [showOnboarding, setShowOnboarding] = useState(() => {
         const today = new Date().toDateString();
         const lastSeenDate = localStorage.getItem('lastOnboardingDate');
@@ -599,7 +599,8 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
             let localProgress = [];
             const saved = storageUtils.getItem(`training_progress_${user.id}`);
             if (saved) {
-                localProgress = JSON.parse(saved);
+                localProgress = (JSON.parse(saved) || [])
+                    .filter(id => id && typeof id === 'string' && !id.toUpperCase().includes('DEBUG') && !id.toUpperCase().includes('TEST'));
             }
 
             // 2. Load Remote
@@ -641,7 +642,8 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                     if (data.completed_lessons) {
                         // 3. Merge (Union)
                         const remoteProgress = Array.isArray(data.completed_lessons) ? data.completed_lessons : [];
-                        const merged = [...new Set([...localProgress, ...remoteProgress])];
+                        const merged = [...new Set([...localProgress, ...remoteProgress])]
+                            .filter(id => id && typeof id === 'string' && !id.toUpperCase().includes('DEBUG') && !id.toUpperCase().includes('TEST'));
 
                         setCompletedLessons(merged);
                         console.log(`📊 Total lessons after merge: ${merged.length}`);
@@ -1214,6 +1216,8 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
     };
 
     const finalizeLessonCompletion = async (lessonId) => {
+        const current = Array.isArray(completedLessons) ? completedLessons : [];
+        const updated = [...new Set([...current, lessonId])].filter(Boolean);
         const alreadyCompleted = completedLessons.includes(lessonId);
 
         if (!alreadyCompleted) {
@@ -1222,35 +1226,41 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
 
             if (user) {
                 try {
-                    await supabase.rpc('submit_quiz_result_v2', {
+                    const { error: rpcError } = await supabase.rpc('submit_quiz_result_v2', {
                         p_quiz_id: `lesson_bonus_${lessonId}`,
                         p_score: bonusPoints
                     });
+
+                    if (rpcError) {
+                        console.error('Error awarding lesson bonus:', rpcError);
+                        if (typeof showNotification === 'function') {
+                            showNotification(language === 'en' ? 'Error saving points' : 'পয়েন্ট সেভ করতে ত্রুটি', 'error');
+                        }
+                        return; // Prevent marking as complete if points failed
+                    }
 
                     // Force leaderboard and rank to refresh immediately 
                     cacheHelper.clear('leaderboard_top_10_v3');
                     cacheHelper.clear('leaderboard_full_v3');
                     cacheHelper.clear(`user_rank_${user.id}`);
+                    cacheHelper.clear(`profile_${user.id}`);
 
                     setRecentReward(bonusPoints);
                     // Clear reward message after 5 seconds
                     setTimeout(() => setRecentReward(null), 5000);
                 } catch (err) {
-                    console.error('Error awarding lesson bonus:', err);
+                    console.error('Critical error in point awarding:', err);
+                    return;
                 }
-            }
 
-            const updated = [...completedLessons, lessonId];
-            setCompletedLessons(updated);
-
-            if (user) {
+                setCompletedLessons(updated);
+                
                 storageUtils.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
 
                 // Sync to Supabase (Level + Detailed Progress)
                 const newLevel = calculateLevelFromProgress(updated, trainingChapters);
                 
                 // Fail-proof: Only update level if it's higher than what we currently have
-                // This prevents old/cached versions from downgrading the user's rank
                 const currentStoredLevel = profile?.training_level || 0;
                 const updatePayload = {
                     completed_lessons: updated
@@ -1260,12 +1270,19 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                     updatePayload.training_level = newLevel;
                 }
 
-                await supabase.from('profiles')
+                console.log('📝 Syncing progress to Supabase...', updatePayload);
+                const { error: updateError } = await supabase.from('profiles')
                     .update(updatePayload)
                     .eq('id', user.id);
+
+                if (updateError) {
+                    console.error('❌ Failed to sync progress to Supabase:', updateError);
+                } else {
+                    console.log('✅ Progress synced successfully!');
+                }
             }
             if (onProgressUpdate) {
-                onProgressUpdate(updated);
+                onProgressUpdate(updated, true); // Added true for forceRefresh
             }
         }
         setShowQuizModal(false);
@@ -1443,6 +1460,31 @@ export default function Training({ language = 'en', user, onProgressUpdate, onOp
                                             </svg>
                                         </button>
                                     )}
+
+                                    {/* Safety Hero Challenge Trigger - Temporarily Hidden 
+                                    <button
+                                        onClick={() => setCurrentView('safety-hero')}
+                                        style={{ display: 'none' }}
+                                        className="mx-auto mt-6 group relative max-w-sm w-full p-1 rounded-[2rem] bg-gradient-to-r from-orange-500 via-rose-500 to-orange-500 bg-[length:200%_auto] animate-gradient-x shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition-all animate-fade-in-up"
+                                        style={{ animationDelay: '100ms' }}
+                                    >
+                                        <div className="bg-white dark:bg-slate-900 rounded-[1.8rem] p-4 flex items-center gap-4">
+                                            <div className="w-14 h-14 bg-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-500/30 group-hover:rotate-12 transition-transform">
+                                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                            </div>
+                                            <div className="flex-1 text-left">
+                                                <h3 className={`text-base font-black text-slate-900 dark:text-white leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    {language === 'en' ? 'Safety Hero Challenge' : 'সুরক্ষা হিরো চ্যালেঞ্জ'}
+                                                </h3>
+                                                <p className={`text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-0.5 leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    {language === 'en' ? 'Share your PPE selfie & join the Hero Wall!' : 'পিপিই সেলফি শেয়ার করুন এবং হিরো ওয়াল-এ যোগ দিন!'}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center justify-center bg-orange-500 text-white w-10 h-10 rounded-2xl shadow-lg shadow-orange-500/20">
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4"/></svg>
+                                            </div>
+                                        </div>
+                                    </button>
 
                                     {/* Action Buttons Group */}
                                     <div className="flex items-center justify-center gap-3 mt-8 animate-fade-in-up" style={{ animationDelay: '200ms' }}>

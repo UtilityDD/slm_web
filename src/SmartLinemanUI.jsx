@@ -34,6 +34,7 @@ const MyProgress = lazy(() => import("./components/MyProgress"));
 const AwarenessStories = lazy(() => import("./components/safety/AwarenessStories"));
 const VideoGuide = lazy(() => import("./components/safety/VideoGuide"));
 const SafetyLibrary = lazy(() => import("./components/safety/SafetyLibrary"));
+const SafetyHero = lazy(() => import("./components/safety/SafetyHero"));
 
 // Smooth transition pre-loader
 const preloadComponent = (factory) => {
@@ -260,14 +261,14 @@ export default function SmartLinemanUI() {
     try {
       await supabase
         .from('profiles')
-        .update({ last_active: new Date().toISOString() })
+        .update({ updated_at: new Date().toISOString() })
         .eq('id', user.id);
     } catch (error) {
       console.error('Error updating last active:', error);
     }
   };
 
-  const fetchProfile = async (userToFetch) => {
+  const fetchProfile = async (userToFetch, forceRefresh = false) => {
     const targetUser = userToFetch || user;
     if (!targetUser) return;
 
@@ -277,14 +278,14 @@ export default function SmartLinemanUI() {
         async () => {
           const { data, error } = await supabase
             .from('profiles')
-            .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id, last_active')
+            .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id, updated_at')
             .eq('id', targetUser.id)
             .single();
 
           if (error) throw error;
           return data;
         },
-        { ttl: 10, swr: true, forceRefresh: false }
+        { ttl: 10, swr: true, forceRefresh: forceRefresh }
       );
 
       if (profileData) {
@@ -888,7 +889,19 @@ export default function SmartLinemanUI() {
         case 'my_tools':
           return <MyTools language={language} user={user} userProfile={userProfile} />;
         case 'training':
-          return <Training language={language} user={user} onProgressUpdate={(newProgress) => { setCompletedLessons(newProgress); setUserProfile(prev => prev ? { ...prev, completed_lessons: newProgress, training_level: Math.max(1, calculateLevelFromProgress(newProgress)) } : null); fetchProfile(user); }} onOpenUserProgress={() => { setSelectedProgressUserId(user?.id || null); setCurrentView('my-progress'); }} setCurrentView={setCurrentView} />;
+          return <Training 
+            language={language} 
+            user={user} 
+            userProfile={userProfile}
+            onProgressUpdate={(newProgress, forceRefresh = false) => { 
+              setCompletedLessons(newProgress); 
+              setUserProfile(prev => prev ? { ...prev, completed_lessons: newProgress, training_level: Math.max(1, calculateLevelFromProgress(newProgress)) } : null); 
+              // Small delay to allow DB update to propagate
+              setTimeout(() => fetchProfile(user, forceRefresh), 1000); 
+            }} 
+            onOpenUserProgress={() => { setSelectedProgressUserId(user?.id || null); setCurrentView('my-progress'); }} 
+            setCurrentView={setCurrentView} 
+          />;
         case 'admin':
           if (!['admin', 'safety mitra', 'lineman'].includes(userProfile?.role)) { setCurrentView('home'); return null; }
           return <Admin language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;
@@ -913,6 +926,8 @@ export default function SmartLinemanUI() {
           return <VideoGuide language={language} setCurrentView={setCurrentView} />;
         case 'safety-library':
           return <SafetyLibrary language={language} setCurrentView={setCurrentView} />;
+        /* case 'safety-hero':
+          return <SafetyHero language={language} user={user} onBack={() => setCurrentView('home')} />; */
         case 'home':
         default:
           return <Home setCurrentView={setCurrentView} language={language} t={t} user={user} userProfile={userProfile} refreshProfile={fetchProfile} />;
