@@ -1439,32 +1439,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                         {language === 'en' ? 'Master your safety skills' : 'আপনার পেশাগত জ্ঞান বাড়ান'}
                                     </p>
 
-                                    {/* Minimal Leaderboard Stats */}
-                                    {userRank && (
-                                        <button
-                                            onClick={() => setCurrentView('leaderboard')}
-                                            className="mx-auto mt-6 px-6 py-2.5 bg-white/70 dark:bg-slate-800/70 backdrop-blur-2xl rounded-full border border-slate-200/60 dark:border-slate-700/60 shadow-sm hover:shadow-lg hover:bg-white/90 dark:hover:bg-slate-800/90 hover:scale-105 active:scale-95 transition-all flex items-center justify-between gap-5 text-slate-700 dark:text-slate-300 animate-fade-in-up"
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xl inline-block drop-shadow-sm">🏆</span>
-                                                <div className="flex flex-col items-start translate-y-[1px]">
-                                                    <span className="text-[10px] uppercase tracking-widest text-slate-400 font-black leading-none mb-0.5">{language === 'en' ? 'Global Rank' : 'অবস্থান'}</span>
-                                                    <span className="text-base font-black leading-none">#{(userRank.rank || 0).toLocaleString('en-US')}</span>
-                                                </div>
-                                            </div>
-                                            <div className="w-px h-8 bg-slate-200 dark:bg-slate-700"></div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xl text-orange-500 inline-block drop-shadow-sm">⚡</span>
-                                                <div className="flex flex-col items-start translate-y-[1px]">
-                                                    <span className="text-[10px] uppercase tracking-widest text-slate-400 font-black leading-none mb-0.5">{language === 'en' ? 'Total Score' : 'মোট স্কোর'}</span>
-                                                    <span className="text-base font-black leading-none">{(userRank.score || 0).toLocaleString('en-US')}</span>
-                                                </div>
-                                            </div>
-                                            <svg className="w-4 h-4 ml-1 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </button>
-                                    )}
+
 
                                     {/* Safety Hero Challenge Trigger - Temporarily Hidden 
                                     <button
@@ -1685,6 +1660,35 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                                     {item.isCompleted && (
                                                         <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white shadow-lg text-white">
                                                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg>
+                                                        </div>
+                                                    )}
+                                                    
+                                                    {/* Floating Profile & Score Bubble for Active Lesson */}
+                                                    {isNext && (
+                                                        <div 
+                                                            className={`absolute top-1/2 -translate-y-1/2 ${xPos > 50 ? 'right-[120%] mr-2' : 'left-[120%] ml-2'} w-max flex items-center gap-2.5 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl px-3 py-2 rounded-2xl shadow-xl shadow-orange-500/15 border border-orange-500/30 animate-in fade-in zoom-in-95 duration-500 pointer-events-none z-50`}
+                                                        >
+                                                            <div className="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 shrink-0 overflow-hidden shadow-inner border-2 border-white dark:border-slate-600">
+                                                                {profile?.avatar_url ? (
+                                                                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex flex-col items-start pr-1">
+                                                                <span className={`text-[9px] uppercase tracking-widest text-orange-600 dark:text-orange-400 font-black leading-none mb-1 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                    {language === 'en' ? 'Current Score' : 'বর্তমান স্কোর'}
+                                                                </span>
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <span className="text-sm drop-shadow-sm leading-none">🏆</span>
+                                                                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 leading-none tracking-tight">
+                                                                        {(userRank?.score || profile?.points || 0).toLocaleString('en-US')}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            {/* Arrow Pointer */}
+                                                            <div className={`absolute top-1/2 -translate-y-1/2 ${xPos > 50 ? '-right-[5.5px] border-y-[6px] border-y-transparent border-l-[6px] border-l-orange-500/30' : '-left-[5.5px] border-y-[6px] border-y-transparent border-r-[6px] border-r-orange-500/30'}`}></div>
+                                                            <div className={`absolute top-1/2 -translate-y-1/2 ${xPos > 50 ? '-right-[4px] border-y-[5px] border-y-transparent border-l-[5px] border-l-white dark:border-l-slate-800' : '-left-[4px] border-y-[5px] border-y-transparent border-r-[5px] border-r-white dark:border-r-slate-800'}`}></div>
                                                         </div>
                                                     )}
                                                 </div>
