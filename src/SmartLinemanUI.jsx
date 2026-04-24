@@ -101,7 +101,7 @@ export default function SmartLinemanUI() {
     }
 
     // Return hash-based route or default to home
-    return hash || 'home';
+    return hash || 'training';
   };
 
   const [currentView, setCurrentView] = useState(getInitialView);

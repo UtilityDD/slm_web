@@ -3,17 +3,8 @@ import React from 'react';
 const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }) => {
   const navItems = [
     {
-      id: 'home',
-      label: language === 'en' ? 'Home' : 'হোম',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-        </svg>
-      )
-    },
-    {
       id: 'training',
-      label: language === 'en' ? 'Training' : 'ট্রেনিং',
+      label: language === 'en' ? 'Training' : 'প্রশিক্ষণ',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -40,10 +31,11 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
     },
     {
       id: 'my-progress',
-      label: language === 'en' ? 'Profile' : 'প্রোফাইল',
+      label: language === 'en' ? 'Certificate' : 'সার্টিফিকেট',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a.75.75 0 00-1.185.38L4.5 12.5m11.665-7.803a.75.75 0 011.185.38L19.5 12.5M12 18.75a6.75 6.75 0 116.75-6.75A6.75 6.75 0 0112 18.75z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 12.75l2.25 2.25 4.5-4.5" />
         </svg>
       )
     },
@@ -62,13 +54,12 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
     <nav className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-[100] md:hidden pb-safe-area">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
         {navItems.map((item) => {
-          const isActive = currentView === item.id || (item.id === 'safety-library' && ['safety-library', 'sops', 'my_ppe', 'my_tools'].includes(currentView));
+          const isActive = currentView === item.id || (item.id === 'safety-library' && ['safety-library', 'sops', 'my_ppe', 'my_tools'].includes(currentView)) || (item.id === 'training' && currentView === 'home');
           
           return (
             <button
               key={item.id}
               onClick={() => {
-                // Add subtle haptic feedback if supported
                 if (navigator.vibrate) navigator.vibrate(5);
                 if (item.id === 'menu') {
                   if (onMenuClick) onMenuClick();
@@ -80,7 +71,6 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
                 isActive ? 'text-orange-500' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
               }`}
             >
-              {/* Active Indicator Background */}
               {isActive && (
                 <span className="absolute top-2 w-12 h-8 bg-orange-500/10 dark:bg-orange-500/20 rounded-full animate-scale-in -z-10"></span>
               )}
@@ -95,7 +85,6 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
                 {item.label}
               </span>
 
-              {/* Dot indicator for active state */}
               {isActive && (
                 <span className="absolute bottom-1.5 w-1 h-1 bg-orange-500 rounded-full"></span>
               )}
