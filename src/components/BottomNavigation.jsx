@@ -21,7 +21,7 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
       )
     },
     {
-      id: 'safety',
+      id: 'safety-library',
       label: language === 'en' ? 'Safety' : 'সুরক্ষা',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -39,7 +39,7 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
       )
     },
     {
-      id: 'progress',
+      id: 'my-progress',
       label: language === 'en' ? 'Profile' : 'প্রোফাইল',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -62,7 +62,7 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
     <nav className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-[100] md:hidden pb-safe-area">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
         {navItems.map((item) => {
-          const isActive = currentView === item.id || (item.id === 'safety' && ['safety', 'sops', 'my-ppe', 'my-tools'].includes(currentView));
+          const isActive = currentView === item.id || (item.id === 'safety-library' && ['safety-library', 'sops', 'my_ppe', 'my_tools'].includes(currentView));
           
           return (
             <button
