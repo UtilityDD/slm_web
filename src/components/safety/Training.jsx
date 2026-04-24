@@ -2267,6 +2267,31 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                     </div>
                                 </div>
                             </div>
+                            {/* Unified Side Navigation Arrows for Mobile & Desktop */}
+                            <div className="pointer-events-none fixed inset-0 z-[110] flex items-center justify-between px-2 sm:px-8">
+                                <div className="pointer-events-auto">
+                                    {!isFirstSlide && (
+                                        <button
+                                            onClick={prevSlide}
+                                            className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-slate-500 dark:text-slate-300 hover:text-orange-500 hover:scale-110 active:scale-75 transition-all shadow-xl"
+                                            title="Previous"
+                                        >
+                                            <svg className="w-6 h-6 sm:w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="pointer-events-auto">
+                                    {!isLastSlide && (
+                                        <button
+                                            onClick={nextSlide}
+                                            className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-slate-500 dark:text-slate-300 hover:text-orange-500 hover:scale-110 active:scale-75 transition-all shadow-xl"
+                                            title="Next"
+                                        >
+                                            <svg className="w-6 h-6 sm:w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
 
                             {/* Slide Content Area */}
                             {(() => {
@@ -2279,27 +2304,6 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                         onTouchEnd={handleReaderTouchEnd}
                                     >
                                         <div key={activeSectionIndex} className="max-w-4xl mx-auto px-6 sm:px-10 md:px-14 py-10 sm:py-14 pb-20 sm:pb-24 animate-fade-in-up relative">
-                                            {/* Unified Side Navigation Arrows for Mobile & Desktop */}
-                                            <div className="contents">
-                                                {!isFirstSlide && (
-                                                    <button
-                                                        onClick={prevSlide}
-                                                        className="fixed left-2 sm:left-8 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-slate-500 dark:text-slate-300 hover:text-orange-500 hover:scale-110 active:scale-75 transition-all z-[110] shadow-xl"
-                                                        title="Previous"
-                                                    >
-                                                        <svg className="w-6 h-6 sm:w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
-                                                    </button>
-                                                )}
-                                                {!isLastSlide && (
-                                                    <button
-                                                        onClick={nextSlide}
-                                                        className="fixed right-2 sm:right-8 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-slate-500 dark:text-slate-300 hover:text-orange-500 hover:scale-110 active:scale-75 transition-all z-[110] shadow-xl"
-                                                        title="Next"
-                                                    >
-                                                        <svg className="w-6 h-6 sm:w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
-                                                    </button>
-                                                )}
-                                            </div>
                                             {activeSlide?.type === 'hero' && (
                                                 <div className="flex flex-col items-center justify-center pt-6 pb-20 space-y-12">
                                                     <div className="w-full space-y-8 text-center">
