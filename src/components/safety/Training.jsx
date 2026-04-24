@@ -1798,29 +1798,31 @@ export default function Training({ language = 'en', user, userProfile: profile, 
 
                     <div className="relative z-10 flex h-full flex-col safe-area-inset-top safe-area-inset-bottom">
                         <header className="sticky top-0 z-20 border-b border-black/5 dark:border-white/5 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl">
-                            <div className="flex items-center justify-between gap-4 px-4 sm:px-6 py-3 sm:py-4">
-                                <button
-                                    onClick={() => {
-                                        stopChapterAudio();
-                                        setSelectedLesson(null);
-                                        setSelectedChapter(null);
-                                    }}
-                                    className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                    <span className="hidden sm:inline">{language === 'en' ? 'Back' : 'ফিরে যান'}</span>
-                                </button>
+                            <div className="relative flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
+                                <div className="relative z-10">
+                                    <button
+                                        onClick={() => {
+                                            stopChapterAudio();
+                                            setSelectedLesson(null);
+                                            setSelectedChapter(null);
+                                        }}
+                                        className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                        <span className="hidden sm:inline">{language === 'en' ? 'Back' : 'ফিরে যান'}</span>
+                                    </button>
+                                </div>
 
-                                <div className="min-w-0 flex-1 text-center px-2">
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-16 sm:px-24">
                                     <h1 className={`truncate text-base sm:text-lg font-black text-slate-900 dark:text-white ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {selectedLesson.chapter?.title || selectedLesson.level_title}
                                     </h1>
                                 </div>
 
-                                <div className="w-[88px] sm:w-[96px] flex justify-end">
-                                    {/* Empty div to balance the flex layout and keep title centered */}
+                                <div className="relative z-10 w-10">
+                                    {/* Spacer for right side if needed, otherwise empty */}
                                 </div>
                             </div>
                         </header>
