@@ -2518,7 +2518,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                             })()}
 
                             {/* Minimal Paper-like Footer Navigation */}
-                            <div className="shrink-0 border-t border-black/5 dark:border-white/5 bg-white/70 dark:bg-black/20 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+                            <div className="shrink-0 border-t border-black/5 dark:border-white/5 bg-white/70 dark:bg-black/20 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
                                 <div className="max-w-5xl mx-auto w-full flex items-center justify-between">
                                     <button
                                         onClick={prevSlide}
