@@ -1010,6 +1010,7 @@ export default function SmartLinemanUI() {
               onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
               onToggleLanguageModal={() => setShowLanguageModal(true)}
               onToggleNotifications={() => setCurrentView('notifications')}
+              onLogout={() => setShowLogoutModal(true)}
             />
           )}
 

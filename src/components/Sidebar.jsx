@@ -13,7 +13,8 @@ export default function Sidebar({
   onToggleSidebar,
   onToggleLanguageModal,
   onToggleNotifications,
-  unreadNotificationsCount
+  unreadNotificationsCount,
+  onLogout
 }) {
   const [currentTab, setCurrentTab] = useState(null);
   const [isMoreExpanded, setIsMoreExpanded] = useState(false);
@@ -222,6 +223,19 @@ export default function Sidebar({
             <span className="text-xl shrink-0">🌐</span>
             <span className="text-sm font-medium">
               {language === 'en' ? 'Language' : 'ভাষা'}
+            </span>
+          </button>
+
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all hover:translate-x-1 border border-transparent hover:border-red-100 dark:hover:border-red-900/50 text-left"
+            title="Logout"
+          >
+            <span className="text-xl shrink-0">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+            </span>
+            <span className="text-sm font-bold">
+              {language === 'en' ? 'Logout' : 'লগ আউট'}
             </span>
           </button>
 
