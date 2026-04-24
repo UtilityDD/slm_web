@@ -21,6 +21,10 @@ export const useTextToSpeech = (language = 'bn') => {
     const [isPaused, setIsPaused] = useState(false);
     const [activeId, setActiveId] = useState(null);
     const [availableVoices, setAvailableVoices] = useState([]); // Web Only
+    const [usePremium, setUsePremium] = useState(true); // Default to premium for pro experience
+    
+    // Replace with your actual Supabase project URL once deployed
+    const PREMIUM_TTS_URL = "https://your-project-ref.supabase.co/functions/v1/edge-tts";
 
     // Check Platform
     const isNative = Capacitor.isNativePlatform();
@@ -148,6 +152,13 @@ export const useTextToSpeech = (language = 'bn') => {
                 await TextToSpeech.stop();
             } else {
                 window.speechSynthesis.cancel();
+            }
+            
+            // Handle Premium Audio stop
+            if (currentUtterance.current instanceof Audio) {
+                currentUtterance.current.pause();
+                currentUtterance.current.src = "";
+                currentUtterance.current = null;
             }
         } catch (err) {
             console.warn("TTS Stop failed:", err);
@@ -285,6 +296,49 @@ export const useTextToSpeech = (language = 'bn') => {
         }
 
         try {
+            // Priority 0: Premium Neural TTS (Microsoft Edge Proxy)
+            if (usePremium && PREMIUM_TTS_URL && !PREMIUM_TTS_URL.includes('your-project-ref')) {
+                try {
+                    const cleaned = cleanText(text);
+                    if (!cleaned) return;
+
+                    setActiveId(id);
+                    setIsPlaying(true);
+                    setIsPaused(false);
+
+                    const response = await fetch(PREMIUM_TTS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            text: cleaned,
+                            lang: language === 'bn' ? 'bn-IN' : 'en-US',
+                            voice: language === 'bn' ? 'bn-IN-NabayotiNeural' : 'en-US-GuyNeural'
+                        })
+                    });
+
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = URL.createObjectURL(blob);
+                        
+                        if (currentUtterance.current instanceof Audio) {
+                            currentUtterance.current.pause();
+                        }
+
+                        const audio = new Audio(url);
+                        currentUtterance.current = audio;
+                        
+                        audio.onended = () => {
+                            setIsPlaying(false);
+                            setActiveId(null);
+                        };
+
+                        audio.play();
+                        return;
+                    }
+                } catch (e) {
+                    console.warn("Premium TTS failed, falling back to system TTS:", e);
+                }
+            }
+
             // Stop any previous speech
             await stop();
             stopSignal.current = false; // Reset signal
