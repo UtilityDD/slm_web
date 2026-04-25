@@ -363,7 +363,7 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
             </header>
 
             {/* Content Area */}
-            <main className="flex-1 overflow-y-auto p-4 sm:p-8 flex flex-col relative">
+            <main className="flex-1 overflow-y-auto p-4 sm:p-8 flex flex-col justify-center relative">
                 
                 {viewMode === 'history' ? (
                     <div className="space-y-4 animate-slide-up">
@@ -443,7 +443,7 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
                         )}
 
                         {currentStep.id === 'pre_checklist' && (
-                            <div className="animate-fadeIn">
+                            <div className="flex-1 flex flex-col justify-center animate-fadeIn">
                                 <div className="grid grid-cols-2 gap-3 mb-10">
                                     {PRE_CHECKLIST_ITEMS.map((item) => (
                                         <button
@@ -465,7 +465,7 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
 
                         {/* Isolation Checklist (Step 4) */}
                         {currentStep.id === 'isolation' && (
-                            <div className="grid grid-cols-1 gap-3 mb-8 animate-slide-up">
+                            <div className="flex-1 flex flex-col justify-center grid grid-cols-1 gap-3 mb-8 animate-slide-up">
                                 {ISOLATION_CHECKLIST_ITEMS.map(item => (
                                     <button
                                         key={item.id}
@@ -504,7 +504,7 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
 
                         {/* Specific Step Content: Checklist (Step 5) */}
                         {currentStep.id === 'final_check' && (
-                            <div className="grid grid-cols-1 gap-3 mb-8 animate-slide-up">
+                            <div className="flex-1 flex flex-col justify-center grid grid-cols-1 gap-3 mb-8 animate-slide-up">
                                 {POST_CHECKLIST_ITEMS.map(item => (
                                     <button
                                         key={item.id}
