@@ -1468,20 +1468,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
 
                                     {/* Action Buttons Group */}
                                     <div className="flex items-center justify-center gap-3 mt-8 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                                        {/* Minimal Progress Button */}
-                                        <button
-                                            onClick={() => {
-                                                if (onOpenUserProgress) {
-                                                    onOpenUserProgress();
-                                                    return;
-                                                }
-                                                setCurrentView('my-progress');
-                                            }}
-                                            className="px-4 py-2 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-bold text-[11px] uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 border border-slate-200 dark:border-slate-700 active:scale-95"
-                                        >
-                                            <span>📊</span>
-                                            {language === 'en' ? 'Progress' : 'প্রোগ্রেস'}
-                                        </button>
+
 
                                         {/* Graceful Lessons Index Button */}
                                         <button
@@ -1675,17 +1662,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                                                 )}
                                                             </div>
-                                                            <div className="flex flex-col items-start pr-1">
-                                                                <span className={`text-[9px] uppercase tracking-widest text-orange-600 dark:text-orange-400 font-black leading-none mb-1 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                    {language === 'en' ? 'Current Score' : 'বর্তমান স্কোর'}
-                                                                </span>
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <span className="text-sm drop-shadow-sm leading-none">🏆</span>
-                                                                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 leading-none tracking-tight">
-                                                                        {(userRank?.score || profile?.points || 0).toLocaleString('en-US')}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
+
                                                             {/* Arrow Pointer */}
                                                             <div className={`absolute top-1/2 -translate-y-1/2 ${xPos > 50 ? '-right-[5.5px] border-y-[6px] border-y-transparent border-l-[6px] border-l-orange-500/30' : '-left-[5.5px] border-y-[6px] border-y-transparent border-r-[6px] border-r-orange-500/30'}`}></div>
                                                             <div className={`absolute top-1/2 -translate-y-1/2 ${xPos > 50 ? '-right-[4px] border-y-[5px] border-y-transparent border-l-[5px] border-l-white dark:border-l-slate-800' : '-left-[4px] border-y-[5px] border-y-transparent border-r-[5px] border-r-white dark:border-r-slate-800'}`}></div>
