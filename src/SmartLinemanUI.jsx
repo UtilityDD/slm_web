@@ -1090,7 +1090,7 @@ export default function SmartLinemanUI() {
                 </div>
               </div>
             )}
-            <div className="fixed inset-0 overflow-hidden pointer-events-none">
+            <div className={`fixed inset-0 overflow-hidden pointer-events-none ${currentView === 'sops' ? 'hidden' : ''}`}>
               <div className="hidden sm:block absolute top-0 right-0 w-[42vw] h-[42vw] bg-orange-100/20 dark:bg-orange-900/10 rounded-full blur-3xl translate-x-1/4 -translate-y-1/4"></div>
               <div className="absolute bottom-0 left-0 w-[40vw] h-[40vw] bg-cyan-100/40 dark:bg-cyan-900/20 rounded-full blur-3xl -translate-x-1/4 translate-y-1/4"></div>
             </div>
