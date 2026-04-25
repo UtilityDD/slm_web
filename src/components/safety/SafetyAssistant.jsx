@@ -340,7 +340,7 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
     };
 
     return (
-        <div className="fixed inset-0 z-[9999] flex flex-col font-sans bg-white dark:bg-slate-950 overflow-hidden text-slate-900 dark:text-slate-100">
+        <div className="flex-1 flex flex-col min-h-0 font-sans bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100">
             {/* Header - Colored & Vibrant with Safe Area Support */}
             <header className={`pt-[env(safe-area-inset-top)] pb-6 px-6 bg-gradient-to-r ${currentStep.bg} text-white shadow-lg shrink-0 transition-all duration-500`}>
                 <div className="flex justify-between items-center mt-2">

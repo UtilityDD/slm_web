@@ -4,12 +4,10 @@ import SafetyAssistant from './SafetyAssistant';
 
 const SOPs = ({ language, setCurrentView }) => {
     return (
-        <div className="fixed inset-0 z-[9999]">
-            <SafetyAssistant 
-                language={language} 
-                onClose={() => setCurrentView ? setCurrentView('home') : window.location.reload()} 
-            />
-        </div>
+        <SafetyAssistant 
+            language={language} 
+            onClose={() => setCurrentView ? setCurrentView('home') : window.location.reload()} 
+        />
     );
 };
 
