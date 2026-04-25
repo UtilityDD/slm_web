@@ -173,6 +173,20 @@ export default function SafetyLibrary({ language, setCurrentView }) {
     const [selectedItem, setSelectedItem] = useState(null);
     const [categories, setCategories] = useState([]);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+    const tabsRef = useRef(null);
+
+    // Scroll Hint Effect
+    useEffect(() => {
+        if (categories.length > 0 && tabsRef.current) {
+            const container = tabsRef.current;
+            setTimeout(() => {
+                container.scrollTo({ left: 100, behavior: 'smooth' });
+                setTimeout(() => {
+                    container.scrollTo({ left: 0, behavior: 'smooth' });
+                }, 800);
+            }, 500);
+        }
+    }, [categories.length]);
 
     const getCategoryMetadata = (catId) => {
         const metadata = {
@@ -308,8 +322,8 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                         )}
                     </div>
 
-                    {/* Compact Categories */}
-                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                    {/* Compact Categories with Scroll Hint Ref */}
+                    <div ref={tabsRef} className="flex gap-2 overflow-x-auto no-scrollbar pb-1 scroll-smooth">
                         {categories.map((cat) => (
                             <button
                                 key={cat.id}
