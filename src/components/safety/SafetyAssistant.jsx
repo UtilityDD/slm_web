@@ -363,7 +363,8 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
             </header>
 
             {/* Content Area */}
-            <main className="flex-1 overflow-y-auto p-4 sm:p-8 flex flex-col justify-center relative">
+            <main className="flex-1 overflow-y-auto p-4 sm:p-8 relative">
+                <div className="min-h-full flex flex-col justify-center">
                 
                 {viewMode === 'history' ? (
                     <div className="space-y-4 animate-slide-up">
@@ -538,8 +539,8 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
                                 </div>
                             </div>
                         )}
-                    </div>
-                )}
+                    )}
+                </div>
             </main>
 
             {/* Nav Footer */}
