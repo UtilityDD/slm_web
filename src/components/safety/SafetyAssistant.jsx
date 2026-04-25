@@ -340,7 +340,7 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
     };
 
     return (
-        <div className="flex-1 flex flex-col min-h-0 font-sans bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+        <div className="flex-1 flex flex-col min-h-0 font-sans bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
             {/* Header - Colored & Vibrant with Safe Area Support */}
             <header className={`pt-[env(safe-area-inset-top)] pb-6 px-6 bg-gradient-to-r ${currentStep.bg} text-white shadow-lg shrink-0 transition-all duration-500`}>
                 <div className="flex justify-between items-center mt-2">
@@ -452,7 +452,7 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
                                                 toggleCheck(item.id);
                                             }}
                                             className={`p-5 h-36 rounded-[2.5rem] border-2 transition-all flex flex-col items-center justify-center gap-2 ${
-                                                checklist[item.id] ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
+                                                checklist[item.id] ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800'
                                             }`}
                                         >
                                             <span className="text-4xl">{item.icon}</span>
@@ -544,7 +544,7 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
 
             {/* Nav Footer */}
             {viewMode === 'wizard' && currentStep.id !== 'start' && (
-                <footer className="p-6 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+                <footer className="p-6 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
                     <div className="flex gap-4">
                         <button 
                             onClick={handleBack}
