@@ -169,7 +169,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeCategory, setActiveCategory] = useState('');
+    const [activeCategory, setActiveCategory] = useState('PPE');
     const [selectedItem, setSelectedItem] = useState(null);
     const [categories, setCategories] = useState([]);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
