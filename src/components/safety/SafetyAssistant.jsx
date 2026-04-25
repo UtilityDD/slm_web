@@ -544,7 +544,7 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
 
             {/* Nav Footer */}
             {viewMode === 'wizard' && currentStep.id !== 'start' && (
-                <footer className="p-6 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+                <footer className="p-6 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
                     <div className="flex gap-4">
                         <button 
                             onClick={handleBack}
