@@ -257,7 +257,7 @@ export default function VideoGuide({ language, setCurrentView }) {
                         </div>
 
                         {/* Metadata Section - Optimized for Portrait reading */}
-                        <div className="flex-1 overflow-y-auto p-6 sm:p-8 bg-gradient-to-b from-slate-900 to-black text-white custom-scrollbar">
+                        <div className="flex-1 overflow-y-auto p-6 sm:p-8 pb-24 sm:pb-12 bg-gradient-to-b from-slate-900 to-black text-white custom-scrollbar">
                             <div className="max-w-3xl mx-auto space-y-4">
                                 <div className="space-y-2">
                                     <span className="hidden sm:inline-block px-3 py-1 bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[10px] font-black uppercase tracking-[0.2em] rounded-full mb-2">

@@ -412,7 +412,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                     </div>
                                 </div>
 
-                                <div className="p-6 sm:p-10 space-y-6">
+                                <div className="p-6 sm:p-10 pb-32 sm:pb-16 space-y-6">
                                     {/* Clean Dedicated Header Section */}
                                     <div className="space-y-3 pb-6 border-b border-slate-100 dark:border-slate-800">
                                         <h3 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">
