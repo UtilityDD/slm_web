@@ -32,6 +32,8 @@ export const leaderboardService = {
 
     /**
      * Fetch Monthly Leaderboard for current month
+     * NOTE: reading_points are stored in profiles but not timestamped in quiz_attempts.
+     * Fix: fetch profiles.created_at and add reading_points for users who joined this month.
      */
     fetchMonthly: async (forceRefresh = false) => {
         const now = new Date();
@@ -44,20 +46,41 @@ export const leaderboardService = {
             async () => {
                 const { data, error } = await supabase
                     .from('monthly_leaderboard_view')
-                    .select('*, profiles(reading_points, district)')
+                    .select('*, profiles(reading_points, district, created_at)')
                     .eq('month_num', m)
                     .eq('year_num', y)
                     .order('points', { ascending: false })
                     .limit(50);
 
                 if (error) throw error;
-                
-                // Flatten the nested profiles data
-                return data.map(item => ({
-                    ...item,
-                    all_time_reading_points: item.profiles?.reading_points || 0,
-                    district: item.profiles?.district || null
-                }));
+
+                return data.map(item => {
+                    const profileReadingPoints = item.profiles?.reading_points || 0;
+                    const profileCreatedAt = item.profiles?.created_at;
+
+                    // Check if user joined in this same month/year
+                    // If so, ALL their reading_points are from this month → add them
+                    let joinedThisMonth = false;
+                    if (profileCreatedAt) {
+                        const joinDate = new Date(profileCreatedAt);
+                        joinedThisMonth =
+                            joinDate.getMonth() + 1 === m &&
+                            joinDate.getFullYear() === y;
+                    }
+
+                    const monthlyReadingPoints = joinedThisMonth
+                        ? profileReadingPoints
+                        : (item.reading_points || 0); // fallback to lesson_bonus% from view
+
+                    return {
+                        ...item,
+                        // Adjusted total = quiz points from view + monthly reading points
+                        points: (item.quiz_points || 0) + monthlyReadingPoints,
+                        reading_points: monthlyReadingPoints,
+                        all_time_reading_points: profileReadingPoints,
+                        district: item.profiles?.district || null
+                    };
+                }).sort((a, b) => b.points - a.points); // re-sort after adjustment
             },
             { ttl: 5, swr: true, forceRefresh }
         );

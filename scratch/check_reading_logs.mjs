@@ -22,33 +22,26 @@ function loadEnv(filePath) {
 const env = loadEnv(envPath);
 const supabase = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY);
 
-async function checkPenalties() {
+async function checkReadingLogs() {
     const userId = 'ef744c69-650b-4735-ba0f-1c67377087c4';
 
-    const { data: attempts, error } = await supabase
-        .from('quiz_attempts')
+    console.log('--- reading_logs ---');
+    const { data: logs, error: logsError } = await supabase
+        .from('reading_logs')
         .select('*')
         .eq('user_id', userId)
-        .order('created_at', { ascending: true });
+        .limit(10);
+    if (logsError) console.error(logsError);
+    else console.log(JSON.stringify(logs, null, 2));
 
-    if (error) {
-        console.error(error);
-        return;
-    }
-
-    console.log(`--- ATTEMPTS FOR ${userId} ---`);
-    let positive = 0;
-    let negative = 0;
-    
-    attempts.forEach(a => {
-        if (a.score > 0) positive += a.score;
-        else if (a.score < 0) negative += a.score;
-        console.log(`- ${a.quiz_id}: ${a.score} (${a.created_at})`);
-    });
-
-    console.log(`\nPositive Sum: ${positive}`);
-    console.log(`Negative Sum (Penalties): ${negative}`);
-    console.log(`Net Quiz Score: ${positive + negative}`);
+    console.log('\n--- reading_history ---');
+    const { data: hist, error: histError } = await supabase
+        .from('reading_history')
+        .select('*')
+        .eq('user_id', userId)
+        .limit(10);
+    if (histError) console.error(histError);
+    else console.log(JSON.stringify(hist, null, 2));
 }
 
-checkPenalties();
+checkReadingLogs();
