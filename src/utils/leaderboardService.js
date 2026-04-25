@@ -64,17 +64,20 @@ export const leaderboardService = {
     },
 
     /**
-     * Fetch Hall of Fame Gallery (Last 12 months toppers)
+     * Fetch Hall of Fame Gallery — only from March 2026 onwards
      */
     fetchHallOfFame: async (forceRefresh = false) => {
-        const cacheKey = 'hall_of_fame_gallery_v2';
+        const cacheKey = 'hall_of_fame_gallery_v3';
         return requestManager.fetch(
             cacheKey,
             async () => {
                 const now = new Date();
+
+                // Only fetch from March 2026 onwards
                 const { data, error } = await supabase
                     .from('monthly_leaderboard_view')
                     .select('*, profiles(slm_id, reading_points, district)')
+                    .or('year_num.gt.2026,and(year_num.eq.2026,month_num.gte.3)')
                     .order('year_num', { ascending: false })
                     .order('month_num', { ascending: false })
                     .order('points', { ascending: false });
@@ -92,6 +95,10 @@ export const leaderboardService = {
 
                 const grouped = {};
                 processedData.forEach(row => {
+                    // Double-check: skip anything before March 2026
+                    if (row.year_num < 2026) return;
+                    if (row.year_num === 2026 && row.month_num < 3) return;
+
                     const key = `${row.year_num}-${row.month_num}`;
                     if (!grouped[key]) grouped[key] = [];
                     if (grouped[key].length < 3) {
@@ -116,3 +123,4 @@ export const leaderboardService = {
         );
     }
 };
+
