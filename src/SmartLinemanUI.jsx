@@ -632,6 +632,13 @@ export default function SmartLinemanUI() {
   // Scroll to top when view changes and sync with URL hash
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Clear selected user ID when navigating away from progress view
+    // This ensures clicking 'My Progress' from navigation always shows logged-in user
+    if (currentView !== 'my-progress') {
+      setSelectedProgressUserId(null);
+    }
+
     if (currentView === 'home') {
       window.history.replaceState(null, '', window.location.pathname);
     } else {
@@ -1153,7 +1160,7 @@ export default function SmartLinemanUI() {
             )}
 
             {showLanguageModal && (
-              <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+              <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
                 <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-700 animate-scale-in">
                   <div className="p-6 text-center border-b border-slate-100 dark:border-slate-700">
                     <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">🌐</div>

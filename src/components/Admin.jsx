@@ -130,7 +130,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       // Fetch paginated users with total count
       let query = supabase
         .from('profiles')
-        .select('id, slm_id, full_name, email, role, district, block, avatar_url, created_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage, is_donor, last_donation_date, blood_group, phone, phone_number, supervisor_id', { count: 'exact' });
+        .select('id, slm_id, full_name, email, role, district, block, avatar_url, created_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage, is_donor, last_donation_date, blood_group, phone, phone_number, supervisor_id, total_penalties', { count: 'exact' });
 
 
       // Apply role-based filtering
@@ -739,6 +739,12 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                         {targetUser.district || 'N/A'}
                       </span>
                     </div>
+                    <div className="flex items-center gap-1.5 col-span-2">
+                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Penalty Points:</span>
+                      <span className={`text-xs font-black px-2 py-0.5 rounded ${targetUser.total_penalties > 0 ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'}`}>
+                        {targetUser.total_penalties || 0}
+                      </span>
+                    </div>
                   </div>
 
                   {!(userProfile?.role === 'safety mitra' && targetUser.role === 'admin') && (
@@ -798,6 +804,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Email</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Role</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">District</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Penalties</th>
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -825,6 +832,11 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-slate-600 dark:text-slate-400">{targetUser.district || 'N/A'}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${targetUser.total_penalties > 0 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                          {targetUser.total_penalties > 0 ? `-${targetUser.total_penalties}` : '0'}
+                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         {!(userProfile?.role === 'safety mitra' && targetUser.role === 'admin') && (

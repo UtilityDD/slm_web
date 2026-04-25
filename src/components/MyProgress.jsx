@@ -131,7 +131,8 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
         return `${origin}/verify/${profile?.id}`;
     }, [profile?.id]);
 
-    const resolvedUserId = user?.id;
+    const resolvedUserId = targetUserId || user?.id;
+    const isCurrentUser = user?.id === resolvedUserId;
 
     useEffect(() => {
         let active = true;
@@ -255,7 +256,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
     const phone = safePhone(profile);
     const joinedDate = formatDate(profile?.created_at, language);
     const lastActive = formatDate(profile?.last_login_at, language);
-    const isCurrentUser = resolvedUserId && user?.id === resolvedUserId;
+
 
     const labels = {
         title: language === 'en' ? 'My Progress' : 'আমার শেখার অগ্রগতি',
@@ -330,25 +331,33 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                     <section 
                         id="progress-report-content" 
                         ref={certRef}
-                        className="relative rounded-[2.5rem] overflow-hidden certificate-frame"
+                        className={`relative rounded-[2.5rem] overflow-hidden ${isCurrentUser ? 'certificate-frame' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 pt-10'}`}
                     >
-                    <div className="certificate-pattern pointer-events-none" />
-                    <div className="certificate-security-watermark overflow-hidden pointer-events-none" aria-hidden="true" />
+                    {isCurrentUser && (
+                        <>
+                            <div className="certificate-pattern pointer-events-none" />
+                            <div className="certificate-security-watermark overflow-hidden pointer-events-none" aria-hidden="true" />
+                        </>
+                    )}
                     
                     <div className="relative z-20 flex flex-col items-center text-center">
                         {/* Certificate Header Text */}
-                        <div className="mb-6">
-                            <h2 className="font-bengali text-2xl sm:text-3xl font-black text-amber-800 dark:text-amber-500 uppercase tracking-[0.2em] mb-1">
-                                {language === 'en' ? 'Certificate of Achievement' : 'সাফল্যের স্বীকৃতিপত্র'}
-                            </h2>
-                            <div className="w-48 h-1 bg-gradient-to-r from-amber-200 via-amber-500 to-amber-200 mx-auto mt-2 rounded-full" />
-                        </div>
+                        {isCurrentUser && (
+                            <>
+                                <div className="mb-6">
+                                    <h2 className="font-bengali text-2xl sm:text-3xl font-black text-amber-800 dark:text-amber-500 uppercase tracking-[0.2em] mb-1">
+                                        {language === 'en' ? 'Certificate of Achievement' : 'সাফল্যের স্বীকৃতিপত্র'}
+                                    </h2>
+                                    <div className="w-48 h-1 bg-gradient-to-r from-amber-200 via-amber-500 to-amber-200 mx-auto mt-2 rounded-full" />
+                                </div>
 
-                        <p className="font-bengali text-slate-500 dark:text-slate-400 italic mb-8 max-w-lg leading-relaxed">
-                            {language === 'en' 
-                                ? 'This certifies the academic progress and technical proficiency of the following individual in the SmartLineman education program.'
-                                : 'এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, স্মার্টলাইনম্যান শিক্ষা কার্যক্রমে নিম্নলিখিত শিক্ষার্থী তাঁর শিক্ষা ও কারিগরি দক্ষতায় সাফল্য অর্জন করেছেন।'}
-                        </p>
+                                <p className="font-bengali text-slate-500 dark:text-slate-400 italic mb-8 max-w-lg leading-relaxed">
+                                    {language === 'en' 
+                                        ? 'This certifies the academic progress and technical proficiency of the following individual in the SmartLineman education program.'
+                                        : 'এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, স্মার্টলাইনম্যান শিক্ষা কার্যক্রমে নিম্নলিখিত শিক্ষার্থী তাঁর শিক্ষা ও কারিগরি দক্ষতায় সাফল্য অর্জন করেছেন।'}
+                                </p>
+                            </>
+                        )}
 
                         {/* Name Section */}
                         <div className="mb-10 w-full max-w-2xl px-4">
@@ -390,106 +399,110 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                         </div>
 
                         {/* Signatures */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 sm:gap-40 w-full max-w-4xl px-8 mt-4">
-                            <div className="flex flex-col items-center">
-                                <div className="signature-line mb-3 font-bengali text-slate-400 dark:text-slate-600 h-10 flex items-center justify-center overflow-visible">
-                                    <img 
-                                        src="/signature.png" 
-                                        alt="Official Signature" 
-                                        className="h-14 sm:h-16 w-auto object-contain mix-blend-multiply dark:invert dark:brightness-200 opacity-90 transition-all"
-                                        onError={(e) => e.target.style.display = 'none'}
-                                    />
+                        {isCurrentUser && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 sm:gap-40 w-full max-w-4xl px-8 mt-4">
+                                <div className="flex flex-col items-center">
+                                    <div className="signature-line mb-3 font-bengali text-slate-400 dark:text-slate-600 h-10 flex items-center justify-center overflow-visible">
+                                        <img 
+                                            src="/signature.png" 
+                                            alt="Official Signature" 
+                                            className="h-14 sm:h-16 w-auto object-contain mix-blend-multiply dark:invert dark:brightness-200 opacity-90 transition-all"
+                                            onError={(e) => e.target.style.display = 'none'}
+                                        />
+                                    </div>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                                        {language === 'en' ? 'Authority, SmartLineman.in' : 'কর্তৃপক্ষ, স্মার্টলাইনম্যান.ইন'}
+                                    </p>
                                 </div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                                    {language === 'en' ? 'Authority, SmartLineman.in' : 'কর্তৃপক্ষ, স্মার্টলাইনম্যান.ইন'}
-                                </p>
-                            </div>
-                            <div className="flex flex-col items-center">
-                                <div className="signature-line mb-3 font-bengali text-slate-400 dark:text-slate-600 h-10 flex items-center justify-center text-xl italic font-bold text-slate-800 dark:text-slate-200">
-                                    {(() => {
-                                        const d = reportGeneratedAt;
-                                        const day = String(d.getDate()).padStart(2, '0');
-                                        const month = String(d.getMonth() + 1).padStart(2, '0');
-                                        const year = d.getFullYear();
-                                        return `${day}/${month}/${year}`;
-                                    })()}
+                                <div className="flex flex-col items-center">
+                                    <div className="signature-line mb-3 font-bengali text-slate-400 dark:text-slate-600 h-10 flex items-center justify-center text-xl italic font-bold text-slate-800 dark:text-slate-200">
+                                        {(() => {
+                                            const d = reportGeneratedAt;
+                                            const day = String(d.getDate()).padStart(2, '0');
+                                            const month = String(d.getMonth() + 1).padStart(2, '0');
+                                            const year = d.getFullYear();
+                                            return `${day}/${month}/${year}`;
+                                        })()}
+                                    </div>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                                        {language === 'en' ? 'Date Issued' : 'ইস্যুর তারিখ'}
+                                    </p>
                                 </div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                                    {language === 'en' ? 'Date Issued' : 'ইস্যুর তারিখ'}
-                                </p>
                             </div>
-                        </div>
+                        )}
 
                         {/* Security Footer */}
-                        <div className="mt-12 w-full flex flex-col sm:flex-row items-center justify-between border-t border-slate-200 dark:border-slate-800/60 pt-6 gap-6 sm:gap-4 opacity-80">
-                            <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
-                                <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-400 mb-1">
-                                    {language === 'en' ? 'Certificate Serial Number' : 'সার্টিফিকেট সিরিয়াল নম্বর'}
-                                </p>
-                                <p className="cert-serial text-[11px] sm:text-xs">
-                                    SLM-CERT-{certId.split('').map((c, i) => i > 0 && i % 4 === 0 ? `-${c}` : c).join('')}
-                                </p>
-                                <p className="mt-2 text-[9px] font-bold text-slate-400 max-w-[180px] leading-tight">
-                                    {language === 'en' 
-                                        ? 'Scan QR code or visit smartlineman.in/verify to authenticate this document.' 
-                                        : 'এই নথির সত্যতা যাচাই করতে QR কোড স্ক্যান করুন বা smartlineman.in/verify ভিজিট করুন।'}
-                                </p>
-                            </div>
-                            
-                            <div className="flex flex-col items-center sm:items-end gap-3">
-                                <div className="relative group">
-                                    <div className="absolute -inset-2 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <a 
-                                        href={verificationUrl} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        title={language === 'en' ? 'Open Verification Page' : 'ভেরিফিকেশন পেজ খুলুন'}
-                                        className="relative block p-2 bg-white rounded-lg shadow-sm border border-slate-100 ring-4 ring-slate-50 dark:ring-slate-900/50 cursor-pointer active:scale-95 transition-transform"
-                                    >
-                                        <QRCodeCanvas 
-                                            value={verificationUrl || ""} 
-                                            size={80} 
-                                            level="M"
-                                            includeMargin={true}
-                                            imageSettings={{
-                                                src: "/icons/logo.png",
-                                                height: 16,
-                                                width: 16,
-                                                excavate: true,
-                                            }}
-                                        />
-                                    </a>
+                        {isCurrentUser && (
+                            <div className="mt-12 w-full flex flex-col sm:flex-row items-center justify-between border-t border-slate-200 dark:border-slate-800/60 pt-6 gap-6 sm:gap-4 opacity-80">
+                                <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
+                                    <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-400 mb-1">
+                                        {language === 'en' ? 'Certificate Serial Number' : 'সার্টিফিকেট সিরিয়াল নম্বর'}
+                                    </p>
+                                    <p className="cert-serial text-[11px] sm:text-xs">
+                                        SLM-CERT-{certId.split('').map((c, i) => i > 0 && i % 4 === 0 ? `-${c}` : c).join('')}
+                                    </p>
+                                    <p className="mt-2 text-[9px] font-bold text-slate-400 max-w-[180px] leading-tight">
+                                        {language === 'en' 
+                                            ? 'Scan QR code or visit smartlineman.in/verify to authenticate this document.' 
+                                            : 'এই নথির সত্যতা যাচাই করতে QR কোড স্ক্যান করুন বা smartlineman.in/verify ভিজিট করুন।'}
+                                    </p>
                                 </div>
-                                <div className="flex flex-col gap-3 items-center sm:items-end">
-                                    <button 
-                                        onClick={handleDownloadPNG}
-                                        disabled={isDownloading}
-                                        className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-slate-800 dark:hover:bg-slate-600 transition-all disabled:opacity-50"
-                                    >
-                                        {isDownloading ? (
-                                            <>
-                                                <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                                {language === 'en' ? 'Preparing...' : 'প্রস্তুত হচ্ছে...'}
-                                            </>
-                                        ) : (
-                                            <>
-                                                <span>📸</span> {language === 'en' ? 'Download PNG' : 'PNG ডাউনলোড করুন'}
-                                            </>
-                                        )}
-                                    </button>
+                                
+                                <div className="flex flex-col items-center sm:items-end gap-3">
+                                    <div className="relative group">
+                                        <div className="absolute -inset-2 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <a 
+                                            href={verificationUrl} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            title={language === 'en' ? 'Open Verification Page' : 'ভেরিফিকেশন পেজ খুলুন'}
+                                            className="relative block p-2 bg-white rounded-lg shadow-sm border border-slate-100 ring-4 ring-slate-50 dark:ring-slate-900/50 cursor-pointer active:scale-95 transition-transform"
+                                        >
+                                            <QRCodeCanvas 
+                                                value={verificationUrl || ""} 
+                                                size={80} 
+                                                level="M"
+                                                includeMargin={true}
+                                                imageSettings={{
+                                                    src: "/icons/logo.png",
+                                                    height: 16,
+                                                    width: 16,
+                                                    excavate: true,
+                                                }}
+                                            />
+                                        </a>
+                                    </div>
+                                    <div className="flex flex-col gap-3 items-center sm:items-end">
+                                        <button 
+                                            onClick={handleDownloadPNG}
+                                            disabled={isDownloading}
+                                            className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-slate-800 dark:hover:bg-slate-600 transition-all disabled:opacity-50"
+                                        >
+                                            {isDownloading ? (
+                                                <>
+                                                    <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                                    {language === 'en' ? 'Preparing...' : 'প্রস্তুত হচ্ছে...'}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span>📸</span> {language === 'en' ? 'Download PNG' : 'PNG ডাউনলোড করুন'}
+                                                </>
+                                            )}
+                                        </button>
 
-                                    <button 
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(verificationUrl);
-                                            alert(language === 'en' ? 'Link copied to clipboard!' : 'লিঙ্ক কপি করা হয়েছে!');
-                                        }}
-                                        className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest hover:underline flex items-center gap-1 active:opacity-60"
-                                    >
-                                        <span>🔗</span> {language === 'en' ? 'Copy Link' : 'লিঙ্ক কপি করুন'}
-                                    </button>
+                                        <button 
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(verificationUrl);
+                                                alert(language === 'en' ? 'Link copied to clipboard!' : 'লিঙ্ক কপি করা হয়েছে!');
+                                            }}
+                                            className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest hover:underline flex items-center gap-1 active:opacity-60"
+                                        >
+                                            <span>🔗</span> {language === 'en' ? 'Copy Link' : 'লিঙ্ক কপি করুন'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
                     </div>
 
                     <div className="absolute top-8 right-8 w-24 sm:w-32 opacity-10 dark:opacity-20 pointer-events-none grayscale contrast-125">
