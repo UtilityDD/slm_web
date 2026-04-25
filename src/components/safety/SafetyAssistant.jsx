@@ -539,7 +539,8 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
                                 </div>
                             </div>
                         )}
-                    )}
+                    </div>
+                )}
                 </div>
             </main>
 
