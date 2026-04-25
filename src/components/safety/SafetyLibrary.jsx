@@ -314,12 +314,11 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                             <button
                                 key={cat.id}
                                 onClick={() => setActiveCategory(cat.id)}
-                                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap border
+                                className={`px-4 py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap border text-center
                                     ${activeCategory === cat.id
                                         ? 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/20'
                                         : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-100 dark:border-slate-800'}`}
                             >
-                                {cat.icon && React.cloneElement(cat.icon, { className: 'w-3 h-3' })}
                                 {cat.label}
                             </button>
                         ))}
