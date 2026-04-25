@@ -65,7 +65,7 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-4">
         {navItems.map((item) => {
           const isActive = currentView === item.id || 
-                           (item.id === 'safety-library' && ['safety-library', 'sops', 'my_ppe', 'my_tools'].includes(currentView)) || 
+                           (item.id === 'safety-library' && ['safety-library', 'my_ppe', 'my_tools'].includes(currentView)) || 
                            (item.id === 'training' && currentView === 'home') ||
                            (item.id === 'leaderboard' && currentView === 'competitions');
           
