@@ -1662,6 +1662,14 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                                                 )}
                                                             </div>
+                                                            <div className="flex flex-col items-start pr-1">
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <span className="text-sm drop-shadow-sm leading-none">🏆</span>
+                                                                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 leading-none tracking-tight">
+                                                                        {(userRank?.score || profile?.points || 0).toLocaleString('en-US')}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
 
                                                             {/* Arrow Pointer */}
                                                             <div className={`absolute top-1/2 -translate-y-1/2 ${xPos > 50 ? '-right-[5.5px] border-y-[6px] border-y-transparent border-l-[6px] border-l-orange-500/30' : '-left-[5.5px] border-y-[6px] border-y-transparent border-r-[6px] border-r-orange-500/30'}`}></div>
