@@ -21,7 +21,7 @@ const VerificationView = ({ language, certificateId }) => {
                 setError(null);
                 
                 // Fetch profile data - look up by either id (UUID) or slm_id (Short ID)
-                let query = supabase.from('profiles').select('full_name, training_level, created_at, slm_id, points, reading_points, quiz_points');
+                let query = supabase.from('profiles').select('full_name, training_level, created_at, slm_id, points, reading_points, quiz_points, total_penalties');
                 
                 // Improved matching logic
                 if (certificateId.includes('-') && certificateId.length > 30) {
@@ -68,6 +68,7 @@ const VerificationView = ({ language, certificateId }) => {
             points: "Total Credits",
             reading: "Reading",
             quiz: "Quiz",
+            penalties: "Penalties",
             status: "Status",
             official: "This is an official SmartLineman.in certificate. The data shown below is from our live secure database.",
             liveData: "This learner has continued to progress. Above is their current live achievement status.",
@@ -88,6 +89,7 @@ const VerificationView = ({ language, certificateId }) => {
             points: "মোট ক্রেডিট",
             reading: "পড়া",
             quiz: "কুইজ",
+            penalties: "পেনাল্টি",
             status: "অবস্থা",
             official: "এটি একটি অফিসিয়াল স্মার্ট লাইনম্যান সার্টিফিকেট। নিচে প্রদর্শিত তথ্য আমাদের লাইভ ডাটাবেস থেকে নেওয়া হয়েছে।",
             liveData: "এই শিক্ষার্থীর অগ্রগতি অব্যাহত রয়েছে। উপরে তার বর্তমান অর্জিত অবস্থা দেখানো হয়েছে।",
@@ -145,7 +147,7 @@ const VerificationView = ({ language, certificateId }) => {
                             </div>
 
                             {/* Compact Score View */}
-                            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 py-4 border-y border-slate-100 dark:border-slate-800">
+                            <div className="grid grid-cols-4 gap-1.5 sm:gap-2 py-4 border-y border-slate-100 dark:border-slate-800">
                                 <div className="text-center p-2 rounded-xl bg-slate-50 dark:bg-slate-900/50">
                                     <p className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase mb-1">{content.points}</p>
                                     <p className="text-sm sm:text-base font-black text-slate-800 dark:text-slate-100">{(certData.points || 0).toLocaleString()}</p>
@@ -157,6 +159,10 @@ const VerificationView = ({ language, certificateId }) => {
                                 <div className="text-center p-2 rounded-xl bg-blue-50/50 dark:bg-blue-900/10">
                                     <p className="text-[8px] sm:text-[9px] font-bold text-blue-600/60 dark:text-blue-400/60 uppercase mb-1">{content.quiz}</p>
                                     <p className="text-sm sm:text-base font-black text-blue-700 dark:text-blue-400">{(certData.quiz_points || 0).toLocaleString()}</p>
+                                </div>
+                                <div className="text-center p-2 rounded-xl bg-rose-50/60 dark:bg-rose-900/15">
+                                    <p className="text-[8px] sm:text-[9px] font-bold text-rose-600/70 dark:text-rose-400/70 uppercase mb-1">{content.penalties}</p>
+                                    <p className="text-sm sm:text-base font-black text-rose-700 dark:text-rose-400">{(certData.total_penalties || 0).toLocaleString()}</p>
                                 </div>
                             </div>
                             <div className="pt-6 border-t border-slate-100 dark:border-slate-700">

@@ -1150,8 +1150,13 @@ export default function SmartLinemanUI() {
             {user && !['login', 'verify'].includes(currentView) && (
               <BottomNavigation 
                 currentView={currentView} 
-                setCurrentView={setCurrentView} 
+                setCurrentView={(view) => {
+                  if (view === 'my-progress') setSelectedProgressUserId(user?.id);
+                  setCurrentView(view);
+                }} 
                 language={language} 
+                userId={user?.id}
+                selectedProgressUserId={selectedProgressUserId}
                 onMenuClick={(forceState) => {
                   if (forceState === false) setSidebarOpen(false);
                   else setSidebarOpen(prev => !prev);

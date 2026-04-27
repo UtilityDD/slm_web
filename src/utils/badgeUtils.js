@@ -17,15 +17,15 @@ export const getBadgeByLevel = (level, readingPoints = 0) => {
     // Fail-proof Point-based Promotion (Logical Override)
     // Thresholds based on chapter completion (approx 200 pts per chapter)
     // We use slightly lower thresholds to account for minor sync latencies
-    if (readingPoints >= 1780) effectiveLevel = Math.max(effectiveLevel, 9);      // Expert
-    else if (readingPoints >= 1580) effectiveLevel = Math.max(effectiveLevel, 8); // Specialist
-    else if (readingPoints >= 1380) effectiveLevel = Math.max(effectiveLevel, 7); // Supervisor
-    else if (readingPoints >= 1180) effectiveLevel = Math.max(effectiveLevel, 6); // Senior (Ch 6 has 11 lessons)
-    else if (readingPoints >= 980) effectiveLevel = Math.max(effectiveLevel, 5);  // Advanced
-    else if (readingPoints >= 780) effectiveLevel = Math.max(effectiveLevel, 4);  // Skilled
-    else if (readingPoints >= 580) effectiveLevel = Math.max(effectiveLevel, 3);  // Technician
-    else if (readingPoints >= 380) effectiveLevel = Math.max(effectiveLevel, 2);  // Junior
-    else if (readingPoints >= 180) effectiveLevel = Math.max(effectiveLevel, 1);  // Trainee
+    if (readingPoints >= 1780) effectiveLevel = Math.max(effectiveLevel, 9);      // Expert (Ch 9)
+    else if (readingPoints >= 1580) effectiveLevel = Math.max(effectiveLevel, 9); // Expert (Ch 8 completed)
+    else if (readingPoints >= 1380) effectiveLevel = Math.max(effectiveLevel, 8); // Specialist (Ch 7 completed)
+    else if (readingPoints >= 1180) effectiveLevel = Math.max(effectiveLevel, 7); // Supervisor (Ch 6 completed)
+    else if (readingPoints >= 980) effectiveLevel = Math.max(effectiveLevel, 6);  // Senior (Ch 5 completed)
+    else if (readingPoints >= 780) effectiveLevel = Math.max(effectiveLevel, 5);  // Advanced (Ch 4 completed)
+    else if (readingPoints >= 580) effectiveLevel = Math.max(effectiveLevel, 4);  // Skilled (Ch 3 completed)
+    else if (readingPoints >= 380) effectiveLevel = Math.max(effectiveLevel, 3);  // Technician (Ch 2 completed)
+    else if (readingPoints >= 180) effectiveLevel = Math.max(effectiveLevel, 2);  // Junior (Ch 1 completed)
 
     return badgeLevels.find(b => b.level === effectiveLevel) || badgeLevels[0];
 };
@@ -73,5 +73,8 @@ export const calculateLevelFromProgress = (completedLessons, trainingChapters) =
         }
     }
 
-    return currentLevel;
+    // Return the level the user is currently at. 
+    // If they finished Chapter N, they are now at Level N+1.
+    // Max level is 9 (Expert).
+    return Math.min(9, currentLevel + 1);
 };

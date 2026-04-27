@@ -2038,14 +2038,33 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{activeQuiz.title}</h3>
                                         <div className="flex items-center gap-3">
                                             <p className="text-xs text-slate-500">{t.questions} {currentQuestionIndex + 1} / {quizQuestions.length}</p>
-                                            {userRank && userRank.score > 1000 && (
-                                                <div className="flex items-center gap-1.5 animate-pulse">
-                                                    <span className="text-xl">🔥</span>
-                                                    <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-tight bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded border border-red-100 dark:border-red-900/30 whitespace-nowrap">
-                                                        {language === 'en' ? 'Loss 15 for Wrong/Skip' : 'ভুল/স্কিপ -১৫'}
+                                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl backdrop-blur-md border shadow-sm animate-in fade-in slide-in-from-right-4 duration-500
+                                                ${userRank && userRank.score > 1000 
+                                                    ? 'bg-red-50/80 dark:bg-red-950/20 border-red-100/50 dark:border-red-500/20' 
+                                                    : 'bg-green-50/80 dark:bg-green-950/20 border-green-100/50 dark:border-green-500/20'}`}>
+                                                
+                                                <div className="relative">
+                                                    <span className="text-sm">{userRank && userRank.score > 1000 ? '🔥' : '🛡️'}</span>
+                                                    {userRank && userRank.score > 1000 && (
+                                                        <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-col leading-none">
+                                                    <span className={`text-[9px] font-black uppercase tracking-[0.1em] ${userRank && userRank.score > 1000 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                                                        {userRank && userRank.score > 1000 
+                                                            ? (language === 'en' ? 'High Stakes Mode' : 'হাই স্টেক মোড') 
+                                                            : (language === 'en' ? 'Standard Mode' : 'স্ট্যান্ডার্ড মোড')}
+                                                    </span>
+                                                    <span className={`text-[8px] font-bold uppercase mt-0.5 ${userRank && userRank.score > 1000 ? 'text-red-500/70 dark:text-red-500/60' : 'text-green-500/70 dark:text-green-500/60'}`}>
+                                                        {userRank && userRank.score > 1000 
+                                                            ? (language === 'en' ? '-15pts per Wrong/Skip' : 'প্রতি ভুল/স্কিপে -১৫') 
+                                                            : (language === 'en' ? 'No Penalties yet' : 'কোনো পেনাল্টি নেই')}
                                                     </span>
                                                 </div>
-                                            )}
+                                            </div>
                                         </div>
                                     </div>
                                     <button onClick={handleAbortQuiz} className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">✕</button>
@@ -2206,11 +2225,27 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                 </div>
 
-                                {userRank && (userProfile?.points || userRank?.score) > 1000 && (
-                                    <div className="mb-6 inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-50 dark:bg-amber-900/10 text-amber-600 dark:text-amber-400 text-[10px] font-bold border border-amber-100 dark:border-amber-900/30">
-                                        <span>⚠️</span> {t.highStakesDesc}
+                                <div className={`mb-6 p-4 rounded-2xl border text-left animate-in fade-in slide-in-from-bottom-2 duration-700
+                                    ${userRank && (userProfile?.points || userRank?.score) > 1000 
+                                        ? 'bg-orange-50/50 dark:bg-orange-950/10 border-orange-100 dark:border-orange-900/20 shadow-sm' 
+                                        : 'bg-green-50/50 dark:bg-green-950/10 border-green-100 dark:border-green-900/20 shadow-sm'}`}>
+                                    
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-white text-xs ${userRank && (userProfile?.points || userRank?.score) > 1000 ? 'bg-orange-500 shadow-orange-500/20' : 'bg-green-500 shadow-green-500/20'} shadow-md`}>
+                                            {userRank && (userProfile?.points || userRank?.score) > 1000 ? '⚠️' : '🛡️'}
+                                        </div>
+                                        <span className={`text-[11px] font-black uppercase tracking-widest ${userRank && (userProfile?.points || userRank?.score) > 1000 ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400'}`}>
+                                            {userRank && (userProfile?.points || userRank?.score) > 1000 
+                                                ? (language === 'en' ? 'High Stakes Active' : 'হাই স্টেক সক্রিয়') 
+                                                : (language === 'en' ? 'Standard Mode' : 'স্ট্যান্ডার্ড মোড')}
+                                        </span>
                                     </div>
-                                )}
+                                    <p className={`text-xs font-bold text-slate-600 dark:text-slate-400 leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {userRank && (userProfile?.points || userRank?.score) > 1000 
+                                            ? t.highStakesDesc 
+                                            : (language === 'en' ? 'Penalties start after 1,000 points. Keep learning safely!' : '১,০০০ পয়েন্টের পর থেকে পেনাল্টি কার্যকর হবে। সাবধানে শিখতে থাকুন!')}
+                                    </p>
+                                </div>
 
                                 <button onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); }} className="w-full py-3 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-lg font-bold hover:bg-slate-800 dark:hover:bg-white transition-colors">
                                     {t.close}

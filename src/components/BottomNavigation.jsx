@@ -1,6 +1,6 @@
 import React from 'react';
 
-const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }) => {
+const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, userId, selectedProgressUserId }) => {
   const navItems = [
     {
       id: 'training',
@@ -60,14 +60,17 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick }
     }
   ];
 
+  // Utility to check if we are viewing someone else's progress
+  const isViewingOthersProgress = currentView === 'my-progress' && selectedProgressUserId && selectedProgressUserId !== userId;
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl border-t border-slate-200/50 dark:border-slate-800/50 z-[100] md:hidden pb-safe-area shadow-[0_-15px_40px_-15px_rgba(0,0,0,0.1)]">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-4">
         {navItems.map((item) => {
-          const isActive = currentView === item.id || 
+          const isActive = (currentView === item.id && !isViewingOthersProgress) || 
                            (item.id === 'safety-library' && ['safety-library', 'my_ppe', 'my_tools'].includes(currentView)) || 
                            (item.id === 'training' && currentView === 'home') ||
-                           (item.id === 'leaderboard' && currentView === 'competitions');
+                           (item.id === 'leaderboard' && (currentView === 'competitions' || isViewingOthersProgress));
           
           return (
             <button

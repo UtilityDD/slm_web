@@ -45,7 +45,7 @@ export const leaderboardService = {
             async () => {
                 const { data, error } = await supabase
                     .from('monthly_leaderboard_view')
-                    .select('*, profiles(reading_points, district)')
+                    .select('*, profiles(reading_points, district, created_at)')
                     .eq('month_num', m)
                     .eq('year_num', y)
                     .order('points', { ascending: false })
@@ -53,11 +53,28 @@ export const leaderboardService = {
 
                 if (error) throw error;
 
-                return data.map(item => ({
-                    ...item,
-                    all_time_reading_points: item.profiles?.reading_points || 0,
-                    district: item.profiles?.district || null
-                }));
+                // Process data to include metadata for display only.
+                // monthly_leaderboard_view.points should be treated as authoritative monthly score.
+                const startOfMonth = new Date(y, m - 1, 1).getTime();
+
+                return data.map(item => {
+                    const basePoints = Number(item.points) || 0;
+                    const readingPoints = Number(item.profiles?.reading_points) || 0;
+                    const joinDate = item.profiles?.created_at ? new Date(item.profiles.created_at).getTime() : 0;
+
+                    // If user joined this month, all their reading points are from this month
+                    // (Double check to prevent double adding if view already handled it)
+                    const isNewUser = joinDate >= startOfMonth;
+                    
+                    return {
+                        ...item,
+                        points: basePoints,
+                        reading_points_added: isNewUser ? readingPoints : 0,
+                        all_time_reading_points: readingPoints,
+                        district: item.profiles?.district || null,
+                        is_new_user: isNewUser
+                    };
+                }).sort((a, b) => b.points - a.points);
             },
             { ttl: 5, swr: true, forceRefresh }
         );
