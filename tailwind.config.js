@@ -78,6 +78,20 @@ export default {
         modal: 'var(--z-modal)',
         toast: 'var(--z-toast)',
       },
+      keyframes: {
+        'safety-shimmer': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+        'safety-float': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-4px)' },
+        },
+      },
+      animation: {
+        'safety-shimmer': 'safety-shimmer 1.8s ease-in-out infinite',
+        'safety-float': 'safety-float 2.4s ease-in-out infinite',
+      },
     },
   },
   plugins: [],

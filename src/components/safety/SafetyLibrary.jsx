@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { libraryService } from '../../utils/libraryService';
 
 const SearchIcon = ({ className }) => (
@@ -65,22 +65,281 @@ const getGoogleDriveDirectLink = (url) => {
     return id ? `https://lh3.googleusercontent.com/u/0/d/${id}?v=${today}` : url;
 };
 
-const ImageSlider = ({ images, alt, aspect = 'aspect-[4/3]', showControls = true }) => {
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 2.5;
+const ZOOM_STEP = 0.25;
+
+const ImageSlider = forwardRef(function ImageSlider(
+    {
+        images,
+        alt,
+        aspect = 'aspect-[4/3]',
+        showControls = true,
+        enableZoom = false,
+        /** When `enableZoom`, omit in-image pill and drive zoom from parent (e.g. modal toolbar). */
+        zoomChrome = 'overlay',
+        /** Fires whenever zoom level changes (pinch, buttons, slide change). */
+        onZoomChange
+    },
+    ref
+) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [validImages, setValidImages] = useState(images || []);
+    const [zoom, setZoom] = useState(1);
+    const [pan, setPan] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const viewportRef = useRef(null);
+    const zoomRef = useRef(1);
+    const pointersRef = useRef(new Map());
+    const pinchRef = useRef({ active: false, startDist: 0, startZoom: 1 });
+    const globalListenersAttachedRef = useRef(false);
+    const globalMoveWrapperRef = useRef(null);
+    const globalUpWrapperRef = useRef(null);
+    const dragRef = useRef({
+        active: false,
+        pointerId: null,
+        startX: 0,
+        startY: 0,
+        originX: 0,
+        originY: 0
+    });
+
+    const clampPan = useCallback((nx, ny, z) => {
+        const el = viewportRef.current;
+        if (!el || z <= 1.001) return { x: 0, y: 0 };
+        const w = el.clientWidth;
+        const h = el.clientHeight;
+        const maxX = w * (z - 1) * 0.52 + 48;
+        const maxY = h * (z - 1) * 0.52 + 48;
+        return {
+            x: Math.max(-maxX, Math.min(maxX, nx)),
+            y: Math.max(-maxY, Math.min(maxY, ny))
+        };
+    }, []);
 
     useEffect(() => {
         setValidImages(images || []);
         setCurrentIndex(0);
+        setZoom(1);
+        setPan({ x: 0, y: 0 });
     }, [images]);
+
+    useEffect(() => {
+        setZoom(1);
+        setPan({ x: 0, y: 0 });
+    }, [currentIndex]);
+
+    useEffect(() => {
+        setPan((p) => clampPan(p.x, p.y, zoom));
+    }, [zoom, clampPan]);
+
+    const panRef = useRef(pan);
+    useEffect(() => {
+        panRef.current = pan;
+    }, [pan]);
+
+    useEffect(() => {
+        zoomRef.current = zoom;
+    }, [zoom]);
+
+    useEffect(() => {
+        onZoomChange?.(zoom);
+    }, [zoom, onZoomChange]);
+
+    useImperativeHandle(
+        ref,
+        () => ({
+            zoomIn: () => {
+                setZoom((z) => Math.min(ZOOM_MAX, Math.round((z + ZOOM_STEP) * 100) / 100));
+            },
+            zoomOut: () => {
+                setZoom((z) => Math.max(ZOOM_MIN, Math.round((z - ZOOM_STEP) * 100) / 100));
+            },
+            resetZoom: () => {
+                setZoom(1);
+                setPan({ x: 0, y: 0 });
+            }
+        }),
+        []
+    );
+
+    const detachGlobalPointerListeners = useCallback(() => {
+        if (!globalListenersAttachedRef.current) return;
+        globalListenersAttachedRef.current = false;
+        const mv = globalMoveWrapperRef.current;
+        const up = globalUpWrapperRef.current;
+        if (mv) window.removeEventListener('pointermove', mv, true);
+        if (up) {
+            window.removeEventListener('pointerup', up, true);
+            window.removeEventListener('pointercancel', up, true);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!enableZoom) return;
+        const onMove = (e) => {
+            if (!pointersRef.current.has(e.pointerId)) return;
+            pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+            if (pinchRef.current.active && pointersRef.current.size >= 2) {
+                const pts = [...pointersRef.current.values()];
+                const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+                const { startDist, startZoom } = pinchRef.current;
+                const next = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, startZoom * (d / startDist)));
+                setZoom(next);
+                return;
+            }
+
+            const d = dragRef.current;
+            if (d.active && !pinchRef.current.active && e.pointerId === d.pointerId) {
+                const dx = e.clientX - d.startX;
+                const dy = e.clientY - d.startY;
+                setPan(clampPan(d.originX + dx, d.originY + dy, zoomRef.current));
+            }
+        };
+
+        const onEnd = (e) => {
+            if (!pointersRef.current.has(e.pointerId)) return;
+            pointersRef.current.delete(e.pointerId);
+
+            if (pinchRef.current.active && pointersRef.current.size < 2) {
+                pinchRef.current.active = false;
+            }
+
+            const d = dragRef.current;
+            if (d.active && d.pointerId === e.pointerId) {
+                const pid = d.pointerId;
+                d.active = false;
+                d.pointerId = null;
+                setIsDragging(false);
+                const vp = viewportRef.current;
+                if (vp) {
+                    try {
+                        vp.releasePointerCapture(pid);
+                    } catch {
+                        /* ignore */
+                    }
+                }
+            }
+
+            if (pointersRef.current.size === 0) {
+                detachGlobalPointerListeners();
+            }
+        };
+
+        globalMoveWrapperRef.current = onMove;
+        globalUpWrapperRef.current = onEnd;
+        return () => {
+            detachGlobalPointerListeners();
+            pointersRef.current.clear();
+            pinchRef.current.active = false;
+        };
+    }, [enableZoom, clampPan, detachGlobalPointerListeners]);
 
     useEffect(() => {
         if (!validImages || validImages.length <= 1 || !showControls) return;
         const interval = setInterval(() => {
+            if (enableZoom && (zoomRef.current > 1.001 || pinchRef.current.active)) return;
             setCurrentIndex((prev) => (prev + 1) % validImages.length);
         }, 3000);
         return () => clearInterval(interval);
-    }, [validImages, showControls]);
+    }, [validImages, showControls, enableZoom]);
+
+    /** iOS/Android: stop the modal scroll parent from eating touch moves while zoomed (touch-none is not always enough). */
+    useEffect(() => {
+        const el = viewportRef.current;
+        if (!enableZoom || !el || zoom <= 1.001) return;
+        const blockParentScroll = (e) => {
+            e.preventDefault();
+        };
+        el.addEventListener('touchmove', blockParentScroll, { passive: false });
+        return () => el.removeEventListener('touchmove', blockParentScroll);
+    }, [enableZoom, zoom]);
+
+    const onViewportPointerDown = useCallback(
+        (e) => {
+            if (!enableZoom) return;
+            if (e.button !== undefined && e.button !== 0) return;
+            const target = e.target;
+            if (target instanceof Element && (target.closest('[data-zoom-ui]') || target.closest('button'))) return;
+
+            pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+            if (!globalListenersAttachedRef.current) {
+                const mv = globalMoveWrapperRef.current;
+                const up = globalUpWrapperRef.current;
+                if (mv && up) {
+                    globalListenersAttachedRef.current = true;
+                    window.addEventListener('pointermove', mv, true);
+                    window.addEventListener('pointerup', up, true);
+                    window.addEventListener('pointercancel', up, true);
+                }
+            }
+
+            if (pointersRef.current.size >= 2) {
+                if (dragRef.current.active) {
+                    const pid = dragRef.current.pointerId;
+                    dragRef.current = {
+                        active: false,
+                        pointerId: null,
+                        startX: 0,
+                        startY: 0,
+                        originX: 0,
+                        originY: 0
+                    };
+                    setIsDragging(false);
+                    try {
+                        viewportRef.current?.releasePointerCapture(pid);
+                    } catch {
+                        /* ignore */
+                    }
+                }
+                const pts = [...pointersRef.current.values()];
+                const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+                pinchRef.current = {
+                    active: true,
+                    startDist: Math.max(dist, 8),
+                    startZoom: zoomRef.current
+                };
+                return;
+            }
+
+            if (zoomRef.current > 1.001) {
+                dragRef.current = {
+                    active: true,
+                    pointerId: e.pointerId,
+                    startX: e.clientX,
+                    startY: e.clientY,
+                    originX: panRef.current.x,
+                    originY: panRef.current.y
+                };
+                setIsDragging(true);
+                try {
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                } catch {
+                    /* ignore */
+                }
+            }
+        },
+        [enableZoom]
+    );
+
+    const onLostPointerCapture = useCallback(
+        (e) => {
+            if (dragRef.current.pointerId !== e.pointerId) return;
+            dragRef.current.active = false;
+            dragRef.current.pointerId = null;
+            setIsDragging(false);
+            pointersRef.current.delete(e.pointerId);
+            if (pinchRef.current.active && pointersRef.current.size < 2) {
+                pinchRef.current.active = false;
+            }
+            if (pointersRef.current.size === 0) {
+                detachGlobalPointerListeners();
+            }
+        },
+        [detachGlobalPointerListeners]
+    );
 
     const handleImageError = (url) => {
         const updated = validImages.filter(img => img !== url);
@@ -101,38 +360,186 @@ const ImageSlider = ({ images, alt, aspect = 'aspect-[4/3]', showControls = true
         );
     }
 
+    const canZoomIn = zoom < ZOOM_MAX - 0.01;
+    const canZoomOut = zoom > ZOOM_MIN + 0.01;
+
     return (
-        <div className={`${aspect} bg-slate-50 dark:bg-slate-900/50 relative overflow-hidden flex items-center justify-center group/slider`}>
+        <div
+            ref={enableZoom ? viewportRef : undefined}
+            onPointerDown={enableZoom ? onViewportPointerDown : undefined}
+            onLostPointerCapture={enableZoom ? onLostPointerCapture : undefined}
+            className={`group/slider relative flex select-none items-center justify-center bg-slate-50 dark:bg-slate-900/50 ${aspect} overflow-hidden [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
+                enableZoom ? `touch-none ${zoom > 1.001 ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : ''}` : ''
+            }`}
+        >
             {showControls && validImages.length > 1 && (
-                <button 
-                    onClick={(e) => { e.stopPropagation(); setCurrentIndex((prev) => (prev - 1 + validImages.length) % validImages.length); }}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover/slider:opacity-100"
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
+                    }}
+                    className="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/20 text-white opacity-100 backdrop-blur-sm transition-all hover:bg-black/40 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/slider:opacity-100"
                 >
                     <ChevronLeftIcon className="w-5 h-5" />
                 </button>
             )}
 
-            <img
-                key={currentIndex}
-                src={getGoogleDriveDirectLink(validImages[currentIndex])}
-                alt={`${alt} ${currentIndex + 1}`}
-                onError={() => handleImageError(validImages[currentIndex])}
-                className="max-h-full w-full object-contain filter drop-shadow-md group-hover:scale-105 transition-all duration-700 animate-in fade-in zoom-in-95 duration-500"
-            />
+            <div
+                className="flex min-h-full min-w-full items-center justify-center p-1"
+                style={{
+                    transform: enableZoom ? `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` : `scale(${zoom})`,
+                    transformOrigin: 'center center',
+                    transition: isDragging ? 'none' : 'transform 0.2s ease-out'
+                }}
+            >
+                <img
+                    key={currentIndex}
+                    src={getGoogleDriveDirectLink(validImages[currentIndex])}
+                    alt={`${alt} ${currentIndex + 1}`}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
+                    onError={() => handleImageError(validImages[currentIndex])}
+                    className={`max-h-full w-full object-contain filter drop-shadow-md transition-opacity duration-300 animate-in fade-in duration-500 ${
+                        enableZoom ? '' : 'zoom-in-95 duration-500 group-hover/slider:scale-105'
+                    }`}
+                />
+            </div>
+
+            {enableZoom && zoomChrome !== 'none' && (
+                <div
+                    data-zoom-ui
+                    className={`pointer-events-auto absolute z-20 flex items-center gap-0.5 rounded-full border border-white/15 bg-black/45 px-1 py-1 backdrop-blur-md ${
+                        showControls && validImages.length > 1 ? 'bottom-10 left-3' : 'bottom-3 left-3'
+                    }`}
+                >
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setZoom((z) => Math.max(ZOOM_MIN, Math.round((z - ZOOM_STEP) * 100) / 100));
+                        }}
+                        disabled={!canZoomOut}
+                        className="flex h-8 w-8 items-center justify-center rounded-full text-lg font-semibold leading-none text-white transition-colors hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-35"
+                        aria-label="Zoom out"
+                    >
+                        −
+                    </button>
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setZoom(1);
+                        }}
+                        className="min-w-[2.25rem] px-1.5 py-1 text-[10px] font-bold tabular-nums text-white/90 transition-colors hover:text-white"
+                        aria-label="Reset zoom"
+                    >
+                        {zoom <= 1.001 ? '1×' : `${zoom.toFixed(2).replace(/\.?0+$/, '')}×`}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setZoom((z) => Math.min(ZOOM_MAX, Math.round((z + ZOOM_STEP) * 100) / 100));
+                        }}
+                        disabled={!canZoomIn}
+                        className="flex h-8 w-8 items-center justify-center rounded-full text-lg font-semibold leading-none text-white transition-colors hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-35"
+                        aria-label="Zoom in"
+                    >
+                        +
+                    </button>
+                </div>
+            )}
 
             {showControls && validImages.length > 1 && (
                 <>
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); setCurrentIndex((prev) => (prev + 1) % validImages.length); }}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover/slider:opacity-100"
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentIndex((prev) => (prev + 1) % validImages.length);
+                        }}
+                        className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/20 text-white opacity-100 backdrop-blur-sm transition-all hover:bg-black/40 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/slider:opacity-100"
                     >
                         <ChevronRightIcon className="w-5 h-5" />
                     </button>
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 px-1.5 py-0.5 bg-black/20 dark:bg-white/20 backdrop-blur-md rounded-full">
-                        {validImages.map((_, i) => (<div key={i} className={`w-1 h-1 rounded-full transition-all duration-300 ${i === currentIndex ? 'bg-orange-500 w-2' : 'bg-white/50'}`} />))}
+                    <div className="pointer-events-none absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1 rounded-full bg-black/20 px-1.5 py-0.5 backdrop-blur-md dark:bg-white/20">
+                        {validImages.map((_, i) => (
+                            <div key={i} className={`h-1 rounded-full transition-all duration-300 ${i === currentIndex ? 'w-2 bg-orange-500' : 'w-1 bg-white/50'}`} />
+                        ))}
                     </div>
                 </>
             )}
+        </div>
+    );
+});
+
+ImageSlider.displayName = 'ImageSlider';
+
+const SkeletonShimmer = ({ className = '' }) => (
+    <div
+        className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`}
+        aria-hidden
+    >
+        <div className="absolute inset-y-0 w-[55%] -skew-x-12 bg-gradient-to-r from-transparent via-white/50 to-transparent dark:via-white/[0.08] animate-safety-shimmer" />
+    </div>
+);
+
+const SafetyLibraryLoadingView = ({ language }) => {
+    const copy =
+        language === 'bn'
+            ? { line: 'তথ্য লোড হচ্ছে…', sub: 'স্প্রেডশিট থেকে লাইব্রেরি আসছে' }
+            : { line: 'Loading library…', sub: 'Fetching items from the sheet' };
+
+    return (
+        <div className="max-w-7xl mx-auto p-3 sm:p-8" aria-busy="true" aria-live="polite">
+            <div className="mb-6 flex flex-col items-center gap-3 py-2 sm:py-4">
+                <div className="relative flex h-[4.5rem] w-[4.5rem] items-center justify-center">
+                    <div
+                        className="absolute inset-0 rounded-full border-[3px] border-orange-500/15 border-t-orange-500/90 dark:border-orange-400/20 dark:border-t-orange-400"
+                        style={{ animation: 'spin 1.05s linear infinite' }}
+                    />
+                    <div
+                        className="absolute inset-1.5 rounded-full border-2 border-orange-400/25 border-b-orange-500/70 dark:border-orange-300/20 dark:border-b-orange-300/80"
+                        style={{ animation: 'spin 1.45s linear infinite reverse' }}
+                    />
+                    <ShieldCheckIcon className="relative h-8 w-8 text-orange-500 drop-shadow-sm animate-safety-float dark:text-orange-400" />
+                </div>
+                <div className="text-center space-y-1">
+                    <p className="text-sm font-bold tracking-tight text-slate-700 dark:text-slate-200">{copy.line}</p>
+                    <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500">{copy.sub}</p>
+                </div>
+            </div>
+
+            <div className="mb-4 sm:mb-6 h-[4.5rem] sm:h-[4.75rem] overflow-hidden rounded-[1.25rem] bg-slate-200/70 dark:bg-slate-800/80 relative border border-slate-200/60 dark:border-slate-700/50">
+                <SkeletonShimmer />
+                <div className="absolute left-4 top-1/2 flex -translate-y-1/2 items-center gap-3">
+                    <div className="h-10 w-10 shrink-0 rounded-full bg-slate-300/80 dark:bg-slate-700/80" />
+                    <div className="space-y-2">
+                        <div className="h-3.5 w-36 rounded-md bg-slate-300/90 dark:bg-slate-700/90 sm:w-48" />
+                        <div className="h-2.5 w-24 rounded-md bg-slate-300/60 dark:bg-slate-700/60" />
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+                {Array.from({ length: 8 }, (_, i) => (
+                    <div
+                        key={i}
+                        className="overflow-hidden rounded-2xl border border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900"
+                        style={{ animationDelay: `${i * 70}ms` }}
+                    >
+                        <div className="relative aspect-square overflow-hidden bg-slate-100 dark:bg-slate-800/90">
+                            <SkeletonShimmer className="opacity-90" />
+                            <div className="absolute left-2 top-2 h-4 w-14 rounded-md bg-slate-300/70 dark:bg-slate-600/70" />
+                        </div>
+                        <div className="space-y-2 p-2.5 sm:p-4">
+                            <div className="mx-auto h-3 w-[88%] rounded-md bg-slate-200 dark:bg-slate-800" />
+                            <div className="mx-auto h-3 w-[62%] rounded-md bg-slate-200/80 dark:bg-slate-800/80" />
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };
@@ -174,6 +581,18 @@ export default function SafetyLibrary({ language, setCurrentView }) {
     const [categories, setCategories] = useState([]);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const tabsRef = useRef(null);
+    const detailSliderRef = useRef(null);
+    const [detailZoomLevel, setDetailZoomLevel] = useState(1);
+    /** Modal only: breadcrumb stack when jumping via Related items chips. */
+    const [modalBrowseStack, setModalBrowseStack] = useState([]);
+
+    useEffect(() => {
+        setDetailZoomLevel(1);
+    }, [selectedItem?.id]);
+
+    useEffect(() => {
+        if (!selectedItem) setModalBrowseStack([]);
+    }, [selectedItem]);
 
     // Scroll Hint Effect
     useEffect(() => {
@@ -208,7 +627,13 @@ export default function SafetyLibrary({ language, setCurrentView }) {
             guideLabel: 'Usage Guide',
             aboutLabel: 'About',
             retry: 'Retry',
-            details: 'Details'
+            details: 'Details',
+            zoomInAria: 'Zoom in',
+            zoomOutAria: 'Zoom out',
+            zoomResetAria: 'Reset zoom',
+            zoomToolbarAria: 'Image zoom controls',
+            relatedOpenAriaPrefix: 'Open related item:',
+            backPreviousAria: 'Previous item'
         },
         bn: {
             title: 'সুরক্ষা লাইব্রেরি',
@@ -218,9 +643,44 @@ export default function SafetyLibrary({ language, setCurrentView }) {
             guideLabel: 'দরকারি টিপ',
             aboutLabel: 'সম্পর্কে',
             retry: 'আবার চেষ্টা করুন',
-            details: 'বিস্তারিত'
+            details: 'বিস্তারিত',
+            zoomInAria: 'বড় করুন',
+            zoomOutAria: 'ছোট করুন',
+            zoomResetAria: 'জুম রিসেট',
+            zoomToolbarAria: 'ছবির জুম নিয়ন্ত্রণ',
+            relatedOpenAriaPrefix: 'খুলুন:',
+            backPreviousAria: 'আগের আইটেমে ফিরুন'
         }
     }[language];
+
+    const closeDetailModal = useCallback(() => {
+        setModalBrowseStack([]);
+        setSelectedItem(null);
+    }, []);
+
+    const openItemDetail = useCallback((item) => {
+        setModalBrowseStack([]);
+        setSelectedItem(item);
+    }, []);
+
+    const goToRelatedLibraryItem = useCallback(
+        (rel) => {
+            const full = items.find((i) => i.id === rel.id);
+            if (!full) return;
+            setModalBrowseStack((prev) => (selectedItem ? [...prev, selectedItem] : prev));
+            setSelectedItem(full);
+        },
+        [items, selectedItem]
+    );
+
+    const popModalBrowseBack = useCallback(() => {
+        setModalBrowseStack((prev) => {
+            if (prev.length === 0) return prev;
+            const restore = prev[prev.length - 1];
+            setSelectedItem(restore);
+            return prev.slice(0, -1);
+        });
+    }, []);
 
     const fetchLibrary = async (force = false) => {
         try {
@@ -279,24 +739,32 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     {/* Mobile Search Trigger */}
-                                    <button 
-                                        onClick={() => setIsSearchExpanded(true)}
-                                        className="sm:hidden w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 active:scale-90 transition-transform"
+                                    <button
+                                        type="button"
+                                        disabled={loading}
+                                        onClick={() => !loading && setIsSearchExpanded(true)}
+                                        className="sm:hidden w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 active:scale-90 transition-transform disabled:pointer-events-none disabled:opacity-40"
                                     >
                                         <SearchIcon className="w-5 h-5" />
                                     </button>
-                                    
+
                                     {/* Desktop Search Bar */}
-                                    <div className="hidden sm:block relative group max-w-md w-full">
-                                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                        <input
-                                            type="text"
-                                            placeholder={t.searchPlaceholder}
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800/50 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500/20 transition-all"
-                                        />
-                                    </div>
+                                    {loading ? (
+                                        <div className="hidden sm:block h-10 max-w-md w-full min-w-[200px] overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800/80 relative">
+                                            <SkeletonShimmer />
+                                        </div>
+                                    ) : (
+                                        <div className="hidden sm:block relative group max-w-md w-full">
+                                            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                            <input
+                                                type="text"
+                                                placeholder={t.searchPlaceholder}
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800/50 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500/20 transition-all"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </>
                         ) : (
@@ -324,53 +792,76 @@ export default function SafetyLibrary({ language, setCurrentView }) {
 
                     {/* Compact Categories with Scroll Hint Ref */}
                     <div ref={tabsRef} className="flex gap-2 overflow-x-auto no-scrollbar pb-1 scroll-smooth">
-                        {categories.map((cat) => (
-                            <button
-                                key={cat.id}
-                                onClick={() => setActiveCategory(cat.id)}
-                                className={`px-4 py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap border text-center
-                                    ${activeCategory === cat.id
-                                        ? 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/20'
-                                        : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-100 dark:border-slate-800'}`}
-                            >
-                                {cat.label}
-                            </button>
-                        ))}
+                        {loading ? (
+                            <>
+                                {[56, 72, 64, 80, 68, 52, 60].map((w, i) => (
+                                    <div
+                                        key={i}
+                                        className="relative h-9 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/90"
+                                        style={{ width: `${w}px` }}
+                                    >
+                                        <SkeletonShimmer />
+                                    </div>
+                                ))}
+                            </>
+                        ) : (
+                            categories.map((cat) => (
+                                <button
+                                    key={cat.id}
+                                    type="button"
+                                    onClick={() => setActiveCategory(cat.id)}
+                                    className={`px-4 py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap border text-center
+                                        ${activeCategory === cat.id
+                                            ? 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/20'
+                                            : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-100 dark:border-slate-800'}`}
+                                >
+                                    {cat.label}
+                                </button>
+                            ))
+                        )}
                     </div>
                 </div>
             </div>
 
             <div className="max-w-7xl mx-auto p-3 sm:p-8">
-                {/* Elegant Video Guide Banner */}
-                <div 
-                    onClick={() => setCurrentView('video-guide')}
-                    className="mb-4 sm:mb-6 rounded-[1.25rem] bg-gradient-to-r from-orange-500 to-orange-600 p-4 text-white flex items-center justify-between cursor-pointer hover:shadow-lg hover:shadow-orange-500/20 transition-all active:scale-[0.98]"
-                >
-                    <div className="flex items-center gap-3.5">
-                        <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
-                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-sm sm:text-base leading-tight">
-                                {language === 'en' ? 'Watch Video Guides' : 'ভিডিও গাইড দেখুন'}
-                            </h3>
-                        </div>
-                    </div>
-                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"/></svg>
-                    </div>
-                </div>
-
                 {loading ? (
-                    <div className="flex items-center justify-center min-h-[300px]">
-                        <div className="w-10 h-10 border-3 border-orange-500/20 border-t-orange-500 rounded-full animate-spin"></div>
+                    <SafetyLibraryLoadingView language={language} />
+                ) : (
+                    <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setCurrentView('video-guide')}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                setCurrentView('video-guide');
+                            }
+                        }}
+                        className="mb-4 sm:mb-6 rounded-[1.25rem] bg-gradient-to-r from-orange-500 to-orange-600 p-4 text-white flex items-center justify-between cursor-pointer hover:shadow-lg hover:shadow-orange-500/20 transition-all active:scale-[0.98]"
+                    >
+                        {/* Elegant Video Guide Banner */}
+                        <div className="flex items-center gap-3.5">
+                            <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
+                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-sm sm:text-base leading-tight">
+                                    {language === 'en' ? 'Watch Video Guides' : 'ভিডিও গাইড দেখুন'}
+                                </h3>
+                            </div>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"/></svg>
+                        </div>
                     </div>
-                ) : filteredItems.length > 0 ? (
+                )}
+
+                {!loading && filteredItems.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {filteredItems.map((item) => (
                             <div
                                 key={item.id}
-                                onClick={() => setSelectedItem(item)}
+                                onClick={() => openItemDetail(item)}
                                 className="group bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 hover:shadow-xl transition-all active:scale-[0.97] flex flex-col cursor-pointer"
                             >
                                 <div className="relative aspect-square">
@@ -389,40 +880,119 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                             </div>
                         ))}
                     </div>
-                ) : (
+                ) : !loading ? (
                     <div className="flex flex-col items-center justify-center min-h-[300px] text-slate-400">
                         <LineChartIcon className="w-12 h-12 mb-2 opacity-10" />
                         <p className="text-sm font-medium">{t.noResults}</p>
                     </div>
-                )}
+                ) : null}
 
                 {/* Premium Detail Modal - Optimized for High-End UX */}
                 {selectedItem && (
                     <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-6 animate-fade-in">
-                        <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl" onClick={() => setSelectedItem(null)} />
+                        <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl" onClick={closeDetailModal} />
                         
-                        <div className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] sm:max-w-2xl bg-white dark:bg-slate-900 rounded-none sm:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up sm:animate-scale-in border-none sm:border border-white/10 pt-[env(safe-area-inset-top)] sm:pt-0">
-                            {/* Drag Indicator for Mobile (Hidden on full screen, keeping for consistency if needed, but adjusted padding) */}
-                            <div className="sm:hidden w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mt-3 mb-2 shrink-0 shadow-inner" onClick={() => setSelectedItem(null)} />
-                            
-                            <button
-                                onClick={() => setSelectedItem(null)}
-                                className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center backdrop-blur-md active:scale-90 transition-all border border-white/20 mt-[env(safe-area-inset-top)] sm:mt-0"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-                            </button>
+                        <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden rounded-none border-none bg-white pt-[env(safe-area-inset-top)] shadow-2xl dark:bg-slate-900 sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:rounded-[2.5rem] sm:border sm:border-white/10 sm:pt-0 animate-slide-up sm:animate-scale-in">
+                            <div className="mx-auto mt-2 mb-1 h-1.5 w-12 shrink-0 cursor-pointer rounded-full bg-slate-200 shadow-inner dark:bg-slate-800 sm:hidden" onClick={closeDetailModal} />
 
-                            <div className="flex-1 overflow-y-auto no-scrollbar">
-                                {/* Clean Image Section with minimal Badge */}
-                                <div className={`relative w-full ${selectedItem.category === 'Charts' ? 'aspect-auto min-h-[50vh]' : 'aspect-square sm:aspect-video'} bg-slate-50 dark:bg-slate-800/20 group/modal-img`}>
-                                    <ImageSlider images={selectedItem.images} alt={selectedItem.name_bn} aspect="h-full" showControls={true} />
-                                    
-                                    {/* Minimalist Top Corner Badge */}
-                                    <div className="absolute top-4 left-4 z-10 animate-in fade-in slide-in-from-left-4 duration-500">
-                                        <span className="px-2 py-0.5 bg-black/40 backdrop-blur-md text-white text-[8px] font-black uppercase tracking-[0.2em] rounded-md border border-white/10">
-                                            {selectedItem.category}
-                                        </span>
-                                    </div>
+                            {/* Top bar: optional back (related navigation) + category | zoom | close */}
+                            <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 border-b border-slate-100 bg-white/95 px-3 py-2 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95 sm:px-5">
+                                <div className="flex min-w-0 items-center gap-1.5">
+                                    {modalBrowseStack.length > 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={popModalBrowseBack}
+                                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 transition-colors hover:bg-slate-100 active:scale-95 dark:border-white/15 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+                                            aria-label={t.backPreviousAria}
+                                        >
+                                            <ChevronLeftIcon className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                    <span className="min-w-0 truncate rounded-md border border-slate-200/80 bg-slate-100 px-2 py-1 text-[8px] font-black uppercase tracking-[0.14em] text-slate-600 dark:border-white/10 dark:bg-white/10 dark:text-white/90">
+                                        {selectedItem.category}
+                                    </span>
+                                </div>
+                                <div
+                                    role="toolbar"
+                                    aria-label={t.zoomToolbarAria}
+                                    data-zoom-ui
+                                    className="flex items-center gap-0.5 justify-self-center rounded-xl border-2 border-orange-500 bg-slate-950 px-1 py-1 text-white shadow-[0_3px_12px_rgba(0,0,0,0.35)] ring-1 ring-orange-400/35 dark:border-orange-400 dark:bg-black"
+                                >
+                                    <button
+                                        type="button"
+                                        onClick={() => detailSliderRef.current?.zoomOut()}
+                                        disabled={detailZoomLevel <= ZOOM_MIN + 0.01}
+                                        className="flex h-8 w-8 items-center justify-center rounded-lg text-base font-semibold leading-none text-white transition-colors hover:bg-orange-500/25 active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
+                                        aria-label={t.zoomOutAria}
+                                    >
+                                        −
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => detailSliderRef.current?.resetZoom()}
+                                        className="min-w-[2.2rem] px-1.5 py-1 text-[10px] font-black tabular-nums text-white transition-colors hover:text-orange-200"
+                                        aria-label={t.zoomResetAria}
+                                    >
+                                        {detailZoomLevel <= 1.001
+                                            ? '1×'
+                                            : `${detailZoomLevel.toFixed(2).replace(/\.?0+$/, '')}×`}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => detailSliderRef.current?.zoomIn()}
+                                        disabled={detailZoomLevel >= ZOOM_MAX - 0.01}
+                                        className="flex h-8 w-8 items-center justify-center rounded-lg text-base font-semibold leading-none text-white transition-colors hover:bg-orange-500/25 active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
+                                        aria-label={t.zoomInAria}
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={closeDetailModal}
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center justify-self-end rounded-full border border-slate-200/80 bg-white text-slate-600 transition-colors hover:bg-slate-50 active:scale-95 dark:border-white/15 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+                                    aria-label={language === 'en' ? 'Close' : 'বন্ধ করুন'}
+                                >
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {selectedItem.related_items?.length > 0 && (
+                                <div className="flex shrink-0 flex-wrap gap-2 border-b border-slate-100 bg-white/90 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/90 sm:px-5">
+                                    {selectedItem.related_items.map((rel) => (
+                                        <button
+                                            key={rel.id}
+                                            type="button"
+                                            onClick={() => goToRelatedLibraryItem(rel)}
+                                            className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-orange-200/90 bg-white py-1 pl-3 pr-2 text-left text-[11px] font-semibold text-slate-800 shadow-sm transition-all hover:border-orange-400 hover:bg-orange-50/90 active:scale-[0.99] dark:border-orange-500/25 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-800/90"
+                                            aria-label={`${t.relatedOpenAriaPrefix} ${rel.name_bn}`}
+                                        >
+                                            <span className="min-w-0 flex-1 truncate">{rel.name_bn}</span>
+                                            <span className="shrink-0 rounded-md bg-orange-100/90 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tight text-orange-900/90 dark:bg-orange-500/20 dark:text-orange-100">
+                                                {rel.category}
+                                            </span>
+                                            <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-orange-600/70 dark:text-orange-300/70" aria-hidden />
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar">
+                                <div
+                                    className={`group/modal-img w-full bg-slate-50 dark:bg-slate-800/20 ${selectedItem.category === 'Charts' ? 'aspect-auto min-h-[45vh] sm:min-h-[50vh]' : 'aspect-square sm:aspect-video max-h-[min(72vh,640px)] sm:max-h-none'}`}
+                                >
+                                    <ImageSlider
+                                        ref={detailSliderRef}
+                                        images={selectedItem.images}
+                                        alt={selectedItem.name_bn}
+                                        aspect="h-full"
+                                        showControls={true}
+                                        enableZoom
+                                        zoomChrome="none"
+                                        onZoomChange={setDetailZoomLevel}
+                                    />
                                 </div>
 
                                 <div className="p-6 sm:p-10 pb-32 sm:pb-16 space-y-6">
@@ -431,17 +1001,12 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                         <h3 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">
                                             {selectedItem.name_bn}
                                         </h3>
-                                        <div className="flex items-center gap-2">
-                                            <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-md">
-                                                {selectedItem.category}
-                                            </span>
-                                            {selectedItem.approx_price_inr !== '---' && (
-                                                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg border border-emerald-500/10 font-black">
-                                                    <span className="text-[10px]">₹</span>
-                                                    <span className="text-xs tabular-nums">{selectedItem.approx_price_inr}</span>
-                                                </div>
-                                            )}
-                                        </div>
+                                        {selectedItem.approx_price_inr !== '---' && (
+                                            <div className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/10 bg-emerald-500/10 px-2.5 py-1 font-black text-emerald-600 dark:text-emerald-400">
+                                                <span className="text-[10px]">₹</span>
+                                                <span className="text-xs tabular-nums">{selectedItem.approx_price_inr}</span>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* About Section - Compact & Minimalist */}

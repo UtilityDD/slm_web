@@ -12,6 +12,7 @@ This folder holds **maintainer-focused** documentation: architecture notes, inte
 | Guide | Scope |
 |--------|--------|
 | [Chapter Quiz Modal](./chapter-quiz-modal.md) | `ChapterQuizModal.jsx`, read-aloud script, quiz UX (mobile, TTS, animations) |
+| [Safety Library](./safety-library.md) | `SafetyLibrary.jsx`, grid, detail modal, Drive image helper |
 
 ## Conventions for new guides
 
