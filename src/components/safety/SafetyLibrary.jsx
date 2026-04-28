@@ -79,7 +79,9 @@ const ImageSlider = forwardRef(function ImageSlider(
         /** When `enableZoom`, omit in-image pill and drive zoom from parent (e.g. modal toolbar). */
         zoomChrome = 'overlay',
         /** Fires whenever zoom level changes (pinch, buttons, slide change). */
-        onZoomChange
+        onZoomChange,
+        /** Tall charts: let image use natural height so the modal scroll body can scroll vertically at 1× zoom. */
+        naturalImageHeight = false
     },
     ref
 ) {
@@ -363,14 +365,22 @@ const ImageSlider = forwardRef(function ImageSlider(
     const canZoomIn = zoom < ZOOM_MAX - 0.01;
     const canZoomOut = zoom > ZOOM_MIN + 0.01;
 
+    const boxAspect = naturalImageHeight ? 'w-full min-h-[30vh]' : aspect;
+    const touchClass =
+        enableZoom && zoom > 1.001
+            ? `touch-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`
+            : enableZoom
+              ? 'touch-pan-y'
+              : '';
+
     return (
         <div
             ref={enableZoom ? viewportRef : undefined}
             onPointerDown={enableZoom ? onViewportPointerDown : undefined}
             onLostPointerCapture={enableZoom ? onLostPointerCapture : undefined}
-            className={`group/slider relative flex select-none items-center justify-center bg-slate-50 dark:bg-slate-900/50 ${aspect} overflow-hidden [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
-                enableZoom ? `touch-none ${zoom > 1.001 ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : ''}` : ''
-            }`}
+            className={`group/slider relative flex select-none items-center justify-center bg-slate-50 dark:bg-slate-900/50 ${boxAspect} [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
+                naturalImageHeight ? 'overflow-x-hidden overflow-y-visible' : 'overflow-hidden'
+            } ${touchClass}`}
         >
             {showControls && validImages.length > 1 && (
                 <button
@@ -386,7 +396,11 @@ const ImageSlider = forwardRef(function ImageSlider(
             )}
 
             <div
-                className="flex min-h-full min-w-full items-center justify-center p-1"
+                className={
+                    naturalImageHeight
+                        ? 'flex w-full items-start justify-center p-1'
+                        : 'flex min-h-full min-w-full items-center justify-center p-1'
+                }
                 style={{
                     transform: enableZoom ? `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` : `scale(${zoom})`,
                     transformOrigin: 'center center',
@@ -400,9 +414,11 @@ const ImageSlider = forwardRef(function ImageSlider(
                     draggable={false}
                     onDragStart={(e) => e.preventDefault()}
                     onError={() => handleImageError(validImages[currentIndex])}
-                    className={`max-h-full w-full object-contain filter drop-shadow-md transition-opacity duration-300 animate-in fade-in duration-500 ${
-                        enableZoom ? '' : 'zoom-in-95 duration-500 group-hover/slider:scale-105'
-                    }`}
+                    className={`object-contain filter drop-shadow-md transition-opacity duration-300 animate-in fade-in duration-500 ${
+                        naturalImageHeight
+                            ? 'h-auto w-full max-w-full'
+                            : 'max-h-full w-full'
+                    } ${enableZoom ? '' : 'zoom-in-95 duration-500 group-hover/slider:scale-105'}`}
                 />
             </div>
 
@@ -981,9 +997,10 @@ export default function SafetyLibrary({ language, setCurrentView }) {
 
                             <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar">
                                 <div
-                                    className={`group/modal-img w-full bg-slate-50 dark:bg-slate-800/20 ${selectedItem.category === 'Charts' ? 'aspect-auto min-h-[45vh] sm:min-h-[50vh]' : 'aspect-square sm:aspect-video max-h-[min(72vh,640px)] sm:max-h-none'}`}
+                                    className={`group/modal-img w-full bg-slate-50 dark:bg-slate-800/20 ${selectedItem.category === 'Charts' ? 'aspect-auto min-h-0' : 'aspect-square sm:aspect-video max-h-[min(72vh,640px)] sm:max-h-none'}`}
                                 >
                                     <ImageSlider
+                                        key={selectedItem.id}
                                         ref={detailSliderRef}
                                         images={selectedItem.images}
                                         alt={selectedItem.name_bn}
@@ -992,6 +1009,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                         enableZoom
                                         zoomChrome="none"
                                         onZoomChange={setDetailZoomLevel}
+                                        naturalImageHeight={selectedItem.category === 'Charts'}
                                     />
                                 </div>
 
