@@ -1149,6 +1149,21 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 }
             }
 
+            // Cap visual questions to max 2 when possible.
+            const getVisualCount = (arr) => arr.filter((q) => isVisualQuestion(q)).length;
+            let visualCount = getVisualCount(picked);
+            if (visualCount > 2) {
+                const remainingPool = freshnessSorted.slice(5);
+                for (let i = 0; i < picked.length && visualCount > 2; i++) {
+                    if (!isVisualQuestion(picked[i])) continue;
+                    const replacement = remainingPool.find((q) => !isVisualQuestion(q));
+                    if (replacement) {
+                        picked[i] = replacement;
+                        visualCount = getVisualCount(picked);
+                    }
+                }
+            }
+
             const selectedQuestions = picked.map(q => {
                 if (!q.options || q.options.length === 0) return q;
 

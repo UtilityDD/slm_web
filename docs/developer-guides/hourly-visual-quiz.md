@@ -31,7 +31,9 @@ Adds image-capable hourly questions from Google Sheets while preserving the exis
 - Supabase still provides base pool via `get_random_hourly_questions`.
 - Visual sheet rows are merged into that pool by `id`.
 - Final user quiz remains exactly 5 questions (deterministic per user + hour).
-- Enforces at least 1 visual question when available.
+- Enforces visual mix target in final 5:
+  - minimum 1 visual question when available
+  - maximum 2 visual questions when non-visual replacements are available
 - Avoids repeating the same image for 10 hours (soft preference, per-user local history).
 
 ## Scoring and database safety
