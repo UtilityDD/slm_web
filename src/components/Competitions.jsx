@@ -6,6 +6,7 @@ import { cacheHelper } from '../utils/cacheHelper';
 import { storageUtils } from '../utils/storageUtils';
 import { leaderboardService } from '../utils/leaderboardService';
 import { requestManager } from '../utils/requestManager';
+import { visualQuizService } from '../utils/visualQuizService';
 import { DotLottiePlayer } from '@dotlottie/react-player';
 import sandyLoading from '../assets/SandyLoading.lottie';
 
@@ -45,6 +46,86 @@ const stringToSeed = (str) => {
         hash |= 0;
     }
     return Math.abs(hash);
+};
+
+const extractDriveFileId = (url) => {
+    if (!url || typeof url !== 'string') return '';
+    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)\/|[?&]id=([a-zA-Z0-9_-]+)/);
+    return match ? (match[1] || match[2] || '') : '';
+};
+
+const buildDriveImageCandidates = (url) => {
+    const trimmed = String(url || '').trim();
+    if (!trimmed) return [];
+    if (!trimmed.includes('drive.google.com')) return [trimmed];
+
+    const id = extractDriveFileId(trimmed);
+    if (!id) return [trimmed];
+
+    return [
+        `https://drive.google.com/thumbnail?id=${id}&sz=w1200`,
+        `https://drive.google.com/uc?export=view&id=${id}`,
+        `https://lh3.googleusercontent.com/d/${id}=w1200`
+    ];
+};
+
+const toDisplayImageUrl = (url) => {
+    const candidates = buildDriveImageCandidates(url);
+    return candidates[0] || '';
+};
+
+const isImageOption = (option) => {
+    const value = String(option || '').trim().toLowerCase();
+    return (
+        value.startsWith('http://') ||
+        value.startsWith('https://') ||
+        value.startsWith('/') ||
+        value.includes('.png') ||
+        value.includes('.jpg') ||
+        value.includes('.jpeg') ||
+        value.includes('.webp') ||
+        value.includes('.gif')
+    );
+};
+
+const isVisualQuestion = (question) => {
+    if (!question) return false;
+    if (String(question.question_image_url || '').trim()) return true;
+    return Array.isArray(question.options) && question.options.some((opt) => isImageOption(opt));
+};
+
+const getQuestionImageKeys = (question) => {
+    if (!question) return [];
+    const keys = [];
+    const qImage = String(question.question_image_url || '').trim();
+    if (qImage) keys.push(qImage);
+    if (Array.isArray(question.options)) {
+        question.options.forEach((opt) => {
+            if (isImageOption(opt)) {
+                const value = String(opt || '').trim();
+                if (value) keys.push(value);
+            }
+        });
+    }
+    return [...new Set(keys)];
+};
+
+const handleImageLoadError = (event, originalUrl) => {
+    const img = event.currentTarget;
+    if (!img) return false;
+
+    const candidates = buildDriveImageCandidates(originalUrl);
+    if (!candidates.length) return true;
+
+    const currentIndex = Number.parseInt(img.dataset.fallbackIndex || '0', 10);
+    const nextIndex = currentIndex + 1;
+
+    if (nextIndex < candidates.length) {
+        img.dataset.fallbackIndex = String(nextIndex);
+        img.src = candidates[nextIndex];
+        return false;
+    }
+    return true;
 };
 
 // Utility to format last active date
@@ -98,6 +179,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [showHint, setShowHint] = useState(false);
     const [hintViewedQuestions, setHintViewedQuestions] = useState(new Set());
     const [showAbortWarningModal, setShowAbortWarningModal] = useState(false);
+    const [imageRetryTick, setImageRetryTick] = useState({});
+    const [failedImageKeys, setFailedImageKeys] = useState({});
     
     // Search Quota State
     const [searchCount, setSearchCount] = useState(0);
@@ -122,6 +205,51 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [pendingSubmission, setPendingSubmission] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
     const [syncErrorMessage, setSyncErrorMessage] = useState(null);
+    const IMAGE_REPEAT_COOLDOWN_HOURS = 10;
+
+    const getImageHistoryStorageKey = () => `slm_hourly_image_history_${user?.id || 'anon'}`;
+
+    const getRecentImageSet = () => {
+        try {
+            const saved = storageUtils.getItem(getImageHistoryStorageKey());
+            const now = getSyncedTime().getTime();
+            const threshold = now - (IMAGE_REPEAT_COOLDOWN_HOURS * 60 * 60 * 1000);
+            const rows = Array.isArray(saved) ? saved : [];
+            const recent = rows.filter((entry) => entry && entry.image && Number(entry.ts) >= threshold);
+            return new Set(recent.map((entry) => entry.image));
+        } catch {
+            return new Set();
+        }
+    };
+
+    const storeSelectedQuestionImages = (questions) => {
+        try {
+            const key = getImageHistoryStorageKey();
+            const saved = storageUtils.getItem(key);
+            const now = getSyncedTime().getTime();
+            const threshold = now - (IMAGE_REPEAT_COOLDOWN_HOURS * 60 * 60 * 1000);
+            const existing = Array.isArray(saved) ? saved : [];
+            const kept = existing.filter((entry) => entry && entry.image && Number(entry.ts) >= threshold);
+            const additions = (questions || [])
+                .flatMap((q) => getQuestionImageKeys(q))
+                .map((image) => ({ image, ts: now }));
+            storageUtils.setItem(key, [...kept, ...additions]);
+        } catch (error) {
+            console.warn('Could not persist image-repeat history:', error);
+        }
+    };
+
+    const buildRetryImageSrc = (rawUrl, imageKey) => {
+        const base = toDisplayImageUrl(rawUrl);
+        if (!base) return '';
+        const sep = base.includes('?') ? '&' : '?';
+        return `${base}${sep}retry=${imageRetryTick[imageKey] || 0}`;
+    };
+
+    const retryImageLoad = (imageKey) => {
+        setFailedImageKeys((prev) => ({ ...prev, [imageKey]: false }));
+        setImageRetryTick((prev) => ({ ...prev, [imageKey]: (prev[imageKey] || 0) + 1 }));
+    };
 
     // PERSISTENCE & ANTI-CHEAT LOGIC
     useEffect(() => {
@@ -721,29 +849,42 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             const quizData = await requestManager.fetch(
                 cacheKey,
                 async () => {
-                    const { data, error } = await supabase.rpc('get_random_hourly_questions', {
-                        lang: 'bn',
-                        limit_count: 5
-                    });
+                    const [{ data, error }, visualQuestions] = await Promise.all([
+                        supabase.rpc('get_random_hourly_questions', {
+                            lang: 'bn',
+                            // Fetch a larger hourly pool; per-user deterministic selection still picks 5.
+                            limit_count: 20
+                        }),
+                        visualQuizService.fetchVisualQuestions({ language: 'bn', hourId })
+                    ]);
 
                     if (error) throw error;
 
-                    if (data && data.length > 0) {
+                    const dbQuestions = (data || []).map((q) => ({
+                        id: q.id,
+                        question_text: q.question_text,
+                        options: q.options,
+                        correct_option_index: q.correct_answer_index,
+                        hint: q.hint,
+                        category: q.category,
+                        tags: q.tags
+                    }));
+
+                    const mergedQuestionMap = new Map();
+                    [...dbQuestions, ...(visualQuestions || [])].forEach((q) => {
+                        if (!q || !q.id) return;
+                        mergedQuestionMap.set(String(q.id), q);
+                    });
+                    const mergedQuestions = [...mergedQuestionMap.values()];
+
+                    if (mergedQuestions.length > 0) {
                         return {
                             id: `hourly-challenge-${hourId}`, // Ensure this ID format is consistent
                             title: language === 'en' ? 'Hourly Safety Challenge' : 'প্রতি ঘন্টায় সুরক্ষা চ্যালেঞ্জ',
                             description: language === 'en' ? 'Test your safety knowledge! New questions every hour.' : 'আপনার সুরক্ষা জ্ঞান পরীক্ষা করুন! প্রতি ঘন্টায় নতুন প্রশ্ন।',
                             duration_minutes: 5,
                             points_reward: 50,
-                            questions: data.map((q) => ({
-                                id: q.id,
-                                question_text: q.question_text,
-                                options: q.options,
-                                correct_option_index: q.correct_answer_index,
-                                hint: q.hint,
-                                category: q.category,
-                                tags: q.tags
-                            })),
+                            questions: mergedQuestions,
                             isLocal: false
                         };
                     }
@@ -989,7 +1130,26 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
             // Deterministically pick 5 questions using robust shuffle
             const shuffledQuestions = shuffleArray(baseQuestions, rng);
-            const selectedQuestions = shuffledQuestions.slice(0, 5).map(q => {
+            const recentImageSet = getRecentImageSet();
+            const freshnessSorted = [...shuffledQuestions].sort((a, b) => {
+                const aHasRecent = getQuestionImageKeys(a).some((img) => recentImageSet.has(img));
+                const bHasRecent = getQuestionImageKeys(b).some((img) => recentImageSet.has(img));
+                if (aHasRecent === bHasRecent) return 0;
+                return aHasRecent ? 1 : -1; // non-recent visuals first
+            });
+            const picked = freshnessSorted.slice(0, 5);
+
+            // Ensure at least 1 visual question when available in the pool.
+            const hasVisualInPool = freshnessSorted.some((q) => isVisualQuestion(q));
+            const hasVisualInPicked = picked.some((q) => isVisualQuestion(q));
+            if (hasVisualInPool && !hasVisualInPicked) {
+                const fallbackVisual = freshnessSorted.slice(5).find((q) => isVisualQuestion(q));
+                if (fallbackVisual) {
+                    picked[picked.length - 1] = fallbackVisual;
+                }
+            }
+
+            const selectedQuestions = picked.map(q => {
                 if (!q.options || q.options.length === 0) return q;
 
                 const correctAnswerText = q.options[q.correct_option_index];
@@ -1003,6 +1163,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 };
             });
             setQuizQuestions(selectedQuestions);
+            storeSelectedQuestionImages(selectedQuestions);
         } else {
             setQuizQuestions([]);
         }
@@ -2076,6 +2237,41 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                     <div className="flex justify-between items-start gap-4 mb-6">
                                         <div className="flex-1 min-w-0">
+                                            {quizQuestions[currentQuestionIndex]?.question_image_url && (
+                                                <div className="mb-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                                                    {(() => {
+                                                        const questionImageKey = `q_${quizQuestions[currentQuestionIndex]?.id || currentQuestionIndex}`;
+                                                        return (
+                                                            <>
+                                                    <img
+                                                        src={buildRetryImageSrc(quizQuestions[currentQuestionIndex]?.question_image_url, questionImageKey)}
+                                                        alt={language === 'en' ? 'Question visual' : 'প্রশ্নের ছবি'}
+                                                        className="w-full max-h-64 object-contain"
+                                                        loading="lazy"
+                                                        data-fallback-index="0"
+                                                        onError={(e) => {
+                                                            const exhausted = handleImageLoadError(e, quizQuestions[currentQuestionIndex]?.question_image_url);
+                                                            if (exhausted) {
+                                                                setFailedImageKeys((prev) => ({ ...prev, [questionImageKey]: true }));
+                                                            }
+                                                        }}
+                                                    />
+                                                            {failedImageKeys[questionImageKey] && (
+                                                                <div className="px-3 pb-3">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => retryImageLoad(questionImageKey)}
+                                                                        className="mt-2 text-xs px-3 py-1.5 rounded-md bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-200 dark:border-orange-700 hover:bg-orange-200 dark:hover:bg-orange-900/50"
+                                                                    >
+                                                                        {language === 'en' ? 'Retry image' : 'ছবি আবার লোড করুন'}
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                            </>
+                                                        );
+                                                    })()}
+                                                </div>
+                                            )}
                                             <div className="flex items-start justify-between gap-3">
                                                 <h2 className={`reading-content text-lg sm:text-xl font-bold ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                     {quizQuestions[currentQuestionIndex]?.question_text}
@@ -2151,9 +2347,40 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     className={`w-full text-left p-3.5 rounded-lg border transition-all duration-200 ${buttonClass} ${hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id) && !reviewMode ? 'cursor-not-allowed opacity-80' : ''}`}
                                                 >
                                                     <span className="mr-3 text-slate-400 font-mono">{String.fromCharCode(65 + idx)}.</span>
-                                                    <span className={`reading-content text-sm sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                        {option}
-                                                    </span>
+                                                    {isImageOption(option) ? (
+                                                        <>
+                                                            <img
+                                                                src={buildRetryImageSrc(option, `o_${quizQuestions[currentQuestionIndex]?.id || currentQuestionIndex}_${idx}`)}
+                                                                alt={`${language === 'en' ? 'Option' : 'অপশন'} ${String.fromCharCode(65 + idx)}`}
+                                                                className="inline-block max-h-28 w-auto max-w-full object-contain rounded"
+                                                                loading="lazy"
+                                                                data-fallback-index="0"
+                                                                onError={(e) => {
+                                                                    const optionImageKey = `o_${quizQuestions[currentQuestionIndex]?.id || currentQuestionIndex}_${idx}`;
+                                                                    const exhausted = handleImageLoadError(e, option);
+                                                                    if (exhausted) {
+                                                                        setFailedImageKeys((prev) => ({ ...prev, [optionImageKey]: true }));
+                                                                    }
+                                                                }}
+                                                            />
+                                                            {failedImageKeys[`o_${quizQuestions[currentQuestionIndex]?.id || currentQuestionIndex}_${idx}`] && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(evt) => {
+                                                                        evt.stopPropagation();
+                                                                        retryImageLoad(`o_${quizQuestions[currentQuestionIndex]?.id || currentQuestionIndex}_${idx}`);
+                                                                    }}
+                                                                    className="ml-2 text-[11px] px-2 py-1 rounded bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-200 dark:border-orange-700"
+                                                                >
+                                                                    {language === 'en' ? 'Retry' : 'রিলোড'}
+                                                                </button>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <span className={`reading-content text-sm sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            {option}
+                                                        </span>
+                                                    )}
                                                     {reviewMode && isCorrect && <span className="float-right text-green-600">✓</span>}
                                                     {reviewMode && isSelected && !isCorrect && <span className="float-right text-red-600">✗</span>}
                                                     {hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id) && !reviewMode && isSelected && <span className="float-right text-slate-400">🔒</span>}
