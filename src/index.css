@@ -1172,6 +1172,89 @@ body,
   animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Chapter quiz: quick “level” change between questions (mobile-first timing) */
+@keyframes quiz-question-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.animate-quiz-question-in {
+  animation: quiz-question-in 0.16s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (min-width: 640px) {
+  .animate-quiz-question-in {
+    animation-duration: 0.19s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-quiz-question-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Chapter quiz: result card enter */
+@keyframes quiz-result-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.animate-quiz-result-in {
+  animation: quiz-result-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-quiz-result-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes quiz-result-confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -6px, 0) rotate(0deg) scale(0.6);
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(8px, min(38vh, 220px), 0) rotate(200deg) scale(1);
+  }
+}
+
+.quiz-result-confetti-piece {
+  animation: quiz-result-confetti-fall 1.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quiz-result-confetti-piece {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
+
 .loading-container-fixed {
   min-height: 400px;
   display: flex;
