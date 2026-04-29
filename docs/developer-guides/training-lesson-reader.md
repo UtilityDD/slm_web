@@ -10,6 +10,21 @@
 |------|------|
 | `src/index.css` | `.training-advance-block-alert` + `@keyframes training-advance-block-shake` |
 | `src/hooks/useTextToSpeech.js` | Read-aloud for lesson content (separate from advance alert). |
+| `src/utils/trainingMediaUrl.js` | **`resolveTrainingMediaSrc`**, **`trainingMediaRefLooksLikeImage`**, Drive direct-link helper for lesson images |
+
+---
+
+## Inline media in lesson text (JSON / sheet)
+
+Body fields that pass through **`renderTextWithImages`** (`mission_briefing`, section `specifications` / `importance` / `daily_check`, tips, etc.) support:
+
+| Pattern | Meaning |
+|--------|--------|
+| `((media\|optional_label))` | **Chip**: small thumb if `media` is an image (file extension **or** Drive / `googleusercontent` URL), else an “info” chip opening a **text** modal with the raw token. `media` is resolved with **`resolveTrainingMediaSrc`** (relative → `/quizzes/…`, `https://` → Drive rewrite when applicable). |
+| `[[filename_or_url]]` | **Hero block**: large tap-to-enlarge figure (unchanged layout, now supports full URLs). |
+| `[[filename_or_url\|inline]]` | **Compact figure**: modest width, rounded card, optional **float-right** from `sm` up so text can wrap beside it; tap opens the same image modal. |
+
+**Sheet workflow:** Store a **File Link** (or any `https://` image URL) in synced JSON; authors can paste the same Drive URLs as in the Safety Library sheet. No extra fetch at runtime—URLs are rewritten for display like **`SafetyLibrary`**.
 
 ---
 
@@ -31,7 +46,7 @@ Section slides expose **`points[]`** (topic cards). Two modes:
 | **Guided** | `sectionReaderMode === 'guided'` | One full card open at a time; prior topics show as compact “done” rows; future topics show locked placeholders. |
 | **Overview** | `sectionReaderMode === 'overview'` | All `SectionPointFullCard` instances open. Sticky **← Step-by-step** returns to the tick summary (still `guided` with all steps done). |
 
-**`sectionGuidedStepDone`** — count of completed guided steps in `0 .. points.length`. When it equals **`points.length`** while still in **`guided`**, the UI shows **only** compact green-tick rows for every topic (no completion banner). A small text control **“All topics — full page”** / **“সব বিষয় — সম্পূর্ণ পাতা”** switches to **`overview`** for full text on one page.
+**`sectionGuidedStepDone`** — count of completed guided steps in `0 .. points.length`. When it equals **`points.length`** while still in **`guided`**, the UI shows **only** compact green-tick rows for every topic (no completion banner). Each row opens **`sectionTickDetailIndex`** for that topic: **`SectionPointFullCard`** with **`readingComfort`** plus a sticky **Back to list** control. A small text link still opens **`overview`** (all topics on one page). **`sectionTickDetailIndex`** resets with slide / content / reader mode changes.
 
 **`SectionPointFullCard`** — shared body for a topic; `showDoneButton` + **`onStepDone`** in guided mode increments `sectionGuidedStepDone` (capped at `points.length`).
 

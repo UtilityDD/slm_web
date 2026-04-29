@@ -20,6 +20,7 @@ import readingLottie from '../../assets/readding.lottie';
 import protipLottie from '../../assets/protip.lottie';
 import mythLottie from '../../assets/myth.lottie';
 import clockLottie from '../../assets/clock.lottie';
+import { resolveTrainingMediaSrc, trainingMediaRefLooksLikeImage } from '../../utils/trainingMediaUrl';
 
 const LOADING_TIPS = {
     en: [
@@ -266,26 +267,50 @@ const TrainingSubChapterCard = React.memo(({ subchapter, isUnlocked, isCompleted
 });
 
 /** Full topic card body — reused in guided (one step) and overview (all open) modes */
-function SectionPointFullCard({ point, pIdx, language, renderTextWithImages, setActiveImageModal, showDoneButton, onStepDone }) {
+function SectionPointFullCard({
+    point,
+    pIdx,
+    language,
+    renderTextWithImages,
+    setActiveImageModal,
+    showDoneButton,
+    onStepDone,
+    readingComfort = false,
+}) {
+    const shell = readingComfort
+        ? 'relative overflow-hidden rounded-xl sm:rounded-2xl border border-orange-200/50 dark:border-orange-900/40 bg-gradient-to-br from-orange-50/30 via-white to-white dark:from-slate-900/80 dark:via-slate-900/65 dark:to-slate-900/55 p-6 sm:p-9 md:p-10 shadow-none ring-0'
+        : 'relative overflow-hidden rounded-2xl sm:rounded-[2rem] border border-orange-100/80 dark:border-orange-900/35 bg-gradient-to-br from-orange-50/40 via-white/90 to-white/95 dark:from-slate-900/90 dark:via-slate-900/70 dark:to-slate-900/50 p-5 sm:p-8 shadow-sm ring-1 ring-orange-500/[0.06] dark:ring-orange-400/10 transition-shadow duration-300 hover:shadow-md';
+    const stackGap = readingComfort ? 'space-y-7 sm:space-y-10' : 'space-y-6 sm:space-y-8';
+    const titleCls = readingComfort
+        ? `text-2xl sm:text-3xl md:text-[1.95rem] font-black text-slate-800 dark:text-slate-100 leading-snug ${language === 'bn' ? 'font-bengali leading-[1.45]' : ''}`
+        : `text-xl sm:text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-100 leading-snug ${language === 'bn' ? 'font-bengali leading-[1.5]' : ''}`;
+    const specCls = readingComfort
+        ? `text-lg sm:text-xl md:text-[1.35rem] text-slate-700 dark:text-slate-200 leading-[2.05] font-medium ${language === 'bn' ? 'font-bengali text-[1.2rem] sm:text-[1.35rem] leading-[2.15]' : ''}`
+        : `text-lg sm:text-xl text-slate-700 dark:text-slate-300 leading-[1.9] font-medium ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl leading-[2.1]' : ''}`;
+    const boxPad = readingComfort ? 'p-7 sm:p-9 rounded-2xl sm:rounded-[1.75rem]' : 'p-6 sm:p-8 rounded-2xl sm:rounded-[2rem]';
+    const boxBody = readingComfort
+        ? `text-base sm:text-lg md:text-[1.2rem] text-slate-800 dark:text-slate-100 font-bold leading-[1.95] ${language === 'bn' ? 'font-bengali leading-[2.1]' : ''}`
+        : `text-base sm:text-lg md:text-xl text-slate-800 dark:text-slate-200 font-bold leading-[1.8] ${language === 'bn' ? 'font-bengali leading-[2.0]' : ''}`;
+
     return (
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-[2rem] border border-orange-100/80 dark:border-orange-900/35 bg-gradient-to-br from-orange-50/40 via-white/90 to-white/95 dark:from-slate-900/90 dark:via-slate-900/70 dark:to-slate-900/50 p-5 sm:p-8 shadow-sm ring-1 ring-orange-500/[0.06] dark:ring-orange-400/10 transition-shadow duration-300 hover:shadow-md">
+        <div className={shell}>
             <div
                 className={`absolute left-0 top-0 bottom-0 w-[3px] sm:w-1 ${pIdx % 2 === 0 ? 'bg-gradient-to-b from-orange-400 to-amber-500' : 'bg-gradient-to-b from-amber-500 to-orange-400'} opacity-90 dark:opacity-75`}
                 aria-hidden
             />
-            <div className="flex flex-col space-y-6 sm:space-y-8 pl-3 sm:pl-4">
-                <h4 className={`text-xl sm:text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-100 leading-snug ${language === 'bn' ? 'font-bengali leading-[1.5]' : ''}`}>
+            <div className={`flex flex-col ${stackGap} pl-3 sm:pl-4`}>
+                <h4 className={titleCls}>
                     {point.item_name}
                 </h4>
 
                 <div className="relative transition-all duration-500">
                     {point.image_name && (
                         <div
-                            className="mb-8 sm:mb-10 rounded-2xl sm:rounded-[2.5rem] overflow-hidden cursor-zoom-in shadow-2xl shadow-black/5"
-                            onClick={() => setActiveImageModal({ type: 'image', value: `/quizzes/${point.image_name}` })}
+                            className={`${readingComfort ? 'mb-7 sm:mb-9 rounded-xl sm:rounded-2xl' : 'mb-8 sm:mb-10 rounded-2xl sm:rounded-[2.5rem]'} overflow-hidden cursor-zoom-in shadow-lg shadow-black/5`}
+                            onClick={() => setActiveImageModal({ type: 'image', value: resolveTrainingMediaSrc(point.image_name) })}
                         >
                             <img
-                                src={`/quizzes/${point.image_name}`}
+                                src={resolveTrainingMediaSrc(point.image_name)}
                                 alt={point.item_name}
                                 className="w-full h-auto object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-700"
                                 loading="lazy"
@@ -293,30 +318,30 @@ function SectionPointFullCard({ point, pIdx, language, renderTextWithImages, set
                         </div>
                     )}
 
-                    <div className="space-y-6 sm:space-y-8">
+                    <div className={readingComfort ? 'space-y-7 sm:space-y-10' : 'space-y-6 sm:space-y-8'}>
                         {point.specifications && (
-                            <p className={`text-lg sm:text-xl text-slate-700 dark:text-slate-300 leading-[1.9] font-medium ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl leading-[2.1]' : ''}`}>
+                            <p className={specCls}>
                                 {renderTextWithImages(point.specifications)}
                             </p>
                         )}
 
-                        <div className="grid grid-cols-1 gap-6">
+                        <div className={`grid grid-cols-1 ${readingComfort ? 'gap-7 sm:gap-8' : 'gap-6'}`}>
                             {point.importance && (
-                                <div className="bg-blue-500/5 dark:bg-blue-400/5 p-6 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-blue-500/10 backdrop-blur-sm">
+                                <div className={`bg-blue-500/5 dark:bg-blue-400/5 ${boxPad} border border-blue-500/10 backdrop-blur-sm`}>
                                     <div className="flex items-center gap-3 mb-3 sm:mb-4">
                                         <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-blue-500/60">{language === 'en' ? 'Strategy' : 'কৌশল'}</span>
                                     </div>
-                                    <p className={`text-base sm:text-lg md:text-xl text-slate-800 dark:text-slate-200 font-bold leading-[1.8] ${language === 'bn' ? 'font-bengali leading-[2.0]' : ''}`}>
+                                    <p className={boxBody}>
                                         {renderTextWithImages(point.importance)}
                                     </p>
                                 </div>
                             )}
                             {point.daily_check && (
-                                <div className="bg-emerald-500/5 dark:bg-emerald-400/5 p-6 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-emerald-500/10 backdrop-blur-sm">
+                                <div className={`bg-emerald-500/5 dark:bg-emerald-400/5 ${boxPad} border border-emerald-500/10 backdrop-blur-sm`}>
                                     <div className="flex items-center gap-3 mb-3 sm:mb-4">
                                         <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-emerald-500/60">{language === 'en' ? 'Action Plan' : 'কর্মপরিকল্পনা'}</span>
                                     </div>
-                                    <p className={`text-base sm:text-lg md:text-xl text-slate-800 dark:text-slate-200 font-bold leading-[1.8] ${language === 'bn' ? 'font-bengali leading-[2.0]' : ''}`}>
+                                    <p className={boxBody}>
                                         {renderTextWithImages(point.daily_check)}
                                     </p>
                                 </div>
@@ -394,6 +419,8 @@ export default function Training({ language = 'en', user, userProfile: profile, 
     const [sectionGuidedStepDone, setSectionGuidedStepDone] = useState(0);
     /** 'guided' = one card at a time; 'overview' = all cards open (after finishing guided) */
     const [sectionReaderMode, setSectionReaderMode] = useState('guided');
+    /** When guided section is done (tick list): index of topic opened for reading, or null for list */
+    const [sectionTickDetailIndex, setSectionTickDetailIndex] = useState(null);
     /** Section slide indices where guided reading was finished at least once (this lesson session) */
     const [completedSectionSlideIndices, setCompletedSectionSlideIndices] = useState(() => new Set());
     const completedSectionSlidesRef = useRef(new Set());
@@ -732,6 +759,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
     useEffect(() => {
         if (!trainingContent) return;
         setSectionReaderMode('guided');
+        setSectionTickDetailIndex(null);
         const sl = getSlides(trainingContent);
         const slide = sl[activeSectionIndex];
         const n = slide?.type === 'section' ? slide.points?.length ?? 0 : 0;
@@ -1085,7 +1113,9 @@ export default function Training({ language = 'en', user, userProfile: profile, 
         fetchInsights();
     }, [user, completedLessons, language]);
 
-    // Custom parser: ((media|optional_label)) and [[image_path]]
+    // Custom parser: ((media|optional_label)) and [[image_ref|optional_layout]]
+    // media / image_ref: filename under /quizzes/ OR full https URL (e.g. Google Drive from sheet sync). Drive links are normalized for <img>.
+    // [[path|inline]] = compact figure (tap to enlarge). See utils/trainingMediaUrl.js.
     const renderTextWithImages = useCallback((text) => {
         if (!text) return null;
 
@@ -1097,7 +1127,8 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                 const pipeIdx = raw.indexOf('|');
                 const mediaPart = pipeIdx >= 0 ? raw.slice(0, pipeIdx).trim() : raw.trim();
                 const authorLabel = pipeIdx >= 0 ? raw.slice(pipeIdx + 1).trim() : '';
-                const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(mediaPart);
+                const resolvedMedia = resolveTrainingMediaSrc(mediaPart);
+                const isImage = trainingMediaRefLooksLikeImage(mediaPart);
                 const defaultLabel = isImage
                     ? (language === 'en' ? 'Photo' : 'ছবি')
                     : (language === 'en' ? 'More' : 'আরও');
@@ -1112,7 +1143,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                             e.preventDefault();
                             e.stopPropagation();
                             if (isImage) {
-                                setActiveImageModal({ type: 'image', value: `/quizzes/${mediaPart}` });
+                                setActiveImageModal({ type: 'image', value: resolvedMedia });
                             } else {
                                 setActiveImageModal({ type: 'text', value: raw });
                             }
@@ -1123,7 +1154,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                         <span className="flex h-4 w-4 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-white/90 ring-1 ring-orange-200/60 dark:bg-slate-900/80 dark:ring-orange-800/50">
                             {isImage ? (
                                 <img
-                                    src={`/quizzes/${mediaPart}`}
+                                    src={resolvedMedia}
                                     alt=""
                                     className="h-full w-full object-cover"
                                     loading="lazy"
@@ -1138,13 +1169,48 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                     </button>
                 );
             } else if (part.startsWith('[[') && part.endsWith(']]')) {
-                const imgPath = part.slice(2, -2);
+                const inner = part.slice(2, -2).trim();
+                const pipeIdx = inner.indexOf('|');
+                const imgPathRaw = pipeIdx >= 0 ? inner.slice(0, pipeIdx).trim() : inner;
+                const layoutFlag = pipeIdx >= 0 ? inner.slice(pipeIdx + 1).trim().toLowerCase() : '';
+                const isInlineFigure = layoutFlag === 'inline';
+                const resolvedSrc = resolveTrainingMediaSrc(imgPathRaw);
+                const openModal = () => setActiveImageModal({ type: 'image', value: resolvedSrc });
+
+                if (isInlineFigure) {
+                    return (
+                        <button
+                            key={index}
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                openModal();
+                            }}
+                            title={language === 'en' ? 'Tap to enlarge' : 'বড় করে দেখতে ট্যাপ করুন'}
+                            className="group my-4 mx-auto block w-full max-w-[13.5rem] overflow-hidden rounded-2xl border-2 border-orange-200/90 bg-white/95 text-left shadow-md ring-1 ring-orange-500/10 transition-transform hover:border-orange-300 hover:shadow-lg active:scale-[0.99] dark:border-orange-900/50 dark:bg-slate-900/80 dark:ring-orange-400/10 dark:hover:border-orange-700 sm:float-right sm:ml-5 sm:mr-0 sm:max-w-[14rem] sm:shrink-0"
+                        >
+                            <span className="relative block aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-slate-800/80">
+                                <img
+                                    src={resolvedSrc}
+                                    alt=""
+                                    className={`h-full w-full object-cover ${prefersReducedMotion ? '' : 'transition-transform duration-500 group-hover:scale-105'}`}
+                                    loading="lazy"
+                                />
+                                <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wide text-white/95">
+                                    {language === 'en' ? 'View' : 'দেখুন'}
+                                </span>
+                            </span>
+                        </button>
+                    );
+                }
+
                 return (
-                    <div key={index} className="my-10 group relative cursor-pointer" onClick={() => setActiveImageModal({ type: 'image', value: `/quizzes/${imgPath}` })}>
+                    <div key={index} className="clear-both my-10 group relative cursor-pointer" onClick={openModal}>
                         <div className={`absolute inset-0 bg-orange-500/20 blur-3xl rounded-[3rem] scale-90 opacity-0 transition-all duration-700 group-hover:opacity-30 group-hover:scale-100 ${prefersReducedMotion ? 'hidden' : ''}`}></div>
                         <div className={`relative overflow-hidden rounded-[2.5rem] border-4 border-white shadow-2xl dark:border-slate-800 ${prefersReducedMotion ? '' : 'transition-all duration-500 group-hover:scale-[1.02]'}`}>
                             <img
-                                src={`/quizzes/${imgPath}`}
+                                src={resolvedSrc}
                                 alt="Inline lesson helper"
                                 className={`w-full h-auto object-cover max-h-[500px] ${prefersReducedMotion ? '' : 'transition-transform duration-700 group-hover:scale-110'}`}
                             />
@@ -2720,6 +2786,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                                             <button
                                                                 type="button"
                                                                 onClick={() => {
+                                                                    setSectionTickDetailIndex(null);
                                                                     setSectionReaderMode('guided');
                                                                     requestAnimationFrame(() => {
                                                                         lessonScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
@@ -2813,35 +2880,86 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                                     )}
 
                                                     {sectionPoints.length > 0 && sectionReaderMode === 'guided' && sectionGuidedStepDone >= sectionPoints.length && (
-                                                        <div className="space-y-2 sm:space-y-3">
-                                                            {sectionPoints.map((point, pIdx) => (
-                                                                <div
-                                                                    key={pIdx}
-                                                                    className="flex items-start gap-3 rounded-2xl border border-emerald-200/90 bg-emerald-50/60 px-4 py-3 dark:border-emerald-800/50 dark:bg-emerald-950/25 sm:py-3.5"
-                                                                >
-                                                                    <span className="shrink-0 text-lg text-emerald-600 dark:text-emerald-400" aria-hidden>
-                                                                        ✓
-                                                                    </span>
-                                                                    <h4 className={`min-w-0 flex-1 text-left text-sm font-bold leading-snug text-emerald-900 dark:text-emerald-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                        {point.item_name}
-                                                                    </h4>
+                                                        <>
+                                                            {sectionTickDetailIndex !== null &&
+                                                            sectionPoints[sectionTickDetailIndex] != null ? (
+                                                                <div className="space-y-4">
+                                                                    <div className="sticky top-0 z-10 -mx-1 mb-1 border-b border-emerald-200/80 bg-[#fcfaf2]/98 px-1 py-2.5 backdrop-blur-md dark:border-emerald-900/45 dark:bg-slate-900/95 sm:-mx-2 sm:px-2">
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setSectionTickDetailIndex(null);
+                                                                                requestAnimationFrame(() => {
+                                                                                    lessonScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+                                                                                });
+                                                                            }}
+                                                                            className={`inline-flex items-center gap-2 rounded-xl border border-emerald-300/90 bg-white px-3 py-2 text-sm font-bold text-emerald-900 shadow-sm transition-colors hover:bg-emerald-50 dark:border-emerald-700 dark:bg-slate-800 dark:text-emerald-100 dark:hover:bg-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                        >
+                                                                            <span aria-hidden>←</span>
+                                                                            {language === 'en' ? 'Back to list' : 'তালিকায় ফিরুন'}
+                                                                        </button>
+                                                                    </div>
+                                                                    <div className="mx-auto max-w-[40rem] rounded-2xl border border-emerald-200/40 bg-white/90 px-3 py-4 shadow-sm dark:border-emerald-900/35 dark:bg-slate-900/75 sm:px-5 sm:py-6 md:px-7 md:py-8">
+                                                                        <SectionPointFullCard
+                                                                            point={sectionPoints[sectionTickDetailIndex]}
+                                                                            pIdx={sectionTickDetailIndex}
+                                                                            language={language}
+                                                                            renderTextWithImages={renderTextWithImages}
+                                                                            setActiveImageModal={setActiveImageModal}
+                                                                            showDoneButton={false}
+                                                                            onStepDone={() => {}}
+                                                                            readingComfort
+                                                                        />
+                                                                    </div>
                                                                 </div>
-                                                            ))}
-                                                            <div className="pt-3 text-center">
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        setSectionReaderMode('overview');
-                                                                        requestAnimationFrame(() => {
-                                                                            lessonScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
-                                                                        });
-                                                                    }}
-                                                                    className={`text-[11px] font-semibold text-emerald-800 underline decoration-emerald-600/60 underline-offset-2 hover:text-emerald-600 dark:text-emerald-200 dark:hover:text-emerald-100 ${language === 'bn' ? 'font-bengali' : ''}`}
-                                                                >
-                                                                    {language === 'en' ? 'All topics — full page' : 'সব বিষয় — সম্পূর্ণ পাতা'}
-                                                                </button>
-                                                            </div>
-                                                        </div>
+                                                            ) : (
+                                                                <div className="space-y-2 sm:space-y-3">
+                                                                    {sectionPoints.map((point, pIdx) => (
+                                                                        <button
+                                                                            key={pIdx}
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setSectionTickDetailIndex(pIdx);
+                                                                                requestAnimationFrame(() => {
+                                                                                    lessonScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+                                                                                });
+                                                                            }}
+                                                                            className={`flex w-full items-start gap-3 rounded-2xl border border-emerald-200/90 bg-emerald-50/60 px-4 py-3 text-left transition-colors hover:border-emerald-400/90 hover:bg-emerald-100/70 active:scale-[0.99] dark:border-emerald-800/50 dark:bg-emerald-950/25 dark:hover:border-emerald-600/50 dark:hover:bg-emerald-950/45 sm:py-3.5 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                        >
+                                                                            <span className="shrink-0 text-lg text-emerald-600 dark:text-emerald-400" aria-hidden>
+                                                                                ✓
+                                                                            </span>
+                                                                            <span className="min-w-0 flex-1">
+                                                                                <span className="block text-sm font-bold leading-snug text-emerald-900 dark:text-emerald-100">
+                                                                                    {point.item_name}
+                                                                                </span>
+                                                                                <span className="mt-0.5 block text-[11px] font-medium text-emerald-800/75 dark:text-emerald-200/80">
+                                                                                    {language === 'en' ? 'Tap to read' : 'ট্যাপ করে পড়ুন'}
+                                                                                </span>
+                                                                            </span>
+                                                                            <span className="shrink-0 self-center text-emerald-600/70 dark:text-emerald-400/80" aria-hidden>
+                                                                                →
+                                                                            </span>
+                                                                        </button>
+                                                                    ))}
+                                                                    <div className="pt-3 text-center">
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setSectionTickDetailIndex(null);
+                                                                                setSectionReaderMode('overview');
+                                                                                requestAnimationFrame(() => {
+                                                                                    lessonScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+                                                                                });
+                                                                            }}
+                                                                            className={`text-[11px] font-semibold text-emerald-800 underline decoration-emerald-600/60 underline-offset-2 hover:text-emerald-600 dark:text-emerald-200 dark:hover:text-emerald-100 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                        >
+                                                                            {language === 'en' ? 'All topics — full page' : 'সব বিষয় — সম্পূর্ণ পাতা'}
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </>
                                                     )}
 
                                                     {sectionReaderMode === 'overview' && sectionPoints.length > 0 && (
