@@ -13,15 +13,74 @@ import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import LessonCelebration from './LessonCelebration';
 import PPESurveyModal from './PPESurveyModal';
 import OnboardingSequence from './OnboardingSequence';
-import Lottie from 'lottie-react';
 import { DotLottiePlayer } from '@dotlottie/react-player';
-import lottieEye from '../../assets/lottie_eye.json';
 import sandyLoading from '../../assets/SandyLoading.lottie';
 import calendarLottie from '../../assets/calendar.lottie';
 import readingLottie from '../../assets/readding.lottie';
 import protipLottie from '../../assets/protip.lottie';
 import mythLottie from '../../assets/myth.lottie';
 import clockLottie from '../../assets/clock.lottie';
+
+const TEXT_SCALE_STORAGE_KEY = 'slm_training_text_scale';
+/** @deprecated read once for migration from boolean field mode */
+const LEGACY_FIELD_MODE_KEY = 'slm_training_field_mode';
+
+const LOADING_TIPS = {
+    en: [
+        'Verify isolation and tagging before touching conductors.',
+        'Inspect helmet, harness, and gloves before line work.',
+        'Treat conductors as live until proven otherwise.',
+        'Use only insulated tools rated for the voltage you work on.',
+        'Follow your permit and work with a partner when required.',
+    ],
+    bn: [
+        'স্পর্শ করার আগে আইসোলেশন ও ট্যাগিং যাচাই করুন।',
+        'লাইনের কাজের আগে হেলমেট, হারনেস ও গ্লাভস দেখে নিন।',
+        'প্রমাণ না হওয়া পর্যন্ত সব তার সচল মনে করুন।',
+        'কাজের ভোল্টেজ অনুযায়ী অনুমোদিত ইনসুলেটেড টুল ব্যবহার করুন।',
+        'পারমিট মেনে চলুন; প্রয়োজনে সঙ্গী নিয়ে কাজ করুন।',
+    ],
+};
+
+/** Short warning chime when lesson advance is blocked (user gesture present). */
+function playLessonAdvanceBlockedChime() {
+    if (typeof window === 'undefined') return;
+    try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        const ctx = new Ctx();
+        const master = ctx.createGain();
+        const reduce =
+            typeof window !== 'undefined' &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        master.gain.value = reduce ? 0.1 : 0.2;
+        master.connect(ctx.destination);
+
+        const schedule = (delaySec, freqHz, durSec) => {
+            const t0 = ctx.currentTime + delaySec;
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freqHz, t0);
+            osc.connect(g);
+            g.connect(master);
+            g.gain.setValueAtTime(0, t0);
+            g.gain.linearRampToValueAtTime(1, t0 + 0.012);
+            g.gain.exponentialRampToValueAtTime(0.001, t0 + durSec);
+            osc.start(t0);
+            osc.stop(t0 + durSec + 0.02);
+        };
+
+        schedule(0, 820, 0.065);
+        schedule(0.1, 620, 0.085);
+
+        window.setTimeout(() => {
+            ctx.close().catch(() => {});
+        }, 400);
+    } catch {
+        /* ignore */
+    }
+}
 
 const PPE_MAP = {
     1: { name: "Safety Helmet", icon: "🪖", image: "/quizzes/faq_images/Safety_Helmet.webp" },
@@ -210,6 +269,82 @@ const TrainingSubChapterCard = React.memo(({ subchapter, isUnlocked, isCompleted
     );
 });
 
+/** Full topic card body — reused in guided (one step) and overview (all open) modes */
+function SectionPointFullCard({ point, pIdx, language, renderTextWithImages, setActiveImageModal, showDoneButton, onStepDone }) {
+    return (
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-[2rem] border border-orange-100/80 dark:border-orange-900/35 bg-gradient-to-br from-orange-50/40 via-white/90 to-white/95 dark:from-slate-900/90 dark:via-slate-900/70 dark:to-slate-900/50 p-5 sm:p-8 shadow-sm ring-1 ring-orange-500/[0.06] dark:ring-orange-400/10 transition-shadow duration-300 hover:shadow-md">
+            <div
+                className={`absolute left-0 top-0 bottom-0 w-[3px] sm:w-1 ${pIdx % 2 === 0 ? 'bg-gradient-to-b from-orange-400 to-amber-500' : 'bg-gradient-to-b from-amber-500 to-orange-400'} opacity-90 dark:opacity-75`}
+                aria-hidden
+            />
+            <div className="flex flex-col space-y-6 sm:space-y-8 pl-3 sm:pl-4">
+                <h4 className={`text-xl sm:text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-100 leading-snug ${language === 'bn' ? 'font-bengali leading-[1.5]' : ''}`}>
+                    {point.item_name}
+                </h4>
+
+                <div className="relative transition-all duration-500">
+                    {point.image_name && (
+                        <div
+                            className="mb-8 sm:mb-10 rounded-2xl sm:rounded-[2.5rem] overflow-hidden cursor-zoom-in shadow-2xl shadow-black/5"
+                            onClick={() => setActiveImageModal({ type: 'image', value: `/quizzes/${point.image_name}` })}
+                        >
+                            <img
+                                src={`/quizzes/${point.image_name}`}
+                                alt={point.item_name}
+                                className="w-full h-auto object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-700"
+                                loading="lazy"
+                            />
+                        </div>
+                    )}
+
+                    <div className="space-y-6 sm:space-y-8">
+                        {point.specifications && (
+                            <p className={`text-lg sm:text-xl text-slate-700 dark:text-slate-300 leading-[1.9] font-medium ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl leading-[2.1]' : ''}`}>
+                                {renderTextWithImages(point.specifications)}
+                            </p>
+                        )}
+
+                        <div className="grid grid-cols-1 gap-6">
+                            {point.importance && (
+                                <div className="bg-blue-500/5 dark:bg-blue-400/5 p-6 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-blue-500/10 backdrop-blur-sm">
+                                    <div className="flex items-center gap-3 mb-3 sm:mb-4">
+                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-blue-500/60">{language === 'en' ? 'Strategy' : 'কৌশল'}</span>
+                                    </div>
+                                    <p className={`text-base sm:text-lg md:text-xl text-slate-800 dark:text-slate-200 font-bold leading-[1.8] ${language === 'bn' ? 'font-bengali leading-[2.0]' : ''}`}>
+                                        {renderTextWithImages(point.importance)}
+                                    </p>
+                                </div>
+                            )}
+                            {point.daily_check && (
+                                <div className="bg-emerald-500/5 dark:bg-emerald-400/5 p-6 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-emerald-500/10 backdrop-blur-sm">
+                                    <div className="flex items-center gap-3 mb-3 sm:mb-4">
+                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-emerald-500/60">{language === 'en' ? 'Action Plan' : 'কর্মপরিকল্পনা'}</span>
+                                    </div>
+                                    <p className={`text-base sm:text-lg md:text-xl text-slate-800 dark:text-slate-200 font-bold leading-[1.8] ${language === 'bn' ? 'font-bengali leading-[2.0]' : ''}`}>
+                                        {renderTextWithImages(point.daily_check)}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {showDoneButton && (
+                    <div className="mt-2 border-t border-orange-200/60 pt-6 dark:border-orange-800/40">
+                        <button
+                            type="button"
+                            onClick={onStepDone}
+                            className="w-full rounded-2xl bg-orange-600 px-4 py-3.5 text-center text-sm font-black text-white shadow-lg shadow-orange-600/25 transition-transform hover:bg-orange-500 active:scale-[0.99] dark:bg-orange-500 dark:hover:bg-orange-400"
+                        >
+                            {language === 'en' ? 'I have read this — continue' : 'পড়ে ফেলেছি — এগিয়ে যান'}
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
 export default function Training({ language = 'en', user, userProfile: profile, onProgressUpdate, onOpenUserProgress, setCurrentView }) {
     const [showOnboarding, setShowOnboarding] = useState(() => {
         const today = new Date().toDateString();
@@ -256,6 +391,54 @@ export default function Training({ language = 'en', user, userProfile: profile, 
     const [userPPEData, setUserPPEData] = useState([]);
     const galleryRef = useRef(null);
     const lessonScrollRef = useRef(null);
+    /** Section slide: steps completed (0..n); when equals n, guided flow is finished */
+    const [sectionGuidedStepDone, setSectionGuidedStepDone] = useState(0);
+    /** 'guided' = one card at a time; 'overview' = all cards open (after finishing guided) */
+    const [sectionReaderMode, setSectionReaderMode] = useState('guided');
+    /** Section slide indices where guided reading was finished at least once (this lesson session) */
+    const [completedSectionSlideIndices, setCompletedSectionSlideIndices] = useState(() => new Set());
+    const completedSectionSlidesRef = useRef(new Set());
+    completedSectionSlidesRef.current = completedSectionSlideIndices;
+    /** Shown when user tries to leave a section slide before finishing all topic cards */
+    const [sectionAdvanceBlockedToast, setSectionAdvanceBlockedToast] = useState(false);
+
+    useEffect(() => {
+        if (!sectionAdvanceBlockedToast) return undefined;
+        playLessonAdvanceBlockedChime();
+        const t = setTimeout(() => setSectionAdvanceBlockedToast(false), 3200);
+        return () => clearTimeout(t);
+    }, [sectionAdvanceBlockedToast]);
+
+    useEffect(() => {
+        if (sectionReaderMode !== 'guided') return undefined;
+        // Step 0: stay at top of the lesson pane so section headers and intro copy stay in view.
+        // Scroll-to-active-card only after the user finishes a card and advances within the section.
+        if (sectionGuidedStepDone < 1) return undefined;
+        let cancelled = false;
+        let raf2Id = 0;
+        const raf1Id = requestAnimationFrame(() => {
+            raf2Id = requestAnimationFrame(() => {
+                if (cancelled) return;
+                const container = lessonScrollRef.current;
+                const el = document.getElementById('section-guided-active-anchor');
+                if (!container || !el) return;
+                const marginTop = parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
+                const cRect = container.getBoundingClientRect();
+                const eRect = el.getBoundingClientRect();
+                const nextTop = container.scrollTop + (eRect.top - cRect.top) - marginTop;
+                container.scrollTo({ top: Math.max(0, nextTop), behavior: 'smooth' });
+            });
+        });
+        return () => {
+            cancelled = true;
+            cancelAnimationFrame(raf1Id);
+            cancelAnimationFrame(raf2Id);
+        };
+        // Intentionally omit activeSectionIndex: on slide change, step is updated in a later effect;
+        // scrolling here would run with stale step and hide the new section header. nextSlide/prevSlide
+        // already reset scrollTop to 0 when changing slides.
+    }, [sectionGuidedStepDone, sectionReaderMode]);
+
     const touchStartXRef = useRef(0);
     const touchStartYRef = useRef(0);
     const audioRef = useRef(null);
@@ -265,6 +448,52 @@ export default function Training({ language = 'en', user, userProfile: profile, 
     const [userRank, setUserRank] = useState(null);
     const [showLessonIndex, setShowLessonIndex] = useState(false);
     const [expandedChapterIndex, setExpandedChapterIndex] = useState(null);
+    /** 0 = default, 1 = larger (field), 2 = largest — cycled by one control with clear labels */
+    const [textScale, setTextScale] = useState(() => {
+        try {
+            const raw = localStorage.getItem(TEXT_SCALE_STORAGE_KEY);
+            if (raw === '1' || raw === '2') return parseInt(raw, 10);
+            if (localStorage.getItem(LEGACY_FIELD_MODE_KEY) === '1') return 1;
+            return 0;
+        } catch {
+            return 0;
+        }
+    });
+    const [prefersReducedMotion, setPrefersReducedMotion] = useState(
+        () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
+    const [loadingTipIndex, setLoadingTipIndex] = useState(0);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return undefined;
+        const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const onChange = () => setPrefersReducedMotion(mq.matches);
+        mq.addEventListener('change', onChange);
+        return () => mq.removeEventListener('change', onChange);
+    }, []);
+
+    useEffect(() => {
+        if (!trainingLoading) return undefined;
+        setLoadingTipIndex(0);
+        const n = LOADING_TIPS.en.length;
+        const id = setInterval(() => {
+            setLoadingTipIndex((i) => (i + 1) % n);
+        }, 3200);
+        return () => clearInterval(id);
+    }, [trainingLoading]);
+
+    const cycleTextScale = useCallback(() => {
+        setTextScale((s) => {
+            const next = (s + 1) % 3;
+            try {
+                localStorage.setItem(TEXT_SCALE_STORAGE_KEY, String(next));
+                localStorage.removeItem(LEGACY_FIELD_MODE_KEY);
+            } catch {
+                /* ignore */
+            }
+            return next;
+        });
+    }, []);
 
     // Fetch user rank for leaderboard preview
     useEffect(() => {
@@ -520,10 +749,52 @@ export default function Training({ language = 'en', user, userProfile: profile, 
     };
 
     const slides = getSlides(trainingContent);
+
+    useEffect(() => {
+        setCompletedSectionSlideIndices(new Set());
+    }, [trainingContent?.level_id]);
+
+    useEffect(() => {
+        if (!trainingContent) return;
+        setSectionReaderMode('guided');
+        const sl = getSlides(trainingContent);
+        const slide = sl[activeSectionIndex];
+        const n = slide?.type === 'section' ? slide.points?.length ?? 0 : 0;
+        const completed = completedSectionSlidesRef.current.has(activeSectionIndex);
+        setSectionGuidedStepDone(n > 0 && completed ? n : 0);
+    }, [activeSectionIndex, trainingContent]);
+
+    useEffect(() => {
+        if (!trainingContent) return;
+        const sl = getSlides(trainingContent);
+        const slide = sl[activeSectionIndex];
+        if (slide?.type !== 'section') return;
+        const n = slide.points?.length ?? 0;
+        if (n === 0 || sectionGuidedStepDone < n) return;
+        setCompletedSectionSlideIndices((prev) => {
+            if (prev.has(activeSectionIndex)) return prev;
+            const next = new Set(prev);
+            next.add(activeSectionIndex);
+            return next;
+        });
+    }, [sectionGuidedStepDone, activeSectionIndex, trainingContent]);
+
+    const isLessonSectionAdvanceBlocked = () => {
+        const slide = slides[activeSectionIndex];
+        if (slide?.type !== 'section') return false;
+        const n = slide.points?.length ?? 0;
+        if (n === 0) return false;
+        return sectionGuidedStepDone < n;
+    };
+
     const isFirstSlide = activeSectionIndex === 0;
     const isLastSlide = activeSectionIndex === slides.length - 1;
     const nextSlide = () => {
         if (!isLastSlide) {
+            if (isLessonSectionAdvanceBlocked()) {
+                setSectionAdvanceBlockedToast(true);
+                return;
+            }
             setActiveSectionIndex(prev => prev + 1);
             if (lessonScrollRef.current) {
                 lessonScrollRef.current.scrollTo({ top: 0, behavior: 'instant' });
@@ -790,63 +1061,75 @@ export default function Training({ language = 'en', user, userProfile: profile, 
         fetchInsights();
     }, [user, completedLessons, language]);
 
-    // Custom parser for interactive content: ((image_path|label)) and [[image_path]]
-    const renderTextWithImages = (text) => {
+    // Custom parser: ((media|optional_label)) and [[image_path]]
+    const renderTextWithImages = useCallback((text) => {
         if (!text) return null;
 
         const parts = text.split(/(\(\(.*?\)\)|\[\[.*?\]\])/g);
 
         return parts.map((part, index) => {
             if (part.startsWith('((') && part.endsWith('))')) {
-                const content = part.slice(2, -2);
-                const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(content);
+                const raw = part.slice(2, -2);
+                const pipeIdx = raw.indexOf('|');
+                const mediaPart = pipeIdx >= 0 ? raw.slice(0, pipeIdx).trim() : raw.trim();
+                const authorLabel = pipeIdx >= 0 ? raw.slice(pipeIdx + 1).trim() : '';
+                const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(mediaPart);
+                const defaultLabel = isImage
+                    ? (language === 'en' ? 'Photo' : 'ছবি')
+                    : (language === 'en' ? 'More' : 'আরও');
+                const labelText = authorLabel || defaultLabel;
+                const tapHint = language === 'en' ? 'Tap to open' : 'খুলতে ট্যাপ করুন';
 
                 return (
                     <button
                         key={index}
+                        type="button"
                         onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
                             if (isImage) {
-                                setActiveImageModal({ type: 'image', value: `/quizzes/${content}` });
+                                setActiveImageModal({ type: 'image', value: `/quizzes/${mediaPart}` });
                             } else {
-                                setActiveImageModal({ type: 'text', value: content });
+                                setActiveImageModal({ type: 'text', value: raw });
                             }
                         }}
-                        className="inline-flex items-center justify-center w-10 h-10 mx-1.5 bg-white dark:bg-slate-800 rounded-2xl text-orange-600 dark:text-orange-400 hover:scale-110 active:scale-90 transition-all border border-orange-100 dark:border-slate-700 align-middle shadow-md hover:shadow-orange-500/10 group relative"
-                        title={isImage ? "Click to view image" : "Click to read more"}
+                        title={`${labelText} — ${tapHint}`}
+                        className={`mx-0.5 inline-flex max-w-[10rem] cursor-pointer items-center gap-1 rounded-md border border-orange-200/80 bg-orange-50/90 py-0.5 pl-0.5 pr-1.5 align-middle text-[10px] font-semibold leading-tight text-orange-900 shadow-none transition-colors hover:border-orange-300 hover:bg-orange-100 dark:border-orange-800/50 dark:bg-orange-950/45 dark:text-orange-100 dark:hover:border-orange-600 dark:hover:bg-orange-900/55 ${language === 'bn' ? 'font-bengali' : ''}`}
                     >
-                        <div className="w-10 h-10 pointer-events-none p-1">
-                            <Lottie
-                                animationData={lottieEye}
-                                loop={true}
-                                autoplay={true}
-                            />
-                        </div>
-                        {isImage && (
-                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-white text-[8px] font-black rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none uppercase tracking-widest z-50">
-                                View Insight
-                            </span>
-                        )}
+                        <span className="flex h-4 w-4 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-white/90 ring-1 ring-orange-200/60 dark:bg-slate-900/80 dark:ring-orange-800/50">
+                            {isImage ? (
+                                <img
+                                    src={`/quizzes/${mediaPart}`}
+                                    alt=""
+                                    className="h-full w-full object-cover"
+                                    loading="lazy"
+                                />
+                            ) : (
+                                <svg className="h-3 w-3 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            )}
+                        </span>
+                        <span className="min-w-0 truncate">{labelText}</span>
                     </button>
                 );
             } else if (part.startsWith('[[') && part.endsWith(']]')) {
                 const imgPath = part.slice(2, -2);
                 return (
                     <div key={index} className="my-10 group relative cursor-pointer" onClick={() => setActiveImageModal({ type: 'image', value: `/quizzes/${imgPath}` })}>
-                        <div className="absolute inset-0 bg-orange-500/20 blur-3xl rounded-[3rem] scale-90 group-hover:scale-100 transition-transform duration-700 opacity-0 group-hover:opacity-30"></div>
-                        <div className="relative rounded-[2.5rem] overflow-hidden border-4 border-white dark:border-slate-800 shadow-2xl transition-all duration-500 group-hover:scale-[1.02]">
+                        <div className={`absolute inset-0 bg-orange-500/20 blur-3xl rounded-[3rem] scale-90 opacity-0 transition-all duration-700 group-hover:opacity-30 group-hover:scale-100 ${prefersReducedMotion ? 'hidden' : ''}`}></div>
+                        <div className={`relative overflow-hidden rounded-[2.5rem] border-4 border-white shadow-2xl dark:border-slate-800 ${prefersReducedMotion ? '' : 'transition-all duration-500 group-hover:scale-[1.02]'}`}>
                             <img
                                 src={`/quizzes/${imgPath}`}
                                 alt="Inline lesson helper"
-                                className="w-full h-auto object-cover max-h-[500px] transition-transform duration-700 group-hover:scale-110"
+                                className={`w-full h-auto object-cover max-h-[500px] ${prefersReducedMotion ? '' : 'transition-transform duration-700 group-hover:scale-110'}`}
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-end pb-8">
-                                <div className="bg-white/20 backdrop-blur-md rounded-full px-6 py-2.5 text-white text-xs font-black uppercase tracking-widest flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                            <div className={`absolute inset-0 flex flex-col items-center justify-end bg-gradient-to-t from-black/60 via-transparent to-transparent pb-8 ${prefersReducedMotion ? 'opacity-100' : 'opacity-0 transition-opacity duration-500 group-hover:opacity-100'}`}>
+                                <div className={`rounded-full bg-white/20 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-white backdrop-blur-md flex items-center gap-2 ${prefersReducedMotion ? '' : 'transform translate-y-4 transition-transform duration-500 group-hover:translate-y-0'}`}>
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
-                                    Enlarge Insight
+                                    {language === 'en' ? 'Enlarge' : 'বড় করে দেখুন'}
                                 </div>
                             </div>
                         </div>
@@ -889,7 +1172,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
             }
             return part;
         });
-    };
+    }, [language, prefersReducedMotion, setActiveImageModal]);
 
     useEffect(() => {
         if (user?.id) {
@@ -1406,18 +1689,30 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                     {!selectedChapter ? (
                         <div className="loading-container-fixed">
                             <div className="w-48 h-48 lg:w-64 lg:h-64 mb-4">
-                                <DotLottiePlayer
-                                    src={sandyLoading}
-                                    autoplay
-                                    loop
-                                />
+                                {prefersReducedMotion ? (
+                                    <div className="flex h-full w-full items-center justify-center text-7xl" aria-hidden>📖</div>
+                                ) : (
+                                    <DotLottiePlayer
+                                        src={sandyLoading}
+                                        autoplay
+                                        loop
+                                    />
+                                )}
                             </div>
                             <p className={`text-slate-500 font-black animate-pulse ${language === 'bn' ? 'font-bengali text-xl' : 'text-lg tracking-widest uppercase opacity-70'}`}>
-                                {language === 'en' ? 'Preparing Lesson...' : 'পাঠ প্রস্তুত করা হচ্ছে...'}
+                                {language === 'en' ? 'Loading lesson…' : 'পাঠ লোড হচ্ছে…'}
+                            </p>
+                            <p className={`mx-auto mt-4 max-w-md px-4 text-center text-sm font-semibold leading-relaxed text-slate-600 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                {LOADING_TIPS[language === 'bn' ? 'bn' : 'en'][loadingTipIndex % LOADING_TIPS.en.length]}
                             </p>
                         </div>
                     ) : (
-                        <TrainingSkeleton />
+                        <div className="space-y-4">
+                            <TrainingSkeleton />
+                            <p className={`mx-auto max-w-md px-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                {LOADING_TIPS[language === 'bn' ? 'bn' : 'en'][loadingTipIndex % LOADING_TIPS.en.length]}
+                            </p>
+                        </div>
                     )}
                 </div>
             ) : !selectedChapter && !trainingContent ? (
@@ -2142,7 +2437,11 @@ export default function Training({ language = 'en', user, userProfile: profile, 
             {/* Safety Journal UI - Immersive Slide-based Experience */}
             {
                 trainingContent && createPortal(
-                    <div className="fixed top-0 md:top-14 inset-x-0 bottom-0 lg:top-16 lg:bottom-6 lg:inset-x-0 lg:mx-auto lg:w-[1000px] lg:max-w-[95vw] lg:rounded-[3rem] lg:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] lg:border lg:border-slate-200 dark:lg:border-white/10 z-[75] bg-slate-50 dark:bg-slate-900 overflow-hidden flex flex-col animate-fade-in-up">
+                    <div
+                        className={`fixed top-0 md:top-14 inset-x-0 bottom-0 lg:top-16 lg:bottom-6 lg:inset-x-0 lg:mx-auto lg:w-[1000px] lg:max-w-[95vw] lg:rounded-[3rem] lg:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] lg:border lg:border-slate-200 dark:lg:border-white/10 z-[75] bg-slate-50 dark:bg-slate-900 overflow-hidden flex flex-col animate-fade-in-up ${
+                            textScale === 1 ? 'ring-2 ring-emerald-500/30' : textScale === 2 ? 'ring-2 ring-orange-400/35' : ''
+                        }`}
+                    >
                         {/* Desktop Backdrop Overlay */}
                         <div className="hidden lg:block fixed inset-0 -z-10 bg-slate-950/40 backdrop-blur-sm" onClick={() => {
                             stop();
@@ -2209,6 +2508,34 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                         </button>
 
                                         <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-1 hidden sm:block opacity-50"></div>
+
+                                        <button
+                                            type="button"
+                                            onClick={cycleTextScale}
+                                            title={
+                                                language === 'en'
+                                                    ? 'Change reading text size (Standard → Large → Largest)'
+                                                    : 'পাঠের অক্ষরের আকার বদলান (সাধারণ → বড় → সবচেয়ে বড়)'
+                                            }
+                                            aria-label={
+                                                language === 'en'
+                                                    ? `Text size: ${['Standard', 'Large', 'Largest'][textScale]}. Tap to cycle.`
+                                                    : `অক্ষর: ${['সাধারণ', 'বড় লেখা', 'সবচেয়ে বড়'][textScale]} — ট্যাপ করে বদলান`
+                                            }
+                                            className={`flex h-9 max-w-[7.5rem] items-center justify-center rounded-lg border px-2 text-[11px] font-bold leading-tight transition-colors sm:h-10 sm:max-w-[9rem] sm:rounded-xl sm:px-2.5 ${
+                                                textScale === 0
+                                                    ? 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-600 dark:bg-slate-800/90 dark:text-slate-200'
+                                                    : textScale === 1
+                                                        ? 'border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-700 dark:bg-emerald-900/45 dark:text-emerald-100'
+                                                        : 'border-orange-300 bg-orange-50 text-orange-950 dark:border-orange-600 dark:bg-orange-950/50 dark:text-orange-50'
+                                            } ${language === 'bn' ? 'font-bengali tracking-normal' : 'normal-case tracking-tight'}`}
+                                        >
+                                            <span className="truncate">
+                                                {language === 'en'
+                                                    ? ['Standard', 'Large', 'Largest'][textScale]
+                                                    : ['সাধারণ', 'বড় লেখা', 'সবচেয়ে বড়'][textScale]}
+                                            </span>
+                                        </button>
 
                                         <button
                                             onClick={handleReadLesson}
@@ -2278,13 +2605,50 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                 </div>
                             </div>
 
+                            {sectionAdvanceBlockedToast && (
+                                <div className="pointer-events-none fixed inset-x-0 top-20 z-[118] flex justify-center px-3 sm:top-24">
+                                    <div
+                                        role="alert"
+                                        aria-live="assertive"
+                                        className={`training-advance-block-alert pointer-events-auto flex max-w-[min(20rem,92vw)] items-start gap-2.5 rounded-lg border-2 border-amber-600 bg-amber-50 px-3 py-2 shadow-[0_8px_30px_rgba(217,119,6,0.35)] ring-2 ring-amber-500/60 dark:border-amber-500 dark:bg-amber-950 dark:shadow-[0_8px_28px_rgba(0,0,0,0.45)] dark:ring-amber-400/40 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                    >
+                                        <span
+                                            className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-600 text-white shadow-md dark:bg-amber-500"
+                                            aria-hidden
+                                        >
+                                            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 10-2 0 1 1 0 002 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                        </span>
+                                        <div className="min-w-0 flex-1 pt-0.5">
+                                            <p className="text-[10px] font-black uppercase tracking-wide text-amber-950 dark:text-amber-100 sm:text-[11px]">
+                                                {language === 'bn' ? 'এখন যাওয়া যাবে না' : 'Cannot advance yet'}
+                                            </p>
+                                            <p className="mt-0.5 text-[11px] font-semibold leading-snug text-amber-950/95 dark:text-amber-50/95 sm:text-xs">
+                                                {language === 'bn'
+                                                    ? 'আগে এই পাতার সব কার্ড পড়ুন। শেষ হলেই পরের পাতা খুলবে—পরে স্বাধীনভাবে যেতে পারবেন।'
+                                                    : 'Finish every topic card here first. Then you can go on—and later move freely.'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Slide Content Area */}
                             {(() => {
                                 const activeSlide = slides[activeSectionIndex];
+                                const sectionPoints =
+                                    activeSlide?.type === 'section' ? activeSlide.points ?? [] : [];
                                 return (
                                     <div
                                         ref={lessonScrollRef}
-                                        className={`flex-1 overflow-y-auto relative book-page-texture book-gutter scroll-smooth transition-colors duration-700`}
+                                        className={`flex-1 overflow-y-auto relative book-page-texture book-gutter scroll-smooth transition-colors duration-700${
+                                            textScale >= 1 ? ' training-lesson-field training-lesson-scroll' : ''
+                                        }${textScale >= 2 ? ' training-lesson-field-max' : ''}`}
                                         onTouchStart={handleReaderTouchStart}
                                         onTouchEnd={handleReaderTouchEnd}
                                     >
@@ -2294,7 +2658,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                                     <div className="w-full space-y-8 text-center">
                                                         <div className="space-y-4">
                                                             <p className="text-sm font-black uppercase tracking-[0.4em] text-slate-400 dark:text-slate-600">
-                                                                {language === 'en' ? `Session ${trainingContent.level_id}` : `পাঠ ${toBengaliNumber(trainingContent.level_id, language)}`}
+                                                                {language === 'en' ? `Lesson ${trainingContent.level_id}` : `পাঠ ${toBengaliNumber(trainingContent.level_id, language)}`}
                                                             </p>
                                                             <div className="h-px w-24 bg-slate-200 dark:bg-slate-800 mx-auto"></div>
                                                         </div>
@@ -2306,93 +2670,203 @@ export default function Training({ language = 'en', user, userProfile: profile, 
 
                                                     <div className="max-w-md w-full relative">
                                                         <div className="absolute inset-0 bg-slate-100 dark:bg-slate-800/30 blur-2xl -z-10 rounded-full"></div>
-                                                        <p className={`text-lg text-slate-700 dark:text-slate-400 leading-[2] font-serif italic text-center px-4 ${language === 'bn' ? 'font-bengali text-[1.35rem] leading-[2.2]' : ''}`}>
+                                                        <p className={`lesson-mission-brief text-lg text-slate-800 dark:text-slate-300 leading-[2] text-center font-medium not-italic px-4 ${language === 'bn' ? 'font-bengali text-[1.35rem] leading-[2.2]' : ''}`}>
                                                             {renderTextWithImages(trainingContent.mission_briefing)}
                                                         </p>
                                                     </div>
 
-                                                    <div className="pt-20">
-                                                        <div className="flex flex-col items-center gap-4 text-slate-300 dark:text-slate-700">
-                                                            <div className="h-16 w-px bg-current"></div>
-                                                            <span className="text-[10px] uppercase font-black tracking-widest">Start Journey</span>
-                                                        </div>
+                                                    <div className="pt-10 pb-6">
+                                                        <p className={`mx-auto max-w-sm text-center text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            {language === 'en'
+                                                                ? 'Use the side arrows or swipe to go to the next part.'
+                                                                : 'পরের অংশে যেতে পাশের তীর চাপুন অথবা সোয়াইপ করুন।'}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             )}
 
-                                            {slides[activeSectionIndex]?.type === 'section' && (
-                                                <div className="space-y-16">
-                                                    <header className="text-center mb-12 sm:mb-16 px-2">
-                                                        <h3 className={`text-2xl sm:text-3xl md:text-5xl font-black text-slate-800 dark:text-slate-100 leading-snug tracking-tight ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
-                                                            {slides[activeSectionIndex].title}
+                                            {activeSlide?.type === 'section' && (
+                                                <article className="space-y-8 sm:space-y-10">
+                                                    <header className="relative mb-2 overflow-hidden rounded-2xl border border-orange-100/80 bg-gradient-to-b from-orange-50/70 via-white/60 to-transparent px-4 py-8 dark:border-orange-900/35 dark:from-orange-950/30 dark:via-slate-900/50 dark:to-transparent sm:mb-4 sm:px-6 sm:py-10">
+                                                        <p className={`mb-2 text-center font-black text-orange-600 dark:text-orange-400/95 ${language === 'bn' ? 'font-bengali text-xs tracking-normal' : 'text-[10px] uppercase tracking-[0.28em]'}`}>
+                                                            {language === 'en' ? 'In this part' : 'এই অংশে'}
+                                                        </p>
+                                                        <h3 className={`text-center text-2xl font-black leading-snug tracking-tight text-slate-800 dark:text-slate-100 sm:text-3xl md:text-5xl ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
+                                                            {activeSlide.title}
                                                         </h3>
+                                                        {sectionPoints.length > 0 && (
+                                                            <p className={`mx-auto mt-4 max-w-md text-center text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-400 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                {language === 'en'
+                                                                    ? sectionReaderMode === 'overview'
+                                                                        ? 'All topics are open below — scroll to skim, then use the arrow for the next screen.'
+                                                                        : `${sectionPoints.length} key ${sectionPoints.length === 1 ? 'topic' : 'topics'}. Open one card at a time; when all are read, you can view everything together.`
+                                                                    : sectionReaderMode === 'overview'
+                                                                        ? 'সব বিষয় নিচে খোলা — স্ক্রল করে দেখে নিন, তারপর পরের পর্দায় যেতে তীর চাপুন।'
+                                                                        : `${toBengaliNumber(sectionPoints.length, language)}টি গুরুত্বপূর্ণ বিষয়। একসময়ে একটি কার্ড পড়ুন; সব শেষ হলে একসাথে দেখার সুযোগ পাবেন।`}
+                                                            </p>
+                                                        )}
                                                     </header>
 
-                                                    <div className="space-y-16 sm:space-y-20">
-                                                        {slides[activeSectionIndex].points?.map((point, pIdx) => (
-                                                            <div key={pIdx} className="group relative">
-                                                                <div className="flex flex-col space-y-6 sm:space-y-8">
-                                                                    <div className="flex items-baseline gap-3 sm:gap-4">
-                                                                        <span className="text-3xl sm:text-4xl md:text-5xl font-serif italic text-orange-500/20 select-none leading-none">
-                                                                            {(pIdx + 1).toString().padStart(2, '0')}
-                                                                        </span>
-                                                                        <h4 className={`text-xl sm:text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-200 leading-snug ${language === 'bn' ? 'font-bengali leading-[1.5]' : ''}`}>
-                                                                            {point.item_name}
-                                                                        </h4>
-                                                                    </div>
+                                                    {sectionReaderMode === 'overview' && sectionPoints.length > 0 && (
+                                                        <div className="sticky top-0 z-20 -mx-2 mb-4 flex justify-center border-b border-orange-200/50 bg-[#fcfaf2]/95 px-2 py-2.5 backdrop-blur-md dark:border-orange-900/40 dark:bg-slate-900/95 sm:-mx-4">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setSectionReaderMode('guided');
+                                                                    requestAnimationFrame(() => {
+                                                                        lessonScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+                                                                    });
+                                                                }}
+                                                                className={`rounded-xl border border-orange-300 bg-white px-4 py-2 text-xs font-bold text-orange-900 shadow-sm transition-colors hover:bg-orange-50 dark:border-orange-700 dark:bg-slate-800 dark:text-orange-100 dark:hover:bg-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                            >
+                                                                {language === 'en' ? '← Back to step-by-step' : '← ধাপে ধাপে ফিরে যান'}
+                                                            </button>
+                                                        </div>
+                                                    )}
 
-                                                                    <div className="relative pl-0 md:pl-12 transition-all duration-500">
-                                                                        {point.image_name && (
+                                                    {sectionPoints.length > 0 && sectionReaderMode === 'guided' && sectionGuidedStepDone < sectionPoints.length && (
+                                                        <>
+                                                            <div className="sticky top-0 z-20 -mx-2 mb-3 border-b border-orange-200/40 bg-[#fcfaf2]/95 px-2 py-3 backdrop-blur-md dark:border-orange-900/40 dark:bg-slate-900/95 sm:-mx-4 sm:px-3">
+                                                                <p className={`mb-2 text-center text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 ${language === 'bn' ? 'font-bengali normal-case tracking-normal text-xs' : ''}`}>
+                                                                    {language === 'en'
+                                                                        ? `Step ${sectionGuidedStepDone + 1} of ${sectionPoints.length}`
+                                                                        : `ধাপ ${toBengaliNumber(sectionGuidedStepDone + 1, language)} / ${toBengaliNumber(sectionPoints.length, language)}`}
+                                                                </p>
+                                                                <div className="flex h-1.5 gap-1 px-1">
+                                                                    {sectionPoints.map((_, i) => (
+                                                                        <div
+                                                                            key={i}
+                                                                            className={`h-full min-w-0 flex-1 rounded-full ${i < sectionGuidedStepDone ? 'bg-emerald-500' : i === sectionGuidedStepDone ? 'bg-orange-500' : 'bg-slate-200 dark:bg-slate-700'}`}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                            <p className={`mx-auto mb-4 max-w-md text-center text-[11px] leading-relaxed text-slate-500 dark:text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                {language === 'en'
+                                                                    ? 'Read this card fully, then tap the orange button at the bottom to unlock the next one.'
+                                                                    : 'এই কার্ডটি ভালো করে পড়ুন, তারপর নিচের কমলা বোতাম চাপলে পরেরটি খুলবে।'}
+                                                            </p>
+                                                            <div className="space-y-4 sm:space-y-5">
+                                                                {sectionPoints.map((point, pIdx) => {
+                                                                    if (pIdx < sectionGuidedStepDone) {
+                                                                        return (
                                                                             <div
-                                                                                className="mb-8 sm:mb-10 rounded-2xl sm:rounded-[2.5rem] overflow-hidden cursor-zoom-in shadow-2xl shadow-black/5"
-                                                                                onClick={() => setActiveImageModal({ type: 'image', value: `/quizzes/${point.image_name}` })}
+                                                                                key={pIdx}
+                                                                                className="flex items-start gap-3 rounded-2xl border border-emerald-200/90 bg-emerald-50/60 px-4 py-3.5 dark:border-emerald-800/50 dark:bg-emerald-950/25"
                                                                             >
-                                                                                <img
-                                                                                    src={`/quizzes/${point.image_name}`}
-                                                                                    alt={point.item_name}
-                                                                                    className="w-full h-auto object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-700"
-                                                                                    loading="lazy"
+                                                                                <span className="shrink-0 text-lg text-emerald-600 dark:text-emerald-400" aria-hidden>✓</span>
+                                                                                <h4 className={`min-w-0 flex-1 text-left text-sm font-bold leading-snug text-emerald-900 dark:text-emerald-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                                    {point.item_name}
+                                                                                </h4>
+                                                                            </div>
+                                                                        );
+                                                                    }
+                                                                    if (pIdx === sectionGuidedStepDone) {
+                                                                        return (
+                                                                            <div key={pIdx} id="section-guided-active-anchor" className="scroll-mt-28">
+                                                                                <SectionPointFullCard
+                                                                                    point={point}
+                                                                                    pIdx={pIdx}
+                                                                                    language={language}
+                                                                                    renderTextWithImages={renderTextWithImages}
+                                                                                    setActiveImageModal={setActiveImageModal}
+                                                                                    showDoneButton
+                                                                                    onStepDone={() =>
+                                                                                        setSectionGuidedStepDone((c) =>
+                                                                                            Math.min(c + 1, sectionPoints.length)
+                                                                                        )
+                                                                                    }
                                                                                 />
                                                                             </div>
-                                                                        )}
-
-                                                                        <div className="space-y-6 sm:space-y-8">
-                                                                            {point.specifications && (
-                                                                                <p className={`text-lg sm:text-xl text-slate-700 dark:text-slate-300 leading-[1.9] font-medium ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl leading-[2.1]' : ''}`}>
-                                                                                    {renderTextWithImages(point.specifications)}
-                                                                                </p>
-                                                                            )}
-
-                                                                            <div className="grid grid-cols-1 gap-6">
-                                                                                {point.importance && (
-                                                                                    <div className="bg-blue-500/5 dark:bg-blue-400/5 p-6 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-blue-500/10 backdrop-blur-sm">
-                                                                                        <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                                                                                            <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-blue-500/60">{language === 'en' ? 'Strategy' : 'কৌশল'}</span>
-                                                                                        </div>
-                                                                                        <p className={`text-base sm:text-lg md:text-xl text-slate-800 dark:text-slate-200 font-bold leading-[1.8] ${language === 'bn' ? 'font-bengali leading-[2.0]' : ''}`}>
-                                                                                            {renderTextWithImages(point.importance)}
-                                                                                        </p>
-                                                                                    </div>
-                                                                                )}
-                                                                                {point.daily_check && (
-                                                                                    <div className="bg-emerald-500/5 dark:bg-emerald-400/5 p-6 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-emerald-500/10 backdrop-blur-sm">
-                                                                                        <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                                                                                            <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-emerald-500/60">{language === 'en' ? 'Action Plan' : 'কর্মপরিকল্পনা'}</span>
-                                                                                        </div>
-                                                                                        <p className={`text-base sm:text-lg md:text-xl text-slate-800 dark:text-slate-200 font-bold leading-[1.8] ${language === 'bn' ? 'font-bengali leading-[2.0]' : ''}`}>
-                                                                                            {renderTextWithImages(point.daily_check)}
-                                                                                        </p>
-                                                                                    </div>
-                                                                                )}
+                                                                        );
+                                                                    }
+                                                                    return (
+                                                                        <div
+                                                                            key={pIdx}
+                                                                            className="rounded-2xl border border-dashed border-slate-300/90 bg-slate-50/70 px-4 py-4 dark:border-slate-600 dark:bg-slate-900/40"
+                                                                        >
+                                                                            <div className="flex items-start gap-3">
+                                                                                <span className="shrink-0 text-base text-slate-400 dark:text-slate-500" aria-hidden>🔒</span>
+                                                                                <div className="min-w-0 flex-1">
+                                                                                    <h4 className={`text-sm font-bold leading-snug text-slate-500 line-clamp-3 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                                        {point.item_name}
+                                                                                    </h4>
+                                                                                    <p className={`mt-1.5 text-[11px] leading-relaxed text-slate-400 dark:text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                                        {language === 'en'
+                                                                                            ? 'Opens after you finish the step above.'
+                                                                                            : 'আগের ধাপ শেষ করলে এটি খুলবে।'}
+                                                                                    </p>
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="h-px w-full bg-slate-100 dark:bg-slate-800/50 mt-20 opacity-50"></div>
+                                                                    );
+                                                                })}
                                                             </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
+                                                        </>
+                                                    )}
+
+                                                    {sectionPoints.length > 0 && sectionReaderMode === 'guided' && sectionGuidedStepDone >= sectionPoints.length && (
+                                                        <div className="rounded-2xl border border-emerald-200/90 bg-emerald-50/70 px-5 py-8 text-center dark:border-emerald-800/50 dark:bg-emerald-950/30">
+                                                            <p className={`text-lg font-black text-emerald-900 dark:text-emerald-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                {language === 'en' ? 'You have read every topic on this page.' : 'এই পাতার সব বিষয় পড়া হয়েছে।'}
+                                                            </p>
+                                                            <p className={`mx-auto mt-2 max-w-sm text-sm font-medium text-emerald-800/90 dark:text-emerald-200/90 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                {language === 'en'
+                                                                    ? 'Optional: open all cards together to skim or review. You can return to this summary any time.'
+                                                                    : 'যদি চান, সব কার্ড একসাথে খুলে আবার দেখতে পারেন। যেকোনো সময় এই সারাংশে ফিরে আসতে পারবেন।'}
+                                                            </p>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setSectionReaderMode('overview');
+                                                                    requestAnimationFrame(() => {
+                                                                        lessonScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+                                                                    });
+                                                                }}
+                                                                className="mt-6 w-full max-w-sm rounded-2xl border border-emerald-600 bg-emerald-600 px-4 py-3.5 text-sm font-black text-white shadow-lg transition-transform hover:bg-emerald-500 active:scale-[0.99] dark:border-emerald-500 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+                                                            >
+                                                                {language === 'en' ? 'View all on one page' : 'সব একসাথে দেখুন'}
+                                                            </button>
+                                                            <p className={`mt-4 text-xs text-slate-600 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                {language === 'en'
+                                                                    ? 'Or go to the next screen with the right arrow when you are ready.'
+                                                                    : 'প্রস্তুত হলে ডান তীরে চেপে পরের পর্দায় যেতে পারেন।'}
+                                                            </p>
+                                                        </div>
+                                                    )}
+
+                                                    {sectionReaderMode === 'overview' && sectionPoints.length > 0 && (
+                                                        <div className="space-y-10 sm:space-y-12">
+                                                            {sectionPoints.map((point, pIdx) => (
+                                                                <div key={pIdx} className="group relative">
+                                                                    <SectionPointFullCard
+                                                                        point={point}
+                                                                        pIdx={pIdx}
+                                                                        language={language}
+                                                                        renderTextWithImages={renderTextWithImages}
+                                                                        setActiveImageModal={setActiveImageModal}
+                                                                        showDoneButton={false}
+                                                                        onStepDone={() => {}}
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    {sectionPoints.length > 0 && (sectionReaderMode === 'overview' || (sectionReaderMode === 'guided' && sectionGuidedStepDone >= sectionPoints.length)) && (
+                                                        <footer
+                                                            className={`mx-auto mt-4 max-w-lg rounded-2xl border border-slate-200/90 bg-slate-100/60 px-4 py-3 text-center text-[11px] leading-relaxed text-slate-600 dark:border-slate-700 dark:bg-slate-800/55 dark:text-slate-400 sm:text-xs ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                        >
+                                                            {sectionReaderMode === 'overview'
+                                                                ? language === 'en'
+                                                                    ? 'Scroll through all topics, then tap the right arrow or swipe to the next screen.'
+                                                                    : 'সব বিষয় স্ক্রল করে দেখুন, তারপর ডান তীর অথবা সোয়াইপ করে পরের পর্দায় যান।'
+                                                                : language === 'en'
+                                                                    ? 'When you are ready, tap the right arrow or swipe to the next screen.'
+                                                                    : 'প্রস্তুত হলে ডান তীর চাপুন অথবা সোয়াইপ করে পরের পর্দায় যান।'}
+                                                        </footer>
+                                                    )}
+                                                </article>
                                             )}
 
                                             {activeSlide?.type === 'pro_tip' && (
@@ -2477,44 +2951,50 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                             )}
 
                                             {slides[activeSectionIndex]?.type === 'completion' && (
-                                                <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-sm mx-auto animate-fade-in py-10">
-                                                    <div className="relative w-64 h-64 mb-10">
-                                                        <div className="absolute inset-0 bg-orange-500/5 dark:bg-orange-500/5 blur-[60px] rounded-full"></div>
-                                                        <DotLottiePlayer
-                                                            src={readingLottie}
-                                                            autoplay
-                                                            loop
-                                                            className="w-full h-full relative z-10 grayscale-[0.3] hover:grayscale-0 transition-all duration-700"
-                                                        />
+                                                <div className="mx-auto flex w-full max-w-sm flex-col items-center justify-center px-3 py-6 text-center animate-fade-in sm:px-4 sm:py-10">
+                                                    <div className="relative mx-auto mb-5 h-[min(32vh,13.5rem)] w-[min(32vh,13.5rem)] max-w-[min(85vw,13.5rem)] shrink-0 sm:mb-8 sm:h-56 sm:w-56 sm:max-w-none">
+                                                        <div className="absolute inset-0 rounded-full bg-orange-500/5 blur-3xl dark:bg-orange-500/5 sm:blur-[60px]"></div>
+                                                        {prefersReducedMotion ? (
+                                                            <div className="relative z-10 flex h-full w-full items-center justify-center text-6xl sm:text-8xl" aria-hidden>
+                                                                ✅
+                                                            </div>
+                                                        ) : (
+                                                            <DotLottiePlayer
+                                                                src={readingLottie}
+                                                                autoplay
+                                                                loop
+                                                                className="relative z-10 h-full w-full object-contain grayscale-[0.3] transition-all duration-700 hover:grayscale-0"
+                                                            />
+                                                        )}
                                                     </div>
 
-                                                    <div className="space-y-4 mb-14">
-                                                        <h3 className={`text-3xl md:text-4xl font-black text-slate-800 dark:text-white ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                            {language === 'en'
-                                                                ? `Mission Complete`
-                                                                : `মিশন সম্পন্ন`}
+                                                    <div className="mb-6 w-full space-y-3 sm:mb-10 sm:space-y-4">
+                                                        <h3 className={`text-2xl font-black text-slate-800 dark:text-white sm:text-3xl md:text-4xl ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            {language === 'en' ? `Mission Complete` : `মিশন সম্পন্ন`}
                                                         </h3>
-                                                        <div className="h-px w-16 bg-slate-200 dark:bg-slate-800 mx-auto"></div>
+                                                        <div className="mx-auto h-px w-16 bg-slate-200 dark:bg-slate-800"></div>
                                                     </div>
 
-                                                    <div className="w-full space-y-6">
+                                                    <div className="w-full max-w-full space-y-4 sm:space-y-6">
                                                         <button
+                                                            type="button"
                                                             onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                                            className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 py-5 rounded-[2rem] text-xl font-black shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+                                                            className="flex w-full items-center justify-center gap-3 rounded-2xl bg-slate-900 py-4 text-lg font-black text-white shadow-xl transition-all hover:scale-[1.02] active:scale-95 dark:bg-slate-100 dark:text-slate-900 sm:rounded-[2rem] sm:py-5 sm:text-xl"
                                                         >
                                                             {language === 'en' ? 'Start Challenge' : 'চ্যালেঞ্জ শুরু করুন'}
                                                         </button>
 
                                                         <button
+                                                            type="button"
                                                             onClick={() => {
                                                                 setTrainingContent(null);
                                                                 setSelectedChapter(null);
                                                                 setIsJournalMode(false);
                                                             }}
-                                                            className="w-full py-4 flex flex-col items-center gap-2 group"
+                                                            className="group flex w-full flex-col items-center gap-2 py-3 sm:py-4"
                                                         >
-                                                            <div className="w-12 h-12 rounded-full border border-slate-200 dark:border-slate-800 flex items-center justify-center group-hover:border-slate-400 transition-all">
-                                                                <svg className="w-6 h-6 text-slate-400 group-hover:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 transition-all group-hover:border-slate-400 dark:border-slate-800 dark:group-hover:border-slate-500">
+                                                                <svg className="h-5 w-5 text-slate-400 group-hover:text-slate-600 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
                                                                 </svg>
                                                             </div>
@@ -2567,43 +3047,49 @@ export default function Training({ language = 'en', user, userProfile: profile, 
             {
                 activeImageModal && createPortal(
                     <div
-                        className="fixed inset-0 z-[400] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/90 backdrop-blur-md animate-fade-in"
+                        className="fixed inset-0 z-[400] flex items-center justify-center p-4 sm:p-6 bg-slate-900/90 backdrop-blur-md animate-fade-in"
                         onClick={() => setActiveImageModal(null)}
                     >
                         <div
-                            className="relative max-w-5xl w-full bg-slate-800 rounded-t-[2.5rem] sm:rounded-3xl overflow-hidden shadow-2xl border-t sm:border border-white/10 animate-slide-up-sheet sm:animate-scale-in"
+                            className={`relative flex max-h-[min(90vh,900px)] w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-2xl animate-scale-in sm:rounded-3xl ${
+                                activeImageModal.type === 'image' ? 'max-w-5xl' : 'max-w-lg'
+                            }`}
                             onClick={e => e.stopPropagation()}
                         >
                             {/* Close Button */}
                             <button
+                                type="button"
                                 onClick={() => setActiveImageModal(null)}
-                                className="absolute top-4 right-4 z-10 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full transition-colors"
+                                className="absolute top-3 right-3 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70 sm:top-4 sm:right-4"
                             >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
 
-                            <div className="p-4 sm:p-8 h-full flex items-center justify-center bg-slate-900 border-t border-white/5">
-                                {activeImageModal.type === 'image' ? (
+                            {activeImageModal.type === 'image' ? (
+                                <div className="flex min-h-0 flex-1 items-center justify-center bg-slate-900 p-4 pt-14 sm:p-8 sm:pt-16">
                                     <img
                                         src={activeImageModal.value}
                                         alt="Preview"
-                                        className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
+                                        className="max-h-[min(78vh,800px)] max-w-full object-contain rounded-xl shadow-2xl"
                                     />
-                                ) : (
-                                    <div className="max-w-xl w-full bg-slate-800 p-6 sm:p-8 rounded-3xl border border-white/10 shadow-2xl animate-scale-in">
-                                        <div className="mb-4">
-                                            <svg className="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </div>
-                                        <p className="text-base sm:text-lg text-slate-200 leading-relaxed whitespace-pre-line text-left font-medium">
-                                            {activeImageModal.value}
-                                        </p>
+                                </div>
+                            ) : (
+                                <div className="min-h-0 flex-1 overflow-y-auto bg-slate-900 p-5 pt-14 sm:p-8 sm:pt-16">
+                                    <div className="mb-3 flex items-center gap-2 text-orange-400">
+                                        <svg className="h-7 w-7 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span className={`text-xs font-bold uppercase tracking-wider text-slate-400 ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
+                                            {language === 'en' ? 'Details' : 'বিস্তারিত'}
+                                        </span>
                                     </div>
-                                )}
-                            </div>
+                                    <p className={`text-left text-base leading-relaxed text-slate-200 sm:text-lg ${language === 'bn' ? 'font-bengali' : 'font-medium'} whitespace-pre-line`}>
+                                        {activeImageModal.value}
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>,
                     document.body

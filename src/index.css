@@ -1559,3 +1559,84 @@ body,
     transform: translateY(0);
   }
 }
+
+/* Training lesson reader — outdoor / larger text mode (class set on portal from Training.jsx) */
+.training-lesson-field.training-lesson-scroll {
+  font-size: 1.0625rem;
+}
+@media (min-width: 640px) {
+  .training-lesson-field.training-lesson-scroll {
+    font-size: 1.125rem;
+  }
+}
+.training-lesson-field.training-lesson-scroll p,
+.training-lesson-field.training-lesson-scroll li {
+  line-height: 1.85;
+}
+.training-lesson-field.training-lesson-scroll .book-page-texture {
+  background-image: none !important;
+}
+.training-lesson-field .lesson-mission-brief {
+  font-size: 1.05em;
+  line-height: 1.9;
+}
+@media (min-width: 640px) {
+  .training-lesson-field .lesson-mission-brief {
+    font-size: 1.1em;
+  }
+}
+
+/* Third step: extra-large lesson text (Training.jsx text scale = 2) */
+.training-lesson-field.training-lesson-scroll.training-lesson-field-max {
+  font-size: 1.125rem;
+}
+@media (min-width: 640px) {
+  .training-lesson-field.training-lesson-scroll.training-lesson-field-max {
+    font-size: 1.1875rem;
+  }
+}
+.training-lesson-field.training-lesson-scroll.training-lesson-field-max p,
+.training-lesson-field.training-lesson-scroll.training-lesson-field-max li {
+  line-height: 1.9;
+}
+.training-lesson-field.training-lesson-scroll.training-lesson-field-max .lesson-mission-brief {
+  font-size: 1.12em;
+}
+@media (min-width: 640px) {
+  .training-lesson-field.training-lesson-scroll.training-lesson-field-max .lesson-mission-brief {
+    font-size: 1.22em;
+  }
+}
+
+@keyframes training-advance-block-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(-7px);
+  }
+  30% {
+    transform: translateX(7px);
+  }
+  45% {
+    transform: translateX(-4px);
+  }
+  60% {
+    transform: translateX(4px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+  90% {
+    transform: translateX(2px);
+  }
+}
+.training-advance-block-alert {
+  animation: training-advance-block-shake 0.42s ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .training-advance-block-alert {
+    animation: none;
+  }
+}

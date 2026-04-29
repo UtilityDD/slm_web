@@ -14,6 +14,7 @@ This folder holds **maintainer-focused** documentation: architecture notes, inte
 | [Chapter Quiz Modal](./chapter-quiz-modal.md) | `ChapterQuizModal.jsx`, read-aloud script, quiz UX (mobile, TTS, animations) |
 | [Hourly Visual Quiz](./hourly-visual-quiz.md) | `Competitions.jsx`, Google Sheet visual quiz sync, deterministic hourly selection, image retry UX |
 | [Safety Library](./safety-library.md) | `SafetyLibrary.jsx`, grid, detail modal, Drive image helper |
+| [Training lesson reader](./training-lesson-reader.md) | `Training.jsx` journal slides, guided section cards, advance lock, alert/chime, scroll + text scale |
 
 ## Conventions for new guides
 
