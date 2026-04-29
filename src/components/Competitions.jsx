@@ -1154,9 +1154,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             let visualCount = getVisualCount(picked);
             if (visualCount > 2) {
                 const remainingPool = freshnessSorted.slice(5);
+                const pickedIds = () => new Set(picked.map((q) => String(q?.id || '')));
                 for (let i = 0; i < picked.length && visualCount > 2; i++) {
                     if (!isVisualQuestion(picked[i])) continue;
-                    const replacement = remainingPool.find((q) => !isVisualQuestion(q));
+                    const used = pickedIds();
+                    const replacement = remainingPool.find(
+                        (q) => !isVisualQuestion(q) && q?.id && !used.has(String(q.id))
+                    );
                     if (replacement) {
                         picked[i] = replacement;
                         visualCount = getVisualCount(picked);

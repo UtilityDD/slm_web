@@ -22,6 +22,9 @@ Adds image-capable hourly questions from Google Sheets while preserving the exis
 - Required columns:
   - `id`, `language`, `question_type`, `question_text`, `question_image_url`
   - `option_1..option_4`, `correct_index`, `category`, `tags`, `hint`, `enabled`
+- Optional editor-only columns (ignored by the app parser):
+  - `preview_q`, `preview_o1`..`preview_o4` — only if you want `=IMAGE(...)` thumbnails inside the sheet.
+  - If Google Sheets already shows previews on hover for Drive links, you can leave these columns empty or omit them from new rows.
 - Behavior:
   - only `language=bn` and `enabled=TRUE` rows are included
   - `correct_index` is zero-based (`0..3`)
