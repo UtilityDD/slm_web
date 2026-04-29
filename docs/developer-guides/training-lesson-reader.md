@@ -1,6 +1,6 @@
 # Training lesson reader — developer guide
 
-**Purpose:** Document the **journal-style lesson reader** in Training: slide model, **guided section cards** (one topic at a time), **first-pass advance lock**, scroll alignment, **compact alert + chime** when advance is blocked, text scaling, and related CSS.
+**Purpose:** Document the **journal-style lesson reader** in Training: slide model, **guided section cards** (one topic at a time), **first-pass advance lock**, scroll alignment, **compact alert + chime** when advance is blocked, and related CSS.
 
 **Primary file:** `src/components/safety/Training.jsx`
 
@@ -8,7 +8,7 @@
 
 | Path | Role |
 |------|------|
-| `src/index.css` | `.training-lesson-field`, `.training-lesson-scroll`, `.training-lesson-field-max`, `.lesson-mission-brief`, `.training-advance-block-alert` + `@keyframes training-advance-block-shake` |
+| `src/index.css` | `.training-advance-block-alert` + `@keyframes training-advance-block-shake` |
 | `src/hooks/useTextToSpeech.js` | Read-aloud for lesson content (separate from advance alert). |
 
 ---
@@ -29,9 +29,9 @@ Section slides expose **`points[]`** (topic cards). Two modes:
 | Mode | State | UX |
 |------|--------|-----|
 | **Guided** | `sectionReaderMode === 'guided'` | One full card open at a time; prior topics show as compact “done” rows; future topics show locked placeholders. |
-| **Overview** | `sectionReaderMode === 'overview'` | All `SectionPointFullCard` instances open (after user chose “all on one page”). |
+| **Overview** | `sectionReaderMode === 'overview'` | All `SectionPointFullCard` instances open. Sticky **← Step-by-step** returns to the tick summary (still `guided` with all steps done). |
 
-**`sectionGuidedStepDone`** — count of completed guided steps in `0 .. points.length`. When it equals **`points.length`**, guided reading for that pass is finished; the green “read every topic” block appears with optional CTA to switch to overview.
+**`sectionGuidedStepDone`** — count of completed guided steps in `0 .. points.length`. When it equals **`points.length`** while still in **`guided`**, the UI shows **only** compact green-tick rows for every topic (no completion banner). A small text control **“All topics — full page”** / **“সব বিষয় — সম্পূর্ণ পাতা”** switches to **`overview`** for full text on one page.
 
 **`SectionPointFullCard`** — shared body for a topic; `showDoneButton` + **`onStepDone`** in guided mode increments `sectionGuidedStepDone` (capped at `points.length`).
 
@@ -43,7 +43,7 @@ Section slides expose **`points[]`** (topic cards). Two modes:
 - When **`sectionGuidedStepDone >= points.length`**, an effect adds **`activeSectionIndex`** to that set.
 - On **`activeSectionIndex` / `trainingContent`** change, another effect resets **`sectionReaderMode`** to `'guided'` and sets **`sectionGuidedStepDone`** to **`points.length`** if that index is in the completed set (so revisiting shows the “all done” summary, not step 0), else **`0`**.
 
-**Advance lock:** **`isLessonSectionAdvanceBlocked()`** is true when the current slide is a **section** with **`points.length > 0`** and **`sectionGuidedStepDone < points.length`**. **`nextSlide`** (and swipe-next, which calls it) returns early and sets **`sectionAdvanceBlockedToast`** to show the alert.
+**Advance lock (two layers):** (1) **`lessonPaneScrolledToEnd`** — **`nextSlide`** is disabled until the main lesson scroll pane (`lessonScrollRef`) is scrolled to the bottom (or the content is shorter than the viewport). **`checkLessonScrollReachedEnd`** runs on scroll, window resize, and **`ResizeObserver`** on the pane and inner content (`lessonScrollInnerRef`) so layout/image loads re-evaluate. (2) **`isLessonSectionAdvanceBlocked()`** — section slides with topic cards require **`sectionGuidedStepDone >= points.length`** first; section takes precedence in **`nextSlide`** and in the nav **`title`**. **`lessonNavBlockedReason`** (`'section'` \| `'scroll'`) drives the amber alert + chime.
 
 **Do not** add `activeSectionIndex` to the **guided scroll-into-view** effect’s dependency array without re-checking ordering against the reset effect (stale `sectionGuidedStepDone` across slides caused wrong scroll in the past).
 
@@ -65,13 +65,6 @@ Dependencies are **`[sectionGuidedStepDone, sectionReaderMode]`** only — not *
 - **UI:** Fixed **top** strip, compact, **`role="alert"`**, **`aria-live="assertive"`**, amber styling, warning icon, class **`training-advance-block-alert`** for shake (see `index.css`; **no animation** under **`prefers-reduced-motion: reduce`**).
 - **Sound:** **`playLessonAdvanceBlockedChime()`** (module-level in `Training.jsx`) uses **Web Audio** for a short two-tone beep; runs when the toast turns on (user gesture already occurred). Slightly lower gain when **`prefers-reduced-motion: reduce`**.
 - Toast auto-dismiss timer (~**3.2s**) lives in the same `useEffect` as the chime.
-
----
-
-## Text scale (accessibility)
-
-- **Storage key:** **`slm_training_text_scale`** (`'0' | '1' | '2'`) — see **`TEXT_SCALE_STORAGE_KEY`**; legacy migration from **`slm_training_field_mode`**.
-- **`textScale`** toggles body classes on the reader column (e.g. **`training-lesson-field`**, **`training-lesson-field-max`**) and persists on change.
 
 ---
 
