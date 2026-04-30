@@ -189,9 +189,9 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
 
     if (mustChangePassword) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 relative overflow-hidden">
+            <div className="min-h-[100dvh] flex items-center justify-center bg-slate-950 p-4 relative overflow-hidden safe-area-inset-top safe-area-inset-bottom">
                 {/* Background Hero Banner */}
-                <div className="absolute inset-0 z-0">
+                <div className="absolute inset-0 z-0 pointer-events-none">
                     <img
                         src={emotionalImages[emotionalImageIndex]}
                         alt="Background"
@@ -260,8 +260,8 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
 
     if (connectionError) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 relative overflow-hidden">
-                <div className="absolute inset-0 z-0">
+            <div className="min-h-[100dvh] flex items-center justify-center bg-slate-950 p-4 relative overflow-hidden safe-area-inset-top safe-area-inset-bottom">
+                <div className="absolute inset-0 z-0 pointer-events-none">
                     <img
                         src={emotionalImages[emotionalImageIndex]}
                         alt="Background"
@@ -304,65 +304,59 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
         );
     }
 
-    // LOGIN FORM - Premium Glassmorphism Redesign
+    // LOGIN — compact sheet, awareness stories open only via explicit control
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 relative overflow-hidden">
-            {/* Background Hero Banner - Slideshow - Clickable */}
-            <div
-                className="absolute inset-0 z-0 cursor-pointer group/hero"
-                onClick={() => setCurrentView('accident-stories')}
-            >
+        <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-slate-950 px-4 py-6 relative overflow-hidden safe-area-inset-top safe-area-inset-bottom touch-manipulation">
+            <div className="absolute inset-0 z-0 pointer-events-none select-none" aria-hidden>
                 <img
                     src={emotionalImages[emotionalImageIndex]}
-                    alt="Hero Background"
-                    className="w-full h-full object-cover opacity-40 transition-all duration-1000 ease-in-out scale-105 group-hover/hero:scale-110 group-hover/hero:opacity-50"
+                    alt=""
+                    className="w-full h-full object-cover opacity-35 transition-opacity duration-1000 ease-in-out"
                     key={emotionalImageIndex}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/80"></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-orange-600/10 via-transparent to-slate-950/50"></div>
-
-                {/* Visual Hint to Click */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-slate-950/90" />
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-600/10 via-transparent to-slate-950/60" />
             </div>
 
-            <div className="w-full max-w-md relative z-10 animate-fadeIn">
-                <div className="bg-white/10 dark:bg-black/20 backdrop-blur-2xl rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-8 sm:p-12 border border-white/10">
-                    <div className="text-center mb-10">
-                        <div className="flex justify-center mb-6">
-                            <div className="flex flex-col items-center group select-none">
-                                <div className="flex items-baseline gap-1">
-                                    <span className="text-3xl sm:text-4xl logo-text logo-text-home drop-shadow-lg transition-transform group-hover:scale-105 duration-300">
-                                        SmartLineMan
-                                    </span>
-                                    <span className="text-xs sm:text-sm font-black bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-lg border border-orange-500/30 shadow-lg ml-1 transform -translate-y-2">
-                                        .in
-                                    </span>
-                                </div>
-                                <div className="h-1 w-12 bg-gradient-to-r from-transparent via-orange-500/40 to-transparent mt-2 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
-                            </div>
+            <div className="w-full max-w-sm relative z-10 animate-fadeIn shrink-0">
+                <div className="bg-white/[0.08] backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.35)] p-6 sm:p-7 border border-white/10">
+                    <div className="text-center mb-6">
+                        <div className="flex justify-center items-baseline gap-1 select-none">
+                            <span className="text-2xl sm:text-3xl logo-text logo-text-home text-white tracking-tight">
+                                SmartLineMan
+                            </span>
+                            <span className="text-[10px] font-bold bg-orange-500/25 text-orange-300 px-1.5 py-0.5 rounded-md border border-orange-500/25 -translate-y-1">
+                                .in
+                            </span>
                         </div>
-                        <p className="text-orange-100/60 text-xs font-medium tracking-[0.2em] uppercase">Safety Starts With You</p>
                     </div>
 
-                    <form onSubmit={handleLogin} className="space-y-6">
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-5">Mobile Number</label>
+                    <form onSubmit={handleLogin} className="space-y-4">
+                        <div className="space-y-1">
+                            <label htmlFor="login-phone" className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide block text-center">
+                                Phone
+                            </label>
                             <input
+                                id="login-phone"
                                 type="tel"
                                 name="phone"
                                 autoComplete="username"
                                 required
                                 value={phone}
                                 onChange={handlePhoneChange}
-                                className="w-full px-6 py-4.5 rounded-[1.5rem] bg-white/5 border border-white/10 text-white placeholder-slate-600 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-lg text-center font-medium"
-                                placeholder="01XXX XXXXXX"
+                                className="w-full min-h-[48px] px-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-orange-500/80 focus:ring-2 focus:ring-orange-500/20 transition outline-none text-base text-center font-medium"
+                                placeholder="01XXXXXXXXX"
                                 autoFocus
                             />
                         </div>
 
-                        <div className="space-y-1.5 relative group">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-5">Security PIN</label>
+                        <div className="space-y-1">
+                            <label htmlFor="login-pin" className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide block text-center">
+                                6-digit PIN
+                            </label>
                             <div className="relative">
                                 <input
+                                    id="login-pin"
                                     type={showPassword ? "text" : "password"}
                                     name="password"
                                     autoComplete="current-password"
@@ -371,13 +365,14 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                                     inputMode="numeric"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value.replace(/\D/g, ''))}
-                                    className="w-full px-6 py-4.5 rounded-[1.5rem] bg-white/5 border border-white/10 text-white placeholder-slate-600 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-xl text-center tracking-[0.8em] font-bold"
+                                    className="w-full min-h-[48px] px-4 pr-12 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-orange-500/80 focus:ring-2 focus:ring-orange-500/20 transition outline-none text-lg text-center tracking-[0.5em] font-semibold"
                                     placeholder="••••••"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 active:text-white rounded-lg"
+                                    aria-label={showPassword ? 'Hide PIN' : 'Show PIN'}
                                 >
                                     {showPassword ? (
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
@@ -388,63 +383,57 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between px-2">
-                            <label className="flex items-center gap-3 cursor-pointer group">
-                                <div className="relative">
+                        <div className="flex items-center justify-center pt-0.5">
+                            <label className="flex items-center gap-2.5 cursor-pointer min-h-[44px] px-1 -mx-1 rounded-lg active:bg-white/5">
+                                <span className="relative inline-flex h-5 w-5 shrink-0 items-center justify-center">
                                     <input
                                         type="checkbox"
                                         checked={rememberMe}
                                         onChange={(e) => setRememberMe(e.target.checked)}
-                                        className="sr-only peer"
+                                        className="peer sr-only"
                                     />
-                                    <div className="w-5 h-5 border-2 border-white/20 rounded-lg peer-checked:bg-orange-500 peer-checked:border-orange-500 transition-all duration-300"></div>
-                                    <svg className="absolute top-0.5 left-0.5 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <span className="pointer-events-none absolute inset-0 rounded-md border-2 border-white/25 transition-colors peer-checked:border-orange-500 peer-checked:bg-orange-500" aria-hidden />
+                                    <svg className="pointer-events-none relative z-10 h-3 w-3 text-white opacity-0 transition-opacity peer-checked:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                                     </svg>
-                                </div>
-                                <span className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Keep me signed in</span>
+                                </span>
+                                <span className="text-sm text-slate-400">Stay signed in</span>
                             </label>
                         </div>
 
                         <button
                             type="submit"
                             disabled={loading || phone.length !== 10 || password.length !== 6}
-                            className="w-full py-5 px-6 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-black rounded-[1.5rem] shadow-2xl shadow-orange-500/20 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:shadow-none mt-2 cursor-pointer"
+                            className="w-full min-h-[48px] py-3 px-4 bg-orange-600 hover:bg-orange-500 active:bg-orange-600 text-white text-[15px] font-semibold rounded-xl shadow-lg shadow-black/20 active:scale-[0.98] transition disabled:opacity-50 disabled:active:scale-100"
                         >
                             {loading ? (
-                                <span className="flex items-center justify-center gap-3">
-                                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                                    Authenticating...
+                                <span className="flex items-center justify-center gap-2">
+                                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
+                                    Signing in…
                                 </span>
                             ) : (
-                                'Enter Dashboard'
+                                'Sign in'
                             )}
                         </button>
                     </form>
                 </div>
 
-                <div
-                    className="mt-12 text-center group"
-                >
-                    <div
-                        className="cursor-pointer mb-4"
+                <div className="mt-6 flex flex-col items-stretch gap-3 w-full max-w-sm mx-auto">
+                    <button
+                        type="button"
                         onClick={() => setCurrentView('accident-stories')}
+                        aria-label="Open awareness stories"
+                        className="w-full min-h-[48px] rounded-xl border border-white/15 bg-white/[0.06] px-3 py-2.5 text-[15px] font-medium text-orange-300 active:bg-white/10 transition-colors"
                     >
-                        <p className="text-orange-400 group-hover:text-orange-300 text-sm font-bold transition-all">
-                            করুণ কাহিনী
-                        </p>
-                        <div className="mt-1 w-12 h-0.5 bg-orange-500/20 mx-auto group-hover:w-16 transition-all"></div>
-                    </div>
+                        করুণ কাহিনী
+                    </button>
 
-                    <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Contact Support</p>
-                        <a
-                            href="mailto:support@smartlineman.in"
-                            className="text-xs font-medium text-slate-400 hover:text-orange-400 transition-colors"
-                        >
-                            support@smartlineman.in
-                        </a>
-                    </div>
+                    <a
+                        href={`mailto:${SUPPORT_EMAIL}`}
+                        className="text-center text-xs text-slate-500 hover:text-slate-300 py-2 min-h-[44px] flex items-center justify-center rounded-lg active:bg-white/5 transition-colors"
+                    >
+                        {SUPPORT_EMAIL}
+                    </a>
                 </div>
             </div>
         </div>
