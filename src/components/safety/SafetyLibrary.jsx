@@ -86,6 +86,7 @@ const ImageSlider = forwardRef(function ImageSlider(
     ref
 ) {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [slideDirection, setSlideDirection] = useState(1);
     const [validImages, setValidImages] = useState(images || []);
     const [zoom, setZoom] = useState(1);
     const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -97,6 +98,7 @@ const ImageSlider = forwardRef(function ImageSlider(
     const globalListenersAttachedRef = useRef(false);
     const globalMoveWrapperRef = useRef(null);
     const globalUpWrapperRef = useRef(null);
+    const activeImageRef = useRef(null);
     const dragRef = useRef({
         active: false,
         pointerId: null,
@@ -121,10 +123,22 @@ const ImageSlider = forwardRef(function ImageSlider(
 
     useEffect(() => {
         setValidImages(images || []);
+        setSlideDirection(1);
         setCurrentIndex(0);
         setZoom(1);
         setPan({ x: 0, y: 0 });
     }, [images]);
+
+    const advanceSlide = useCallback(
+        (step) => {
+            const len = validImages?.length || 0;
+            if (len <= 1) return;
+            const direction = step >= 0 ? 1 : -1;
+            setSlideDirection(direction);
+            setCurrentIndex((prev) => (prev + step + len) % len);
+        },
+        [validImages]
+    );
 
     useEffect(() => {
         setZoom(1);
@@ -242,10 +256,10 @@ const ImageSlider = forwardRef(function ImageSlider(
         if (!validImages || validImages.length <= 1 || !showControls) return;
         const interval = setInterval(() => {
             if (enableZoom && (zoomRef.current > 1.001 || pinchRef.current.active)) return;
-            setCurrentIndex((prev) => (prev + 1) % validImages.length);
+            advanceSlide(1);
         }, 3000);
         return () => clearInterval(interval);
-    }, [validImages, showControls, enableZoom]);
+    }, [validImages, showControls, enableZoom, advanceSlide]);
 
     /** iOS/Android: stop the modal scroll parent from eating touch moves while zoomed (touch-none is not always enough). */
     useEffect(() => {
@@ -347,9 +361,26 @@ const ImageSlider = forwardRef(function ImageSlider(
         const updated = validImages.filter(img => img !== url);
         setValidImages(updated);
         if (currentIndex >= updated.length && updated.length > 0) {
+            setSlideDirection(1);
             setCurrentIndex(0);
         }
     };
+
+    useEffect(() => {
+        if (!activeImageRef.current || (validImages?.length || 0) <= 1) return;
+        const fromX = slideDirection >= 0 ? 28 : -28;
+        activeImageRef.current.animate(
+            [
+                { opacity: 0, transform: `translateX(${fromX}px) scale(0.985)` },
+                { opacity: 1, transform: 'translateX(0) scale(1)' }
+            ],
+            {
+                duration: 340,
+                easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                fill: 'both'
+            }
+        );
+    }, [currentIndex, slideDirection, validImages]);
 
     if (!validImages || validImages.length === 0) {
         return (
@@ -387,9 +418,9 @@ const ImageSlider = forwardRef(function ImageSlider(
                     type="button"
                     onClick={(e) => {
                         e.stopPropagation();
-                        setCurrentIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
+                        advanceSlide(-1);
                     }}
-                    className="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/20 text-white opacity-100 backdrop-blur-sm transition-all hover:bg-black/40 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/slider:opacity-100"
+                    className="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/25 text-white opacity-100 backdrop-blur-sm transition-all hover:bg-black/45"
                 >
                     <ChevronLeftIcon className="w-5 h-5" />
                 </button>
@@ -408,13 +439,14 @@ const ImageSlider = forwardRef(function ImageSlider(
                 }}
             >
                 <img
+                    ref={activeImageRef}
                     key={currentIndex}
                     src={getGoogleDriveDirectLink(validImages[currentIndex])}
                     alt={`${alt} ${currentIndex + 1}`}
                     draggable={false}
                     onDragStart={(e) => e.preventDefault()}
                     onError={() => handleImageError(validImages[currentIndex])}
-                    className={`object-contain filter drop-shadow-md transition-opacity duration-300 animate-in fade-in duration-500 ${
+                    className={`object-contain filter drop-shadow-md transition-opacity duration-300 ${
                         naturalImageHeight
                             ? 'h-auto w-full max-w-full'
                             : 'h-auto w-auto max-h-full max-w-full'
@@ -473,9 +505,9 @@ const ImageSlider = forwardRef(function ImageSlider(
                         type="button"
                         onClick={(e) => {
                             e.stopPropagation();
-                            setCurrentIndex((prev) => (prev + 1) % validImages.length);
+                            advanceSlide(1);
                         }}
-                        className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/20 text-white opacity-100 backdrop-blur-sm transition-all hover:bg-black/40 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/slider:opacity-100"
+                        className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/25 text-white opacity-100 backdrop-blur-sm transition-all hover:bg-black/45"
                     >
                         <ChevronRightIcon className="w-5 h-5" />
                     </button>

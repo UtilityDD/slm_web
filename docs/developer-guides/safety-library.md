@@ -25,9 +25,9 @@
 ## UI building blocks (same file)
 
 1. **`getGoogleDriveDirectLink(url)`** — Rewrites common Drive share URLs to a `googleusercontent` direct image URL (with cache-bust date). Falls through for non-Drive URLs.
-2. **`ImageSlider`** — Multi-image carousel with auto-advance (3s), prev/next chevrons, dots. Props: `images`, `alt`, `aspect` (Tailwind classes), `showControls`, **`enableZoom`** (optional). When `enableZoom` is true (detail modal only): `−` / `1×` / `+` pill (bottom-left), scale **1×–2.5×** in **0.25** steps; **drag** (pointer + touch) pans the zoomed image with clamped bounds, `cursor-grab` / `grabbing`, **`touch-none`** on the viewport; **two-finger pinch** scales between the same min/max (global `pointermove` / `pointerup` in capture phase so both contacts track); auto-advance pauses while zoom is above 1× or a pinch is active; pan resets with zoom or slide change.
+2. **`ImageSlider`** — Multi-image carousel with auto-advance (3s), prev/next chevrons, dots. Props: `images`, `alt`, `aspect` (Tailwind classes), `showControls`, **`enableZoom`** (optional). When `enableZoom` is true (detail modal only): `−` / `1×` / `+` pill (bottom-left), scale **1×–2.5×** in **0.25** steps; **drag** (pointer + touch) pans the zoomed image with clamped bounds, `cursor-grab` / `grabbing`, **`touch-none`** on the viewport; **two-finger pinch** scales between the same min/max (global `pointermove` / `pointerup` in capture phase so both contacts track); auto-advance pauses while zoom is above 1× or a pinch is active; pan resets with zoom or slide change. Slide changes use a guaranteed transition via Web Animations API (`translateX` + fade + slight scale) so image swaps are visibly smooth across mobile and desktop.
 
-**Carousel arrows:** Full opacity on devices with **`(hover: none)`** (typical touch); on **`(hover: hover)`** primary-pointer desktops, chevrons fade until `group-hover` on the slider.
+**Carousel arrows:** Left/right chevrons stay **always visible** on all pointer types (including desktop) so users do not miss image navigation affordances.
 
 **Mobile zoom/pan:** Uses **Pointer events** + `setPointerCapture` for single-finger pan when zoomed. While zoomed, a **non-passive `touchmove`** listener calls `preventDefault` so the parent modal scroll does not steal the gesture; **`-webkit-touch-callout: none`**, **no tap highlight**, **`draggable={false}`** + `onDragStart` prevent iOS image callout/drag quirks; **`lostpointercapture`** clears drag state and prunes the internal pointer map.
 3. **`GridImage`** — Single random thumbnail from `images` for grid cards.
@@ -108,6 +108,7 @@ At runtime, `libraryService` resolves tokens to other items in the same fetch. U
 ## Quick check after UI changes
 
 - [ ] Open an item with **one** and **multiple** images; verify arrows/dots and no toolbar overlap.
+- [ ] Multi-image transitions are visibly smooth (arrow tap + auto-slide), not abrupt.
 - [ ] **Charts** item: tall image scrolls; toolbar still visible.
 - [ ] Desktop: modal header sits below app title bar (not covered) and image/text are side-by-side.
 - [ ] Safe area on notched phones: modal `pt-[env(safe-area-inset-top)]` on shell; toolbar immediately below drag pill.
