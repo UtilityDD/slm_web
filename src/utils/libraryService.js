@@ -51,7 +51,8 @@ const parseCSV = (text) => {
     const lines = text.split(/\r?\n/).filter(line => line.trim());
     if (lines.length < 2) return [];
 
-    const headers = splitCSVLine(lines[0]);
+    /** Strip UTF-8 BOM so first header (e.g. Related_Keys) still matches. */
+    const headers = splitCSVLine(lines[0].replace(/^\uFEFF/, '')).map((h) => h.trim());
 
     const rows = lines.slice(1).map(line => {
         const values = splitCSVLine(line);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
 import { libraryService } from '../../utils/libraryService';
 
 const SearchIcon = ({ className }) => (
@@ -365,7 +365,7 @@ const ImageSlider = forwardRef(function ImageSlider(
     const canZoomIn = zoom < ZOOM_MAX - 0.01;
     const canZoomOut = zoom > ZOOM_MIN + 0.01;
 
-    const boxAspect = naturalImageHeight ? 'w-full min-h-[30vh]' : aspect;
+    const boxAspect = naturalImageHeight ? 'w-full min-h-0' : aspect;
     const touchClass =
         enableZoom && zoom > 1.001
             ? `touch-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`
@@ -378,8 +378,8 @@ const ImageSlider = forwardRef(function ImageSlider(
             ref={enableZoom ? viewportRef : undefined}
             onPointerDown={enableZoom ? onViewportPointerDown : undefined}
             onLostPointerCapture={enableZoom ? onLostPointerCapture : undefined}
-            className={`group/slider relative flex select-none items-center justify-center bg-slate-50 dark:bg-slate-900/50 ${boxAspect} [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
-                naturalImageHeight ? 'overflow-x-hidden overflow-y-visible' : 'overflow-hidden'
+            className={`group/slider relative flex select-none justify-center bg-slate-50 dark:bg-slate-900/50 ${boxAspect} [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
+                naturalImageHeight ? 'items-start overflow-x-hidden overflow-y-visible' : 'items-center overflow-hidden'
             } ${touchClass}`}
         >
             {showControls && validImages.length > 1 && (
@@ -403,7 +403,7 @@ const ImageSlider = forwardRef(function ImageSlider(
                 }
                 style={{
                     transform: enableZoom ? `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` : `scale(${zoom})`,
-                    transformOrigin: 'center center',
+                    transformOrigin: naturalImageHeight ? 'top center' : 'center center',
                     transition: isDragging ? 'none' : 'transform 0.2s ease-out'
                 }}
             >
@@ -417,7 +417,7 @@ const ImageSlider = forwardRef(function ImageSlider(
                     className={`object-contain filter drop-shadow-md transition-opacity duration-300 animate-in fade-in duration-500 ${
                         naturalImageHeight
                             ? 'h-auto w-full max-w-full'
-                            : 'max-h-full w-full'
+                            : 'h-auto w-auto max-h-full max-w-full'
                     } ${enableZoom ? '' : 'zoom-in-95 duration-500 group-hover/slider:scale-105'}`}
                 />
             </div>
@@ -734,6 +734,11 @@ export default function SafetyLibrary({ language, setCurrentView }) {
         setFilteredItems(filtered);
     }, [searchQuery, activeCategory, items]);
 
+    const chartRelatedForModal = useMemo(() => {
+        if (!selectedItem?.related_items?.length) return [];
+        return selectedItem.related_items.filter((r) => r.category === 'Charts');
+    }, [selectedItem]);
+
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20">
             {/* Sticky Header */}
@@ -908,7 +913,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                     <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-6 animate-fade-in">
                         <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl" onClick={closeDetailModal} />
                         
-                        <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden rounded-none border-none bg-white pt-[env(safe-area-inset-top)] shadow-2xl dark:bg-slate-900 sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:rounded-[2.5rem] sm:border sm:border-white/10 sm:pt-0 animate-slide-up sm:animate-scale-in">
+                        <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden rounded-none border-none bg-white pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-2xl dark:bg-slate-900 sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:rounded-[2.5rem] sm:border sm:border-white/10 sm:pb-0 sm:pt-0 animate-slide-up sm:animate-scale-in">
                             <div className="mx-auto mt-2 mb-1 h-1.5 w-12 shrink-0 cursor-pointer rounded-full bg-slate-200 shadow-inner dark:bg-slate-800 sm:hidden" onClick={closeDetailModal} />
 
                             {/* Top bar: optional back (related navigation) + category | zoom | close */}
@@ -975,14 +980,33 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                 </button>
                             </div>
 
-                            {selectedItem.related_items?.length > 0 && (
-                                <div className="flex shrink-0 flex-wrap gap-2 border-b border-slate-100 bg-white/90 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/90 sm:px-5">
-                                    {selectedItem.related_items.map((rel) => (
+                            {chartRelatedForModal.length > 0 && (
+                                <div className="flex shrink-0 flex-nowrap items-center gap-1.5 overflow-x-auto overflow-y-hidden border-b border-slate-100 bg-white/80 px-3 py-1.5 no-scrollbar [-webkit-overflow-scrolling:touch] dark:border-slate-800 dark:bg-slate-900/80 sm:px-5">
+                                    {chartRelatedForModal.map((chart) => (
+                                        <button
+                                            key={chart.id}
+                                            type="button"
+                                            onClick={() => goToRelatedLibraryItem(chart)}
+                                            className="inline-flex h-8 max-w-[min(100%,12rem)] shrink-0 items-center gap-1.5 rounded-lg border border-slate-200/90 bg-white py-0 pl-1.5 pr-2 text-left text-[10px] font-semibold leading-tight text-slate-700 transition-colors hover:border-orange-300 hover:bg-orange-50/90 hover:text-slate-900 active:scale-[0.99] dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:border-orange-500/35 dark:hover:bg-orange-500/10 dark:hover:text-white sm:max-w-[14rem]"
+                                            aria-label={`${t.relatedOpenAriaPrefix} ${chart.name_bn}`}
+                                        >
+                                            <LineChartIcon className="h-3.5 w-3.5 shrink-0 text-slate-500 dark:text-slate-400" aria-hidden />
+                                            <span className="min-w-0 truncate">{chart.name_bn}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {selectedItem.related_items?.some((rel) => rel.category !== 'Charts') && (
+                                <div className="flex shrink-0 flex-nowrap gap-2 overflow-x-auto overflow-y-hidden border-b border-slate-100 bg-white/90 px-3 py-2 no-scrollbar [-webkit-overflow-scrolling:touch] dark:border-slate-800 dark:bg-slate-900/90 sm:flex-wrap sm:overflow-x-visible sm:px-5">
+                                    {selectedItem.related_items
+                                        .filter((rel) => rel.category !== 'Charts')
+                                        .map((rel) => (
                                         <button
                                             key={rel.id}
                                             type="button"
                                             onClick={() => goToRelatedLibraryItem(rel)}
-                                            className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-orange-200/90 bg-white py-1 pl-3 pr-2 text-left text-[11px] font-semibold text-slate-800 shadow-sm transition-all hover:border-orange-400 hover:bg-orange-50/90 active:scale-[0.99] dark:border-orange-500/25 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-800/90"
+                                            className="inline-flex max-w-[min(100%,18rem)] shrink-0 items-center gap-1.5 rounded-full border border-orange-200/90 bg-white py-1 pl-3 pr-2 text-left text-[11px] font-semibold text-slate-800 shadow-sm transition-all hover:border-orange-400 hover:bg-orange-50/90 active:scale-[0.99] dark:border-orange-500/25 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-800/90 sm:max-w-full"
                                             aria-label={`${t.relatedOpenAriaPrefix} ${rel.name_bn}`}
                                         >
                                             <span className="min-w-0 flex-1 truncate">{rel.name_bn}</span>
@@ -991,14 +1015,12 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                             </span>
                                             <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-orange-600/70 dark:text-orange-300/70" aria-hidden />
                                         </button>
-                                    ))}
+                                        ))}
                                 </div>
                             )}
 
-                            <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar">
-                                <div
-                                    className={`group/modal-img w-full bg-slate-50 dark:bg-slate-800/20 ${selectedItem.category === 'Charts' ? 'aspect-auto min-h-0' : 'aspect-square sm:aspect-video max-h-[min(72vh,640px)] sm:max-h-none'}`}
-                                >
+                            <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar">
+                                <div className="group/modal-img w-full shrink-0 bg-slate-50 dark:bg-slate-800/20">
                                     <ImageSlider
                                         key={selectedItem.id}
                                         ref={detailSliderRef}
@@ -1009,7 +1031,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                         enableZoom
                                         zoomChrome="none"
                                         onZoomChange={setDetailZoomLevel}
-                                        naturalImageHeight={selectedItem.category === 'Charts'}
+                                        naturalImageHeight
                                     />
                                 </div>
 
