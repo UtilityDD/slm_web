@@ -910,14 +910,14 @@ export default function SafetyLibrary({ language, setCurrentView }) {
 
                 {/* Premium Detail Modal - Optimized for High-End UX */}
                 {selectedItem && (
-                    <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-6 animate-fade-in">
+                    <div className="fixed inset-0 z-[11000] flex items-end sm:items-start justify-center p-0 sm:px-4 sm:pt-20 sm:pb-4 lg:px-6 lg:pt-24 lg:pb-6 animate-fade-in">
                         <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl" onClick={closeDetailModal} />
                         
-                        <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden rounded-none border-none bg-white pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-2xl dark:bg-slate-900 sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:rounded-[2.5rem] sm:border sm:border-white/10 sm:pb-0 sm:pt-0 animate-slide-up sm:animate-scale-in">
+                        <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden rounded-none border-none bg-white pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-2xl dark:bg-slate-900 sm:h-[min(calc(100dvh-6rem),940px)] sm:max-h-[calc(100dvh-6rem)] sm:w-[min(96vw,1220px)] sm:max-w-none sm:rounded-[2rem] sm:border sm:border-white/10 sm:pb-0 sm:pt-0 lg:h-[min(calc(100dvh-7rem),940px)] lg:max-h-[calc(100dvh-7rem)] animate-slide-up sm:animate-scale-in">
                             <div className="mx-auto mt-2 mb-1 h-1.5 w-12 shrink-0 cursor-pointer rounded-full bg-slate-200 shadow-inner dark:bg-slate-800 sm:hidden" onClick={closeDetailModal} />
 
                             {/* Top bar: optional back (related navigation) + category | zoom | close */}
-                            <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 border-b border-slate-100 bg-white/95 px-3 py-2 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95 sm:px-5">
+                            <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 border-b border-slate-100 bg-white/95 px-3 py-2 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95 sm:px-6 sm:py-3">
                                 <div className="flex min-w-0 items-center gap-1.5">
                                     {modalBrowseStack.length > 0 && (
                                         <button
@@ -981,7 +981,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                             </div>
 
                             {chartRelatedForModal.length > 0 && (
-                                <div className="flex shrink-0 flex-nowrap items-center gap-1.5 overflow-x-auto overflow-y-hidden border-b border-slate-100 bg-white/80 px-3 py-1.5 no-scrollbar [-webkit-overflow-scrolling:touch] dark:border-slate-800 dark:bg-slate-900/80 sm:px-5">
+                                <div className="flex shrink-0 flex-nowrap items-center gap-1.5 overflow-x-auto overflow-y-hidden border-b border-slate-100 bg-white/80 px-3 py-1.5 no-scrollbar [-webkit-overflow-scrolling:touch] dark:border-slate-800 dark:bg-slate-900/80 sm:px-6 sm:py-2">
                                     {chartRelatedForModal.map((chart) => (
                                         <button
                                             key={chart.id}
@@ -998,7 +998,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                             )}
 
                             {selectedItem.related_items?.some((rel) => rel.category !== 'Charts') && (
-                                <div className="flex shrink-0 flex-nowrap gap-2 overflow-x-auto overflow-y-hidden border-b border-slate-100 bg-white/90 px-3 py-2 no-scrollbar [-webkit-overflow-scrolling:touch] dark:border-slate-800 dark:bg-slate-900/90 sm:flex-wrap sm:overflow-x-visible sm:px-5">
+                                <div className="flex shrink-0 flex-nowrap gap-2 overflow-x-auto overflow-y-hidden border-b border-slate-100 bg-white/90 px-3 py-2 no-scrollbar [-webkit-overflow-scrolling:touch] dark:border-slate-800 dark:bg-slate-900/90 sm:flex-wrap sm:overflow-x-visible sm:px-6 sm:py-3">
                                     {selectedItem.related_items
                                         .filter((rel) => rel.category !== 'Charts')
                                         .map((rel) => (
@@ -1019,8 +1019,13 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                 </div>
                             )}
 
-                            <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar">
-                                <div className="group/modal-img w-full shrink-0 bg-slate-50 dark:bg-slate-800/20">
+                            <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar sm:overflow-hidden">
+                                <div className="sm:grid sm:h-full sm:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] sm:items-stretch">
+                                <div
+                                    className={`group/modal-img w-full shrink-0 bg-slate-50 dark:bg-slate-800/20 sm:h-full sm:border-r border-slate-100 dark:border-slate-800 sm:bg-slate-50/60 sm:dark:bg-slate-900/55 ${
+                                        selectedItem.category === 'Charts' ? 'sm:overflow-y-auto sm:no-scrollbar' : 'sm:overflow-hidden'
+                                    }`}
+                                >
                                     <ImageSlider
                                         key={selectedItem.id}
                                         ref={detailSliderRef}
@@ -1035,7 +1040,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                     />
                                 </div>
 
-                                <div className="p-6 sm:p-10 pb-32 sm:pb-16 space-y-6">
+                                <div className="p-6 sm:h-full sm:overflow-y-auto sm:bg-white/85 sm:p-8 sm:pb-14 sm:pr-8 sm:pl-7 sm:no-scrollbar sm:backdrop-blur-sm sm:dark:bg-slate-900/70 pb-32 space-y-6">
                                     {/* Clean Dedicated Header Section */}
                                     <div className="space-y-3 pb-6 border-b border-slate-100 dark:border-slate-800">
                                         <h3 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">
@@ -1076,6 +1081,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                     )}
 
 
+                                </div>
                                 </div>
                             </div>
                         </div>

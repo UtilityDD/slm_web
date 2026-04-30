@@ -37,13 +37,18 @@
 
 ## Detail modal layout (important)
 
-The modal is a **column flex** shell (`h-[100dvh]` on mobile, `sm:max-h-[90vh]` on desktop):
+The modal is a **column flex** shell with view-specific behavior:
+
+- **Mobile:** full-screen sheet style (`h-[100dvh]`) with safe-area top/bottom padding.
+- **Desktop:** larger framed dialog (`sm:w-[min(96vw,1220px)]`, height constrained by viewport) that starts below the app title bar (`sm:pt-20 lg:pt-24` on overlay container) so the modal header is never hidden.
 
 1. **Drag pill** (mobile only, `sm:hidden`) — tap to dismiss; decorative affordance.
 2. **Toolbar row** (`shrink-0`) — **category** label (left) and **Close** (right). This bar sits **above** the image so labels and chrome **do not overlay** the artwork.
-3. **Scroll body** (`flex-1 min-h-0 overflow-y-auto`) — hero `ImageSlider`, then text sections (title, price, about, guide).
+3. **Scroll body** (`flex-1 min-h-0`) — mobile is stacked; desktop is split into two columns.
 
-**Charts category:** Image block uses taller `min-h` instead of strict square/video aspect.
+- **Desktop content split:** `sm:grid` with image + text side-by-side (`~1.15fr / 0.85fr`).
+- **Charts vertical viewing:** when selected item is `category === 'Charts'`, media pane enables vertical scroll on desktop so tall chart graphics can be viewed fully.
+- **Related links UI:** chart links and non-chart links are rendered as compact chip/button rows without section labels.
 
 **Do not** reintroduce `absolute top-4` badges or close buttons on top of the image region without reserving space (padding or a dedicated bar)—that caused overlap on tall graphics and titles.
 
@@ -75,7 +80,12 @@ The app matches by **Drive file id** (and normalized URL), so the target row is 
 
 **Not supported:** a generic “open this Google Sheet tab” browser URL without a **file** id (the published CSV has no stable row handle for that). Use the row’s **`File Link`** instead.
 
-At runtime, `libraryService` resolves tokens to other items in the same fetch. Unmatched URLs or ids are skipped. The detail modal shows a **single row of chip buttons** (no section title); **Back** appears after following a link.
+At runtime, `libraryService` resolves tokens to other items in the same fetch. Unmatched URLs or ids are skipped. The detail modal shows compact chip/button rows (chart + non-chart split), no section title; **Back** appears after following a link.
+
+### CSV/header robustness
+
+- `libraryService.parseCSV()` strips UTF-8 BOM from header row and trims header names before lookup.
+- This prevents cases where `Related_Keys` exists in the sheet but is silently missed because of BOM-prefixed first header.
 
 ---
 
@@ -89,7 +99,7 @@ At runtime, `libraryService` resolves tokens to other items in the same fetch. U
 
 ## Gotchas
 
-- **Z-index:** Modal uses `z-[1000]`; nested portals elsewhere must stay below or raise consistently.
+- **Z-index:** Safety Library detail modal uses `z-[11000]` so it stays above app headers/menus and other overlays.
 - **Auto-slide timer:** `ImageSlider` resets when `images` reference changes; avoid recreating the array each parent render without need.
 - **Encoding:** User-visible strings for BN should live in the `t` object as UTF-8 in the repo—avoid pasting mojibake literals in JSX.
 
@@ -99,4 +109,5 @@ At runtime, `libraryService` resolves tokens to other items in the same fetch. U
 
 - [ ] Open an item with **one** and **multiple** images; verify arrows/dots and no toolbar overlap.
 - [ ] **Charts** item: tall image scrolls; toolbar still visible.
+- [ ] Desktop: modal header sits below app title bar (not covered) and image/text are side-by-side.
 - [ ] Safe area on notched phones: modal `pt-[env(safe-area-inset-top)]` on shell; toolbar immediately below drag pill.
