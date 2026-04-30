@@ -1462,6 +1462,220 @@ body,
 .animate-spin-slow {
   animation: spin-slow 15s linear infinite;
 }
+
+@keyframes hall-radiance {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.03);
+  }
+}
+
+@keyframes hall-sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0.4) translateY(0);
+  }
+  40% {
+    opacity: 0.95;
+    transform: scale(1) translateY(-4px);
+  }
+  75% {
+    opacity: 0.4;
+    transform: scale(0.75) translateY(-8px);
+  }
+}
+
+@keyframes hall-badge-shimmer {
+  0% {
+    box-shadow: 0 0 0 rgba(251, 191, 36, 0);
+  }
+  50% {
+    box-shadow: 0 16px 40px rgba(251, 191, 36, 0.25);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(251, 191, 36, 0);
+  }
+}
+
+.hall-celebration-overlay {
+  isolation: isolate;
+}
+
+.hall-celebration-radiance {
+  background:
+    radial-gradient(circle at 50% 15%, rgba(251, 191, 36, 0.28), rgba(251, 191, 36, 0) 46%),
+    linear-gradient(to bottom, rgba(245, 158, 11, 0.15), rgba(255, 255, 255, 0));
+  animation: hall-radiance 4.2s ease-out forwards;
+}
+
+.hall-confetti-piece {
+  filter: drop-shadow(0 4px 6px rgba(120, 53, 15, 0.2));
+}
+
+.hall-sparkle {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(253, 224, 71, 1), rgba(251, 191, 36, 0.25) 70%, rgba(251, 191, 36, 0));
+  animation: hall-sparkle 1.6s ease-in-out infinite;
+}
+
+.hall-winner-badge {
+  animation: hall-badge-shimmer 2.2s ease-in-out 2;
+}
+
+/* Hall of Fame: center flower / star-cone burst */
+.hall-starburst-host {
+  width: min(92vmin, 520px);
+  height: min(92vmin, 520px);
+}
+
+.hall-starburst-spin {
+  position: absolute;
+  inset: 0;
+  animation: hall-starburst-decel-spin 2.6s cubic-bezier(0.18, 0.82, 0.22, 1) 0.82s forwards;
+}
+
+@keyframes hall-starburst-decel-spin {
+  0% {
+    transform: rotate(-6deg);
+  }
+  100% {
+    transform: rotate(18deg);
+  }
+}
+
+.hall-starburst-cone-ring {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.hall-starburst-flower-ring {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.hall-starburst-cone-ray {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform: rotate(var(--cb-rot));
+}
+
+.hall-starburst-cone-ray-shape {
+  display: block;
+  position: absolute;
+  left: -7px;
+  bottom: 0;
+  width: 14px;
+  height: min(260px, 48vmin);
+  transform-origin: 50% 100%;
+  opacity: 0;
+  clip-path: polygon(5% 100%, 50% 0%, 95% 100%);
+  background: linear-gradient(to top,
+    transparent 0%,
+    rgba(251, 191, 36, 0.1) 20%,
+    rgba(253, 224, 71, 0.55) 68%,
+    rgba(254, 252, 232, 1) 100%);
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.35));
+  animation: hall-starburst-cone-expand 1.12s cubic-bezier(0.12, 0.88, 0.25, 1) forwards;
+  animation-delay: var(--cb-delay, 0s);
+}
+
+@keyframes hall-starburst-cone-expand {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.04);
+    filter: brightness(1.9) drop-shadow(0 0 10px rgba(253, 224, 71, 0.8));
+  }
+  42% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scaleY(1);
+    filter: brightness(1) drop-shadow(0 0 4px rgba(251, 191, 36, 0.2));
+  }
+}
+
+.hall-starburst-flower-petal {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform: rotate(var(--fb-rot));
+}
+
+.hall-starburst-flower-petal-shape {
+  display: block;
+  position: absolute;
+  left: -13px;
+  bottom: 0;
+  width: 26px;
+  height: min(148px, 30vmin);
+  transform-origin: 50% 100%;
+  opacity: 0;
+  clip-path: polygon(0 100%, 50% 0%, 100% 100%);
+  background: linear-gradient(to top,
+    transparent 25%,
+    rgba(251, 146, 60, 0.15) 48%,
+    rgba(251, 191, 36, 0.75) 100%);
+  filter: drop-shadow(0 2px 8px rgba(234, 88, 12, 0.2));
+  animation: hall-starburst-flower-open 0.92s cubic-bezier(0.2, 0.92, 0.28, 1) forwards;
+  animation-delay: var(--fb-delay, 0s);
+}
+
+@keyframes hall-starburst-flower-open {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.06) scaleX(0.85);
+  }
+  100% {
+    opacity: 0.95;
+    transform: scaleY(1) scaleX(1);
+  }
+}
+
+.hall-starburst-core-hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-left: calc(-3.5rem / 2);
+  margin-top: calc(-3.5rem / 2);
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 1), rgba(254, 243, 199, 1) 32%, rgba(251, 191, 36, 0.95) 62%, rgba(217, 119, 6, 0.9) 100%);
+  opacity: 0;
+  transform: scale(0.2);
+  box-shadow:
+    0 0 0 2px rgba(254, 243, 199, 0.95),
+    0 0 min(72px, 18vmin) rgba(251, 191, 36, 0.55),
+    inset 0 0 1rem rgba(255, 255, 255, 0.65);
+  animation: hall-starburst-hub-pop 0.58s cubic-bezier(0.32, 1.45, 0.54, 1) 0.88s forwards;
+}
+
+@keyframes hall-starburst-hub-pop {
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* --- Power Pole Progress Map Styles --- */
 .training-path-container {
     @apply relative w-full overflow-y-auto pb-32;

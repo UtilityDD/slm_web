@@ -1175,14 +1175,21 @@ export default function SmartLinemanUI() {
               </header>
             )}
 
-            <div id="main-scroll-container" className="flex-1 overflow-y-auto overflow-x-hidden relative pb-20 md:pb-0">
+            <div
+              id="main-scroll-container"
+              className={`flex-1 overflow-y-auto overflow-x-hidden relative ${
+                currentView === 'leaderboard'
+                  ? 'pb-[calc(10rem+env(safe-area-inset-bottom))] md:pb-8'
+                  : 'pb-20 md:pb-0'
+              }`}
+            >
               <div className="h-full relative z-10 w-full view-transition" key={currentView}>
                 {renderContent()}
               </div>
             </div>
 
             {currentView !== 'sops' && (
-              <div className="fixed bottom-[72px] left-0 z-[250] animate-slide-up">
+              <div className={`fixed left-0 z-[250] animate-slide-up ${currentView === 'leaderboard' ? 'bottom-[calc(8rem+env(safe-area-inset-bottom))]' : 'bottom-[72px]'}`}>
                  <button
                     onClick={() => setCurrentView('sops')}
                     onMouseEnter={() => setIsSathiExpanded(true)}

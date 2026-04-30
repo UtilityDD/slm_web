@@ -193,6 +193,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [hallOfFameData, setHallOfFameData] = useState([]);
     const [loadingGallery, setLoadingGallery] = useState(false);
     const [maximizedAvatar, setMaximizedAvatar] = useState(null);
+    const [showHallCelebration, setShowHallCelebration] = useState(false);
+    const hallCelebrationShownRef = React.useRef(false);
 
     // Gamified Ladder state
     const [todayAttempts, setTodayAttempts] = useState([]);
@@ -250,6 +252,85 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         setFailedImageKeys((prev) => ({ ...prev, [imageKey]: false }));
         setImageRetryTick((prev) => ({ ...prev, [imageKey]: (prev[imageKey] || 0) + 1 }));
     };
+
+    useEffect(() => {
+        if (!showHallOfFame) {
+            hallCelebrationShownRef.current = false;
+            setShowHallCelebration(false);
+        }
+    }, [showHallOfFame]);
+
+    useEffect(() => {
+        if (!showHallOfFame || loadingGallery || hallOfFameData.length === 0 || hallCelebrationShownRef.current) return;
+
+        const playCelebrationSound = () => {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const now = ctx.currentTime + 0.04;
+                const master = ctx.createGain();
+                master.gain.value = 0.16;
+                master.connect(ctx.destination);
+
+                const playVoice = (freq, start, duration, type = 'triangle', volume = 0.2) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, start);
+                    osc.frequency.exponentialRampToValueAtTime(freq * 1.008, start + duration * 0.6);
+                    gain.gain.setValueAtTime(0.0001, start);
+                    gain.gain.exponentialRampToValueAtTime(volume, start + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+                    osc.connect(gain);
+                    gain.connect(master);
+                    osc.start(start);
+                    osc.stop(start + duration + 0.02);
+                };
+
+                // Warm bass bed for richness
+                [130.81, 146.83, 164.81].forEach((freq, idx) => {
+                    playVoice(freq, now + idx * 0.26, 0.34, 'sine', 0.08);
+                });
+
+                // Main victory motif (major progression)
+                const motif = [
+                    { n: 523.25, t: 0.00, d: 0.20 },
+                    { n: 659.25, t: 0.16, d: 0.20 },
+                    { n: 783.99, t: 0.32, d: 0.24 },
+                    { n: 1046.5, t: 0.50, d: 0.30 },
+                    { n: 1318.51, t: 0.76, d: 0.34 }
+                ];
+                motif.forEach(({ n, t, d }) => playVoice(n, now + t, d, 'triangle', 0.12));
+
+                // Sparkle harmonics for polished finish
+                [1567.98, 2093.0].forEach((freq, idx) => {
+                    playVoice(freq, now + 0.68 + idx * 0.13, 0.22, 'sine', 0.05);
+                });
+
+                setTimeout(() => {
+                    if (ctx.state !== 'closed') ctx.close().catch(() => {});
+                }, 1900);
+            } catch {
+                // Non-critical UI effect; skip if audio is blocked.
+            }
+        };
+
+        const startTimer = setTimeout(() => {
+            hallCelebrationShownRef.current = true;
+            setShowHallCelebration(true);
+            playCelebrationSound();
+        }, 1200);
+
+        const stopTimer = setTimeout(() => {
+            setShowHallCelebration(false);
+        }, 5600);
+
+        return () => {
+            clearTimeout(startTimer);
+            clearTimeout(stopTimer);
+        };
+    }, [showHallOfFame, loadingGallery, hallOfFameData.length]);
 
     // PERSISTENCE & ANTI-CHEAT LOGIC
     useEffect(() => {
@@ -1357,12 +1438,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             : <><span className="text-3xl drop-shadow-sm inline-block animate-spin-slow">🌍</span> {language === 'en' ? 'Global Rankings' : 'গ্লোবাল র‍্যাঙ্কিং'}</>
                                         }
                                     </h1>
-                                    <p className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mt-1.5 flex items-center gap-2">
-                                        <span className="w-4 h-px bg-slate-300 dark:bg-slate-700"></span>
-                                        {showHallOfFame 
-                                            ? (language === 'en' ? 'Celebrating Excellence' : 'সেরা পারফর্মারদের গ্যালারি') 
-                                            : (language === 'en' ? 'Live Global Leaderboard' : 'লাইভ গ্লোবাল লিডারবোর্ড')}
-                                    </p>
                                 </div>
                                 
                                 <button 
@@ -1430,6 +1505,76 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
             {showHallOfFame ? (
                     <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+                        {showHallCelebration && (
+                            <div className="fixed inset-0 z-[95] pointer-events-none overflow-hidden hall-celebration-overlay">
+                                <div className="absolute inset-0 hall-celebration-radiance"></div>
+
+                                {/* Center flower / star-cone burst (viewport center); CSS delay matches audio peak */}
+                                <div className="absolute left-1/2 top-[48%] z-[14] hall-starburst-host -translate-x-1/2 -translate-y-1/2 pointer-events-none" aria-hidden>
+                                    <div className="hall-starburst-spin">
+                                        <div className="hall-starburst-cone-ring">
+                                            {[...Array(28)].map((_, i) => (
+                                                <div
+                                                    key={`cb-${i}`}
+                                                    className="hall-starburst-cone-ray"
+                                                    style={{ '--cb-rot': `${(360 / 28) * i}deg`, '--cb-delay': `${0.86 + i * 0.012}s` }}
+                                                >
+                                                    <span className="hall-starburst-cone-ray-shape" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="hall-starburst-flower-ring">
+                                            {[...Array(14)].map((_, i) => (
+                                                <div
+                                                    key={`fb-${i}`}
+                                                    className="hall-starburst-flower-petal"
+                                                    style={{ '--fb-rot': `${(360 / 14) * i}deg`, '--fb-delay': `${0.92 + i * 0.018}s` }}
+                                                >
+                                                    <span className="hall-starburst-flower-petal-shape" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="hall-starburst-core-hub" />
+                                    </div>
+                                </div>
+
+                                {[...Array(52)].map((_, i) => (
+                                    <span
+                                        key={`hall-confetti-${i}`}
+                                        className="absolute animate-confetti hall-confetti-piece"
+                                        style={{
+                                            left: `${(i * 19) % 100}%`,
+                                            top: `${-10 - (i % 6) * 6}%`,
+                                            animationDelay: `${(i % 14) * 0.08}s`,
+                                            animationDuration: `${2.7 + (i % 5) * 0.45}s`,
+                                            fontSize: `${11 + (i % 5) * 3}px`
+                                        }}
+                                    >
+                                        {['🎉', '✨', '🏆', '🎊'][i % 4]}
+                                    </span>
+                                ))}
+
+                                {[...Array(20)].map((_, i) => (
+                                    <span
+                                        key={`hall-spark-${i}`}
+                                        className="absolute hall-sparkle"
+                                        style={{
+                                            left: `${5 + (i * 9) % 90}%`,
+                                            top: `${10 + (i * 11) % 70}%`,
+                                            animationDelay: `${(i % 10) * 0.16}s`
+                                        }}
+                                    />
+                                ))}
+
+                                <div className="absolute inset-x-0 top-20 flex justify-center px-4">
+                                    <div className="hall-winner-badge rounded-2xl border border-amber-300/60 dark:border-amber-600/40 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-4 sm:px-7 py-3 shadow-2xl animate-scale-in">
+                                        <p className="font-bengali text-sm sm:text-base font-black text-amber-700 dark:text-amber-300 tracking-wide text-center">
+                                            🎉 অভিনন্দন মাসের সেরা বিজয়ীরা!
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {loadingGallery ? (
                             <div className="flex flex-col items-center justify-center py-20 pointer-events-none">
@@ -1437,7 +1582,45 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 <p className="text-slate-400 font-bold mt-4 animate-pulse uppercase tracking-[0.2em] text-[10px]">{language === 'en' ? 'Opening the Gallery...' : 'গ্যালারি খোলা হচ্ছে...'}</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 gap-5 sm:gap-10 max-w-7xl mx-auto px-0 md:px-8">
+                            <div className="space-y-5 sm:space-y-8 max-w-7xl mx-auto px-0 md:px-8">
+                                <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-orange-200/70 dark:border-orange-800/40 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-100 dark:from-orange-900/20 dark:via-amber-900/15 dark:to-orange-900/20 p-4 sm:p-6 animate-slide-up">
+                                    <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-orange-400/20 blur-2xl animate-pulse"></div>
+                                    <div className="absolute -bottom-12 -left-8 w-36 h-36 rounded-full bg-amber-400/20 blur-2xl animate-pulse"></div>
+
+                                    <div className="relative z-10">
+                                        <p className="font-bengali text-sm sm:text-base md:text-lg font-black leading-relaxed text-slate-800 dark:text-slate-100">
+                                            🎉 মাসের বিজয়ীদের অভিনন্দন! পুরস্কার সংক্রান্ত আপডেট পেতে অনুগ্রহ করে আমাদের Facebook পেজ ফলো করুন এবং WhatsApp গ্রুপে যুক্ত থাকুন।
+                                        </p>
+                                        <div className="mt-3 flex flex-wrap items-center gap-2.5">
+                                            <a
+                                                href="https://www.facebook.com/smartlineman"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="w-11 h-11 sm:w-12 sm:h-12 bg-[#1877F2] text-white rounded-full flex items-center justify-center shadow-lg shadow-blue-500/25 hover:scale-105 active:scale-95 transition-transform border-2 border-white/20"
+                                                title={language === 'en' ? 'Facebook Page' : 'ফেসবুক পেজ'}
+                                                aria-label={language === 'en' ? 'Open Facebook page' : 'ফেসবুক পেজ খুলুন'}
+                                            >
+                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                                    <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" />
+                                                </svg>
+                                            </a>
+                                            <a
+                                                href="https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="w-11 h-11 sm:w-12 sm:h-12 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-lg shadow-green-500/25 hover:scale-105 active:scale-95 transition-transform border-2 border-white/20"
+                                                title={language === 'en' ? 'WhatsApp Community' : 'হোয়াটসঅ্যাপ গ্রুপ'}
+                                                aria-label={language === 'en' ? 'Join WhatsApp group' : 'হোয়াটসঅ্যাপ গ্রুপে যুক্ত হোন'}
+                                            >
+                                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                                                </svg>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            <div className="grid grid-cols-1 gap-5 sm:gap-10">
                                 {hallOfFameData.map((entry, idx) => (
                                     <div 
                                         key={`${entry.year}-${entry.month}`} 
@@ -1452,12 +1635,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             {/* Header Section */}
                                             <div className="flex flex-row items-center justify-between mb-3 sm:mb-6 gap-3 relative z-10 border-b border-slate-200/50 dark:border-white/10 pb-2 sm:pb-4">
                                                 <div>
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <div className="h-px w-6 bg-indigo-500/50"></div>
-                                                        <span className="text-[9px] font-black tracking-[0.2em] text-indigo-500 dark:text-indigo-400 uppercase">
-                                                            {language === 'en' ? 'Monthly Stars' : 'মাসের সেরারা'}
-                                                        </span>
-                                                    </div>
                                                     <h3 className="text-lg sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tighter">
                                                         {new Date(entry.year, entry.month - 1).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', { month: 'long', year: 'numeric' })}
                                                     </h3>
@@ -1572,6 +1749,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         </div>
                                     </div>
                                 ))}
+                            </div>
                             </div>
                         )}
 
@@ -1854,7 +2032,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     }
 
     return (
-        <div className="max-w-md mx-auto min-h-screen relative pb-20">
+        <div className="max-w-md mx-auto min-h-screen relative pb-[calc(11rem+env(safe-area-inset-bottom))] md:pb-24">
             {/* 1. STICKY SCOREBOARD HEADER */}
             <div className="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm transition-all duration-300">
                 <div className="px-4 py-4">
@@ -2145,7 +2323,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
 
             {/* Floating Action Buttons */}
-            <div className="fixed bottom-24 right-4 md:right-8 z-[70] flex flex-col gap-3">
+            <div className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-4 md:right-8 z-[70] flex flex-col gap-3">
                 <a
                     href="https://www.facebook.com/smartlineman"
                     target="_blank"
