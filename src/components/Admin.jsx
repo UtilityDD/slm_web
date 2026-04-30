@@ -11,6 +11,13 @@ import DeleteUserConfirmationModal from './DeleteUserConfirmationModal';
 import MyPPE from './safety/MyPPE';
 import MyTools from './safety/MyTools';
 
+const NOTIFICATION_URGENCY_STYLES = {
+  info: { selected: 'border-orange-500 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400', idle: 'border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700' },
+  update: { selected: 'border-green-500 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400', idle: 'border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700' },
+  warning: { selected: 'border-orange-500 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400', idle: 'border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700' },
+  alert: { selected: 'border-red-500 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400', idle: 'border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700' }
+};
+
 const UserTableSkeleton = () => (
   <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
     <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
@@ -77,6 +84,18 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [supervisors, setSupervisors] = useState([]);
   const [isSendingNotification, setIsSendingNotification] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [adminBroadcasts, setAdminBroadcasts] = useState([]);
+  const [adminBroadcastsLoading, setAdminBroadcastsLoading] = useState(false);
+  const [adminBroadcastsError, setAdminBroadcastsError] = useState(null);
+  const [deliveryHealth, setDeliveryHealth] = useState({
+    checking: false,
+    checkedAt: null,
+    activeCount: null,
+    publicRpcOk: null,
+    adminRpcOk: null,
+    realtimeStatus: null,
+    error: null
+  });
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [invitePhone, setInvitePhone] = useState('');
   const [inviteName, setInviteName] = useState('');
@@ -91,6 +110,100 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   useEffect(() => {
     fetchUsers(currentPage);
   }, [currentPage, userProfile?.role]);
+
+  const loadAdminBroadcasts = async () => {
+    if (userProfile?.role !== 'admin' || !user?.id) return;
+    setAdminBroadcastsLoading(true);
+    setAdminBroadcastsError(null);
+    try {
+      const { data, error } = await supabase.rpc('get_notifications_admin', {
+        p_caller_id: user.id
+      });
+      if (error) throw error;
+      setAdminBroadcasts(Array.isArray(data) ? data.slice(0, 40) : []);
+    } catch (err) {
+      console.error('Error loading broadcasts:', err);
+      setAdminBroadcasts([]);
+      setAdminBroadcastsError(
+        err?.message ||
+          (language === 'en'
+            ? 'Could not load notices. Run the SQL migration notifications_admin_rpc.sql in Supabase if this is the first setup.'
+            : 'বিজ্ঞপ্তি লোড করা যায়নি।')
+      );
+    } finally {
+      setAdminBroadcastsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (userProfile?.role === 'admin' && user?.id) loadAdminBroadcasts();
+  }, [userProfile?.role, user?.id]);
+
+  const runDeliveryHealthCheck = async () => {
+    if (userProfile?.role !== 'admin' || !user?.id) return;
+
+    setDeliveryHealth((prev) => ({
+      ...prev,
+      checking: true,
+      error: null
+    }));
+
+    try {
+      const [publicResult, adminResult] = await Promise.all([
+        supabase.rpc('get_active_notifications_public'),
+        supabase.rpc('get_notifications_admin', { p_caller_id: user.id })
+      ]);
+
+      const publicError = publicResult.error;
+      const adminError = adminResult.error;
+      const publicData = Array.isArray(publicResult.data) ? publicResult.data : [];
+      const adminData = Array.isArray(adminResult.data) ? adminResult.data : [];
+
+      const realtimeStatus = await new Promise((resolve) => {
+        const channel = supabase.channel(`diag:notifications:${Date.now()}`);
+        let settled = false;
+
+        const settle = (status) => {
+          if (settled) return;
+          settled = true;
+          resolve(status);
+          supabase.removeChannel(channel);
+        };
+
+        channel
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => {})
+          .subscribe((status) => settle(status));
+
+        setTimeout(() => settle('TIMEOUT'), 2500);
+      });
+
+      setDeliveryHealth({
+        checking: false,
+        checkedAt: new Date().toISOString(),
+        activeCount: publicData.length,
+        publicRpcOk: !publicError,
+        adminRpcOk: !adminError,
+        realtimeStatus,
+        error: publicError?.message || adminError?.message || null
+      });
+    } catch (err) {
+      setDeliveryHealth({
+        checking: false,
+        checkedAt: new Date().toISOString(),
+        activeCount: null,
+        publicRpcOk: false,
+        adminRpcOk: false,
+        realtimeStatus: 'FAILED',
+        error: err?.message || 'Health check failed'
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (userProfile?.role === 'admin' && user?.id) {
+      runDeliveryHealthCheck();
+    }
+  }, [userProfile?.role, user?.id]);
 
   useEffect(() => {
     const fetchSupervisors = async () => {
@@ -201,16 +314,16 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
     setIsSendingNotification(true);
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .insert([{
-          title: notificationForm.title,
-          message: notificationForm.message,
-          type: notificationForm.type,
-          admin_id: user.id
-        }]);
+      const { error } = await supabase.rpc('admin_create_notification', {
+        p_caller_id: user.id,
+        p_title: notificationForm.title.trim(),
+        p_message: notificationForm.message.trim(),
+        p_type: notificationForm.type
+      });
 
       if (error) throw error;
+
+      await loadAdminBroadcasts();
 
       alert('Notification sent successfully!');
       setNotificationForm({ title: '', message: '', type: 'info' });
@@ -220,6 +333,39 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       alert(`Failed to send notification: ${error.message}`);
     } finally {
       setIsSendingNotification(false);
+    }
+  };
+
+  const handleToggleBroadcastActive = async (row) => {
+    if (!user?.id) return;
+    try {
+      const next = row.is_active !== true;
+      const { error } = await supabase.rpc('admin_set_notification_active', {
+        p_caller_id: user.id,
+        p_notification_id: row.id,
+        p_is_active: next
+      });
+      if (error) throw error;
+      setAdminBroadcasts((prev) => prev.map((r) => (r.id === row.id ? { ...r, is_active: next } : r)));
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Failed to update notice');
+    }
+  };
+
+  const handleDeleteBroadcastRow = async (id) => {
+    if (!user?.id) return;
+    if (!window.confirm(language === 'en' ? 'Delete this notice permanently?' : 'এই বিজ্ঞপ্তি স্থায়ীভাবে মুছবেন?')) return;
+    try {
+      const { error } = await supabase.rpc('admin_delete_notification', {
+        p_caller_id: user.id,
+        p_notification_id: id
+      });
+      if (error) throw error;
+      setAdminBroadcasts((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Failed to delete notice');
     }
   };
 
@@ -652,6 +798,148 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
           </div>
         )}
       </div>
+
+      {userProfile?.role === 'admin' && !showAnalytics && (
+        <div className="mb-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm p-4 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+              {language === 'en' ? 'Broadcast notices' : 'ব্রডকাস্ট বিজ্ঞপ্তি'}
+            </h2>
+            <button
+              type="button"
+              onClick={() => loadAdminBroadcasts()}
+              className="text-sm font-bold text-orange-600 hover:text-orange-700 dark:text-orange-400"
+            >
+              {language === 'en' ? 'Refresh' : 'রিফ্রেশ'}
+            </button>
+          </div>
+          {adminBroadcastsLoading ? (
+            <p className="text-sm text-slate-500">{language === 'en' ? 'Loading…' : 'লোড হচ্ছে…'}</p>
+          ) : adminBroadcastsError ? (
+            <div className="rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/30 p-4 text-sm text-amber-900 dark:text-amber-100">
+              <p className="font-bold mb-1">{language === 'en' ? 'Could not load notices' : 'বিজ্ঞপ্তি লোড হয়নি'}</p>
+              <p className="text-amber-800/90 dark:text-amber-200/90 mb-2">{adminBroadcastsError}</p>
+              <p className="text-xs text-amber-700/80 dark:text-amber-300/80">
+                {language === 'en'
+                  ? 'Apply migration supabase/migrations/notifications_admin_rpc.sql in the Supabase SQL Editor, then tap Refresh.'
+                  : 'Supabase SQL Editor-এ notifications_admin_rpc.sql চালান, তারপর রিফ্রেশ করুন।'}
+              </p>
+            </div>
+          ) : adminBroadcasts.length === 0 ? (
+            <p className="text-sm text-slate-500">
+              {language === 'en' ? 'No notices yet. Use Send Notification to publish one.' : 'এখনও কোনো বিজ্ঞপ্তি নেই।'}
+            </p>
+          ) : (
+            <ul className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
+              {adminBroadcasts.map((row) => {
+                const rowIsActive = row.is_active === true;
+                return (
+                <li
+                  key={row.id}
+                  className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${rowIsActive ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'}`}>
+                        {rowIsActive ? (language === 'en' ? 'Active' : 'সক্রিয়') : (language === 'en' ? 'Inactive' : 'নিষ্ক্রিয়')}
+                      </span>
+                      <span className="text-xs text-slate-400">{row.created_at ? new Date(row.created_at).toLocaleString() : ''}</span>
+                    </div>
+                    <p className="font-bold text-slate-900 dark:text-slate-100 truncate">{row.title}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">{row.message}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleBroadcastActive(row)}
+                      className="px-3 py-2 rounded-lg text-xs font-bold bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100"
+                    >
+                      {rowIsActive
+                        ? (language === 'en' ? 'Deactivate' : 'নিষ্ক্রিয়')
+                        : (language === 'en' ? 'Activate' : 'সক্রিয়')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteBroadcastRow(row.id)}
+                      className="px-3 py-2 rounded-lg text-xs font-bold bg-rose-100 hover:bg-rose-200 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200"
+                    >
+                      {language === 'en' ? 'Delete' : 'মুছুন'}
+                    </button>
+                  </div>
+                </li>
+              );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {userProfile?.role === 'admin' && !showAnalytics && (
+        <div className="mb-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm p-4 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+              {language === 'en' ? 'Delivery health' : 'ডেলিভারি হেলথ'}
+            </h2>
+            <button
+              type="button"
+              onClick={runDeliveryHealthCheck}
+              disabled={deliveryHealth.checking}
+              className="text-sm font-bold text-orange-600 hover:text-orange-700 dark:text-orange-400 disabled:opacity-50"
+            >
+              {deliveryHealth.checking
+                ? (language === 'en' ? 'Checking...' : 'চেক হচ্ছে...')
+                : (language === 'en' ? 'Run check' : 'চেক করুন')}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">
+              <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">
+                {language === 'en' ? 'Active notices' : 'সক্রিয় নোটিশ'}
+              </p>
+              <p className="text-xl font-black text-slate-900 dark:text-slate-100">
+                {deliveryHealth.activeCount ?? '-'}
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">
+              <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">
+                {language === 'en' ? 'Public RPC' : 'পাবলিক RPC'}
+              </p>
+              <p className={`text-sm font-black ${deliveryHealth.publicRpcOk === true ? 'text-emerald-600 dark:text-emerald-400' : deliveryHealth.publicRpcOk === false ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500'}`}>
+                {deliveryHealth.publicRpcOk === true ? 'OK' : deliveryHealth.publicRpcOk === false ? 'FAIL' : '-'}
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">
+              <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">
+                {language === 'en' ? 'Admin RPC' : 'এডমিন RPC'}
+              </p>
+              <p className={`text-sm font-black ${deliveryHealth.adminRpcOk === true ? 'text-emerald-600 dark:text-emerald-400' : deliveryHealth.adminRpcOk === false ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500'}`}>
+                {deliveryHealth.adminRpcOk === true ? 'OK' : deliveryHealth.adminRpcOk === false ? 'FAIL' : '-'}
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">
+              <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">
+                {language === 'en' ? 'Realtime' : 'রিয়েলটাইম'}
+              </p>
+              <p className={`text-sm font-black ${deliveryHealth.realtimeStatus === 'SUBSCRIBED' ? 'text-emerald-600 dark:text-emerald-400' : deliveryHealth.realtimeStatus && deliveryHealth.realtimeStatus !== 'SUBSCRIBED' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500'}`}>
+                {deliveryHealth.realtimeStatus || '-'}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+            {deliveryHealth.checkedAt
+              ? `${language === 'en' ? 'Last checked' : 'সর্বশেষ চেক'}: ${new Date(deliveryHealth.checkedAt).toLocaleString()}`
+              : (language === 'en' ? 'Not checked yet.' : 'এখনও চেক হয়নি।')}
+          </div>
+          {deliveryHealth.error && (
+            <p className="mt-2 text-xs text-rose-600 dark:text-rose-400 break-all">
+              {deliveryHealth.error}
+            </p>
+          )}
+        </div>
+      )}
+
       {loading ? (
         <UserTableSkeleton />
       ) : fetchError ? (
@@ -1198,8 +1486,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                       type="button"
                       onClick={() => setNotificationForm({ ...notificationForm, type: type.id })}
                       className={`py-3 px-4 rounded-xl font-bold text-sm transition-all border-2 ${notificationForm.type === type.id
-                        ? `border-${type.color}-500 bg-${type.color}-50 text-${type.color}-700 dark:bg-${type.color}-900/20 dark:text-${type.color}-400`
-                        : 'border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'
+                        ? NOTIFICATION_URGENCY_STYLES[type.id]?.selected
+                        : NOTIFICATION_URGENCY_STYLES[type.id]?.idle
                         }`}
                     >
                       {type.label}

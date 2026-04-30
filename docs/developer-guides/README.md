@@ -12,9 +12,11 @@ This folder holds **maintainer-focused** documentation: architecture notes, inte
 | Guide | Scope |
 |--------|--------|
 | [Chapter Quiz Modal](./chapter-quiz-modal.md) | `ChapterQuizModal.jsx`, read-aloud script, quiz UX (mobile, TTS, animations) |
+| [Admin Broadcast Notifications](./admin-broadcast-notifications.md) | `Admin.jsx`, `SmartLinemanUI.jsx`, Supabase RPCs for create/list/toggle/delete, startup modal behavior |
 | [Hourly Visual Quiz](./hourly-visual-quiz.md) | `Competitions.jsx`, Google Sheet visual quiz sync, deterministic hourly selection, image retry UX |
 | [Safety Library](./safety-library.md) | `SafetyLibrary.jsx`, grid, detail modal, Drive image helper |
 | [Training lesson reader](./training-lesson-reader.md) | `Training.jsx` journal slides, guided section cards, advance lock, alert/chime, scroll + text scale |
+| [Broadcast notifications](./notifications-broadcasts.md) | `Admin.jsx`, `SmartLinemanUI.jsx`, notification RPCs, startup modal + admin controls |
 
 ## Conventions for new guides
 

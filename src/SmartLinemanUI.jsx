@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from "react";
+import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Browser } from '@capacitor/browser';
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -121,7 +121,9 @@ export default function SmartLinemanUI() {
   const [notificationsHistory, setNotificationsHistory] = useState([]);
   const [notifFetchError, setNotifFetchError] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [lastSeenNotificationId, setLastSeenNotificationId] = useState(() => storageUtils.getItem('lastSeenNotificationId'));
+  const [showActiveBroadcastModal, setShowActiveBroadcastModal] = useState(false);
+  const [activeBroadcastNotice, setActiveBroadcastNotice] = useState(null);
+  const activeBroadcastShownOnceRef = useRef(false);
   const [showHandbookModal, setShowHandbookModal] = useState(false);
   const [completedLessons, setCompletedLessons] = useState([]);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -543,15 +545,10 @@ export default function SmartLinemanUI() {
       const data = await requestManager.fetch(
         'notifications_list',
         async () => {
-          const { data, error } = await supabase
-            .from('notifications')
-            .select('*')
-            .eq('is_active', true)
-            .order('created_at', { ascending: false })
-            .limit(20);
+          const { data, error } = await supabase.rpc('get_active_notifications_public');
 
           if (error) throw error;
-          return data || [];
+          return (data || []).slice(0, 20);
         },
         { ttl: 2, forceRefresh, swr: true }
       );
@@ -563,10 +560,25 @@ export default function SmartLinemanUI() {
     }
   };
 
-  // Fetch Notifications History on mount
   useEffect(() => {
-    fetchNotifications();
-  }, []);
+    if (user?.id) {
+      activeBroadcastShownOnceRef.current = false;
+      fetchNotifications(true);
+    } else {
+      setNotificationsHistory([]);
+      setShowActiveBroadcastModal(false);
+      setActiveBroadcastNotice(null);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id || ['login', 'verify', 'update-password'].includes(currentView) || activeBroadcastShownOnceRef.current) return;
+    const latest = notificationsHistory[0];
+    if (!latest?.id) return;
+    activeBroadcastShownOnceRef.current = true;
+    setActiveBroadcastNotice(latest);
+    setShowActiveBroadcastModal(true);
+  }, [user?.id, notificationsHistory, currentView]);
 
   const handleDeleteNotification = async (id) => {
     try {
@@ -593,9 +605,27 @@ export default function SmartLinemanUI() {
         schema: 'public',
         table: 'notifications'
       }, (payload) => {
-        setPushNotification(payload.new);
-        setNotificationsHistory(prev => [payload.new, ...prev].slice(0, 20));
+        const row = payload.new;
+        if (!row?.id) return;
+        if (row.is_active !== true) return;
+        setPushNotification(row);
+        setNotificationsHistory(prev => [row, ...prev.filter((n) => n.id !== row.id)].slice(0, 20));
         setTimeout(() => setPushNotification(null), 10000);
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'notifications'
+      }, (payload) => {
+        const row = payload.new;
+        if (!row?.id) return;
+        setNotificationsHistory((prev) => {
+          if (row.is_active !== true) return prev.filter((n) => n.id !== row.id);
+          const without = prev.filter((n) => n.id !== row.id);
+          return [row, ...without]
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            .slice(0, 20);
+        });
       })
       .on('postgres_changes', {
         event: 'DELETE',
@@ -1024,6 +1054,32 @@ export default function SmartLinemanUI() {
           <div className="flex-1 flex flex-col h-full overflow-hidden">
             {showLogoutModal && (
               <LogoutConfirmationModal onConfirm={() => confirmLogout(false)} onCancel={cancelLogout} language={language} loading={isLoggingOut} />
+            )}
+
+            {showActiveBroadcastModal && activeBroadcastNotice && (
+              <div className="fixed inset-0 z-[210] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 text-left border border-slate-200 dark:border-slate-700 relative overflow-hidden max-h-[85vh] flex flex-col">
+                  <div className="absolute -top-24 -right-24 w-48 h-48 bg-orange-500/10 blur-[100px] rounded-full pointer-events-none" />
+                  <div className="relative flex-1 min-h-0 flex flex-col">
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0 mb-4 bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">
+                      {activeBroadcastNotice.type === 'alert' ? '🚨' : activeBroadcastNotice.type === 'warning' ? '⚠️' : activeBroadcastNotice.type === 'update' ? '✅' : '📢'}
+                    </div>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+                      {activeBroadcastNotice.title}
+                    </h2>
+                    <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-wrap overflow-y-auto custom-scrollbar flex-1 mb-6">
+                      {activeBroadcastNotice.message}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowActiveBroadcastModal(false)}
+                      className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-orange-600/20 shrink-0"
+                    >
+                      {language === 'en' ? 'OK' : 'ঠিক আছে'}
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
 
             {showUpdateModal && updateInfo && (
