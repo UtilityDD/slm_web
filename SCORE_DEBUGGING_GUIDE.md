@@ -73,6 +73,52 @@ Old reading completions may lack trustworthy timestamps. Policy used in **`fix_m
 
 ---
 
+## Time zones: DB “month” vs app “This month”
+
+- **`monthly_leaderboard_view`** groups rows with `EXTRACT(MONTH FROM qa.created_at)` and `EXTRACT(YEAR FROM qa.created_at)` on `timestamptz`. In PostgreSQL that follows the **database session time zone** (hosted Supabase is often **UTC**).
+- **`leaderboardService.fetchMonthly`** (and the Competitions UI) filter with **`new Date().getMonth()` / `getFullYear()`** — the user’s **device-local** calendar month.
+
+So the label **“This month”** can **diverge slightly** from what users expect on their wall calendar near month boundaries or when travelling. **Points are not deleted**; attempts remain in `quiz_attempts` and feed all-time totals — grouping in the monthly **view** can differ from a naive local-calendar sum.
+
+User-facing reassurance lives in **`Competitions.jsx`** as `t.leaderboardTimeInfo` (EN/BN). Keep support answers consistent with that (no promise that the monthly table equals every user’s local calendar month pixel-perfect).
+
+---
+
+## Frontend: leaderboard cache & stale UI
+
+Leaderboard fetches go through **`requestManager`** + **`cacheHelper`**: TTL values are **minutes**; SWR can return cached rows and only background-refresh when cache is older than ~30 seconds unless `forceRefresh` is true.
+
+**Single helper — keep keys in sync:** `src/utils/leaderboardCacheKeys.js` exports **`invalidateLeaderboardCaches(userId)`**, which clears:
+
+- `leaderboard_top_10_all_time`
+- `leaderboard_full_all_time`
+- `hall_of_fame_gallery_v3`
+- `user_rank_all_time_<userId>`
+- `leaderboard_monthly_<year>_<month>` for the **current** local month
+
+Do **not** clear obsolete keys like `leaderboard_top_10_v3` / `leaderboard_full_v3` / `user_rank_<id>` — they are unused and were a source of “refresh did nothing” bugs.
+
+**Where invalidation / forced refetch happens:**
+
+| Location | Behaviour |
+|----------|-----------|
+| **`Competitions.jsx`** — hourly quiz success & retry | `fetchLeaderboard(true)` plus **`fetchFullLeaderboard(true)`** and **`fetchMonthlyLeaderboard(true)`** so top-10, full list, and monthly tabs all update. |
+| **`Training.jsx`** / **`SafetyHub.jsx`** — lesson bonus | Call **`invalidateLeaderboardCaches(user.id)`** after a successful points RPC. Training’s rank preview cache key is **`user_rank_all_time_<id>`** (same family as Competitions). |
+| **`SmartLinemanUI.jsx`** — pull-to-refresh | **`invalidateLeaderboardCaches(user.id)`** then **`leaderboardService.fetchAllTime(true)`** / **`fetchMonthly(true)`** (fire-and-forget) so leaderboard data is not left stale while profile/notifications refresh. |
+
+If you add a new leaderboard cache key in **`leaderboardService.js`** or **`Competitions.jsx`**, add it to **`invalidateLeaderboardCaches`** in the same PR.
+
+---
+
+## Hourly quiz ID (client clock)
+
+- **Competitions:** `getSyncedTime()` = `Date.now()` corrected by **`get_server_time`** (or UTC fallback). The hourly id `hourly-challenge-YYYY-MM-DD-HH` still uses **`getFullYear()` / `getMonth()` / `getDate()` / `getHours()`** — i.e. **local** calendar fields for that instant after skew correction.
+- **Training** (`checkHourlyEligibility`): builds the same id pattern from **plain `new Date()`** — if device clock is wrong and sync never ran in Competitions, Training and Competitions can disagree.
+
+Server RPCs generally **trust `p_quiz_id` from the client**; duplicate `(user_id, quiz_id)` handling depends on the deployed **`submit_quiz_result_v2`** (e.g. `ON CONFLICT DO NOTHING` avoids double-awarding the same id). Do not assume clock manipulation is fully blocked without server-side validation of the hourly id against `now()` in a fixed zone.
+
+---
+
 ## Do **not** run blindly
 
 - **`supabase/migrations/sync_scores.sql`** (and similar): sets `profiles.points` from **`SUM(score)` without the same penalty model** as live RPCs — can **worsen** drift. Only use after reading it end-to-end and matching your active RPC contract.
@@ -136,9 +182,11 @@ Same pattern as Appendix A; compare counts to pre-check. Optional sample: top 20
 - **All-time:** `leaderboard_view` → `points` / `reading_points` (see `leaderboardService.fetchAllTime`).
 - **Monthly:** `monthly_leaderboard_view` — **`points` is authoritative net for the month**; do not subtract `total_penalties` again in JS (`leaderboardService.fetchMonthly`).
 - **Certificate verify:** `VerificationView` should select `total_penalties` if penalties are shown.
+- **Cache:** use **`invalidateLeaderboardCaches`** whenever the user earns points outside the Competitions hourly flow (e.g. training lesson bonus) so the next leaderboard read is not served from stale `slm_cache_*` entries.
 
 ---
 
 ## Change log
 
+- **2026-04 (late):** Documented frontend leaderboard cache keys, `invalidateLeaderboardCaches`, post-score refetch paths, timezone vs “This month”, hourly id client behaviour; Training vs Competitions clock note.
 - **2026-04:** Added trigger-safe repair, net monthly view, consolidated operator checklist into this document, removed duplicate `operator_score_repair_checklist.sql`.
