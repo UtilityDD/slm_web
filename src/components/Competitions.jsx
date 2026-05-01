@@ -429,7 +429,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             searchConfirm: "Do you want to search Google? You have 2 searches per session (Used: %s/2).",
             searchExhausted: "Quota exhausted! You have used all 2 searches.",
             searchProceed: "Proceed",
-            noDistrict: "No Update"
+            noDistrict: "No Update",
+            leaderboardTimeInfo:
+                "The server uses one time zone and your phone uses another, so “This month” here can look a little different from your calendar. All points still count—nothing is removed, and the contest stays fair."
         },
         bn: {
             title: "প্রতিযোগিতা",
@@ -481,7 +483,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             searchConfirm: "আপনি কি এটি গুগলে খুঁজতে চান? প্রতি সেশনে আপনি মাত্র ২ বার সার্চ করতে পারবেন (ব্যবহৃত: %s/২)।",
             searchExhausted: "দুঃখিত! আপনার ২টির সার্চের কোটা শেষ হয়ে গেছে।",
             searchProceed: "সার্চ করুন",
-            noDistrict: "আপডেট নেই"
+            noDistrict: "আপডেট নেই",
+            leaderboardTimeInfo:
+                "সার্ভার ও ফোনের টাইম জোন আলাদা হওয়ায় ‘এই মাস’-এর নম্বরে সামান্য পার্থক্য দেখা যেতে পারে। তবে নিশ্চিন্ত থাকুন—সব পয়েন্টই সঠিকভাবে গণনা হচ্ছে। এগিয়ে চলুন! 💪"
         }
     }[language];
 
@@ -1482,6 +1486,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
             {/* Tab Navigation - Added for All-Time vs Monthly */}
             {!showHallOfFame && (
+                <>
                 <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                     <div className="max-w-6xl mx-auto px-4">
                         <div className="flex gap-8">
@@ -1505,6 +1510,18 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                         </div>
                     </div>
                 </div>
+                <div className="bg-slate-50/90 dark:bg-slate-800/40 border-b border-slate-200/80 dark:border-slate-700/80">
+                    <div className="max-w-6xl mx-auto px-3 sm:px-4 py-1">
+                        <p
+                            className="flex gap-1 items-start text-[10px] sm:text-[11px] leading-snug text-slate-500 dark:text-slate-400"
+                            role="note"
+                        >
+                            <span className="shrink-0 opacity-70 select-none" aria-hidden>ℹ️</span>
+                            <span className="min-w-0">{t.leaderboardTimeInfo}</span>
+                        </p>
+                    </div>
+                </div>
+                </>
             )}
 
             {showHallOfFame ? (
@@ -1836,40 +1853,51 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 
                                                 return (
                                                     <div key={player.user_id} className={`flex flex-col items-center ${isWinner ? 'scale-110 mb-2' : 'mb-0 opacity-90'}`}>
-                                                        <div className="relative mb-3">
-                                                            <div 
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    if (player.avatar_url) setMaximizedAvatar(player.avatar_url);
-                                                                }}
-                                                                className={`w-14 h-14 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 shadow-xl cursor-zoom-in active:scale-95 transition-transform ${rank === 1 ? 'border-amber-400 ring-4 ring-amber-400/20' : rank === 2 ? 'border-slate-300 ring-4 ring-slate-300/20' : 'border-orange-300 ring-4 ring-orange-300/20'} relative`}
-                                                            >
-                                                                {player.avatar_url ? <img src={player.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-xl font-bold text-slate-400">{player.full_name?.[0]}</div>}
-                                                                
-                                                                {/* Status Indicator in Corner */}
-                                                                {(() => {
-                                                                    const lastActiveDate = player.last_active || player.last_login_at;
-                                                                    if (!lastActiveDate) return null;
-                                                                    const date = new Date(lastActiveDate);
-                                                                    const now = new Date();
-                                                                    const diffInSeconds = Math.floor((now - date) / 1000);
-                                                                    const isOnline = diffInSeconds < 300;
-                                                                    const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-                                                                    
-                                                                    if (!isToday) return null;
-
-                                                                    return (
-                                                                        <span className="absolute bottom-1 right-1 flex h-3 w-3 z-20">
-                                                                            {isOnline && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>}
-                                                                            <span className={`relative inline-flex rounded-full h-3 w-3 ${isOnline ? 'bg-green-500' : 'bg-green-500/60'} border-2 border-white dark:border-slate-900`}></span>
+                                                        <div className="relative mb-3 flex flex-col items-center">
+                                                            <div className="relative h-14 w-14 sm:h-20 sm:w-20 shrink-0">
+                                                                {rank === 1 && (
+                                                                    <div
+                                                                        className="pointer-events-none absolute -right-3 -top-3 z-30 flex items-start justify-end sm:-right-4 sm:-top-4"
+                                                                        aria-hidden
+                                                                    >
+                                                                        <span className="text-[1.2rem] leading-none drop-shadow-[0_2px_3px_rgba(0,0,0,0.35)] sm:text-[1.45rem] dark:drop-shadow-[0_2px_3px_rgba(0,0,0,0.55)]">
+                                                                            👑
                                                                         </span>
-                                                                    );
-                                                                })()}
+                                                                    </div>
+                                                                )}
+                                                                <div
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        if (player.avatar_url) setMaximizedAvatar(player.avatar_url);
+                                                                    }}
+                                                                    className={`absolute inset-0 rounded-2xl overflow-hidden border-2 shadow-xl cursor-zoom-in active:scale-95 transition-transform ${rank === 1 ? 'border-amber-400 ring-4 ring-amber-400/20' : rank === 2 ? 'border-slate-300 ring-4 ring-slate-300/20' : 'border-orange-300 ring-4 ring-orange-300/20'}`}
+                                                                >
+                                                                    {player.avatar_url ? <img src={player.avatar_url} className="h-full w-full object-cover" alt="" /> : <div className="flex h-full w-full items-center justify-center bg-slate-200 text-xl font-bold text-slate-400 dark:bg-slate-800">{player.full_name?.[0]}</div>}
+
+                                                                    {/* Status Indicator in Corner */}
+                                                                    {(() => {
+                                                                        const lastActiveDate = player.last_active || player.last_login_at;
+                                                                        if (!lastActiveDate) return null;
+                                                                        const date = new Date(lastActiveDate);
+                                                                        const now = new Date();
+                                                                        const diffInSeconds = Math.floor((now - date) / 1000);
+                                                                        const isOnline = diffInSeconds < 300;
+                                                                        const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+
+                                                                        if (!isToday) return null;
+
+                                                                        return (
+                                                                            <span className="absolute bottom-1 right-1 z-20 flex h-3 w-3">
+                                                                                {isOnline && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>}
+                                                                                <span className={`relative inline-flex h-3 w-3 rounded-full border-2 border-white dark:border-slate-900 ${isOnline ? 'bg-green-500' : 'bg-green-500/60'}`}></span>
+                                                                            </span>
+                                                                        );
+                                                                    })()}
+                                                                </div>
                                                             </div>
-                                                            <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-black border-2 shadow-lg ${rank === 1 ? 'bg-amber-400 text-amber-900 border-amber-200' : rank === 2 ? 'bg-slate-300 text-slate-800 border-slate-100' : 'bg-orange-300 text-orange-900 border-orange-100'}`}>
+                                                            <div className={`absolute -bottom-2 left-1/2 z-20 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-lg border-2 text-[10px] font-black shadow-lg sm:h-8 sm:w-8 sm:text-xs ${rank === 1 ? 'border-amber-200 bg-amber-400 text-amber-900' : rank === 2 ? 'border-slate-100 bg-slate-300 text-slate-800' : 'border-orange-100 bg-orange-300 text-orange-900'}`}>
                                                                 {rank}
                                                             </div>
-                                                            {rank === 1 && <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-2xl animate-bounce">👑</div>}
                                                         </div>
                                                         <p className="text-[10px] sm:text-xs font-black text-slate-900 dark:text-white truncate max-w-full text-center px-1 leading-tight">{player.full_name}</p>
                                                         {leaderboardTab === 'monthly' && (
@@ -2266,12 +2294,20 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black border transition-transform group-hover:scale-110 ${rankColors}`}>
                                             {rank}
                                         </div>
-                                        <div className="relative flex-shrink-0">
-                                            <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700 ring-1 ring-transparent group-hover:ring-orange-500/20 transition-all">
+                                        <div className="relative h-8 w-8 shrink-0">
+                                            {rank === 1 && (
+                                                <span
+                                                    className="pointer-events-none absolute -right-2 -top-2 z-20 text-sm leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
+                                                    aria-hidden
+                                                >
+                                                    👑
+                                                </span>
+                                            )}
+                                            <div className="absolute inset-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 ring-1 ring-transparent transition-all group-hover:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-800">
                                                 {item.avatar_url ? (
-                                                    <img src={item.avatar_url} className="w-full h-full object-cover" alt="" />
+                                                    <img src={item.avatar_url} className="h-full w-full object-cover" alt="" />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xs uppercase">{item.full_name?.[0] || 'U'}</div>
+                                                    <div className="flex h-full w-full items-center justify-center text-xs font-bold uppercase text-slate-400">{item.full_name?.[0] || 'U'}</div>
                                                 )}
                                             </div>
                                             {(item.last_active || item.last_login_at) && (() => {
@@ -2283,13 +2319,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 const isToday = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
 
                                                 return isToday && (
-                                                    <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
-                                                        {isOnline && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>}
-                                                        <span className={`relative inline-flex rounded-full h-2.5 w-2.5 border-2 border-white dark:border-slate-900 ${isOnline ? 'bg-green-500' : 'bg-green-500/60'}`}></span>
+                                                    <span className="absolute -bottom-0.5 -right-0.5 z-10 flex h-2.5 w-2.5">
+                                                        {isOnline && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>}
+                                                        <span className={`relative inline-flex h-2.5 w-2.5 rounded-full border-2 border-white dark:border-slate-900 ${isOnline ? 'bg-green-500' : 'bg-green-500/60'}`}></span>
                                                     </span>
                                                 );
                                             })()}
-                                            {rank === 1 && <span className="absolute -top-1 -left-1 text-[8px] animate-bounce">👑</span>}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="text-xs font-black text-slate-800 dark:text-slate-100 truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors leading-tight">
