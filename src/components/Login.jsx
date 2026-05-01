@@ -112,7 +112,7 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                 storageUtils.setItem('session_token', user.session_token);
                 storageUtils.setItem('user_id', user.user_id);
 
-                // Trigger app login
+                // Trigger app login (parent may switch view / nav); toast after layout
                 onLogin({
                     id: user.user_id,
                     phone: user.phone_number,
@@ -121,7 +121,9 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                     slm_id: user.slm_id
                 });
 
-                showNotification(`Welcome back, ${user.full_name}!`, 'success');
+                requestAnimationFrame(() => {
+                    showNotification(`Welcome back, ${user.full_name}!`, 'success');
+                });
             }
         } catch (error) {
             console.error('Login error:', error);
@@ -178,7 +180,9 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                 slm_id: currentUser.slm_id
             });
 
-            showNotification('Password changed successfully!', 'success');
+            requestAnimationFrame(() => {
+                showNotification('Password changed successfully!', 'success');
+            });
         } catch (error) {
             console.error('Password change error:', error);
             showNotification(error.message, 'error');

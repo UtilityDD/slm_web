@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { cacheHelper } from '../utils/cacheHelper';
@@ -58,18 +58,20 @@ const EmptyState = ({ icon, title, message }) => (
 const Toast = ({ message, type, show, onDismiss }) => {
     if (!show) return null;
 
-    const baseClasses = "fixed top-20 right-5 p-4 rounded-xl shadow-xl text-white transition-all duration-300 z-50 elevation-5";
-    const typeClasses = {
-        success: "bg-green-600",
-        error: "bg-red-600",
-        info: "bg-orange-600"
-    };
+    const border =
+        type === 'error'
+            ? 'border-l-rose-500'
+            : type === 'success'
+              ? 'border-l-emerald-500'
+              : 'border-l-sky-500';
 
     return (
-        <div className={`${baseClasses} ${typeClasses[type]}`} onClick={onDismiss}>
-            <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">{message}</span>
-            </div>
+        <div
+            className={`fixed top-[max(5rem,env(safe-area-inset-top,0px)+4rem)] right-4 left-4 sm:left-auto sm:w-[min(100%-2rem,24rem)] z-[350] p-3.5 rounded-2xl shadow-xl border border-slate-600/40 dark:border-slate-500/35 border-l-4 ${border} bg-slate-900/95 text-slate-100 backdrop-blur-md transition-all duration-300 animate-toast-in`}
+            onClick={onDismiss}
+            role="status"
+        >
+            <p className="text-sm font-semibold leading-snug pr-6">{message}</p>
         </div>
     );
 };
@@ -187,16 +189,28 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
     const [donors, setDonors] = useState([]);
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState({ message: '', type: 'info', show: false });
+    const toastHideTimerRef = useRef(null);
     const [serviceSearch, setServiceSearch] = useState('');
     const [expandedServiceId, setExpandedServiceId] = useState(null);
     const [expandedDonorId, setExpandedDonorId] = useState(null);
 
     const showToast = (message, type = 'info') => {
+        if (toastHideTimerRef.current) {
+            clearTimeout(toastHideTimerRef.current);
+            toastHideTimerRef.current = null;
+        }
         setToast({ message, type, show: true });
-        setTimeout(() => {
-            setToast(t => ({ ...t, show: false }));
-        }, 3000);
+        toastHideTimerRef.current = setTimeout(() => {
+            setToast((t) => ({ ...t, show: false }));
+            toastHideTimerRef.current = null;
+        }, 3600);
     };
+
+    useEffect(() => {
+        return () => {
+            if (toastHideTimerRef.current) clearTimeout(toastHideTimerRef.current);
+        };
+    }, []);
 
 
     // Registration Form State

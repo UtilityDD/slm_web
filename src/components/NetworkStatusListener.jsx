@@ -123,11 +123,11 @@ const NetworkStatusListener = ({ language = 'en' }) => {
 
             {/* Connection Restored Toast */}
             {isOnline && !isWeakSignal && showRestored && (
-                <div className="mt-4 bg-green-500 text-white px-6 py-2 rounded-full shadow-xl flex items-center gap-2 animate-bounce-in pointer-events-auto backdrop-blur-md bg-opacity-90">
-                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="mt-4 px-5 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce-in pointer-events-auto backdrop-blur-md bg-slate-900/95 text-slate-100 border border-slate-600/40 border-l-4 border-l-emerald-500">
+                    <svg className="w-5 h-5 shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span className="font-bold text-sm">
+                    <span className="font-semibold text-sm">
                         {language === 'en' ? 'You are back online!' : 'আপনি আবার অনলাইনে ফিরে এসেছেন!'}
                     </span>
                 </div>

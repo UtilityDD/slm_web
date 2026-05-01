@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { createPortal } from "react-dom";
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Browser } from '@capacitor/browser';
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -126,6 +127,7 @@ export default function SmartLinemanUI() {
   const [showActiveBroadcastModal, setShowActiveBroadcastModal] = useState(false);
   const [activeBroadcastNotice, setActiveBroadcastNotice] = useState(null);
   const activeBroadcastShownOnceRef = useRef(false);
+  const notificationHideTimerRef = useRef(null);
   const [showHandbookModal, setShowHandbookModal] = useState(false);
   const [completedLessons, setCompletedLessons] = useState([]);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -208,13 +210,14 @@ export default function SmartLinemanUI() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Auto-collapse Suraksha Sathi button after 5 seconds
+  // Suraksha Sathi: expanded on each view, then auto-collapse after a longer pause
   useEffect(() => {
+    setIsSathiExpanded(true);
     const timer = setTimeout(() => {
       setIsSathiExpanded(false);
-    }, 5000);
+    }, 14000);
     return () => clearTimeout(timer);
-  }, [currentView]); // Re-start timer when view changes
+  }, [currentView]);
 
   // Background Pre-fetching for Leaderboard & Monthly Stars
   useEffect(() => {
@@ -258,9 +261,24 @@ export default function SmartLinemanUI() {
   };
 
   const showNotification = (message, type = 'success') => {
+    if (notificationHideTimerRef.current) {
+      clearTimeout(notificationHideTimerRef.current);
+      notificationHideTimerRef.current = null;
+    }
     setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
+    notificationHideTimerRef.current = setTimeout(() => {
+      setNotification(null);
+      notificationHideTimerRef.current = null;
+    }, 3600);
   };
+
+  useEffect(() => {
+    return () => {
+      if (notificationHideTimerRef.current) {
+        clearTimeout(notificationHideTimerRef.current);
+      }
+    };
+  }, []);
 
   const updateLastActive = async () => {
     if (!user) return;
@@ -833,14 +851,14 @@ export default function SmartLinemanUI() {
       storageUtils.removeItem('slm_session_id');
       cacheHelper.clearAll();
       setShowLogoutModal(false);
-
-      if (isAutomatic === true) {
-        showNotification(language === 'en' ? 'Logged in from another device' : 'অন্য ডিভাইস থেকে লগ ইন করা হয়েছে', 'error');
-      } else {
-        showNotification(language === 'en' ? 'Logged out successfully' : 'সফলভাবে লগ আউট হয়েছে');
-      }
-
       setCurrentView('home');
+      requestAnimationFrame(() => {
+        if (isAutomatic === true) {
+          showNotification(language === 'en' ? 'Logged in from another device' : 'অন্য ডিভাইস থেকে লগ ইন করা হয়েছে', 'error');
+        } else {
+          showNotification(language === 'en' ? 'Logged out successfully' : 'সফলভাবে লগ আউট হয়েছে');
+        }
+      });
     } catch (error) {
       showNotification(error.message, 'error');
     } finally {
@@ -919,7 +937,6 @@ export default function SmartLinemanUI() {
               onLogin={(u) => {
                 setUser(u);
                 fetchProfile(u);
-                showNotification(language === 'en' ? 'Welcome!' : 'আপনাকে স্বাগতম!');
               }}
               showNotification={showNotification}
               setCurrentView={setCurrentView}
@@ -936,7 +953,6 @@ export default function SmartLinemanUI() {
           onLogin={(u) => {
             setUser(u);
             fetchProfile(u);
-            showNotification(language === 'en' ? 'Welcome back!' : 'আপনাকে স্বাগতম!');
             setCurrentView('home');
           }}
           showNotification={showNotification}
@@ -1161,14 +1177,40 @@ export default function SmartLinemanUI() {
               </div>
             )}
 
-            {notification && (
-              <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xs px-4 animate-toast-in pointer-events-none">
-                <div className={`flex items-center gap-3 p-4 rounded-2xl shadow-2xl border pointer-events-auto ${notification.type === 'success' ? 'bg-green-600 border-green-500 text-white' : 'bg-red-600 border-red-500 text-white'}`}>
-                  <span className="text-xl">{notification.type === 'success' ? '✅' : '⚠️'}</span>
-                  <p className="text-sm font-bold">{notification.message}</p>
-                </div>
-              </div>
-            )}
+            {notification &&
+              createPortal(
+                <div
+                  className="fixed inset-x-0 bottom-0 z-[350] flex justify-center px-4 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-10 pointer-events-none"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <div
+                    className={`pointer-events-auto w-full max-w-sm flex items-start gap-3 px-4 py-3.5 rounded-2xl shadow-xl border backdrop-blur-md animate-toast-in border-l-4 ${
+                      notification.type === 'error'
+                        ? 'border-l-rose-500 bg-slate-900/95 text-slate-100 border-slate-600/40 dark:border-slate-500/35'
+                        : notification.type === 'info'
+                          ? 'border-l-sky-500 bg-slate-900/95 text-slate-100 border-slate-600/40 dark:border-slate-500/35'
+                          : 'border-l-emerald-500 bg-slate-900/95 text-slate-100 border-slate-600/40 dark:border-slate-500/35'
+                    }`}
+                  >
+                    {notification.type === 'error' ? (
+                      <svg className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                    ) : notification.type === 'info' ? (
+                      <svg className="w-5 h-5 shrink-0 mt-0.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                    <p className="text-sm font-semibold leading-snug text-slate-50">{notification.message}</p>
+                  </div>
+                </div>,
+                document.body
+              )}
 
             {pushNotification && (
               <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[110] w-[calc(100%-2rem)] max-w-md animate-bounce-in">
@@ -1239,8 +1281,8 @@ export default function SmartLinemanUI() {
               blocked={idleReminderBlocked}
             />
 
-            {user && currentView !== 'sops' && (
-              <div className={`fixed left-0 z-[250] animate-slide-up ${currentView === 'leaderboard' ? 'bottom-[calc(8rem+env(safe-area-inset-bottom))]' : 'bottom-[72px]'}`}>
+            {currentView !== 'sops' && (
+              <div className="fixed left-0 z-[250] animate-slide-up bottom-[calc(8rem+env(safe-area-inset-bottom))]">
                  <button
                     onClick={() => setCurrentView('sops')}
                     onMouseEnter={() => setIsSathiExpanded(true)}
