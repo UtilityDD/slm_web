@@ -16,7 +16,7 @@ function shuffleArray(items) {
 
 /**
  * @param {Array} sourceQuestions raw quiz from props
- * @param {'fixed' | 'random'} questionOrder fixed = keep chapter order; random = shuffle question order (e.g. Try again)
+ * @param {'fixed' | 'random'} questionOrder fixed = keep chapter order; random = shuffle question order (first open and Try again)
  */
 function buildShuffledQuiz(sourceQuestions, questionOrder = 'fixed') {
     if (!sourceQuestions || sourceQuestions.length === 0) return [];
@@ -282,7 +282,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
 
             const timer = setTimeout(() => {
                 if (questions.length > 0) {
-                    setShuffledQuestions(buildShuffledQuiz(questions, 'fixed'));
+                    setShuffledQuestions(buildShuffledQuiz(questions, 'random'));
                 } else {
                     setShuffledQuestions([]);
                 }

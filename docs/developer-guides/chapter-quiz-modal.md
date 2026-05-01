@@ -90,7 +90,7 @@ Fullscreen styling uses `isFullscreenScreen = showResult || isReviewMode`.
 1. **Hooks order:** All `useState` / `useEffect` / `useCallback` / custom hooks must appear **above** `if (!isOpen) return null;`. Violating this breaks the Rules of Hooks.
 2. **Portal:** UI is rendered with `createPortal(..., document.body)` — z-index stack (`z-[200]`, nested modals `z-[300]`) matters for overlays (report, Google confirm).
 3. **Question identity:** `currentQuestion` comes from `shuffledQuestions[currentQuestionIndex]`; any TTS or animation effect should not depend on `userAnswers` unless you intentionally want re-read after each tap.
-4. **Try again:** Rebuilds from the canonical `questions` prop using `buildShuffledQuiz(questions, 'random')`: **question order** and **each option order** are freshly shuffled (Fisher–Yates, unbiased). First open uses `'fixed'` question order (chapter order from JSON) with options shuffled only—so the first attempt follows author order; retries feel like a new mix. Loading copy uses `t.loadingRetry` while reshuffling after Try again.
+4. **Shuffle:** On first open and on **Try again**, `buildShuffledQuiz` uses `'random'` question order and Fisher–Yates shuffled options (unbiased). Loading copy uses `t.loadingRetry` only while reshuffling after Try again.
 5. **Images in options:** URLs are detected in both UI and read-aloud util; spoken fallback is short (“Picture” / “ছবি”) so URLs are not read aloud.
 6. **Review list markers:** Use the `ReviewOptionMarker` SVG helper in `ChapterQuizModal.jsx`—do not paste raw ✓/○ characters in ASCII source files (they can become mojibake like `âœ“` if encoding drifts). WhatsApp report bodies use ASCII markers `(correct)` / `(wrong)` and `-` dividers for the same reason.
 
