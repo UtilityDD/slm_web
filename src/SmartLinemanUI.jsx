@@ -582,9 +582,16 @@ export default function SmartLinemanUI() {
     if (!user?.id || ['login', 'verify', 'update-password'].includes(currentView) || activeBroadcastShownOnceRef.current) return;
     const latest = notificationsHistory[0];
     if (!latest?.id) return;
-    activeBroadcastShownOnceRef.current = true;
-    setActiveBroadcastNotice(latest);
-    setShowActiveBroadcastModal(true);
+
+    // Brief delay so the startup screen / welcome toast does not stack with this modal on first paint.
+    const t = window.setTimeout(() => {
+      if (activeBroadcastShownOnceRef.current) return;
+      activeBroadcastShownOnceRef.current = true;
+      setActiveBroadcastNotice(latest);
+      setShowActiveBroadcastModal(true);
+    }, 700);
+
+    return () => window.clearTimeout(t);
   }, [user?.id, notificationsHistory, currentView]);
 
   const handleDeleteNotification = async (id) => {
