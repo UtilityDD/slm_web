@@ -15,6 +15,7 @@ import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from "./con
 import { preloadSafetyLibraryAssets } from "./utils/assetPreloader";
 import { leaderboardService } from "./utils/leaderboardService";
 import BottomNavigation from "./components/BottomNavigation";
+import IdleStoryReminder from "./components/IdleStoryReminder";
 
 // Lazy load heavy components for code splitting
 const Competitions = lazy(() => import("./components/Competitions"));
@@ -130,6 +131,7 @@ export default function SmartLinemanUI() {
   const [updateInfo, setUpdateInfo] = useState(null);
   const [isForceUpdate, setIsForceUpdate] = useState(false);
   const [selectedProgressUserId, setSelectedProgressUserId] = useState(null);
+  const [awarenessOpenStoryId, setAwarenessOpenStoryId] = useState(null);
 
   // Version Comparison Helper
   const isVersionOlder = (current, min) => {
@@ -669,6 +671,10 @@ export default function SmartLinemanUI() {
       setSelectedProgressUserId(null);
     }
 
+    if (currentView !== 'accident-stories') {
+      setAwarenessOpenStoryId(null);
+    }
+
     if (currentView === 'home') {
       window.history.replaceState(null, '', window.location.pathname);
     } else {
@@ -976,7 +982,14 @@ export default function SmartLinemanUI() {
         case 'notifications':
           return <Notifications language={language} notifications={notificationsHistory} setCurrentView={setCurrentView} />;
         case 'accident-stories':
-          return <AwarenessStories setCurrentView={setCurrentView} language={language} />;
+          return (
+            <AwarenessStories
+              setCurrentView={setCurrentView}
+              language={language}
+              initialStoryId={awarenessOpenStoryId}
+              onInitialStoryConsumed={() => setAwarenessOpenStoryId(null)}
+            />
+          );
         case 'video-guide':
           return <VideoGuide language={language} setCurrentView={setCurrentView} />;
         case 'safety-library':
@@ -1023,6 +1036,19 @@ export default function SmartLinemanUI() {
       </div>
     );
   }
+
+  const idleReminderBlocked =
+    appLoading ||
+    globalLoading ||
+    showLogoutModal ||
+    showLanguageModal ||
+    !!pushNotification ||
+    showActiveBroadcastModal ||
+    showUpdateModal ||
+    isRetiring ||
+    currentView === 'accident-stories' ||
+    currentView === 'verify' ||
+    (currentView === 'update-password' && !user);
 
   return (
     <Suspense fallback={<PageLoader />}>
@@ -1180,15 +1206,28 @@ export default function SmartLinemanUI() {
               className={`flex-1 overflow-y-auto overflow-x-hidden relative ${
                 currentView === 'leaderboard'
                   ? 'pb-[calc(10rem+env(safe-area-inset-bottom))] md:pb-8'
-                  : 'pb-20 md:pb-0'
-              }`}
+                  : user
+                    ? 'pb-20 md:pb-0'
+                    : 'pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:pb-0'
+              } ${currentView === 'accident-stories' ? 'bg-slate-950' : ''}`}
             >
-              <div className="h-full relative z-10 w-full view-transition" key={currentView}>
+              <div
+                className={`h-full relative z-10 w-full view-transition min-h-full ${currentView === 'accident-stories' ? 'bg-slate-950' : ''}`}
+                key={currentView}
+              >
                 {renderContent()}
               </div>
             </div>
 
-            {currentView !== 'sops' && (
+            <IdleStoryReminder
+              language={language}
+              currentView={currentView}
+              setCurrentView={setCurrentView}
+              onRequestOpenStory={(id) => setAwarenessOpenStoryId(id)}
+              blocked={idleReminderBlocked}
+            />
+
+            {user && currentView !== 'sops' && (
               <div className={`fixed left-0 z-[250] animate-slide-up ${currentView === 'leaderboard' ? 'bottom-[calc(8rem+env(safe-area-inset-bottom))]' : 'bottom-[72px]'}`}>
                  <button
                     onClick={() => setCurrentView('sops')}

@@ -1,370 +1,333 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Share } from '@capacitor/share';
+import { WEBSITE_URL } from '../../config';
+import { AWARENESS_STORIES } from '../../data/awarenessStories';
 
-const StoryCard = ({ story, onClick, language, scrollX }) => {
-    const cardRef = useRef(null);
-    const [offsetLeft, setOffsetLeft] = useState(0);
-
+function usePrefersReducedMotion() {
+    const [reduce, setReduce] = useState(false);
     useEffect(() => {
-        if (cardRef.current) {
-            setOffsetLeft(cardRef.current.offsetLeft);
-        }
+        const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const update = () => setReduce(mq.matches);
+        update();
+        mq.addEventListener('change', update);
+        return () => mq.removeEventListener('change', update);
     }, []);
+    return reduce;
+}
 
-    // Calculate parallax offset
-    const x = offsetLeft - scrollX;
-    const imageTransform = `translateX(${x * 0.15}px)`;
-    const textTransform = `translateX(${x * 0.08}px)`;
+/** Full-width vertical card: large photo + typographic overlay */
+const StoryCard = ({ story, onOpen, language }) => {
+    const title = story.title[language];
+    const excerpt = story.excerpt[language];
+    const category = story.category[language];
+    const openLabel =
+        language === 'en'
+            ? `Open story: ${title}. ${excerpt}`
+            : `গল্প খুলুন: ${title}। ${excerpt}`;
 
     return (
-        <div
-            ref={cardRef}
-            onClick={() => onClick(story)}
-            className="flex-shrink-0 w-[280px] sm:w-[320px] snap-center relative aspect-[4/5] rounded-[2.5rem] overflow-hidden group cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 shadow-2xl"
+        <button
+            type="button"
+            onClick={() => onOpen(story)}
+            aria-label={openLabel}
+                className="group relative w-full overflow-hidden rounded-2xl border border-white/10 bg-slate-950 text-left shadow-2xl shadow-black/50
+                transition-[transform,box-shadow] duration-200
+                hover:border-white/20 hover:shadow-black/60
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950
+                active:scale-[0.995] min-h-[min(58vh,560px)] sm:min-h-[520px]"
         >
-            {/* Background Image with Parallax */}
             <img
                 src={story.image}
-                alt={story.title[language]}
-                className="absolute inset-0 w-[120%] h-full object-cover transition-transform duration-1000 group-hover:scale-110 will-change-transform"
-                style={{ transform: imageTransform, left: '-10%' }}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03] motion-reduce:group-hover:scale-100"
             />
+            {/* Readability: top dim + bottom heavy scrim */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/90" aria-hidden />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-transparent" aria-hidden />
 
-            {/* Dark Dramatic Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent opacity-90" />
-            <div className="absolute inset-0 bg-gradient-to-br from-red-600/20 via-transparent to-slate-950/40" />
+            <div className="relative flex h-full min-h-[inherit] flex-col justify-between p-5 sm:p-7 md:p-8">
+                <div className="flex items-start justify-between gap-3 pt-1">
+                    <span className="inline-flex max-w-[85%] items-center border-l-2 border-orange-500 bg-black/35 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-orange-100 backdrop-blur-sm sm:text-[11px]">
+                        {category}
+                    </span>
+                </div>
 
-            {/* Content Container with Parallax */}
-            <div
-                className="absolute inset-0 p-8 flex flex-col justify-end will-change-transform"
-                style={{ transform: textTransform }}
-            >
-                <div className="space-y-3">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-600/80 backdrop-blur-md rounded-full border border-red-400/30">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                        <span className="text-[10px] font-black text-white uppercase tracking-widest">
-                            {story.category[language]}
-                        </span>
-                    </div>
-
-                    <h3 className={`text-2xl font-black text-white leading-tight drop-shadow-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        {story.title[language]}
-                    </h3>
-
-                    <p className={`text-sm text-red-50/80 leading-relaxed line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        {story.excerpt[language]}
+                <div className="space-y-3 sm:space-y-4">
+                    <h2
+                        className={`text-2xl font-bold leading-[1.15] tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)] sm:text-3xl md:text-[1.85rem] ${
+                            language === 'bn' ? 'font-bengali' : ''
+                        }`}
+                    >
+                        {title}
+                    </h2>
+                    <p
+                        className={`max-w-prose text-[15px] leading-relaxed text-slate-100/95 line-clamp-4 sm:text-base sm:leading-relaxed ${
+                            language === 'bn' ? 'font-bengali' : ''
+                        }`}
+                        style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
+                    >
+                        {excerpt}
                     </p>
-
-                    <div className="flex items-center justify-between pt-2">
-                        <span className="text-[10px] font-bold text-white/50 uppercase tracking-tighter">
-                            {language === 'en' ? 'Click to Read' : 'বিস্তারিত পড়তে ক্লিক করুন'}
-                        </span>
-                        <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 group-hover:bg-red-600 group-hover:border-red-500 transition-all">
+                    <div className="flex items-center gap-2 border-t border-white/15 pt-3 text-sm font-semibold text-orange-200">
+                        <span>{language === 'en' ? 'Read full account' : 'সম্পূর্ণ বর্ণনা পড়ুন'}</span>
+                        <span aria-hidden className="text-orange-400 transition-transform group-hover:translate-x-0.5">
                             →
-                        </div>
+                        </span>
                     </div>
                 </div>
             </div>
-        </div>
+        </button>
     );
 };
 
-const MoreCard = ({ language, scrollX }) => {
-    const cardRef = useRef(null);
-    const [offsetLeft, setOffsetLeft] = useState(0);
-
-    useEffect(() => {
-        if (cardRef.current) {
-            setOffsetLeft(cardRef.current.offsetLeft);
-        }
-    }, []);
-
-    const x = offsetLeft - scrollX;
-    const contentTransform = `translateX(${x * 0.1}px)`;
-
-    const openRepo = () => window.open('https://smartlinemanapp.github.io/accident_story/', '_system');
-
-    return (
-        <div
-            ref={cardRef}
-            onClick={openRepo}
-            className="flex-shrink-0 w-[280px] sm:w-[320px] snap-center relative aspect-[4/5] rounded-[2.5rem] overflow-hidden group cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 shadow-2xl bg-slate-900 border-2 border-dashed border-white/10"
-        >
-            {/* Background Texture/Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 via-slate-950 to-slate-950/40" />
-
-            <div
-                className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-6 will-change-transform"
-                style={{ transform: contentTransform }}
-            >
-                <div className="w-16 h-16 rounded-full bg-red-600/20 border border-red-500/30 flex items-center justify-center text-red-500 animate-pulse">
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                </div>
-
-                <div className="space-y-2">
-                    <h3 className={`text-2xl font-black text-white leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        {language === 'en' ? 'More True Stories' : 'আরও সত্য কাহিনী'}
-                    </h3>
-                    <p className={`text-xs text-slate-400 leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        {language === 'en'
-                            ? 'Protect your family. Read all real-life stories to stay safe at work.'
-                            : 'নিজেকে এবং পরিবারকে বাঁচাতে সব বাস্তব কাহিনীগুলো পড়ুন।'}
-                    </p>
-                </div>
-
-                <div className="w-full py-4 bg-red-600 text-white rounded-2xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-red-600/30 hover:bg-red-500 transition-all">
-                    {language === 'en' ? 'Open All Stories' : 'সবগুলো দেখুন'}
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const AwarenessStories = ({ setCurrentView, language = 'en' }) => {
+const AwarenessStories = ({ setCurrentView, language = 'en', initialStoryId = null, onInitialStoryConsumed }) => {
     const [selectedStory, setSelectedStory] = useState(null);
-    const [scrollX, setScrollX] = useState(0);
     const [detailScrollY, setDetailScrollY] = useState(0);
-    const galleryRef = useRef(null);
-
-    const scrollGallery = (direction) => {
-        if (galleryRef.current) {
-            const scrollAmount = direction === 'left' ? -350 : 350;
-            galleryRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-        }
-    };
-
-    const handleScroll = (e) => {
-        setScrollX(e.target.scrollLeft);
-    };
+    const [loadMoreRevealed, setLoadMoreRevealed] = useState(false);
+    const reduceMotion = usePrefersReducedMotion();
+    const stories = AWARENESS_STORIES;
 
     const handleDetailScroll = (e) => {
         setDetailScrollY(e.target.scrollTop);
     };
 
-    // High Impact Story Data (Inspired by Repo Content)
-    const stories = [
-        {
-            id: 'back-feeding-tragedy',
-            image: '/assets/emotional/mother.png',
-            category: { en: 'Back-Feeding Hazard', bn: 'ব্যাক-ফিডিং বিপদ' },
-            title: { en: 'The Fatal Invisible Current', bn: 'রবিকান্তের শেষ শাটডাউন' },
-            excerpt: {
-                en: 'Rabikanta thought the line was dead. He didn\'t know 11,000V was coming from the other side.',
-                bn: 'রবিকান্ত ভেবেছিলেন লাইনটি বন্ধ। তিনি জানতেন না বিপরীত দিক থেকে ১১,০০০ ভোল্ট আসছে।'
-            },
-            fullContent: {
-                en: "On Dec 31, 2023, Rabikanta Barman was working on an 11kV line near Balurghat. A shutdown was taken, but current was flowing from an unchecked 'back-feed' source. The moment he touched the wire, he was thrown off, breaking his spine. After a year of bedridden agony, he passed away. The tragedy turned into a nightmare when his wife abandoned his 60-year-old mother and two children with the insurance money. Today, his elderly mother works as a help to survive, reminding us that technically verifying a 'dead' line is a matter of life or death.",
-                bn: "৩১/১২/২০২৩ তারিখে বালুরঘাটের রবিকান্ত বর্মন ১১ কেভি লাইনে কাজ করছিলেন। শাটডাউন নেওয়া হলেও 'ব্যাক-ফিডিং' সোর্স থেকে বিদ্যুৎ আসছিল। তারে হাত দেওয়া মাত্রই তিনি পোল থেকে ছিটকে পড়েন এবং মেরুদণ্ড ভেঙে যায়। এক বছর শয্যাশায়ী থাকার পর তিনি মারা যান। ট্র্যাজেডি এখানেই শেষ হয়নি—তার মৃত্যুর পর স্ত্রী বিমার টাকা নিয়ে বৃদ্ধ মা ও সন্তানদের ফেলে চলে যান। আজ শচী রাণী (৬০) অন্যের বাড়িতে কাজ করে কোনোমতে দিন কাটাচ্ছেন। সঠিক শাটডাউন যাচাই এবং ব্যাক-ফিডিং চেক করা থাকলে আজ এই পরিবারটি ধ্বংস হতো না।"
-            }
-        },
-        {
-            id: 'verbal-order-tragedy',
-            image: '/assets/emotional/lineman.png',
-            category: { en: 'Operational Error', bn: 'অপারেশনাল ভুল' },
-            title: { en: 'Oral Orders: A Fatal Trap', bn: 'মৌখিক নির্দেশের মরণফাঁদ' },
-            excerpt: {
-                en: 'Najimul climbed the DP structure based on verbal orders without a formal shutdown. The line was active.',
-                bn: 'যথাযথ শাটডাউন না নিয়ে শুধুমাত্র মৌখিক নির্দেশে লাইনে ওঠায় নাজিমুল ইসলাম মারাত্মক বিদ্যুৎস্পৃষ্ট হন।'
-            },
-            fullContent: {
-                en: "On Nov 10, 2025, Najimul Islam (46) was performing maintenance on the Hatiduba 11kV feeder. Following a verbal instruction from a colleague to restore power, he scaled a DP structure without waiting for a formal shutdown from the operator. The line was still energized. He died instantly, leaving behind his wife Reba, son Rubel (19), daughter Riya (13), and elderly parents. This tragedy teaches us that verbal orders are never a substitute for a written Permit-To-Work. Always use discharge rods to ensure the line is dead and never trust verbal clearance.",
-                bn: "১০/১১/২০২৫ তারিখে নাজিমুল ইসলাম (৪৬) হাটিদুবা ১১ কেভি ফিডারের রক্ষণাবেক্ষণের কাজে নিযুক্ত ছিলেন। সহকর্মীর মৌখিক নির্দেশে পাওয়ার রিস্টোরেশনের জন্য তিনি একটি DP স্ট্রাকচারে ওঠেন। কিন্তু তিনি অপারেটরের কাছ থেকে যথাযথ শাটডাউন নেননি। লাইনে তখনও বিদ্যুৎ ছিল, ফলে ঘটনাস্থলেই তার মৃত্যু ঘটে। নাজিমুলের ১৯ বছর বয়সী ছেলে রুবেলের ভবিষ্যৎ আজ অন্ধকারে ঢাকা। সপ্তম শ্রেণীতে পড়ুয়া মেয়ে রিয়া এবং বৃদ্ধ বাবা-মায়ের দায়িত্ব নেওয়ার মতো আর কেউ রইল না। এক মুহূর্তের অসাবধানতা কয়েকটি জীবনের ভবিষ্যৎ কেড়ে নিল। সর্বদা লিখিত অনুমতি নিন এবং ডিসচার্জ রড দিয়ে নিশ্চিত হোন যে লাইনটি মৃত।"
-            }
+    useEffect(() => {
+        if (!initialStoryId) return;
+        const s = stories.find((st) => st.id === initialStoryId);
+        if (s) {
+            setDetailScrollY(0);
+            setSelectedStory(s);
         }
-    ];
+        onInitialStoryConsumed?.();
+    }, [initialStoryId, onInitialStoryConsumed, stories]);
 
     const handleShare = async (story) => {
         try {
             await Share.share({
                 title: story.title[language],
-                text: `${story.title[language]}\n\n${story.excerpt[language]}\n\nStay Safe with SmartLineMan App!`,
-                url: 'https://smartlinemanapp.github.io/accident_story/',
-                dialogTitle: 'Share Tragic Story'
+                text: `${story.title[language]}\n\n${story.excerpt[language]}\n\nStay safe with SmartLineMan.`,
+                url: WEBSITE_URL,
+                dialogTitle: language === 'en' ? 'Share story' : 'গল্প শেয়ার'
             });
         } catch (err) {
-            console.error("Share Failed:", err);
+            console.error('Share failed:', err);
         }
     };
 
+    const backLabel = selectedStory
+        ? language === 'en'
+            ? 'Back to story list'
+            : 'গল্পের তালিকায় ফিরুন'
+        : language === 'en'
+            ? 'Back to home'
+            : 'হোমে ফিরুন';
+
     return (
-        <div className="flex flex-col w-full h-full bg-slate-950 relative overflow-hidden">
-            {/* Ambient Background Glow */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-red-600/10 rounded-full blur-[120px] -mr-64 -mt-64" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-slate-800/20 rounded-full blur-[120px] -ml-64 -mb-64" />
+        <div className="relative z-[20] flex h-full min-h-0 w-full flex-1 flex-col bg-slate-950 text-slate-100">
+            <header className="shrink-0 border-b border-red-900/35 bg-slate-950/95 backdrop-blur-md safe-area-inset-top">
+                <div className="mx-auto grid w-full max-w-lg grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 px-3 py-3 sm:max-w-xl sm:px-4">
+                    <button
+                        type="button"
+                        onClick={() => (selectedStory ? setSelectedStory(null) : setCurrentView('home'))}
+                        aria-label={backLabel}
+                        className="flex h-11 w-11 items-center justify-center justify-self-start rounded-xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+                    >
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
 
-            {/* Header */}
-            <div className="py-3 flex items-center justify-between px-6 z-30 shrink-0">
-                <button
-                    onClick={() => selectedStory ? setSelectedStory(null) : setCurrentView('home')}
-                    className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all"
-                >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-                <div className="text-center">
-                    <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.3em]">Awareness</span>
-                    <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none mt-1">
-                        {language === 'en' ? 'Tragic Stories' : 'করুণ কাহিনী'}
-                    </h2>
-                </div>
-                <div className="w-10" /> {/* Spacer */}
-            </div>
-
-            <div className="flex-1 overflow-y-auto z-10">
-                {!selectedStory ? (
-                    <div className="px-6 py-8 space-y-10 max-w-4xl mx-auto">
-                        {/* ... existing gallery logic ... */}
-                        <div className="text-center space-y-4 mb-8">
-                            <h1 className={`text-4xl sm:text-5xl font-black text-white italic tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                {language === 'en' ? 'Shattered Dreams' : 'ছিন্ন ভিন্ন স্বপ্ন'}
-                            </h1>
-                            <p className={`text-slate-400 max-w-sm mx-auto text-sm leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                {language === 'en'
-                                    ? 'Awareness, Rights and Protection. Too many lives are lost to negligence and indifference.'
-                                    : 'সচেতনতা, অধিকার এবং সুরক্ষার উদ্যোগ। উদাসীনতা আর অবহেলার নির্মম বলি হয়ে অকালে হারিয়ে যাচ্ছে কত প্রাণ!'}
-                            </p>
-                        </div>
-
-                        <div className="relative group/gallery">
-                            <button
-                                onClick={() => scrollGallery('left')}
-                                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 z-30 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/10 shadow-xl items-center justify-center text-white hover:bg-red-600 transition-all duration-300 hidden lg:flex opacity-0 group-hover/gallery:opacity-100 group-hover/gallery:translate-x-0"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-
-                            <button
-                                onClick={() => scrollGallery('right')}
-                                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 z-30 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/10 shadow-xl items-center justify-center text-white hover:bg-red-600 transition-all duration-300 hidden lg:flex opacity-0 group-hover/gallery:opacity-100 group-hover/gallery:-translate-x-0"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
-
-                            <div
-                                ref={galleryRef}
-                                onScroll={handleScroll}
-                                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-6 px-6 gap-6 pb-12 scroll-smooth"
-                            >
-                                {stories.map(story => (
-                                    <StoryCard
-                                        key={story.id}
-                                        story={story}
-                                        language={language}
-                                        onClick={(s) => {
-                                            setDetailScrollY(0);
-                                            setSelectedStory(s);
-                                        }}
-                                        scrollX={scrollX}
-                                    />
-                                ))}
-                                <MoreCard language={language} scrollX={scrollX} />
+                    <div className="min-w-0 justify-self-center text-center">
+                        {!selectedStory ? (
+                            <div className="px-1">
+                                <p
+                                    className={`text-lg font-bold leading-tight tracking-tight text-white sm:text-xl ${
+                                        language === 'bn' ? 'font-bengali' : ''
+                                    }`}
+                                >
+                                    {language === 'bn' ? (
+                                        <span className="text-slate-100">ছিন্নভিন্ন স্বপ্ন</span>
+                                    ) : (
+                                        <span className="text-slate-100">Shattered Dreams</span>
+                                    )}
+                                </p>
+                                {language === 'bn' && (
+                                    <p className="font-bengali mt-1 text-[11px] tracking-wide text-slate-400">
+                                        কিছু না-ফেরা মানুষের গল্প
+                                    </p>
+                                )}
+                                {language === 'en' && (
+                                    <p className="mt-1 text-[11px] tracking-wide text-slate-400">
+                                        Stories of those who never returned
+                                    </p>
+                                )}
                             </div>
-                        </div>
-
-                        <div className="py-12 border-t border-white/5 flex flex-col items-center gap-4">
-                            <p className="text-slate-600 text-[10px] uppercase tracking-widest font-black">
-                                © 2026 SmartLineMan Awareness Initiative
+                        ) : (
+                            <p
+                                className={`line-clamp-2 px-1 text-sm font-semibold leading-snug text-white sm:text-base ${
+                                    language === 'bn' ? 'font-bengali' : ''
+                                }`}
+                            >
+                                {selectedStory.title[language]}
                             </p>
+                        )}
+                    </div>
+
+                    <div className="h-11 w-11 shrink-0 justify-self-end" aria-hidden />
+                </div>
+            </header>
+
+            <main className="min-h-0 flex-1 overflow-y-auto bg-slate-950 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
+                {!selectedStory ? (
+                    <div className="mx-auto w-full max-w-lg px-4 pb-10 pt-7 sm:max-w-xl sm:px-5 sm:pt-8">
+                        <h1 className="sr-only">
+                            {language === 'bn' ? 'ছিন্নভিন্ন স্বপ্ন, কিছু না-ফেরা মানুষের গল্প' : 'Shattered Dreams, stories of those who never returned'}
+                        </h1>
+
+                        <div className="flex flex-col gap-6 sm:gap-8" role="feed" aria-label={language === 'en' ? 'Stories' : 'গল্পসমূহ'}>
+                            {stories.map((story) => (
+                                <StoryCard
+                                    key={story.id}
+                                    story={story}
+                                    language={language}
+                                    onOpen={(s) => {
+                                        setDetailScrollY(0);
+                                        setSelectedStory(s);
+                                    }}
+                                />
+                            ))}
+                            <div className={`w-full ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                {!loadMoreRevealed ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => setLoadMoreRevealed(true)}
+                                        aria-expanded={false}
+                                        className="flex min-h-[48px] w-full items-center justify-center rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 active:scale-[0.99]"
+                                    >
+                                        {language === 'en' ? 'Load more stories' : 'আরও গল্প লোড করুন'}
+                                    </button>
+                                ) : (
+                                    <p
+                                        role="status"
+                                        aria-live="polite"
+                                        className="rounded-2xl border border-dashed border-white/15 bg-slate-900/50 px-4 py-4 text-center text-sm leading-relaxed text-slate-300 sm:text-base"
+                                    >
+                                        {language === 'en'
+                                            ? 'May this list end here. Let no other family\'s dreams be shattered.'
+                                            : 'এই তালিকা এখানেই শেষ হোক। আর কোনো পরিবারের স্বপ্ন যেন ছিন্নভিন্ন না হয়।'}
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 ) : (
-                    <div
+                    <article
                         onScroll={handleDetailScroll}
-                        className="animate-fadeIn min-h-full bg-slate-950 overflow-y-auto lg:overflow-visible"
+                        className="min-h-full animate-fadeIn bg-slate-950 lg:overflow-visible"
                     >
-                        <div className="lg:grid lg:grid-cols-2 lg:min-h-full">
-                            {/* Story Media Section */}
-                            <div className="relative h-[45vh] lg:h-screen w-full overflow-hidden lg:sticky lg:top-0">
+                        <div className="lg:grid lg:min-h-full lg:grid-cols-2">
+                            <div className="relative min-h-[48vh] w-full overflow-hidden sm:min-h-[52vh] lg:sticky lg:top-0 lg:min-h-screen">
                                 <img
                                     src={selectedStory.image}
-                                    alt={selectedStory.title[language]}
-                                    className="w-full h-[120%] object-cover absolute top-0 lg:h-full lg:w-full will-change-transform"
+                                    alt=""
+                                    className="absolute inset-0 h-[120%] w-full object-cover motion-reduce:transform-none"
                                     style={{
-                                        transform: typeof window !== 'undefined' && window.innerWidth < 1024
-                                            ? `translateY(${detailScrollY * 0.4}px)`
-                                            : 'none'
+                                        transform:
+                                            !reduceMotion && typeof window !== 'undefined' && window.innerWidth < 1024
+                                                ? `translateY(${detailScrollY * 0.2}px)`
+                                                : 'none'
                                     }}
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10" />
-                                <div className="absolute bottom-6 left-6 right-6 z-20 lg:bottom-12 lg:left-12 lg:right-12">
-                                    <span className="px-3 py-1 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full mb-3 inline-block">
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/45 to-black/40" aria-hidden />
+                                <div className="absolute inset-x-0 bottom-0 z-10 p-5 sm:p-8 lg:p-10">
+                                    <span className="mb-2 inline-flex border-l-2 border-orange-500 bg-black/40 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-orange-100 backdrop-blur-sm sm:text-[11px]">
                                         {selectedStory.category[language]}
                                     </span>
-                                    <h1 className={`text-3xl sm:text-4xl lg:text-6xl font-black text-white leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <h1 className={`mt-2 text-2xl font-bold leading-tight text-white drop-shadow-lg sm:text-3xl lg:text-4xl ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {selectedStory.title[language]}
                                     </h1>
                                 </div>
                             </div>
 
-                            {/* Story Narrative Section */}
-                            <div className="p-8 lg:p-20 space-y-12 max-w-2xl mx-auto z-20 relative bg-slate-950 lg:bg-transparent lg:max-w-none lg:w-full">
-                                <div className="flex items-center justify-between py-6 border-y border-white/5">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-2xl bg-red-600 flex items-center justify-center text-white font-black shadow-lg shadow-red-600/30 text-lg">
-                                            SLM
+                            <div className="border-t border-white/10 bg-slate-950 px-5 py-8 sm:px-8 lg:border-t-0 lg:py-12 lg:pl-10 lg:pr-12">
+                                <div className="mx-auto max-w-prose space-y-8">
+                                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-5">
+                                        <div className="flex min-w-0 items-center gap-3">
+                                            <div
+                                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-600 text-sm font-bold text-white"
+                                                aria-hidden
+                                            >
+                                                SLM
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-semibold text-white">
+                                                    {language === 'en' ? 'Verified account' : 'যাচাই করা বর্ণনা'}
+                                                </p>
+                                                <p className="text-xs text-slate-500">
+                                                    {language === 'en' ? 'For awareness, not gossip' : 'সচেতনতার জন্য, গসিপ নয়'}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div className="text-white text-sm font-black uppercase tracking-widest">Safety Awareness</div>
-                                            <div className="text-red-500/60 text-[10px] font-bold uppercase tracking-tighter italic">Verified Report</div>
-                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleShare(selectedStory)}
+                                            aria-label={language === 'en' ? 'Share this story' : 'এই গল্প শেয়ার করুন'}
+                                            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+                                        >
+                                            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden>
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                                                />
+                                            </svg>
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={() => handleShare(selectedStory)}
-                                        className="w-12 h-12 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-2xl text-white transition-all border border-white/10 group"
+
+                                    <div
+                                        className={`text-lg leading-relaxed text-slate-200 sm:text-xl ${language === 'bn' ? 'font-bengali leading-relaxed' : ''} reading-content`}
                                     >
-                                        <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                                        </svg>
-                                    </button>
-                                </div>
-
-                                <div className={`text-xl lg:text-2xl text-slate-300 leading-relaxed font-medium reading-content ${language === 'bn' ? 'font-bengali leading-snug' : ''}`}>
-                                    {selectedStory.fullContent[language]}
-                                </div>
-
-                                <blockquote className="relative p-8 lg:p-12 border-l-8 border-red-600 bg-red-600/5 rounded-r-[3rem] overflow-hidden group">
-                                    <div className="absolute top-0 right-0 p-4 text-red-600/10 scale-150 group-hover:scale-[2] transition-transform duration-1000">
-                                        <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C20.1216 16 21.017 16.8954 21.017 18V21C21.017 22.1046 20.1216 23 19.017 23H16.017C14.9124 23 14.017 22.1046 14.017 21ZM14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C20.1216 16 21.017 16.8954 21.017 18V21C21.017 22.1046 20.1216 23 19.017 23H16.017C14.9124 23 14.017 22.1046 14.017 21Z" />
-                                        </svg>
+                                        {selectedStory.fullContent[language]}
                                     </div>
-                                    <p className={`text-2xl lg:text-3xl italic text-red-50 font-black tracking-tight relative z-10 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {language === 'en'
-                                            ? "Your family's happiness is more important than a few minutes saved by skipping rules."
-                                            : "নিয়ম এড়িয়ে বাঁচানো কয়েক মিনিটের চেয়ে আপনার পরিবারের হাসি অনেক বেশি মূল্যবান।"}
-                                    </p>
-                                </blockquote>
 
-                                <div className="flex flex-col sm:flex-row gap-4 pt-12">
-                                    <button
-                                        onClick={() => {
-                                            setSelectedStory(null);
-                                            setDetailScrollY(0);
-                                        }}
-                                        className="flex-1 py-5 bg-white text-slate-950 rounded-[2rem] font-black hover:bg-red-500 hover:text-white transition-all active:scale-[0.98] uppercase tracking-[0.2em] text-xs shadow-xl shadow-white/5"
+                                    <aside
+                                        className={`rounded-2xl border-l-4 border-orange-500 bg-orange-950/30 px-5 py-5 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                        aria-label={language === 'en' ? 'Takeaway for this story' : 'এই গল্প থেকে মনে রাখার কথা'}
                                     >
-                                        {language === 'en' ? 'Back to Gallery' : 'গ্যালারিতে ফিরে যান'}
-                                    </button>
-                                    <button
-                                        onClick={() => handleShare(selectedStory)}
-                                        className="flex-1 py-5 bg-white/5 border border-white/10 text-white rounded-[2rem] font-black hover:bg-white/10 transition-all active:scale-[0.98] uppercase tracking-[0.2em] text-xs"
-                                    >
-                                        {language === 'en' ? 'Share Story' : 'শেয়ার করুন'}
-                                    </button>
+                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-orange-300/90">
+                                            {language === 'en' ? 'Remember' : 'মনে রাখবেন'}
+                                        </p>
+                                        <p className="mt-2 text-base font-medium leading-relaxed text-orange-50 sm:text-lg">
+                                            {selectedStory.moral[language]}
+                                        </p>
+                                    </aside>
+
+                                    <div className="flex flex-col gap-3 pb-6 sm:flex-row">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setSelectedStory(null);
+                                                setDetailScrollY(0);
+                                            }}
+                                            className="min-h-[48px] flex-1 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-orange-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 active:scale-[0.99]"
+                                        >
+                                            {language === 'en' ? 'Back to list' : 'তালিকায় ফিরুন'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleShare(selectedStory)}
+                                            className="min-h-[48px] flex-1 rounded-xl border border-white/20 bg-transparent px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 active:scale-[0.99]"
+                                        >
+                                            {language === 'en' ? 'Share' : 'শেয়ার'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </article>
                 )}
-            </div>
+            </main>
         </div>
     );
 };
