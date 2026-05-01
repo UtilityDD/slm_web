@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { calculateLevelFromProgress } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
+import { invalidateLeaderboardCaches } from '../utils/leaderboardCacheKeys';
 import secureStorage from '../utils/secureStorage';
 import ChapterQuizModal from './ChapterQuizModal';
 import { getBadgeByLevel } from '../utils/badgeUtils';
@@ -721,11 +722,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                         p_score: bonusPoints
                     });
 
-                    // Force leaderboard and rank to refresh immediately 
-                    // when the user next visits the Competitions tab
-                    cacheHelper.clear('leaderboard_top_10_v3');
-                    cacheHelper.clear('leaderboard_full_v3');
-                    cacheHelper.clear(`user_rank_${user.id}`);
+                    invalidateLeaderboardCaches(user.id);
 
                     setRecentReward(bonusPoints);
                     // Clear reward message after 5 seconds

@@ -748,6 +748,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             });
 
             fetchLeaderboard(true);
+            fetchFullLeaderboard(true);
+            fetchMonthlyLeaderboard(true);
             refreshProfile(user);
 
             // Update updated_at in profiles table to reflect recent activity
@@ -846,6 +848,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             // Refresh data
             await fetchTodayAttempts();
             await fetchLeaderboard(true);
+            await fetchFullLeaderboard(true);
+            await fetchMonthlyLeaderboard(true);
             if (submission.quiz_id === hourlyQuiz?.id) {
                 // Update local state immediately to lock the UI
                 setLastAttemptTime(submission.timestamp);

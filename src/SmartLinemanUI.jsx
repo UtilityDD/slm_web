@@ -14,6 +14,7 @@ import { UserIcon } from "./components/icons";
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from "./config";
 import { preloadSafetyLibraryAssets } from "./utils/assetPreloader";
 import { leaderboardService } from "./utils/leaderboardService";
+import { invalidateLeaderboardCaches } from "./utils/leaderboardCacheKeys";
 import BottomNavigation from "./components/BottomNavigation";
 import IdleStoryReminder from "./components/IdleStoryReminder";
 
@@ -352,6 +353,10 @@ export default function SmartLinemanUI() {
       await fetchProfile(user);
       // Also refresh notifications using the optimized fetcher
       await fetchNotifications(true);
+
+      invalidateLeaderboardCaches(user.id);
+      leaderboardService.fetchAllTime(true).catch(() => {});
+      leaderboardService.fetchMonthly(true).catch(() => {});
 
       showNotification(language === 'en' ? 'Updated' : 'আপডেট করা হয়েছে', 'success');
     } catch (err) {

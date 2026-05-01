@@ -6,6 +6,7 @@ import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../..
 import HomeSkeleton from '../loaders/HomeSkeleton';
 import { calculateLevelFromProgress, getBadgeByLevel } from '../../utils/badgeUtils';
 import { cacheHelper } from '../../utils/cacheHelper';
+import { invalidateLeaderboardCaches } from '../../utils/leaderboardCacheKeys';
 import { storageUtils } from '../../utils/storageUtils';
 import { requestManager } from '../../utils/requestManager';
 import ChapterQuizModal from '../ChapterQuizModal';
@@ -503,7 +504,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
             if (!user) return;
             try {
                 const rankData = await requestManager.fetch(
-                    `user_rank_${user.id}`,
+                    `user_rank_all_time_${user.id}`,
                     async () => {
                         const { data: myData, error: myError } = await supabase
                             .from('leaderboard_view')
@@ -534,7 +535,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
         };
 
         fetchRank();
-    }, [user]);
+    }, [user, completedLessons.length]);
 
     useEffect(() => {
         const checkHourlyEligibility = async () => {
@@ -1617,10 +1618,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                         return; // Prevent marking as complete if points failed
                     }
 
-                    // Force leaderboard and rank to refresh immediately 
-                    cacheHelper.clear('leaderboard_top_10_v3');
-                    cacheHelper.clear('leaderboard_full_v3');
-                    cacheHelper.clear(`user_rank_${user.id}`);
+                    invalidateLeaderboardCaches(user.id);
                     cacheHelper.clear(`profile_${user.id}`);
 
                     setRecentReward(bonusPoints);
