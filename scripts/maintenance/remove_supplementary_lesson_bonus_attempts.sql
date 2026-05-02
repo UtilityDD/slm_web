@@ -52,6 +52,39 @@ group by p.id, p.full_name, p.slm_id, p.reading_points, p.completed_lessons
 order by bad_bonus_rows desc;
 
 -- ---------------------------------------------------------------------------
+-- A2) If A shows 0 rows — broader search (still read-only)
+-- ---------------------------------------------------------------------------
+-- Any attempt row whose quiz_id mentions "supp" (case-insensitive)
+select quiz_id, count(*) as row_count, coalesce(sum(score), 0) as score_sum
+from quiz_attempts
+where quiz_id ilike '%supp%'
+group by quiz_id
+order by row_count desc;
+
+-- Any lesson_bonus row that does NOT look like core chapter.lesson (digits.digits)
+-- (may include typos, old experiments, or non-standard ids)
+select qa.quiz_id, count(*) as row_count, coalesce(sum(qa.score), 0) as score_sum
+from quiz_attempts qa
+where qa.quiz_id like 'lesson_bonus\_%' escape '\'
+  and qa.quiz_id !~ E'^lesson_bonus_[0-9]+\\.[0-9]+$'
+group by qa.quiz_id
+order by row_count desc;
+
+-- Profiles that still store supplementary ids in completed_lessons (even if attempts are gone)
+select
+  p.id,
+  p.full_name,
+  p.reading_points,
+  p.completed_lessons
+from profiles p
+where exists (
+  select 1
+  from jsonb_array_elements_text(coalesce(p.completed_lessons, '[]'::jsonb)) e
+  where lower(e) like 'supp\_%' escape '\'
+)
+order by p.updated_at desc nulls last;
+
+-- ---------------------------------------------------------------------------
 -- B) APPLY — uncomment the whole block from BEGIN through COMMIT when ready
 -- ---------------------------------------------------------------------------
 /*
