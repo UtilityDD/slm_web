@@ -1,3 +1,5 @@
+import { filterCoreCompletedLessonIds } from './trainingLessonIds';
+
 export const badgeLevels = [
     { level: 1, en: "Trainee", bn: "ট্রেইনি", color: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700" },
     { level: 2, en: "Junior", bn: "জুনিয়র", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800" },
@@ -36,7 +38,10 @@ const defaultChapterCounts = {
 };
 
 export const calculateLevelFromProgress = (completedLessons, trainingChapters) => {
-    if (!completedLessons || completedLessons.length === 0) return 0;
+    const coreLessons = filterCoreCompletedLessonIds(
+        Array.isArray(completedLessons) ? completedLessons : []
+    );
+    if (!coreLessons.length) return 0;
 
     const chaptersToTrack = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     let currentLevel = 0;
@@ -57,7 +62,7 @@ export const calculateLevelFromProgress = (completedLessons, trainingChapters) =
         let allLessonsCompleted = true;
         for (let i = 1; i <= lessonCount; i++) {
             const lessonId = `${chapterNum}.${i}`;
-            if (!completedLessons.includes(lessonId)) {
+            if (!coreLessons.includes(lessonId)) {
                 allLessonsCompleted = false;
                 break;
             }

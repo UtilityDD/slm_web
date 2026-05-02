@@ -27,6 +27,7 @@ import {
     loadSupplementaryCompletedModuleIds,
     appendSupplementaryCompletion,
 } from '../../utils/supplementaryProgressStorage';
+import { filterCoreCompletedLessonIds, isSupplementaryProgressLessonId } from '../../utils/trainingLessonIds';
 
 const LOADING_TIPS = {
     en: [
@@ -1171,8 +1172,8 @@ export default function Training({
             let localProgress = [];
             const saved = storageUtils.getItem(`training_progress_${user.id}`);
             if (saved) {
-                localProgress = (JSON.parse(saved) || [])
-                    .filter(id => id && typeof id === 'string' && !id.toUpperCase().includes('DEBUG') && !id.toUpperCase().includes('TEST'));
+                localProgress = filterCoreCompletedLessonIds((JSON.parse(saved) || [])
+                    .filter(id => id && typeof id === 'string' && !id.toUpperCase().includes('DEBUG') && !id.toUpperCase().includes('TEST')));
             }
 
             // 2. Load Remote
@@ -1212,16 +1213,30 @@ export default function Training({
                     setReadingPoints(data.reading_points || 0);
 
                     if (data.completed_lessons) {
-                        // 3. Merge (Union)
+                        // 3. Merge (Union) — supplementary `supp_*` ids stay local-only, never in profile.completed_lessons
                         const remoteProgress = Array.isArray(data.completed_lessons) ? data.completed_lessons : [];
-                        const merged = [...new Set([...localProgress, ...remoteProgress])]
+                        const remoteCore = filterCoreCompletedLessonIds(remoteProgress);
+                        const merged = [...new Set([...localProgress, ...remoteCore])]
                             .filter(id => id && typeof id === 'string' && !id.toUpperCase().includes('DEBUG') && !id.toUpperCase().includes('TEST'));
 
                         setCompletedLessons(merged);
                         console.log(`📊 Total lessons after merge: ${merged.length}`);
 
-                        // Update local storage if different
-                        if (merged.length !== localProgress.length) {
+                        const serverHadSupplementaryIds = remoteProgress.some(isSupplementaryProgressLessonId);
+                        if (serverHadSupplementaryIds) {
+                            void (async () => {
+                                const { error } = await supabase
+                                    .from('profiles')
+                                    .update({ completed_lessons: merged })
+                                    .eq('id', user.id);
+                                if (error) {
+                                    console.warn('Could not strip supplementary ids from profile completed_lessons:', error);
+                                }
+                            })();
+                        }
+
+                        // Update local storage if different or we removed supplementary junk
+                        if (merged.length !== localProgress.length || serverHadSupplementaryIds) {
                             storageUtils.setItem(`training_progress_${user.id}`, JSON.stringify(merged));
                         }
                     } else {
@@ -1844,8 +1859,14 @@ export default function Training({
     };
 
     const finalizeLessonCompletion = async (lessonId) => {
+        if (isSupplementaryProgressLessonId(lessonId)) {
+            setShowQuizModal(false);
+            setPendingLessonId(null);
+            return;
+        }
+
         const current = Array.isArray(completedLessons) ? completedLessons : [];
-        const updated = [...new Set([...current, lessonId])].filter(Boolean);
+        const updated = filterCoreCompletedLessonIds([...new Set([...current, lessonId])].filter(Boolean));
         const alreadyCompleted = completedLessons.includes(lessonId);
 
         if (!alreadyCompleted) {
@@ -1896,14 +1917,34 @@ export default function Training({
                 }
 
                 console.log('📝 Syncing progress to Supabase...', updatePayload);
-                const { error: updateError } = await supabase.from('profiles')
-                    .update(updatePayload)
-                    .eq('id', user.id);
+                // Transient network/RLS failures here used to leave reading_points awarded
+                // (RPC) while completed_lessons never persisted — retries reduce that drift.
+                let updateError = null;
+                for (let attempt = 1; attempt <= 3; attempt++) {
+                    const { error } = await supabase
+                        .from('profiles')
+                        .update(updatePayload)
+                        .eq('id', user.id);
+                    if (!error) {
+                        updateError = null;
+                        console.log('✅ Progress synced successfully!');
+                        break;
+                    }
+                    updateError = error;
+                    console.warn(`Profile sync attempt ${attempt}/3 failed:`, error);
+                    await new Promise((r) => setTimeout(r, 350 * attempt));
+                }
 
                 if (updateError) {
-                    console.error('❌ Failed to sync progress to Supabase:', updateError);
-                } else {
-                    console.log('✅ Progress synced successfully!');
+                    console.error('❌ Failed to sync progress to Supabase after retries:', updateError);
+                    if (typeof showNotification === 'function') {
+                        showNotification(
+                            language === 'en'
+                                ? 'Points were saved but lesson progress did not sync. Refresh the app or try again; contact support if this continues.'
+                                : 'পয়েন্ট সেভ হয়েছে কিন্তু পাঠের অগ্রগতি সার্ভারে যায়নি। অ্যাপ রিফ্রেশ করুন বা আবার চেষ্টা করুন।',
+                            'error'
+                        );
+                    }
                 }
             }
             if (onProgressUpdate) {
@@ -1915,6 +1956,9 @@ export default function Training({
     };
 
     const initiateLessonCompletion = async (lessonId) => {
+        if (isSupplementaryProgressLessonId(lessonId)) {
+            return;
+        }
         // Construct quiz filename based on lesson ID (e.g., "1.1" -> "questions_1_1.json")
         const filename = `questions_${lessonId.replace('.', '_')}.json`;
 

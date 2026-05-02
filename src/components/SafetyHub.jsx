@@ -8,6 +8,7 @@ import { invalidateLeaderboardCaches } from '../utils/leaderboardCacheKeys';
 import secureStorage from '../utils/secureStorage';
 import ChapterQuizModal from './ChapterQuizModal';
 import { getBadgeByLevel } from '../utils/badgeUtils';
+import { filterCoreCompletedLessonIds, isSupplementaryProgressLessonId } from '../utils/trainingLessonIds';
 
 const PPESkeleton = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -587,7 +588,12 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
             let localProgress = [];
             const saved = localStorage.getItem(`training_progress_${user.id}`);
             if (saved) {
-                localProgress = JSON.parse(saved);
+                try {
+                    const raw = JSON.parse(saved);
+                    localProgress = filterCoreCompletedLessonIds(Array.isArray(raw) ? raw : []);
+                } catch {
+                    localProgress = [];
+                }
             }
 
             // 2. Load Remote
@@ -599,14 +605,27 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                     .single();
 
                 if (data && data.completed_lessons) {
-                    // 3. Merge (Union)
+                    // 3. Merge (Union) — exclude supplementary `supp_*` from server-backed progress
                     const remoteProgress = Array.isArray(data.completed_lessons) ? data.completed_lessons : [];
-                    const merged = [...new Set([...localProgress, ...remoteProgress])];
+                    const remoteCore = filterCoreCompletedLessonIds(remoteProgress);
+                    const merged = [...new Set([...localProgress, ...remoteCore])];
 
                     setCompletedLessons(merged);
 
-                    // Update local storage if different
-                    if (merged.length !== localProgress.length) {
+                    const serverHadSupplementaryIds = remoteProgress.some(isSupplementaryProgressLessonId);
+                    if (serverHadSupplementaryIds) {
+                        void (async () => {
+                            const { error } = await supabase
+                                .from('profiles')
+                                .update({ completed_lessons: merged })
+                                .eq('id', user.id);
+                            if (error) {
+                                console.warn('SafetyHub: could not strip supplementary ids from profile:', error);
+                            }
+                        })();
+                    }
+
+                    if (merged.length !== localProgress.length || serverHadSupplementaryIds) {
                         localStorage.setItem(`training_progress_${user.id}`, JSON.stringify(merged));
                     }
                 } else {
@@ -709,6 +728,12 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
     const [recentReward, setRecentReward] = useState(null);
 
     const finalizeLessonCompletion = async (lessonId) => {
+        if (isSupplementaryProgressLessonId(lessonId)) {
+            setShowQuizModal(false);
+            setPendingLessonId(null);
+            return;
+        }
+
         const alreadyCompleted = completedLessons.includes(lessonId);
 
         if (!alreadyCompleted) {
@@ -717,35 +742,61 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
             if (user) {
                 try {
-                    await supabase.rpc('submit_quiz_result', {
-                        p_quiz_id: `lesson_bonus_${lessonId}`,
-                        p_score: bonusPoints
+                    const { error: rpcError } = await supabase.rpc('award_training_points', {
+                        input_quiz_id: `lesson_bonus_${lessonId}`,
+                        input_score: bonusPoints
                     });
 
+                    if (rpcError) {
+                        console.error('Error awarding lesson bonus:', rpcError);
+                        setShowQuizModal(false);
+                        setPendingLessonId(null);
+                        return;
+                    }
+
                     invalidateLeaderboardCaches(user.id);
+                    cacheHelper.clear(`profile_${user.id}`);
 
                     setRecentReward(bonusPoints);
                     // Clear reward message after 5 seconds
                     setTimeout(() => setRecentReward(null), 5000);
                 } catch (err) {
                     console.error('Error awarding lesson bonus:', err);
+                    setShowQuizModal(false);
+                    setPendingLessonId(null);
+                    return;
                 }
             }
 
-            const updated = [...completedLessons, lessonId];
+            const updated = filterCoreCompletedLessonIds([...completedLessons, lessonId]);
             setCompletedLessons(updated);
 
             if (user) {
                 localStorage.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
 
-                // Sync to Supabase
+                // Sync to Supabase (match Training.jsx: retry so reading_points RPC is not orphaned)
                 const newLevel = calculateLevelFromProgress(updated);
-                await supabase.from('profiles')
-                    .update({
-                        training_level: newLevel,
-                        completed_lessons: updated
-                    })
-                    .eq('id', user.id);
+                const updatePayload = {
+                    training_level: newLevel,
+                    completed_lessons: updated
+                };
+                let updateError = null;
+                for (let attempt = 1; attempt <= 3; attempt++) {
+                    const { error } = await supabase
+                        .from('profiles')
+                        .update(updatePayload)
+                        .eq('id', user.id);
+                    if (!error) {
+                        updateError = null;
+                        break;
+                    }
+                    updateError = error;
+                    console.warn(`SafetyHub profile sync attempt ${attempt}/3 failed:`, error);
+                    await new Promise((r) => setTimeout(r, 350 * attempt));
+                }
+                if (updateError) {
+                    console.error('SafetyHub: failed to persist completed_lessons after bonus RPC:', updateError);
+                }
             }
             if (onProgressUpdate) {
                 onProgressUpdate(updated);
@@ -757,6 +808,9 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
     // Initiate lesson completion - check for quiz first
     const initiateLessonCompletion = async (lessonId) => {
+        if (isSupplementaryProgressLessonId(lessonId)) {
+            return;
+        }
         // Check if we have a quiz for this lesson
         // Note: We allow re-taking the quiz for practice even if lesson is completed
 

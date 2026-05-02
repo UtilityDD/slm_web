@@ -5,6 +5,7 @@ import { Browser } from '@capacitor/browser';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { supabase } from "./supabaseClient";
 import { getBadgeByLevel, calculateLevelFromProgress } from './utils/badgeUtils';
+import { filterCoreCompletedLessonIds } from './utils/trainingLessonIds';
 import { cacheHelper } from './utils/cacheHelper';
 import { storageUtils } from './utils/storageUtils';
 import { requestManager } from './utils/requestManager';
@@ -317,7 +318,23 @@ export default function SmartLinemanUI() {
         const remoteLessons = Array.isArray(profileData.completed_lessons)
           ? profileData.completed_lessons
           : [];
-        const computedLevel = Math.max(1, calculateLevelFromProgress(profileData.completed_lessons || []));
+        const coreRemoteLessons = filterCoreCompletedLessonIds(remoteLessons);
+        const serverHadSupplementaryIds = remoteLessons.some(
+          (id) => typeof id === 'string' && id.trim().toLowerCase().startsWith('supp_')
+        );
+        const computedLevel = Math.max(1, calculateLevelFromProgress(coreRemoteLessons));
+
+        if (serverHadSupplementaryIds && targetUser?.id) {
+          const { error: stripError } = await supabase
+            .from('profiles')
+            .update({ completed_lessons: coreRemoteLessons })
+            .eq('id', targetUser.id);
+          if (stripError) {
+            console.warn('Could not strip supplementary lesson ids from profile:', stripError);
+          } else {
+            profileData.completed_lessons = coreRemoteLessons;
+          }
+        }
 
         if (profileData.training_level !== computedLevel) {
           const { error: levelUpdateError } = await supabase
@@ -341,9 +358,9 @@ export default function SmartLinemanUI() {
         }
 
         // Server progress is authoritative to prevent stale localStorage from re-promoting users.
-        setCompletedLessons(remoteLessons);
+        setCompletedLessons(coreRemoteLessons);
         if (targetUser?.id) {
-          localStorage.setItem(`training_progress_${targetUser.id}`, JSON.stringify(remoteLessons));
+          localStorage.setItem(`training_progress_${targetUser.id}`, JSON.stringify(coreRemoteLessons));
         }
 
         setUserProfile(profileData);
@@ -984,8 +1001,9 @@ export default function SmartLinemanUI() {
             user={user} 
             userProfile={userProfile}
             onProgressUpdate={(newProgress, forceRefresh = false) => { 
-              setCompletedLessons(newProgress); 
-              setUserProfile(prev => prev ? { ...prev, completed_lessons: newProgress, training_level: Math.max(1, calculateLevelFromProgress(newProgress)) } : null); 
+              const coreProgress = filterCoreCompletedLessonIds(Array.isArray(newProgress) ? newProgress : []);
+              setCompletedLessons(coreProgress); 
+              setUserProfile(prev => prev ? { ...prev, completed_lessons: coreProgress, training_level: Math.max(1, calculateLevelFromProgress(coreProgress)) } : null); 
               // Small delay to allow DB update to propagate
               setTimeout(() => fetchProfile(user, forceRefresh), 1000); 
             }} 
