@@ -2542,14 +2542,15 @@ export default function Training({
                         </div>
                     </>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-2 py-8 animate-fade-in-up max-w-7xl mx-auto mb-32">
+                        <div className="mx-auto mb-20 grid max-w-7xl animate-fade-in-up grid-cols-1 gap-4 px-2 py-4 min-[420px]:grid-cols-2 sm:mb-28 sm:gap-5 sm:py-6 md:grid-cols-3 lg:mb-32">
                             {supplementaryModules.map((module) => {
                                 const isCompleted = suppCompleted.includes(module.id);
+                                const cardTitle = language === 'en' ? module.title_en : module.title_bn;
                                 const openSupplementaryModule = () => {
                                     setTrainingContent({
                                         level_id: module.id,
                                         lesson_code: module.lesson_code ?? null,
-                                        level_title: language === 'en' ? module.title_en : module.title_bn,
+                                        level_title: cardTitle,
                                         manuscript_url: module.manuscript_url,
                                         isSupplementary: true,
                                         audio_url_en: module.audio_url_en ?? null,
@@ -2559,127 +2560,65 @@ export default function Training({
                                     setActiveSectionIndex(0);
                                 };
                                 return (
-                                    <div
+                                    <button
                                         key={module.id}
-                                        className={`group relative flex flex-col rounded-[2.5rem] border transition-all duration-500 overflow-hidden bg-white dark:bg-slate-900 shadow-sm hover:shadow-xl hover:-translate-y-1 ${
+                                        type="button"
+                                        onClick={openSupplementaryModule}
+                                        className={`group relative aspect-[3/4] w-full max-h-[280px] overflow-hidden rounded-2xl text-left shadow-md ring-1 ring-black/5 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:ring-white/10 dark:focus-visible:ring-offset-slate-950 sm:max-h-[320px] sm:rounded-3xl md:aspect-[4/5] md:max-h-[360px] ${
                                             isCompleted
-                                                ? 'border-emerald-200 dark:border-emerald-900/50'
-                                                : 'border-slate-100 dark:border-slate-800 hover:border-indigo-400/50 dark:hover:border-indigo-500/50'
+                                                ? 'ring-emerald-500/40'
+                                                : 'hover:shadow-xl hover:ring-indigo-400/30 dark:hover:ring-indigo-500/25'
                                         }`}
                                     >
-                                        {/* Image/Icon Header */}
-                                        <div className={`relative h-48 flex items-center justify-center overflow-hidden transition-all duration-700 ${isCompleted ? '' : 'group-hover:scale-105'}`}>
-                                            <div className={`absolute inset-0 bg-gradient-to-br transition-opacity duration-500 ${
-                                                module.category === 'mental' ? 'from-indigo-500/10 to-purple-500/10' :
-                                                module.category === 'financial' ? 'from-emerald-500/10 to-teal-500/10' :
-                                                module.category === 'digital' ? 'from-blue-500/10 to-cyan-500/10' :
-                                                'from-orange-500/10 to-rose-500/10'
-                                            }`} />
-                                            
+                                        {/* Full-bleed media */}
+                                        <div className="absolute inset-0 bg-slate-800">
                                             {module.image_url ? (
-                                                <img 
-                                                    src={module.image_url} 
-                                                    alt={module.title_en}
-                                                    className="w-full h-full object-cover"
+                                                <img
+                                                    src={module.image_url}
+                                                    alt=""
+                                                    className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                                                 />
                                             ) : (
-                                                <div className="relative text-7xl transform transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
-                                                    {module.icon || '📚'}
-                                                    <div className="absolute inset-0 blur-2xl bg-current opacity-20" />
-                                                </div>
-                                            )}
-
-                                            {/* Completion Overlay - Big Satisfying Checkmark */}
-                                            {isCompleted && (
-                                                <div className="absolute inset-0 bg-emerald-500/10 backdrop-blur-[1px] flex items-center justify-center animate-fade-in">
-                                                    <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.5)] border-4 border-white/50 animate-bounce-slow">
-                                                        <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="5" d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Status Badge */}
-                                            <div className="absolute top-4 right-4 flex items-center gap-2">
-                                                {isCompleted ? (
-                                                    <div
-                                                        className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
-                                                        title={language === 'en' ? 'Read before' : 'আগে পড়া হয়েছে'}
-                                                    >
-                                                        <span className="sr-only">{language === 'en' ? 'Read before' : 'আগে পড়া হয়েছে'}</span>
-                                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                    </div>
-                                                ) : module.duration && (
-                                                    <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 shadow-sm border border-slate-200/50 dark:border-white/5">
-                                                        {module.duration}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Content */}
-                                        <div className="flex flex-1 flex-col gap-4 p-6 sm:p-8">
-                                            <div className="min-w-0">
-                                                <div className="mb-2 flex items-center gap-2">
-                                                    <span className={`h-1.5 w-1.5 rounded-full ${isCompleted ? 'bg-emerald-500' : 'animate-pulse bg-indigo-500'}`} />
-                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
-                                                        {module.category || 'Supplementary'}
+                                                <div
+                                                    className={`flex h-full w-full items-center justify-center bg-gradient-to-br text-6xl sm:text-7xl ${
+                                                        module.category === 'mental'
+                                                            ? 'from-indigo-600 to-violet-700'
+                                                            : module.category === 'financial'
+                                                              ? 'from-emerald-600 to-teal-700'
+                                                              : module.category === 'digital'
+                                                                ? 'from-sky-600 to-blue-800'
+                                                                : 'from-orange-600 to-rose-700'
+                                                    }`}
+                                                >
+                                                    <span className="drop-shadow-lg" aria-hidden>
+                                                        {module.icon || '📚'}
                                                     </span>
                                                 </div>
-                                                <h3
-                                                    className={`mb-2 text-xl font-black leading-tight transition-colors ${
-                                                        isCompleted
-                                                            ? 'text-slate-900 dark:text-white'
-                                                            : 'text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400'
-                                                    }`}
-                                                >
-                                                    {language === 'en' ? module.title_en : module.title_bn}
-                                                </h3>
-                                                <p className="text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
-                                                    {language === 'en' ? module.description_en : module.description_bn}
-                                                </p>
-                                            </div>
-
-                                            {(module.highlights_en || module.highlights_bn) && (
-                                                <div
-                                                    className={`rounded-2xl border px-4 py-3 transition-colors ${
-                                                        isCompleted
-                                                            ? 'border-emerald-100 bg-emerald-50/30 dark:border-emerald-900/30 dark:bg-emerald-900/10'
-                                                            : 'border-indigo-100/50 bg-indigo-50/30 dark:border-indigo-900/30 dark:bg-indigo-900/10 group-hover:border-indigo-200 dark:group-hover:border-indigo-800'
-                                                    }`}
-                                                >
-                                                    <p
-                                                        className={`text-[11px] font-bold leading-tight tracking-tight ${isCompleted ? 'text-emerald-700/80 dark:text-emerald-400/80' : 'text-indigo-700/80 dark:text-indigo-400/80'}`}
-                                                    >
-                                                        {language === 'en' ? module.highlights_en : module.highlights_bn}
-                                                    </p>
-                                                    {(language === 'en' ? module.trusted_blurb_en : module.trusted_blurb_bn) && (
-                                                        <p className="mt-2 border-t border-slate-200/80 pt-2 text-[10px] font-medium leading-snug text-slate-500 dark:border-slate-600/60 dark:text-slate-500">
-                                                            {language === 'en' ? module.trusted_blurb_en : module.trusted_blurb_bn}
-                                                        </p>
-                                                    )}
-                                                </div>
                                             )}
-
-                                            <button
-                                                type="button"
-                                                onClick={openSupplementaryModule}
-                                                className={`mt-auto flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-black transition active:scale-[0.99] ${
-                                                    isCompleted
-                                                        ? 'border border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-100 dark:hover:bg-emerald-900/50'
-                                                        : 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25 hover:bg-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400'
-                                                }`}
-                                            >
-                                                <span>{language === 'en' ? 'Open' : 'খুলুন'}</span>
-                                                <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                                </svg>
-                                            </button>
                                         </div>
-                                    </div>
+
+                                        {/* Readability scrim + title only */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+                                        <div className="absolute inset-x-0 bottom-0 p-3.5 sm:p-5">
+                                            <h3 className="line-clamp-3 text-[0.8125rem] font-bold leading-snug tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)] sm:text-base md:text-lg md:leading-tight">
+                                                {cardTitle}
+                                            </h3>
+                                        </div>
+
+                                        {isCompleted && (
+                                            <div
+                                                className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-black/25 ring-2 ring-white/90 sm:right-3 sm:top-3 sm:h-9 sm:w-9"
+                                                title={language === 'en' ? 'Completed' : 'সম্পন্ন'}
+                                            >
+                                                <span className="sr-only">
+                                                    {language === 'en' ? 'Completed' : 'সম্পন্ন'}
+                                                </span>
+                                                <svg className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </div>
+                                        )}
+                                    </button>
                                 );
                             })}
                         </div>
