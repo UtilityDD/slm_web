@@ -56,8 +56,8 @@
     "trusted_blurb_bn": "CERT-In, RBI, NPCI-র সাইবার সতর্কতার সঙ্গে মিল; নম্বর সরকারি সাইটে যাচাই করুন।",
     "category": "digital",
     "manuscript_url": "/quizzes/lesson_10_3.json",
-    "audio_url_en": null,
-    "audio_url_bn": null
+    "audio_url_en": "https://raw.githubusercontent.com/UtilityDD/slm_audio/main/life_skill_03.wav",
+    "audio_url_bn": "https://raw.githubusercontent.com/UtilityDD/slm_audio/main/life_skill_03.wav"
   },
   {
     "id": "supp_10_4",
@@ -76,8 +76,8 @@
     "trusted_blurb_bn": "ILO-র শ্রম মান ও DISCOM গ্রাহকসেবা নীতির সাধারণ ধারার সঙ্গে মিল।",
     "category": "social",
     "manuscript_url": "/quizzes/lesson_10_4.json",
-    "audio_url_en": null,
-    "audio_url_bn": null
+    "audio_url_en": "https://raw.githubusercontent.com/UtilityDD/slm_audio/main/life_skill_04.wav",
+    "audio_url_bn": "https://raw.githubusercontent.com/UtilityDD/slm_audio/main/life_skill_04.wav"
   },
   {
     "id": "supp_10_5",
@@ -96,7 +96,7 @@
     "trusted_blurb_bn": "WHO, রেড ক্রস, NDMA-র সাধারণ নির্দেশনার সঙ্গে মিল; স্বীকৃত প্রশিক্ষণ এখনও জরুরি।",
     "category": "health",
     "manuscript_url": "/quizzes/lesson_10_5.json",
-    "audio_url_en": null,
-    "audio_url_bn": null
+    "audio_url_en": "https://raw.githubusercontent.com/UtilityDD/slm_audio/main/life_skill_05.wav",
+    "audio_url_bn": "https://raw.githubusercontent.com/UtilityDD/slm_audio/main/life_skill_05.wav"
   }
 ]

@@ -8,9 +8,14 @@ function formatTime(sec) {
     return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
+function formatRemaining(current, duration) {
+    if (!Number.isFinite(duration) || duration <= 0) return '—:—';
+    const rem = Math.max(0, duration - (Number.isFinite(current) ? current : 0));
+    return formatTime(rem);
+}
+
 /**
- * Full-screen “radio listen” mode: blocks the rest of the UI until the user exits.
- * Intended for professional lesson MP3s (may differ from on-screen text).
+ * Full-screen listen mode for hosted lesson audio (Life Skills).
  */
 export default function LessonRadioOverlay({ isOpen, onClose, src, language, lessonTitle }) {
     const audioRef = useRef(null);
@@ -19,8 +24,6 @@ export default function LessonRadioOverlay({ isOpen, onClose, src, language, les
     const [duration, setDuration] = useState(0);
     const [current, setCurrent] = useState(0);
     const [loadFailed, setLoadFailed] = useState(false);
-    const [hasStarted, setHasStarted] = useState(false);
-    const barRef = useRef(null);
 
     const exit = useCallback(() => {
         const a = audioRef.current;
@@ -45,7 +48,6 @@ export default function LessonRadioOverlay({ isOpen, onClose, src, language, les
             setProgress(0);
             setCurrent(0);
             setLoadFailed(false);
-            setHasStarted(false);
         }
     }, [isOpen]);
 
@@ -74,123 +76,92 @@ export default function LessonRadioOverlay({ isOpen, onClose, src, language, les
         }
     }, [playing, loadFailed]);
 
-    const seekFromClientX = useCallback((clientX) => {
-        const a = audioRef.current;
-        const bar = barRef.current;
-        if (!a || !bar || !Number.isFinite(a.duration) || a.duration <= 0) return;
-        const rect = bar.getBoundingClientRect();
-        const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-        a.currentTime = ratio * a.duration;
-        setCurrent(a.currentTime);
-        setProgress(ratio * 100);
-    }, []);
-
     if (!isOpen || !src) return null;
 
     const t = {
-        badge: language === 'bn' ? 'লেসন অডিও' : 'Lesson audio',
-        hint: language === 'bn' ? 'পাতার লেখা আর রেকর্ডিং আলাদা হতে পারে' : 'Recording may differ from the text on the slides',
-        tap: language === 'bn' ? 'চালু করতে ট্যাপ করুন' : 'Tap to play',
-        exit: language === 'bn' ? 'শেষ করে পড়ায় ফিরুন' : 'Exit & return to reading',
-        unavailable: language === 'bn' ? 'এখন উপলব্ধ নয়।' : 'Not available now.',
+        brand: 'SLM Radio',
+        play: language === 'bn' ? 'চালু' : 'Play',
+        pause: language === 'bn' ? 'থামান' : 'Pause',
+        close: language === 'bn' ? 'বন্ধ' : 'Close',
+        backToLesson: language === 'bn' ? 'পড়ায় ফিরুন' : 'Back to lesson',
+        unavailable: language === 'bn' ? 'অডিও লোড হয়নি।' : 'Audio unavailable.',
     };
+
+    const title = lessonTitle || (language === 'bn' ? 'লেসন' : 'Lesson');
 
     return createPortal(
         <div
-            className="fixed inset-0 z-[220] flex flex-col bg-slate-950/95 backdrop-blur-xl animate-fade-in"
+            className="fixed inset-0 z-[220] flex flex-col bg-zinc-950/98 backdrop-blur-xl animate-fade-in"
             role="dialog"
             aria-modal="true"
             aria-labelledby="lesson-radio-overlay-title"
         >
-            <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                <div className="absolute -left-1/4 top-0 h-[60vh] w-[70vw] rounded-full bg-indigo-600/25 blur-[100px]" />
-                <div className="absolute -right-1/4 bottom-0 h-[50vh] w-[60vw] rounded-full bg-violet-600/20 blur-[90px]" />
-            </div>
-
-            <div className="relative z-10 flex shrink-0 items-center justify-end px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2">
+            <header className="relative z-10 flex items-center justify-between px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 sm:px-5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-400">{t.brand}</p>
                 <button
                     type="button"
                     onClick={exit}
-                    className="rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-white/90 transition hover:bg-white/20"
+                    aria-label={t.close}
+                    className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-400 transition hover:bg-white/10 hover:text-white"
                 >
-                    {language === 'bn' ? 'বন্ধ' : 'Close'}
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
-            </div>
+            </header>
 
-            <div className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-                <div className="w-full max-w-md rounded-[2rem] border border-white/10 bg-slate-900/80 p-8 shadow-2xl">
-                    <p className="text-center text-[10px] font-black uppercase tracking-[0.25em] text-indigo-300/90">{t.badge}</p>
+            <div className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+                <div className="w-full max-w-sm rounded-2xl border border-white/[0.08] bg-zinc-900/90 p-6 shadow-2xl shadow-black/40 sm:max-w-md sm:p-8">
                     <h2
                         id="lesson-radio-overlay-title"
-                        className={`mt-2 text-center text-xl font-black leading-snug text-white sm:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}
+                        className={`text-center text-lg font-semibold leading-snug tracking-tight text-white sm:text-xl ${language === 'bn' ? 'font-bengali' : ''}`}
                     >
-                        {lessonTitle || (language === 'bn' ? 'লেসন' : 'Lesson')}
+                        {title}
                     </h2>
-                    <p className={`mt-2 text-center text-xs font-medium text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>{t.hint}</p>
 
                     {loadFailed ? (
-                        <p className={`mt-10 text-center text-sm font-semibold text-amber-200/90 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                            {t.unavailable}
-                        </p>
+                        <p className={`mt-8 text-center text-sm text-zinc-400 ${language === 'bn' ? 'font-bengali' : ''}`}>{t.unavailable}</p>
                     ) : (
                         <>
-                            <div className="relative mt-10 flex h-44 items-center justify-center">
-                                <span className="absolute h-36 w-36 animate-lesson-radio-pulse rounded-full bg-indigo-500/30" />
-                                <span className="absolute h-28 w-28 animate-lesson-radio-pulse rounded-full bg-indigo-400/25 [animation-delay:0.4s]" />
-                                <span className="absolute h-20 w-20 animate-lesson-radio-pulse rounded-full bg-white/10 [animation-delay:0.8s]" />
+                            <div className="mt-8 flex justify-center sm:mt-10">
                                 <button
                                     type="button"
                                     onClick={toggle}
-                                    aria-label={playing ? (language === 'bn' ? 'থামান' : 'Pause') : t.tap}
-                                    className="relative z-10 flex h-24 w-24 items-center justify-center rounded-full bg-white text-indigo-900 shadow-[0_20px_50px_rgba(0,0,0,0.35)] transition-transform active:scale-95 hover:scale-105"
+                                    aria-label={playing ? t.pause : t.play}
+                                    className="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-950/50 transition hover:bg-indigo-500 active:scale-[0.98] sm:h-[4.5rem] sm:w-[4.5rem]"
                                 >
                                     {playing ? (
-                                        <svg className="h-10 w-10" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                        <svg className="h-7 w-7" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
                                             <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                                         </svg>
                                     ) : (
-                                        <svg className="ml-1 h-10 w-10" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                        <svg className="ml-0.5 h-7 w-7" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
                                             <path d="M8 5v14l11-7z" />
                                         </svg>
                                     )}
                                 </button>
                             </div>
-                            {!playing && !hasStarted && (
-                                <p className={`mt-2 text-center text-[11px] font-bold uppercase tracking-wide text-indigo-200/80 ${language === 'bn' ? 'font-bengali normal-case' : ''}`}>
-                                    {t.tap}
-                                </p>
-                            )}
 
-                            <div className="mt-8 flex items-center justify-between gap-3 text-xs font-bold tabular-nums text-slate-400">
-                                <span>{formatTime(current)}</span>
-                                <span>{formatTime(duration)}</span>
-                            </div>
                             <div
-                                ref={barRef}
-                                role="slider"
-                                tabIndex={0}
-                                aria-valuemin={0}
-                                aria-valuemax={100}
-                                aria-valuenow={Math.round(progress)}
-                                onKeyDown={(e) => {
-                                    const a = audioRef.current;
-                                    if (!a || !Number.isFinite(a.duration)) return;
-                                    if (e.key === 'ArrowRight') {
-                                        e.preventDefault();
-                                        a.currentTime = Math.min(a.duration, a.currentTime + 5);
-                                    }
-                                    if (e.key === 'ArrowLeft') {
-                                        e.preventDefault();
-                                        a.currentTime = Math.max(0, a.currentTime - 5);
-                                    }
-                                }}
-                                onClick={(e) => seekFromClientX(e.clientX)}
-                                className="mt-1 h-2 w-full cursor-pointer rounded-full bg-slate-700"
+                                className="mt-8 border-t border-white/[0.06] pt-6"
+                                aria-live="polite"
+                                aria-atomic="true"
+                                aria-label={
+                                    language === 'bn'
+                                        ? `${formatTime(current)} শোনা, ${formatRemaining(current, duration)} বাকি`
+                                        : `${formatTime(current)} elapsed, ${formatRemaining(current, duration)} remaining`
+                                }
                             >
-                                <div
-                                    className="h-full rounded-full bg-gradient-to-r from-indigo-400 to-violet-400 transition-[width] duration-100"
-                                    style={{ width: `${progress}%` }}
-                                />
+                                <div className="relative h-1 overflow-hidden rounded-full bg-zinc-800">
+                                    <div
+                                        className="h-full rounded-full bg-indigo-500 transition-[width] duration-150 ease-linear"
+                                        style={{ width: `${progress}%` }}
+                                    />
+                                </div>
+                                <div className="mt-4 flex items-baseline justify-between gap-4 font-mono tabular-nums">
+                                    <span className="text-sm text-zinc-500 sm:text-base">{formatTime(current)}</span>
+                                    <span className="text-lg font-medium text-zinc-200 sm:text-xl">{formatRemaining(current, duration)}</span>
+                                </div>
                             </div>
                         </>
                     )}
@@ -198,9 +169,12 @@ export default function LessonRadioOverlay({ isOpen, onClose, src, language, les
                     <button
                         type="button"
                         onClick={exit}
-                        className={`mt-10 w-full rounded-2xl border border-white/15 bg-white/5 py-3.5 text-sm font-black uppercase tracking-widest text-white/90 transition hover:bg-white/10 ${language === 'bn' ? 'font-bengali normal-case' : ''}`}
+                        aria-label={t.backToLesson}
+                        className="mt-8 flex h-12 w-full items-center justify-center rounded-xl border border-white/[0.08] bg-zinc-800/80 text-zinc-200 transition hover:bg-zinc-800 hover:text-white sm:mt-10"
                     >
-                        {t.exit}
+                        <svg className="h-5 w-5 shrink-0 opacity-90" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                        </svg>
                     </button>
                 </div>
             </div>
@@ -212,12 +186,13 @@ export default function LessonRadioOverlay({ isOpen, onClose, src, language, les
                 playsInline
                 onPlay={() => {
                     setPlaying(true);
-                    setHasStarted(true);
                 }}
                 onPause={() => setPlaying(false)}
-                onEnded={() => {
+                onEnded={(e) => {
                     setPlaying(false);
                     setProgress(100);
+                    const d = e.target.duration;
+                    if (Number.isFinite(d) && d > 0) setCurrent(d);
                 }}
                 onLoadedMetadata={(e) => {
                     const d = e.target.duration;
