@@ -12,6 +12,7 @@ import { requestManager } from '../../utils/requestManager';
 import ChapterQuizModal from '../ChapterQuizModal';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import LessonCelebration from './LessonCelebration';
+import LessonRadioOverlay from './LessonRadioOverlay';
 import PPESurveyModal from './PPESurveyModal';
 import OnboardingSequence from './OnboardingSequence';
 import { DotLottiePlayer } from '@dotlottie/react-player';
@@ -22,6 +23,10 @@ import protipLottie from '../../assets/protip.lottie';
 import mythLottie from '../../assets/myth.lottie';
 import clockLottie from '../../assets/clock.lottie';
 import { resolveTrainingMediaSrc, trainingMediaRefLooksLikeImage } from '../../utils/trainingMediaUrl';
+import {
+    loadSupplementaryCompletedModuleIds,
+    appendSupplementaryCompletion,
+} from '../../utils/supplementaryProgressStorage';
 
 const LOADING_TIPS = {
     en: [
@@ -39,6 +44,39 @@ const LOADING_TIPS = {
         'পারমিট মেনে চলুন; প্রয়োজনে সঙ্গী নিয়ে কাজ করুন।',
     ],
 };
+
+/** localStorage JSON `{ visits, dismissed }`; legacy v1 `'1'` = dismissed. */
+const LIFE_SKILLS_HINT_STORAGE_KEY = 'slm_training_lifeskills_hint_v2';
+const LIFE_SKILLS_HINT_LEGACY_KEY = 'slm_training_lifeskills_hint_v1';
+/** Show hint on core training home for this many visits, then stop (unless dismissed earlier). */
+const MAX_LIFE_SKILLS_HINT_VISITS = 12;
+
+function readLifeSkillsHintState() {
+    if (typeof window === 'undefined') return { visits: 0, dismissed: true };
+    try {
+        if (localStorage.getItem(LIFE_SKILLS_HINT_LEGACY_KEY) === '1') {
+            return { visits: MAX_LIFE_SKILLS_HINT_VISITS, dismissed: true };
+        }
+        const raw = localStorage.getItem(LIFE_SKILLS_HINT_STORAGE_KEY);
+        if (!raw) return { visits: 0, dismissed: false };
+        const o = JSON.parse(raw);
+        return {
+            visits: typeof o.visits === 'number' && o.visits >= 0 ? o.visits : 0,
+            dismissed: !!o.dismissed,
+        };
+    } catch {
+        return { visits: 0, dismissed: false };
+    }
+}
+
+function writeLifeSkillsHintState(state) {
+    if (typeof window === 'undefined') return;
+    try {
+        localStorage.setItem(LIFE_SKILLS_HINT_STORAGE_KEY, JSON.stringify(state));
+    } catch {
+        /* ignore */
+    }
+}
 
 /** Short warning chime when lesson advance is blocked (user gesture present). */
 function playLessonAdvanceBlockedChime() {
@@ -98,6 +136,33 @@ const toBengaliNumber = (num, lang) => {
     if (lang !== 'bn') return num;
     const bnNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
     return num.toString().split('').map(digit => bnNumbers[digit] || digit).join('');
+};
+
+/** Map internal id (e.g. supp_10_3) to LS03 when catalogue `lesson_code` is missing (cache / old data). */
+const deriveLifeSkillCodeFromLevelId = (levelId) => {
+    if (typeof levelId !== 'string') return '';
+    const m = levelId.trim().match(/^supp_10_(\d{1,2})$/i);
+    if (!m) return '';
+    const n = parseInt(m[1], 10);
+    if (!Number.isFinite(n) || n < 1 || n > 99) return '';
+    return `LS${String(n).padStart(2, '0')}`;
+};
+
+/** Header / hero: Life Skill modules use short codes (LS01); core lessons keep level_id. */
+const getTrainingHeaderLessonCode = (trainingContent, lang) => {
+    if (!trainingContent?.level_id) return '';
+    if (trainingContent.isSupplementary) {
+        let code = '';
+        if (typeof trainingContent.lesson_code === 'string' && trainingContent.lesson_code.trim()) {
+            code = trainingContent.lesson_code.trim();
+        } else {
+            code = deriveLifeSkillCodeFromLevelId(trainingContent.level_id);
+        }
+        if (code) {
+            return lang === 'bn' ? toBengaliNumber(code, 'bn') : code;
+        }
+    }
+    return lang === 'bn' ? toBengaliNumber(trainingContent.level_id, lang) : `${trainingContent.level_id}`;
 };
 
 const TrainingSkeleton = () => (
@@ -367,7 +432,33 @@ function SectionPointFullCard({
     );
 }
 
-export default function Training({ language = 'en', user, userProfile: profile, onProgressUpdate, onOpenUserProgress, setCurrentView }) {
+/**
+ * Life Skills listen uses hosted audio only from GitHub (raw content or release assets).
+ * Relative paths and non-GitHub URLs keep the control disabled until a valid link is configured.
+ */
+function isValidSupplementaryGithubListenUrl(url) {
+    if (typeof url !== 'string') return false;
+    const u = url.trim();
+    if (!u.startsWith('https://')) return false;
+    try {
+        const { hostname, pathname } = new URL(u);
+        const host = hostname.toLowerCase();
+        if (host === 'raw.githubusercontent.com') return pathname.length > 1;
+        if (host === 'github.com' && pathname.toLowerCase().includes('/releases/download/')) return pathname.length > 1;
+        return false;
+    } catch {
+        return false;
+    }
+}
+
+export default function Training({
+    language = 'en',
+    user,
+    userProfile: profile,
+    onProgressUpdate,
+    onOpenUserProgress,
+    setCurrentView,
+}) {
     const [showOnboarding, setShowOnboarding] = useState(() => {
         const today = new Date().toDateString();
         const lastSeenDate = localStorage.getItem('lastOnboardingDate');
@@ -395,6 +486,16 @@ export default function Training({ language = 'en', user, userProfile: profile, 
     const [fetchError, setFetchError] = useState(false);
     const [readingPoints, setReadingPoints] = useState(0);
 
+    // Supplementary Modules State
+    const [trainingTab, setTrainingTab] = useState('core'); // 'core' | 'supplementary'
+    const [supplementaryModules, setSupplementaryModules] = useState([]);
+    const [suppCompleted, setSuppCompleted] = useState([]);
+    const [showLifeSkillsHint, setShowLifeSkillsHint] = useState(() => {
+        const s = readLifeSkillsHintState();
+        return !s.dismissed && s.visits < MAX_LIFE_SKILLS_HINT_VISITS;
+    });
+    const lifeSkillsHintHomeBumpRef = useRef(false);
+
     // Quiz Modal State
     const [showQuizModal, setShowQuizModal] = useState(false);
     const [currentQuizQuestions, setCurrentQuizQuestions] = useState([]);
@@ -412,6 +513,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
     const [pendingSubchapter, setPendingSubchapter] = useState(null);
     const [userPPEData, setUserPPEData] = useState([]);
     const galleryRef = useRef(null);
+    const [supplementaryRadioOverlayOpen, setSupplementaryRadioOverlayOpen] = useState(false);
     const lessonScrollRef = useRef(null);
     const lessonScrollInnerRef = useRef(null);
     /** True when the lesson scroll pane is scrolled to the bottom (or content fits without scrolling). */
@@ -497,6 +599,93 @@ export default function Training({ language = 'en', user, userProfile: profile, 
         }, 3200);
         return () => clearInterval(id);
     }, [trainingLoading]);
+
+    // Load supplementary modules and progress
+    useEffect(() => {
+        const fetchSupplementary = async () => {
+            try {
+                const res = await fetch('/data/supplementary_modules.json');
+                if (res.ok) {
+                    const data = await res.json();
+                    setSupplementaryModules(data);
+                }
+            } catch (err) {
+                console.error("Error loading supplementary modules:", err);
+            }
+        };
+
+        fetchSupplementary();
+
+        if (user) {
+            setSuppCompleted(loadSupplementaryCompletedModuleIds(user.id));
+        } else {
+            setSuppCompleted([]);
+        }
+    }, [user]);
+
+    const handleMarkSupplementaryRead = useCallback(
+        (moduleId, { silent = false } = {}) => {
+            if (!user) return;
+            const updated = appendSupplementaryCompletion(user.id, moduleId);
+            setSuppCompleted(updated);
+            if (!silent && typeof showNotification === 'function') {
+                showNotification(
+                    language === 'en' ? 'Saved to your progress.' : 'আপনার অগ্রগতিতে সংরক্ষিত হয়েছে।'
+                );
+            }
+        },
+        [user, language]
+    );
+
+    const dismissLifeSkillsHint = useCallback(() => {
+        const s = readLifeSkillsHintState();
+        writeLifeSkillsHintState({ ...s, dismissed: true });
+        setShowLifeSkillsHint(false);
+    }, []);
+
+    useEffect(() => {
+        if (trainingTab !== 'supplementary') return;
+        const s = readLifeSkillsHintState();
+        writeLifeSkillsHintState({ ...s, dismissed: true });
+        setShowLifeSkillsHint(false);
+    }, [trainingTab]);
+
+    // Count core-home "visits" for Life Skills hint; cap at MAX_LIFE_SKILLS_HINT_VISITS.
+    useEffect(() => {
+        if (selectedChapter || trainingContent) {
+            lifeSkillsHintHomeBumpRef.current = false;
+            return;
+        }
+        if (trainingTab !== 'core') {
+            lifeSkillsHintHomeBumpRef.current = false;
+            return;
+        }
+        if (lifeSkillsHintHomeBumpRef.current) return;
+        lifeSkillsHintHomeBumpRef.current = true;
+
+        const s = readLifeSkillsHintState();
+        if (s.dismissed) {
+            setShowLifeSkillsHint(false);
+            return;
+        }
+        if (s.visits >= MAX_LIFE_SKILLS_HINT_VISITS) {
+            setShowLifeSkillsHint(false);
+            return;
+        }
+        setShowLifeSkillsHint(true);
+        writeLifeSkillsHintState({ ...s, visits: s.visits + 1 });
+    }, [selectedChapter, trainingContent, trainingTab]);
+
+    // Life Skills surfaces: keep scroll at top (window + app main scroller).
+    useEffect(() => {
+        const surface = trainingTab === 'supplementary' || !!trainingContent?.isSupplementary;
+        if (!surface) return undefined;
+        const id = requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+            document.getElementById('main-scroll-container')?.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        });
+        return () => cancelAnimationFrame(id);
+    }, [trainingTab, trainingContent?.isSupplementary, trainingContent?.level_id]);
 
     // Fetch user rank for leaderboard preview
     useEffect(() => {
@@ -753,9 +942,50 @@ export default function Training({ language = 'en', user, userProfile: profile, 
 
     const slides = getSlides(trainingContent);
 
+    /** Reset auto-save guard when opening a different supplementary module. */
+    const supplementaryAutoSavedRef = useRef(null);
+    useEffect(() => {
+        supplementaryAutoSavedRef.current = null;
+    }, [trainingContent?.level_id]);
+
+    /** Life Skills: persist completion silently when the learner reaches the last screen. */
+    useEffect(() => {
+        if (!user || !trainingContent?.isSupplementary || !trainingContent?.level_id) return;
+        const slide = slides[activeSectionIndex];
+        if (!slide || slide.type !== 'completion') return;
+        const id = trainingContent.level_id;
+        if (supplementaryAutoSavedRef.current === id) return;
+        supplementaryAutoSavedRef.current = id;
+        handleMarkSupplementaryRead(id, { silent: true });
+    }, [user, trainingContent?.isSupplementary, trainingContent?.level_id, activeSectionIndex, slides, handleMarkSupplementaryRead]);
+
     useEffect(() => {
         setCompletedSectionSlideIndices(new Set());
     }, [trainingContent?.level_id]);
+
+    useEffect(() => {
+        if (trainingContent?.manuscript_url && !trainingContent.sections) {
+            const loadSupplementaryContent = async () => {
+                try {
+                    const response = await fetch(trainingContent.manuscript_url);
+                    if (response.ok) {
+                        const data = await response.json();
+                        setTrainingContent((prev) => ({
+                            ...prev,
+                            ...data,
+                            lesson_code:
+                                (typeof prev.lesson_code === 'string' && prev.lesson_code.trim()
+                                    ? prev.lesson_code
+                                    : deriveLifeSkillCodeFromLevelId(data.level_id || prev.level_id)) || null,
+                        }));
+                    }
+                } catch (error) {
+                    console.error("Error loading supplementary content:", error);
+                }
+            };
+            loadSupplementaryContent();
+        }
+    }, [trainingContent]);
 
     useEffect(() => {
         if (!trainingContent) return;
@@ -901,6 +1131,24 @@ export default function Training({ language = 'en', user, userProfile: profile, 
     };
 
     const { speak, pause, resume, stop, isPlaying, isPaused, activeId, isLoading } = useTextToSpeech(language);
+
+    const supplementaryRadioSrc = useMemo(() => {
+        if (!trainingContent?.isSupplementary) return '';
+        const en = typeof trainingContent.audio_url_en === 'string' ? trainingContent.audio_url_en.trim() : '';
+        const bn = typeof trainingContent.audio_url_bn === 'string' ? trainingContent.audio_url_bn.trim() : '';
+        const pick = language === 'bn' ? bn || en : en || bn;
+        return isValidSupplementaryGithubListenUrl(pick) ? pick : '';
+    }, [trainingContent?.isSupplementary, trainingContent?.audio_url_en, trainingContent?.audio_url_bn, language]);
+
+    /** Life Skills: hide read-aloud when a hosted lesson track exists (radio-only for audio). */
+    const hideReadAloudForSupplementaryRadio =
+        !!trainingContent?.isSupplementary && !!supplementaryRadioSrc;
+
+    useEffect(() => {
+        if (!trainingContent) {
+            setSupplementaryRadioOverlayOpen(false);
+        }
+    }, [trainingContent]);
 
     // Body scroll locking when full-page training is open
     useEffect(() => {
@@ -1575,6 +1823,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
     };
 
     const handleReadLesson = async () => {
+        setSupplementaryRadioOverlayOpen(false);
         const fullText = getCurrentSlideNarrationText();
         if (!fullText) return;
         const currentSpeechId = `lesson-slide-${activeSectionIndex}`;
@@ -1805,6 +2054,87 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                 </div>
             ) : !selectedChapter && !trainingContent ? (
                 <div className="animate-fade-in-up">
+                    {/* Sticky tab row (same scrollport as before: full-width column + z-40). Hint stays below in normal flow. */}
+                    <div
+                        className={`sticky top-4 z-40 mx-auto mb-6 flex w-full max-w-sm justify-center ${
+                            showLifeSkillsHint && trainingTab === 'core'
+                                ? prefersReducedMotion
+                                    ? 'rounded-full p-[2px] ring-2 ring-indigo-500/55 dark:ring-indigo-400/45'
+                                    : 'animate-lifeskills-hint-glow rounded-full p-[2px] ring-2 ring-indigo-500/55 dark:ring-indigo-400/45'
+                                : ''
+                        }`}
+                    >
+                        <div className="relative flex w-full rounded-full border border-slate-200/50 bg-white/80 p-1.5 shadow-lg backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/80">
+                            {showLifeSkillsHint && trainingTab === 'core' && (
+                                <span
+                                    className="pointer-events-none absolute right-2 top-0 z-20 -translate-y-1/2 rounded-full bg-indigo-600 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-md dark:bg-indigo-500"
+                                    aria-hidden
+                                >
+                                    {language === 'en' ? (
+                                        'New'
+                                    ) : (
+                                        <>
+                                            <span className="font-sans tracking-wide">New</span>
+                                            <span className="mx-0.5 opacity-80">·</span>
+                                            <span className={language === 'bn' ? 'font-bengali tracking-normal normal-case' : ''}>
+                                                নতুন
+                                            </span>
+                                        </>
+                                    )}
+                                </span>
+                            )}
+                            <div
+                                className={`absolute inset-y-1.5 w-[calc(50%-6px)] rounded-full bg-orange-600 shadow-sm transition-all duration-300 ease-out ${trainingTab === 'core' ? 'left-1.5' : 'left-[calc(50%+1.5px)]'}`}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setTrainingTab('core')}
+                                className={`relative z-10 w-1/2 rounded-full py-2.5 text-xs font-black uppercase tracking-wider transition-colors duration-300 ${trainingTab === 'core' ? 'text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            >
+                                {language === 'en' ? 'Training' : 'প্রশিক্ষণ'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setTrainingTab('supplementary')}
+                                aria-describedby={showLifeSkillsHint && trainingTab === 'core' ? 'lifeskills-hint-copy' : undefined}
+                                className={`relative z-10 w-1/2 rounded-full py-2.5 text-xs font-black uppercase tracking-wider transition-colors duration-300 ${trainingTab === 'supplementary' ? 'text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            >
+                                {language === 'en' ? 'Life Skill ✨' : 'লাইফ স্কিল ✨'}
+                            </button>
+                        </div>
+                    </div>
+                    {showLifeSkillsHint && trainingTab === 'core' && (
+                        <div className="mx-auto mb-6 w-full max-w-sm rounded-xl border border-slate-200/90 bg-slate-50/95 px-3 py-2.5 shadow-sm dark:border-slate-700/90 dark:bg-slate-900/85">
+                            <p
+                                id="lifeskills-hint-copy"
+                                className={`text-center text-[11px] font-medium leading-snug text-slate-600 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}
+                            >
+                                {language === 'en' ? (
+                                    <>
+                                        Short modules next to training—tap{' '}
+                                        <span className="whitespace-nowrap font-bold text-indigo-700 dark:text-indigo-300">Life Skill</span>.
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="font-bold text-indigo-700 dark:text-indigo-300">লাইফ স্কিল</span>
+                                        —প্রশিক্ষণের পাশে ছোট মডিউল; ডান দিকের ট্যাবে।
+                                    </>
+                                )}
+                            </p>
+                            <div className="mt-2 flex justify-center">
+                                <button
+                                    type="button"
+                                    onClick={dismissLifeSkillsHint}
+                                    className={`text-[11px] font-bold text-indigo-600 underline decoration-indigo-400/50 underline-offset-2 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                >
+                                    {language === 'en' ? 'Got it' : 'বুঝেছি'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {trainingTab === 'core' ? (
+                        <>
                     {/* Gamified Journey Map Logic */}
                     {(() => {
                         const isMobile = window.innerWidth < 768;
@@ -2134,33 +2464,177 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                     </div>
 
 
-                    {/* Professional Branding Footer */}
-                    <div className="mt-20 mb-32 text-center relative z-10 animate-fade-in-up">
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-slate-100 dark:bg-white/5 rounded-full border border-slate-200 dark:border-white/10">
-                                <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Official Platform</span>
-                            </div>
-                            <a
-                                href={WEBSITE_URL}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-2xl font-black text-slate-900 dark:text-white tracking-tight hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
-                            >
-                                {WEBSITE_URL.replace('https://', '')}
-                            </a>
-                            <div className="flex flex-col gap-1 items-center">
-                                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">For support and inquiries:</p>
-                                <a href={`mailto:${SUPPORT_EMAIL}`} className="text-sm font-bold text-orange-600 dark:text-orange-400 hover:text-orange-500 transition-colors">
-                                    {SUPPORT_EMAIL}
+                        {/* Professional Branding Footer */}
+                        <div className="mt-20 mb-32 text-center relative z-10 animate-fade-in-up">
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-slate-100 dark:bg-white/5 rounded-full border border-slate-200 dark:border-white/10">
+                                    <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Official Platform</span>
+                                </div>
+                                <a
+                                    href={WEBSITE_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-2xl font-black text-slate-900 dark:text-white tracking-tight hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
+                                >
+                                    {WEBSITE_URL.replace('https://', '')}
                                 </a>
+                                <div className="flex flex-col gap-1 items-center">
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">For support and inquiries:</p>
+                                    <a href={`mailto:${SUPPORT_EMAIL}`} className="text-sm font-bold text-orange-600 dark:text-orange-400 hover:text-orange-500 transition-colors">
+                                        {SUPPORT_EMAIL}
+                                    </a>
+                                </div>
+                                <div className="mt-4 w-40 h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent"></div>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                    {APP_NAME} v{CURRENT_APP_VERSION}
+                                </p>
                             </div>
-                            <div className="mt-4 w-40 h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent"></div>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                                {APP_NAME} v{CURRENT_APP_VERSION}
-                            </p>
                         </div>
-                    </div>
+                    </>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-2 py-8 animate-fade-in-up max-w-7xl mx-auto mb-32">
+                            {supplementaryModules.map((module) => {
+                                const isCompleted = suppCompleted.includes(module.id);
+                                const openSupplementaryModule = () => {
+                                    setTrainingContent({
+                                        level_id: module.id,
+                                        lesson_code: module.lesson_code ?? null,
+                                        level_title: language === 'en' ? module.title_en : module.title_bn,
+                                        manuscript_url: module.manuscript_url,
+                                        isSupplementary: true,
+                                        audio_url_en: module.audio_url_en ?? null,
+                                        audio_url_bn: module.audio_url_bn ?? null,
+                                    });
+                                    setIsJournalMode(true);
+                                    setActiveSectionIndex(0);
+                                };
+                                return (
+                                    <div
+                                        key={module.id}
+                                        className={`group relative flex flex-col rounded-[2.5rem] border transition-all duration-500 overflow-hidden bg-white dark:bg-slate-900 shadow-sm hover:shadow-xl hover:-translate-y-1 ${
+                                            isCompleted
+                                                ? 'border-emerald-200 dark:border-emerald-900/50'
+                                                : 'border-slate-100 dark:border-slate-800 hover:border-indigo-400/50 dark:hover:border-indigo-500/50'
+                                        }`}
+                                    >
+                                        {/* Image/Icon Header */}
+                                        <div className={`relative h-48 flex items-center justify-center overflow-hidden transition-all duration-700 ${isCompleted ? '' : 'group-hover:scale-105'}`}>
+                                            <div className={`absolute inset-0 bg-gradient-to-br transition-opacity duration-500 ${
+                                                module.category === 'mental' ? 'from-indigo-500/10 to-purple-500/10' :
+                                                module.category === 'financial' ? 'from-emerald-500/10 to-teal-500/10' :
+                                                module.category === 'digital' ? 'from-blue-500/10 to-cyan-500/10' :
+                                                'from-orange-500/10 to-rose-500/10'
+                                            }`} />
+                                            
+                                            {module.image_url ? (
+                                                <img 
+                                                    src={module.image_url} 
+                                                    alt={module.title_en}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="relative text-7xl transform transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
+                                                    {module.icon || '📚'}
+                                                    <div className="absolute inset-0 blur-2xl bg-current opacity-20" />
+                                                </div>
+                                            )}
+
+                                            {/* Completion Overlay - Big Satisfying Checkmark */}
+                                            {isCompleted && (
+                                                <div className="absolute inset-0 bg-emerald-500/10 backdrop-blur-[1px] flex items-center justify-center animate-fade-in">
+                                                    <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.5)] border-4 border-white/50 animate-bounce-slow">
+                                                        <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="5" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Status Badge */}
+                                            <div className="absolute top-4 right-4 flex items-center gap-2">
+                                                {isCompleted ? (
+                                                    <div
+                                                        className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
+                                                        title={language === 'en' ? 'Read before' : 'আগে পড়া হয়েছে'}
+                                                    >
+                                                        <span className="sr-only">{language === 'en' ? 'Read before' : 'আগে পড়া হয়েছে'}</span>
+                                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    </div>
+                                                ) : module.duration && (
+                                                    <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 shadow-sm border border-slate-200/50 dark:border-white/5">
+                                                        {module.duration}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Content */}
+                                        <div className="flex flex-1 flex-col gap-4 p-6 sm:p-8">
+                                            <div className="min-w-0">
+                                                <div className="mb-2 flex items-center gap-2">
+                                                    <span className={`h-1.5 w-1.5 rounded-full ${isCompleted ? 'bg-emerald-500' : 'animate-pulse bg-indigo-500'}`} />
+                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
+                                                        {module.category || 'Supplementary'}
+                                                    </span>
+                                                </div>
+                                                <h3
+                                                    className={`mb-2 text-xl font-black leading-tight transition-colors ${
+                                                        isCompleted
+                                                            ? 'text-slate-900 dark:text-white'
+                                                            : 'text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400'
+                                                    }`}
+                                                >
+                                                    {language === 'en' ? module.title_en : module.title_bn}
+                                                </h3>
+                                                <p className="text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                                                    {language === 'en' ? module.description_en : module.description_bn}
+                                                </p>
+                                            </div>
+
+                                            {(module.highlights_en || module.highlights_bn) && (
+                                                <div
+                                                    className={`rounded-2xl border px-4 py-3 transition-colors ${
+                                                        isCompleted
+                                                            ? 'border-emerald-100 bg-emerald-50/30 dark:border-emerald-900/30 dark:bg-emerald-900/10'
+                                                            : 'border-indigo-100/50 bg-indigo-50/30 dark:border-indigo-900/30 dark:bg-indigo-900/10 group-hover:border-indigo-200 dark:group-hover:border-indigo-800'
+                                                    }`}
+                                                >
+                                                    <p
+                                                        className={`text-[11px] font-bold leading-tight tracking-tight ${isCompleted ? 'text-emerald-700/80 dark:text-emerald-400/80' : 'text-indigo-700/80 dark:text-indigo-400/80'}`}
+                                                    >
+                                                        {language === 'en' ? module.highlights_en : module.highlights_bn}
+                                                    </p>
+                                                    {(language === 'en' ? module.trusted_blurb_en : module.trusted_blurb_bn) && (
+                                                        <p className="mt-2 border-t border-slate-200/80 pt-2 text-[10px] font-medium leading-snug text-slate-500 dark:border-slate-600/60 dark:text-slate-500">
+                                                            {language === 'en' ? module.trusted_blurb_en : module.trusted_blurb_bn}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            <button
+                                                type="button"
+                                                onClick={openSupplementaryModule}
+                                                className={`mt-auto flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-black transition active:scale-[0.99] ${
+                                                    isCompleted
+                                                        ? 'border border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-100 dark:hover:bg-emerald-900/50'
+                                                        : 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25 hover:bg-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400'
+                                                }`}
+                                            >
+                                                <span>{language === 'en' ? 'Open' : 'খুলুন'}</span>
+                                                <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             ) : selectedLesson ? (
                 /* Full Screen Lesson Preview Overlay */
@@ -2534,7 +3008,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                             setSelectedChapter(null);
                             setSelectedLesson(null);
                         }} />
-                        <div className="flex flex-col h-full overflow-hidden book-page-texture">
+                        <div className="relative flex flex-col h-full overflow-hidden book-page-texture">
                             {/* Simple Book-like Header */}
                             <div className="sticky top-0 z-[100] bg-white/40 dark:bg-black/20 backdrop-blur-md border-b border-black/5 dark:border-white/5">
                                 <div className="max-w-5xl mx-auto w-full px-5 py-3 flex items-center h-16">
@@ -2555,7 +3029,7 @@ export default function Training({ language = 'en', user, userProfile: profile, 
 
                                     <div className="text-center flex-1 mx-4 min-w-0">
                                         <h2 className={`text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] truncate ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
-                                            <span className="text-orange-500/80 font-black">{language === 'en' ? `${trainingContent.level_id}` : toBengaliNumber(trainingContent.level_id, language)}</span>
+                                            <span className="text-orange-500/80 font-black">{getTrainingHeaderLessonCode(trainingContent, language)}</span>
                                             <span className="mx-1.5 text-slate-300 dark:text-slate-600">·</span>
                                             {trainingContent.level_title}
                                         </h2>
@@ -2591,37 +3065,42 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                             <span className="text-xl animate-rotate-y inline-block">🛡️</span>
                                         </button>
 
-                                        <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-1 hidden sm:block opacity-50"></div>
+                                        {!hideReadAloudForSupplementaryRadio && (
+                                            <>
+                                                <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-1 hidden sm:block opacity-50"></div>
 
-                                        <button
-                                            onClick={handleReadLesson}
-                                            disabled={isLoading}
-                                            title={isLoading 
-                                                ? (language === 'en' ? 'Preparing audio...' : 'অডিও তৈরি হচ্ছে...')
-                                                : isPlaying && !isPaused
-                                                    ? (language === 'en' ? 'Pause reading' : 'পড়া থামান')
-                                                    : (language === 'en' ? 'Read aloud' : 'উচ্চস্বরে পড়ুন')}
-                                            className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-500 ${
-                                                isLoading ? 'bg-orange-500/20 text-orange-500 animate-pulse' :
-                                                isPlaying && !isPaused ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/40 scale-105' : 
-                                                'text-slate-400 hover:text-orange-500'
-                                            }`}
-                                        >
-                                            <div className={`absolute inset-0 rounded-full bg-orange-500 animate-ping opacity-20 ${isPlaying && !isPaused && !isLoading ? 'block' : 'hidden'}`}></div>
-                                            <div className="relative z-10 flex items-center justify-center">
-                                                {isLoading ? (
-                                                    <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-                                                ) : isPlaying && !isPaused ? (
-                                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                                                    </svg>
-                                                ) : (
-                                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M8 5v14l11-7z" />
-                                                    </svg>
-                                                )}
-                                            </div>
-                                        </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleReadLesson}
+                                                    disabled={isLoading}
+                                                    title={isLoading
+                                                        ? (language === 'en' ? 'Preparing audio...' : 'অডিও তৈরি হচ্ছে...')
+                                                        : isPlaying && !isPaused
+                                                            ? (language === 'en' ? 'Pause reading' : 'পড়া থামান')
+                                                            : (language === 'en' ? 'Read aloud' : 'উচ্চস্বরে পড়ুন')}
+                                                    className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-500 ${
+                                                        isLoading ? 'bg-orange-500/20 text-orange-500 animate-pulse' :
+                                                        isPlaying && !isPaused ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/40 scale-105' :
+                                                        'text-slate-400 hover:text-orange-500'
+                                                    }`}
+                                                >
+                                                    <div className={`absolute inset-0 rounded-full bg-orange-500 animate-ping opacity-20 ${isPlaying && !isPaused && !isLoading ? 'block' : 'hidden'}`}></div>
+                                                    <div className="relative z-10 flex items-center justify-center">
+                                                        {isLoading ? (
+                                                            <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                                                        ) : isPlaying && !isPaused ? (
+                                                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                                                            </svg>
+                                                        ) : (
+                                                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                                                <path d="M8 5v14l11-7z" />
+                                                            </svg>
+                                                        )}
+                                                    </div>
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
 
@@ -2634,22 +3113,62 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                         <div className="absolute top-0 right-0 w-4 h-full bg-white/40 skew-x-12 opacity-50"></div>
                                     </div>
                                 </div>
-                            </div>
-                            {/* Unified Side Navigation Arrows for Mobile & Desktop */}
-                            <div className="pointer-events-none fixed inset-0 z-[110] flex items-center justify-between px-2 sm:px-8">
-                                <div className="pointer-events-auto">
-                                    {!isFirstSlide && (
+
+                                {trainingContent?.isSupplementary ? (
+                                    <div className="max-w-5xl mx-auto w-full px-4 pb-2 pt-1">
                                         <button
-                                            onClick={prevSlide}
-                                            className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-slate-500 dark:text-slate-300 hover:text-orange-500 hover:scale-110 active:scale-75 transition-all shadow-xl"
-                                            title="Previous"
+                                            type="button"
+                                            disabled={!supplementaryRadioSrc}
+                                            title={
+                                                supplementaryRadioSrc
+                                                    ? undefined
+                                                    : language === 'bn'
+                                                        ? 'শুধুমাত্র GitHub-এ হোস্ট করা বৈধ অডিও লিঙ্ক থাকলে চালু হবে।'
+                                                        : 'Enabled only when a valid GitHub-hosted audio URL is set for this lesson.'
+                                            }
+                                            onClick={() => {
+                                                if (!supplementaryRadioSrc) return;
+                                                stop();
+                                                setSupplementaryRadioOverlayOpen(true);
+                                            }}
+                                            className={`flex w-full items-center justify-center gap-3 rounded-2xl border py-3.5 text-sm font-black uppercase tracking-wide transition ${
+                                                supplementaryRadioSrc
+                                                    ? 'border-indigo-300/80 bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/25 hover:brightness-110 active:scale-[0.99] dark:border-indigo-500/50 dark:from-indigo-500 dark:to-violet-600'
+                                                    : 'cursor-not-allowed border-slate-300/70 bg-slate-200/90 text-slate-500 opacity-75 dark:border-slate-600 dark:bg-slate-800/90 dark:text-slate-500'
+                                            } disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:brightness-100 disabled:active:scale-100`}
                                         >
-                                            <svg className="w-6 h-6 sm:w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
+                                            <span className="text-xl" aria-hidden>
+                                                📻
+                                            </span>
+                                            {language === 'bn' ? 'মনোযোগ দিয়ে শুনুন' : 'Listen (full screen)'}
                                         </button>
-                                    )}
-                                </div>
-                                <div className="pointer-events-auto">
-                                    {!isLastSlide && (
+                                        {supplementaryRadioSrc ? (
+                                            <LessonRadioOverlay
+                                                isOpen={supplementaryRadioOverlayOpen}
+                                                onClose={() => setSupplementaryRadioOverlayOpen(false)}
+                                                src={supplementaryRadioSrc}
+                                                language={language}
+                                                lessonTitle={trainingContent.level_title}
+                                            />
+                                        ) : null}
+                                    </div>
+                                ) : null}
+                            </div>
+                            {/* Side prev/next arrows — omitted on final slide (completion uses in-content actions). */}
+                            {!isLastSlide && (
+                                <div className="pointer-events-none fixed inset-0 z-[110] flex items-center justify-between px-2 sm:px-8">
+                                    <div className="pointer-events-auto">
+                                        {!isFirstSlide && (
+                                            <button
+                                                onClick={prevSlide}
+                                                className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-slate-500 dark:text-slate-300 hover:text-orange-500 hover:scale-110 active:scale-75 transition-all shadow-xl"
+                                                title="Previous"
+                                            >
+                                                <svg className="w-6 h-6 sm:w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="pointer-events-auto">
                                         <button
                                             type="button"
                                             disabled={isNextDisabledByLessonRules}
@@ -2671,9 +3190,9 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                         >
                                             <svg className="w-6 h-6 sm:w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
                                         </button>
-                                    )}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             {lessonNavBlockedReason && (
                                 <div className="pointer-events-none fixed inset-x-0 top-20 z-[118] flex justify-center px-3 sm:top-24">
@@ -2723,10 +3242,16 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                 const activeSlide = slides[activeSectionIndex];
                                 const sectionPoints =
                                     activeSlide?.type === 'section' ? activeSlide.points ?? [] : [];
+                                const isSupplementaryCompletion =
+                                    activeSlide?.type === 'completion' && trainingContent?.isSupplementary;
                                 return (
                                     <div
                                         ref={lessonScrollRef}
-                                        className="flex-1 overflow-y-auto relative book-page-texture book-gutter scroll-smooth transition-colors duration-700"
+                                        className={`flex-1 relative book-page-texture book-gutter scroll-smooth transition-colors duration-700 ${
+                                            isSupplementaryCompletion
+                                                ? 'min-h-0 overflow-x-hidden overflow-y-hidden'
+                                                : 'overflow-y-auto'
+                                        }`}
                                         onScroll={checkLessonScrollReachedEnd}
                                         onTouchStart={handleReaderTouchStart}
                                         onTouchEnd={handleReaderTouchEnd}
@@ -2734,14 +3259,20 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                         <div
                                             ref={lessonScrollInnerRef}
                                             key={activeSectionIndex}
-                                            className="max-w-4xl mx-auto px-6 sm:px-10 md:px-14 py-10 sm:py-14 pb-20 sm:pb-24 animate-fade-in-up relative"
+                                            className={`max-w-4xl mx-auto animate-fade-in-up relative px-4 sm:px-10 md:px-14 ${
+                                                isSupplementaryCompletion
+                                                    ? 'flex h-full min-h-0 flex-col items-center overflow-hidden py-3 pb-4 sm:py-8 sm:pb-10'
+                                                    : 'px-6 py-10 pb-20 sm:py-14 sm:pb-24'
+                                            }`}
                                         >
                                             {activeSlide?.type === 'hero' && (
                                                 <div className="flex flex-col items-center justify-center pt-6 pb-20 space-y-12">
                                                     <div className="w-full space-y-8 text-center">
                                                         <div className="space-y-4">
                                                             <p className="text-sm font-black uppercase tracking-[0.4em] text-slate-400 dark:text-slate-600">
-                                                                {language === 'en' ? `Lesson ${trainingContent.level_id}` : `পাঠ ${toBengaliNumber(trainingContent.level_id, language)}`}
+                                                                {language === 'en'
+                                                                    ? `Lesson ${getTrainingHeaderLessonCode(trainingContent, language)}`
+                                                                    : `পাঠ ${getTrainingHeaderLessonCode(trainingContent, language)}`}
                                                             </p>
                                                             <div className="h-px w-24 bg-slate-200 dark:bg-slate-800 mx-auto"></div>
                                                         </div>
@@ -3063,55 +3594,108 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                                             )}
 
                                             {slides[activeSectionIndex]?.type === 'completion' && (
-                                                <div className="mx-auto flex w-full max-w-sm flex-col items-center justify-center px-3 py-6 text-center animate-fade-in sm:px-4 sm:py-10">
-                                                    <div className="relative mx-auto mb-5 h-[min(32vh,13.5rem)] w-[min(32vh,13.5rem)] max-w-[min(85vw,13.5rem)] shrink-0 sm:mb-8 sm:h-56 sm:w-56 sm:max-w-none">
-                                                        <div className="absolute inset-0 rounded-full bg-orange-500/5 blur-3xl dark:bg-orange-500/5 sm:blur-[60px]"></div>
-                                                        {prefersReducedMotion ? (
-                                                            <div className="relative z-10 flex h-full w-full items-center justify-center text-6xl sm:text-8xl" aria-hidden>
-                                                                ✅
+                                                <div
+                                                    className={`mx-auto flex w-full max-w-sm flex-col items-center text-center animate-fade-in sm:max-w-md ${
+                                                        trainingContent.isSupplementary
+                                                            ? 'justify-center gap-0 py-1 sm:py-2'
+                                                            : 'justify-center px-3 py-6 sm:px-4 sm:py-10'
+                                                    }`}
+                                                >
+                                                    {trainingContent.isSupplementary ? (
+                                                        <div className="animate-fade-in-up flex w-full max-w-[19rem] flex-col items-center gap-4 sm:max-w-md sm:gap-5">
+                                                            <div className="relative mx-auto flex h-20 w-20 shrink-0 items-center justify-center sm:h-28 sm:w-28">
+                                                                <div className="absolute inset-0 rounded-full bg-indigo-500/10 blur-xl sm:blur-3xl"></div>
+                                                                <div className="relative text-4xl drop-shadow-sm sm:text-5xl" aria-hidden>
+                                                                    ✨
+                                                                </div>
                                                             </div>
-                                                        ) : (
-                                                            <DotLottiePlayer
-                                                                src={readingLottie}
-                                                                autoplay
-                                                                loop
-                                                                className="relative z-10 h-full w-full object-contain grayscale-[0.3] transition-all duration-700 hover:grayscale-0"
-                                                            />
-                                                        )}
-                                                    </div>
-
-                                                    <div className="mb-6 w-full space-y-3 sm:mb-10 sm:space-y-4">
-                                                        <h3 className={`text-2xl font-black text-slate-800 dark:text-white sm:text-3xl md:text-4xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                            {language === 'en' ? `Mission Complete` : `মিশন সম্পন্ন`}
-                                                        </h3>
-                                                        <div className="mx-auto h-px w-16 bg-slate-200 dark:bg-slate-800"></div>
-                                                    </div>
-
-                                                    <div className="w-full max-w-full space-y-4 sm:space-y-6">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                                            className="flex w-full items-center justify-center gap-3 rounded-2xl bg-slate-900 py-4 text-lg font-black text-white shadow-xl transition-all hover:scale-[1.02] active:scale-95 dark:bg-slate-100 dark:text-slate-900 sm:rounded-[2rem] sm:py-5 sm:text-xl"
-                                                        >
-                                                            {language === 'en' ? 'Start Challenge' : 'চ্যালেঞ্জ শুরু করুন'}
-                                                        </button>
-
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                setTrainingContent(null);
-                                                                setSelectedChapter(null);
-                                                                setIsJournalMode(false);
-                                                            }}
-                                                            className="group flex w-full flex-col items-center gap-2 py-3 sm:py-4"
-                                                        >
-                                                            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 transition-all group-hover:border-slate-400 dark:border-slate-800 dark:group-hover:border-slate-500">
-                                                                <svg className="h-5 w-5 text-slate-400 group-hover:text-slate-600 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                                                            <div className="w-full space-y-1.5 sm:space-y-2">
+                                                                <h3
+                                                                    className={`text-lg font-black leading-snug text-slate-800 dark:text-white sm:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                >
+                                                                    {language === 'en' ? 'Deep Insight Gained' : 'নতুন কিছু শিখলেন'}
+                                                                </h3>
+                                                                <p
+                                                                    className={`text-[11px] font-medium leading-relaxed text-slate-500 dark:text-slate-400 sm:text-sm ${language === 'bn' ? 'font-bengali sm:text-base' : ''}`}
+                                                                >
+                                                                    {language === 'en'
+                                                                        ? 'Taking care of yourself is as important as any technical skill. Well done.'
+                                                                        : 'নিজের যত্ন নেওয়া যে কোনো কারিগরি দক্ষতার মতোই জরুরি। দারুণ কাজ করেছেন!'}
+                                                                </p>
+                                                            </div>
+                                                            <div className="mx-auto h-px w-10 bg-slate-100 dark:bg-slate-800 sm:w-16"></div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    stop();
+                                                                    setTrainingContent(null);
+                                                                    setIsJournalMode(false);
+                                                                    setTrainingTab('supplementary');
+                                                                }}
+                                                                className={`mx-auto flex min-h-[3rem] w-full max-w-[17.5rem] items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 shadow-sm transition active:scale-[0.99] hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800/90 dark:text-slate-100 dark:hover:bg-slate-800 sm:max-w-xs sm:min-h-[2.75rem] sm:text-base`}
+                                                            >
+                                                                <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M15 19l-7-7 7-7" />
                                                                 </svg>
+                                                                <span className={language === 'bn' ? 'font-bengali' : ''}>
+                                                                    {language === 'en' ? 'Back to training' : 'প্রশিক্ষণে ফিরুন'}
+                                                                </span>
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <div className="relative mx-auto mb-5 h-[min(32vh,13.5rem)] w-[min(32vh,13.5rem)] max-w-[min(85vw,13.5rem)] shrink-0 sm:mb-8 sm:h-56 sm:w-56 sm:max-w-none">
+                                                                <div className="absolute inset-0 rounded-full bg-orange-500/5 blur-3xl dark:bg-orange-500/5 sm:blur-[60px]"></div>
+                                                                {prefersReducedMotion ? (
+                                                                    <div className="relative z-10 flex h-full w-full items-center justify-center text-6xl sm:text-8xl" aria-hidden>
+                                                                        ✅
+                                                                    </div>
+                                                                ) : (
+                                                                    <DotLottiePlayer
+                                                                        src={readingLottie}
+                                                                        autoplay
+                                                                        loop
+                                                                        className="relative z-10 h-full w-full object-contain grayscale-[0.3] transition-all duration-700 hover:grayscale-0"
+                                                                    />
+                                                                )}
                                                             </div>
-                                                        </button>
-                                                    </div>
+
+                                                            <div className="mb-6 w-full space-y-3 sm:mb-10 sm:space-y-4">
+                                                                <h3 className={`text-2xl font-black text-slate-800 dark:text-white sm:text-3xl md:text-4xl ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                    {language === 'en' ? `Mission Complete` : `মিশন সম্পন্ন`}
+                                                                </h3>
+                                                                <div className="mx-auto h-px w-16 bg-slate-200 dark:bg-slate-800"></div>
+                                                            </div>
+                                                        </>
+                                                    )}
+
+                                                    {!trainingContent.isSupplementary ? (
+                                                        <div className="w-full max-w-full space-y-4 sm:space-y-6">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => initiateLessonCompletion(trainingContent.level_id)}
+                                                                className="flex w-full items-center justify-center gap-3 rounded-2xl bg-slate-900 py-4 text-lg font-black text-white shadow-xl transition-all hover:scale-[1.02] active:scale-95 dark:bg-slate-100 dark:text-slate-900 sm:rounded-[2rem] sm:py-5 sm:text-xl"
+                                                            >
+                                                                {language === 'en' ? 'Start Challenge' : 'চ্যালেঞ্জ শুরু করুন'}
+                                                            </button>
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setTrainingContent(null);
+                                                                    setSelectedChapter(null);
+                                                                    setIsJournalMode(false);
+                                                                }}
+                                                                className="group flex w-full flex-col items-center gap-2 py-3 sm:py-4"
+                                                            >
+                                                                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 transition-all group-hover:border-slate-400 dark:border-slate-800 dark:group-hover:border-slate-500">
+                                                                    <svg className="h-5 w-5 text-slate-400 group-hover:text-slate-600 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                                                                    </svg>
+                                                                </div>
+                                                            </button>
+                                                        </div>
+                                                    ) : null}
                                                 </div>
                                             )}
                                         </div>
@@ -3301,9 +3885,14 @@ export default function Training({ language = 'en', user, userProfile: profile, 
                 )
             }
 
-            {/* Floating Challenge Button */}
+            {/* Floating Challenge Button (hidden on Life Skills tab / surface) */}
             {
-                !selectedChapter && !trainingContent && !showWelcome && !trainingLoading && createPortal(
+                !selectedChapter &&
+                !trainingContent &&
+                !showWelcome &&
+                !trainingLoading &&
+                trainingTab === 'core' &&
+                createPortal(
                     <button
                         onClick={() => setCurrentView('competitions')}
                         className="fixed bottom-24 right-4 sm:bottom-6 sm:right-6 z-[90] hover:scale-110 active:scale-95 transition-transform duration-300 drop-shadow-2xl animate-entrance-pop focus:outline-none"

@@ -97,3 +97,9 @@ Dependencies are **`[sectionGuidedStepDone, sectionReaderMode]`** only — not *
 2. **Section with zero points:** No guided lock; advance is not blocked.
 3. **AudioContext:** First chime may fail silently in very strict environments; the handler is wrapped in **`try/catch`**.
 4. **Scratch scripts:** One-off patch scripts under `scratch/` are not part of the runtime app; do not assume they stay in repo.
+
+---
+
+## See also
+
+- **[Life Skill / supplementary modules](./life-skills-supplementary.md)** — `supplementary_modules.json`, `lesson_10_*.json`, **GitHub-only** Listen URLs, `LS01` header codes, local completion storage.

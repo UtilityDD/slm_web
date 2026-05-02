@@ -108,6 +108,7 @@ export default function SmartLinemanUI() {
   };
 
   const [currentView, setCurrentView] = useState(getInitialView);
+
   const [language, setLanguage] = useState('bn');
   const [theme, setTheme] = useState(() => {
     // Default to dark unless user has an explicit preference
@@ -989,7 +990,7 @@ export default function SmartLinemanUI() {
               setTimeout(() => fetchProfile(user, forceRefresh), 1000); 
             }} 
             onOpenUserProgress={() => { setSelectedProgressUserId(user?.id || null); setCurrentView('my-progress'); }} 
-            setCurrentView={setCurrentView} 
+            setCurrentView={setCurrentView}
           />;
         case 'admin':
           if (!['admin', 'safety mitra', 'lineman'].includes(userProfile?.role)) { setCurrentView('home'); return null; }
@@ -1281,9 +1282,10 @@ export default function SmartLinemanUI() {
               blocked={idleReminderBlocked}
             />
 
-            {currentView !== 'sops' && (
+            {currentView !== 'sops' && currentView !== 'training' && (
               <div className="fixed left-0 z-[250] animate-slide-up bottom-[calc(8rem+env(safe-area-inset-bottom))]">
                  <button
+                    type="button"
                     onClick={() => setCurrentView('sops')}
                     onMouseEnter={() => setIsSathiExpanded(true)}
                     onMouseLeave={() => setIsSathiExpanded(false)}
