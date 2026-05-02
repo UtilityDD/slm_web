@@ -5,7 +5,9 @@ Adds image-capable hourly questions from Google Sheets while preserving the exis
 ## File map
 
 - `src/components/Competitions.jsx`
-  - hourly fetch (`fetchHourlyQuiz`)
+  - hourly fetch (`fetchHourlyQuiz(forceRefresh)` — returns quiz or `null`, supports `requestManager` `forceRefresh`)
+  - `beginHourlyQuiz` — before `startQuiz`, ensures `hourlyQuiz.id` matches `getHourlyQuizId()` for the current clock hour
+  - background interval (~12s) refetches when hour id drifts (skipped while a quiz is active or a refresh is in progress)
   - deterministic 5-question selection (`startQuiz`)
   - visual rendering + retry fallback for question/option images
 - `src/utils/visualQuizService.js`
@@ -48,6 +50,20 @@ The visual integration does not modify the scoring path:
 - `submitHourlyQuiz()` unchanged.
 - Supabase RPC `submit_quiz_result_v2` unchanged.
 - Hourly `quiz_id` format unchanged (`hourly-challenge-YYYY-MM-DD-HH`).
+
+## Hour rollover (same questions at 59 → next hour)
+
+- `fetchHourlyQuiz` used to run only on mount (`language` / `user` change). If the user stayed on the screen across an hour boundary, `hourlyQuiz` stayed on the **previous hour’s** payload while the ladder showed the new “live” hour—so `startQuiz` could reuse the same question pool.
+- **Mitigation:** `beginHourlyQuiz` compares `hourlyQuiz.id` to `getHourlyQuizId()` and **force-refetches** when they differ before calling `startQuiz`. A background interval also refetches when the hour id drifts (skipped while an hourly quiz is active or a refresh is in progress).
+
+### While a quiz is already open (`activeQuiz` set)
+
+- The background refetch **does not run** (guarded by `activeQuizRef`) so we do not replace `hourlyQuiz` or disturb the in-flight session.
+- The user keeps the **same** `quiz.id`, question set, and submission target for the **hour they started in**, even if the wall clock moves to the next hour mid-attempt. This keeps scoring and `quiz_id` posting consistent with “one attempt per hourly-challenge id.”
+
+### UX while refreshing before start
+
+- `hourlyQuizRefreshBusy` disables the live card button briefly and shows a short “Updating quiz for this hour…” message so users do not start on stale data.
 
 ## State and lifecycle notes
 

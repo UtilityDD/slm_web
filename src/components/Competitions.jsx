@@ -163,6 +163,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [quizResults, setQuizResults] = useState(null);
     const [leaderboard, setLeaderboard] = useState([]);
     const [hourlyQuiz, setHourlyQuiz] = useState(null);
+    const hourlyQuizRef = React.useRef(null);
+    const activeQuizRef = React.useRef(null);
+    const hourlyQuizRefreshBusyRef = React.useRef(false);
+    const [hourlyQuizRefreshBusy, setHourlyQuizRefreshBusy] = useState(false);
     const [timeLeft, setTimeLeft] = useState('');
     const [lastAttemptTime, setLastAttemptTime] = useState(null);
     const [lastAttemptPenalty, setLastAttemptPenalty] = useState(0);
@@ -195,6 +199,18 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [maximizedAvatar, setMaximizedAvatar] = useState(null);
     const [showHallCelebration, setShowHallCelebration] = useState(false);
     const hallCelebrationShownRef = React.useRef(false);
+
+    React.useEffect(() => {
+        hourlyQuizRef.current = hourlyQuiz;
+    }, [hourlyQuiz]);
+
+    React.useEffect(() => {
+        activeQuizRef.current = activeQuiz;
+    }, [activeQuiz]);
+
+    React.useEffect(() => {
+        hourlyQuizRefreshBusyRef.current = hourlyQuizRefreshBusy;
+    }, [hourlyQuizRefreshBusy]);
 
     // Gamified Ladder state
     const [todayAttempts, setTodayAttempts] = useState([]);
@@ -923,7 +939,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         }
     };
 
-    const fetchHourlyQuiz = async () => {
+    const fetchHourlyQuiz = async (forceRefresh = false) => {
+        if (isFullLeaderboard) return null;
+
         const now = getSyncedTime();
         // Use simpler strict format: YYYY-MM-DD-HH
         const year = now.getFullYear();
@@ -979,17 +997,58 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     }
                     return null;
                 },
-                { ttl: 60, swr: true }
+                { ttl: 60, swr: true, forceRefresh }
             );
 
             if (quizData) {
                 setHourlyQuiz(quizData);
             }
+            return quizData ?? null;
         } catch (error) {
             console.error('Unexpected error fetching hourly quiz:', error);
             setFetchError(true);
+            return null;
         }
     };
+
+    /** Ensures hourly payload matches the current clock hour (fixes stale quiz after hour rollover). */
+    const beginHourlyQuiz = async () => {
+        if (isFullLeaderboard) return;
+        if (!user) {
+            setCurrentView('login');
+            return;
+        }
+        setHourlyQuizRefreshBusy(true);
+        try {
+            let quiz = hourlyQuizRef.current;
+            const expectedId = getHourlyQuizId();
+            if (!quiz || quiz.id !== expectedId) {
+                quiz = await fetchHourlyQuiz(true);
+            }
+            if (quiz && quiz.id !== getHourlyQuizId()) {
+                quiz = await fetchHourlyQuiz(true);
+            }
+            if (!quiz) return;
+            await startQuiz(quiz);
+        } finally {
+            setHourlyQuizRefreshBusy(false);
+        }
+    };
+
+    // Refresh hourly quiz when the clock hour changes while this screen stays mounted.
+    React.useEffect(() => {
+        if (isFullLeaderboard) return undefined;
+        const tick = () => {
+            if (activeQuizRef.current || hourlyQuizRefreshBusyRef.current) return;
+            const expected = getHourlyQuizId();
+            const cur = hourlyQuizRef.current;
+            if (cur && cur.id !== expected) {
+                fetchHourlyQuiz(true).catch(() => {});
+            }
+        };
+        const id = window.setInterval(tick, 12000);
+        return () => window.clearInterval(id);
+    }, [isFullLeaderboard, serverTimeOffset, language]);
 
     const fetchLastAttempt = async (quizId) => {
         if (!user) return;
@@ -2024,9 +2083,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                                     {/* Card Content */}
                                     <button
-                                        disabled={!isLive && !isPlayed}
+                                        disabled={(!isLive && !isPlayed) || (isLive && hourlyQuizRefreshBusy)}
                                         onClick={() => {
-                                            if (isLive) startQuiz(hourlyQuiz);
+                                            if (isLive) void beginHourlyQuiz();
                                             else if (isPlayed) startReview();
                                         }}
                                         className={`w-full overflow-hidden rounded-2xl border-2 relative group text-left transition-all active:scale-[0.98]
@@ -2040,6 +2099,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             <div className="flex-1">
                                                 {isLive ? (
                                                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 flex flex-col items-start gap-1">
+                                                        {hourlyQuizRefreshBusy && (
+                                                            <div className="mb-1 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                                                                {language === 'en' ? 'Updating quiz for this hour…' : 'এই ঘণ্টার কুইজ আপডেট হচ্ছে…'}
+                                                            </div>
+                                                        )}
                                                         <div className="flex items-center gap-2 mb-1 px-2.5 py-1 bg-rose-500/10 dark:bg-rose-500/20 rounded-full border border-rose-500/20">
                                                             <div className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.6)]"></div>
                                                             <span className="text-[10px] font-black text-rose-600 dark:text-rose-400 tracking-tighter uppercase">{t.liveNow}</span>
