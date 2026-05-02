@@ -16,8 +16,8 @@
     "trusted_blurb_bn": "WHO-র মানসিক স্বাস্থ্য নির্দেশনার সঙ্গে সামঞ্জস্য; চিকিৎসার বিকল্প নয়।",
     "category": "mental",
     "manuscript_url": "/quizzes/lesson_10_1.json",
-    "audio_url_en": "/audio/life_skills_sample.mp3",
-    "audio_url_bn": "/audio/life_skills_sample.mp3"
+    "audio_url_en": "https://raw.githubusercontent.com/UtilityDD/slm_audio/main/life_skill_01.wav",
+    "audio_url_bn": "https://raw.githubusercontent.com/UtilityDD/slm_audio/main/life_skill_01.wav"
   },
   {
     "id": "supp_10_2",
@@ -36,8 +36,8 @@
     "trusted_blurb_bn": "RBI, SEBI, IRDAI-র জনসাধারণ শিক্ষার ধারার সঙ্গে মিল; বড় সিদ্ধান্তে বিশেষজ্ঞের পরামর্শ নিন।",
     "category": "financial",
     "manuscript_url": "/quizzes/lesson_10_2.json",
-    "audio_url_en": null,
-    "audio_url_bn": null
+    "audio_url_en": "https://raw.githubusercontent.com/UtilityDD/slm_audio/main/life_skill_02.wav",
+    "audio_url_bn": "https://raw.githubusercontent.com/UtilityDD/slm_audio/main/life_skill_02.wav"
   },
   {
     "id": "supp_10_3",

@@ -1,6 +1,6 @@
 # Life Skill (supplementary) modules — developer guide
 
-**Purpose:** Document the **Life Skill** tab in Training: the **module catalogue**, **journal manuscripts**, **header lesson codes (`LS01`…)**, **GitHub-only hosted listen audio**, **local completion storage**, and how to **add or change** content safely.
+**Purpose:** Document the **Life Skill** tab in Training: the **module catalogue**, **journal manuscripts**, **header lesson codes (`LS01`…)**, **hosted listen audio** (GitHub or same-origin `/audio/`), **local completion storage**, and how to **add or change** content safely.
 
 **Primary files**
 
@@ -8,7 +8,7 @@
 |------|------|
 | `public/data/supplementary_modules.json` | Module list: ids, titles, `manuscript_url`, optional `audio_url_*`, `lesson_code`, blurbs, assets |
 | `public/quizzes/lesson_10_*.json` | Manuscript JSON merged into `trainingContent` when a module opens (same slide model as core lessons — see [Training lesson reader](./training-lesson-reader.md)) |
-| `src/components/safety/Training.jsx` | Tab UI, card grid, `getSlides`, merge of manuscript, `getTrainingHeaderLessonCode`, `isValidSupplementaryGithubListenUrl`, Listen button, completion auto-save |
+| `src/components/safety/Training.jsx` | Tab UI, card grid, `getSlides`, merge of manuscript, `getTrainingHeaderLessonCode`, `isValidSupplementaryListenUrl`, Listen button, completion auto-save |
 | `src/components/safety/LessonRadioOverlay.jsx` | Full-screen `<audio>` player for the Listen flow |
 | `src/utils/supplementaryProgressStorage.js` | `localStorage` progress keyed by user; optional future Supabase sync |
 
@@ -31,7 +31,7 @@ Each entry is one card on the **Life Skill** tab. Typical fields:
 | `trusted_blurb_en` / `trusted_blurb_bn` | Optional | Small footnote under highlights (source alignment). |
 | `category` | Optional | Styling / label (`mental`, `financial`, etc.). |
 | `duration` | Optional | Badge when not completed. |
-| `audio_url_en` / `audio_url_bn` | Optional | **Listen** button — see [Hosted listen audio](#hosted-listen-audio-github-only) below. |
+| `audio_url_en` / `audio_url_bn` | Optional | **Listen** button — see [Hosted listen audio](#hosted-listen-audio) below. |
 
 **Adding a new module**
 
@@ -52,30 +52,32 @@ Opening a module sets `trainingContent` with `isSupplementary: true`, `lesson_co
 
 ---
 
-## Hosted listen audio (GitHub only)
+## Hosted listen audio
 
-The **Listen (full screen)** control is **enabled only** when the active language’s URL passes **`isValidSupplementaryGithubListenUrl`** in `Training.jsx`:
+The **Listen (full screen)** control is **enabled only** when the active language’s URL passes **`isValidSupplementaryListenUrl`** in `Training.jsx`.
 
-1. **Scheme:** must be **`https://`** (`http://` and relative paths like `/audio/foo.mp3` are rejected).
-2. **Allowed hosts:**
-   - **`raw.githubusercontent.com`** — path must be non-empty (typical: `https://raw.githubusercontent.com/<org>/<repo>/<ref>/<path>/file.mp3`).
-   - **`github.com`** — URL path must include **`/releases/download/`** (release asset MP3).
+### Option A — GitHub (public repo only)
+
+Browsers load audio **without** your users’ GitHub logins. **Private** GitHub repos return 404/403 for raw URLs, so this path only works if the audio repo is **public**.
+
+1. **Scheme:** must be **`https://`** (`http://` is rejected).
+2. **Allowed patterns:**
+   - **`raw.githubusercontent.com`** — non-empty path (e.g. `https://raw.githubusercontent.com/<org>/<repo>/main/folder/file.mp3`).
+   - **`github.com`** with **`/releases/download/`** — release asset download URL.
+
+### Option B — Same-origin `/audio/` (private GitHub alternative)
+
+Put the file in **`public/audio/`** in this app (e.g. `life_skill_01.wav`) and set **`audio_url_en` / `audio_url_bn`** to a path like **`/audio/life_skill_01.wav`**. The path must start with **`/audio/`**, must not contain **`..`**, and is served with the web app (no anonymous access to a separate private repo required).
 
 The UI picks **`audio_url_bn`** when the app language is Bengali (fallback to `audio_url_en`), else **`audio_url_en`** (fallback to `audio_url_bn`).
 
 ### How to integrate an audio link
 
-1. **Host the file** on GitHub (same repo or another) so it is reachable over **HTTPS** as **raw** content or as a **Release** asset.
-2. **Raw file (common):**  
-   - Commit `my-lesson-bn.mp3` to branch `main`.  
-   - Use:  
-     `https://raw.githubusercontent.com/<ORG>/<REPO>/main/<optional-folder>/my-lesson-bn.mp3`  
-   - Put that string in **`audio_url_bn`** or **`audio_url_en`** in `supplementary_modules.json` for the right module.
-3. **Release asset:** upload the MP3 to a GitHub Release and copy the **browser download** URL; it must contain **`github.com`** and **`/releases/download/`**.
-4. **CORS / playback:** Raw GitHub URLs are widely used for static assets; if a file fails to load, check the URL in a new tab, branch/ref name, and that the repo is public (or that the client can access it).
-5. **Per language:** set both `audio_url_en` and `audio_url_bn` if tracks differ; use `null` for a side with no track (Listen uses the other if valid).
+1. **Public GitHub:** commit the file, use a **raw** or **releases/download** URL as above in `supplementary_modules.json`.
+2. **Private audio:** copy the asset into **`public/audio/`**, reference **`/audio/<filename>`**.
+3. **Per language:** set both `audio_url_en` and `audio_url_bn` if tracks differ; use `null` for a side with no track (Listen uses the other if valid).
 
-If no URL passes validation, the Listen button stays **disabled**; read-aloud (TTS) may still appear for text unless a valid GitHub URL hides it — see `hideReadAloudForSupplementaryRadio` in `Training.jsx`.
+If no URL passes validation, the Listen button stays **disabled**; read-aloud (TTS) may still appear for text unless a valid listen URL hides it — see `hideReadAloudForSupplementaryRadio` in `Training.jsx`.
 
 ---
 

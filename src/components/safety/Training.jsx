@@ -434,12 +434,17 @@ function SectionPointFullCard({
 }
 
 /**
- * Life Skills listen uses hosted audio only from GitHub (raw content or release assets).
- * Relative paths and non-GitHub URLs keep the control disabled until a valid link is configured.
+ * Life Skills listen accepts:
+ * - GitHub raw or release asset URLs (public hosting), or
+ * - Same-origin paths under /audio/ (e.g. public/audio/ in this repo — works when GitHub audio is private).
  */
-function isValidSupplementaryGithubListenUrl(url) {
+function isValidSupplementaryListenUrl(url) {
     if (typeof url !== 'string') return false;
     const u = url.trim();
+    if (!u) return false;
+    if (u.startsWith('/audio/') && !u.includes('..')) {
+        return u.length > '/audio/'.length;
+    }
     if (!u.startsWith('https://')) return false;
     try {
         const { hostname, pathname } = new URL(u);
@@ -1138,7 +1143,7 @@ export default function Training({
         const en = typeof trainingContent.audio_url_en === 'string' ? trainingContent.audio_url_en.trim() : '';
         const bn = typeof trainingContent.audio_url_bn === 'string' ? trainingContent.audio_url_bn.trim() : '';
         const pick = language === 'bn' ? bn || en : en || bn;
-        return isValidSupplementaryGithubListenUrl(pick) ? pick : '';
+        return isValidSupplementaryListenUrl(pick) ? pick : '';
     }, [trainingContent?.isSupplementary, trainingContent?.audio_url_en, trainingContent?.audio_url_bn, language]);
 
     /** Life Skills: hide read-aloud when a hosted lesson track exists (radio-only for audio). */

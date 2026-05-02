@@ -16,7 +16,7 @@ This folder holds **maintainer-focused** documentation: architecture notes, inte
 | [Hourly Visual Quiz](./hourly-visual-quiz.md) | `Competitions.jsx`, Google Sheet visual quiz sync, deterministic hourly selection, image retry UX |
 | [Safety Library](./safety-library.md) | `SafetyLibrary.jsx`, grid, detail modal, Drive image helper |
 | [Training lesson reader](./training-lesson-reader.md) | `Training.jsx` journal slides, guided section cards, advance lock, alert/chime, scroll + text scale |
-| [Life Skill / supplementary modules](./life-skills-supplementary.md) | `supplementary_modules.json`, `lesson_10_*.json`, GitHub listen URLs, `LS` codes, `supplementaryProgressStorage.js` |
+| [Life Skill / supplementary modules](./life-skills-supplementary.md) | `supplementary_modules.json`, `lesson_10_*.json`, GitHub or `/audio/` listen URLs, `LS` codes, `supplementaryProgressStorage.js` |
 | [Broadcast notifications](./notifications-broadcasts.md) | `Admin.jsx`, `SmartLinemanUI.jsx`, notification RPCs, startup modal + admin controls |
 
 ## Conventions for new guides
