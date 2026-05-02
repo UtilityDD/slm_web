@@ -1486,116 +1486,32 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
             {/* Tab Navigation - Added for All-Time vs Monthly */}
             {!showHallOfFame && (
-                <>
-                <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-                    <div className="max-w-6xl mx-auto px-4">
-                        <div className="flex gap-8">
+                <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md pt-3 pb-4">
+                    <div className="max-w-xs mx-auto px-4">
+                        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-full shadow-inner">
                             <button
                                 onClick={() => setLeaderboardTab('all-time')}
-                                className={`py-4 text-sm font-black transition-all relative ${leaderboardTab === 'all-time' ? 'text-orange-600 dark:text-orange-400' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`flex-1 py-2 text-xs sm:text-sm font-black rounded-full transition-all ${leaderboardTab === 'all-time' ? 'bg-white dark:bg-slate-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
                             >
                                 {language === 'en' ? 'All-Time' : 'সর্বকালীন'}
-                                {leaderboardTab === 'all-time' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-orange-600 rounded-t-full shadow-[0_-4px_8px_rgba(234,88,12,0.3)]"></div>}
                             </button>
                             <button
                                 onClick={() => {
                                     setLeaderboardTab('monthly');
                                     if (monthlyLeaderboard.length === 0) fetchMonthlyLeaderboard();
                                 }}
-                                className={`py-4 text-sm font-black transition-all relative ${leaderboardTab === 'monthly' ? 'text-orange-600 dark:text-orange-400' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`flex-1 py-2 text-xs sm:text-sm font-black rounded-full transition-all ${leaderboardTab === 'monthly' ? 'bg-white dark:bg-slate-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
                             >
                                 {language === 'en' ? 'This Month' : 'এই মাস'}
-                                {leaderboardTab === 'monthly' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-orange-600 rounded-t-full shadow-[0_-4px_8px_rgba(234,88,12,0.3)]"></div>}
                             </button>
                         </div>
                     </div>
                 </div>
-                <div className="bg-slate-50/90 dark:bg-slate-800/40 border-b border-slate-200/80 dark:border-slate-700/80">
-                    <div className="max-w-6xl mx-auto px-3 sm:px-4 py-1">
-                        <p
-                            className="flex gap-1 items-start text-[10px] sm:text-[11px] leading-snug text-slate-500 dark:text-slate-400"
-                            role="note"
-                        >
-                            <span className="shrink-0 opacity-70 select-none" aria-hidden>ℹ️</span>
-                            <span className="min-w-0">{t.leaderboardTimeInfo}</span>
-                        </p>
-                    </div>
-                </div>
-                </>
             )}
 
             {showHallOfFame ? (
                     <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
-                        {showHallCelebration && (
-                            <div className="fixed inset-0 z-[95] pointer-events-none overflow-hidden hall-celebration-overlay">
-                                <div className="absolute inset-0 hall-celebration-radiance"></div>
-
-                                {/* Center flower / star-cone burst (viewport center); CSS delay matches audio peak */}
-                                <div className="absolute left-1/2 top-[48%] z-[14] hall-starburst-host -translate-x-1/2 -translate-y-1/2 pointer-events-none" aria-hidden>
-                                    <div className="hall-starburst-spin">
-                                        <div className="hall-starburst-cone-ring">
-                                            {[...Array(28)].map((_, i) => (
-                                                <div
-                                                    key={`cb-${i}`}
-                                                    className="hall-starburst-cone-ray"
-                                                    style={{ '--cb-rot': `${(360 / 28) * i}deg`, '--cb-delay': `${0.86 + i * 0.012}s` }}
-                                                >
-                                                    <span className="hall-starburst-cone-ray-shape" />
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div className="hall-starburst-flower-ring">
-                                            {[...Array(14)].map((_, i) => (
-                                                <div
-                                                    key={`fb-${i}`}
-                                                    className="hall-starburst-flower-petal"
-                                                    style={{ '--fb-rot': `${(360 / 14) * i}deg`, '--fb-delay': `${0.92 + i * 0.018}s` }}
-                                                >
-                                                    <span className="hall-starburst-flower-petal-shape" />
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div className="hall-starburst-core-hub" />
-                                    </div>
-                                </div>
-
-                                {[...Array(52)].map((_, i) => (
-                                    <span
-                                        key={`hall-confetti-${i}`}
-                                        className="absolute animate-confetti hall-confetti-piece"
-                                        style={{
-                                            left: `${(i * 19) % 100}%`,
-                                            top: `${-10 - (i % 6) * 6}%`,
-                                            animationDelay: `${(i % 14) * 0.08}s`,
-                                            animationDuration: `${2.7 + (i % 5) * 0.45}s`,
-                                            fontSize: `${11 + (i % 5) * 3}px`
-                                        }}
-                                    >
-                                        {['🎉', '✨', '🏆', '🎊'][i % 4]}
-                                    </span>
-                                ))}
-
-                                {[...Array(20)].map((_, i) => (
-                                    <span
-                                        key={`hall-spark-${i}`}
-                                        className="absolute hall-sparkle"
-                                        style={{
-                                            left: `${5 + (i * 9) % 90}%`,
-                                            top: `${10 + (i * 11) % 70}%`,
-                                            animationDelay: `${(i % 10) * 0.16}s`
-                                        }}
-                                    />
-                                ))}
-
-                                <div className="absolute inset-x-0 top-20 flex justify-center px-4">
-                                    <div className="hall-winner-badge rounded-2xl border border-amber-300/60 dark:border-amber-600/40 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-4 sm:px-7 py-3 shadow-2xl animate-scale-in">
-                                        <p className="font-bengali text-sm sm:text-base font-black text-amber-700 dark:text-amber-300 tracking-wide text-center">
-                                            🎉 অভিনন্দন মাসের সেরা বিজয়ীরা!
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                        {/* Overlay removed for professional cleaner look */}
 
                         {loadingGallery ? (
                             <div className="flex flex-col items-center justify-center py-20 pointer-events-none">
@@ -1604,63 +1520,40 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             </div>
                         ) : (
                             <div className="space-y-5 sm:space-y-8 max-w-7xl mx-auto px-0 md:px-8">
-                                <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-orange-200/70 dark:border-orange-800/40 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-100 dark:from-orange-900/20 dark:via-amber-900/15 dark:to-orange-900/20 p-4 sm:p-6 animate-slide-up">
-                                    <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-orange-400/20 blur-2xl animate-pulse"></div>
-                                    <div className="absolute -bottom-12 -left-8 w-36 h-36 rounded-full bg-amber-400/20 blur-2xl animate-pulse"></div>
-
-                                    <div className="relative z-10">
-                                        <p className="font-bengali text-sm sm:text-base md:text-lg font-black leading-relaxed text-slate-800 dark:text-slate-100">
-                                            🎉 মাসের বিজয়ীদের অভিনন্দন! পুরস্কার সংক্রান্ত আপডেট পেতে অনুগ্রহ করে আমাদের Facebook পেজ ফলো করুন এবং WhatsApp গ্রুপে যুক্ত থাকুন।
+                                <div className="rounded-2xl border border-orange-100 dark:border-slate-800 bg-orange-50/50 dark:bg-slate-800/50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in shadow-sm">
+                                    <div className="flex items-start gap-3">
+                                        <span className="text-xl sm:text-2xl mt-0.5">🎉</span>
+                                        <p className="font-bengali text-sm sm:text-base font-bold text-slate-700 dark:text-slate-300">
+                                            মাসের বিজয়ীদের অভিনন্দন! পুরস্কার সংক্রান্ত আপডেট পেতে আমাদের Facebook পেজ ফলো করুন এবং WhatsApp গ্রুপে যুক্ত থাকুন।
                                         </p>
-                                        <div className="mt-3 flex flex-wrap items-center gap-2.5">
-                                            <a
-                                                href="https://www.facebook.com/smartlineman"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="w-11 h-11 sm:w-12 sm:h-12 bg-[#1877F2] text-white rounded-full flex items-center justify-center shadow-lg shadow-blue-500/25 hover:scale-105 active:scale-95 transition-transform border-2 border-white/20"
-                                                title={language === 'en' ? 'Facebook Page' : 'ফেসবুক পেজ'}
-                                                aria-label={language === 'en' ? 'Open Facebook page' : 'ফেসবুক পেজ খুলুন'}
-                                            >
-                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                                    <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" />
-                                                </svg>
-                                            </a>
-                                            <a
-                                                href="https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="w-11 h-11 sm:w-12 sm:h-12 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-lg shadow-green-500/25 hover:scale-105 active:scale-95 transition-transform border-2 border-white/20"
-                                                title={language === 'en' ? 'WhatsApp Community' : 'হোয়াটসঅ্যাপ গ্রুপ'}
-                                                aria-label={language === 'en' ? 'Join WhatsApp group' : 'হোয়াটসঅ্যাপ গ্রুপে যুক্ত হোন'}
-                                            >
-                                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                                                </svg>
-                                            </a>
-                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        <a href="https://www.facebook.com/smartlineman" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-10 h-10 bg-[#1877F2]/10 hover:bg-[#1877F2]/20 text-[#1877F2] rounded-xl transition-colors">
+                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" /></svg>
+                                        </a>
+                                        <a href="https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-10 h-10 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] rounded-xl transition-colors">
+                                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
+                                        </a>
                                     </div>
                                 </div>
 
-                            <div className="grid grid-cols-1 gap-5 sm:gap-10">
+                            <div className="grid grid-cols-1 gap-6 sm:gap-8">
                                 {hallOfFameData.map((entry, idx) => (
                                     <div 
                                         key={`${entry.year}-${entry.month}`} 
-                                        className="award-perspective group animate-slide-up"
-                                        style={{ animationDelay: `${idx * 150}ms` }}
+                                        className="animate-slide-up"
+                                        style={{ animationDelay: `${idx * 100}ms` }}
                                     >
-                                        <div className="diamond-glass award-tilt rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-8 md:p-10 relative overflow-hidden transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.12)]">
-                                            {/* Refined Background Accents */}
-                                            <div className="absolute -top-24 -right-24 w-64 h-64 bg-amber-500/10 dark:bg-amber-400/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-amber-500/20 transition-all duration-1000"></div>
-                                            <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/10 dark:bg-indigo-400/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-indigo-500/20 transition-all duration-1000"></div>
+                                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 md:p-8 transition-all duration-300">
                                             
                                             {/* Header Section */}
-                                            <div className="flex flex-row items-center justify-between mb-3 sm:mb-6 gap-3 relative z-10 border-b border-slate-200/50 dark:border-white/10 pb-2 sm:pb-4">
+                                            <div className="flex flex-row items-center justify-between mb-4 sm:mb-6 gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
                                                 <div>
                                                     <h3 className="text-lg sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tighter">
                                                         {new Date(entry.year, entry.month - 1).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', { month: 'long', year: 'numeric' })}
                                                     </h3>
                                                 </div>
-                                                <div className="flex items-center gap-2 bg-white/50 dark:bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/50 dark:border-white/10 shadow-sm">
+                                                <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-100 dark:border-slate-700">
                                                     <div className="flex -space-x-2">
                                                         {entry.winners.map((w, i) => (
                                                             <div key={i} className="w-6 h-6 rounded-full border-2 border-white dark:border-slate-800 overflow-hidden shadow-sm">
@@ -1669,13 +1562,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         ))}
                                                     </div>
                                                     <p className="hidden xs:block text-[8px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">
-                                                        {language === 'en' ? 'Platinum' : 'প্ল্যাটিনাম'}
+                                                        {language === 'en' ? 'Stars' : 'সেরারা'}
                                                     </p>
                                                 </div>
                                             </div>
 
                                             {/* Winners Horizontal Grid */}
-                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 relative z-10">
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                                                 {entry.winners.slice(0, 3).map((winner, winIdx) => {
                                                     const isGold = winIdx === 0;
                                                     
@@ -1683,85 +1576,50 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         <div 
                                                             key={winner.user_id} 
                                                             onClick={() => openUserProgress(winner.user_id)}
-                                                            className={`relative p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all duration-500 group/topper cursor-pointer
-                                                                ${isGold 
-                                                                    ? 'bg-gradient-to-br from-amber-50 to-white dark:from-amber-900/10 dark:to-slate-900/50 border-amber-200 dark:border-amber-500/20 shadow-md shadow-amber-500/5' 
-                                                                    : 'bg-white/40 dark:bg-slate-800/40 border-slate-100 dark:border-white/5 hover:border-indigo-500/30'}`}
+                                                            className="relative p-3 sm:p-4 rounded-xl border bg-slate-50/50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-colors cursor-pointer flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-4 group"
                                                         >
-                                                            <div className="flex sm:flex-col justify-between sm:justify-start items-center sm:items-stretch gap-3">
-                                                                {/* Left Part: Medal & Avatar info in row for mobile, col for desktop */}
-                                                                <div className="flex items-center sm:items-stretch gap-3 flex-1 min-w-0">
-                                                                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm
-                                                                        ${winIdx === 0 ? 'bg-amber-100 dark:bg-amber-900/40' :
-                                                                           winIdx === 1 ? 'bg-slate-100 dark:bg-slate-700' :
-                                                                           'bg-orange-100 dark:bg-orange-900/30'}`}>
-                                                                        {winIdx === 0 ? (
-                                                                            <span className="text-lg">🥇</span>
-                                                                        ) : winIdx === 1 ? (
-                                                                            <span className="text-lg">🥈</span>
-                                                                        ) : (
-                                                                            <span className="text-lg">🥉</span>
-                                                                        )}
-                                                                    </div>
-                                                                    
-                                                                    <div className="flex items-center sm:hidden gap-3 flex-1 min-w-0">
-                                                                        <div 
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                if (winner.avatar_url) setMaximizedAvatar(winner.avatar_url);
-                                                                            }}
-                                                                            className={`w-10 h-10 rounded-lg overflow-hidden border shadow-sm cursor-zoom-in active:scale-95 transition-transform ${isGold ? 'border-amber-400' : 'border-slate-200 dark:border-slate-700'}`}
-                                                                        >
-                                                                            {winner.avatar_url ? <img src={winner.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-black text-slate-400">{(winner.full_name || '?')[0]}</div>}
-                                                                        </div>
-                                                                        <div className="min-w-0">
-                                                                            <div className="flex items-center gap-1.5 flex-wrap">
-                                                                                <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{winner.full_name || 'Anonymous'}</p>
-                                                                                {(() => {
-                                                                                    const badge = getBadgeByLevel(winner.training_level || 0, winner.all_time_reading_points || 0);
-                                                                                    return badge && (
-                                                                                        <span className={`text-[6px] px-1 py-0 rounded-sm border font-black uppercase tracking-tighter ${badge.color}`}>
-                                                                                            {language === 'en' ? badge.en : badge.bn}
-                                                                                        </span>
-                                                                                    );
-                                                                                })()}
-                                                                            </div>
-                                                                            <p className="text-[8px] font-bold text-slate-400 uppercase tabular-nums">{winner.slm_id || (language === 'en' ? 'SLM-MEMBER' : 'এসএলএম-সদস্য')}</p>
-                                                                            <p className="text-[7px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-tighter mt-0.5">
-                                                                                📍 {winner.district || t.noDistrict}
-                                                                            </p>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                {/* Score Part */}
-                                                                <div className="text-right sm:text-left sm:mt-2">
-                                                                    <p className={`text-base sm:text-lg font-black tabular-nums ${isGold ? 'text-amber-600' : winIdx === 1 ? 'text-slate-500' : 'text-orange-600'}`}>
-                                                                        {(winner.points || 0).toLocaleString()}
-                                                                    </p>
-                                                                </div>
+                                                            <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl shrink-0 shadow-sm bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                                                                <span className="text-lg">
+                                                                    {winIdx === 0 ? '🥇' : winIdx === 1 ? '🥈' : '🥉'}
+                                                                </span>
                                                             </div>
 
-                                                            {/* Desktop Only Avatar Info */}
-                                                            <div className="hidden sm:flex items-center gap-3 mt-4 pt-3 border-t border-slate-100 dark:border-white/5">
+                                                            <div className="flex flex-1 sm:w-full items-center sm:items-start gap-3 min-w-0">
                                                                 <div 
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
                                                                         if (winner.avatar_url) setMaximizedAvatar(winner.avatar_url);
                                                                     }}
-                                                                    className={`w-10 h-10 rounded-xl overflow-hidden border shadow-sm cursor-zoom-in active:scale-95 transition-transform ${isGold ? 'border-amber-400' : 'border-slate-200 dark:border-slate-700'}`}
+                                                                    className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm cursor-zoom-in active:scale-95 transition-transform"
                                                                 >
                                                                     {winner.avatar_url ? <img src={winner.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-black text-slate-400">{(winner.full_name || '?')[0]}</div>}
                                                                 </div>
-                                                                <div className="min-w-0">
-                                                                    <p className="text-xs font-black text-slate-900 dark:text-white truncate">{winner.full_name || 'Anonymous'}</p>
-                                                                    <div className="flex items-center justify-between gap-2 mt-0.5">
-                                                                        <p className="text-[8px] font-bold text-slate-400 uppercase tabular-nums">{winner.slm_id || 'SLM-MEMBER'}</p>
-                                                                        <p className="text-[7px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/20 px-1 rounded">
-                                                                            {winner.district || t.noDistrict}
+                                                                
+                                                                <div className="min-w-0 flex-1">
+                                                                    <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                                                                        <p className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">{winner.full_name || 'Anonymous'}</p>
+                                                                        {(() => {
+                                                                            const badge = getBadgeByLevel(winner.training_level || 0, winner.all_time_reading_points || 0);
+                                                                            return badge && (
+                                                                                <span className={`text-[8px] px-1 py-0.5 rounded font-bold uppercase ${badge.color}`}>
+                                                                                    {language === 'en' ? badge.en : badge.bn}
+                                                                                </span>
+                                                                            );
+                                                                        })()}
+                                                                    </div>
+                                                                    <div className="flex items-center justify-between gap-2 mt-1 sm:flex-col sm:items-start sm:gap-1">
+                                                                        <p className="text-[9px] font-bold text-slate-400 uppercase tabular-nums">{winner.slm_id || (language === 'en' ? 'SLM-MEMBER' : 'এসএলএম-সদস্য')}</p>
+                                                                        <p className="text-[8px] font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-tight bg-indigo-50 dark:bg-indigo-900/20 px-1.5 py-0.5 rounded">
+                                                                            📍 {winner.district || t.noDistrict}
                                                                         </p>
                                                                     </div>
                                                                 </div>
+                                                            </div>
+
+                                                            <div className="text-right sm:text-left shrink-0">
+                                                                <p className={`text-base sm:text-xl font-black tabular-nums ${isGold ? 'text-amber-600 dark:text-amber-500' : winIdx === 1 ? 'text-slate-600 dark:text-slate-400' : 'text-orange-600 dark:text-orange-500'}`}>
+                                                                    {(winner.points || 0).toLocaleString()}
+                                                                </p>
                                                             </div>
                                                         </div>
                                                     );
@@ -1777,53 +1635,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                         <div className="h-20"></div>
                     </div>
                 ) : (
-                    <div className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-3">
-                        {user && userRank && !loadingFull && leaderboardTab === 'all-time' && (() => {
-                        const userBadge = getBadgeByLevel(userProfile?.training_level || 0);
-                        return (
-                            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-4 sm:p-5 mb-2">
-                                <div className="flex items-center justify-between gap-3">
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400 mb-1">
-                                            {language === 'en' ? 'Your All-Time Standing' : 'আপনার সর্বকালীন অবস্থান'}
-                                        </p>
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">#{userRank.rank}</p>
-                                            {userBadge && (
-                                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold border ${userBadge.color}`}>
-                                                    {language === 'en' ? userBadge.en : userBadge.bn}
-                                                </span>
-                                            )}
-                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                        <p className="text-sm font-black text-slate-700 dark:text-slate-200 ml-1 tabular-nums">{(userRank.score || 0).toLocaleString()}</p>
-                                                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/10">
-                                                            <span className="text-[10px]">📖</span>
-                                                            <span className="text-[10px] font-black text-orange-700 dark:text-orange-300 tabular-nums">
-                                                                {(userRank.reading_points || 0).toLocaleString()} <span className="text-[8px] opacity-70 ml-0.5">{language === 'en' ? 'RDG' : 'রিডিং'}</span>
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    {(userProfile?.last_active || userProfile?.last_login_at) && (
-                                                        <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-1.5">
-                                                            {language === 'en' ? 'Active' : 'সক্রিয়'} {formatLastActive(userProfile.last_active || userProfile.last_login_at, language)}
-                                                        </p>
-                                                    )}
-                                        </div>
-                                    </div>
-                                    <div 
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (userProfile?.avatar_url) setMaximizedAvatar(userProfile.avatar_url);
-                                        }}
-                                        className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-orange-600 dark:text-orange-300 border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0 cursor-zoom-in active:scale-95 transition-transform"
-                                    >
-                                        {userProfile?.avatar_url ? <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })()}
-
+                    <>
+                    <div className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-3 pb-48 md:pb-56">
                     {/* Winners Podium / List Container */}
                     <div className="space-y-4">
                         {(leaderboardTab === 'all-time' ? loadingFull : loadingMonthly) ? (
@@ -2041,7 +1854,63 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             </div>
                         )}
                     </div>
+
+                    {!showHallOfFame && leaderboardTab === 'monthly' && !loadingMonthly && (
+                        <div className="mt-6 mb-8 max-w-2xl mx-auto px-4">
+                            <p className="flex gap-2 items-center justify-center text-[10px] sm:text-[11px] leading-snug text-slate-400 dark:text-slate-500 text-center bg-slate-50 dark:bg-slate-800/50 py-3 px-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                                <span className="text-lg opacity-70">ℹ️</span>
+                                <span>{t.leaderboardTimeInfo}</span>
+                            </p>
+                        </div>
+                    )}
                 </div>
+
+                {/* My Position Sticky Bar */}
+                {!showHallOfFame && user && userRank && !loadingFull && leaderboardTab === 'all-time' && (() => {
+                    const userBadge = getBadgeByLevel(userProfile?.training_level || 0);
+                    return (
+                        <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] md:bottom-8 left-0 right-0 z-50 px-4 md:px-8 pointer-events-none">
+                            <div className="max-w-3xl mx-auto">
+                                <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl border border-orange-200/50 dark:border-orange-500/20 shadow-[0_-8px_30px_-15px_rgba(0,0,0,0.1)] p-3 sm:p-4 pointer-events-auto transform transition-all duration-300 hover:-translate-y-1">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[9px] font-black uppercase tracking-[0.15em] text-orange-600/80 dark:text-orange-400/80 mb-1">
+                                                {language === 'en' ? 'Your Standing' : 'আপনার অবস্থান'}
+                                            </p>
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">#{userRank.rank}</p>
+                                                {userBadge && (
+                                                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold border ${userBadge.color}`}>
+                                                        {language === 'en' ? userBadge.en : userBadge.bn}
+                                                    </span>
+                                                )}
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <p className="text-sm font-black text-slate-700 dark:text-slate-200 ml-1 tabular-nums">{(userRank.score || 0).toLocaleString()}</p>
+                                                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/10">
+                                                        <span className="text-[10px]">📖</span>
+                                                        <span className="text-[9px] font-black text-orange-700 dark:text-orange-300 tabular-nums">
+                                                            {(userRank.reading_points || 0).toLocaleString()} <span className="text-[8px] opacity-70 ml-0.5">{language === 'en' ? 'RDG' : 'রিডিং'}</span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (userProfile?.avatar_url) setMaximizedAvatar(userProfile.avatar_url);
+                                            }}
+                                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-orange-600 dark:text-orange-300 border border-slate-200 dark:border-slate-700 overflow-hidden shrink-0 cursor-zoom-in active:scale-95 transition-transform shadow-inner"
+                                        >
+                                            {userProfile?.avatar_url ? <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })()}
+                </>
             )}
 
             {/* Avatar Viewer Modal */}
