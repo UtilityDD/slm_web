@@ -56,6 +56,24 @@ const ChevronRightIcon = ({ className }) => (
     </svg>
 );
 
+/** Magnifying glass + minus (zoom out) */
+const MagnifierMinusIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <circle cx="10.5" cy="10.5" r="6.25" />
+        <path d="M15 15l4.5 4.5" />
+        <path d="M8 10.5h5" strokeWidth="2.25" />
+    </svg>
+);
+
+/** Magnifying glass + plus (zoom in) */
+const MagnifierPlusIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <circle cx="10.5" cy="10.5" r="6.25" />
+        <path d="M15 15l4.5 4.5" />
+        <path d="M10.5 8v5M8 10.5h5" strokeWidth="2.25" />
+    </svg>
+);
+
 const getGoogleDriveDirectLink = (url) => {
     if (!url) return '';
     if (!url.includes('drive.google.com')) return url;
@@ -678,7 +696,6 @@ export default function SafetyLibrary({ language, setCurrentView }) {
             details: 'Details',
             zoomInAria: 'Zoom in',
             zoomOutAria: 'Zoom out',
-            zoomResetAria: 'Reset zoom',
             zoomToolbarAria: 'Image zoom controls',
             relatedOpenAriaPrefix: 'Open related item:',
             backPreviousAria: 'Previous item'
@@ -694,7 +711,6 @@ export default function SafetyLibrary({ language, setCurrentView }) {
             details: 'বিস্তারিত',
             zoomInAria: 'বড় করুন',
             zoomOutAria: 'ছোট করুন',
-            zoomResetAria: 'জুম রিসেট',
             zoomToolbarAria: 'ছবির জুম নিয়ন্ত্রণ',
             relatedOpenAriaPrefix: 'খুলুন:',
             backPreviousAria: 'আগের আইটেমে ফিরুন'
@@ -948,9 +964,9 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                         <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden rounded-none border-none bg-white pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-2xl dark:bg-slate-900 sm:h-[min(calc(100dvh-6rem),940px)] sm:max-h-[calc(100dvh-6rem)] sm:w-[min(96vw,1220px)] sm:max-w-none sm:rounded-[2rem] sm:border sm:border-white/10 sm:pb-0 sm:pt-0 lg:h-[min(calc(100dvh-7rem),940px)] lg:max-h-[calc(100dvh-7rem)] animate-slide-up sm:animate-scale-in">
                             <div className="mx-auto mt-2 mb-1 h-1.5 w-12 shrink-0 cursor-pointer rounded-full bg-slate-200 shadow-inner dark:bg-slate-800 sm:hidden" onClick={closeDetailModal} />
 
-                            {/* Top bar: optional back (related navigation) + category | zoom | close */}
+                            {/* Top bar: optional back + category + title | zoom | close */}
                             <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 border-b border-slate-100 bg-white/95 px-3 py-2 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95 sm:px-6 sm:py-3">
-                                <div className="flex min-w-0 items-center gap-1.5">
+                                <div className="flex min-w-0 items-center gap-2">
                                     {modalBrowseStack.length > 0 && (
                                         <button
                                             type="button"
@@ -961,43 +977,39 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                             <ChevronLeftIcon className="h-4 w-4" />
                                         </button>
                                     )}
-                                    <span className="min-w-0 truncate rounded-md border border-slate-200/80 bg-slate-100 px-2 py-1 text-[8px] font-black uppercase tracking-[0.14em] text-slate-600 dark:border-white/10 dark:bg-white/10 dark:text-white/90">
+                                    <span className="shrink-0 rounded-md border border-slate-200/80 bg-slate-100 px-2 py-1 text-[8px] font-black uppercase tracking-[0.14em] text-slate-600 dark:border-white/10 dark:bg-white/10 dark:text-white/90">
                                         {selectedItem.category}
                                     </span>
+                                    <h2
+                                        className="min-w-0 flex-1 truncate text-left text-[13px] font-extrabold leading-snug tracking-tight text-slate-900 dark:text-white sm:text-sm"
+                                        title={selectedItem.name_bn}
+                                    >
+                                        {selectedItem.name_bn}
+                                    </h2>
                                 </div>
                                 <div
                                     role="toolbar"
                                     aria-label={t.zoomToolbarAria}
                                     data-zoom-ui
-                                    className="flex items-center gap-0.5 justify-self-center rounded-xl border-2 border-orange-500 bg-slate-950 px-1 py-1 text-white shadow-[0_3px_12px_rgba(0,0,0,0.35)] ring-1 ring-orange-400/35 dark:border-orange-400 dark:bg-black"
+                                    className="flex items-center gap-0.5 justify-self-center rounded-full border border-slate-200/90 bg-slate-50/95 p-0.5 shadow-sm dark:border-white/10 dark:bg-slate-800/90"
                                 >
                                     <button
                                         type="button"
                                         onClick={() => detailSliderRef.current?.zoomOut()}
                                         disabled={detailZoomLevel <= ZOOM_MIN + 0.01}
-                                        className="flex h-8 w-8 items-center justify-center rounded-lg text-base font-semibold leading-none text-white transition-colors hover:bg-orange-500/25 active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
+                                        className="flex h-7 w-7 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-200/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30 dark:text-slate-300 dark:hover:bg-white/10"
                                         aria-label={t.zoomOutAria}
                                     >
-                                        −
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => detailSliderRef.current?.resetZoom()}
-                                        className="min-w-[2.2rem] px-1.5 py-1 text-[10px] font-black tabular-nums text-white transition-colors hover:text-orange-200"
-                                        aria-label={t.zoomResetAria}
-                                    >
-                                        {detailZoomLevel <= 1.001
-                                            ? '1×'
-                                            : `${detailZoomLevel.toFixed(2).replace(/\.?0+$/, '')}×`}
+                                        <MagnifierMinusIcon className="h-[15px] w-[15px]" />
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => detailSliderRef.current?.zoomIn()}
                                         disabled={detailZoomLevel >= ZOOM_MAX - 0.01}
-                                        className="flex h-8 w-8 items-center justify-center rounded-lg text-base font-semibold leading-none text-white transition-colors hover:bg-orange-500/25 active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
+                                        className="flex h-7 w-7 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-200/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30 dark:text-slate-300 dark:hover:bg-white/10"
                                         aria-label={t.zoomInAria}
                                     >
-                                        +
+                                        <MagnifierPlusIcon className="h-[15px] w-[15px]" />
                                     </button>
                                 </div>
                                 <button
@@ -1054,7 +1066,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                             <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar sm:overflow-hidden">
                                 <div className="sm:grid sm:h-full sm:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] sm:items-stretch">
                                 <div
-                                    className={`group/modal-img w-full shrink-0 bg-slate-50 dark:bg-slate-800/20 sm:h-full sm:border-r border-slate-100 dark:border-slate-800 sm:bg-slate-50/60 sm:dark:bg-slate-900/55 ${
+                                    className={`group/modal-img relative w-full shrink-0 bg-slate-50 dark:bg-slate-800/20 sm:h-full sm:border-r border-slate-100 dark:border-slate-800 sm:bg-slate-50/60 sm:dark:bg-slate-900/55 ${
                                         selectedItem.category === 'Charts' ? 'sm:overflow-y-auto sm:no-scrollbar' : 'sm:overflow-hidden'
                                     }`}
                                 >
@@ -1075,9 +1087,6 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                 <div className="p-6 sm:h-full sm:overflow-y-auto sm:bg-white/85 sm:p-8 sm:pb-14 sm:pr-8 sm:pl-7 sm:no-scrollbar sm:backdrop-blur-sm sm:dark:bg-slate-900/70 pb-32 space-y-6">
                                     {/* Clean Dedicated Header Section */}
                                     <div className="space-y-3 pb-6 border-b border-slate-100 dark:border-slate-800">
-                                        <h3 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">
-                                            {selectedItem.name_bn}
-                                        </h3>
                                         {selectedItem.approx_price_inr !== '---' && (
                                             <div className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/10 bg-emerald-500/10 px-2.5 py-1 font-black text-emerald-600 dark:text-emerald-400">
                                                 <span className="text-[10px]">₹</span>
