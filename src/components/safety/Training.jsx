@@ -4,7 +4,7 @@ import secureStorage from '../../utils/secureStorage';
 import { supabase } from '../../supabaseClient';
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../../config';
 import HomeSkeleton from '../loaders/HomeSkeleton';
-import { calculateLevelFromProgress, getBadgeByLevel } from '../../utils/badgeUtils';
+import { badgeLevels, calculateLevelFromProgress, getBadgeByLevel } from '../../utils/badgeUtils';
 import { cacheHelper } from '../../utils/cacheHelper';
 import { invalidateLeaderboardCaches } from '../../utils/leaderboardCacheKeys';
 import { storageUtils } from '../../utils/storageUtils';
@@ -165,6 +165,75 @@ function countCoreProgramLessonsCompleted(completedLessons) {
         const ch = parseInt(m[1], 10);
         return ch >= 1 && ch <= CORE_PROGRAM_LAST_CHAPTER;
     }).length;
+}
+
+/** Max wait (ms) before opening a life skill (no progress in main path through 3.10). */
+const LIFE_SKILL_OPEN_MAX_WAIT_MS = 60_000;
+
+const TECHNICIAN_BADGE = badgeLevels.find((b) => b.level === 3) || { en: 'Technician', bn: 'টেকনিশিয়ান' };
+
+function parseCoreLessonId(id) {
+    const m = String(id).match(/^(\d+)\.(\d+)$/);
+    if (!m) return null;
+    return { ch: parseInt(m[1], 10), n: parseInt(m[2], 10) };
+}
+
+/** True if lesson `a` is strictly after `b` on the main path (same chapter: higher number; else higher chapter). */
+function coreLessonIdStrictlyAfter(aId, bId) {
+    const a = parseCoreLessonId(aId);
+    const b = parseCoreLessonId(bId);
+    if (!a || !b) return false;
+    if (a.ch !== b.ch) return a.ch > b.ch;
+    return a.n > b.n;
+}
+
+/** Ordered ids from 1.1 through 3.10 (clamped to manifest counts for chapters 1–3). */
+function buildLifeSkillGateLessonIds(trainingChapters) {
+    const ids = [];
+    for (let ch = 1; ch <= 3; ch += 1) {
+        const cnt = getCoreChapterLessonCount(ch, trainingChapters);
+        if (cnt <= 0) continue;
+        const cap = ch === 3 ? Math.min(10, cnt) : cnt;
+        for (let i = 1; i <= cap; i += 1) {
+            ids.push(`${ch}.${i}`);
+        }
+    }
+    return ids;
+}
+
+/**
+ * No wait: every lesson in the 1.1…3.10 gate segment is done, or any completed core lesson is strictly after the gate end (e.g. 4.1).
+ */
+function hasZeroLifeSkillGateDelay(coreSet, gateIds) {
+    if (!gateIds.length) return true;
+    const lastGateId = gateIds[gateIds.length - 1];
+    for (const id of coreSet) {
+        if (typeof id === 'string' && coreLessonIdStrictlyAfter(id, lastGateId)) return true;
+    }
+    let d = 0;
+    for (const id of gateIds) {
+        if (coreSet.has(id)) d += 1;
+    }
+    return d >= gateIds.length;
+}
+
+/**
+ * First catalogue card (index 0) is always instant. Others: linear 60s→0s over progress through lessons 1.1…3.10; 0 after 3.10 (or beyond).
+ */
+function getLifeSkillOpenDelayMs(moduleIndex, completedLessons, trainingChapters) {
+    if (moduleIndex === 0) return 0;
+    const gateIds = buildLifeSkillGateLessonIds(trainingChapters);
+    if (!gateIds.length) return 0;
+    const coreArr = filterCoreCompletedLessonIds(Array.isArray(completedLessons) ? completedLessons : []);
+    const coreSet = new Set(coreArr);
+    if (hasZeroLifeSkillGateDelay(coreSet, gateIds)) return 0;
+    let d = 0;
+    for (const id of gateIds) {
+        if (coreSet.has(id)) d += 1;
+    }
+    const n = gateIds.length;
+    const raw = LIFE_SKILL_OPEN_MAX_WAIT_MS * (1 - d / n);
+    return Math.min(LIFE_SKILL_OPEN_MAX_WAIT_MS, Math.max(0, Math.round(raw)));
 }
 
 /** First chapter in 1..9 with an incomplete lesson; null if all core lessons done. */
@@ -610,6 +679,9 @@ export default function Training({
     const [userPPEData, setUserPPEData] = useState([]);
     const galleryRef = useRef(null);
     const [supplementaryRadioOverlayOpen, setSupplementaryRadioOverlayOpen] = useState(false);
+    /** Countdown overlay while opening a life skill (encourages core reading first; first module has no wait). */
+    const [lifeSkillWaitUi, setLifeSkillWaitUi] = useState(null);
+    const lifeSkillWaitTimersRef = useRef(null);
     const lessonScrollRef = useRef(null);
     const lessonScrollInnerRef = useRef(null);
     /** True when the lesson scroll pane is scrolled to the bottom (or content fits without scrolling). */
@@ -755,6 +827,29 @@ export default function Training({
         writeLifeSkillsHintState({ ...s, dismissed: true });
         setShowLifeSkillsHint(false);
     }, [trainingTab]);
+
+    const clearLifeSkillWaitTimers = useCallback(() => {
+        const t = lifeSkillWaitTimersRef.current;
+        if (t?.intervalId) clearInterval(t.intervalId);
+        if (t?.timeoutId) clearTimeout(t.timeoutId);
+        lifeSkillWaitTimersRef.current = null;
+    }, []);
+
+    useEffect(() => {
+        if (trainingTab !== 'supplementary') {
+            clearLifeSkillWaitTimers();
+            setLifeSkillWaitUi(null);
+        }
+    }, [trainingTab, clearLifeSkillWaitTimers]);
+
+    useEffect(
+        () => () => {
+            const t = lifeSkillWaitTimersRef.current;
+            if (t?.intervalId) clearInterval(t.intervalId);
+            if (t?.timeoutId) clearTimeout(t.timeoutId);
+        },
+        []
+    );
 
     // Count core-home "visits" for Life Skills hint; cap at MAX_LIFE_SKILLS_HINT_VISITS.
     useEffect(() => {
@@ -987,6 +1082,54 @@ export default function Training({
 
         return { items, height, maxPath, nodeVerticalGap, journeyChapters };
     }, [trainingChapters, completedLessons, isLessonUnlocked]);
+
+    const openLifeSkillModule = useCallback(
+        (module, moduleIndex) => {
+            const cardTitle = language === 'en' ? module.title_en : module.title_bn;
+            const doOpen = () => {
+                setTrainingContent({
+                    level_id: module.id,
+                    lesson_code: module.lesson_code ?? null,
+                    level_title: cardTitle,
+                    manuscript_url: module.manuscript_url,
+                    isSupplementary: true,
+                    audio_url_en: module.audio_url_en ?? null,
+                    audio_url_bn: module.audio_url_bn ?? null,
+                });
+                setIsJournalMode(true);
+                setActiveSectionIndex(0);
+            };
+            const delayMs = getLifeSkillOpenDelayMs(moduleIndex, completedLessons, trainingChapters);
+            if (delayMs <= 0) {
+                doOpen();
+                return;
+            }
+            clearLifeSkillWaitTimers();
+            const totalSec = Math.max(1, Math.ceil(delayMs / 1000));
+            const startedAt = Date.now();
+            const levelNum = calculateLevelFromProgress(completedLessons, trainingChapters);
+            const userBadge = getBadgeByLevel(levelNum, readingPoints || 0);
+            setLifeSkillWaitUi({
+                cardTitle,
+                secondsLeft: totalSec,
+                currentBadgeEn: userBadge.en,
+                currentBadgeBn: userBadge.bn,
+            });
+            lifeSkillWaitTimersRef.current = {
+                intervalId: setInterval(() => {
+                    const elapsedSec = Math.floor((Date.now() - startedAt) / 1000);
+                    const left = Math.max(0, totalSec - elapsedSec);
+                    setLifeSkillWaitUi((prev) => (prev ? { ...prev, secondsLeft: left } : null));
+                }, 250),
+                timeoutId: setTimeout(() => {
+                    clearLifeSkillWaitTimers();
+                    setLifeSkillWaitUi(null);
+                    doOpen();
+                }, delayMs),
+            };
+        },
+        [language, completedLessons, trainingChapters, readingPoints, clearLifeSkillWaitTimers]
+    );
 
     // Auto-scroll to current reading position
     useEffect(() => {
@@ -2523,28 +2666,30 @@ export default function Training({
                         </div>
                     </>
                     ) : (
-                        <div className="mx-auto mb-20 grid max-w-7xl animate-fade-in-up grid-cols-1 gap-4 px-2 py-4 min-[420px]:grid-cols-2 sm:mb-28 sm:gap-5 sm:py-6 md:grid-cols-3 lg:mb-32">
-                            {supplementaryModules.map((module) => {
+                        <>
+                            <header className="mx-auto mb-8 max-w-2xl px-4 pt-1 text-center sm:mb-10 sm:pt-2 md:mb-12">
+                                <h1
+                                    className={`text-[2.25rem] font-black leading-[1.06] tracking-tight text-slate-900 dark:text-white sm:text-5xl md:text-6xl ${language === 'bn' ? 'font-bengali' : ''}`}
+                                >
+                                    {language === 'en' ? 'Life Skill' : 'লাইফ স্কিল'}
+                                </h1>
+                                <p
+                                    className={`mx-auto mt-3 max-w-md text-base font-bold leading-snug text-slate-500 dark:text-slate-400 sm:mt-4 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}
+                                >
+                                    {language === 'en'
+                                        ? 'Without essential knowledge beyond the job, you can never become a truly smart professional.'
+                                        : 'কাজের বাইরে কিছু জরুরি জ্ঞান না থাকলে আপনি কখনোই সত্যিকারের স্মার্ট পেশাদার হতে পারবেন না।'}
+                                </p>
+                            </header>
+                            <div className="mx-auto mb-20 grid max-w-7xl animate-fade-in-up grid-cols-1 gap-4 px-2 py-4 min-[420px]:grid-cols-2 sm:mb-28 sm:gap-5 sm:py-6 md:grid-cols-3 lg:mb-32">
+                            {supplementaryModules.map((module, moduleIndex) => {
                                 const isCompleted = suppCompleted.includes(module.id);
                                 const cardTitle = language === 'en' ? module.title_en : module.title_bn;
-                                const openSupplementaryModule = () => {
-                                    setTrainingContent({
-                                        level_id: module.id,
-                                        lesson_code: module.lesson_code ?? null,
-                                        level_title: cardTitle,
-                                        manuscript_url: module.manuscript_url,
-                                        isSupplementary: true,
-                                        audio_url_en: module.audio_url_en ?? null,
-                                        audio_url_bn: module.audio_url_bn ?? null,
-                                    });
-                                    setIsJournalMode(true);
-                                    setActiveSectionIndex(0);
-                                };
                                 return (
                                     <button
                                         key={module.id}
                                         type="button"
-                                        onClick={openSupplementaryModule}
+                                        onClick={() => openLifeSkillModule(module, moduleIndex)}
                                         className={`group relative aspect-[3/4] w-full max-h-[280px] overflow-hidden rounded-2xl text-left shadow-md ring-1 ring-black/5 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:ring-white/10 dark:focus-visible:ring-offset-slate-950 sm:max-h-[320px] sm:rounded-3xl md:aspect-[4/5] md:max-h-[360px] ${
                                             isCompleted
                                                 ? 'ring-emerald-500/40'
@@ -2578,10 +2723,19 @@ export default function Training({
                                             )}
                                         </div>
 
-                                        {/* Readability scrim + title only */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
-                                        <div className="absolute inset-x-0 bottom-0 p-3.5 sm:p-5">
-                                            <h3 className="line-clamp-3 text-[0.8125rem] font-bold leading-snug tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)] sm:text-base md:text-lg md:leading-tight">
+                                        {/* Vignette: heavy bottom fade so titles read as part of the photo */}
+                                        <div
+                                            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black from-[4%] via-black/72 via-[36%] to-transparent to-[68%]"
+                                            aria-hidden
+                                        />
+                                        <div className="absolute inset-x-0 bottom-0 px-4 pb-4 pt-12 sm:px-5 sm:pb-5 sm:pt-14 md:px-6 md:pb-6 md:pt-16">
+                                            <h3
+                                                className={`line-clamp-3 text-lg text-white sm:text-xl md:text-2xl lg:text-[1.65rem] [text-shadow:0_1px_2px_rgba(0,0,0,0.85),0_4px_20px_rgba(0,0,0,0.55),0_0_1px_rgba(0,0,0,0.9)] ${
+                                                    language === 'bn'
+                                                        ? 'font-bengali font-bold leading-[1.28] tracking-normal sm:leading-[1.26] md:leading-[1.3] lg:leading-snug'
+                                                        : 'font-black leading-[1.12] tracking-tight sm:leading-[1.1] md:leading-tight lg:leading-snug'
+                                                }`}
+                                            >
                                                 {cardTitle}
                                             </h3>
                                         </div>
@@ -2602,7 +2756,8 @@ export default function Training({
                                     </button>
                                 );
                             })}
-                        </div>
+                            </div>
+                        </>
                     )}
                 </div>
             ) : selectedLesson ? (
@@ -2964,6 +3119,99 @@ export default function Training({
                 </div>,
                 document.body
             )}
+
+            {lifeSkillWaitUi &&
+                createPortal(
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-live="polite"
+                        aria-labelledby="lifeskill-wait-headline"
+                        className="fixed inset-0 z-[215] flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-md animate-fade-in"
+                        onClick={(e) => {
+                            if (e.target === e.currentTarget) {
+                                clearLifeSkillWaitTimers();
+                                setLifeSkillWaitUi(null);
+                            }
+                        }}
+                    >
+                        <div className="relative w-full max-w-sm overflow-hidden rounded-[1.75rem] border border-white/10 bg-white shadow-2xl dark:bg-slate-900 animate-scale-in">
+                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-violet-500/10" />
+                            <div className="relative space-y-4 p-6 text-center sm:p-7">
+                                <p
+                                    id="lifeskill-wait-headline"
+                                    className={`line-clamp-3 text-base font-black leading-snug text-slate-900 dark:text-white sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}
+                                >
+                                    {lifeSkillWaitUi.cardTitle}
+                                </p>
+                                <p className="text-5xl font-black tabular-nums text-indigo-600 dark:text-indigo-300 sm:text-6xl">
+                                    {language === 'en'
+                                        ? lifeSkillWaitUi.secondsLeft
+                                        : toBengaliNumber(lifeSkillWaitUi.secondsLeft, 'bn')}
+                                </p>
+                                <div className={`space-y-3 text-left text-sm leading-relaxed text-slate-600 dark:text-slate-300 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    {language === 'en' ? (
+                                        <>
+                                            <p>
+                                                Your main training badge:{' '}
+                                                <span className="font-black text-indigo-700 dark:text-indigo-300">
+                                                    {lifeSkillWaitUi.currentBadgeEn}
+                                                </span>
+                                                .
+                                            </p>
+                                            <p>
+                                                To read or listen to life skills alongside, you will need to reach the{' '}
+                                                <span className="font-black text-slate-800 dark:text-slate-100">
+                                                    {TECHNICIAN_BADGE.en}
+                                                </span>{' '}
+                                                badge. Please wait{' '}
+                                                <span className="font-black text-indigo-700 dark:text-indigo-300">
+                                                    {lifeSkillWaitUi.secondsLeft}s
+                                                </span>
+                                                . After you finish through lesson{' '}
+                                                <span className="font-black">3.10</span> on the main path, there is no
+                                                wait.
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <p>
+                                                মূল পাঠে এখন আপনার ব্যাজ{' '}
+                                                <span className="font-black text-indigo-700 dark:text-indigo-300">
+                                                    {lifeSkillWaitUi.currentBadgeBn}
+                                                </span>
+                                                । লাইফ স্কিল একসঙ্গে দেখতে বা শুনতে{' '}
+                                                <span className="font-black text-slate-800 dark:text-slate-100">
+                                                    {TECHNICIAN_BADGE.bn}
+                                                </span>{' '}
+                                                ব্যাজে যেতে হবে।
+                                            </p>
+                                            <p>
+                                                <span className="font-black text-indigo-700 dark:text-indigo-300">
+                                                    {toBengaliNumber(lifeSkillWaitUi.secondsLeft, 'bn')}
+                                                </span>{' '}
+                                                সেকেন্ড অপেক্ষা করুন। মূল পাঠের{' '}
+                                                <span className="font-black">৩.১০</span> পর্যন্ত শেষ করলে আর অপেক্ষা
+                                                করতে হবে না।
+                                            </p>
+                                        </>
+                                    )}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        clearLifeSkillWaitTimers();
+                                        setLifeSkillWaitUi(null);
+                                    }}
+                                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 transition-all hover:bg-slate-100 active:scale-[0.99] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                                >
+                                    {language === 'en' ? 'Cancel' : 'বাতিল'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>,
+                    document.body
+                )}
 
             {/* Safety Journal UI - Immersive Slide-based Experience */}
             {
