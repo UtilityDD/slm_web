@@ -139,6 +139,98 @@ const toBengaliNumber = (num, lang) => {
     return num.toString().split('').map(digit => bnNumbers[digit] || digit).join('');
 };
 
+/** Chapters 1–9 = main reading program (matches manifest core path). */
+const CORE_PROGRAM_LAST_CHAPTER = 9;
+const DEFAULT_CORE_CHAPTER_COUNTS = { 1: 10, 2: 10, 3: 10, 4: 10, 5: 10, 6: 11, 7: 10, 8: 10, 9: 10 };
+
+function getCoreChapterLessonCount(chapterNum, trainingChapters) {
+    const chap = Array.isArray(trainingChapters) ? trainingChapters.find((c) => c.number === chapterNum) : null;
+    if (chap && Number(chap.count) > 0) return Number(chap.count);
+    return DEFAULT_CORE_CHAPTER_COUNTS[chapterNum] || 0;
+}
+
+function sumCoreProgramLessonTotal(trainingChapters) {
+    let sum = 0;
+    for (let n = 1; n <= CORE_PROGRAM_LAST_CHAPTER; n++) {
+        sum += getCoreChapterLessonCount(n, trainingChapters);
+    }
+    return sum;
+}
+
+function countCoreProgramLessonsCompleted(completedLessons) {
+    const core = filterCoreCompletedLessonIds(Array.isArray(completedLessons) ? completedLessons : []);
+    return core.filter((id) => {
+        const m = String(id).match(/^(\d+)\.(\d+)$/);
+        if (!m) return false;
+        const ch = parseInt(m[1], 10);
+        return ch >= 1 && ch <= CORE_PROGRAM_LAST_CHAPTER;
+    }).length;
+}
+
+/** First chapter in 1..9 with an incomplete lesson; null if all core lessons done. */
+function getActiveCoreChapterNumber(completedLessons, trainingChapters) {
+    const core = new Set(filterCoreCompletedLessonIds(Array.isArray(completedLessons) ? completedLessons : []));
+    for (let n = 1; n <= CORE_PROGRAM_LAST_CHAPTER; n++) {
+        const lessonCount = getCoreChapterLessonCount(n, trainingChapters);
+        for (let i = 1; i <= lessonCount; i++) {
+            if (!core.has(`${n}.${i}`)) return n;
+        }
+    }
+    return null;
+}
+
+/**
+ * Welcome-card copy from reading lesson ids only (chapters 1–9 vs manifest counts).
+ * @returns {{ primary: string, secondary: string | null } | null}
+ */
+function buildLessonProgressWelcomeCopy({ completedLessons, trainingChapters, language, readingPoints }) {
+    const total = sumCoreProgramLessonTotal(trainingChapters);
+    const done = countCoreProgramLessonsCompleted(completedLessons);
+    const activeChapter = getActiveCoreChapterNumber(completedLessons, trainingChapters);
+    const levelNum = calculateLevelFromProgress(completedLessons, trainingChapters);
+    const badge = getBadgeByLevel(levelNum, readingPoints || 0);
+
+    if (language === 'bn') {
+        const d = toBengaliNumber(done, 'bn');
+        const t = toBengaliNumber(total, 'bn');
+        const chBn = activeChapter != null ? toBengaliNumber(activeChapter, 'bn') : null;
+        if (done === 0) {
+            return {
+                primary: 'এখনো কোনো পড়ার পাঠ শেষ করেননি। সময় হলে প্রথম পাঠটি খুলে নিন।',
+                secondary: null,
+            };
+        }
+        if (activeChapter === null) {
+            return {
+                primary: `মূল পাঠ ${t}টাই শেষ। অসাধারণ!`,
+                secondary: `ধাপ: ${badge.bn}`,
+            };
+        }
+        const primary = `পড়ার পাঠ ${d}টা শেষ, মোট ${t}টার মধ্যে। এখন ${chBn} নম্বর অধ্যায় চলছে।`;
+        return {
+            primary,
+            secondary: `ধাপ: ${badge.bn}`,
+        };
+    }
+
+    if (done === 0) {
+        return {
+            primary: "You haven't finished a reading lesson yet. Open the first lesson when you're ready.",
+            secondary: null,
+        };
+    }
+    if (activeChapter === null) {
+        return {
+            primary: `You've completed all ${total} core reading lessons. Excellent work!`,
+            secondary: `Badge: ${badge.en}`,
+        };
+    }
+    return {
+        primary: `You've completed ${done} of ${total} reading lessons. You're in Chapter ${activeChapter}.`,
+        secondary: `Badge: ${badge.en}`,
+    };
+}
+
 /** Map internal id (e.g. supp_10_3) to LS03 when catalogue `lesson_code` is missing (cache / old data). */
 const deriveLifeSkillCodeFromLevelId = (levelId) => {
     if (typeof levelId !== 'string') return '';
@@ -512,8 +604,6 @@ export default function Training({
     const [isJournalMode, setIsJournalMode] = useState(false);
     const [activeImageModal, setActiveImageModal] = useState(null);
     const [showAllChapters, setShowAllChapters] = useState(false);
-    const [learningInsights, setLearningInsights] = useState(null);
-    const [isInsightsLoading, setIsInsightsLoading] = useState(false);
     const [showPPESurvey, setShowPPESurvey] = useState(false);
     const [surveyPPEItem, setSurveyPPEItem] = useState(null);
     const [pendingSubchapter, setPendingSubchapter] = useState(null);
@@ -587,6 +677,16 @@ export default function Training({
         () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
     );
     const [loadingTipIndex, setLoadingTipIndex] = useState(0);
+
+    const lessonProgressWelcome = useMemo(() => {
+        if (!user?.id) return null;
+        return buildLessonProgressWelcomeCopy({
+            completedLessons,
+            trainingChapters,
+            language,
+            readingPoints,
+        });
+    }, [user?.id, completedLessons, trainingChapters, language, readingPoints]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return undefined;
@@ -1262,125 +1362,6 @@ export default function Training({
 
         loadProgress();
     }, [user]);
-
-    // Fetch and Calculate Learning Insights
-    useEffect(() => {
-        const fetchInsights = async () => {
-            if (!user) return;
-            setIsInsightsLoading(true);
-
-            try {
-                const { data, error } = await supabase
-                    .from('quiz_attempts')
-                    .select('created_at, quiz_id')
-                    .eq('user_id', user.id)
-                    .like('quiz_id', 'lesson_bonus_%')
-                    .order('created_at', { ascending: false });
-
-                if (!error && data) {
-                    // 1. Calculate Streak
-                    const dates = data.map(d => new Date(d.created_at).toDateString());
-                    const uniqueDates = [...new Set(dates)];
-                    let streak = 0;
-                    const today = new Date().toDateString();
-                    const yesterday = new Date(Date.now() - 86400000).toDateString();
-
-                    if (uniqueDates[0] === today || uniqueDates[0] === yesterday) {
-                        streak = 1;
-                        for (let i = 0; i < uniqueDates.length - 1; i++) {
-                            const d1 = new Date(uniqueDates[i]);
-                            const d2 = new Date(uniqueDates[i + 1]);
-                            const diff = (d1 - d2) / (1000 * 60 * 60 * 24);
-                            if (diff === 1) streak++;
-                            else break;
-                        }
-                    }
-
-                    // 2. Peak Hour
-                    const hours = data.map(d => new Date(d.created_at).getHours());
-                    const hourCounts = {};
-                    hours.forEach(h => hourCounts[h] = (hourCounts[h] || 0) + 1);
-                    const peakHour = Object.keys(hourCounts).reduce((a, b) => hourCounts[a] > hourCounts[b] ? a : b, 0);
-
-                    // 3. Weekly Momentum & Days
-                    const lastWeek = new Date(Date.now() - 7 * 86400000);
-                    const weeklyLessons = data.filter(d => new Date(d.created_at) > lastWeek);
-                    const weeklyCons = weeklyLessons.length;
-                    const weeklyDays = [...new Set(weeklyLessons.map(d => new Date(d.created_at).toDateString()))].length;
-
-                    // --- NEW: Descriptive Feedback & Ratings ---
-
-                    // Habit Feedback (Based on Streak)
-                    let habitRating = 1;
-                    let habitFeedback = "";
-                    if (streak >= 7) { habitRating = 5; habitFeedback = language === 'en' ? "Amazing consistency! You're a pro." : "আপনার শেখার আগ্রহ দারুণ! নিয়মিত বজায় রাখুন।"; }
-                    else if (streak >= 3) { habitRating = 4; habitFeedback = language === 'en' ? "Good job! You're reading regularly." : "আপনার শেখার আগ্রহ ভাল। নিয়মিত পড়ছেন।"; }
-                    else if (streak >= 1) { habitRating = 3; habitFeedback = language === 'en' ? "Occasional learner. Aim for daily reading!" : "আপনি মাঝেমধ্যে পড়েন। নিয়মিত হওয়ার চেষ্টা করুন।"; }
-                    else { habitRating = 2; habitFeedback = language === 'en' ? "A bit irregular. Try to read every day!" : "আপনি ভীষণ অনিয়মিত। প্রতিদিন পড়ার অভ্যাস করুন।"; }
-                    if (data.length === 0) { habitRating = 1; habitFeedback = language === 'en' ? "Start your journey today!" : "আজই আপনার শেখার যাত্রা শুরু করুন!"; }
-
-                    // Timing Feedback (Based on Peak Hour)
-                    let timingFeedback = "";
-                    let timingRating = 5;
-                    const maxFreq = hourCounts[peakHour] || 0;
-                    const isRandom = data.length >= 3 && maxFreq < 2;
-
-                    if (isRandom) {
-                        timingRating = 3;
-                        timingFeedback = language === 'en' ? "Your learning time is inconsistent. Try setting a fixed schedule for better results!" : "আপনার পড়ার কোনো নির্দিষ্ট সময় নেই। প্রতিদিন একটি নির্দিষ্ট সময়ে পড়ার অভ্যাস করলে ভালো ফল পাবেন।";
-                    } else if (peakHour >= 5 && peakHour < 11) {
-                        timingFeedback = language === 'en' ? "You usually read in the morning! Very good habit." : "আপনি সাধারণত সকালে পড়েন! খুব ভাল অভ্যাস।";
-                    } else if (peakHour >= 11 && peakHour < 16) {
-                        timingFeedback = language === 'en' ? "Great use of daylight for learning!" : "আপনি দিনের আলোয় শিখছেন!";
-                    } else if (peakHour >= 16 && peakHour < 21) {
-                        timingFeedback = language === 'en' ? "Productive evening learner. Keep it up!" : "আপনি বিকেলের সময় ব্যবহার করছেন।";
-                    } else if (peakHour >= 21 || peakHour < 1) {
-                        timingFeedback = language === 'en' ? "Quiet night learning. Stay focused!" : "আপনি রাতে শান্তিতে শিখতে পছন্দ করেন। চালিয়ে যান!";
-                    } else {
-                        timingFeedback = language === 'en' ? "Learning at late hours. Get enough rest too!" : "আপনি অনেক রাত পর্যন্ত পড়ছেন। পর্যাপ্ত বিশ্রামও নিন!";
-                    }
-
-                    // Weekly Momentum Feedback
-                    let weeklyRating = 1;
-                    let weeklyFeedback = "";
-                    if (data.length === 0) {
-                        weeklyRating = 1;
-                        weeklyFeedback = language === 'en' ? "Your journey starts now! Complete your first lesson." : "আপনার যাত্রা মাত্র শুরু হলো! আজই প্রথম পাঠ সম্পন্ন করুন।";
-                    } else if (weeklyCons >= 5) {
-                        weeklyRating = 5;
-                        weeklyFeedback = language === 'en' ? "Great speed this week! Learning fast." : "এই সপ্তাহে দুর্দান্ত গতি ছিল! আপনি দ্রুত শিখছেন।";
-                    } else if (weeklyCons >= 2) {
-                        weeklyRating = 4;
-                        weeklyFeedback = language === 'en' ? "Steady progress this week." : "শিখনের গতি মাঝারি। আরও একটু চেষ্টা করুন।";
-                    } else {
-                        weeklyRating = 2;
-                        weeklyFeedback = language === 'en' ? "Low momentum this week. Start again!" : "এই সপ্তাহে গতি বেশ কম। আবার শুরু করুন!";
-                    }
-
-                    setLearningInsights({
-                        streak,
-                        peakHour: parseInt(peakHour, 10),
-                        isRandom,
-                        weeklyMomentum: weeklyCons,
-                        weeklyDays,
-                        totalLessons: data.length,
-                        habitRating,
-                        habitFeedback,
-                        timingFeedback,
-                        timingRating,
-                        weeklyRating,
-                        weeklyFeedback
-                    });
-                }
-            } catch (err) {
-                console.error("Error calculating insights:", err);
-            } finally {
-                setIsInsightsLoading(false);
-            }
-        };
-
-        fetchInsights();
-    }, [user, completedLessons, language]);
 
     // Custom parser: ((media|optional_label)) and [[image_ref|optional_layout]]
     // media / image_ref: filename under /quizzes/ OR full https URL (e.g. Google Drive from sheet sync). Drive links are normalized for <img>.
@@ -3801,47 +3782,32 @@ export default function Training({
                                     />
                                 </div>
 
-                                {/* User Rating Indicator */}
-                                {learningInsights && (
-                                    <div className="flex flex-col items-center gap-2 animate-entrance-pop">
-                                        <div className="flex gap-1.5">
-                                            {[...Array(5)].map((_, i) => (
-                                                <svg key={i} className={`w-6 h-6 md:w-8 md:h-8 ${i < learningInsights.habitRating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-300 dark:text-slate-700'}`} viewBox="0 0 20 20">
-                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                                </svg>
-                                            ))}
-                                        </div>
-                                        <span className={`text-xs md:text-sm font-black text-slate-400 uppercase tracking-widest ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                            {language === 'en' ? 'Your Skill Rating' : 'আপনার রেটিং'}
-                                        </span>
-                                    </div>
-                                )}
-
                                 {/* Welcome Text */}
                                 <div className="space-y-1.5 md:space-y-3 animate-entrance-pop" style={{ animationDelay: '100ms' }}>
                                     <h1 className={`text-2xl md:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {language === 'en' ? 'Welcome!' : 'স্বাগতম!'}
                                     </h1>
                                     <p className={`text-base md:text-xl font-bold text-slate-600 dark:text-slate-400 ${language === 'bn' ? 'font-bengali opacity-90' : ''}`}>
-                                        {language === 'en' ? 'How are you learning?' : 'আপনি কেমন শিখছেন?'}
+                                        {language === 'en' ? "Here's your reading progress." : 'আপনার পড়ার অগ্রগতি এখানে।'}
                                     </p>
                                 </div>
 
-                                {/* Learning Insights Block */}
-                                {learningInsights && (
+                                {lessonProgressWelcome && (
                                     <div className="grid grid-cols-1 gap-3 animate-entrance-pop text-left w-full max-w-sm" style={{ animationDelay: '200ms' }}>
-                                        {/* Habit Card */}
+                                        <p className={`text-center text-[11px] md:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
+                                            {language === 'en' ? 'Your reading progress' : 'পড়ার অগ্রগতি'}
+                                        </p>
                                         <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-md p-4 rounded-3xl border border-white/20 dark:border-slate-700/50 flex gap-4 items-center">
                                             <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center text-2xl shrink-0">
-                                                🔥
+                                                📖
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className={`text-slate-800 dark:text-white font-black leading-snug ${learningInsights.habitRating > 2 ? 'mb-1' : ''} ${language === 'bn' ? 'font-bengali text-base md:text-lg' : 'text-xs md:text-sm'}`}>
-                                                    {learningInsights.habitFeedback}
+                                                <p className={`text-slate-800 dark:text-white font-black leading-snug ${lessonProgressWelcome.secondary ? 'mb-1' : ''} ${language === 'bn' ? 'font-bengali text-base md:text-lg' : 'text-xs md:text-sm'}`}>
+                                                    {lessonProgressWelcome.primary}
                                                 </p>
-                                                {learningInsights.habitRating > 2 && (
-                                                    <p className="text-[9px] md:text-[10px] uppercase font-bold text-slate-400">
-                                                        {language === 'en' ? `You read ${learningInsights.weeklyDays} days this week!` : `এই সপ্তাহে ${learningInsights.weeklyDays} দিন পড়েছেন!`}
+                                                {lessonProgressWelcome.secondary && (
+                                                    <p className={`text-[10px] md:text-[11px] font-semibold text-slate-500 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                        {lessonProgressWelcome.secondary}
                                                     </p>
                                                 )}
                                             </div>

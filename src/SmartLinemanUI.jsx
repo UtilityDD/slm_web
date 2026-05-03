@@ -19,6 +19,7 @@ import { leaderboardService } from "./utils/leaderboardService";
 import { invalidateLeaderboardCaches } from "./utils/leaderboardCacheKeys";
 import BottomNavigation from "./components/BottomNavigation";
 import IdleStoryReminder from "./components/IdleStoryReminder";
+import { libraryService } from "./utils/libraryService";
 
 // Lazy load heavy components for code splitting
 const Competitions = lazy(() => import("./components/Competitions"));
@@ -66,8 +67,6 @@ const PageLoader = () => (
     </div>
   </div>
 );
-
-import { libraryService } from "./utils/libraryService";
 
 export default function SmartLinemanUI() {
   // Background Data Pre-fetching
@@ -619,13 +618,13 @@ export default function SmartLinemanUI() {
     const latest = notificationsHistory[0];
     if (!latest?.id) return;
 
-    // Brief delay so the startup screen / welcome toast does not stack with this modal on first paint.
+    // Slightly longer delay so Training welcome / login toast can clear first, then show the same broadcast as before.
     const t = window.setTimeout(() => {
       if (activeBroadcastShownOnceRef.current) return;
       activeBroadcastShownOnceRef.current = true;
       setActiveBroadcastNotice(latest);
       setShowActiveBroadcastModal(true);
-    }, 700);
+    }, 1400);
 
     return () => window.clearTimeout(t);
   }, [user?.id, notificationsHistory, currentView]);
@@ -955,6 +954,7 @@ export default function SmartLinemanUI() {
               onLogin={(u) => {
                 setUser(u);
                 fetchProfile(u);
+                setCurrentView('training');
               }}
               showNotification={showNotification}
               setCurrentView={setCurrentView}
@@ -971,7 +971,7 @@ export default function SmartLinemanUI() {
           onLogin={(u) => {
             setUser(u);
             fetchProfile(u);
-            setCurrentView('home');
+            setCurrentView('training');
           }}
           showNotification={showNotification}
           setCurrentView={setCurrentView}
