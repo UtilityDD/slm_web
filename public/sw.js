@@ -1,4 +1,4 @@
-const CACHE_NAME = 'suraksha-sathi-v22-neural';
+const CACHE_NAME = 'suraksha-sathi-v23-neural';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -34,7 +34,8 @@ const ASSETS_TO_CACHE = [
   '/quizzes/lesson_10_7.json',
   '/quizzes/lesson_10_8.json',
   '/quizzes/lesson_10_9.json',
-  '/quizzes/lesson_10_10.json'
+  '/quizzes/lesson_10_10.json',
+  '/quizzes/lesson_10_11.json'
 ];
 
 self.addEventListener('install', (event) => {

@@ -36,6 +36,7 @@ update_chapters_supabase.js
 update_supabase.js
 update_top10.js
 tmp_check_images.cjs
+scratch/
 
 # Media and Large Files
 public/smartlineman.apk

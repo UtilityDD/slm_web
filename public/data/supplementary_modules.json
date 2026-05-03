@@ -198,5 +198,25 @@
     "manuscript_url": "/quizzes/lesson_10_10.json",
     "audio_url_en": "https://raw.githubusercontent.com/UtilityDD/slm_audio/main/life_skill_10.wav",
     "audio_url_bn": "https://raw.githubusercontent.com/UtilityDD/slm_audio/main/life_skill_10.wav"
+  },
+  {
+    "id": "supp_10_11",
+    "lesson_code": "LS11",
+    "number": "S11",
+    "title_bn": "উত্তেজিত গ্রাহককে সামলানো",
+    "title_en": "Dealing with Angry Customers",
+    "description_bn": "মাঠে কাজ করার সময় রাগী গ্রাহকদের সাথে শান্তভাবে কথা বলার কৌশল।",
+    "description_en": "Techniques for handling angry consumers professionally during field work.",
+    "icon": "🗣️",
+    "image_url": "/assets/supplementary/conflict_deescalation.png",
+    "duration": "6 min",
+    "highlights_en": "Active Listening • Calm Tone • Personal Safety",
+    "highlights_bn": "মনোযোগ দিয়ে শোনা • শান্ত কণ্ঠস্বর • নিজের নিরাপত্তা",
+    "trusted_blurb_en": "Based on professional customer service and de-escalation training standards.",
+    "trusted_blurb_bn": "পেশাদার গ্রাহক পরিষেবা এবং ডি-এস্কেলেশন ট্রেনিং স্ট্যান্ডার্ডের ওপর ভিত্তি করে তৈরি।",
+    "category": "social",
+    "manuscript_url": "/quizzes/lesson_10_11.json",
+    "audio_url_en": "https://raw.githubusercontent.com/UtilityDD/slm_audio/main/life_skill_11.wav",
+    "audio_url_bn": "https://raw.githubusercontent.com/UtilityDD/slm_audio/main/life_skill_11.wav"
   }
 ]
