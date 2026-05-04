@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { UserIcon } from './icons';
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../config';
+import { useLifeSkillRadio } from '../context/LifeSkillRadioContext';
 
 export default function Sidebar({
   isOpen,
@@ -16,6 +17,7 @@ export default function Sidebar({
   unreadNotificationsCount,
   onLogout
 }) {
+  const { startRadio, loading: radioLoading } = useLifeSkillRadio();
   const [currentTab, setCurrentTab] = useState(null);
   const [isMoreExpanded, setIsMoreExpanded] = useState(true);
   const navRef = useRef(null);
@@ -169,6 +171,23 @@ export default function Sidebar({
 
         {/* Navigation Items - Enhanced */}
         <nav ref={navRef} className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5 custom-scrollbar">
+          <button
+            type="button"
+            disabled={radioLoading}
+            onClick={() => {
+              startRadio();
+              onClose();
+            }}
+            className="mb-2 flex w-full items-center gap-3 rounded-xl border border-indigo-200/80 bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-3.5 text-left text-white shadow-lg shadow-indigo-500/25 transition-all hover:from-indigo-500 hover:to-violet-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 dark:border-indigo-500/30"
+          >
+            <span className="text-xl shrink-0" aria-hidden>
+              📻
+            </span>
+            <span className={`text-sm font-bold leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+              {language === 'en' ? 'Listen to SLM Radio' : 'SLM রেডিও শুনুন'}
+            </span>
+          </button>
+
           {primaryItems.map((item) => (
             <button
               key={item.id}

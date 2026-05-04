@@ -18,6 +18,9 @@ import { preloadSafetyLibraryAssets } from "./utils/assetPreloader";
 import { leaderboardService } from "./utils/leaderboardService";
 import { invalidateLeaderboardCaches } from "./utils/leaderboardCacheKeys";
 import BottomNavigation from "./components/BottomNavigation";
+import RadioMiniPlayer from "./components/RadioMiniPlayer";
+import RadioDesktopLaunch from "./components/RadioDesktopLaunch";
+import { LifeSkillRadioProvider, RadioScrollPaddingBridge } from "./context/LifeSkillRadioContext";
 import IdleStoryReminder from "./components/IdleStoryReminder";
 import { libraryService } from "./utils/libraryService";
 
@@ -1102,6 +1105,7 @@ export default function SmartLinemanUI() {
       {appLoading ? (
         <PageLoader />
       ) : (
+        <LifeSkillRadioProvider language={language} enabled={!!user}>
         <div
           className={`h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-300 font-sans flex flex-col ${language === 'bn' ? 'font-bengali' : ''}`}
           onTouchStart={handleTouchStart}
@@ -1262,6 +1266,7 @@ export default function SmartLinemanUI() {
                     </div>
                     <div className="flex-grow"></div>
                     <div className="flex items-center gap-1 sm:gap-2">
+                      {user && <RadioDesktopLaunch language={language} currentView={currentView} />}
                       <button onClick={handleThemeToggle} className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 ${currentView === 'home' ? 'bg-white/10 hover:bg-white/20' : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600'} rounded-lg transition-all touch-target`} title="Toggle Theme"><span className="text-lg sm:text-xl">{theme === 'light' ? '🌙' : '☀️'}</span></button>
                       {user ? (
                         <div className="flex items-center gap-2 pl-1 sm:pl-2"><button onClick={handleLogout} className="flex items-center justify-center p-1 bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-all touch-target border border-slate-200 dark:border-slate-600 shadow-sm" title="Logout"><div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white shrink-0 overflow-hidden shadow-sm">{userProfile?.avatar_url ? <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" /> : <UserIcon className="w-5 h-5 text-white" />}</div></button></div>
@@ -1300,7 +1305,11 @@ export default function SmartLinemanUI() {
               blocked={idleReminderBlocked}
             />
 
-            {currentView !== 'sops' && currentView !== 'training' && (
+            {user &&
+              !sidebarOpen &&
+              !['login', 'verify', 'update-password'].includes(currentView) &&
+              currentView !== 'sops' &&
+              currentView !== 'training' && (
               <div className="fixed left-0 z-[250] animate-slide-up bottom-[calc(8rem+env(safe-area-inset-bottom))]">
                  <button
                     type="button"
@@ -1322,6 +1331,12 @@ export default function SmartLinemanUI() {
             )}
 
             <NetworkStatusListener language={language} />
+
+            {user && <RadioScrollPaddingBridge currentView={currentView} />}
+
+            {user && !['login', 'verify'].includes(currentView) && (
+              <RadioMiniPlayer language={language} />
+            )}
 
             {user && !['login', 'verify'].includes(currentView) && (
               <BottomNavigation 
@@ -1358,6 +1373,7 @@ export default function SmartLinemanUI() {
             )}
           </div>
         </div>
+        </LifeSkillRadioProvider>
       )}
     </Suspense>
   );

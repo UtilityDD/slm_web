@@ -28,6 +28,8 @@ import {
     appendSupplementaryCompletion,
 } from '../../utils/supplementaryProgressStorage';
 import { filterCoreCompletedLessonIds, isSupplementaryProgressLessonId } from '../../utils/trainingLessonIds';
+import { pickSupplementaryListenSrc } from '../../utils/supplementaryAudioUrl';
+import { useLifeSkillRadio } from '../../context/LifeSkillRadioContext';
 
 const LOADING_TIPS = {
     en: [
@@ -594,30 +596,6 @@ function SectionPointFullCard({
     );
 }
 
-/**
- * Life Skills listen accepts:
- * - GitHub raw or release asset URLs (public hosting), or
- * - Same-origin paths under /audio/ (e.g. public/audio/ in this repo — works when GitHub audio is private).
- */
-function isValidSupplementaryListenUrl(url) {
-    if (typeof url !== 'string') return false;
-    const u = url.trim();
-    if (!u) return false;
-    if (u.startsWith('/audio/') && !u.includes('..')) {
-        return u.length > '/audio/'.length;
-    }
-    if (!u.startsWith('https://')) return false;
-    try {
-        const { hostname, pathname } = new URL(u);
-        const host = hostname.toLowerCase();
-        if (host === 'raw.githubusercontent.com') return pathname.length > 1;
-        if (host === 'github.com' && pathname.toLowerCase().includes('/releases/download/')) return pathname.length > 1;
-        return false;
-    } catch {
-        return false;
-    }
-}
-
 export default function Training({
     language = 'en',
     user,
@@ -652,6 +630,7 @@ export default function Training({
     const [isFaqTagsExpanded, setIsFaqTagsExpanded] = useState(false);
     const [fetchError, setFetchError] = useState(false);
     const [readingPoints, setReadingPoints] = useState(0);
+    const { expanded: radioGlobalExpanded } = useLifeSkillRadio();
 
     // Supplementary Modules State
     const [trainingTab, setTrainingTab] = useState('core'); // 'core' | 'supplementary'
@@ -1383,10 +1362,7 @@ export default function Training({
 
     const supplementaryRadioSrc = useMemo(() => {
         if (!trainingContent?.isSupplementary) return '';
-        const en = typeof trainingContent.audio_url_en === 'string' ? trainingContent.audio_url_en.trim() : '';
-        const bn = typeof trainingContent.audio_url_bn === 'string' ? trainingContent.audio_url_bn.trim() : '';
-        const pick = language === 'bn' ? bn || en : en || bn;
-        return isValidSupplementaryListenUrl(pick) ? pick : '';
+        return pickSupplementaryListenSrc(trainingContent, language);
     }, [trainingContent?.isSupplementary, trainingContent?.audio_url_en, trainingContent?.audio_url_bn, language]);
 
     /** Life Skills: hide read-aloud when a hosted lesson track exists (radio-only for audio). */
@@ -2227,54 +2203,84 @@ export default function Training({
                 </div>
             ) : !selectedChapter && !trainingContent ? (
                 <div className="animate-fade-in-up">
-                    {/* Sticky tab row (same scrollport as before: full-width column + z-40). Hint stays below in normal flow. */}
-                    <div
-                        className={`sticky top-4 z-40 mx-auto mb-6 flex w-full max-w-sm justify-center ${
-                            showLifeSkillsHint && trainingTab === 'core'
-                                ? prefersReducedMotion
-                                    ? 'rounded-full p-[2px] ring-2 ring-indigo-500/55 dark:ring-indigo-400/45'
-                                    : 'animate-lifeskills-hint-glow rounded-full p-[2px] ring-2 ring-indigo-500/55 dark:ring-indigo-400/45'
-                                : ''
-                        }`}
-                    >
-                        <div className="relative flex w-full rounded-full border border-slate-200/50 bg-white/80 p-1.5 shadow-lg backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/80">
-                            {showLifeSkillsHint && trainingTab === 'core' && (
-                                <span
-                                    className="pointer-events-none absolute right-2 top-0 z-20 -translate-y-1/2 rounded-full bg-indigo-600 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-md dark:bg-indigo-500"
-                                    aria-hidden
+                    {/* Sticky tab row + hourly challenge entry (z-40). Hint stays below in normal flow. */}
+                    <div className="sticky top-4 z-40 mx-auto mb-6 flex w-full max-w-sm flex-col gap-1.5">
+                        <div
+                            className={`flex w-full justify-center ${
+                                showLifeSkillsHint && trainingTab === 'core'
+                                    ? prefersReducedMotion
+                                        ? 'rounded-full p-[2px] ring-2 ring-indigo-500/55 dark:ring-indigo-400/45'
+                                        : 'animate-lifeskills-hint-glow rounded-full p-[2px] ring-2 ring-indigo-500/55 dark:ring-indigo-400/45'
+                                    : ''
+                            }`}
+                        >
+                            <div className="relative flex w-full rounded-full border border-slate-200/50 bg-white/80 p-1.5 shadow-lg backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/80">
+                                {showLifeSkillsHint && trainingTab === 'core' && (
+                                    <span
+                                        className="pointer-events-none absolute right-2 top-0 z-20 -translate-y-1/2 rounded-full bg-indigo-600 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-md dark:bg-indigo-500"
+                                        aria-hidden
+                                    >
+                                        {language === 'en' ? (
+                                            'New'
+                                        ) : (
+                                            <>
+                                                <span className="font-sans tracking-wide">New</span>
+                                                <span className="mx-0.5 opacity-80">·</span>
+                                                <span className={language === 'bn' ? 'font-bengali tracking-normal normal-case' : ''}>
+                                                    নতুন
+                                                </span>
+                                            </>
+                                        )}
+                                    </span>
+                                )}
+                                <div
+                                    className={`absolute inset-y-1.5 w-[calc(50%-6px)] rounded-full bg-orange-600 shadow-sm transition-all duration-300 ease-out ${trainingTab === 'core' ? 'left-1.5' : 'left-[calc(50%+1.5px)]'}`}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setTrainingTab('core')}
+                                    className={`relative z-10 w-1/2 rounded-full py-2.5 text-xs font-black uppercase tracking-wider transition-colors duration-300 ${trainingTab === 'core' ? 'text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                                 >
-                                    {language === 'en' ? (
-                                        'New'
-                                    ) : (
-                                        <>
-                                            <span className="font-sans tracking-wide">New</span>
-                                            <span className="mx-0.5 opacity-80">·</span>
-                                            <span className={language === 'bn' ? 'font-bengali tracking-normal normal-case' : ''}>
-                                                নতুন
-                                            </span>
-                                        </>
-                                    )}
-                                </span>
-                            )}
-                            <div
-                                className={`absolute inset-y-1.5 w-[calc(50%-6px)] rounded-full bg-orange-600 shadow-sm transition-all duration-300 ease-out ${trainingTab === 'core' ? 'left-1.5' : 'left-[calc(50%+1.5px)]'}`}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setTrainingTab('core')}
-                                className={`relative z-10 w-1/2 rounded-full py-2.5 text-xs font-black uppercase tracking-wider transition-colors duration-300 ${trainingTab === 'core' ? 'text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                            >
-                                {language === 'en' ? 'Training' : 'প্রশিক্ষণ'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setTrainingTab('supplementary')}
-                                aria-describedby={showLifeSkillsHint && trainingTab === 'core' ? 'lifeskills-hint-copy' : undefined}
-                                className={`relative z-10 w-1/2 rounded-full py-2.5 text-xs font-black uppercase tracking-wider transition-colors duration-300 ${trainingTab === 'supplementary' ? 'text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                            >
-                                {language === 'en' ? 'Life Skill ✨' : 'লাইফ স্কিল ✨'}
-                            </button>
+                                    {language === 'en' ? 'Training' : 'প্রশিক্ষণ'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setTrainingTab('supplementary')}
+                                    aria-describedby={showLifeSkillsHint && trainingTab === 'core' ? 'lifeskills-hint-copy' : undefined}
+                                    className={`relative z-10 w-1/2 rounded-full py-2.5 text-xs font-black uppercase tracking-wider transition-colors duration-300 ${trainingTab === 'supplementary' ? 'text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                                >
+                                    {language === 'en' ? 'Life Skill ✨' : 'লাইফ স্কিল ✨'}
+                                </button>
+                            </div>
                         </div>
+                        {trainingTab === 'core' && !trainingLoading && !showWelcome && !radioGlobalExpanded && (
+                            <div className="flex w-full justify-end pr-0.5">
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentView('competitions')}
+                                    className="rounded-2xl p-0.5 transition-transform duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:focus-visible:ring-offset-slate-900"
+                                    title={language === 'en' ? 'Hourly Challenge' : 'প্রতি ঘণ্টার চ্যালেঞ্জ'}
+                                    aria-label={language === 'en' ? 'Hourly Challenge' : 'প্রতি ঘণ্টার চ্যালেঞ্জ'}
+                                >
+                                    <div className="relative">
+                                        <div className="h-12 w-12 drop-shadow-lg sm:h-14 sm:w-14">
+                                            <DotLottiePlayer
+                                                src={clockLottie}
+                                                autoplay
+                                                loop
+                                                className="h-full w-full filter saturate-150 contrast-125"
+                                            />
+                                        </div>
+                                        {isHourlyPending && (
+                                            <span className="absolute right-1 top-1 flex h-2.5 w-2.5 sm:h-3 sm:w-3">
+                                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+                                                <span className="relative inline-flex h-full w-full rounded-full border border-white bg-emerald-500 shadow-sm dark:border-slate-800" />
+                                            </span>
+                                        )}
+                                    </div>
+                                </button>
+                            </div>
+                        )}
                     </div>
                     {showLifeSkillsHint && trainingTab === 'core' && (
                         <div className="mx-auto mb-6 w-full max-w-sm rounded-xl border border-slate-200/90 bg-slate-50/95 px-3 py-2.5 shadow-sm dark:border-slate-700/90 dark:bg-slate-900/85">
@@ -2317,94 +2323,57 @@ export default function Training({
                         return (
                             <div className="relative max-w-2xl mx-auto pb-32">
                                 {/* Header */}
-                                <div className="text-center mb-16 pt-4 space-y-3">
-                                    <h1 className={`text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {language === 'en' ? 'Learn' : 'শিখুন'}
-                                    </h1>
-                                    <p className={`text-xl text-slate-500 dark:text-slate-400 font-bold max-w-lg mx-auto ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {language === 'en' ? 'Master your safety skills' : 'আপনার পেশাগত জ্ঞান বাড়ান'}
-                                    </p>
-
-
-
-                                    {/* Safety Hero Challenge Trigger - Temporarily Hidden 
-                                    <button
-                                        onClick={() => setCurrentView('safety-hero')}
-                                        style={{ display: 'none' }}
-                                        className="mx-auto mt-6 group relative max-w-sm w-full p-1 rounded-[2rem] bg-gradient-to-r from-orange-500 via-rose-500 to-orange-500 bg-[length:200%_auto] animate-gradient-x shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition-all animate-fade-in-up"
-                                        style={{ animationDelay: '100ms' }}
+                                <div className="mb-12 px-2 pt-4 md:mb-16">
+                                    <h1
+                                        className={`text-center text-3xl font-black leading-tight tracking-tight text-slate-900 dark:text-white sm:text-4xl md:text-5xl ${language === 'bn' ? 'font-bengali' : ''}`}
                                     >
-                                        <div className="bg-white dark:bg-slate-900 rounded-[1.8rem] p-4 flex items-center gap-4">
-                                            <div className="w-14 h-14 bg-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-500/30 group-hover:rotate-12 transition-transform">
-                                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                            </div>
-                                            <div className="flex-1 text-left">
-                                                <h3 className={`text-base font-black text-slate-900 dark:text-white leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                    {language === 'en' ? 'Safety Hero Challenge' : 'সুরক্ষা হিরো চ্যালেঞ্জ'}
-                                                </h3>
-                                                <p className={`text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-0.5 leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                    {language === 'en' ? 'Share your PPE selfie & join the Hero Wall!' : 'পিপিই সেলফি শেয়ার করুন এবং হিরো ওয়াল-এ যোগ দিন!'}
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center justify-center bg-orange-500 text-white w-10 h-10 rounded-2xl shadow-lg shadow-orange-500/20">
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4"/></svg>
-                                            </div>
-                                        </div>
-                                    </button>
+                                        {language === 'en' ? 'Grow your professional knowledge' : 'পেশাগত জ্ঞান বাড়ান'}
+                                    </h1>
 
-                                    {/* Action Buttons Group */}
-                                    <div className="flex items-center justify-center gap-3 mt-8 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-
-
-                                        {/* Graceful Lessons Index Button */}
-                                        <button
-                                            onClick={() => setShowLessonIndex(true)}
-                                            className="px-4 py-2 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-bold text-[11px] uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 border border-slate-200 dark:border-slate-700 active:scale-95"
-                                        >
-                                            <span>📑</span>
-                                            {language === 'en' ? 'Index' : 'সূচীপত্র'}
-                                        </button>
-                                    </div>
-
-                                    {/* Global Progress Dashboard */}
+                                    {/* Index + core step count (same counts as former progress card; no bar / %) */}
                                     {(() => {
                                         const totalLessons = journeyChapters.reduce((acc, c) => acc + (c.count || 0), 0);
-                                        const totalCompleted = completedLessons.filter(id => {
+                                        const totalCompleted = completedLessons.filter((id) => {
                                             if (!id) return false;
-                                            const chapterNum = parseInt(id.toString().split('.')[0]);
+                                            const chapterNum = parseInt(id.toString().split('.')[0], 10);
                                             return chapterNum >= 1 && chapterNum < 10;
                                         }).length;
-                                        const overallProgressPercentage = totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0;
-
-                                        if (totalLessons === 0) return null;
+                                        const doneStr =
+                                            language === 'bn'
+                                                ? totalCompleted === 0
+                                                    ? '০'
+                                                    : toBengaliNumber(totalCompleted, language) || String(totalCompleted)
+                                                : String(totalCompleted);
+                                        const totalStr =
+                                            language === 'bn'
+                                                ? totalLessons === 0
+                                                    ? '০'
+                                                    : toBengaliNumber(totalLessons, language) || String(totalLessons)
+                                                : String(totalLessons);
 
                                         return (
-                                            <div className="max-w-md mx-auto mt-8 p-5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-[2rem] border border-slate-200/50 dark:border-slate-700/50 shadow-2xl animate-entrance-pop">
-                                                <div className="flex items-center justify-center md:justify-between mb-4 px-1">
-                                                    <div className="hidden md:flex items-center gap-2">
-                                                        <div className="w-8 h-8 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-lg">🏆</div>
-                                                        <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-                                                            {language === 'en' ? 'Your Progress' : 'আপনার অগ্রগতি'}
-                                                        </span>
-                                                    </div>
-                                                    <span className="text-xs font-black text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 px-3 py-1.5 rounded-xl border border-orange-100 dark:border-orange-900 text-[10px] shadow-sm">
-                                                        {totalCompleted} / {totalLessons} {language === 'en' ? 'STEPS' : 'ধাপ'}
-                                                    </span>
-                                                </div>
-
-                                                <div className="relative h-5 w-full bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden border border-slate-200/50 dark:border-slate-800 mb-4 shadow-inner">
-                                                    <div
-                                                        className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-400 via-orange-500 to-rose-500 shadow-[0_0_15px_rgba(249,115,22,0.4)] transition-all duration-1000 ease-out z-0"
-                                                        style={{ width: `${overallProgressPercentage}%` }}
+                                            <div
+                                                className="mx-auto mt-6 flex max-w-lg flex-wrap items-center justify-center gap-3 animate-fade-in-up sm:gap-4"
+                                                style={{ animationDelay: '120ms' }}
+                                            >
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowLessonIndex(true)}
+                                                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-100/90 px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest text-slate-600 transition-all hover:bg-slate-200 active:scale-95 dark:border-slate-600 dark:bg-slate-800/90 dark:text-slate-300 dark:hover:bg-slate-700"
+                                                >
+                                                    <span aria-hidden>📑</span>
+                                                    {language === 'en' ? 'Index' : 'সূচীপত্র'}
+                                                </button>
+                                                {totalLessons > 0 ? (
+                                                    <span
+                                                        className={`inline-flex items-center rounded-xl border border-orange-200/80 bg-orange-50/90 px-4 py-2.5 text-sm font-black tabular-nums text-orange-800 shadow-sm dark:border-orange-900/50 dark:bg-orange-950/35 dark:text-orange-100 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                     >
-                                                        <div className="absolute inset-0 shimmer-fast opacity-30"></div>
-                                                    </div>
-                                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                                                        <span className="text-[10px] font-black text-slate-700 dark:text-slate-200 drop-shadow-sm">
-                                                            {overallProgressPercentage}%
+                                                        {doneStr} / {totalStr}{' '}
+                                                        <span className="ml-1 text-[10px] font-black uppercase tracking-wider text-orange-600/90 dark:text-orange-300/90">
+                                                            {language === 'en' ? 'steps' : 'ধাপ'}
                                                         </span>
-                                                    </div>
-                                                </div>
+                                                    </span>
+                                                ) : null}
                                             </div>
                                         );
                                     })()}
@@ -4087,39 +4056,6 @@ export default function Training({
                 )
             }
 
-            {/* Floating Challenge Button (hidden on Life Skills tab / surface) */}
-            {
-                !selectedChapter &&
-                !trainingContent &&
-                !showWelcome &&
-                !trainingLoading &&
-                trainingTab === 'core' &&
-                createPortal(
-                    <button
-                        onClick={() => setCurrentView('competitions')}
-                        className="fixed bottom-24 right-4 sm:bottom-6 sm:right-6 z-[90] hover:scale-110 active:scale-95 transition-transform duration-300 drop-shadow-2xl animate-entrance-pop focus:outline-none"
-                        title={language === 'en' ? 'Hourly Challenge' : 'প্রতি ঘণ্টার চ্যালেঞ্জ'}
-                    >
-                        <div className="relative">
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-xl">
-                                <DotLottiePlayer
-                                    src={clockLottie}
-                                    autoplay
-                                    loop
-                                    className="w-full h-full filter saturate-150 contrast-125"
-                                />
-                            </div>
-                            {isHourlyPending && (
-                                <span className="absolute top-2 right-2 flex h-3 w-3 sm:h-3.5 sm:w-3.5">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-full w-full bg-emerald-500 border border-white dark:border-slate-800 shadow-sm"></span>
-                                </span>
-                            )}
-                        </div>
-                    </button>,
-                    document.body
-                )
-            }
             {
                 showOnboarding && (
                     <OnboardingSequence
