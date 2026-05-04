@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLifeSkillRadio } from '../context/LifeSkillRadioContext';
+import { OnAirIndicator, RadioEqualizer, SignalStrength } from './radio/RadioAtmosphere';
 
 /** Same resource whether playlist has `/audio/x` and element reports absolute URL. */
 function supplementaryAudioResourceKey(url) {
@@ -93,8 +94,18 @@ function RadioExpandedSheet({ language, title, audioRef, onMinimize, togglePlay,
             id="radio-expanded-title"
             className={`text-center text-lg font-semibold leading-snug tracking-tight text-white sm:text-xl ${language === 'bn' ? 'font-bengali' : ''}`}
           >
-            {title}
+            {currentTrack.type === 'transition' ? (
+              <span className="text-orange-500 animate-pulse">
+                {language === 'bn' ? 'টিউন করা হচ্ছে…' : 'Tuning Signal…'}
+              </span>
+            ) : title}
           </h2>
+
+          <div className="mt-4 flex items-center justify-center gap-6">
+            <OnAirIndicator active={playing} language={language} />
+            <RadioEqualizer active={playing} />
+            <SignalStrength strength={4} />
+          </div>
 
           <div className="mt-8 flex justify-center sm:mt-10">
             <button
@@ -291,13 +302,19 @@ export default function RadioMiniPlayer({ language }) {
                 className="min-w-0 flex-1 text-left active:opacity-80 pr-2"
                 aria-label={t.brand}
               >
-                <p className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
-                  {t.brand}
-                </p>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+                    {t.brand}
+                  </p>
+                  <div className="h-1 w-1 rounded-full bg-zinc-400" />
+                  <RadioEqualizer active={playing} colorClass={playing ? 'bg-orange-500' : 'bg-zinc-400'} />
+                </div>
                 <p
                   className={`truncate text-sm font-semibold text-slate-900 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}
                 >
-                  {currentTrack.title}
+                  {currentTrack.type === 'transition' 
+                    ? (language === 'bn' ? 'টিউন করা হচ্ছে…' : 'Tuning…') 
+                    : currentTrack.title}
                 </p>
               </button>
 

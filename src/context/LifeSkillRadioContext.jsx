@@ -3,6 +3,11 @@ import { pickSupplementaryListenSrc } from '../utils/supplementaryAudioUrl';
 
 const LifeSkillRadioContext = createContext(null);
 
+// Placeholder URLs for background and transitions
+const BG_MUSIC_URL = '/audio/radio_bg.mp3'; // Soothing ambient (Place your file here)
+const TRANSITION_URL = '/audio/radio_transition.mp3'; // Radio sweep/jingle (Place your file here)
+const FALLBACK_BG = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'; // Stable fallback
+
 export function useLifeSkillRadio() {
   const ctx = useContext(LifeSkillRadioContext);
   if (!ctx) {
@@ -53,6 +58,7 @@ export function RadioScrollPaddingBridge({ currentView }) {
 
 export function LifeSkillRadioProvider({ children, language, enabled }) {
   const audioRef = useRef(null);
+  const bgAudioRef = useRef(null);
   const tracksRef = useRef([]);
   const [visible, setVisible] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -71,6 +77,10 @@ export function LifeSkillRadioProvider({ children, language, enabled }) {
     if (a) {
       a.pause();
       a.removeAttribute('src');
+    }
+    const b = bgAudioRef.current;
+    if (b) {
+      b.pause();
     }
     setVisible(false);
     setExpanded(false);
@@ -93,15 +103,32 @@ export function LifeSkillRadioProvider({ children, language, enabled }) {
       if (!res.ok) throw new Error('fetch failed');
       const modules = await res.json();
       const list = [];
-      for (const m of Array.isArray(modules) ? modules : []) {
+      const rawList = Array.isArray(modules) ? modules : [];
+      
+      for (let i = 0; i < rawList.length; i++) {
+        const m = rawList[i];
         const src = pickSupplementaryListenSrc(m, language);
         if (!src) continue;
+
+        // Add the main track
         list.push({
           id: m.id,
           src,
           title: language === 'bn' ? (m.title_bn || m.title_en) : (m.title_en || m.title_bn),
+          type: 'lesson'
         });
+
+        // Insert a transition track between every 2 lessons or if it's not the last one
+        if (i < rawList.length - 1) {
+          list.push({
+            id: `trans_${i}`,
+            src: TRANSITION_URL,
+            title: language === 'bn' ? 'রেডিও বিরতি' : 'Radio Intermission',
+            type: 'transition'
+          });
+        }
       }
+
       if (list.length === 0) {
         setError(language === 'bn' ? 'কোনো অডিও নেই' : 'No audio available');
         return;
@@ -110,6 +137,12 @@ export function LifeSkillRadioProvider({ children, language, enabled }) {
       setIndex(0);
       setVisible(true);
       setExpanded(false);
+
+      // Start background music
+      if (bgAudioRef.current) {
+        bgAudioRef.current.volume = 0.15;
+        bgAudioRef.current.play().catch(() => {});
+      }
     } catch {
       setError(language === 'bn' ? 'লোড হয়নি' : 'Could not load');
     } finally {
@@ -136,11 +169,23 @@ export function LifeSkillRadioProvider({ children, language, enabled }) {
     }
   }, []);
 
+  // Duck background music when main track is playing
+  useLayoutEffect(() => {
+    const b = bgAudioRef.current;
+    if (!b) return;
+    if (playing) {
+      b.volume = 0.05; // Duck
+    } else {
+      b.volume = 0.15; // Unduck
+    }
+  }, [playing]);
+
   const currentTrack = tracks[index] || null;
 
   const value = useMemo(
     () => ({
       audioRef,
+      bgAudioRef,
       visible,
       expanded,
       setExpanded,
@@ -174,5 +219,23 @@ export function LifeSkillRadioProvider({ children, language, enabled }) {
     ]
   );
 
-  return <LifeSkillRadioContext.Provider value={value}>{children}</LifeSkillRadioContext.Provider>;
+  return (
+    <LifeSkillRadioContext.Provider value={value}>
+      {children}
+      <audio 
+        ref={bgAudioRef} 
+        src={BG_MUSIC_URL} 
+        loop 
+        preload="auto" 
+        style={{ display: 'none' }}
+        onError={(e) => {
+          // If local file missing, try fallback for testing
+          if (e.target.src.includes(BG_MUSIC_URL)) {
+            e.target.src = FALLBACK_BG;
+            e.target.play().catch(() => {});
+          }
+        }}
+      />
+    </LifeSkillRadioContext.Provider>
+  );
 }
