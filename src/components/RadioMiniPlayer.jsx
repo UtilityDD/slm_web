@@ -94,9 +94,16 @@ function RadioExpandedSheet({ language, title, audioRef, onMinimize, togglePlay,
             id="radio-expanded-title"
             className={`text-center text-lg font-semibold leading-snug tracking-tight text-white sm:text-xl ${language === 'bn' ? 'font-bengali' : ''}`}
           >
-            {currentTrack.type === 'transition' ? (
-              <span className="text-orange-500 animate-pulse">
-                {language === 'bn' ? 'টিউন করা হচ্ছে…' : 'Tuning Signal…'}
+            {currentTrack.type === 'transition' || currentTrack.type === 'welcome' || currentTrack.type === 'safety' || currentTrack.type === 'encouragement' ? (
+              <span className={
+                currentTrack.type === 'safety' ? 'text-amber-500' : 
+                currentTrack.type === 'encouragement' ? 'text-emerald-500' : 
+                'text-orange-500 animate-pulse'
+              }>
+                {currentTrack.type === 'welcome' ? (language === 'bn' ? 'স্বাগতম…' : 'Welcome…') : 
+                 currentTrack.type === 'safety' ? (language === 'bn' ? 'সুরক্ষা বার্তা…' : 'Safety Alert…') :
+                 currentTrack.type === 'encouragement' ? (language === 'bn' ? 'অনুপ্রেরণা…' : 'Inspiration…') :
+                 (language === 'bn' ? 'টিউন করা হচ্ছে…' : 'Tuning Signal…')}
               </span>
             ) : title}
           </h2>
@@ -307,13 +314,23 @@ export default function RadioMiniPlayer({ language }) {
                     {t.brand}
                   </p>
                   <div className="h-1 w-1 rounded-full bg-zinc-400" />
-                  <RadioEqualizer active={playing} colorClass={playing ? 'bg-orange-500' : 'bg-zinc-400'} />
+                  <RadioEqualizer 
+                    active={playing} 
+                    colorClass={
+                      currentTrack.type === 'safety' ? 'bg-amber-500' : 
+                      currentTrack.type === 'encouragement' ? 'bg-emerald-500' : 
+                      'bg-orange-500'
+                    } 
+                  />
                 </div>
                 <p
                   className={`truncate text-sm font-semibold text-slate-900 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}
                 >
-                  {currentTrack.type === 'transition' 
-                    ? (language === 'bn' ? 'টিউন করা হচ্ছে…' : 'Tuning…') 
+                  {currentTrack.type === 'transition' || currentTrack.type === 'welcome' || currentTrack.type === 'safety' || currentTrack.type === 'encouragement'
+                    ? (currentTrack.type === 'welcome' ? (language === 'bn' ? 'স্বাগতম…' : 'Welcome…') :
+                       currentTrack.type === 'safety' ? (language === 'bn' ? 'সুরক্ষা…' : 'Safety…') :
+                       currentTrack.type === 'encouragement' ? (language === 'bn' ? 'অনুপ্রেরণা…' : 'Inspiration…') :
+                       (language === 'bn' ? 'টিউন করা হচ্ছে…' : 'Tuning…'))
                     : currentTrack.title}
                 </p>
               </button>

@@ -3,10 +3,16 @@ import { pickSupplementaryListenSrc } from '../utils/supplementaryAudioUrl';
 
 const LifeSkillRadioContext = createContext(null);
 
-// Placeholder URLs for background and transitions
-const BG_MUSIC_URL = '/audio/radio_bg.mp3'; // Soothing ambient (Place your file here)
-const TRANSITION_URL = '/audio/radio_transition.mp3'; // Radio sweep/jingle (Place your file here)
-const FALLBACK_BG = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'; // Stable fallback
+// Audio Assets
+const BG_MUSIC_URL = '/audio/radio_bg.mp3';
+const TRANSITION_URL = '/audio/radio_transition.mp3';
+const FALLBACK_BG = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+
+const WELCOME_CLIPS = ['/audio/welcome_1.wav', '/audio/welcome_2.wav'];
+const SAFETY_CLIPS = ['/audio/safety_1.wav', '/audio/safety_2.wav'];
+const ENCOURAGEMENT_CLIPS = ['/audio/encouragement_1.wav', '/audio/encouragement_2.wav'];
+
+const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 export function useLifeSkillRadio() {
   const ctx = useContext(LifeSkillRadioContext);
@@ -105,12 +111,20 @@ export function LifeSkillRadioProvider({ children, language, enabled }) {
       const list = [];
       const rawList = Array.isArray(modules) ? modules : [];
       
+      // 1. Add Random Welcome Clip
+      list.push({
+        id: 'radio_welcome',
+        src: getRandom(WELCOME_CLIPS),
+        title: language === 'bn' ? 'স্বাগতম বার্তা' : 'Radio Welcome',
+        type: 'welcome'
+      });
+
       for (let i = 0; i < rawList.length; i++) {
         const m = rawList[i];
         const src = pickSupplementaryListenSrc(m, language);
         if (!src) continue;
 
-        // Add the main track
+        // 2. Add the main lesson track
         list.push({
           id: m.id,
           src,
@@ -118,14 +132,34 @@ export function LifeSkillRadioProvider({ children, language, enabled }) {
           type: 'lesson'
         });
 
-        // Insert a transition track between every 2 lessons or if it's not the last one
+        // 3. Insert random interstitials between lessons
         if (i < rawList.length - 1) {
-          list.push({
-            id: `trans_${i}`,
-            src: TRANSITION_URL,
-            title: language === 'bn' ? 'রেডিও বিরতি' : 'Radio Intermission',
-            type: 'transition'
-          });
+          const rand = Math.random();
+          if (rand < 0.4) {
+            // Safety Tip
+            list.push({
+              id: `safety_${i}`,
+              src: getRandom(SAFETY_CLIPS),
+              title: language === 'bn' ? 'সুরক্ষা টিপস' : 'Safety Tip',
+              type: 'safety'
+            });
+          } else if (rand < 0.7) {
+            // Encouragement
+            list.push({
+              id: `encouragement_${i}`,
+              src: getRandom(ENCOURAGEMENT_CLIPS),
+              title: language === 'bn' ? 'অনুপ্রেরণা' : 'Inspiration',
+              type: 'encouragement'
+            });
+          } else {
+            // Radio Transition
+            list.push({
+              id: `trans_${i}`,
+              src: TRANSITION_URL,
+              title: language === 'bn' ? 'রেডিও বিরতি' : 'Radio Intermission',
+              type: 'transition'
+            });
+          }
         }
       }
 
@@ -229,7 +263,6 @@ export function LifeSkillRadioProvider({ children, language, enabled }) {
         preload="auto" 
         style={{ display: 'none' }}
         onError={(e) => {
-          // If local file missing, try fallback for testing
           if (e.target.src.includes(BG_MUSIC_URL)) {
             e.target.src = FALLBACK_BG;
             e.target.play().catch(() => {});
