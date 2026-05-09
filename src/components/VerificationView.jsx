@@ -21,7 +21,7 @@ const VerificationView = ({ language, certificateId }) => {
                 setError(null);
                 
                 // Fetch profile data - look up by either id (UUID) or slm_id (Short ID)
-                let query = supabase.from('profiles').select('full_name, training_level, created_at, slm_id, points, reading_points, quiz_points, total_penalties');
+                let query = supabase.from('profiles').select('id, full_name, training_level, created_at, slm_id, points, reading_points, quiz_points');
                 
                 // Improved matching logic
                 if (certificateId.includes('-') && certificateId.length > 30) {
@@ -38,7 +38,27 @@ const VerificationView = ({ language, certificateId }) => {
                     setStatus('invalid');
                 } else if (data) {
                     console.log('Certificate verified successfully:', data);
-                    setCertData(data);
+
+                    let totalPenaltySum = 0;
+                    try {
+                        const { data: penaltyRows, error: penaltyError } = await supabase
+                            .from('quiz_attempts')
+                            .select('penalty')
+                            .eq('user_id', data.id);
+
+                        if (penaltyError) {
+                            console.warn('Verification penalty fetch:', penaltyError.message);
+                        } else {
+                            totalPenaltySum = (penaltyRows || []).reduce(
+                                (sum, row) => sum + (Number(row.penalty) || 0),
+                                0
+                            );
+                        }
+                    } catch (penaltyErr) {
+                        console.warn('Verification penalty fetch failed:', penaltyErr);
+                    }
+
+                    setCertData({ ...data, totalPenaltySum });
                     setStatus('verified');
                 } else {
                     console.warn('No data found for this Certificate ID');
@@ -162,7 +182,7 @@ const VerificationView = ({ language, certificateId }) => {
                                 </div>
                                 <div className="text-center p-2 rounded-xl bg-rose-50/60 dark:bg-rose-900/15">
                                     <p className="text-[8px] sm:text-[9px] font-bold text-rose-600/70 dark:text-rose-400/70 uppercase mb-1">{content.penalties}</p>
-                                    <p className="text-sm sm:text-base font-black text-rose-700 dark:text-rose-400">{(certData.total_penalties || 0).toLocaleString()}</p>
+                                    <p className="text-sm sm:text-base font-black text-rose-700 dark:text-rose-400">{(certData.totalPenaltySum ?? 0).toLocaleString()}</p>
                                 </div>
                             </div>
                             <div className="pt-6 border-t border-slate-100 dark:border-slate-700">

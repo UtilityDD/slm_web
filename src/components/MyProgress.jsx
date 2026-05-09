@@ -149,7 +149,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                     async () => {
                         const { data, error: profileError } = await supabase
                             .from('profiles')
-                            .select('id, slm_id, full_name, email, role, district, block, blood_group, avatar_url, phone, phone_number, created_at, last_login_at, training_level, points, reading_points, quiz_points, total_penalties, completed_lessons')
+                            .select('id, slm_id, full_name, email, role, district, block, blood_group, avatar_url, phone, phone_number, created_at, last_login_at, training_level, points, reading_points, quiz_points, completed_lessons')
                             .eq('id', resolvedUserId)
                             .single();
 
@@ -227,7 +227,8 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
         const avgScorePerAttempt = attempts.length > 0 ? attempts.reduce((sum, item) => sum + (Number(item.score) || 0), 0) / attempts.length : 0;
 
         const totalAttempts = attempts.length;
-        const averagePenalty = totalAttempts > 0 ? attempts.reduce((sum, item) => sum + (Number(item.penalty) || 0), 0) / totalAttempts : 0;
+        const totalPenaltySum = attempts.reduce((sum, item) => sum + (Number(item.penalty) || 0), 0);
+        const averagePenalty = totalAttempts > 0 ? totalPenaltySum / totalAttempts : 0;
 
         const paceSource = hasRewardTimestamps
             ? (language === 'en' ? 'Derived from lesson reward timestamps' : 'পাঠের পুরস্কারের সময় ধরে হিসাব করা হয়েছে')
@@ -244,6 +245,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
             daysPerChapter,
             avgScorePerAttempt,
             averagePenalty,
+            totalPenaltySum,
             paceSource,
             chapterBreakdown: Array.from(chapterMap.entries())
                 .map(([chapter, count]) => ({ chapter, count }))
@@ -514,7 +516,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                         <MetricCard label={language === 'en' ? 'Rank Stage' : 'পড়ার ধাপ'} value={`Lv ${profile.training_level || 1}`} hint={labels.badge} accent="orange" />
                         <MetricCard label={language === 'en' ? 'Reading Points' : 'পড়ার পয়েন্ট'} value={formatNumber(profile.reading_points)} hint={language === 'en' ? 'Lesson rewards' : 'পাঠ থেকে পাওয়া পয়েন্ট'} accent="emerald" />
                         <MetricCard label={language === 'en' ? 'Quiz Points' : 'কুইজ পয়েন্ট'} value={formatNumber(profile.quiz_points)} hint={language === 'en' ? 'Challenge rewards' : 'চ্যালেঞ্জ থেকে পাওয়া পয়েন্ট'} accent="blue" />
-                        <MetricCard label={language === 'en' ? 'Penalties' : 'কাটা পয়েন্ট'} value={formatNumber(profile.total_penalties)} hint={language === 'en' ? 'Losses / deductions' : 'বিয়োগ হওয়া পয়েন্ট'} accent="rose" />
+                        <MetricCard label={language === 'en' ? 'Penalties' : 'কাটা পয়েন্ট'} value={formatNumber(stats.totalPenaltySum)} hint={language === 'en' ? 'Sum from all quiz attempts' : 'সব চেষ্টা থেকে মোট'} accent="rose" />
                         <MetricCard label={language === 'en' ? 'Lessons Read' : 'পড়া পাঠ'} value={formatNumber(stats.completedLessons)} hint={language === 'en' ? 'Unique lessons completed' : 'যতগুলো পাঠ শেষ করেছেন'} accent="slate" />
                         <MetricCard label={language === 'en' ? 'Chapters Read' : 'পড়া অধ্যায়'} value={formatNumber(stats.chaptersRead)} hint={language === 'en' ? 'Distinct chapters reached' : 'যেসব অধ্যায় পর্যন্ত এগিয়েছেন'} accent="orange" />
                     </div>
@@ -661,10 +663,10 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                                 <div>
                                     <div className="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
                                         <span>{language === 'en' ? 'Penalty load' : 'কাটা পয়েন্ট'}</span>
-                                        <span>{formatNumber(profile.total_penalties)}</span>
+                                        <span>{formatNumber(stats.totalPenaltySum)}</span>
                                     </div>
                                     <div className="h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700">
-                                        <div className="h-full rounded-full bg-gradient-to-r from-red-500 to-rose-600" style={{ width: `${profile.total_penalties ? Math.min(100, (profile.total_penalties / Math.max(profile.points + profile.total_penalties, 1)) * 100) : 0}%` }} />
+                                        <div className="h-full rounded-full bg-gradient-to-r from-red-500 to-rose-600" style={{ width: `${stats.totalPenaltySum ? Math.min(100, (stats.totalPenaltySum / Math.max(profile.points + stats.totalPenaltySum, 1)) * 100) : 0}%` }} />
                                     </div>
                                 </div>
                             </div>
