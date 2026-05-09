@@ -24,7 +24,7 @@ function formatTime(sec) {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-function RadioExpandedSheet({ language, title, audioRef, onMinimize, togglePlay, playing }) {
+function RadioExpandedSheet({ language, title, track, audioRef, onMinimize, togglePlay, playing }) {
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
 
@@ -94,24 +94,58 @@ function RadioExpandedSheet({ language, title, audioRef, onMinimize, togglePlay,
             id="radio-expanded-title"
             className={`text-center text-lg font-semibold leading-snug tracking-tight text-white sm:text-xl ${language === 'bn' ? 'font-bengali' : ''}`}
           >
-            {currentTrack.type === 'transition' || currentTrack.type === 'welcome' || currentTrack.type === 'safety' || currentTrack.type === 'encouragement' ? (
-              <span className={
-                currentTrack.type === 'safety' ? 'text-amber-500' : 
-                currentTrack.type === 'encouragement' ? 'text-emerald-500' : 
-                'text-orange-500 animate-pulse'
-              }>
-                {currentTrack.type === 'welcome' ? (language === 'bn' ? 'স্বাগতম…' : 'Welcome…') : 
-                 currentTrack.type === 'safety' ? (language === 'bn' ? 'সুরক্ষা বার্তা…' : 'Safety Alert…') :
-                 currentTrack.type === 'encouragement' ? (language === 'bn' ? 'অনুপ্রেরণা…' : 'Inspiration…') :
-                 (language === 'bn' ? 'টিউন করা হচ্ছে…' : 'Tuning Signal…')}
+            {track?.type === 'startup_bed' ? (
+              <span className="text-sky-400 animate-pulse">{language === 'bn' ? 'সংযোগ…' : 'Tuning in…'}</span>
+            ) : track?.type === 'intro_music' ? (
+              <span className="text-violet-400">{language === 'bn' ? 'পরিচিতি…' : 'Program intro…'}</span>
+            ) : track?.type === 'transition' || track?.type === 'welcome' || track?.type === 'safety' || track?.type === 'encouragement' ? (
+              <span
+                className={
+                  track.type === 'safety'
+                    ? 'text-amber-500'
+                    : track.type === 'encouragement'
+                      ? 'text-emerald-500'
+                      : 'text-orange-500 animate-pulse'
+                }
+              >
+                {track.type === 'welcome'
+                  ? language === 'bn'
+                    ? 'স্বাগতম…'
+                    : 'Welcome…'
+                  : track.type === 'safety'
+                    ? language === 'bn'
+                      ? 'সুরক্ষা বার্তা…'
+                      : 'Safety Alert…'
+                    : track.type === 'encouragement'
+                      ? language === 'bn'
+                        ? 'অনুপ্রেরণা…'
+                        : 'Inspiration…'
+                      : language === 'bn'
+                        ? 'সংকেত…'
+                        : 'Station signal…'}
               </span>
-            ) : title}
+            ) : (
+              title
+            )}
           </h2>
 
           <div className="mt-4 flex items-center justify-center gap-6">
-            <OnAirIndicator active={playing} language={language} />
-            <RadioEqualizer active={playing} />
-            <SignalStrength strength={4} />
+            <OnAirIndicator active={playing || track?.type === 'startup_bed'} language={language} />
+            <RadioEqualizer
+              active={playing || track?.type === 'startup_bed'}
+              colorClass={
+                track?.type === 'startup_bed'
+                  ? 'bg-sky-500'
+                  : track?.type === 'intro_music'
+                    ? 'bg-violet-500'
+                    : track?.type === 'safety'
+                      ? 'bg-amber-500'
+                      : track?.type === 'encouragement'
+                        ? 'bg-emerald-500'
+                        : 'bg-orange-500'
+              }
+            />
+            <SignalStrength strength={track?.type === 'startup_bed' ? 2 : 4} />
           </div>
 
           <div className="mt-8 flex justify-center sm:mt-10">
@@ -163,6 +197,7 @@ function RadioExpandedSheet({ language, title, audioRef, onMinimize, togglePlay,
 export default function RadioMiniPlayer({ language }) {
   const {
     audioRef,
+    bgAudioRef,
     visible,
     expanded,
     setExpanded,
@@ -181,6 +216,45 @@ export default function RadioMiniPlayer({ language }) {
   } = useLifeSkillRadio();
 
   const lastAutoplaySigRef = useRef('');
+  const tracksRef = useRef(tracks);
+  const indexRef = useRef(index);
+  useEffect(() => {
+    tracksRef.current = tracks;
+  }, [tracks]);
+  useEffect(() => {
+    indexRef.current = index;
+  }, [index]);
+
+  /** Phase A: bed only — ramp carrier, then advance playlist. */
+  useEffect(() => {
+    if (!visible || !tracks.length) return undefined;
+    const tr = tracks[index];
+    const bg = bgAudioRef?.current;
+    if (!bg || tr?.type !== 'startup_bed') return undefined;
+
+    const dur = typeof tr.durationMs === 'number' && tr.durationMs > 0 ? tr.durationMs : 2800;
+    if (bg.paused) bg.play().catch(() => {});
+
+    const t0 = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const from = 0.035;
+    const to = 0.22;
+    const iv = window.setInterval(() => {
+      const elapsed = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - t0;
+      const p = Math.min(1, elapsed / dur);
+      bg.volume = from + (to - from) * p;
+      if (p >= 1) window.clearInterval(iv);
+    }, 48);
+
+    const timer = window.setTimeout(() => {
+      window.clearInterval(iv);
+      nextTrack();
+    }, dur);
+
+    return () => {
+      window.clearInterval(iv);
+      window.clearTimeout(timer);
+    };
+  }, [visible, tracks, index, nextTrack, bgAudioRef]);
 
   useEffect(() => {
     if (!visible) {
@@ -190,7 +264,13 @@ export default function RadioMiniPlayer({ language }) {
     if (!tracks.length) return undefined;
     const t = tracks[index];
     const a = audioRef.current;
-    if (!a || !t?.src) return undefined;
+    if (!a) return undefined;
+    if (t?.type === 'startup_bed') {
+      a.pause();
+      a.removeAttribute('src');
+      return undefined;
+    }
+    if (!t?.src) return undefined;
 
     const want = t.src;
     const keyWant = supplementaryAudioResourceKey(want);
@@ -226,6 +306,11 @@ export default function RadioMiniPlayer({ language }) {
     nextTrack();
   }, [nextTrack]);
 
+  const onMainAudioError = useCallback(() => {
+    const tr = tracksRef.current[indexRef.current];
+    if (tr?.type === 'intro_music') nextTrack();
+  }, [nextTrack]);
+
   const t = {
     brand: language === 'bn' ? 'SLM রেডিও' : 'SLM Radio',
     next: language === 'bn' ? 'পরের ট্র্যাক' : 'Next',
@@ -242,6 +327,7 @@ export default function RadioMiniPlayer({ language }) {
         playsInline
         preload="metadata"
         onEnded={onEnded}
+        onError={onMainAudioError}
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
       />
@@ -289,6 +375,7 @@ export default function RadioMiniPlayer({ language }) {
             <RadioExpandedSheet
               language={language}
               title={currentTrack.title}
+              track={currentTrack}
               audioRef={audioRef}
               onMinimize={() => setExpanded(false)}
               togglePlay={togglePlay}
@@ -314,24 +401,52 @@ export default function RadioMiniPlayer({ language }) {
                     {t.brand}
                   </p>
                   <div className="h-1 w-1 rounded-full bg-zinc-400" />
-                  <RadioEqualizer 
-                    active={playing} 
+                  <RadioEqualizer
+                    active={playing || currentTrack.type === 'startup_bed'}
                     colorClass={
-                      currentTrack.type === 'safety' ? 'bg-amber-500' : 
-                      currentTrack.type === 'encouragement' ? 'bg-emerald-500' : 
-                      'bg-orange-500'
-                    } 
+                      currentTrack.type === 'startup_bed'
+                        ? 'bg-sky-500'
+                        : currentTrack.type === 'intro_music'
+                          ? 'bg-violet-500'
+                          : currentTrack.type === 'safety'
+                            ? 'bg-amber-500'
+                            : currentTrack.type === 'encouragement'
+                              ? 'bg-emerald-500'
+                              : 'bg-orange-500'
+                    }
                   />
                 </div>
                 <p
                   className={`truncate text-sm font-semibold text-slate-900 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}
                 >
-                  {currentTrack.type === 'transition' || currentTrack.type === 'welcome' || currentTrack.type === 'safety' || currentTrack.type === 'encouragement'
-                    ? (currentTrack.type === 'welcome' ? (language === 'bn' ? 'স্বাগতম…' : 'Welcome…') :
-                       currentTrack.type === 'safety' ? (language === 'bn' ? 'সুরক্ষা…' : 'Safety…') :
-                       currentTrack.type === 'encouragement' ? (language === 'bn' ? 'অনুপ্রেরণা…' : 'Inspiration…') :
-                       (language === 'bn' ? 'টিউন করা হচ্ছে…' : 'Tuning…'))
-                    : currentTrack.title}
+                  {currentTrack.type === 'startup_bed'
+                    ? language === 'bn'
+                      ? 'সংযোগ…'
+                      : 'Tuning in…'
+                    : currentTrack.type === 'intro_music'
+                      ? language === 'bn'
+                        ? 'পরিচিতি…'
+                        : 'Intro…'
+                      : currentTrack.type === 'transition' ||
+                          currentTrack.type === 'welcome' ||
+                          currentTrack.type === 'safety' ||
+                          currentTrack.type === 'encouragement'
+                        ? currentTrack.type === 'welcome'
+                          ? language === 'bn'
+                            ? 'স্বাগতম…'
+                            : 'Welcome…'
+                          : currentTrack.type === 'safety'
+                            ? language === 'bn'
+                              ? 'সুরক্ষা…'
+                              : 'Safety…'
+                            : currentTrack.type === 'encouragement'
+                              ? language === 'bn'
+                                ? 'অনুপ্রেরণা…'
+                                : 'Inspiration…'
+                              : language === 'bn'
+                                ? 'সংকেত…'
+                                : 'Signal…'
+                        : currentTrack.title}
                 </p>
               </button>
 
