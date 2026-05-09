@@ -716,6 +716,8 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
     }, [user, completedLessons, language]);
     // Helper function to check if a lesson is unlocked
     const isLessonUnlocked = (chapterNum, subchapterNum) => {
+        if (userProfile?.role === 'admin') return true;
+
         // First lesson of each chapter is always unlocked
         if (subchapterNum === 1) return true;
 

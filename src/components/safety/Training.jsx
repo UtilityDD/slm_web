@@ -975,6 +975,9 @@ export default function Training({
 
     // Helper function to check if a lesson is unlocked (GLOBALLY SEQUENTIAL — FULL CHAIN)
     const isLessonUnlocked = useCallback((chapterNum, subchapterNum) => {
+        // Admins can open any core lesson for QA; scoring and completion rules are unchanged elsewhere.
+        if (profile?.role === 'admin') return true;
+
         // Very first lesson is always unlocked
         if (chapterNum === 1 && subchapterNum === 1) return true;
 
@@ -993,7 +996,7 @@ export default function Training({
         }
 
         return true;
-    }, [completedLessons, trainingChapters]);
+    }, [completedLessons, trainingChapters, profile?.role]);
 
     useEffect(() => {
         return () => {
@@ -1078,7 +1081,10 @@ export default function Training({
                 setIsJournalMode(true);
                 setActiveSectionIndex(0);
             };
-            const delayMs = getLifeSkillOpenDelayMs(moduleIndex, completedLessons, trainingChapters);
+            const delayMs =
+                profile?.role === 'admin'
+                    ? 0
+                    : getLifeSkillOpenDelayMs(moduleIndex, completedLessons, trainingChapters);
             if (delayMs <= 0) {
                 doOpen();
                 return;
@@ -1107,7 +1113,7 @@ export default function Training({
                 }, delayMs),
             };
         },
-        [language, completedLessons, trainingChapters, readingPoints, clearLifeSkillWaitTimers]
+        [language, completedLessons, trainingChapters, readingPoints, clearLifeSkillWaitTimers, profile?.role]
     );
 
     // Auto-scroll to current reading position
