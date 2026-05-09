@@ -409,7 +409,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             close: "Close",
             loginReq: "Please login to participate",
             highStakes: "High Stakes",
-            highStakesDesc: "Wrong or skipped answers deduct 15 points",
+            highStakesDesc: "Wrong answers deduct 15 points",
+            selectAnswerToContinue: "Select an answer to continue.",
             syncing: "Syncing your score...",
             waitingNetwork: "Waiting for network connection...",
             autoRetry: "Auto-retry enabled",
@@ -463,7 +464,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             close: "বন্ধ করুন",
             loginReq: "অংশগ্রহণ করতে লগইন করুন",
             highStakes: "হাই স্টেক",
-            highStakesDesc: "ভুল বা স্কিপ করা উত্তরের জন্য ১৫ পয়েন্ট কাটা হবে",
+            highStakesDesc: "প্রতিটি ভুল উত্তরের জন্য ১৫ পয়েন্ট কাটা হবে",
+            selectAnswerToContinue: "চালিয়ে যেতে একটি উত্তর বেছে নিন।",
             syncing: "আপনার স্কোর সিঙ্ক হচ্ছে...",
             waitingNetwork: "নেটওয়ার্ক সংযোগের জন্য অপেক্ষা করা হচ্ছে...",
             autoRetry: "স্বয়ংক্রিয় পুনঃচেষ্টা সক্রিয়",
@@ -1402,12 +1404,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         let totalPenalty = 0;
 
         if (isHighStakes && quizQuestions.length > 0) {
-            // Determine wrong OR skipped choices
-            const wrongOrSkippedCount = quizQuestions.filter(q =>
-                answers[q.id] !== q.correct_option_index
+            // Wrong answers only (hourly flow requires every question answered before submit)
+            const wrongCountPenalty = quizQuestions.filter((q) =>
+                answers[String(q.id)] !== undefined &&
+                Number(answers[String(q.id)]) !== Number(q.correct_option_index)
             ).length;
 
-            totalPenalty = wrongOrSkippedCount * 15; // Deduct 15 points per WRONG or SKIPPED choice
+            totalPenalty = wrongCountPenalty * 15;
         }
         return totalPenalty;
     };
@@ -1420,6 +1423,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
 
     const submitQuiz = async () => {
+        if (quizQuestions.some((q) => userAnswers[String(q.id)] === undefined)) {
+            console.warn('Hourly submit blocked: not all questions have an answer.');
+            return;
+        }
+
         let calculatedScore = 0;
         let correctCount = 0;
         let wrongCount = 0;
@@ -1445,10 +1453,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
         if (isHighStakes) {
             penalty = quizQuestions.reduce((acc, q) => {
-                // Use Number() to ensure type-safe comparison against stored string keys
-                const answer = userAnswers[String(q.id)]; 
+                const answer = userAnswers[String(q.id)];
                 if (answer === undefined || Number(answer) !== Number(q.correct_option_index)) {
-                    return acc + 15; // 15 points penalty for wrong/skipped
+                    return acc + 15; // wrong (unanswered should be impossible after UI gate)
                 }
                 return acc;
             }, 0);
@@ -1489,6 +1496,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             await submitHourlyQuiz(calculatedScore, penalty);
         }
     };
+
+    const hourlyCurrentQuestion =
+        activeQuiz && Array.isArray(quizQuestions) && quizQuestions.length > 0
+            ? quizQuestions[currentQuestionIndex]
+            : null;
+    const hourlyCurrentAnswered =
+        reviewMode ||
+        !!(hourlyCurrentQuestion && userAnswers[String(hourlyCurrentQuestion.id)] !== undefined);
 
     if (isFullLeaderboard) {
         return (
@@ -1999,7 +2014,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex flex-col">
                             <h1 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2 tracking-tight">
-                                <span className="text-2xl">🏆</span> {language === 'en' ? 'Daily Challenge' : 'দৈনিক চ্যালেঞ্জ'}
+                                <span className="text-2xl">🏆</span> {language === 'en' ? '5 quizzes every hour' : 'প্রতি ঘণ্টায় ৫ কুইজ'}
                             </h1>
                         </div>
                         {userRank && (
@@ -2294,27 +2309,31 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             </div>
 
 
-            {/* Floating Action Buttons */}
-            <div className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-4 md:right-8 z-[70] flex flex-col gap-3">
-                <a
-                    href="https://www.facebook.com/smartlineman"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-12 h-12 bg-[#1877F2] text-white rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(24,119,242,0.4)] hover:scale-110 hover:-translate-y-1 transition-all duration-300 border-2 border-white/20"
-                    title="Facebook Page"
-                >
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" /></svg>
-                </a>
-                <a
-                    href="https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-12 h-12 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(37,211,102,0.4)] hover:scale-110 hover:-translate-y-1 transition-all duration-300 border-2 border-white/20"
-                    title="WhatsApp Community"
-                >
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
-                </a>
-            </div>
+            {/* Portal to body: parent .view-transition uses transform, which breaks fixed positioning and makes FABs jump when the animation ends */}
+            {typeof document !== 'undefined' &&
+                createPortal(
+                    <div className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom,0px))] z-[70] flex flex-col gap-3 right-[max(1rem,calc(3.75rem+env(safe-area-inset-right,0px)))] md:right-[max(2rem,calc(3.75rem+env(safe-area-inset-right,0px)))]">
+                        <a
+                            href="https://www.facebook.com/smartlineman"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-12 h-12 bg-[#1877F2] text-white rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(24,119,242,0.4)] hover:scale-110 hover:-translate-y-1 transition-all duration-300 border-2 border-white/20"
+                            title="Facebook Page"
+                        >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" /></svg>
+                        </a>
+                        <a
+                            href="https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-12 h-12 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(37,211,102,0.4)] hover:scale-110 hover:-translate-y-1 transition-all duration-300 border-2 border-white/20"
+                            title="WhatsApp Community"
+                        >
+                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
+                        </a>
+                    </div>,
+                    document.body
+                )}
 
             {showAbortWarningModal && createPortal(
                 <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/75 backdrop-blur-sm animate-fade-in">
@@ -2390,7 +2409,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     </span>
                                                     <span className={`text-[8px] font-bold uppercase mt-0.5 ${userRank && userRank.score > 1000 ? 'text-red-500/70 dark:text-red-500/60' : 'text-green-500/70 dark:text-green-500/60'}`}>
                                                         {userRank && userRank.score > 1000 
-                                                            ? (language === 'en' ? '-15pts per Wrong/Skip' : 'প্রতি ভুল/স্কিপে -১৫') 
+                                                            ? (language === 'en' ? '-15 pts per wrong answer' : 'প্রতি ভুল উত্তরে -১৫') 
                                                             : (language === 'en' ? 'No Penalties yet' : 'কোনো পেনাল্টি নেই')}
                                                     </span>
                                                 </div>
@@ -2559,31 +2578,61 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                 </div>
 
-                                <div className="flex justify-between items-center pt-6 border-t border-slate-100 dark:border-slate-700">
-                                    <button
-                                        disabled={currentQuestionIndex === 0}
-                                        onClick={() => {
-                                            setCurrentQuestionIndex(prev => prev - 1);
-                                            setShowHint(false);
-                                        }}
-                                        className="text-slate-500 hover:text-slate-800 dark:text-slate-200 font-bold text-sm disabled:opacity-30 px-4"
-                                    >
-                                        ← Prev
-                                    </button>
-                                    {currentQuestionIndex === quizQuestions.length - 1 ? (
-                                        <button onClick={reviewMode ? () => setActiveQuiz(null) : submitQuiz} className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-colors ${reviewMode ? 'bg-slate-800 dark:bg-slate-700 text-white hover:bg-slate-900 dark:hover:bg-slate-600' : 'bg-green-600 text-white hover:bg-green-700'}`}>
-                                            {reviewMode ? 'Close Review' : 'Finish Quiz'}
-                                        </button>
-                                    ) : (
+                                <div className="flex flex-col gap-2 pt-6 border-t border-slate-100 dark:border-slate-700">
+                                    <div className="flex justify-between items-center">
                                         <button
+                                            type="button"
+                                            disabled={currentQuestionIndex === 0}
                                             onClick={() => {
-                                                setCurrentQuestionIndex(prev => prev + 1);
+                                                setCurrentQuestionIndex((prev) => prev - 1);
                                                 setShowHint(false);
                                             }}
-                                            className="px-6 py-2.5 bg-orange-600 text-white rounded-lg font-bold text-sm hover:bg-orange-700 transition-colors"
+                                            className="text-slate-500 hover:text-slate-800 dark:text-slate-200 font-bold text-sm disabled:opacity-30 px-4"
                                         >
-                                            Next →
+                                            ← Prev
                                         </button>
+                                        {currentQuestionIndex === quizQuestions.length - 1 ? (
+                                            <button
+                                                type="button"
+                                                disabled={!reviewMode && !hourlyCurrentAnswered}
+                                                onClick={reviewMode ? () => setActiveQuiz(null) : submitQuiz}
+                                                aria-disabled={!reviewMode && !hourlyCurrentAnswered}
+                                                className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-colors ${
+                                                    reviewMode
+                                                        ? 'bg-slate-800 dark:bg-slate-700 text-white hover:bg-slate-900 dark:hover:bg-slate-600'
+                                                        : hourlyCurrentAnswered
+                                                          ? 'bg-green-600 text-white hover:bg-green-700'
+                                                          : 'bg-slate-300 dark:bg-slate-600 text-slate-500 dark:text-slate-400 cursor-not-allowed'
+                                                }`}
+                                            >
+                                                {reviewMode ? 'Close Review' : 'Finish Quiz'}
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                disabled={!reviewMode && !hourlyCurrentAnswered}
+                                                onClick={() => {
+                                                    setCurrentQuestionIndex((prev) => prev + 1);
+                                                    setShowHint(false);
+                                                }}
+                                                aria-disabled={!reviewMode && !hourlyCurrentAnswered}
+                                                className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-colors ${
+                                                    reviewMode || hourlyCurrentAnswered
+                                                        ? 'bg-orange-600 text-white hover:bg-orange-700'
+                                                        : 'bg-slate-300 dark:bg-slate-600 text-slate-500 dark:text-slate-400 cursor-not-allowed'
+                                                }`}
+                                            >
+                                                Next →
+                                            </button>
+                                        )}
+                                    </div>
+                                    {!reviewMode && !hourlyCurrentAnswered && (
+                                        <p
+                                            className={`text-center text-xs font-semibold text-amber-700 dark:text-amber-300/90 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                            role="status"
+                                        >
+                                            {t.selectAnswerToContinue}
+                                        </p>
                                     )}
                                 </div>
                             </>
@@ -2606,7 +2655,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-3 gap-2 mb-8">
+                                <div className="mx-auto mb-8 grid max-w-md grid-cols-2 gap-3">
                                     <div className="bg-green-50 dark:bg-green-900/10 p-3 rounded-xl border border-green-100 dark:border-green-900/30">
                                         <div className="text-[10px] font-bold text-green-600 uppercase tracking-tighter mb-1">Right</div>
                                         <div className="text-lg font-bold text-green-700 dark:text-green-400">+{quizResults?.pointsEarned || 0}</div>
@@ -2615,11 +2664,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         <div className="text-[10px] font-bold text-red-600 uppercase tracking-tighter mb-1">Wrong</div>
                                         <div className="text-lg font-bold text-red-700 dark:text-red-400">-{quizResults?.penalty || 0}</div>
                                     </div>
-                                    <div className="bg-slate-50 dark:bg-slate-900/10 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">Skipped</div>
-                                        <div className="text-lg font-bold text-slate-600 dark:text-slate-400">{quizResults?.skipped || 0}</div>
-                                    </div>
                                 </div>
+                                {(quizResults?.skipped || 0) > 0 && (
+                                    <p className={`mb-6 text-center text-[11px] text-slate-500 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en'
+                                            ? `This saved attempt includes ${quizResults.skipped} unanswered question(s) from an older format. New quizzes require every answer.`
+                                            : `এই সংরক্ষিত প্রচেষ্টায় পুরনো ফরম্যাট থেকে ${quizResults.skipped}টি প্রশ্ন উত্তরহীন ছিল। নতুন কুইজে সব প্রশ্নের উত্তর দিতে হবে।`}
+                                    </p>
+                                )}
 
                                 <div className={`mb-6 p-4 rounded-2xl border text-left animate-in fade-in slide-in-from-bottom-2 duration-700
                                     ${userRank && (userProfile?.points || userRank?.score) > 1000 

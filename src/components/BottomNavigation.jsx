@@ -69,8 +69,8 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
         {navItems.map((item) => {
           const isActive = (currentView === item.id && !isViewingOthersProgress) || 
                            (item.id === 'safety-library' && ['safety-library', 'my_ppe', 'my_tools'].includes(currentView)) || 
-                           (item.id === 'training' && currentView === 'home') ||
-                           (item.id === 'leaderboard' && (currentView === 'competitions' || isViewingOthersProgress));
+                           (item.id === 'training' && (currentView === 'home' || currentView === 'competitions')) ||
+                           (item.id === 'leaderboard' && (currentView === 'leaderboard' || isViewingOthersProgress));
           
           return (
             <button
