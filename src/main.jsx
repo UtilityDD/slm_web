@@ -13,8 +13,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   </React.StrictMode>,
 )
 
-// Register service worker for PWA (Only in production and NOT in native app)
-if ('serviceWorker' in navigator && import.meta.env.PROD && !window.Capacitor) {
+// Register service worker for PWA (localhost + production; skip native Capacitor shell)
+if ('serviceWorker' in navigator && !window.Capacitor) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js')

@@ -12,6 +12,7 @@ import { requestManager } from './utils/requestManager';
 import LogoutConfirmationModal from "./components/LogoutConfirmationModal";
 import Sidebar from "./components/Sidebar";
 import NetworkStatusListener from "./components/NetworkStatusListener";
+import PwaInstallPrompt from "./components/PwaInstallPrompt";
 import { UserIcon } from "./components/icons";
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from "./config";
 import { preloadSafetyLibraryAssets } from "./utils/assetPreloader";
@@ -1102,6 +1103,11 @@ export default function SmartLinemanUI() {
 
   return (
     <Suspense fallback={<PageLoader />}>
+      <>
+      <PwaInstallPrompt
+        language={language}
+        offsetForBottomNav={!appLoading && !!user && !['login', 'verify'].includes(currentView)}
+      />
       {appLoading ? (
         <PageLoader />
       ) : (
@@ -1375,6 +1381,7 @@ export default function SmartLinemanUI() {
         </div>
         </LifeSkillRadioProvider>
       )}
+      </>
     </Suspense>
   );
 }
