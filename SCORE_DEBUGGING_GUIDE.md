@@ -183,10 +183,12 @@ Same pattern as Appendix A; compare counts to pre-check. Optional sample: top 20
 - **Monthly:** `monthly_leaderboard_view` — **`points` is authoritative net for the month**; do not subtract `total_penalties` again in JS (`leaderboardService.fetchMonthly`).
 - **Certificate verify:** `VerificationView` should select `total_penalties` if penalties are shown.
 - **Cache:** use **`invalidateLeaderboardCaches`** whenever the user earns points outside the Competitions hourly flow (e.g. training lesson bonus) so the next leaderboard read is not served from stale `slm_cache_*` entries.
+- **Monthly display (new users this calendar month):** the view buckets attempts by DB time on `created_at`; `lesson_bonus` rows can sit in an adjacent month vs the client’s local month filter, so **`fetchMonthly`** adds **`max(0, profiles.reading_points − view.reading_points)`** to the row’s **`points`** only when **`profiles.created_at` ≥ start of local month** — so totals match expectation (e.g. Kabir-style 170 vs 110) without double-counting when the view already includes monthly reading.
 
 ---
 
 ## Change log
 
+- **2026-05:** `fetchMonthly`: for users who **joined this local calendar month**, monthly **`points`** shown in the app now include **`max(0, profile.reading_points − view.reading_points)`** so reading is not dropped when DB month buckets disagree with the client (see “Time zones” above).
 - **2026-04 (late):** Documented frontend leaderboard cache keys, `invalidateLeaderboardCaches`, post-score refetch paths, timezone vs “This month”, hourly id client behaviour; Training vs Competitions clock note.
 - **2026-04:** Added trigger-safe repair, net monthly view, consolidated operator checklist into this document, removed duplicate `operator_score_repair_checklist.sql`.

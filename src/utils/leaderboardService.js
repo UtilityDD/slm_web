@@ -53,24 +53,28 @@ export const leaderboardService = {
 
                 if (error) throw error;
 
-                // Process data to include metadata for display only.
-                // monthly_leaderboard_view.points should be treated as authoritative monthly score.
+                // Process data for display. DB view buckets by server/session month on created_at;
+                // lesson_bonus rows can land in an adjacent month vs the client's local "this month"
+                // filter, so points can under-count reading while profiles.reading_points is correct.
                 const startOfMonth = new Date(y, m - 1, 1).getTime();
 
                 return data.map(item => {
                     const basePoints = Number(item.points) || 0;
-                    const readingPoints = Number(item.profiles?.reading_points) || 0;
+                    const viewReadingInMonth = Number(item.reading_points) || 0;
+                    const profileReading = Number(item.profiles?.reading_points) || 0;
                     const joinDate = item.profiles?.created_at ? new Date(item.profiles.created_at).getTime() : 0;
 
-                    // If user joined this month, all their reading points are from this month
-                    // (Double check to prevent double adding if view already handled it)
                     const isNewUser = joinDate >= startOfMonth;
-                    
+                    // Only for users who joined this calendar month: add reading that exists on the
+                    // profile but is not already counted in this view row's monthly lesson_bonus sum.
+                    const readingGap = isNewUser ? Math.max(0, profileReading - viewReadingInMonth) : 0;
+                    const displayPoints = basePoints + readingGap;
+
                     return {
                         ...item,
-                        points: basePoints,
-                        reading_points_added: isNewUser ? readingPoints : 0,
-                        all_time_reading_points: readingPoints,
+                        points: displayPoints,
+                        reading_points_added: readingGap,
+                        all_time_reading_points: profileReading,
                         district: item.profiles?.district || null,
                         is_new_user: isNewUser
                     };
