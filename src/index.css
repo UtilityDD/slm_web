@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Serif+Bengali:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -156,6 +156,25 @@ body,
 
   .font-bengali {
     font-family: 'Noto Serif Bengali', serif;
+    letter-spacing: 0;
+  }
+
+  /* Landing page: Hind Siliguri for UI, Noto Serif for long-form lesson text */
+  .landing-page-light.lang-bn {
+    font-family: 'Hind Siliguri', 'Noto Serif Bengali', serif;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .landing-page-light.lang-bn .landing-bn-ui {
+    font-family: 'Hind Siliguri', sans-serif;
+    letter-spacing: 0.01em;
+  }
+
+  .landing-page-light.lang-bn .landing-bn-reading {
+    font-family: 'Noto Serif Bengali', serif;
+    line-height: 1.9;
     letter-spacing: 0;
   }
 

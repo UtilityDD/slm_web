@@ -34,6 +34,7 @@ const MyPPE = lazy(() => import("./components/safety/MyPPE"));
 const MyTools = lazy(() => import("./components/safety/MyTools"));
 const Training = lazy(() => import("./components/safety/Training"));
 const Login = lazy(() => import("./components/Login"));
+const Landing = lazy(() => import("./components/Landing"));
 const Admin = lazy(() => import("./components/Admin"));
 const AdminServices = lazy(() => import("./components/AdminServices"));
 const Home = lazy(() => import("./components/Home"));
@@ -107,13 +108,13 @@ export default function SmartLinemanUI() {
       return 'verify';
     }
 
-    // Return hash-based route or default to home
-    return hash || 'training';
+    // Return hash-based route or default to public landing
+    return hash || 'landing';
   };
 
   const [currentView, setCurrentView] = useState(getInitialView);
 
-  const [language, setLanguage] = useState('bn');
+  const [language, setLanguage] = useState(() => storageUtils.getItem('appLanguage') || 'en');
   const [theme, setTheme] = useState(() => {
     // Default to dark unless user has an explicit preference
     return storageUtils.getItem('appTheme') || 'dark';
@@ -559,6 +560,13 @@ export default function SmartLinemanUI() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Authenticated users should not stay on the public landing screen
+  useEffect(() => {
+    if (!appLoading && user && currentView === 'landing') {
+      setCurrentView('training');
+    }
+  }, [appLoading, user, currentView]);
+
   // Load completed lessons from localStorage
   useEffect(() => {
     if (user) {
@@ -726,7 +734,7 @@ export default function SmartLinemanUI() {
       setAwarenessOpenStoryId(null);
     }
 
-    if (currentView === 'home') {
+    if (currentView === 'home' || currentView === 'landing') {
       window.history.replaceState(null, '', window.location.pathname);
     } else {
       const hash = window.location.hash.replace('#/', '').split('?')[0];
@@ -750,8 +758,8 @@ export default function SmartLinemanUI() {
         if (hash && hash !== prevView) {
           return hash;
         }
-        if (!hash && prevView !== 'home') {
-          return 'home';
+        if (!hash) {
+          return user ? 'home' : 'landing';
         }
         return prevView;
       });
@@ -759,7 +767,7 @@ export default function SmartLinemanUI() {
 
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+  }, [user]);
 
   // Add a listener to re-check auth when the app becomes visible
   useEffect(() => {
@@ -872,7 +880,7 @@ export default function SmartLinemanUI() {
       storageUtils.removeItem('slm_session_id');
       cacheHelper.clearAll();
       setShowLogoutModal(false);
-      setCurrentView('home');
+      setCurrentView('landing');
       requestAnimationFrame(() => {
         if (isAutomatic === true) {
           showNotification(language === 'en' ? 'Logged in from another device' : 'অন্য ডিভাইস থেকে লগ ইন করা হয়েছে', 'error');
@@ -947,21 +955,18 @@ export default function SmartLinemanUI() {
   const t = translations[language];
 
   const renderContent = () => {
-    const publicViews = ['login', 'update-password', 'verify', 'accident-stories', 'sops'];
+    const publicViews = ['landing', 'login', 'update-password', 'verify', 'accident-stories', 'video-guide', 'sops'];
     const isPublic = publicViews.includes(currentView);
 
     if (!user && !isPublic && !appLoading) {
       return (
         <Suspense fallback={<PageLoader />}>
           <div className="flex-1 flex flex-col min-h-0 w-full animate-slide-up-fade">
-            <Login
-              onLogin={(u) => {
-                setUser(u);
-                fetchProfile(u);
-                setCurrentView('training');
-              }}
-              showNotification={showNotification}
+            <Landing
+              language={language}
+              onLanguageChange={handleLanguageSelect}
               setCurrentView={setCurrentView}
+              user={user}
             />
           </div>
         </Suspense>
@@ -969,6 +974,17 @@ export default function SmartLinemanUI() {
     }
 
     const content = (() => {
+      if (currentView === 'landing' && !user) {
+        return (
+          <Landing
+            language={language}
+            onLanguageChange={handleLanguageSelect}
+            setCurrentView={setCurrentView}
+            user={user}
+          />
+        );
+      }
+
       if (currentView === 'login' || (currentView === 'update-password' && !user)) {
         return <Login
           initialView={currentView === 'update-password' ? 'update' : 'login'}
@@ -1098,6 +1114,7 @@ export default function SmartLinemanUI() {
     showUpdateModal ||
     isRetiring ||
     currentView === 'accident-stories' ||
+    currentView === 'landing' ||
     currentView === 'verify' ||
     (currentView === 'update-password' && !user);
 
@@ -1106,7 +1123,7 @@ export default function SmartLinemanUI() {
       <>
       <PwaInstallPrompt
         language={language}
-        offsetForBottomNav={!appLoading && !!user && !['login', 'verify'].includes(currentView)}
+        offsetForBottomNav={!appLoading && !!user && !['login', 'verify', 'landing'].includes(currentView)}
       />
       {appLoading ? (
         <PageLoader />
