@@ -178,6 +178,15 @@ body,
     letter-spacing: 0;
   }
 
+  .landing-life-skills-scroll {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .landing-life-skills-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
   .reading-content {
     @apply text-slate-700 dark:text-slate-300;
     line-height: 1.7;

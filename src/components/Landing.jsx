@@ -276,7 +276,7 @@ function AnimatedNumber({ value, loading }) {
   }, [target, loading]);
 
   if (loading) {
-    return <span className="inline-block h-9 w-16 bg-slate-200/80 rounded-lg animate-pulse" />;
+    return <span className="inline-block h-10 w-20 sm:h-12 sm:w-24 bg-slate-200/80 rounded-lg animate-pulse" />;
   }
   return <span>{formatCount(display)}</span>;
 }
@@ -290,18 +290,18 @@ const StatTile = ({ label, value, icon, accent, loading, sub }) => {
   }
 
   return (
-    <div className="relative group overflow-hidden rounded-3xl border border-slate-200/60 bg-white/90 backdrop-blur-md p-6 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-      <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-orange-500 to-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-      <div className="flex items-center justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-1.5">{label}</p>
-          <p className={`text-3.5xl sm:text-4xl font-black tracking-tight tabular-nums ${accent}`}>
+    <div className="relative group overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/60 bg-white/90 backdrop-blur-md p-4 sm:p-6 shadow-md sm:hover:shadow-xl transition-all duration-300 sm:hover:-translate-y-1">
+      <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-orange-500 to-amber-400 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block" />
+      <div className="flex flex-col items-center text-center gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:text-left sm:gap-4">
+        <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-tr ${gradientClass} flex items-center justify-center text-2xl sm:text-4xl shadow-md sm:shadow-lg shrink-0 text-white sm:transform sm:group-hover:scale-110 sm:transition-transform sm:duration-300`}>
+          {icon}
+        </div>
+        <div className="min-w-0 flex-1 w-full">
+          <p className={`text-3xl sm:text-5xl font-black tracking-tight tabular-nums leading-none ${accent}`}>
             <AnimatedNumber value={value} loading={loading} />
           </p>
-          {sub && <p className="text-xs font-semibold text-slate-500 mt-1 truncate">{sub}</p>}
-        </div>
-        <div className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${gradientClass} flex items-center justify-center text-3xl shadow-lg shrink-0 text-white transform group-hover:scale-110 transition-transform duration-300`}>
-          {icon}
+          <p className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wide sm:tracking-widest text-slate-400 mt-1.5 sm:mt-1 line-clamp-2 sm:line-clamp-none">{label}</p>
+          {sub && <p className="hidden sm:block text-xs font-semibold text-slate-500 mt-1 truncate">{sub}</p>}
         </div>
       </div>
     </div>
@@ -526,36 +526,43 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
 
   return (
     <div
-      className={`landing-page-light min-h-full bg-gradient-to-b from-slate-50 via-white to-orange-50/20 text-slate-900 pb-16 ${bnFont ? 'lang-bn' : 'font-sans'}`}
+      className={`landing-page-light min-h-full bg-gradient-to-b from-slate-50 via-white to-orange-50/20 text-slate-900 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] sm:pb-16 ${bnFont ? 'lang-bn' : 'font-sans'}`}
     >
       {/* Top bar sticky glassmorphic */}
-      <div className="sticky top-0 z-20 border-b border-slate-200/50 bg-white/75 backdrop-blur-md safe-area-inset-top">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-          <div className="flex items-baseline gap-1 select-none">
-            <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">SmartLineMan</span>
-            <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded-md border border-orange-200 shadow-sm">.in</span>
+      <div className="sticky top-0 z-20 border-b border-slate-200/50 bg-white/90 backdrop-blur-md safe-area-inset-top">
+        <div className="max-w-5xl mx-auto px-3 sm:px-6 min-h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-baseline gap-1 select-none min-w-0">
+            <span className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate">SmartLineMan</span>
+            <span className="text-[9px] sm:text-[10px] font-black text-orange-600 bg-orange-50 px-1 sm:px-1.5 py-0.5 rounded-md border border-orange-200 shadow-sm shrink-0">.in</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <div
-              className="flex p-1 rounded-full border border-slate-200 bg-slate-100/80 text-xs font-bold"
+              className="flex p-0.5 sm:p-1 rounded-full border border-slate-200 bg-slate-100/80 text-[11px] sm:text-xs font-bold"
               role="group"
               aria-label={t.language}
             >
               <button
                 type="button"
                 onClick={() => onLanguageChange('en')}
-                className={`px-3 py-1.5 rounded-full transition-all duration-300 ${language === 'en' ? 'bg-orange-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                className={`min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 px-2.5 sm:px-3 py-1.5 rounded-full transition-all duration-300 touch-manipulation ${language === 'en' ? 'bg-orange-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
               >
                 EN
               </button>
               <button
                 type="button"
                 onClick={() => onLanguageChange('bn')}
-                className={`px-3 py-1.5 rounded-full transition-all duration-300 ${language === 'bn' ? 'bg-orange-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                className={`min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 px-2.5 sm:px-3 py-1.5 rounded-full transition-all duration-300 touch-manipulation ${language === 'bn' ? 'bg-orange-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
               >
                 বাং
               </button>
             </div>
+            <button
+              type="button"
+              onClick={() => setCurrentView('login')}
+              className="inline-flex sm:hidden items-center min-h-[36px] px-3 py-1.5 rounded-full bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold shadow-md shadow-orange-600/10 active:scale-[0.98] touch-manipulation"
+            >
+              {t.login}
+            </button>
             <button
               type="button"
               onClick={() => setCurrentView('login')}
@@ -567,15 +574,15 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-16 relative">
-        {/* Soft glowing ambient backgrounds */}
-        <div className="pointer-events-none absolute top-4 right-10 w-72 h-72 bg-gradient-to-tr from-amber-400/20 to-orange-400/10 blur-3xl rounded-full" />
-        <div className="pointer-events-none absolute top-40 -left-12 w-64 h-64 bg-gradient-to-br from-cyan-400/15 to-indigo-400/10 blur-3xl rounded-full" />
+      <div className="max-w-5xl mx-auto px-3 sm:px-6 pb-8 sm:pb-16 relative">
+        {/* Soft glowing ambient backgrounds — desktop only */}
+        <div className="pointer-events-none absolute top-4 right-10 w-72 h-72 bg-gradient-to-tr from-amber-400/20 to-orange-400/10 blur-3xl rounded-full hidden sm:block" />
+        <div className="pointer-events-none absolute top-40 -left-12 w-64 h-64 bg-gradient-to-br from-cyan-400/15 to-indigo-400/10 blur-3xl rounded-full hidden sm:block" />
 
         {/* Hero Section Grid */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-8 sm:pt-12 pb-12 relative z-10">
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center pt-5 sm:pt-12 pb-8 sm:pb-12 relative z-10">
           <div className="lg:col-span-7 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-50 border border-orange-100 text-xs font-bold text-orange-700 mb-6 shadow-sm animate-safety-float">
+            <div className="inline-flex flex-wrap items-center justify-center lg:justify-start gap-2 px-3 py-1.5 rounded-full bg-orange-50 border border-orange-100 text-[11px] sm:text-xs font-bold text-orange-700 mb-4 sm:mb-6 shadow-sm animate-safety-float max-w-full text-center lg:text-left">
               <span className="flex h-2 w-2 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
@@ -583,7 +590,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
               {t.tagline}
             </div>
             
-            <h1 className="text-4xl sm:text-6xl font-black text-slate-900 leading-tight mb-4 tracking-tight">
+            <h1 className={`font-black text-slate-900 leading-[1.2] sm:leading-tight mb-3 sm:mb-4 tracking-tight text-balance ${bnFont ? 'text-[1.6rem] sm:text-4xl md:text-6xl' : 'text-3xl sm:text-5xl md:text-6xl'}`}>
               {language === 'bn' ? (
                 <>
                   প্রশিক্ষণ নিন। প্রতিযোগিতা করুন। <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-amber-500">নিরাপদ থাকুন।</span>
@@ -595,20 +602,20 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
               )}
             </h1>
             
-            <p className="text-slate-500 text-sm font-semibold tracking-wider uppercase mb-2">{t.tagline}</p>
-            <p className={`text-lg text-slate-600 max-w-2xl leading-relaxed mb-8 font-medium ${bnFont ? 'landing-bn-reading' : ''}`}>{t.heroSubtitle}</p>
+            <p className="hidden sm:block text-slate-500 text-sm font-semibold tracking-wider uppercase mb-2">{t.tagline}</p>
+            <p className={`text-base sm:text-lg text-slate-600 max-w-2xl leading-relaxed mb-6 sm:mb-8 font-medium mx-auto lg:mx-0 ${bnFont ? 'landing-bn-reading' : ''}`}>{t.heroSubtitle}</p>
             
-            <div className="flex flex-col sm:flex-row gap-3.5 justify-center sm:justify-start">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
               <button
                 type="button"
                 onClick={() => setCurrentView('login')}
-                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-black text-lg shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all transform hover:-translate-y-0.5 active:scale-[0.98]"
+                className="hidden sm:inline-flex w-full sm:w-auto min-h-[48px] px-8 py-4 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-black text-lg shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all transform hover:-translate-y-0.5 active:scale-[0.98] touch-manipulation items-center justify-center"
               >
                 {t.login}
               </button>
               <a
                 href="#life-skills"
-                className="w-full sm:w-auto px-6 py-4 rounded-2xl border border-slate-200 bg-white/80 backdrop-blur-sm font-bold text-slate-700 hover:text-slate-900 hover:border-slate-300 transition-all text-center flex items-center justify-center gap-2 hover:bg-slate-50 shadow-sm"
+                className="w-full sm:w-auto min-h-[48px] px-6 py-3.5 sm:py-4 rounded-2xl border border-slate-200 bg-white/80 backdrop-blur-sm font-bold text-slate-700 hover:text-slate-900 hover:border-slate-300 transition-all text-center flex items-center justify-center gap-2 hover:bg-slate-50 shadow-sm touch-manipulation"
               >
                 {t.exploreLifeSkills}
                 <svg className="w-4 h-4 text-slate-400 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
@@ -664,8 +671,8 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
           </div>
         </section>
 
-        {/* Dynamic Stats Grid */}
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-12 relative z-10">
+        {/* Dynamic Stats Grid — 3-up on mobile */}
+        <section className="grid grid-cols-3 gap-2 sm:gap-5 mb-8 sm:mb-12 relative z-10">
           <StatTile label={t.statsUsers} value={stats.users} icon="👷" accent="text-orange-600" loading={loading} />
           <StatTile
             label={t.statsToppers}
@@ -687,12 +694,12 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
 
         {/* Top 3 Performance Podium / Honors Board */}
         {stats.toppers.length > 0 && (
-          <section className="mb-12 relative z-10">
-            <h2 className="text-xl font-black text-slate-900 mb-5 flex items-center gap-2">
-              <span className="text-2xl">🎖️</span>
-              {t.topPlayers}
+          <section className="mb-8 sm:mb-12 relative z-10">
+            <h2 className="text-lg sm:text-xl font-black text-slate-900 mb-4 sm:mb-5 flex items-center gap-2">
+              <span className="text-xl sm:text-2xl shrink-0">🎖️</span>
+              <span className="leading-snug">{t.topPlayers}</span>
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               {stats.toppers.map((player, idx) => {
                 const medals = ['🥇', '🥈', '🥉'];
                 const rankColors = [
@@ -706,36 +713,36 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                 return (
                   <div
                     key={`${player.name}-${idx}`}
-                    className={`relative overflow-hidden flex flex-col sm:flex-row items-center gap-5 p-6 rounded-3xl border ${rankColors[idx]} shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5`}
+                    className={`relative overflow-hidden flex flex-row items-center gap-4 sm:gap-5 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border ${rankColors[idx]} shadow-md sm:hover:shadow-lg transition-all duration-300 sm:hover:-translate-y-0.5`}
                   >
                     {/* Rank Indicator Badge */}
-                    <div className="absolute top-3 right-3 flex items-center gap-1">
-                      <span className="text-xl">{medals[idx]}</span>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">{rankBadgeText[idx]}</span>
+                    <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 flex items-center gap-1">
+                      <span className="text-2xl sm:text-3xl">{medals[idx]}</span>
+                      <span className="hidden sm:inline text-[10px] font-black uppercase tracking-wider text-slate-400">{rankBadgeText[idx]}</span>
                     </div>
 
                     {player.avatarUrl ? (
-                      <div className={`relative shrink-0 ${isFirst ? 'p-1 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-300 shadow-md shadow-amber-500/20' : ''}`}>
+                      <div className={`relative shrink-0 ${isFirst ? 'p-1 sm:p-1.5 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-300 shadow-md shadow-amber-500/20' : ''}`}>
                         <img
                           src={player.avatarUrl}
                           alt={player.name}
-                          className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl object-cover border border-slate-200"
+                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl object-cover border-2 border-slate-200"
                         />
                       </div>
                     ) : (
-                      <div className={`w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br ${isFirst ? 'from-amber-400 to-yellow-500 text-white' : 'from-slate-100 to-slate-200 text-slate-700'} border border-slate-200/50 flex items-center justify-center font-black text-3xl shrink-0 shadow-inner`}>
+                      <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl bg-gradient-to-br ${isFirst ? 'from-amber-400 to-yellow-500 text-white' : 'from-slate-100 to-slate-200 text-slate-700'} border-2 border-slate-200/50 flex items-center justify-center font-black text-3xl sm:text-4xl shrink-0 shadow-inner`}>
                         {(player.name || '?').charAt(0).toUpperCase()}
                       </div>
                     )}
 
-                    <div className="min-w-0 flex-1 text-center sm:text-left mt-2 sm:mt-0">
+                    <div className="min-w-0 flex-1 text-left pr-10 sm:pr-12">
                       <p className="font-black text-lg sm:text-xl text-slate-900 truncate leading-snug">{player.name}</p>
-                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-1.5">
-                        <p className="text-sm font-black text-orange-600 bg-orange-50 px-2.5 py-0.5 rounded-lg border border-orange-100">
+                      <div className="flex flex-wrap items-center gap-2 mt-1.5 sm:mt-2">
+                        <p className="text-sm sm:text-base font-black text-orange-600 bg-orange-50 px-2.5 sm:px-3 py-1 rounded-lg border border-orange-100 tabular-nums">
                           {player.points} {t.pts}
                         </p>
                         {player.district && (
-                          <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-505 bg-slate-100 px-2 py-0.5 rounded-lg">
+                          <span className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg">
                             <span className="text-orange-500">📍</span>
                             {player.district}
                           </span>
@@ -750,15 +757,15 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
         )}
 
         {/* Vision & Mission section */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 relative z-10">
-          <article className="relative overflow-hidden group p-7 rounded-3xl bg-gradient-to-br from-amber-50/40 via-white to-white border border-amber-200/60 shadow-sm hover:shadow-md transition-all duration-300">
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-12 relative z-10">
+          <article className="relative overflow-hidden group p-5 sm:p-7 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-amber-50/40 via-white to-white border border-amber-200/60 shadow-sm sm:hover:shadow-md transition-all duration-300">
             <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-xl group-hover:scale-125 transition-transform" />
             <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-2xl mb-4 text-amber-700">🔭</div>
             <h2 className="text-xl font-black text-slate-900 mb-2.5">{t.visionTitle}</h2>
             <p className={`text-slate-600 leading-relaxed text-sm sm:text-base font-medium ${bnFont ? 'landing-bn-reading' : ''}`}>{t.vision}</p>
           </article>
           
-          <article className="relative overflow-hidden group p-7 rounded-3xl bg-gradient-to-br from-cyan-50/40 via-white to-white border border-cyan-200/60 shadow-sm hover:shadow-md transition-all duration-300">
+          <article className="relative overflow-hidden group p-5 sm:p-7 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-cyan-50/40 via-white to-white border border-cyan-200/60 shadow-sm sm:hover:shadow-md transition-all duration-300">
             <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-full blur-xl group-hover:scale-125 transition-transform" />
             <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 flex items-center justify-center text-2xl mb-4 text-cyan-700">🎯</div>
             <h2 className="text-xl font-black text-slate-900 mb-2.5">{t.missionTitle}</h2>
@@ -767,8 +774,8 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
         </section>
 
         {/* Life Skills Course grid */}
-        <section id="life-skills" className="mb-12 relative z-10">
-          <div className="rounded-3xl border border-slate-200/80 bg-white/80 backdrop-blur-md p-6 sm:p-8 shadow-md">
+        <section id="life-skills" className="mb-8 sm:mb-12 relative z-10 scroll-mt-20">
+          <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 bg-white/80 backdrop-blur-md p-4 sm:p-8 shadow-md">
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
                 <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-1.5 flex items-center gap-1.5">
@@ -781,7 +788,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
               </div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div className="landing-life-skills-scroll flex sm:grid sm:grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-6 -mx-1 px-1 sm:mx-0 sm:px-0 overflow-x-auto sm:overflow-visible pb-1 sm:pb-0 snap-x snap-mandatory">
               {(lifeSkillModules.length
                 ? lifeSkillModules
                 : [
@@ -802,7 +809,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                     type="button"
                     onClick={() => openLifeSkillPreview(module)}
                     key={module?.id || code}
-                    className="group relative text-left p-6 rounded-3xl border border-slate-200/60 bg-white hover:border-indigo-300 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.99] flex flex-col justify-between min-h-[180px]"
+                    className="group relative text-left p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200/60 bg-white hover:border-indigo-300 sm:hover:shadow-lg transition-all duration-300 sm:hover:-translate-y-0.5 active:scale-[0.99] flex flex-col justify-between min-h-[168px] sm:min-h-[180px] w-[min(78vw,280px)] sm:w-auto shrink-0 sm:shrink snap-center touch-manipulation"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-3">
@@ -844,7 +851,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
           </div>
         </section>
 
-        <footer className="text-center sm:text-left text-xs text-slate-400 border-t border-slate-200/60 pt-8 mt-12">
+        <footer className="text-center sm:text-left text-xs text-slate-400 border-t border-slate-200/60 pt-6 sm:pt-8 mt-8 sm:mt-12">
           <p className="font-semibold">{t.footer}</p>
           <p className="mt-1.5 font-bold">
             {APP_NAME} ·{' '}
@@ -856,52 +863,113 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
       </div>
 
       {/* Mobile sticky Login CTA */}
-      <div className="sm:hidden fixed bottom-0 inset-x-0 z-30 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-white via-white/95 to-transparent">
-        <button
-          type="button"
-          onClick={() => setCurrentView('login')}
-          className="w-full py-4.5 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-50 text-white font-black text-lg shadow-xl shadow-orange-600/25 active:scale-[0.98] transition-transform"
-        >
-          {t.login}
-        </button>
-      </div>
+      {!activeLifeSkill && (
+        <div className="sm:hidden fixed bottom-0 inset-x-0 z-30 px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-white via-white/98 to-white/80 border-t border-slate-200/40 backdrop-blur-sm">
+          <button
+            type="button"
+            onClick={() => setCurrentView('login')}
+            className="w-full min-h-[48px] py-3.5 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-500 text-white font-black text-base shadow-xl shadow-orange-600/25 active:scale-[0.98] transition-transform touch-manipulation"
+          >
+            {t.login}
+          </button>
+        </div>
+      )}
 
       {/* Modern Full Screen Interactive Reading Dashboard Modal */}
       {activeLifeSkill && (
         <div className={`fixed inset-0 z-50 bg-slate-50 flex flex-col animate-toast-in overflow-hidden ${bnFont ? 'lang-bn' : 'font-sans'}`}>
-          <header className="sticky top-0 z-10 border-b border-slate-200/60 bg-white/85 backdrop-blur-md safe-area-inset-top shrink-0">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-extrabold uppercase tracking-widest text-indigo-600 px-2.5 py-0.5 rounded-lg bg-indigo-50 border border-indigo-100">{activeLifeSkill.lesson_code || 'LS'}</span>
-                  {activeLifeSkill.duration && <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">⏱️ {activeLifeSkill.duration}</span>}
+          <header className="sticky top-0 z-10 border-b border-slate-200/60 bg-white/90 backdrop-blur-md safe-area-inset-top shrink-0">
+            <div className="max-w-4xl mx-auto px-3 sm:px-6 py-3 sm:py-4 flex items-start sm:items-center justify-between gap-2 sm:gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest text-indigo-600 px-2 sm:px-2.5 py-0.5 rounded-lg bg-indigo-50 border border-indigo-100">{activeLifeSkill.lesson_code || 'LS'}</span>
+                  {activeLifeSkill.duration && <span className="text-[10px] sm:text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">⏱️ {activeLifeSkill.duration}</span>}
                 </div>
-                <h4 className="text-lg sm:text-xl font-black text-slate-900 truncate leading-snug mt-1.5">
+                <h4 className={`text-base sm:text-xl font-black text-slate-900 leading-snug mt-1 sm:mt-1.5 ${bnFont ? 'line-clamp-2 sm:truncate' : 'truncate'}`}>
                   {language === 'bn' ? activeLifeSkill.title_bn : activeLifeSkill.title_en}
                 </h4>
               </div>
               <button
                 type="button"
                 onClick={() => setActiveLifeSkill(null)}
-                className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-bold shadow-sm transition-colors active:scale-95 shrink-0"
+                className="min-h-[40px] px-3 sm:px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-bold shadow-sm transition-colors active:scale-95 shrink-0 touch-manipulation"
               >
                 {language === 'bn' ? 'বন্ধ' : 'Close'}
                 </button>
               </div>
             </header>
 
-          <main ref={lifeSkillModalScrollRef} className="flex-1 overflow-y-auto custom-scrollbar">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 pb-24">
-              <section className="lg:col-span-8 space-y-5">
+          <main ref={lifeSkillModalScrollRef} className="flex-1 overflow-y-auto custom-scrollbar overscroll-contain">
+            <div className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-6 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:pb-24">
+              <aside className="lg:col-span-4 space-y-4 sm:space-y-5 order-first lg:order-none lg:sticky lg:top-24 h-max">
+                {/* Duration & Info */}
+                <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                  <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-2">
+                    {language === 'bn' ? 'এই পাঠ সম্পর্কে' : 'Module Info'}
+                  </p>
+                  {!!activeLifeSkill.duration && (
+                    <p className="text-sm text-slate-600 font-bold">
+                      <span>{language === 'bn' ? 'সময়' : 'Duration'}:</span> {activeLifeSkill.duration}
+                    </p>
+                  )}
+                </div>
+
+                {/* Audio Lesson Player — surfaced early on mobile */}
+                {!!(activeLifeSkill.audio_url_en || activeLifeSkill.audio_url_bn) && (
+                  <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-2.5">
+                      {language === 'bn' ? 'শুনে শুনে শিখুন' : 'Audio Lesson'}
+                    </p>
+                    <div className="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-100 text-center">
+                      <span className="text-2xl sm:text-3xl block mb-2 animate-bounce-slow">🎧</span>
+                      <p className="text-xs font-bold text-slate-500 mb-3 sm:mb-4">{language === 'bn' ? 'মাঠে কাজের সময় শোনার জন্য' : 'Listen on-the-go during field work'}</p>
+                      <audio
+                        controls
+                        preload="none"
+                        className="w-full custom-audio-player focus:outline-none"
+                        src={(language === 'bn' ? activeLifeSkill.audio_url_bn : activeLifeSkill.audio_url_en) || activeLifeSkill.audio_url_en || activeLifeSkill.audio_url_bn}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Trusted Blurb guidance — desktop sidebar */}
+                {!!(activeLifeSkill.trusted_blurb_en || activeLifeSkill.trusted_blurb_bn) && (
+                  <div className="hidden lg:block rounded-3xl border border-dashed border-slate-200 bg-white p-5 text-xs text-slate-400 leading-relaxed font-semibold">
+                    <p className="font-extrabold text-slate-500 mb-1.5">{language === 'bn' ? 'তথ্যের উৎস' : 'Information Trust'}</p>
+                    {language === 'bn' ? activeLifeSkill.trusted_blurb_bn : activeLifeSkill.trusted_blurb_en}
+                  </div>
+                )}
+
+                {/* Close & Action Panel — desktop sidebar */}
+                <div className="hidden lg:block rounded-3xl border border-slate-200 bg-white p-5 space-y-2.5 shadow-sm">
+                  <button
+                    type="button"
+                    onClick={openLifeSkills}
+                    className="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm shadow-md shadow-indigo-600/10 active:scale-[0.98] transition-all"
+                  >
+                    {t.lifeSkillsTrack}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveLifeSkill(null)}
+                    className="w-full py-3.5 rounded-2xl border border-slate-200 hover:border-slate-300 text-sm font-bold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all"
+                  >
+                      {language === 'bn' ? 'বন্ধ' : 'Close'}
+                    </button>
+                  </div>
+                </aside>
+
+              <section className="lg:col-span-8 space-y-4 sm:space-y-5">
                 {activeLifeSkill.image_url && (
                   <img
                     src={activeLifeSkill.image_url}
                     alt={language === 'bn' ? activeLifeSkill.title_bn : activeLifeSkill.title_en}
-                    className="w-full h-52 sm:h-72 object-cover rounded-3xl border border-slate-200/60 shadow-sm"
+                    className="w-full h-52 sm:h-80 md:h-96 object-cover rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm"
                   />
                 )}
 
-                <div className={`rounded-3xl border border-slate-200 bg-white p-6 shadow-sm ${bnFont ? 'landing-bn-reading' : ''}`}>
+                <div className={`rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm ${bnFont ? 'landing-bn-reading' : ''}`}>
                   <p className="text-base leading-relaxed text-slate-700 font-medium">
                     {language === 'bn' ? activeLifeSkill.description_bn : activeLifeSkill.description_en}
                   </p>
@@ -917,7 +985,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                 </div>
 
                 {activeLifeSkillLoading && (
-                  <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm flex items-center justify-center gap-3 text-slate-500 font-bold">
+                  <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm flex items-center justify-center gap-3 text-slate-500 font-bold text-sm sm:text-base">
                     <span className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin shrink-0"></span>
                     {language === 'bn' ? 'লোড হচ্ছে…' : 'Loading full content...'}
                   </div>
@@ -926,7 +994,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                 {!activeLifeSkillLoading && translatedLifeSkillContent && (
                   <div className="space-y-5">
                     {!!translatedLifeSkillContent.mission_briefing && (
-                      <article className={`rounded-3xl border border-slate-200 bg-white p-6 shadow-sm ${bnFont ? 'landing-bn-reading' : ''}`}>
+                      <article className={`rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm ${bnFont ? 'landing-bn-reading' : ''}`}>
                         <h5 className={`text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-3 ${bnFont ? 'landing-bn-ui' : ''}`}>
                           {language === 'bn' ? 'শুরুর কথা' : 'Mission Briefing'}
                         </h5>
@@ -936,14 +1004,14 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
 
                     {Array.isArray(translatedLifeSkillContent.sections) &&
                       translatedLifeSkillContent.sections.map((section, sectionIdx) => (
-                        <article key={`${section.title}-${sectionIdx}`} className={`rounded-3xl border border-slate-200 bg-white p-6 shadow-sm ${bnFont ? 'landing-bn-reading' : ''}`}>
-                          <h6 className={`text-base sm:text-lg font-black text-slate-900 mb-4 flex items-center gap-2 ${bnFont ? 'landing-bn-ui' : ''}`}>
+                        <article key={`${section.title}-${sectionIdx}`} className={`rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm ${bnFont ? 'landing-bn-reading' : ''}`}>
+                          <h6 className={`text-base sm:text-lg font-black text-slate-900 mb-3 sm:mb-4 flex items-center gap-2 ${bnFont ? 'landing-bn-ui' : ''}`}>
                             <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 shrink-0 animate-pulse" />
                             {section.title}
                           </h6>
-                          <div className="space-y-4">
+                          <div className="space-y-3 sm:space-y-4">
                             {(section.points || []).map((point, pointIdx) => (
-                              <div key={`${point.item_name}-${pointIdx}`} className="rounded-2xl border border-slate-100 p-5 bg-slate-50/60 hover:bg-slate-50 transition-colors">
+                              <div key={`${point.item_name}-${pointIdx}`} className="rounded-xl sm:rounded-2xl border border-slate-100 p-4 sm:p-5 bg-slate-50/60 sm:hover:bg-slate-50 transition-colors">
                                 <p className="font-black text-base text-slate-800 flex items-start gap-2">
                                   <span className="text-indigo-600 mt-0.5">▪</span>
                                   {point.item_name}
@@ -975,7 +1043,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                 )}
 
                 {!activeLifeSkillLoading && !activeLifeSkillContent && (
-                  <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-6 shadow-sm text-center text-slate-400 font-bold text-sm">
+                  <div className="rounded-2xl sm:rounded-3xl border border-dashed border-slate-300 bg-white p-4 sm:p-6 shadow-sm text-center text-slate-400 font-bold text-sm">
                     {activeLifeSkillError
                       ? (language === 'bn' ? 'এখন এই পাঠ লোড হচ্ছে না। একটু পর আবার চেষ্টা করুন।' : 'Unable to load this content right now.')
                       : (language === 'bn'
@@ -983,68 +1051,26 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                           : 'Full reading content for this module is available inside Training.')}
                   </div>
                 )}
-              </section>
-
-              <aside className="lg:col-span-4 space-y-5 lg:sticky lg:top-24 h-max">
-                {/* Duration & Info */}
-                <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-2">
-                    {language === 'bn' ? 'এই পাঠ সম্পর্কে' : 'Module Info'}
-                  </p>
-                  {!!activeLifeSkill.duration && (
-                    <p className="text-sm text-slate-600 font-bold">
-                      <span>{language === 'bn' ? 'সময়' : 'Duration'}:</span> {activeLifeSkill.duration}
-                    </p>
-                  )}
-                </div>
-
-                {/* Audio Lesson Player */}
-                {!!(activeLifeSkill.audio_url_en || activeLifeSkill.audio_url_bn) && (
-                  <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-2.5">
-                      {language === 'bn' ? 'শুনে শুনে শিখুন' : 'Audio Lesson'}
-                    </p>
-                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center">
-                      <span className="text-3xl block mb-2 animate-bounce-slow">🎧</span>
-                      <p className="text-xs font-bold text-slate-500 mb-4">{language === 'bn' ? 'মাঠে কাজের সময় শোনার জন্য' : 'Listen on-the-go during field work'}</p>
-                      <audio
-                        controls
-                        preload="none"
-                        className="w-full custom-audio-player focus:outline-none"
-                        src={(language === 'bn' ? activeLifeSkill.audio_url_bn : activeLifeSkill.audio_url_en) || activeLifeSkill.audio_url_en || activeLifeSkill.audio_url_bn}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Trusted Blurb guidance */}
                 {!!(activeLifeSkill.trusted_blurb_en || activeLifeSkill.trusted_blurb_bn) && (
-                  <div className="rounded-3xl border border-dashed border-slate-200 bg-white p-5 text-xs text-slate-400 leading-relaxed font-semibold">
+                  <div className="lg:hidden rounded-2xl border border-dashed border-slate-200 bg-white p-4 text-xs text-slate-400 leading-relaxed font-semibold">
                     <p className="font-extrabold text-slate-500 mb-1.5">{language === 'bn' ? 'তথ্যের উৎস' : 'Information Trust'}</p>
                     {language === 'bn' ? activeLifeSkill.trusted_blurb_bn : activeLifeSkill.trusted_blurb_en}
                   </div>
                 )}
-
-                {/* Close & Action Panel */}
-                <div className="rounded-3xl border border-slate-200 bg-white p-5 space-y-2.5 shadow-sm">
-                  <button
-                    type="button"
-                    onClick={openLifeSkills}
-                    className="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm shadow-md shadow-indigo-600/10 active:scale-[0.98] transition-all"
-                  >
-                    {t.lifeSkillsTrack}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveLifeSkill(null)}
-                    className="w-full py-3.5 rounded-2xl border border-slate-200 hover:border-slate-300 text-sm font-bold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all"
-                  >
-                      {language === 'bn' ? 'বন্ধ' : 'Close'}
-                    </button>
-                  </div>
-                </aside>
+              </section>
             </div>
           </main>
+
+          {/* Mobile lesson actions */}
+          <div className="lg:hidden shrink-0 border-t border-slate-200/60 bg-white/95 backdrop-blur-md px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            <button
+              type="button"
+              onClick={openLifeSkills}
+              className="w-full min-h-[44px] py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm shadow-md shadow-indigo-600/10 active:scale-[0.98] transition-all touch-manipulation"
+            >
+              {t.lifeSkillsTrack}
+            </button>
+          </div>
         </div>
       )}
     </div>
