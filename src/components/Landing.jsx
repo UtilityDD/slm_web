@@ -392,7 +392,18 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
         let prizeMonths = 0;
         if (Array.isArray(hallOfFame)) {
           prizeMonths = hallOfFame.length;
-          prizesCount = hallOfFame.reduce((acc, month) => acc + (month.winners?.length || 0), 0);
+          prizesCount = hallOfFame.reduce((acc, month) => {
+            if (month.prizeWinners?.winners?.length) {
+              return acc + month.prizeWinners.winners.length;
+            }
+            if (month.boards) {
+              return acc + Object.values(month.boards).reduce(
+                (s, arr) => s + (arr?.filter((w) => w.prize_rank != null && w.prize_status !== 'superseded').length || 0),
+                0
+              );
+            }
+            return acc + (month.winners?.length || 0);
+          }, 0);
         }
 
         if (!cancelled) {

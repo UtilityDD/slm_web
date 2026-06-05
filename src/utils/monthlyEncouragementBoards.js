@@ -1,0 +1,647 @@
+/** Rules and copy for monthly encouragement boards + token prize resolution. */
+
+export const BOARD_IDS = {
+    MAIN: 'main_champion',
+    NEW_PLAYER: 'new_player',
+    MOST_IMPROVED: 'most_improved',
+    TOP_LEARNER: 'top_learner',
+};
+
+/** Display order for monthly boards and prize resolution. */
+export const BOARD_ORDER = [
+    BOARD_IDS.MAIN,
+    BOARD_IDS.NEW_PLAYER,
+    BOARD_IDS.MOST_IMPROVED,
+    BOARD_IDS.TOP_LEARNER,
+];
+
+export const RULES = {
+    NEW_PLAYER_DAYS: 90,
+    NEW_MIN_POINTS: 500,
+    NEW_MIN_HOURLY: 15,
+    NEW_MIN_LESSONS: 5,
+    IMPROVE_MIN_PREV: 200,
+    IMPROVE_MIN_CUR: 500,
+    LEARNER_MIN_LESSONS: 8,
+    TOP_N: 3,
+};
+
+export function getEncouragementCopy(language = 'bn') {
+    const en = language === 'en';
+    return {
+        sectionTitle: en ? 'More ways to win this month' : 'এই মাসে আরও চারটে সুযোগ',
+        prizeTitle: en ? 'Current top 3 (month-end prizes)' : 'এখন যারা এগিয়ে (মাস শেষে পুরস্কার)',
+        prizeRule: en
+            ? 'Three prizes per list. One prize per person — if you lead multiple lists, you keep your highest award only; the next player moves up on the other lists.'
+            : 'প্রতিটি তালিকায় তিনটি পুরস্কার। একজনে একটি মাত্র — একাধিক তালিকায় থাকলে সর্বোচ্চ পুরস্কারই পাবেন, বাকি তালিকায় পরের যোগ্য খেলোয়াড় এগিয়ে যাবে।',
+        prizeNote: en
+            ? 'Final at month-end · updates live'
+            : 'মাস শেষে চূড়ান্ত হবে · খেলতে থাকলে তালিকা বদলাবে',
+        hallOfFamePrizeNote: en
+            ? 'Grayed names led this list but won on a higher list; highlighted names received the prize (including next eligible players).'
+            : 'ধূসর নামেরা এই তালিকায় এগিয়ে ছিলেন কিন্তু উচ্চতর তালিকায় পুরস্কার পেয়েছেন; হাইলাইট নামগুলো প্রকৃত পুরস্কার প্রাপক।',
+        prizeSuperseded: en ? 'Won on another list' : 'অন্য তালিকায় পুরস্কার',
+        prizeReplacement: en ? 'Prize winner' : 'পুরস্কার প্রাপক',
+        prizeTop3: en ? 'Top 3 win prizes' : 'প্রথম তিনজন পুরস্কার',
+        emptyBoard: en ? 'No qualifiers yet — keep playing!' : 'এখনো কেউ পৌঁছায়নি—খেলতে থাকুন!',
+        notEligible: en ? 'Not eligible yet' : 'এখনো যোগ্য হননি',
+        boards: {
+            [BOARD_IDS.NEW_PLAYER]: {
+                title: en ? 'New Player Champion' : 'নতুন সদস্য',
+                logic: en
+                    ? 'Joined ≤90 days · excludes monthly top 3 · top 3 win prizes · qualify: 500 pts OR 15 hourlies OR 5 lessons'
+                    : 'গত ৯০ দিনে যোগ করা সদস্য—মাসের শীর্ষ তিনজন বাদে। ৫০০ পয়েন্ট, ১৫টা ঘণ্টার কুইজ বা ৫টা পাঠ—যেকোনোটা করলেই চলে।',
+                rankBy: en ? 'Ranked by: monthly points' : 'নতুন সদস্যদের মাসিক পয়েন্টে সাজানো',
+                prize: en ? 'Top 3 win prizes' : 'প্রথম তিনজন পুরস্কার পাবেন',
+            },
+            [BOARD_IDS.MOST_IMPROVED]: {
+                title: en ? 'Most Improved' : 'সবচেয়ে এগিয়ে',
+                logic: en
+                    ? 'Account >30 days · top 3 win prizes · last month 200+ & this month 500+ · ranked by growth'
+                    : 'গত মাসে ২০০+ পয়েন্ট, এই মাসে ৫০০+—তারপর কে গত মাসের চেয়ে সবচেয়ে বেশি এগিয়েছে।',
+                rankBy: en ? 'Ranked by: growth vs last month' : 'গত মাসের চেয়ে কত পয়েন্ট বেড়েছে সেটায় সাজানো',
+                prize: en ? 'Top 3 win prizes' : 'প্রথম তিনজন পুরস্কার পাবেন',
+            },
+            [BOARD_IDS.TOP_LEARNER]: {
+                title: en ? 'Top Learner' : 'পড়াশোনা',
+                logic: en
+                    ? 'Top 3 win prizes · most lesson reading points · qualify: 8+ lessons done'
+                    : 'এই মাসে পাঠ পড়ে কে সবচেয়ে বেশি রিডিং পয়েন্ট জোগাড় করেছেন। ৮টার বেশি পাঠ শেষ করতে হবে।',
+                rankBy: en ? 'Ranked by: lesson reading points' : 'পাঠের রিডিং পয়েন্টে সাজানো',
+                prize: en ? 'Top 3 win prizes' : 'প্রথম তিনজন পুরস্কার পাবেন',
+            },
+            [BOARD_IDS.MAIN]: {
+                title: en ? 'Monthly Champion' : 'মাসের সেরা',
+                logic: en
+                    ? 'Top 3 win prizes · highest total points (hourly quizzes + reading)'
+                    : 'এই মাসে মোট পয়েন্টে সেরা তিনজন—ঘণ্টার কুইজ আর পড়া, দুটোই গণনায়।',
+                rankBy: en ? 'Ranked by: total monthly points' : 'মাসের মোট পয়েন্টে সাজানো',
+                prize: en ? 'Top 3 win prizes' : 'প্রথম তিনজন পুরস্কার পাবেন',
+            },
+        },
+        stats: {
+            points: en ? 'pts' : 'পয়েন্ট',
+            hourly: en ? 'hourlies' : 'ঘণ্টার কুইজ',
+            lessons: en ? 'lessons' : 'পাঠ',
+            improvement: en ? 'vs last month' : 'গত মাসের চেয়ে',
+            learnerPts: en ? 'reading pts' : 'রিডিং পয়েন্ট',
+        },
+        monthlyTabs: {
+            champion: en ? 'Champion' : 'মাসের সেরা',
+            [BOARD_IDS.NEW_PLAYER]: en ? 'New Player' : 'নতুন সদস্য',
+            [BOARD_IDS.MOST_IMPROVED]: en ? 'Improved' : 'সবচেয়ে এগিয়ে',
+            [BOARD_IDS.TOP_LEARNER]: en ? 'Learner' : 'পড়াশোনা',
+        },
+    };
+}
+
+export const MONTHLY_SUB_TAB = {
+    CHAMPION: 'champion',
+    ...BOARD_IDS,
+};
+
+export const MONTHLY_SUB_TAB_ORDER = [
+    MONTHLY_SUB_TAB.CHAMPION,
+    BOARD_IDS.NEW_PLAYER,
+    BOARD_IDS.MOST_IMPROVED,
+    BOARD_IDS.TOP_LEARNER,
+];
+
+/** Map monthly sub-tab id to encouragement board id (Hall of Fame + live monthly). */
+export function getHallOfFameBoardKey(tabId) {
+    return tabId === MONTHLY_SUB_TAB.CHAMPION ? BOARD_IDS.MAIN : tabId;
+}
+
+export const PRIZE_STATUS = {
+    WINNER: 'winner',
+    SUPERSEDED: 'superseded',
+    REPLACEMENT: 'replacement',
+};
+
+export function getHallOfFameWinners(entry, boardTab) {
+    if (!entry) return [];
+    const boardKey = getHallOfFameBoardKey(boardTab);
+    let winners = [];
+    if (entry.boards && Object.prototype.hasOwnProperty.call(entry.boards, boardKey)) {
+        winners = entry.boards[boardKey];
+    } else if (boardTab === MONTHLY_SUB_TAB.CHAMPION && entry.winners?.length) {
+        winners = entry.winners;
+    }
+    return winners;
+}
+
+/**
+ * Standings leaders who were skipped for prize (won on a higher list) plus replacement winners.
+ * Order: top standings first, then extra prize recipients not in the top standings slice.
+ */
+export function buildBoardDisplayList(boardId, boards, prizeWinners) {
+    const ranked = boards[boardId]?.ranked || [];
+    const boardPrizes = prizeWinners?.byBoard?.[boardId] || [];
+    const skippedUsers = new Set(
+        (prizeWinners?.skipped || [])
+            .filter((s) => s.boardId === boardId)
+            .map((s) => s.player.user_id)
+    );
+    const prizeByUser = new Map(boardPrizes.map((w) => [w.player.user_id, w]));
+    const seen = new Set();
+    const entries = [];
+
+    ranked.forEach((player, idx) => {
+        if (!player?.user_id || seen.has(player.user_id)) return;
+        seen.add(player.user_id);
+        const standingRank = idx + 1;
+        const prizeEntry = prizeByUser.get(player.user_id);
+
+        if (prizeEntry) {
+            entries.push({
+                player,
+                standing_rank: standingRank,
+                prize_rank: prizeEntry.rank,
+                prize_status: PRIZE_STATUS.WINNER,
+            });
+        } else if (skippedUsers.has(player.user_id)) {
+            entries.push({
+                player,
+                standing_rank: standingRank,
+                prize_rank: null,
+                prize_status: PRIZE_STATUS.SUPERSEDED,
+            });
+        } else {
+            entries.push({
+                player,
+                standing_rank: standingRank,
+                prize_rank: null,
+                prize_status: null,
+            });
+        }
+    });
+
+    for (const prizeEntry of boardPrizes) {
+        const id = prizeEntry.player.user_id;
+        if (!id || seen.has(id)) continue;
+        seen.add(id);
+        entries.push({
+            player: prizeEntry.player,
+            standing_rank: null,
+            prize_rank: prizeEntry.rank,
+            prize_status: PRIZE_STATUS.REPLACEMENT,
+        });
+    }
+
+    return entries;
+}
+
+/** Hall of Fame stores display rows: superseded leaders (gray) + actual prize winners. */
+export function archiveBoardsFromEncouragement(encouragement) {
+    const boards = {};
+    const prizeWinners = encouragement?.prizeWinners || resolvePrizeWinners(encouragement?.boards || {});
+
+    for (const boardId of BOARD_ORDER) {
+        boards[boardId] = buildBoardDisplayList(boardId, encouragement?.boards || {}, prizeWinners).map(
+            toHallDisplayEntry
+        );
+    }
+
+    return boards;
+}
+
+function toHallDisplayEntry({ player, standing_rank, prize_rank, prize_status }) {
+    return {
+        ...player,
+        standing_rank,
+        prize_rank,
+        prize_status,
+        all_time_reading_points: player.all_time_reading_points ?? 0,
+    };
+}
+
+function toHallWinner(player, rank) {
+    return toHallDisplayEntry({
+        player,
+        standing_rank: rank,
+        prize_rank: rank,
+        prize_status: PRIZE_STATUS.WINNER,
+    });
+}
+
+export function getMonthlyLeaderboardList(monthlyBoardTab, monthlyLeaderboard, encouragementBoards) {
+    if (monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION) {
+        return monthlyLeaderboard;
+    }
+    return encouragementBoards?.boards?.[monthlyBoardTab]?.ranked || [];
+}
+
+/** Flat list for monthly UI: standings with prize flags + replacement winners appended. */
+export function getMonthlyPrizeDisplayList(monthlyBoardTab, monthlyLeaderboard, encouragementBoards) {
+    if (monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION) {
+        const prizeWinners = encouragementBoards?.prizeWinners;
+        const prizeIds = new Set(
+            (prizeWinners?.byBoard?.[BOARD_IDS.MAIN] || []).map((w) => w.player.user_id)
+        );
+        return (monthlyLeaderboard || []).map((player, idx) => {
+            const standingRank = idx + 1;
+            const prizeRank = prizeIds.has(player.user_id) && standingRank <= RULES.TOP_N ? standingRank : null;
+            return {
+                ...player,
+                standing_rank: standingRank,
+                prize_rank: prizeRank,
+                prize_status: prizeRank ? PRIZE_STATUS.WINNER : null,
+            };
+        });
+    }
+
+    const boardId = monthlyBoardTab;
+    const boards = encouragementBoards?.boards || {};
+    const prizeWinners = encouragementBoards?.prizeWinners;
+    return buildBoardDisplayList(boardId, boards, prizeWinners).map(
+        ({ player, standing_rank, prize_rank, prize_status }) => ({
+            ...player,
+            standing_rank,
+            prize_rank,
+            prize_status,
+        })
+    );
+}
+
+export function getMonthlyStandingsForPodium(monthlyBoardTab, monthlyLeaderboard, encouragementBoards) {
+    const display = getMonthlyPrizeDisplayList(monthlyBoardTab, monthlyLeaderboard, encouragementBoards);
+    if (monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION) {
+        return monthlyLeaderboard;
+    }
+    return display
+        .filter((item) => item.standing_rank != null)
+        .sort((a, b) => a.standing_rank - b.standing_rank)
+        .slice(0, RULES.TOP_N);
+}
+
+export function getMonthlyPlayerScore(item, monthlyBoardTab) {
+    if (!item) return 0;
+    if (monthlyBoardTab === BOARD_IDS.MOST_IMPROVED) return Number(item.improvement) || 0;
+    if (monthlyBoardTab === BOARD_IDS.TOP_LEARNER) return Number(item.learner_score) || 0;
+    return Number(item.points ?? item.score) || 0;
+}
+
+export function formatMonthlyPlayerScore(item, monthlyBoardTab) {
+    const score = getMonthlyPlayerScore(item, monthlyBoardTab);
+    if (monthlyBoardTab === BOARD_IDS.MOST_IMPROVED) {
+        return `+${score.toLocaleString()}`;
+    }
+    return score.toLocaleString();
+}
+
+export function getMonthlyBoardMeta(monthlyBoardTab, language, encouragementBoards) {
+    const copy = getEncouragementCopy(language);
+    if (monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION) {
+        return {
+            boardId: BOARD_IDS.MAIN,
+            ...copy.boards[BOARD_IDS.MAIN],
+            emptyHint: copy.emptyBoard,
+        };
+    }
+    const boardCopy = copy.boards[monthlyBoardTab];
+    const emptyHint =
+        monthlyBoardTab === BOARD_IDS.MOST_IMPROVED
+            ? language === 'en'
+                ? 'Updates when players beat last month’s pace — usually clearer after mid-month.'
+                : 'গত মাসের চেয়ে বেশি পয়েন্ট তুললেই তালিকায় আসবেন—মাসটা কিছুটা এগোলে দেখা যাবে।'
+            : copy.emptyBoard;
+    return { boardId: monthlyBoardTab, ...boardCopy, emptyHint };
+}
+
+export function normalizeMonthlyDisplayPoints(item, year, month) {
+    const basePoints = Number(item.points) || 0;
+    const viewReadingInMonth = Number(item.reading_points) || 0;
+    const profileReading = Number(item.profiles?.reading_points) || 0;
+    const joinDate = item.profiles?.created_at ? new Date(item.profiles.created_at).getTime() : 0;
+    const startOfMonth = new Date(year, month - 1, 1).getTime();
+    const isNewUser = joinDate >= startOfMonth;
+    const readingGap = isNewUser ? Math.max(0, profileReading - viewReadingInMonth) : 0;
+    return basePoints + readingGap;
+}
+
+export function mapMonthlyRow(item, year, month) {
+    const points = normalizeMonthlyDisplayPoints(item, year, month);
+    return {
+        user_id: item.user_id,
+        full_name: item.full_name,
+        avatar_url: item.avatar_url,
+        district: item.profiles?.district || item.district || null,
+        training_level: item.training_level,
+        slm_id: item.profiles?.slm_id || null,
+        points,
+        reading_points: Number(item.reading_points) || 0,
+        quiz_points: Number(item.quiz_points) || 0,
+        total_penalties: Number(item.total_penalties) || 0,
+        joined_at: item.profiles?.created_at || null,
+        all_time_reading_points: Number(item.profiles?.reading_points) || 0,
+    };
+}
+
+function monthBounds(year, month) {
+    const start = `${year}-${String(month).padStart(2, '0')}-01T00:00:00`;
+    const endMonth = month === 12 ? 1 : month + 1;
+    const endYear = month === 12 ? year + 1 : year;
+    const end = `${endYear}-${String(endMonth).padStart(2, '0')}-01T00:00:00`;
+    return { start, end };
+}
+
+export function aggregateActivityAttempts(rows) {
+    const byUser = {};
+    for (const row of rows || []) {
+        const id = row.user_id;
+        if (!id) continue;
+        if (!byUser[id]) {
+            byUser[id] = { hourly: 0, lessons: new Set(), learner_score: 0 };
+        }
+        const qid = String(row.quiz_id || '');
+        if (qid.startsWith('hourly-challenge')) {
+            byUser[id].hourly += 1;
+        } else if (qid.startsWith('lesson_bonus')) {
+            byUser[id].lessons.add(qid);
+            byUser[id].learner_score += Number(row.score) || 0;
+        }
+    }
+    return Object.fromEntries(
+        Object.entries(byUser).map(([id, v]) => [
+            id,
+            { hourly: v.hourly, lessons: v.lessons.size, learner_score: v.learner_score },
+        ])
+    );
+}
+
+export function getNewPlayerCutoff(year, month) {
+    const end = new Date(year, month, 0, 23, 59, 59);
+    const cutoff = new Date(end);
+    cutoff.setDate(cutoff.getDate() - RULES.NEW_PLAYER_DAYS);
+    return cutoff;
+}
+
+export function isNewPlayerForMonth(joinedAt, year, month) {
+    if (!joinedAt) return false;
+    return new Date(joinedAt) >= getNewPlayerCutoff(year, month);
+}
+
+function isNewPlayer(joinedAt, year, month) {
+    return isNewPlayerForMonth(joinedAt, year, month);
+}
+
+function meetsNewPlayerActivity(player, activity) {
+    const a = activity[player.user_id] || {};
+    return (
+        player.points >= RULES.NEW_MIN_POINTS ||
+        (a.hourly || 0) >= RULES.NEW_MIN_HOURLY ||
+        (a.lessons || 0) >= RULES.NEW_MIN_LESSONS
+    );
+}
+
+function eligibilityNote(player, activity, language) {
+    const en = language === 'en';
+    const a = activity[player.user_id] || {};
+    const need = [];
+    if (player.points < RULES.NEW_MIN_POINTS) {
+        need.push(en ? `${RULES.NEW_MIN_POINTS - player.points} more pts` : `${RULES.NEW_MIN_POINTS - player.points} পয়েন্ট আরো লাগবে`);
+    }
+    if ((a.hourly || 0) < RULES.NEW_MIN_HOURLY) {
+        need.push(en ? `${RULES.NEW_MIN_HOURLY - (a.hourly || 0)} hourlies` : `${RULES.NEW_MIN_HOURLY - (a.hourly || 0)}টা ঘণ্টার কুইজ আরো`);
+    }
+    if ((a.lessons || 0) < RULES.NEW_MIN_LESSONS) {
+        need.push(en ? `${RULES.NEW_MIN_LESSONS - (a.lessons || 0)} lessons` : `${RULES.NEW_MIN_LESSONS - (a.lessons || 0)}টা পাঠ আরো বাকি`);
+    }
+    return need.slice(0, 2).join(en ? ' · ' : ' · ');
+}
+
+export function buildEncouragementBoards({
+    currentRows = [],
+    previousRows = [],
+    joinerProfiles = [],
+    activity = {},
+    year,
+    month,
+    prevYear,
+    prevMonth,
+    language = 'bn',
+}) {
+    const current = currentRows.map((r) => mapMonthlyRow(r, year, month));
+    const previous = previousRows.map((r) => mapMonthlyRow(r, prevYear, prevMonth));
+    const prevByUser = Object.fromEntries(previous.map((p) => [p.user_id, p]));
+    const currentByUser = Object.fromEntries(current.map((p) => [p.user_id, p]));
+
+    for (const prof of joinerProfiles) {
+        if (!prof?.id || currentByUser[prof.id]) continue;
+        if (!isNewPlayer(prof.created_at, year, month)) continue;
+        currentByUser[prof.id] = {
+            user_id: prof.id,
+            full_name: prof.full_name,
+            avatar_url: prof.avatar_url,
+            district: prof.district,
+            training_level: prof.training_level,
+            slm_id: prof.slm_id,
+            points: 0,
+            reading_points: 0,
+            quiz_points: 0,
+            total_penalties: 0,
+            joined_at: prof.created_at,
+            all_time_reading_points: Number(prof.reading_points) || 0,
+        };
+    }
+
+    const allCurrent = Object.values(currentByUser).sort((a, b) => b.points - a.points);
+    const mainChampion = allCurrent[0] || null;
+    const prevChampion = [...previous].sort((a, b) => b.points - a.points)[0] || null;
+    const championTopIds = new Set(allCurrent.slice(0, RULES.TOP_N).map((p) => p.user_id));
+
+    const newPool = allCurrent.filter(
+        (p) => isNewPlayer(p.joined_at, year, month) && !championTopIds.has(p.user_id)
+    );
+    const newRanked = newPool
+        .map((p) => ({
+            ...p,
+            hourly: activity[p.user_id]?.hourly || 0,
+            lessons: activity[p.user_id]?.lessons || 0,
+            eligible: meetsNewPlayerActivity(p, activity),
+            eligibility_note: meetsNewPlayerActivity(p, activity) ? null : eligibilityNote(p, activity, language),
+        }))
+        .sort((a, b) => {
+            if (b.points !== a.points) return b.points - a.points;
+            if (b.hourly !== a.hourly) return b.hourly - a.hourly;
+            if (b.reading_points !== a.reading_points) return b.reading_points - a.reading_points;
+            return new Date(a.joined_at || 0) - new Date(b.joined_at || 0);
+        });
+
+    const monthStart = new Date(year, month - 1, 1);
+    const improvedPool = allCurrent
+        .filter((p) => {
+            const joined = p.joined_at ? new Date(p.joined_at) : null;
+            if (!joined || joined >= monthStart) return false;
+            const prev = prevByUser[p.user_id];
+            if (!prev || prev.points < RULES.IMPROVE_MIN_PREV) return false;
+            if (p.points < RULES.IMPROVE_MIN_CUR) return false;
+            if (prevChampion && p.user_id === prevChampion.user_id) return false;
+            return true;
+        })
+        .map((p) => ({
+            ...p,
+            prev_points: prevByUser[p.user_id].points,
+            improvement: p.points - prevByUser[p.user_id].points,
+            hourly: activity[p.user_id]?.hourly || 0,
+            eligible: p.points - prevByUser[p.user_id].points > 0,
+        }))
+        .filter((p) => p.eligible)
+        .sort((a, b) => {
+            if (b.improvement !== a.improvement) return b.improvement - a.improvement;
+            if (b.points !== a.points) return b.points - a.points;
+            if (b.hourly !== a.hourly) return b.hourly - a.hourly;
+            return a.total_penalties - b.total_penalties;
+        });
+
+    const learnerPool = allCurrent
+        .map((p) => {
+            const lessonCount = activity[p.user_id]?.lessons || 0;
+            const eligible = lessonCount >= RULES.LEARNER_MIN_LESSONS;
+            const en = language === 'en';
+            return {
+                ...p,
+                lesson_count: lessonCount,
+                learner_score: activity[p.user_id]?.learner_score || Number(p.reading_points) || 0,
+                eligible,
+                eligibility_note: eligible
+                    ? null
+                    : lessonCount > 0
+                      ? en
+                          ? `${RULES.LEARNER_MIN_LESSONS - lessonCount} more lessons`
+                          : `${RULES.LEARNER_MIN_LESSONS - lessonCount}টা পাঠ আরো শেষ করুন`
+                      : null,
+            };
+        })
+        .filter((p) => p.lesson_count > 0)
+        .sort((a, b) => {
+            if (b.learner_score !== a.learner_score) return b.learner_score - a.learner_score;
+            if (b.lesson_count !== a.lesson_count) return b.lesson_count - a.lesson_count;
+            return new Date(a.joined_at || 0) - new Date(b.joined_at || 0);
+        });
+
+    const boards = {
+        [BOARD_IDS.MAIN]: {
+            leader: mainChampion,
+            ranked: allCurrent.slice(0, RULES.TOP_N),
+            prizePool: allCurrent,
+        },
+        [BOARD_IDS.NEW_PLAYER]: {
+            ranked: newRanked.slice(0, RULES.TOP_N),
+            prizePool: newRanked,
+            pool_count: newPool.length,
+        },
+        [BOARD_IDS.MOST_IMPROVED]: {
+            ranked: improvedPool.slice(0, RULES.TOP_N),
+            prizePool: improvedPool,
+            opens_mid_month: true,
+        },
+        [BOARD_IDS.TOP_LEARNER]: {
+            ranked: learnerPool.slice(0, RULES.TOP_N),
+            prizePool: learnerPool,
+        },
+    };
+
+    const prizeWinners = resolvePrizeWinners(boards);
+    return { boards, prizeWinners, tokenWinners: prizeWinners, year, month };
+}
+
+function isPrizeEligibleForBoard(boardId, player) {
+    if (!player?.user_id) return false;
+    if (boardId === BOARD_IDS.NEW_PLAYER || boardId === BOARD_IDS.TOP_LEARNER) {
+        return !!player.eligible;
+    }
+    if (boardId === BOARD_IDS.MOST_IMPROVED) {
+        return player.eligible !== false && (player.improvement || 0) > 0;
+    }
+    return true;
+}
+
+function getBoardPrizePool(boardId, boards) {
+    return boards[boardId]?.prizePool || boards[boardId]?.ranked || [];
+}
+
+/**
+ * Top 3 prizes per board; each user receives at most one award (higher-priority board first).
+ * Walks the full prize pool and skips users already awarded on a prior list.
+ */
+export function resolvePrizeWinners(boards) {
+    const awarded = new Set();
+    const byBoard = {};
+    const winners = [];
+    const skipped = [];
+
+    for (const boardId of BOARD_ORDER) {
+        const pool = getBoardPrizePool(boardId, boards);
+        const boardWinners = [];
+
+        for (const player of pool) {
+            if (!isPrizeEligibleForBoard(boardId, player)) continue;
+            if (awarded.has(player.user_id)) {
+                skipped.push({ boardId, player, reason: 'already_awarded_higher_priority' });
+                continue;
+            }
+            awarded.add(player.user_id);
+            boardWinners.push({
+                boardId,
+                rank: boardWinners.length + 1,
+                player,
+            });
+            if (boardWinners.length >= RULES.TOP_N) break;
+        }
+
+        byBoard[boardId] = boardWinners;
+        winners.push(...boardWinners);
+    }
+
+    return { byBoard, winners, skipped };
+}
+
+/** @deprecated Use resolvePrizeWinners */
+export const resolveTokenWinners = resolvePrizeWinners;
+
+export function getRankMedal(rank) {
+    if (rank === 1) return '🥇';
+    if (rank === 2) return '🥈';
+    if (rank === 3) return '🥉';
+    return `#${rank}`;
+}
+
+export function getUserBoardPrizeRank(userId, boardId, prizeWinners) {
+    if (!userId || !boardId || !prizeWinners?.byBoard) return null;
+    const entry = prizeWinners.byBoard[boardId]?.find((w) => w.player.user_id === userId);
+    return entry?.rank ?? null;
+}
+
+export function getBoardPrizeDisplayList(boardId, encouragementData) {
+    const boards = encouragementData?.boards || {};
+    const prizeWinners = encouragementData?.prizeWinners || encouragementData?.tokenWinners;
+    return buildBoardDisplayList(boardId, boards, prizeWinners);
+}
+
+export function isPrizeSuperseded(item) {
+    return item?.prize_status === PRIZE_STATUS.SUPERSEDED;
+}
+
+export function isPrizeRecipient(item) {
+    if (item?.prize_rank == null || isPrizeSuperseded(item)) return false;
+    if (!item.prize_status) return true;
+    return item.prize_status === PRIZE_STATUS.WINNER || item.prize_status === PRIZE_STATUS.REPLACEMENT;
+}
+
+export function getTokenEmoji(boardId) {
+    switch (boardId) {
+        case BOARD_IDS.MAIN:
+            return '🏆';
+        case BOARD_IDS.NEW_PLAYER:
+            return '✨';
+        case BOARD_IDS.MOST_IMPROVED:
+            return '📈';
+        case BOARD_IDS.TOP_LEARNER:
+            return '📚';
+        default:
+            return '🏅';
+    }
+}
+
+export { monthBounds };

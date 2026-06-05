@@ -92,9 +92,10 @@ Leaderboard fetches go through **`requestManager`** + **`cacheHelper`**: TTL val
 
 - `leaderboard_top_10_all_time`
 - `leaderboard_full_all_time`
-- `hall_of_fame_gallery_v3`
+- `hall_of_fame_gallery_v3` … `hall_of_fame_gallery_v8` (current Hall of Fame payload uses **v8** + `boardsVersion: 8`)
 - `user_rank_all_time_<userId>`
 - `leaderboard_monthly_<year>_<month>` for the **current** local month
+- `leaderboard_encouragement_<year>_<month>_bn` and `_en` (monthly sub-tab boards; data is the same, keys differ by language slot)
 
 Do **not** clear obsolete keys like `leaderboard_top_10_v3` / `leaderboard_full_v3` / `user_rank_<id>` — they are unused and were a source of “refresh did nothing” bugs.
 
@@ -102,7 +103,7 @@ Do **not** clear obsolete keys like `leaderboard_top_10_v3` / `leaderboard_full_
 
 | Location | Behaviour |
 |----------|-----------|
-| **`Competitions.jsx`** — hourly quiz success & retry | `fetchLeaderboard(true)` plus **`fetchFullLeaderboard(true)`** and **`fetchMonthlyLeaderboard(true)`** so top-10, full list, and monthly tabs all update. |
+| **`Competitions.jsx`** — hourly quiz success & retry | `fetchLeaderboard(true)` plus **`fetchFullLeaderboard(true)`** and **`fetchMonthlyLeaderboard(true)`** so top-10, full list, monthly tab, and **encouragement sub-boards** all update (`fetchMonthly` + `fetchEncouragementBoards` in parallel). |
 | **`Training.jsx`** / **`SafetyHub.jsx`** — lesson bonus | Call **`invalidateLeaderboardCaches(user.id)`** after a successful points RPC. Training’s rank preview cache key is **`user_rank_all_time_<id>`** (same family as Competitions). |
 | **`SmartLinemanUI.jsx`** — pull-to-refresh | **`invalidateLeaderboardCaches(user.id)`** then **`leaderboardService.fetchAllTime(true)`** / **`fetchMonthly(true)`** (fire-and-forget) so leaderboard data is not left stale while profile/notifications refresh. |
 
@@ -184,11 +185,13 @@ Same pattern as Appendix A; compare counts to pre-check. Optional sample: top 20
 - **Certificate verify:** `VerificationView` should select `total_penalties` if penalties are shown.
 - **Cache:** use **`invalidateLeaderboardCaches`** whenever the user earns points outside the Competitions hourly flow (e.g. training lesson bonus) so the next leaderboard read is not served from stale `slm_cache_*` entries.
 - **Monthly display (new users this calendar month):** the view buckets attempts by DB time on `created_at`; `lesson_bonus` rows can sit in an adjacent month vs the client’s local month filter, so **`fetchMonthly`** adds **`max(0, profiles.reading_points − view.reading_points)`** to the row’s **`points`** only when **`profiles.created_at` ≥ start of local month** — so totals match expectation (e.g. Kabir-style 170 vs 110) without double-counting when the view already includes monthly reading.
+- **Encouragement boards (four monthly sub-tabs):** logic, eligibility, Hall of Fame archive, and UI are documented in **[`docs/developer-guides/monthly-encouragement-boards.md`](docs/developer-guides/monthly-encouragement-boards.md)**. Board assembly lives in **`src/utils/monthlyEncouragementBoards.js`**; **`fetchEncouragementBoards`** / **`fetchHallOfFame`** in **`leaderboardService.js`**.
 
 ---
 
 ## Change log
 
+- **2026-06:** Encouragement boards: four monthly sub-tabs, top-3 prizes per board with **one prize per person** (`resolvePrizeWinners`), Hall of Fame `v8` shows superseded leaders + replacement winners (`buildBoardDisplayList`); cache keys `leaderboard_encouragement_*` and `hall_of_fame_gallery_v8`; see **`monthly-encouragement-boards.md`**.
 - **2026-05:** `fetchMonthly`: for users who **joined this local calendar month**, monthly **`points`** shown in the app now include **`max(0, profile.reading_points − view.reading_points)`** so reading is not dropped when DB month buckets disagree with the client (see “Time zones” above).
 - **2026-04 (late):** Documented frontend leaderboard cache keys, `invalidateLeaderboardCaches`, post-score refetch paths, timezone vs “This month”, hourly id client behaviour; Training vs Competitions clock note.
 - **2026-04:** Added trigger-safe repair, net monthly view, consolidated operator checklist into this document, removed duplicate `operator_score_repair_checklist.sql`.

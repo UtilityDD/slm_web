@@ -18,6 +18,22 @@ import {
 import { DotLottiePlayer } from '@dotlottie/react-player';
 import sandyLoading from '../assets/SandyLoading.lottie';
 import HourlyPenaltyInfoModal from './HourlyPenaltyInfoModal';
+import { MonthlyBoardHeader } from './MonthlyEncouragementBoards';
+import MonthlyBoardInfoModal from './MonthlyBoardInfoModal';
+import {
+    getEncouragementCopy,
+    getHallOfFameWinners,
+    getMonthlyBoardMeta,
+    getMonthlyPrizeDisplayList,
+    getMonthlyStandingsForPodium,
+    formatMonthlyPlayerScore,
+    getRankMedal,
+    isPrizeSuperseded,
+    isPrizeRecipient,
+    PRIZE_STATUS,
+    MONTHLY_SUB_TAB,
+    MONTHLY_SUB_TAB_ORDER,
+} from '../utils/monthlyEncouragementBoards';
 
 const LiveIndicator = () => (
     <div className="live-pulse" title="Live Now">
@@ -187,7 +203,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [fetchError, setFetchError] = useState(false);
     const [showCompactView, setShowCompactView] = useState(!isFullLeaderboard);
     const [leaderboardTab, setLeaderboardTab] = useState('all-time'); // 'all-time' or 'monthly'
+    const [monthlyBoardTab, setMonthlyBoardTab] = useState(MONTHLY_SUB_TAB.CHAMPION);
     const [monthlyLeaderboard, setMonthlyLeaderboard] = useState([]);
+    const [encouragementBoards, setEncouragementBoards] = useState(null);
     const [loadingMonthly, setLoadingMonthly] = useState(false);
     const [showHint, setShowHint] = useState(false);
     const [hintViewedQuestions, setHintViewedQuestions] = useState(new Set());
@@ -203,6 +221,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     
     // Hall of Fame Gallery State
     const [showHallOfFame, setShowHallOfFame] = useState(false);
+    const [hallOfFameBoardTab, setHallOfFameBoardTab] = useState(MONTHLY_SUB_TAB.CHAMPION);
     const [hallOfFameData, setHallOfFameData] = useState([]);
     const [loadingGallery, setLoadingGallery] = useState(false);
     const [maximizedAvatar, setMaximizedAvatar] = useState(null);
@@ -520,6 +539,17 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const hourlyLifetimePoints = getLifetimePoints(userProfile, userRank);
     const hourlyStakesUi = getHourlyStakesUi(hourlyLifetimePoints, language);
     const [showHourlyPenaltyInfoModal, setShowHourlyPenaltyInfoModal] = useState(false);
+    const [showMonthlyBoardInfoModal, setShowMonthlyBoardInfoModal] = useState(false);
+    const encouragementCopy = getEncouragementCopy(language);
+    const activeMonthlyList = leaderboardTab === 'monthly'
+        ? getMonthlyPrizeDisplayList(monthlyBoardTab, monthlyLeaderboard, encouragementBoards)
+        : [];
+    const monthlyPodiumList = leaderboardTab === 'monthly'
+        ? getMonthlyStandingsForPodium(monthlyBoardTab, monthlyLeaderboard, encouragementBoards)
+        : [];
+    const monthlyBoardMeta = leaderboardTab === 'monthly'
+        ? getMonthlyBoardMeta(monthlyBoardTab, language, encouragementBoards)
+        : null;
 
     const loadData = async (forceRefresh = false) => {
         setLoading(true);
@@ -1215,8 +1245,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const fetchMonthlyLeaderboard = async (forceRefresh = false) => {
         setLoadingMonthly(true);
         try {
-            const data = await leaderboardService.fetchMonthly(forceRefresh);
+            const [data, boards] = await Promise.all([
+                leaderboardService.fetchMonthly(forceRefresh),
+                leaderboardService.fetchEncouragementBoards(forceRefresh, language),
+            ]);
             if (data) setMonthlyLeaderboard(data);
+            if (boards) setEncouragementBoards(boards);
         } catch (error) {
             console.error('Error fetching monthly leaderboard:', error);
         } finally {
@@ -1225,7 +1259,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     };
 
     const fetchHallOfFameGallery = async (forceRefresh = false) => {
-        if (!forceRefresh && hallOfFameData.length > 0) return;
+        const hasCurrentBoards = hallOfFameData.length > 0
+            && hallOfFameData[0]?.boardsVersion === 8;
+        if (!forceRefresh && hasCurrentBoards) return;
         
         setLoadingGallery(true);
         try {
@@ -1565,9 +1601,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     </div>
                 </div>
 
-            {/* Tab Navigation - Added for All-Time vs Monthly */}
+            {/* Tab Navigation - All-Time vs Monthly */}
             {!showHallOfFame && (
-                <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md pt-3 pb-4">
+                <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md pt-3 pb-3">
                     <div className="max-w-xs mx-auto px-4">
                         <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-full shadow-inner">
                             <button
@@ -1587,6 +1623,23 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             </button>
                         </div>
                     </div>
+
+                    {leaderboardTab === 'monthly' && (
+                        <div className="mt-3 max-w-lg mx-auto px-4 overflow-x-auto">
+                            <div className="flex min-w-max gap-1.5 rounded-full bg-slate-100 p-1 dark:bg-slate-800">
+                                {MONTHLY_SUB_TAB_ORDER.map((tabId) => (
+                                    <button
+                                        key={tabId}
+                                        type="button"
+                                        onClick={() => setMonthlyBoardTab(tabId)}
+                                        className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[10px] sm:text-xs font-black transition-all ${monthlyBoardTab === tabId ? 'bg-white text-orange-600 shadow-sm dark:bg-slate-700 dark:text-orange-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                                    >
+                                        {encouragementCopy.monthlyTabs[tabId]}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -1618,10 +1671,31 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                 </div>
 
+                                <div className="max-w-lg mx-auto overflow-x-auto px-1">
+                                    <div className="flex min-w-max gap-1.5 rounded-full bg-slate-100 p-1 dark:bg-slate-800">
+                                        {MONTHLY_SUB_TAB_ORDER.map((tabId) => (
+                                            <button
+                                                key={tabId}
+                                                type="button"
+                                                onClick={() => setHallOfFameBoardTab(tabId)}
+                                                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[10px] sm:text-xs font-black transition-all ${hallOfFameBoardTab === tabId ? 'bg-white text-orange-600 shadow-sm dark:bg-slate-700 dark:text-orange-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                                            >
+                                                {encouragementCopy.monthlyTabs[tabId]}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <p className={`text-center text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 px-4 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    {encouragementCopy.hallOfFamePrizeNote}
+                                </p>
+
                             <div className="grid grid-cols-1 gap-6 sm:gap-8">
-                                {hallOfFameData.map((entry, idx) => (
+                                {hallOfFameData.map((entry, idx) => {
+                                    const monthWinners = getHallOfFameWinners(entry, hallOfFameBoardTab);
+                                    return (
                                     <div 
-                                        key={`${entry.year}-${entry.month}`} 
+                                        key={`${entry.year}-${entry.month}-${hallOfFameBoardTab}`} 
                                         className="animate-slide-up"
                                         style={{ animationDelay: `${idx * 100}ms` }}
                                     >
@@ -1636,32 +1710,47 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 </div>
                                                 <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-100 dark:border-slate-700">
                                                     <div className="flex -space-x-2">
-                                                        {entry.winners.map((w, i) => (
+                                                        {monthWinners.map((w, i) => (
                                                             <div key={i} className="w-6 h-6 rounded-full border-2 border-white dark:border-slate-800 overflow-hidden shadow-sm">
                                                                 {w.avatar_url ? <img src={w.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-200 dark:bg-slate-700"></div>}
                                                             </div>
                                                         ))}
                                                     </div>
                                                     <p className="hidden xs:block text-[8px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">
-                                                        {language === 'en' ? 'Stars' : 'সেরারা'}
+                                                        {encouragementCopy.monthlyTabs[hallOfFameBoardTab]}
                                                     </p>
                                                 </div>
                                             </div>
 
                                             {/* Winners Horizontal Grid */}
                                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                                                {entry.winners.slice(0, 3).map((winner, winIdx) => {
-                                                    const isGold = winIdx === 0;
+                                                {monthWinners.length === 0 ? (
+                                                    <p className="col-span-full rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                                                        {language === 'en' ? 'No winners for this category that month.' : 'সেই মাসে এই তালিকায় কেউ উঠেননি।'}
+                                                    </p>
+                                                ) : monthWinners.map((winner, winIdx) => {
+                                                    const superseded = isPrizeSuperseded(winner);
+                                                    const prizeRecipient = isPrizeRecipient(winner);
+                                                    const medalRank = superseded
+                                                        ? winner.standing_rank
+                                                        : (winner.prize_rank || winner.standing_rank || winIdx + 1);
+                                                    const isGold = !superseded && medalRank === 1;
                                                     
                                                     return (
                                                         <div 
-                                                            key={winner.user_id} 
+                                                            key={`${winner.user_id}-${winner.prize_status || 'row'}-${winIdx}`} 
                                                             onClick={() => openUserProgress(winner.user_id)}
-                                                            className="relative p-3 sm:p-4 rounded-xl border bg-slate-50/50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-colors cursor-pointer flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-4 group"
+                                                            className={`relative p-3 sm:p-4 rounded-xl border transition-colors cursor-pointer flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-4 group ${
+                                                                superseded
+                                                                    ? 'bg-slate-100/80 dark:bg-slate-800/20 border-slate-200/80 dark:border-slate-700/60 opacity-60 grayscale hover:opacity-75'
+                                                                    : prizeRecipient
+                                                                        ? 'bg-orange-50/60 dark:bg-orange-950/20 border-orange-200/80 dark:border-orange-800/50 hover:border-orange-300 dark:hover:border-orange-700'
+                                                                        : 'bg-slate-50/50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600'
+                                                            }`}
                                                         >
                                                             <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl shrink-0 shadow-sm bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                                                                <span className="text-lg">
-                                                                    {winIdx === 0 ? '🥇' : winIdx === 1 ? '🥈' : '🥉'}
+                                                                <span className={`text-lg ${superseded ? 'opacity-50' : ''}`}>
+                                                                    {getRankMedal(medalRank)}
                                                                 </span>
                                                             </div>
 
@@ -1678,7 +1767,21 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 
                                                                 <div className="min-w-0 flex-1">
                                                                     <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                                                                        <p className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">{winner.full_name || 'Anonymous'}</p>
+                                                                        <p className={`text-xs sm:text-sm font-black truncate transition-colors ${
+                                                                            superseded
+                                                                                ? 'text-slate-500 dark:text-slate-400 line-through decoration-slate-400/70'
+                                                                                : 'text-slate-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400'
+                                                                        }`}>{winner.full_name || 'Anonymous'}</p>
+                                                                        {superseded && (
+                                                                            <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold bg-slate-200/80 text-slate-500 dark:bg-slate-700 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                                {encouragementCopy.prizeSuperseded}
+                                                                            </span>
+                                                                        )}
+                                                                        {winner.prize_status === PRIZE_STATUS.REPLACEMENT && (
+                                                                            <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                                {encouragementCopy.prizeReplacement}
+                                                                            </span>
+                                                                        )}
                                                                         {(() => {
                                                                             const badge = getBadgeByLevel(winner.training_level || 0, winner.all_time_reading_points || 0);
                                                                             return badge && (
@@ -1698,8 +1801,16 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             </div>
 
                                                             <div className="text-right sm:text-left shrink-0">
-                                                                <p className={`text-base sm:text-xl font-black tabular-nums ${isGold ? 'text-amber-600 dark:text-amber-500' : winIdx === 1 ? 'text-slate-600 dark:text-slate-400' : 'text-orange-600 dark:text-orange-500'}`}>
-                                                                    {(winner.points || 0).toLocaleString()}
+                                                                <p className={`text-base sm:text-xl font-black tabular-nums ${
+                                                                    superseded
+                                                                        ? 'text-slate-400 dark:text-slate-500'
+                                                                        : isGold
+                                                                            ? 'text-amber-600 dark:text-amber-500'
+                                                                            : medalRank === 2
+                                                                                ? 'text-slate-600 dark:text-slate-400'
+                                                                                : 'text-orange-600 dark:text-orange-500'
+                                                                }`}>
+                                                                    {formatMonthlyPlayerScore(winner, hallOfFameBoardTab)}
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -1708,7 +1819,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             </div>
                                         </div>
                                     </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                             </div>
                         )}
@@ -1718,6 +1830,16 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 ) : (
                     <>
                     <div className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-3 pb-48 md:pb-56">
+                    {leaderboardTab === 'monthly' && !loadingMonthly && monthlyBoardMeta && (
+                        <div className="max-w-2xl mx-auto px-2">
+                            <MonthlyBoardHeader
+                                meta={monthlyBoardMeta}
+                                language={language}
+                                onInfoClick={() => setShowMonthlyBoardInfoModal(true)}
+                            />
+                        </div>
+                    )}
+
                     {/* Winners Podium / List Container */}
                     <div className="space-y-4">
                         {(leaderboardTab === 'all-time' ? loadingFull : loadingMonthly) ? (
@@ -1725,11 +1847,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 <div className="w-12 h-12 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin"></div>
                                 <p className="text-xs font-bold text-slate-400 mt-4 uppercase tracking-widest">{t.loadingText || 'Loading Rankings...'}</p>
                             </div>
-                        ) : (leaderboardTab === 'all-time' ? fullLeaderboard : monthlyLeaderboard).length > 0 ? (
+                        ) : (leaderboardTab === 'all-time' ? fullLeaderboard : activeMonthlyList).length > 0 ? (
                             <>
                                 {/* Top 3 Podium (Reused logic) */}
                                 {(() => {
-                                    const list = leaderboardTab === 'all-time' ? fullLeaderboard : monthlyLeaderboard;
+                                    const list = leaderboardTab === 'all-time' ? fullLeaderboard : monthlyPodiumList;
                                     let topPlayers = [];
                                     if (list.length === 1) {
                                         topPlayers = [list[0]];
@@ -1744,9 +1866,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             {topPlayers.map((player, idx) => {
                                                 const isWinner = topPlayers.length === 1 ? true : (topPlayers.length === 2 ? idx === 1 : idx === 1);
                                                 const rank = topPlayers.length === 1 ? 1 : (topPlayers.length === 2 ? (idx === 0 ? 2 : 1) : (idx === 0 ? 2 : idx === 1 ? 1 : 3));
+                                                const superseded = leaderboardTab === 'monthly' && isPrizeSuperseded(player);
                                                 
                                                 return (
-                                                    <div key={player.user_id} className={`flex flex-col items-center ${isWinner ? 'scale-110 mb-2' : 'mb-0 opacity-90'}`}>
+                                                    <div key={player.user_id} className={`flex flex-col items-center ${isWinner && !superseded ? 'scale-110 mb-2' : 'mb-0'} ${superseded ? 'opacity-50 grayscale' : isWinner ? '' : 'opacity-90'}`}>
                                                         <div className="relative mb-3 flex flex-col items-center">
                                                             <div className="relative h-14 w-14 sm:h-20 sm:w-20 shrink-0">
                                                                 {rank === 1 && (
@@ -1793,7 +1916,16 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 {rank}
                                                             </div>
                                                         </div>
-                                                        <p className="text-[10px] sm:text-xs font-black text-slate-900 dark:text-white truncate max-w-full text-center px-1 leading-tight">{player.full_name}</p>
+                                                        <p className={`text-[10px] sm:text-xs font-black truncate max-w-full text-center px-1 leading-tight ${
+                                                            superseded
+                                                                ? 'text-slate-500 dark:text-slate-400 line-through'
+                                                                : 'text-slate-900 dark:text-white'
+                                                        }`}>{player.full_name}</p>
+                                                        {superseded && (
+                                                            <p className={`text-[8px] font-bold text-slate-400 mt-0.5 text-center ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                {encouragementCopy.prizeSuperseded}
+                                                            </p>
+                                                        )}
                                                         {leaderboardTab === 'monthly' && (
                                                             <p className="text-[7px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-[0.1em] mt-0.5">
                                                                 {player.district || t.noDistrict}
@@ -1813,7 +1945,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             })()}
                                                         </div>
                                                         <div className="flex flex-col items-center">
-                                                            <p className="text-[11px] font-black text-orange-600 dark:text-orange-400 tabular-nums">{(player.points || player.score || 0).toLocaleString()}</p>
+                                                            <p className="text-[11px] font-black text-orange-600 dark:text-orange-400 tabular-nums">
+                                                                {leaderboardTab === 'monthly'
+                                                                    ? formatMonthlyPlayerScore(player, monthlyBoardTab)
+                                                                    : (player.points || player.score || 0).toLocaleString()}
+                                                            </p>
                                                             {leaderboardTab === 'all-time' && (
                                                                 <div className="flex items-center gap-1 mt-0.5 opacity-80 scale-90">
                                                                     <span className="text-[9px]">📖</span>
@@ -1830,14 +1966,29 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                                 {/* List View for others */}
                                 <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-                                    {(leaderboardTab === 'all-time' ? fullLeaderboard : monthlyLeaderboard).map((item, idx) => (
+                                    {(leaderboardTab === 'all-time' ? fullLeaderboard : activeMonthlyList).map((item, idx) => {
+                                        const superseded = leaderboardTab === 'monthly' && isPrizeSuperseded(item);
+                                        const prizeRecipient = leaderboardTab === 'monthly' && isPrizeRecipient(item);
+                                        const rankLabel = leaderboardTab === 'monthly' && item.standing_rank != null
+                                            ? item.standing_rank
+                                            : idx + 1;
+
+                                        return (
                                         <div 
-                                            key={item.user_id}
+                                            key={`${item.user_id}-${item.prize_status || 'row'}-${idx}`}
                                             onClick={() => openUserProgress(item.user_id)}
-                                            className="flex items-center gap-2 sm:gap-4 p-2.5 sm:p-4 border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer group"
+                                            className={`flex items-center gap-2 sm:gap-4 p-2.5 sm:p-4 border-b border-slate-50 dark:border-slate-800/50 transition-colors cursor-pointer group ${
+                                                superseded
+                                                    ? 'bg-slate-50/80 dark:bg-slate-800/20 opacity-60 grayscale hover:opacity-75'
+                                                    : prizeRecipient
+                                                        ? 'bg-orange-50/40 dark:bg-orange-950/15 hover:bg-orange-50/70 dark:hover:bg-orange-950/25'
+                                                        : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
+                                            }`}
                                         >
-                                            <div className="w-6 sm:w-8 text-center text-xs sm:text-sm font-black text-slate-400 group-hover:text-orange-500 transition-colors">
-                                                {idx + 1}
+                                            <div className={`w-6 sm:w-8 text-center text-xs sm:text-sm font-black transition-colors ${
+                                                superseded ? 'text-slate-300 dark:text-slate-600' : 'text-slate-400 group-hover:text-orange-500'
+                                            }`}>
+                                                {rankLabel}
                                             </div>
                                             <div 
                                                 onClick={(e) => {
@@ -1869,8 +2020,22 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex flex-col mb-0.5">
-                                                    <div className="flex items-center gap-2">
-                                                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{item.full_name}</p>
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <p className={`text-sm font-bold truncate ${
+                                                            superseded
+                                                                ? 'text-slate-500 dark:text-slate-400 line-through decoration-slate-400/70'
+                                                                : 'text-slate-900 dark:text-white'
+                                                        }`}>{item.full_name}</p>
+                                                        {superseded && (
+                                                            <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold bg-slate-200/80 text-slate-500 dark:bg-slate-700 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                {encouragementCopy.prizeSuperseded}
+                                                            </span>
+                                                        )}
+                                                        {item.prize_status === PRIZE_STATUS.REPLACEMENT && (
+                                                            <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                {encouragementCopy.prizeReplacement} · #{item.prize_rank}
+                                                            </span>
+                                                        )}
                                                         {(() => {
                                                             const badge = getBadgeByLevel(
                                                                 item.training_level || 0, 
@@ -1884,10 +2049,17 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         })()}
                                                     </div>
                                                     {leaderboardTab === 'monthly' && (
-                                                       <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5 flex items-center gap-1">
-                                                           <span className="w-1 h-1 rounded-full bg-orange-400"></span>
-                                                           {item.district || t.noDistrict}
-                                                       </p>
+                                                       <>
+                                                           <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5 flex items-center gap-1">
+                                                               <span className="w-1 h-1 rounded-full bg-orange-400"></span>
+                                                               {item.district || t.noDistrict}
+                                                           </p>
+                                                           {item.eligibility_note && (
+                                                               <p className="text-[9px] font-medium text-amber-600 dark:text-amber-400 mt-0.5">
+                                                                   {item.eligibility_note}
+                                                               </p>
+                                                           )}
+                                                       </>
                                                     )}
                                                 </div>
                                                 <div className="flex items-center gap-3">
@@ -1923,27 +2095,27 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 </div>
                                             </div>
                                             <div className="text-right shrink-0">
-                                                <p className="text-sm font-black text-slate-900 dark:text-white tabular-nums">{(item.points || item.score || 0).toLocaleString()}</p>
+                                                <p className={`text-sm font-black tabular-nums ${
+                                                    superseded ? 'text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white'
+                                                }`}>
+                                                    {leaderboardTab === 'monthly'
+                                                        ? formatMonthlyPlayerScore(item, monthlyBoardTab)
+                                                        : (item.points || item.score || 0).toLocaleString()}
+                                                </p>
                                             </div>
                                         </div>
-                                    ))}
+                                    );
+                                    })}
                                 </div>
                             </>
                         ) : (
                             <div className="text-center py-20 text-slate-400 italic">
-                                {language === 'en' ? 'No rankings found for this category.' : 'এই বিভাগে কোনো র‍্যাঙ্কিং পাওয়া যায়নি।'}
+                                {leaderboardTab === 'monthly' && monthlyBoardMeta?.emptyHint
+                                    ? monthlyBoardMeta.emptyHint
+                                    : (language === 'en' ? 'No rankings found for this category.' : 'এই বিভাগে কোনো র‍্যাঙ্কিং পাওয়া যায়নি।')}
                             </div>
                         )}
                     </div>
-
-                    {!showHallOfFame && leaderboardTab === 'monthly' && !loadingMonthly && (
-                        <div className="mt-6 mb-8 max-w-2xl mx-auto px-4">
-                            <p className="flex gap-2 items-center justify-center text-[10px] sm:text-[11px] leading-snug text-slate-400 dark:text-slate-500 text-center bg-slate-50 dark:bg-slate-800/50 py-3 px-4 rounded-xl border border-slate-100 dark:border-slate-800">
-                                <span className="text-lg opacity-70">ℹ️</span>
-                                <span>{t.leaderboardTimeInfo}</span>
-                            </p>
-                        </div>
-                    )}
                 </div>
 
                 {/* My Position Sticky Bar */}
@@ -2009,6 +2181,16 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     </div>
                 </div>
             )}
+
+            <MonthlyBoardInfoModal
+                open={showMonthlyBoardInfoModal}
+                language={language}
+                meta={monthlyBoardMeta}
+                encouragementData={encouragementBoards}
+                userId={user?.id}
+                timeInfo={monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION ? t.leaderboardTimeInfo : null}
+                onClose={() => setShowMonthlyBoardInfoModal(false)}
+            />
         </main>
         );
     }
@@ -2745,6 +2927,15 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 language={language}
                 lifetimePoints={hourlyLifetimePoints}
                 onClose={() => setShowHourlyPenaltyInfoModal(false)}
+            />
+            <MonthlyBoardInfoModal
+                open={showMonthlyBoardInfoModal}
+                language={language}
+                meta={monthlyBoardMeta}
+                encouragementData={encouragementBoards}
+                userId={user?.id}
+                timeInfo={monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION ? t.leaderboardTimeInfo : null}
+                onClose={() => setShowMonthlyBoardInfoModal(false)}
             />
         </div>
     );

@@ -14,6 +14,7 @@ This folder holds **maintainer-focused** documentation: architecture notes, inte
 | [Chapter Quiz Modal](./chapter-quiz-modal.md) | `ChapterQuizModal.jsx`, read-aloud script, quiz UX (mobile, TTS, animations) |
 | [Admin Broadcast Notifications](./admin-broadcast-notifications.md) | `Admin.jsx`, `SmartLinemanUI.jsx`, Supabase RPCs for create/list/toggle/delete, startup modal behavior |
 | [Hourly Visual Quiz](./hourly-visual-quiz.md) | `Competitions.jsx`, Google Sheet visual quiz sync, deterministic hourly selection, image retry UX |
+| [Monthly encouragement boards](./monthly-encouragement-boards.md) | Four monthly tabs (champion / new / improved / learner), Hall of Fame v8, prizes, `monthlyEncouragementBoards.js` |
 | [Safety Library](./safety-library.md) | `SafetyLibrary.jsx`, grid, detail modal, Drive image helper |
 | [Training lesson reader](./training-lesson-reader.md) | `Training.jsx` journal slides, guided section cards, advance lock, alert/chime, scroll + text scale |
 | [Life Skill / supplementary modules](./life-skills-supplementary.md) | `supplementary_modules.json`, `lesson_10_*.json`, GitHub or `/audio/` listen URLs, `LS` codes, `supplementaryProgressStorage.js` |
