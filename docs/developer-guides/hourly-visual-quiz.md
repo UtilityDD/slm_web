@@ -41,13 +41,24 @@ Adds image-capable hourly questions from Google Sheets while preserving the exis
   - maximum 2 visual questions when non-visual replacements are available
 - Avoids repeating the same image for 10 hours (soft preference, per-user local history).
 
+## Difficulty tags (`easy` / `medium` / `hard`)
+
+- Stored on `hourly_questions.tags` (text array) and the visual sheet `tags` column (comma-separated).
+- Untagged questions are treated as **easy**.
+- Selection uses `src/utils/hourlyDifficulty.js` + `startQuiz` in `Competitions.jsx`:
+  - &lt; 10k lifetime: easy only (5× easy)
+  - 10k–30k: 3 easy + 2 medium
+  - 30k–50k: 2 medium + 3 hard
+  - 50k+: 1 medium + 4 hard
+- DB tags live in `hourly_questions.tags` (see `quiz_management/hourly_difficulty_tags.json`).
+- Re-assess: `node scripts/maintenance/assess_hourly_difficulty.mjs`
+- Re-apply: `npx supabase db push` (SQL migration) or `node scripts/maintenance/apply_hourly_difficulty_tags.mjs` (service role + RPC).
+
 ## Scoring and database safety
 
-The visual integration does not modify the scoring path:
-
-- `submitQuiz()` scoring formula unchanged.
-- `calculatePenalty()` unchanged.
-- `submitHourlyQuiz()` unchanged.
+- Gross score unchanged (50 pts max, 10 per correct).
+- Penalties use lifetime `profiles.points` tiers in `hourlyDifficulty.js` (0 / 12 / 20 / 28 per wrong).
+- `submitHourlyQuiz()` and RPC `submit_quiz_result_v2` unchanged.
 - Supabase RPC `submit_quiz_result_v2` unchanged.
 - Hourly `quiz_id` format unchanged (`hourly-challenge-YYYY-MM-DD-HH`).
 

@@ -7,8 +7,17 @@ import { storageUtils } from '../utils/storageUtils';
 import { leaderboardService } from '../utils/leaderboardService';
 import { requestManager } from '../utils/requestManager';
 import { visualQuizService } from '../utils/visualQuizService';
+import {
+    filterQuestionsForTier,
+    getHourlyStakesUi,
+    getHourlyTier,
+    getLifetimePoints,
+    getPenaltyPerWrongForLifetime,
+    pickQuestionsByDifficultyMix
+} from '../utils/hourlyDifficulty';
 import { DotLottiePlayer } from '@dotlottie/react-player';
 import sandyLoading from '../assets/SandyLoading.lottie';
+import HourlyPenaltyInfoModal from './HourlyPenaltyInfoModal';
 
 const LiveIndicator = () => (
     <div className="live-pulse" title="Live Now">
@@ -409,7 +418,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             close: "Close",
             loginReq: "Please login to participate",
             highStakes: "High Stakes",
-            highStakesDesc: "Wrong answers deduct 15 points",
+            highStakesDesc: "Wrong answers deduct points based on your lifetime score",
             selectAnswerToContinue: "Select an answer to continue.",
             syncing: "Syncing your score...",
             waitingNetwork: "Waiting for network connection...",
@@ -464,7 +473,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             close: "বন্ধ করুন",
             loginReq: "অংশগ্রহণ করতে লগইন করুন",
             highStakes: "হাই স্টেক",
-            highStakesDesc: "প্রতিটি ভুল উত্তরের জন্য ১৫ পয়েন্ট কাটা হবে",
+            highStakesDesc: "মোট পয়েন্ট অনুযায়ী প্রতিটি ভুল উত্তরে পয়েন্ট কাটা হবে",
             selectAnswerToContinue: "চালিয়ে যেতে একটি উত্তর বেছে নিন।",
             syncing: "আপনার স্কোর সিঙ্ক হচ্ছে...",
             waitingNetwork: "নেটওয়ার্ক সংযোগের জন্য অপেক্ষা করা হচ্ছে...",
@@ -508,6 +517,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     }[language];
 
     const currentUserBadge = getBadgeByLevel((userProfile && userProfile.training_level) || 0);
+    const hourlyLifetimePoints = getLifetimePoints(userProfile, userRank);
+    const hourlyStakesUi = getHourlyStakesUi(hourlyLifetimePoints, language);
+    const [showHourlyPenaltyInfoModal, setShowHourlyPenaltyInfoModal] = useState(false);
 
     const loadData = async (forceRefresh = false) => {
         setLoading(true);
@@ -952,7 +964,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         const hour = String(now.getHours()).padStart(2, '0');
         const hourId = `${year}-${month}-${day}-${hour}`;
 
-        const cacheKey = `hourly_quiz_db_bn_v2_${hourId}`;
+        const cacheKey = `hourly_quiz_db_bn_v4_${hourId}`;
 
         try {
             const quizData = await requestManager.fetch(
@@ -961,8 +973,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     const [{ data, error }, visualQuestions] = await Promise.all([
                         supabase.rpc('get_random_hourly_questions', {
                             lang: 'bn',
-                            // Fetch a larger hourly pool; per-user deterministic selection still picks 5.
-                            limit_count: 20
+                            // Larger pool for difficulty-tagged selection (5 shown per user).
+                            limit_count: 50
                         }),
                         visualQuizService.fetchVisualQuestions({ language: 'bn', hourId })
                     ]);
@@ -1278,8 +1290,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 return idA.localeCompare(idB);
             });
 
-            // Deterministically pick 5 questions using robust shuffle
-            const shuffledQuestions = shuffleArray(baseQuestions, rng);
+            const lifetimePoints = getLifetimePoints(userProfile, userRank);
+            const tier = getHourlyTier(lifetimePoints);
+            const eligibleForBand = filterQuestionsForTier(baseQuestions, tier);
+            const selectionPool = eligibleForBand.length >= 5 ? eligibleForBand : baseQuestions;
+
+            const shuffledQuestions = shuffleArray(selectionPool, rng);
             const recentImageSet = getRecentImageSet();
             const freshnessSorted = [...shuffledQuestions].sort((a, b) => {
                 const aHasRecent = getQuestionImageKeys(a).some((img) => recentImageSet.has(img));
@@ -1287,7 +1303,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 if (aHasRecent === bHasRecent) return 0;
                 return aHasRecent ? 1 : -1; // non-recent visuals first
             });
-            const picked = freshnessSorted.slice(0, 5);
+            const picked = pickQuestionsByDifficultyMix(freshnessSorted, lifetimePoints, 5);
 
             // Ensure at least 1 visual question when available in the pool.
             const hasVisualInPool = freshnessSorted.some((q) => isVisualQuestion(q));
@@ -1399,20 +1415,15 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     };
 
     const calculatePenalty = (answers) => {
-        const currentPoints = userProfile?.points || userRank?.score || 0;
-        const isHighStakes = currentPoints > 1000;
-        let totalPenalty = 0;
+        const perWrong = getPenaltyPerWrongForLifetime(getLifetimePoints(userProfile, userRank));
+        if (!perWrong || quizQuestions.length === 0) return 0;
 
-        if (isHighStakes && quizQuestions.length > 0) {
-            // Wrong answers only (hourly flow requires every question answered before submit)
-            const wrongCountPenalty = quizQuestions.filter((q) =>
-                answers[String(q.id)] !== undefined &&
-                Number(answers[String(q.id)]) !== Number(q.correct_option_index)
-            ).length;
+        const wrongCount = quizQuestions.filter((q) =>
+            answers[String(q.id)] !== undefined &&
+            Number(answers[String(q.id)]) !== Number(q.correct_option_index)
+        ).length;
 
-            totalPenalty = wrongCountPenalty * 15;
-        }
-        return totalPenalty;
+        return wrongCount * perWrong;
     };
 
     const handleAnswerSelect = (questionId, optionIndex) => {
@@ -1446,20 +1457,16 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         }
         calculatedScore = correctCount * pointsPerQuestion;
 
-        // Calculate penalty (Only for High Stakes users > 1000 points)
-        const currentPoints = userProfile?.points || userRank?.score || 0;
-        const isHighStakes = currentPoints > 1000;
-        let penalty = 0;
-
-        if (isHighStakes) {
-            penalty = quizQuestions.reduce((acc, q) => {
+        const perWrong = getPenaltyPerWrongForLifetime(getLifetimePoints(userProfile, userRank));
+        const penalty = perWrong
+            ? quizQuestions.reduce((acc, q) => {
                 const answer = userAnswers[String(q.id)];
                 if (answer === undefined || Number(answer) !== Number(q.correct_option_index)) {
-                    return acc + 15; // wrong (unanswered should be impossible after UI gate)
+                    return acc + perWrong;
                 }
                 return acc;
-            }, 0);
-        }
+            }, 0)
+            : 0;
         
         // Final score for UI display
         const netScore = Math.max(0, calculatedScore - penalty);
@@ -2012,10 +2019,23 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             <div className="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm transition-all duration-300">
                 <div className="px-4 py-4">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="flex flex-col">
-                            <h1 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2 tracking-tight">
-                                <span className="text-2xl">🏆</span> {language === 'en' ? '5 quizzes every hour' : 'প্রতি ঘণ্টায় ৫ কুইজ'}
+                        <div className="flex items-center gap-2 min-w-0">
+                            <h1 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2 tracking-tight min-w-0">
+                                <span className="text-2xl shrink-0">🏆</span>
+                                <span className="truncate">{language === 'en' ? '5 quizzes every hour' : 'প্রতি ঘণ্টায় ৫ কুইজ'}</span>
                             </h1>
+                            <button
+                                type="button"
+                                onClick={() => setShowHourlyPenaltyInfoModal(true)}
+                                className="shrink-0 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+                                aria-label={language === 'en' ? 'Penalty info' : 'পেনাল্টি তথ্য'}
+                            >
+                                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path strokeLinecap="round" d="M12 11v5" />
+                                    <circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none" />
+                                </svg>
+                            </button>
                         </div>
                         {userRank && (
                             <div className="flex flex-col items-end gap-1">
@@ -2385,35 +2405,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 <div className="flex justify-between items-center mb-6">
                                     <div>
                                         <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{activeQuiz.title}</h3>
-                                        <div className="flex items-center gap-3">
-                                            <p className="text-xs text-slate-500">{t.questions} {currentQuestionIndex + 1} / {quizQuestions.length}</p>
-                                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl backdrop-blur-md border shadow-sm animate-in fade-in slide-in-from-right-4 duration-500
-                                                ${userRank && userRank.score > 1000 
-                                                    ? 'bg-red-50/80 dark:bg-red-950/20 border-red-100/50 dark:border-red-500/20' 
-                                                    : 'bg-green-50/80 dark:bg-green-950/20 border-green-100/50 dark:border-green-500/20'}`}>
-                                                
-                                                <div className="relative">
-                                                    <span className="text-sm">{userRank && userRank.score > 1000 ? '🔥' : '🛡️'}</span>
-                                                    {userRank && userRank.score > 1000 && (
-                                                        <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="flex flex-col leading-none">
-                                                    <span className={`text-[9px] font-black uppercase tracking-[0.1em] ${userRank && userRank.score > 1000 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                                                        {userRank && userRank.score > 1000 
-                                                            ? (language === 'en' ? 'High Stakes Mode' : 'হাই স্টেক মোড') 
-                                                            : (language === 'en' ? 'Standard Mode' : 'স্ট্যান্ডার্ড মোড')}
-                                                    </span>
-                                                    <span className={`text-[8px] font-bold uppercase mt-0.5 ${userRank && userRank.score > 1000 ? 'text-red-500/70 dark:text-red-500/60' : 'text-green-500/70 dark:text-green-500/60'}`}>
-                                                        {userRank && userRank.score > 1000 
-                                                            ? (language === 'en' ? '-15 pts per wrong answer' : 'প্রতি ভুল উত্তরে -১৫') 
-                                                            : (language === 'en' ? 'No Penalties yet' : 'কোনো পেনাল্টি নেই')}
-                                                    </span>
-                                                </div>
-                                            </div>
+                                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                                            <span>{t.questions} {currentQuestionIndex + 1} / {quizQuestions.length}</span>
+                                            {hourlyStakesUi.quizHint && (
+                                                <span className="text-slate-400 dark:text-slate-500 tabular-nums before:content-['·'] before:mx-1">
+                                                    {hourlyStakesUi.quizHint}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                     <button onClick={handleAbortQuiz} className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">✕</button>
@@ -2655,15 +2653,21 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                 </div>
 
-                                <div className="mx-auto mb-8 grid max-w-md grid-cols-2 gap-3">
+                                <div className={`mx-auto mb-8 grid max-w-md gap-3 ${(quizResults?.penalty || 0) > 0 ? 'grid-cols-2' : 'grid-cols-1 max-w-xs'}`}>
                                     <div className="bg-green-50 dark:bg-green-900/10 p-3 rounded-xl border border-green-100 dark:border-green-900/30">
-                                        <div className="text-[10px] font-bold text-green-600 uppercase tracking-tighter mb-1">Right</div>
-                                        <div className="text-lg font-bold text-green-700 dark:text-green-400">+{quizResults?.pointsEarned || 0}</div>
+                                        <div className="text-[10px] font-bold text-green-600 uppercase tracking-tighter mb-1">
+                                            {language === 'bn' ? 'সঠিক' : 'Right'}
+                                        </div>
+                                        <div className="text-lg font-bold text-green-700 dark:text-green-400 tabular-nums">+{quizResults?.pointsEarned || 0}</div>
                                     </div>
-                                    <div className="bg-red-50 dark:bg-red-900/10 p-3 rounded-xl border border-red-100 dark:border-red-900/30">
-                                        <div className="text-[10px] font-bold text-red-600 uppercase tracking-tighter mb-1">Wrong</div>
-                                        <div className="text-lg font-bold text-red-700 dark:text-red-400">-{quizResults?.penalty || 0}</div>
-                                    </div>
+                                    {(quizResults?.penalty || 0) > 0 && (
+                                        <div className="bg-red-50 dark:bg-red-900/10 p-3 rounded-xl border border-red-100 dark:border-red-900/30">
+                                            <div className="text-[10px] font-bold text-red-600 uppercase tracking-tighter mb-1">
+                                                {language === 'bn' ? 'পেনাল্টি' : 'Penalty'}
+                                            </div>
+                                            <div className="text-lg font-bold text-red-700 dark:text-red-400 tabular-nums">-{quizResults.penalty}</div>
+                                        </div>
+                                    )}
                                 </div>
                                 {(quizResults?.skipped || 0) > 0 && (
                                     <p className={`mb-6 text-center text-[11px] text-slate-500 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
@@ -2672,28 +2676,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             : `এই সংরক্ষিত প্রচেষ্টায় পুরনো ফরম্যাট থেকে ${quizResults.skipped}টি প্রশ্ন উত্তরহীন ছিল। নতুন কুইজে সব প্রশ্নের উত্তর দিতে হবে।`}
                                     </p>
                                 )}
-
-                                <div className={`mb-6 p-4 rounded-2xl border text-left animate-in fade-in slide-in-from-bottom-2 duration-700
-                                    ${userRank && (userProfile?.points || userRank?.score) > 1000 
-                                        ? 'bg-orange-50/50 dark:bg-orange-950/10 border-orange-100 dark:border-orange-900/20 shadow-sm' 
-                                        : 'bg-green-50/50 dark:bg-green-950/10 border-green-100 dark:border-green-900/20 shadow-sm'}`}>
-                                    
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-white text-xs ${userRank && (userProfile?.points || userRank?.score) > 1000 ? 'bg-orange-500 shadow-orange-500/20' : 'bg-green-500 shadow-green-500/20'} shadow-md`}>
-                                            {userRank && (userProfile?.points || userRank?.score) > 1000 ? '⚠️' : '🛡️'}
-                                        </div>
-                                        <span className={`text-[11px] font-black uppercase tracking-widest ${userRank && (userProfile?.points || userRank?.score) > 1000 ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400'}`}>
-                                            {userRank && (userProfile?.points || userRank?.score) > 1000 
-                                                ? (language === 'en' ? 'High Stakes Active' : 'হাই স্টেক সক্রিয়') 
-                                                : (language === 'en' ? 'Standard Mode' : 'স্ট্যান্ডার্ড মোড')}
-                                        </span>
-                                    </div>
-                                    <p className={`text-xs font-bold text-slate-600 dark:text-slate-400 leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {userRank && (userProfile?.points || userRank?.score) > 1000 
-                                            ? t.highStakesDesc 
-                                            : (language === 'en' ? 'Penalties start after 1,000 points. Keep learning safely!' : '১,০০০ পয়েন্টের পর থেকে পেনাল্টি কার্যকর হবে। সাবধানে শিখতে থাকুন!')}
-                                    </p>
-                                </div>
 
                                 <button onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); }} className="w-full py-3 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-lg font-bold hover:bg-slate-800 dark:hover:bg-white transition-colors">
                                     {t.close}
@@ -2757,6 +2739,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 </div>,
                 document.body
             )}
+
+            <HourlyPenaltyInfoModal
+                open={showHourlyPenaltyInfoModal}
+                language={language}
+                lifetimePoints={hourlyLifetimePoints}
+                onClose={() => setShowHourlyPenaltyInfoModal(false)}
+            />
         </div>
     );
 }

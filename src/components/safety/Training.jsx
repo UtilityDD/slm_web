@@ -30,6 +30,10 @@ import {
 import { filterCoreCompletedLessonIds, isSupplementaryProgressLessonId } from '../../utils/trainingLessonIds';
 import { pickSupplementaryListenSrc } from '../../utils/supplementaryAudioUrl';
 import { useLifeSkillRadio } from '../../context/LifeSkillRadioContext';
+import { getLifetimePoints } from '../../utils/hourlyDifficulty';
+import HourlyPenaltyInfoModal from '../HourlyPenaltyInfoModal';
+
+const HOURLY_PENALTY_MODAL_SKIP_KEY = 'slm_hourly_penalty_info_skip';
 
 const LOADING_TIPS = {
     en: [
@@ -721,6 +725,8 @@ export default function Training({
     const [isAudioPlaying, setIsAudioPlaying] = useState(false);
     const [activeAudioChapter, setActiveAudioChapter] = useState(null);
     const [isHourlyPending, setIsHourlyPending] = useState(false);
+    const [showHourlyPenaltyModal, setShowHourlyPenaltyModal] = useState(false);
+    const [hourlyPenaltyDontShowAgain, setHourlyPenaltyDontShowAgain] = useState(false);
     const [userRank, setUserRank] = useState(null);
     const [showLessonIndex, setShowLessonIndex] = useState(false);
     const [expandedChapterIndex, setExpandedChapterIndex] = useState(null);
@@ -799,6 +805,27 @@ export default function Training({
         writeLifeSkillsHintState({ ...s, dismissed: true });
         setShowLifeSkillsHint(false);
     }, []);
+
+    const hourlyLifetimePoints = useMemo(
+        () => getLifetimePoints(profile, userRank),
+        [profile, userRank]
+    );
+    const handleHourlyChallengeClick = useCallback(() => {
+        if (user?.id && !storageUtils.getItem(`${HOURLY_PENALTY_MODAL_SKIP_KEY}_${user.id}`)) {
+            setHourlyPenaltyDontShowAgain(false);
+            setShowHourlyPenaltyModal(true);
+            return;
+        }
+        setCurrentView('competitions');
+    }, [user?.id, setCurrentView]);
+
+    const closeHourlyPenaltyModalAndGo = useCallback(() => {
+        if (hourlyPenaltyDontShowAgain && user?.id) {
+            storageUtils.setItem(`${HOURLY_PENALTY_MODAL_SKIP_KEY}_${user.id}`, '1');
+        }
+        setShowHourlyPenaltyModal(false);
+        setCurrentView('competitions');
+    }, [hourlyPenaltyDontShowAgain, user?.id, setCurrentView]);
 
     useEffect(() => {
         if (trainingTab !== 'supplementary') return;
@@ -2263,7 +2290,7 @@ export default function Training({
                             <div className="flex w-full justify-end pr-0.5">
                                 <button
                                     type="button"
-                                    onClick={() => setCurrentView('competitions')}
+                                    onClick={handleHourlyChallengeClick}
                                     className="rounded-2xl p-0.5 transition-transform duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:focus-visible:ring-offset-slate-900"
                                     title={language === 'en' ? 'Hourly Challenge' : 'প্রতি ঘণ্টার চ্যালেঞ্জ'}
                                     aria-label={language === 'en' ? 'Hourly Challenge' : 'প্রতি ঘণ্টার চ্যালেঞ্জ'}
@@ -3046,6 +3073,16 @@ export default function Training({
                 </div>
             ) : null
             }
+
+            <HourlyPenaltyInfoModal
+                open={showHourlyPenaltyModal}
+                language={language}
+                lifetimePoints={hourlyLifetimePoints}
+                onClose={closeHourlyPenaltyModalAndGo}
+                showDontShowAgain
+                dontShowAgain={hourlyPenaltyDontShowAgain}
+                onDontShowAgainChange={setHourlyPenaltyDontShowAgain}
+            />
 
             {lockedLessonModal && createPortal(
                 <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xl animate-fade-in">
