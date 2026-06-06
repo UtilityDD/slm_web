@@ -36,6 +36,7 @@ const copy = {
     pts: 'pts',
     prizeMonths: 'months with winners',
     footer: 'Empowering linemen through safety, learning, and recognition.',
+    followFacebook: 'Follow on Facebook',
   },
   bn: {
     tagline: 'পশ্চিমবঙ্গের লাইনম্যানদের নিরাপদ কাজের সঙ্গী',
@@ -66,6 +67,7 @@ const copy = {
     pts: 'পয়েন্ট',
     prizeMonths: 'টি মাসে পুরস্কার',
     footer: 'নিরাপত্তা, শেখা আর স্বীকৃতি—লাইনম্যানের পাশে থাকি।',
+    followFacebook: 'Facebook পেজ',
   },
 };
 
@@ -1051,7 +1053,22 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
 
         <footer className="nb-footer text-center sm:text-left text-xs pt-6 sm:pt-8 pb-8 mt-8 sm:mt-12">
           <p className="font-semibold text-slate-200">{t.footer}</p>
-          <p className="mt-1.5 font-bold text-white">
+          <div className="mt-4 flex flex-col sm:flex-row items-center sm:items-start gap-3">
+            <a
+              href="https://www.facebook.com/smartlineman"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border-2 border-slate-900 bg-white px-4 py-2.5 text-slate-900 font-bold shadow-[3px_3px_0_#0f172a] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5"
+            >
+              <span className="flex h-8 w-8 items-center justify-center border-2 border-slate-900 bg-[#1877F2] text-white shadow-[2px_2px_0_#0f172a]">
+                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" />
+                </svg>
+              </span>
+              <span className={bnFont ? 'font-bengali text-sm' : 'text-sm nb-mono uppercase tracking-wide'}>{t.followFacebook}</span>
+            </a>
+          </div>
+          <p className="mt-4 font-bold text-white">
             {APP_NAME} ·{' '}
             <a href={WEBSITE_URL} className="text-orange-400 hover:underline" target="_blank" rel="noopener noreferrer">
               {WEBSITE_URL.replace(/^https?:\/\//, '')}
