@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
 import { libraryService } from '../../utils/libraryService';
+import { storageUtils } from '../../utils/storageUtils';
 
 const SearchIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -402,7 +403,7 @@ const ImageSlider = forwardRef(function ImageSlider(
 
     if (!validImages || validImages.length === 0) {
         return (
-            <div className={`${aspect} bg-slate-100 dark:bg-slate-900/50 flex flex-col items-center justify-center p-4 text-slate-400 text-center`}>
+            <div className={`${aspect} bg-slate-100 flex flex-col items-center justify-center p-4 text-slate-400 text-center border-b-2 border-slate-900`}>
                 <svg className="w-8 h-8 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
@@ -427,7 +428,7 @@ const ImageSlider = forwardRef(function ImageSlider(
             ref={enableZoom ? viewportRef : undefined}
             onPointerDown={enableZoom ? onViewportPointerDown : undefined}
             onLostPointerCapture={enableZoom ? onLostPointerCapture : undefined}
-            className={`group/slider relative flex select-none justify-center bg-slate-50 dark:bg-slate-900/50 ${boxAspect} [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
+            className={`group/slider relative flex select-none justify-center bg-white ${boxAspect} [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
                 naturalImageHeight ? 'items-start overflow-x-hidden overflow-y-visible' : 'items-center overflow-hidden'
             } ${touchClass}`}
         >
@@ -547,7 +548,7 @@ const SkeletonShimmer = ({ className = '' }) => (
         className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`}
         aria-hidden
     >
-        <div className="absolute inset-y-0 w-[55%] -skew-x-12 bg-gradient-to-r from-transparent via-white/50 to-transparent dark:via-white/[0.08] animate-safety-shimmer" />
+        <div className="absolute inset-y-0 w-[55%] -skew-x-12 bg-gradient-to-r from-transparent via-orange-100/80 to-transparent animate-safety-shimmer" />
     </div>
 );
 
@@ -560,30 +561,22 @@ const SafetyLibraryLoadingView = ({ language }) => {
     return (
         <div className="max-w-7xl mx-auto p-3 sm:p-8" aria-busy="true" aria-live="polite">
             <div className="mb-6 flex flex-col items-center gap-3 py-2 sm:py-4">
-                <div className="relative flex h-[4.5rem] w-[4.5rem] items-center justify-center">
-                    <div
-                        className="absolute inset-0 rounded-full border-[3px] border-orange-500/15 border-t-orange-500/90 dark:border-orange-400/20 dark:border-t-orange-400"
-                        style={{ animation: 'spin 1.05s linear infinite' }}
-                    />
-                    <div
-                        className="absolute inset-1.5 rounded-full border-2 border-orange-400/25 border-b-orange-500/70 dark:border-orange-300/20 dark:border-b-orange-300/80"
-                        style={{ animation: 'spin 1.45s linear infinite reverse' }}
-                    />
-                    <ShieldCheckIcon className="relative h-8 w-8 text-orange-500 drop-shadow-sm animate-safety-float dark:text-orange-400" />
+                <div className="nb-icon-badge relative flex h-[4.5rem] w-[4.5rem] items-center justify-center bg-orange-100">
+                    <ShieldCheckIcon className="relative h-8 w-8 text-orange-600 animate-safety-float" />
                 </div>
                 <div className="text-center space-y-1">
-                    <p className="text-sm font-bold tracking-tight text-slate-700 dark:text-slate-200">{copy.line}</p>
-                    <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500">{copy.sub}</p>
+                    <p className="text-sm font-black tracking-tight text-slate-800 nb-mono uppercase">{copy.line}</p>
+                    <p className="text-[11px] font-semibold text-slate-500">{copy.sub}</p>
                 </div>
             </div>
 
-            <div className="mb-4 sm:mb-6 h-[4.5rem] sm:h-[4.75rem] overflow-hidden rounded-[1.25rem] bg-slate-200/70 dark:bg-slate-800/80 relative border border-slate-200/60 dark:border-slate-700/50">
+            <div className="mb-4 sm:mb-6 h-[4.5rem] sm:h-[4.75rem] overflow-hidden nb-card bg-white relative">
                 <SkeletonShimmer />
                 <div className="absolute left-4 top-1/2 flex -translate-y-1/2 items-center gap-3">
-                    <div className="h-10 w-10 shrink-0 rounded-full bg-slate-300/80 dark:bg-slate-700/80" />
+                    <div className="h-10 w-10 shrink-0 border-2 border-slate-900 bg-slate-200 shadow-[2px_2px_0_#0f172a]" />
                     <div className="space-y-2">
-                        <div className="h-3.5 w-36 rounded-md bg-slate-300/90 dark:bg-slate-700/90 sm:w-48" />
-                        <div className="h-2.5 w-24 rounded-md bg-slate-300/60 dark:bg-slate-700/60" />
+                        <div className="h-3.5 w-36 bg-slate-200 border border-slate-900 sm:w-48" />
+                        <div className="h-2.5 w-24 bg-slate-100 border border-slate-300" />
                     </div>
                 </div>
             </div>
@@ -592,16 +585,16 @@ const SafetyLibraryLoadingView = ({ language }) => {
                 {Array.from({ length: 8 }, (_, i) => (
                     <div
                         key={i}
-                        className="overflow-hidden rounded-2xl border border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900"
+                        className="overflow-hidden nb-card bg-white p-0"
                         style={{ animationDelay: `${i * 70}ms` }}
                     >
-                        <div className="relative aspect-square overflow-hidden bg-slate-100 dark:bg-slate-800/90">
+                        <div className="relative aspect-square overflow-hidden bg-slate-100 border-b-2 border-slate-900">
                             <SkeletonShimmer className="opacity-90" />
-                            <div className="absolute left-2 top-2 h-4 w-14 rounded-md bg-slate-300/70 dark:bg-slate-600/70" />
+                            <div className="absolute left-2 top-2 h-4 w-14 bg-slate-300 border border-slate-900" />
                         </div>
                         <div className="space-y-2 p-2.5 sm:p-4">
-                            <div className="mx-auto h-3 w-[88%] rounded-md bg-slate-200 dark:bg-slate-800" />
-                            <div className="mx-auto h-3 w-[62%] rounded-md bg-slate-200/80 dark:bg-slate-800/80" />
+                            <div className="mx-auto h-3 w-[88%] bg-slate-200 border border-slate-300" />
+                            <div className="mx-auto h-3 w-[62%] bg-slate-100 border border-slate-200" />
                         </div>
                     </div>
                 ))}
@@ -619,14 +612,14 @@ const GridImage = ({ images, alt, aspect = 'aspect-square' }) => {
 
     if (!randomImage) {
         return (
-            <div className={`${aspect} bg-slate-100 dark:bg-slate-900/50 flex flex-col items-center justify-center p-4 text-slate-400`}>
+            <div className={`${aspect} bg-slate-100 flex flex-col items-center justify-center p-4 text-slate-400 border-b-2 border-slate-900`}>
                 <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">No Image</span>
             </div>
         );
     }
 
     return (
-        <div className={`${aspect} bg-slate-50 dark:bg-slate-900/50 relative overflow-hidden flex items-center justify-center group-hover:scale-105 transition-transform duration-500`}>
+        <div className={`${aspect} bg-white relative overflow-hidden flex items-center justify-center group-hover:scale-105 transition-transform duration-500`}>
             <img
                 src={getGoogleDriveDirectLink(randomImage)}
                 alt={alt}
@@ -659,6 +652,32 @@ export default function SafetyLibrary({ language, setCurrentView }) {
     useEffect(() => {
         if (!selectedItem) setModalBrowseStack([]);
     }, [selectedItem]);
+
+    useEffect(() => {
+        const html = document.documentElement;
+        html.classList.remove('dark');
+
+        let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        const previousThemeColor = metaThemeColor?.getAttribute('content') || null;
+        if (!metaThemeColor) {
+            metaThemeColor = document.createElement('meta');
+            metaThemeColor.setAttribute('name', 'theme-color');
+            document.head.appendChild(metaThemeColor);
+        }
+        metaThemeColor.setAttribute('content', '#fffdf7');
+
+        return () => {
+            const savedTheme = storageUtils.getItem('appTheme') || 'dark';
+            if (savedTheme === 'dark') {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+            if (previousThemeColor) {
+                metaThemeColor.setAttribute('content', previousThemeColor);
+            }
+        };
+    }, []);
 
     // Scroll Hint Effect
     useEffect(() => {
@@ -788,49 +807,50 @@ export default function SafetyLibrary({ language, setCurrentView }) {
     }, [selectedItem]);
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20">
+        <div className="neo-brutal min-h-screen pb-20 text-slate-900">
+            <div className="nb-hazard sticky top-0 z-[101]" aria-hidden="true" />
+
             {/* Sticky Header */}
-            <div className="sticky top-0 z-[100] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 py-4 px-4 sm:px-8">
+            <div className="sticky top-[6px] z-[100] bg-white border-b-[2.5px] border-slate-900 py-4 px-4 sm:px-8">
                 <div className="max-w-7xl mx-auto space-y-4">
                     <div className="flex items-center justify-between gap-4">
                         {!isSearchExpanded ? (
                             <>
                                 <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4 duration-300">
-                                    <button 
-                                        onClick={() => setCurrentView('training')} 
-                                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 active:scale-90 transition-transform"
+                                    <button
+                                        type="button"
+                                        onClick={() => setCurrentView('training')}
+                                        className="w-9 h-9 flex items-center justify-center border-2 border-slate-900 bg-white text-slate-900 shadow-[3px_3px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0_#0f172a] transition-transform"
                                     >
                                         <ChevronLeftIcon className="w-5 h-5" />
                                     </button>
-                                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                                         {t.title}
                                     </h1>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    {/* Mobile Search Trigger */}
                                     <button
                                         type="button"
                                         disabled={loading}
                                         onClick={() => !loading && setIsSearchExpanded(true)}
-                                        className="sm:hidden w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 active:scale-90 transition-transform disabled:pointer-events-none disabled:opacity-40"
+                                        className="sm:hidden w-9 h-9 flex items-center justify-center border-2 border-slate-900 bg-white text-slate-900 shadow-[3px_3px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 disabled:pointer-events-none disabled:opacity-40"
                                     >
                                         <SearchIcon className="w-5 h-5" />
                                     </button>
 
-                                    {/* Desktop Search Bar */}
                                     {loading ? (
-                                        <div className="hidden sm:block h-10 max-w-md w-full min-w-[200px] overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800/80 relative">
+                                        <div className="hidden sm:block h-10 max-w-md w-full min-w-[200px] overflow-hidden nb-card bg-white relative">
                                             <SkeletonShimmer />
                                         </div>
                                     ) : (
-                                        <div className="hidden sm:block relative group max-w-md w-full">
-                                            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                        <div className="hidden sm:block relative max-w-md w-full">
+                                            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 z-10" />
                                             <input
                                                 type="text"
                                                 placeholder={t.searchPlaceholder}
                                                 value={searchQuery}
                                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                                className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800/50 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500/20 transition-all"
+                                                className="nb-input !min-h-[40px] py-2 pl-9 pr-3 text-sm"
                                             />
                                         </div>
                                     )}
@@ -839,19 +859,20 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                         ) : (
                             <div className="flex-1 flex items-center gap-2 animate-in slide-in-from-right-4 duration-300">
                                 <div className="relative flex-1">
-                                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 z-10" />
                                     <input
                                         autoFocus
                                         type="text"
                                         placeholder={t.searchPlaceholder}
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-9 pr-3 py-2.5 bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500/30 transition-all"
+                                        className="nb-input py-2.5 pl-9 pr-3 text-sm"
                                     />
                                 </div>
-                                <button 
+                                <button
+                                    type="button"
                                     onClick={() => { setIsSearchExpanded(false); setSearchQuery(''); }}
-                                    className="px-3 py-2 text-sm font-bold text-orange-500 dark:text-orange-400 active:scale-95"
+                                    className="px-3 py-2 text-sm font-black text-orange-600 nb-mono uppercase active:scale-95"
                                 >
                                     Cancel
                                 </button>
@@ -859,14 +880,13 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                         )}
                     </div>
 
-                    {/* Compact Categories with Scroll Hint Ref */}
                     <div ref={tabsRef} className="flex gap-2 overflow-x-auto no-scrollbar pb-1 scroll-smooth">
                         {loading ? (
                             <>
                                 {[56, 72, 64, 80, 68, 52, 60].map((w, i) => (
                                     <div
                                         key={i}
-                                        className="relative h-9 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/90"
+                                        className="relative h-9 shrink-0 overflow-hidden border-2 border-slate-900 bg-slate-100 shadow-[2px_2px_0_#0f172a]"
                                         style={{ width: `${w}px` }}
                                     >
                                         <SkeletonShimmer />
@@ -879,10 +899,10 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                     key={cat.id}
                                     type="button"
                                     onClick={() => setActiveCategory(cat.id)}
-                                    className={`px-4 py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap border text-center
+                                    className={`px-4 py-2 text-[10px] sm:text-xs font-black transition-all whitespace-nowrap border-2 border-slate-900 text-center shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0_#0f172a]
                                         ${activeCategory === cat.id
-                                            ? 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/20'
-                                            : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-100 dark:border-slate-800'}`}
+                                            ? 'bg-orange-500 text-white'
+                                            : 'bg-white text-slate-700 hover:bg-orange-50'}`}
                                 >
                                     {cat.label}
                                 </button>
@@ -906,20 +926,19 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                 setCurrentView('video-guide');
                             }
                         }}
-                        className="mb-4 sm:mb-6 rounded-[1.25rem] bg-gradient-to-r from-orange-500 to-orange-600 p-4 text-white flex items-center justify-between cursor-pointer hover:shadow-lg hover:shadow-orange-500/20 transition-all active:scale-[0.98]"
+                        className="mb-4 sm:mb-6 nb-btn-primary p-4 flex items-center justify-between cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
                     >
-                        {/* Elegant Video Guide Banner */}
                         <div className="flex items-center gap-3.5">
-                            <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
-                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div className="w-10 h-10 border-2 border-slate-900 bg-white text-orange-600 flex items-center justify-center shrink-0 shadow-[2px_2px_0_#0f172a]">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             </div>
                             <div>
-                                <h3 className="font-bold text-sm sm:text-base leading-tight">
+                                <h3 className="font-black text-sm sm:text-base leading-tight">
                                     {language === 'en' ? 'Watch Video Guides' : 'ভিডিও গাইড দেখুন'}
                                 </h3>
                             </div>
                         </div>
-                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                        <div className="w-8 h-8 border-2 border-slate-900 bg-white/20 flex items-center justify-center">
                             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"/></svg>
                         </div>
                     </div>
@@ -931,18 +950,18 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                             <div
                                 key={item.id}
                                 onClick={() => openItemDetail(item)}
-                                className="group bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 hover:shadow-xl transition-all active:scale-[0.97] flex flex-col cursor-pointer"
+                                className="group nb-card overflow-hidden p-0 flex flex-col cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
                             >
-                                <div className="relative aspect-square">
+                                <div className="relative aspect-square border-b-2 border-slate-900">
                                     <GridImage images={item.images} alt={item.name_bn} aspect="h-full" />
                                     <div className="absolute top-2 left-2">
-                                        <span className="px-1.5 py-0.5 bg-black/40 backdrop-blur-md rounded-md text-[8px] font-bold text-white uppercase tracking-tighter">
+                                        <span className="nb-tag px-1.5 py-0.5 bg-orange-100 text-orange-800 text-[8px]">
                                             {item.category}
                                         </span>
                                     </div>
                                 </div>
-                                <div className="p-2.5 sm:p-4 flex-grow flex flex-col justify-center">
-                                    <h3 className="text-[11px] sm:text-sm font-bold text-slate-900 dark:text-white leading-tight line-clamp-2 text-center group-hover:text-orange-500 transition-colors">
+                                <div className="p-2.5 sm:p-4 flex-grow flex flex-col justify-center bg-white">
+                                    <h3 className="text-[11px] sm:text-sm font-black text-slate-900 leading-tight line-clamp-2 text-center group-hover:text-orange-600 transition-colors">
                                         {item.name_bn}
                                     </h3>
                                 </div>
@@ -950,38 +969,40 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                         ))}
                     </div>
                 ) : !loading ? (
-                    <div className="flex flex-col items-center justify-center min-h-[300px] text-slate-400">
-                        <LineChartIcon className="w-12 h-12 mb-2 opacity-10" />
-                        <p className="text-sm font-medium">{t.noResults}</p>
+                    <div className="flex flex-col items-center justify-center min-h-[300px]">
+                        <div className="nb-card p-8 text-center bg-white">
+                            <LineChartIcon className="w-12 h-12 mb-3 mx-auto text-slate-300" />
+                            <p className="text-sm font-black text-slate-600">{t.noResults}</p>
+                        </div>
                     </div>
                 ) : null}
 
                 {/* Premium Detail Modal - Optimized for High-End UX */}
                 {selectedItem && (
                     <div className="fixed inset-0 z-[11000] flex items-end sm:items-start justify-center p-0 sm:px-4 sm:pt-20 sm:pb-4 lg:px-6 lg:pt-24 lg:pb-6 animate-fade-in">
-                        <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl" onClick={closeDetailModal} />
-                        
-                        <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden rounded-none border-none bg-white pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-2xl dark:bg-slate-900 sm:h-[min(calc(100dvh-6rem),940px)] sm:max-h-[calc(100dvh-6rem)] sm:w-[min(96vw,1220px)] sm:max-w-none sm:rounded-[2rem] sm:border sm:border-white/10 sm:pb-0 sm:pt-0 lg:h-[min(calc(100dvh-7rem),940px)] lg:max-h-[calc(100dvh-7rem)] animate-slide-up sm:animate-scale-in">
-                            <div className="mx-auto mt-2 mb-1 h-1.5 w-12 shrink-0 cursor-pointer rounded-full bg-slate-200 shadow-inner dark:bg-slate-800 sm:hidden" onClick={closeDetailModal} />
+                        <div className="absolute inset-0 bg-slate-900/55" onClick={closeDetailModal} aria-hidden="true" />
 
-                            {/* Top bar: optional back + category + title | zoom | close */}
-                            <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 border-b border-slate-100 bg-white/95 px-3 py-2 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95 sm:px-6 sm:py-3">
+                        <div className="neo-brutal relative flex h-[100dvh] w-full flex-col overflow-hidden border-[2.5px] border-slate-900 bg-[#fffdf7] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[4px_4px_0_#0f172a] sm:h-[min(calc(100dvh-6rem),940px)] sm:max-h-[calc(100dvh-6rem)] sm:w-[min(96vw,1220px)] sm:max-w-none sm:rounded-lg sm:pb-0 sm:pt-0 lg:h-[min(calc(100dvh-7rem),940px)] lg:max-h-[calc(100dvh-7rem)] animate-slide-up sm:animate-scale-in">
+                            <div className="nb-hazard shrink-0" aria-hidden="true" />
+                            <div className="mx-auto mt-2 mb-1 h-1.5 w-12 shrink-0 cursor-pointer bg-slate-900 sm:hidden" onClick={closeDetailModal} aria-hidden="true" />
+
+                            <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 border-b-2 border-slate-900 bg-white px-3 py-2 sm:px-6 sm:py-3">
                                 <div className="flex min-w-0 items-center gap-2">
                                     {modalBrowseStack.length > 0 && (
                                         <button
                                             type="button"
                                             onClick={popModalBrowseBack}
-                                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 transition-colors hover:bg-slate-100 active:scale-95 dark:border-white/15 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+                                            className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-slate-900 bg-white text-slate-900 shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5"
                                             aria-label={t.backPreviousAria}
                                         >
                                             <ChevronLeftIcon className="h-4 w-4" />
                                         </button>
                                     )}
-                                    <span className="shrink-0 rounded-md border border-slate-200/80 bg-slate-100 px-2 py-1 text-[8px] font-black uppercase tracking-[0.14em] text-slate-600 dark:border-white/10 dark:bg-white/10 dark:text-white/90">
+                                    <span className="nb-tag shrink-0 px-2 py-1 bg-orange-100 text-orange-800 text-[8px]">
                                         {selectedItem.category}
                                     </span>
                                     <h2
-                                        className="min-w-0 flex-1 truncate text-left text-[13px] font-extrabold leading-snug tracking-tight text-slate-900 dark:text-white sm:text-sm"
+                                        className="min-w-0 flex-1 truncate text-left text-[13px] font-black leading-snug tracking-tight text-slate-900 sm:text-sm"
                                         title={selectedItem.name_bn}
                                     >
                                         {selectedItem.name_bn}
@@ -991,13 +1012,13 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                     role="toolbar"
                                     aria-label={t.zoomToolbarAria}
                                     data-zoom-ui
-                                    className="flex items-center gap-0.5 justify-self-center rounded-full border border-slate-200/90 bg-slate-50/95 p-0.5 shadow-sm dark:border-white/10 dark:bg-slate-800/90"
+                                    className="flex items-center gap-0.5 justify-self-center border-2 border-slate-900 bg-white p-0.5 shadow-[2px_2px_0_#0f172a]"
                                 >
                                     <button
                                         type="button"
                                         onClick={() => detailSliderRef.current?.zoomOut()}
                                         disabled={detailZoomLevel <= ZOOM_MIN + 0.01}
-                                        className="flex h-7 w-7 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-200/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30 dark:text-slate-300 dark:hover:bg-white/10"
+                                        className="flex h-7 w-7 items-center justify-center text-slate-700 hover:bg-orange-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
                                         aria-label={t.zoomOutAria}
                                     >
                                         <MagnifierMinusIcon className="h-[15px] w-[15px]" />
@@ -1006,7 +1027,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                         type="button"
                                         onClick={() => detailSliderRef.current?.zoomIn()}
                                         disabled={detailZoomLevel >= ZOOM_MAX - 0.01}
-                                        className="flex h-7 w-7 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-200/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30 dark:text-slate-300 dark:hover:bg-white/10"
+                                        className="flex h-7 w-7 items-center justify-center text-slate-700 hover:bg-orange-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
                                         aria-label={t.zoomInAria}
                                     >
                                         <MagnifierPlusIcon className="h-[15px] w-[15px]" />
@@ -1015,7 +1036,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                 <button
                                     type="button"
                                     onClick={closeDetailModal}
-                                    className="flex h-9 w-9 shrink-0 items-center justify-center justify-self-end rounded-full border border-slate-200/80 bg-white text-slate-600 transition-colors hover:bg-slate-50 active:scale-95 dark:border-white/15 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center justify-self-end border-2 border-slate-900 bg-white text-slate-900 shadow-[3px_3px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5"
                                     aria-label={language === 'en' ? 'Close' : 'বন্ধ করুন'}
                                 >
                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -1025,16 +1046,16 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                             </div>
 
                             {chartRelatedForModal.length > 0 && (
-                                <div className="flex shrink-0 flex-nowrap items-center gap-1.5 overflow-x-auto overflow-y-hidden border-b border-slate-100 bg-white/80 px-3 py-1.5 no-scrollbar [-webkit-overflow-scrolling:touch] dark:border-slate-800 dark:bg-slate-900/80 sm:px-6 sm:py-2">
+                                <div className="flex shrink-0 flex-nowrap items-center gap-1.5 overflow-x-auto overflow-y-hidden border-b-2 border-slate-900 bg-amber-50 px-3 py-1.5 no-scrollbar [-webkit-overflow-scrolling:touch] sm:px-6 sm:py-2">
                                     {chartRelatedForModal.map((chart) => (
                                         <button
                                             key={chart.id}
                                             type="button"
                                             onClick={() => goToRelatedLibraryItem(chart)}
-                                            className="inline-flex h-8 max-w-[min(100%,12rem)] shrink-0 items-center gap-1.5 rounded-lg border border-slate-200/90 bg-white py-0 pl-1.5 pr-2 text-left text-[10px] font-semibold leading-tight text-slate-700 transition-colors hover:border-orange-300 hover:bg-orange-50/90 hover:text-slate-900 active:scale-[0.99] dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:border-orange-500/35 dark:hover:bg-orange-500/10 dark:hover:text-white sm:max-w-[14rem]"
+                                            className="inline-flex h-8 max-w-[min(100%,12rem)] shrink-0 items-center gap-1.5 border-2 border-slate-900 bg-white py-0 pl-1.5 pr-2 text-left text-[10px] font-bold leading-tight text-slate-800 shadow-[2px_2px_0_#0f172a] hover:bg-orange-50 active:translate-x-0.5 active:translate-y-0.5 sm:max-w-[14rem]"
                                             aria-label={`${t.relatedOpenAriaPrefix} ${chart.name_bn}`}
                                         >
-                                            <LineChartIcon className="h-3.5 w-3.5 shrink-0 text-slate-500 dark:text-slate-400" aria-hidden />
+                                            <LineChartIcon className="h-3.5 w-3.5 shrink-0 text-slate-600" aria-hidden />
                                             <span className="min-w-0 truncate">{chart.name_bn}</span>
                                         </button>
                                     ))}
@@ -1042,7 +1063,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                             )}
 
                             {selectedItem.related_items?.some((rel) => rel.category !== 'Charts') && (
-                                <div className="flex shrink-0 flex-nowrap gap-2 overflow-x-auto overflow-y-hidden border-b border-slate-100 bg-white/90 px-3 py-2 no-scrollbar [-webkit-overflow-scrolling:touch] dark:border-slate-800 dark:bg-slate-900/90 sm:flex-wrap sm:overflow-x-visible sm:px-6 sm:py-3">
+                                <div className="flex shrink-0 flex-nowrap gap-2 overflow-x-auto overflow-y-hidden border-b-2 border-slate-900 bg-white px-3 py-2 no-scrollbar [-webkit-overflow-scrolling:touch] sm:flex-wrap sm:overflow-x-visible sm:px-6 sm:py-3">
                                     {selectedItem.related_items
                                         .filter((rel) => rel.category !== 'Charts')
                                         .map((rel) => (
@@ -1050,14 +1071,14 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                             key={rel.id}
                                             type="button"
                                             onClick={() => goToRelatedLibraryItem(rel)}
-                                            className="inline-flex max-w-[min(100%,18rem)] shrink-0 items-center gap-1.5 rounded-full border border-orange-200/90 bg-white py-1 pl-3 pr-2 text-left text-[11px] font-semibold text-slate-800 shadow-sm transition-all hover:border-orange-400 hover:bg-orange-50/90 active:scale-[0.99] dark:border-orange-500/25 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-800/90 sm:max-w-full"
+                                            className="inline-flex max-w-[min(100%,18rem)] shrink-0 items-center gap-1.5 border-2 border-slate-900 bg-white py-1 pl-3 pr-2 text-left text-[11px] font-bold text-slate-800 shadow-[2px_2px_0_#0f172a] hover:bg-orange-50 active:translate-x-0.5 active:translate-y-0.5 sm:max-w-full"
                                             aria-label={`${t.relatedOpenAriaPrefix} ${rel.name_bn}`}
                                         >
                                             <span className="min-w-0 flex-1 truncate">{rel.name_bn}</span>
-                                            <span className="shrink-0 rounded-md bg-orange-100/90 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tight text-orange-900/90 dark:bg-orange-500/20 dark:text-orange-100">
+                                            <span className="nb-tag shrink-0 px-1.5 py-0.5 bg-orange-100 text-orange-800 text-[9px]">
                                                 {rel.category}
                                             </span>
-                                            <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-orange-600/70 dark:text-orange-300/70" aria-hidden />
+                                            <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-orange-600" aria-hidden />
                                         </button>
                                         ))}
                                 </div>
@@ -1066,7 +1087,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                             <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar sm:overflow-hidden">
                                 <div className="sm:grid sm:h-full sm:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] sm:items-stretch">
                                 <div
-                                    className={`group/modal-img relative w-full shrink-0 bg-slate-50 dark:bg-slate-800/20 sm:h-full sm:border-r border-slate-100 dark:border-slate-800 sm:bg-slate-50/60 sm:dark:bg-slate-900/55 ${
+                                    className={`group/modal-img relative w-full shrink-0 bg-white sm:h-full sm:border-r-2 border-slate-900 ${
                                         selectedItem.category === 'Charts' ? 'sm:overflow-y-auto sm:no-scrollbar' : 'sm:overflow-hidden'
                                     }`}
                                 >
@@ -1084,38 +1105,35 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                     />
                                 </div>
 
-                                <div className="p-6 sm:h-full sm:overflow-y-auto sm:bg-white/85 sm:p-8 sm:pb-14 sm:pr-8 sm:pl-7 sm:no-scrollbar sm:backdrop-blur-sm sm:dark:bg-slate-900/70 pb-32 space-y-6">
-                                    {/* Clean Dedicated Header Section */}
-                                    <div className="space-y-3 pb-6 border-b border-slate-100 dark:border-slate-800">
+                                <div className="p-6 sm:h-full sm:overflow-y-auto sm:bg-[#fffdf7] sm:p-8 sm:pb-14 sm:pr-8 sm:pl-7 sm:no-scrollbar pb-32 space-y-6">
+                                    <div className="space-y-3 pb-6 border-b-2 border-slate-900">
                                         {selectedItem.approx_price_inr !== '---' && (
-                                            <div className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/10 bg-emerald-500/10 px-2.5 py-1 font-black text-emerald-600 dark:text-emerald-400">
+                                            <div className="nb-score-pill inline-flex items-center gap-1.5 px-2.5 py-1 !bg-emerald-100 !text-emerald-800">
                                                 <span className="text-[10px]">₹</span>
                                                 <span className="text-xs tabular-nums">{selectedItem.approx_price_inr}</span>
                                             </div>
                                         )}
                                     </div>
 
-                                    {/* About Section - Compact & Minimalist */}
                                     {selectedItem.category !== 'Charts' && selectedItem.function_bn && (
-                                        <div className="space-y-2">
-                                            <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
+                                        <div className="nb-card p-4 sm:p-5 space-y-2 bg-white">
+                                            <div className="flex items-center gap-1.5 text-slate-500">
                                                 <InfoIcon className="w-3.5 h-3.5" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest">{t.aboutLabel}</span>
+                                                <span className="nb-label">{t.aboutLabel}</span>
                                             </div>
-                                            <p className="text-[14px] sm:text-base text-slate-700 dark:text-slate-200 leading-relaxed font-medium">
+                                            <p className="text-[14px] sm:text-base text-slate-700 leading-relaxed font-semibold">
                                                 {selectedItem.function_bn}
                                             </p>
                                         </div>
                                     )}
 
-                                    {/* Guide Section - Elegant Minimal Box */}
                                     {selectedItem.category !== 'Charts' && selectedItem.guide_bn && (
-                                        <div className="p-4 bg-orange-50/50 dark:bg-orange-950/10 rounded-2xl border border-orange-100/50 dark:border-orange-500/5 space-y-2">
-                                            <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400 font-black text-[10px] uppercase tracking-wider">
+                                        <div className="nb-card p-4 sm:p-5 bg-amber-50 space-y-2">
+                                            <div className="flex items-center gap-2 text-orange-700 font-black text-[10px] uppercase tracking-wider nb-mono">
                                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                                                 {t.guideLabel}
                                             </div>
-                                            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-bold italic">
+                                            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-bold italic">
                                                 "{selectedItem.guide_bn}"
                                             </p>
                                         </div>
