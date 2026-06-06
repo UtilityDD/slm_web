@@ -832,12 +832,6 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
         {/* Hero Section Grid */}
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center pt-5 sm:pt-12 pb-8 sm:pb-12 relative z-10">
           <div className="lg:col-span-7 text-center lg:text-left">
-            <div className="inline-flex flex-wrap items-center justify-center lg:justify-start gap-2 px-3 py-1.5 nb-live-badge text-[10px] sm:text-xs mb-4 sm:mb-6 max-w-full text-center lg:text-left">
-              LIVE
-              <span className="w-2 h-2 rounded-full bg-green-600 border border-slate-900" />
-              <span className="font-sans normal-case font-bold text-slate-800">{t.tagline}</span>
-            </div>
-            
             <h1 className={`font-black text-slate-900 leading-[1.2] sm:leading-tight mb-3 sm:mb-4 tracking-tight text-balance ${bnFont ? 'text-[1.6rem] sm:text-4xl md:text-6xl' : 'text-3xl sm:text-5xl md:text-6xl'}`}>
               {language === 'bn' ? (
                 <>
@@ -964,14 +958,12 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
         {/* Vision & Mission section */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-12 relative z-10">
           <article className="nb-card p-5 sm:p-7 bg-amber-50">
-            <div className="inline-block px-2 py-0.5 mb-3 bg-amber-400 border-2 border-slate-900 text-[10px] font-bold nb-mono uppercase">01</div>
             <SectionIconBadge name="eye" tone="amber" className="mb-4" />
             <h2 className="text-xl font-black text-slate-900 mb-2.5">{t.visionTitle}</h2>
             <p className={`text-slate-700 leading-relaxed text-sm sm:text-base font-medium ${bnFont ? 'landing-bn-reading' : ''}`}>{t.vision}</p>
           </article>
           
           <article className="nb-card p-5 sm:p-7 bg-cyan-50">
-            <div className="inline-block px-2 py-0.5 mb-3 bg-cyan-400 border-2 border-slate-900 text-[10px] font-bold nb-mono uppercase">02</div>
             <SectionIconBadge name="target" tone="cyan" className="mb-4" />
             <h2 className="text-xl font-black text-slate-900 mb-2.5">{t.missionTitle}</h2>
             <p className={`text-slate-700 leading-relaxed text-sm sm:text-base font-medium ${bnFont ? 'landing-bn-reading' : ''}`}>{t.mission}</p>

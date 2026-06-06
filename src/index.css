@@ -187,7 +187,8 @@ body,
     display: none;
   }
 
-  /* Neo-brutal landing theme */
+  /* Neo-brutal theme (landing, login, etc.) */
+  .neo-brutal,
   .landing-neo-brutal {
     --nb-ink: #0f172a;
     --nb-paper: #fffdf7;
@@ -199,10 +200,12 @@ body,
     color: var(--nb-ink);
   }
 
+  .neo-brutal .nb-mono,
   .landing-neo-brutal .nb-mono {
     font-family: 'IBM Plex Mono', ui-monospace, monospace;
   }
 
+  .neo-brutal .nb-hazard,
   .landing-neo-brutal .nb-hazard {
     height: 6px;
     background: repeating-linear-gradient(
@@ -215,6 +218,7 @@ body,
     border-bottom: var(--nb-border);
   }
 
+  .neo-brutal .nb-card,
   .landing-neo-brutal .nb-card {
     background: #fff;
     border: var(--nb-border);
@@ -222,16 +226,19 @@ body,
     box-shadow: var(--nb-shadow);
   }
 
+  .neo-brutal .nb-card:hover,
   .landing-neo-brutal .nb-card:hover {
     box-shadow: var(--nb-shadow-hover, 6px 6px 0 var(--nb-ink));
   }
 
+  .neo-brutal .nb-icon-badge,
   .landing-neo-brutal .nb-icon-badge {
     border: var(--nb-border);
     border-radius: 0.5rem;
     box-shadow: var(--nb-shadow-sm);
   }
 
+  .neo-brutal .nb-rank-badge,
   .landing-neo-brutal .nb-rank-badge {
     border: 2px solid var(--nb-ink);
     border-radius: 0.375rem;
@@ -240,6 +247,7 @@ body,
     font-weight: 700;
   }
 
+  .neo-brutal .nb-btn-primary,
   .landing-neo-brutal .nb-btn-primary {
     background: #ea580c;
     color: #fff;
@@ -249,15 +257,18 @@ body,
     transition: transform 0.1s ease, box-shadow 0.1s ease;
   }
 
+  .neo-brutal .nb-btn-primary:hover,
   .landing-neo-brutal .nb-btn-primary:hover {
     background: #f97316;
   }
 
+  .neo-brutal .nb-btn-primary:active,
   .landing-neo-brutal .nb-btn-primary:active {
     transform: translate(2px, 2px);
     box-shadow: 2px 2px 0 var(--nb-ink);
   }
 
+  .neo-brutal .nb-btn-secondary,
   .landing-neo-brutal .nb-btn-secondary {
     background: #fff;
     color: var(--nb-ink);
@@ -267,15 +278,18 @@ body,
     transition: transform 0.1s ease, box-shadow 0.1s ease;
   }
 
+  .neo-brutal .nb-btn-secondary:hover,
   .landing-neo-brutal .nb-btn-secondary:hover {
     background: #fff7ed;
   }
 
+  .neo-brutal .nb-btn-secondary:active,
   .landing-neo-brutal .nb-btn-secondary:active {
     transform: translate(2px, 2px);
     box-shadow: 2px 2px 0 var(--nb-ink);
   }
 
+  .neo-brutal .nb-btn-indigo,
   .landing-neo-brutal .nb-btn-indigo {
     background: #4f46e5;
     color: #fff;
@@ -284,11 +298,13 @@ body,
     box-shadow: var(--nb-shadow);
   }
 
+  .neo-brutal .nb-btn-indigo:active,
   .landing-neo-brutal .nb-btn-indigo:active {
     transform: translate(2px, 2px);
     box-shadow: 2px 2px 0 var(--nb-ink);
   }
 
+  .neo-brutal .nb-live-badge,
   .landing-neo-brutal .nb-live-badge {
     background: #dcfce7;
     color: #15803d;
@@ -301,6 +317,7 @@ body,
     text-transform: uppercase;
   }
 
+  .neo-brutal .nb-tag,
   .landing-neo-brutal .nb-tag {
     border: 2px solid var(--nb-ink) !important;
     border-radius: 0.375rem !important;
@@ -311,6 +328,7 @@ body,
     text-transform: uppercase;
   }
 
+  .neo-brutal .nb-score-pill,
   .landing-neo-brutal .nb-score-pill {
     background: #ffedd5;
     color: #c2410c;
@@ -321,6 +339,7 @@ body,
     font-weight: 700;
   }
 
+  .neo-brutal .nb-stat-label,
   .landing-neo-brutal .nb-stat-label {
     font-family: 'IBM Plex Mono', ui-monospace, monospace;
     font-size: 0.6rem;
@@ -331,11 +350,13 @@ body,
     opacity: 0.7;
   }
 
+  .neo-brutal .nb-stat-value,
   .landing-neo-brutal .nb-stat-value {
     font-family: 'IBM Plex Mono', ui-monospace, monospace;
     font-weight: 700;
   }
 
+  .neo-brutal .nb-footer,
   .landing-neo-brutal .nb-footer {
     background: var(--nb-ink);
     color: #f8fafc;
@@ -347,6 +368,7 @@ body,
   }
 
   @media (min-width: 640px) {
+    .neo-brutal .nb-footer,
     .landing-neo-brutal .nb-footer {
       margin-left: -1.5rem;
       margin-right: -1.5rem;
@@ -355,13 +377,61 @@ body,
     }
   }
 
+  .neo-brutal .nb-modal,
   .landing-neo-brutal .nb-modal {
     background: var(--nb-paper);
   }
 
+  .neo-brutal .nb-modal-header,
   .landing-neo-brutal .nb-modal-header {
     background: #fff;
     border-bottom: var(--nb-border);
+  }
+
+  .neo-brutal .nb-label,
+  .landing-neo-brutal .nb-label {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--nb-ink);
+    opacity: 0.75;
+  }
+
+  .neo-brutal .nb-input,
+  .landing-neo-brutal .nb-input {
+    width: 100%;
+    min-height: 48px;
+    padding: 0.75rem 1rem;
+    background: #fff;
+    color: var(--nb-ink);
+    border: var(--nb-border);
+    border-radius: 0.5rem;
+    box-shadow: var(--nb-shadow-sm);
+    font-weight: 600;
+    outline: none;
+    transition: box-shadow 0.1s ease, border-color 0.1s ease;
+  }
+
+  .neo-brutal .nb-input::placeholder,
+  .landing-neo-brutal .nb-input::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+  }
+
+  .neo-brutal .nb-input:focus,
+  .landing-neo-brutal .nb-input:focus {
+    border-color: #ea580c;
+    box-shadow: var(--nb-shadow);
+  }
+
+  .neo-brutal .nb-btn-primary:disabled,
+  .landing-neo-brutal .nb-btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: var(--nb-shadow-sm);
   }
 
   .reading-content {

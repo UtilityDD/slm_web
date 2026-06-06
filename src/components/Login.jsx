@@ -5,6 +5,74 @@ import { DotLottiePlayer } from '@dotlottie/react-player';
 import noInternetLottie from '../assets/no_internet.lottie';
 import { SUPPORT_EMAIL } from '../config';
 
+function LoginLogo() {
+    return (
+        <div className="flex justify-center items-baseline gap-1.5 select-none">
+            <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">SmartLineMan</span>
+            <span className="text-[10px] font-black text-slate-900 bg-orange-400 px-1.5 py-0.5 rounded border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] shrink-0 nb-mono">.in</span>
+        </div>
+    );
+}
+
+function LoginPageShell({
+    emotionalImageIndex,
+    emotionalImages,
+    children,
+    footer,
+    animate = 'animate-fadeIn',
+    onOpenAwarenessStories,
+    onGoHome,
+}) {
+    return (
+        <div className="neo-brutal min-h-[100dvh] flex flex-col items-center justify-center px-4 py-6 relative overflow-hidden safe-area-inset-top safe-area-inset-bottom touch-manipulation text-slate-900">
+            <div className="nb-hazard absolute top-0 left-0 right-0 z-20" aria-hidden="true" />
+            <div className={`w-full max-w-sm relative z-10 ${animate} shrink-0 space-y-4 pt-2`}>
+                {onGoHome && (
+                    <button
+                        type="button"
+                        onClick={onGoHome}
+                        className="inline-flex items-center gap-1.5 min-h-[44px] px-1 text-sm font-black text-slate-800 hover:text-orange-600 nb-mono touch-manipulation"
+                        aria-label="Back to home"
+                    >
+                        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Home
+                    </button>
+                )}
+
+                {onOpenAwarenessStories && (
+                    <button
+                        type="button"
+                        onClick={onOpenAwarenessStories}
+                        className="nb-card overflow-hidden p-0 w-full text-left group relative touch-manipulation"
+                        aria-label="Open awareness stories — Korun Kahini"
+                    >
+                        <img
+                            src={emotionalImages[emotionalImageIndex]}
+                            alt=""
+                            className="w-full h-36 sm:h-40 object-cover transition-opacity duration-1000 ease-in-out group-active:opacity-90"
+                            key={emotionalImageIndex}
+                        />
+                        <div className="absolute inset-x-0 bottom-0 border-t-2 border-slate-900 bg-orange-500 px-3 py-2.5 flex items-center justify-between gap-2">
+                            <span className="font-black text-white text-sm sm:text-base">করুণ কাহিনী</span>
+                            <span className="text-white text-xs font-bold nb-mono uppercase tracking-wide">Read →</span>
+                        </div>
+                    </button>
+                )}
+
+                {children}
+                {footer}
+            </div>
+        </div>
+    );
+}
+
+const loginShellNav = (setCurrentView) => ({
+    onGoHome: () => setCurrentView('landing'),
+    onOpenAwarenessStories: () => setCurrentView('accident-stories'),
+});
+
 export default function Login({ onLogin, showNotification, setCurrentView }) {
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
@@ -43,6 +111,33 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
         }, 4000);
 
         return () => clearInterval(imageInterval);
+    }, []);
+
+    // Login matches landing: always light neo-brutal, restore saved theme on exit.
+    useEffect(() => {
+        const html = document.documentElement;
+        html.classList.remove('dark');
+
+        let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        const previousThemeColor = metaThemeColor?.getAttribute('content') || null;
+        if (!metaThemeColor) {
+            metaThemeColor = document.createElement('meta');
+            metaThemeColor.setAttribute('name', 'theme-color');
+            document.head.appendChild(metaThemeColor);
+        }
+        metaThemeColor.setAttribute('content', '#fffdf7');
+
+        return () => {
+            const savedTheme = storageUtils.getItem('appTheme') || 'dark';
+            if (savedTheme === 'dark') {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+            if (previousThemeColor) {
+                metaThemeColor.setAttribute('content', previousThemeColor);
+            }
+        };
     }, []);
 
     const formatPhone = (value) => {
@@ -193,253 +288,213 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
 
     if (mustChangePassword) {
         return (
-            <div className="min-h-[100dvh] flex items-center justify-center bg-slate-950 p-4 relative overflow-hidden safe-area-inset-top safe-area-inset-bottom">
-                {/* Background Hero Banner */}
-                <div className="absolute inset-0 z-0 pointer-events-none">
-                    <img
-                        src={emotionalImages[emotionalImageIndex]}
-                        alt="Background"
-                        className="w-full h-full object-cover opacity-30 transition-all duration-1000 scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-slate-950/50 to-orange-950/80"></div>
-                </div>
+            <LoginPageShell
+                emotionalImageIndex={emotionalImageIndex}
+                emotionalImages={emotionalImages}
+                animate="animate-slideUp"
+                {...loginShellNav(setCurrentView)}
+            >
+                <div className="nb-card p-6 sm:p-8">
+                    <div className="text-center mb-8">
+                        <span className="nb-tag inline-block px-3 py-1 bg-orange-100 text-orange-700 mb-4">Safety First</span>
+                        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2 tracking-tight">Set Your PIN</h1>
+                        <p className="text-slate-600 text-sm font-semibold">Protect your progress & identity</p>
+                    </div>
 
-                <div className="w-full max-w-md relative z-10 animate-slideUp">
-                    <div className="bg-white/10 dark:bg-black/20 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl p-8 sm:p-10 border border-white/10">
-                        <div className="text-center mb-10">
-                            <div className="inline-block px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 text-[10px] font-bold uppercase tracking-widest mb-4 border border-orange-500/20">
-                                Safety First
-                            </div>
-                            <h1 className="text-3xl font-black text-white mb-2 tracking-tight">Set Your PIN</h1>
-                            <p className="text-slate-400 text-sm font-medium">Protect your progress & identity</p>
+                    <form onSubmit={handleChangePassword} className="space-y-4">
+                        <div className="space-y-1.5">
+                            <label className="nb-label block text-center">New 6-Digit PIN</label>
+                            <input
+                                type="password"
+                                required
+                                maxLength="6"
+                                inputMode="numeric"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value.replace(/\D/g, ''))}
+                                className="nb-input text-center tracking-[1em] text-2xl font-bold"
+                                placeholder="••••••"
+                            />
                         </div>
 
-                        <form onSubmit={handleChangePassword} className="space-y-5">
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-4">New 6-Digit PIN</label>
-                                <input
-                                    type="password"
-                                    required
-                                    maxLength="6"
-                                    inputMode="numeric"
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value.replace(/\D/g, ''))}
-                                    className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-slate-600 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-center tracking-[1em] text-2xl font-bold"
-                                    placeholder="••••••"
-                                />
-                            </div>
+                        <div className="space-y-1.5">
+                            <label className="nb-label block text-center">Confirm PIN</label>
+                            <input
+                                type="password"
+                                required
+                                maxLength="6"
+                                inputMode="numeric"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value.replace(/\D/g, ''))}
+                                className="nb-input text-center tracking-[1em] text-2xl font-bold"
+                                placeholder="••••••"
+                            />
+                        </div>
 
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-4">Confirm PIN</label>
-                                <input
-                                    type="password"
-                                    required
-                                    maxLength="6"
-                                    inputMode="numeric"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value.replace(/\D/g, ''))}
-                                    className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-slate-600 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-center tracking-[1em] text-2xl font-bold"
-                                    placeholder="••••••"
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={loading || newPassword.length !== 6 || newPassword !== confirmPassword}
-                                className="w-full py-5 px-6 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-bold rounded-2xl shadow-xl shadow-orange-950/20 transition-all transform active:scale-[0.98] disabled:opacity-50 mt-4 cursor-pointer"
-                            >
-                                {loading ? (
-                                    <span className="flex items-center justify-center gap-2">
-                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                        Saving...
-                                    </span>
-                                ) : 'Secure Account & Log In'}
-                            </button>
-                        </form>
-                    </div>
+                        <button
+                            type="submit"
+                            disabled={loading || newPassword.length !== 6 || newPassword !== confirmPassword}
+                            className="w-full min-h-[48px] py-3 px-6 nb-btn-primary font-black text-base mt-2"
+                        >
+                            {loading ? (
+                                <span className="flex items-center justify-center gap-2">
+                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
+                                    Saving...
+                                </span>
+                            ) : 'Secure Account & Log In'}
+                        </button>
+                    </form>
                 </div>
-            </div>
+            </LoginPageShell>
         );
     }
 
     if (connectionError) {
         return (
-            <div className="min-h-[100dvh] flex items-center justify-center bg-slate-950 p-4 relative overflow-hidden safe-area-inset-top safe-area-inset-bottom">
-                <div className="absolute inset-0 z-0 pointer-events-none">
-                    <img
-                        src={emotionalImages[emotionalImageIndex]}
-                        alt="Background"
-                        className="w-full h-full object-cover opacity-30 transition-all duration-1000 scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-slate-950/50 to-orange-950/80"></div>
-                </div>
-
-                <div className="w-full max-w-md relative z-10 animate-slideUp">
-                    <div className="bg-white/10 dark:bg-black/20 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl p-10 text-center border border-white/10">
-                        <div className="mb-8 inline-flex p-4 rounded-3xl bg-orange-500/10 border border-orange-500/20">
-                            <DotLottiePlayer
-                                src={noInternetLottie}
-                                autoplay
-                                loop
-                                className="w-40 h-40"
-                            />
-                        </div>
-
-                        <h2 className="text-3xl font-black text-white mb-3 tracking-tight">Connection Error</h2>
-                        <p className="text-slate-400 mb-10 font-medium px-4">
-                            Oops! It seems you are offline or having trouble connecting to our servers.
-                        </p>
-
-                        <button
-                            onClick={() => {
-                                setConnectionError(false);
-                                setLoading(false);
-                            }}
-                            className="w-full py-5 px-6 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-bold rounded-2xl shadow-xl shadow-orange-950/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-3 cursor-pointer"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Retry Login
-                        </button>
+            <LoginPageShell
+                emotionalImageIndex={emotionalImageIndex}
+                emotionalImages={emotionalImages}
+                animate="animate-slideUp"
+                {...loginShellNav(setCurrentView)}
+            >
+                <div className="nb-card p-8 sm:p-10 text-center">
+                    <div className="mb-6 inline-flex p-4 nb-icon-badge bg-orange-50">
+                        <DotLottiePlayer
+                            src={noInternetLottie}
+                            autoplay
+                            loop
+                            className="w-36 h-36 sm:w-40 sm:h-40"
+                        />
                     </div>
+
+                    <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mb-3 tracking-tight">Connection Error</h2>
+                    <p className="text-slate-600 mb-8 font-semibold px-2 text-sm sm:text-base">
+                        Oops! It seems you are offline or having trouble connecting to our servers.
+                    </p>
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setConnectionError(false);
+                            setLoading(false);
+                        }}
+                        className="w-full min-h-[48px] py-3 px-6 nb-btn-primary font-black text-base flex items-center justify-center gap-3"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Retry Login
+                    </button>
                 </div>
-            </div>
+            </LoginPageShell>
         );
     }
 
     // LOGIN — compact sheet, awareness stories open only via explicit control
     return (
-        <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-slate-950 px-4 py-6 relative overflow-hidden safe-area-inset-top safe-area-inset-bottom touch-manipulation">
-            <div className="absolute inset-0 z-0 pointer-events-none select-none" aria-hidden>
-                <img
-                    src={emotionalImages[emotionalImageIndex]}
-                    alt=""
-                    className="w-full h-full object-cover opacity-35 transition-opacity duration-1000 ease-in-out"
-                    key={emotionalImageIndex}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-slate-950/90" />
-                <div className="absolute inset-0 bg-gradient-to-br from-orange-600/10 via-transparent to-slate-950/60" />
-            </div>
+        <LoginPageShell
+            emotionalImageIndex={emotionalImageIndex}
+            emotionalImages={emotionalImages}
+            {...loginShellNav(setCurrentView)}
+            footer={(
+                <a
+                    href={`mailto:${SUPPORT_EMAIL}`}
+                    className="text-center text-xs text-slate-600 hover:text-slate-900 py-2 min-h-[44px] flex items-center justify-center font-semibold nb-mono"
+                >
+                    {SUPPORT_EMAIL}
+                </a>
+            )}
+        >
+            <div className="nb-card p-6 sm:p-7">
+                <div className="text-center mb-6">
+                    <LoginLogo />
+                </div>
 
-            <div className="w-full max-w-sm relative z-10 animate-fadeIn shrink-0">
-                <div className="bg-white/[0.08] backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.35)] p-6 sm:p-7 border border-white/10">
-                    <div className="text-center mb-6">
-                        <div className="flex justify-center items-baseline gap-1 select-none">
-                            <span className="text-2xl sm:text-3xl logo-text logo-text-home text-white tracking-tight">
-                                SmartLineMan
-                            </span>
-                            <span className="text-[10px] font-bold bg-orange-500/25 text-orange-300 px-1.5 py-0.5 rounded-md border border-orange-500/25 -translate-y-1">
-                                .in
-                            </span>
+                <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-1.5">
+                        <label htmlFor="login-phone" className="nb-label block text-center">
+                            Phone
+                        </label>
+                        <input
+                            id="login-phone"
+                            type="tel"
+                            name="phone"
+                            autoComplete="username"
+                            required
+                            value={phone}
+                            onChange={handlePhoneChange}
+                            className="nb-input text-base text-center"
+                            placeholder="01XXXXXXXXX"
+                            autoFocus
+                        />
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label htmlFor="login-pin" className="nb-label block text-center">
+                            6-digit PIN
+                        </label>
+                        <div className="relative">
+                            <input
+                                id="login-pin"
+                                type={showPassword ? "text" : "password"}
+                                name="password"
+                                autoComplete="current-password"
+                                required
+                                maxLength="6"
+                                inputMode="numeric"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value.replace(/\D/g, ''))}
+                                className="nb-input pr-12 text-lg text-center tracking-[0.5em] font-bold"
+                                placeholder="••••••"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-1 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-600 hover:text-slate-900 rounded-md"
+                                aria-label={showPassword ? 'Hide PIN' : 'Show PIN'}
+                            >
+                                {showPassword ? (
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
+                                ) : (
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                )}
+                            </button>
                         </div>
                     </div>
 
-                    <form onSubmit={handleLogin} className="space-y-4">
-                        <div className="space-y-1">
-                            <label htmlFor="login-phone" className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide block text-center">
-                                Phone
-                            </label>
-                            <input
-                                id="login-phone"
-                                type="tel"
-                                name="phone"
-                                autoComplete="username"
-                                required
-                                value={phone}
-                                onChange={handlePhoneChange}
-                                className="w-full min-h-[48px] px-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-orange-500/80 focus:ring-2 focus:ring-orange-500/20 transition outline-none text-base text-center font-medium"
-                                placeholder="01XXXXXXXXX"
-                                autoFocus
-                            />
-                        </div>
-
-                        <div className="space-y-1">
-                            <label htmlFor="login-pin" className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide block text-center">
-                                6-digit PIN
-                            </label>
-                            <div className="relative">
+                    <div className="flex items-center justify-center pt-0.5">
+                        <label className="flex items-center gap-2.5 cursor-pointer min-h-[44px] px-1">
+                            <span className="relative inline-flex h-5 w-5 shrink-0 items-center justify-center">
                                 <input
-                                    id="login-pin"
-                                    type={showPassword ? "text" : "password"}
-                                    name="password"
-                                    autoComplete="current-password"
-                                    required
-                                    maxLength="6"
-                                    inputMode="numeric"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value.replace(/\D/g, ''))}
-                                    className="w-full min-h-[48px] px-4 pr-12 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-orange-500/80 focus:ring-2 focus:ring-orange-500/20 transition outline-none text-lg text-center tracking-[0.5em] font-semibold"
-                                    placeholder="••••••"
+                                    type="checkbox"
+                                    checked={rememberMe}
+                                    onChange={(e) => setRememberMe(e.target.checked)}
+                                    className="peer sr-only"
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 active:text-white rounded-lg"
-                                    aria-label={showPassword ? 'Hide PIN' : 'Show PIN'}
-                                >
-                                    {showPassword ? (
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
-                                    ) : (
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
+                                <span className="pointer-events-none absolute inset-0 rounded border-2 border-slate-900 bg-white shadow-[2px_2px_0_#0f172a] transition-colors peer-checked:bg-orange-500 peer-checked:border-slate-900" aria-hidden />
+                                <svg className="pointer-events-none relative z-10 h-3 w-3 text-white opacity-0 transition-opacity peer-checked:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </span>
+                            <span className="text-sm font-semibold text-slate-700">Stay signed in</span>
+                        </label>
+                    </div>
 
-                        <div className="flex items-center justify-center pt-0.5">
-                            <label className="flex items-center gap-2.5 cursor-pointer min-h-[44px] px-1 -mx-1 rounded-lg active:bg-white/5">
-                                <span className="relative inline-flex h-5 w-5 shrink-0 items-center justify-center">
-                                    <input
-                                        type="checkbox"
-                                        checked={rememberMe}
-                                        onChange={(e) => setRememberMe(e.target.checked)}
-                                        className="peer sr-only"
-                                    />
-                                    <span className="pointer-events-none absolute inset-0 rounded-md border-2 border-white/25 transition-colors peer-checked:border-orange-500 peer-checked:bg-orange-500" aria-hidden />
-                                    <svg className="pointer-events-none relative z-10 h-3 w-3 text-white opacity-0 transition-opacity peer-checked:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                </span>
-                                <span className="text-sm text-slate-400">Stay signed in</span>
-                            </label>
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={loading || phone.length !== 10 || password.length !== 6}
-                            className="w-full min-h-[48px] py-3 px-4 bg-orange-600 hover:bg-orange-500 active:bg-orange-600 text-white text-[15px] font-semibold rounded-xl shadow-lg shadow-black/20 active:scale-[0.98] transition disabled:opacity-50 disabled:active:scale-100"
-                        >
-                            {loading ? (
-                                <span className="flex items-center justify-center gap-2">
-                                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
-                                    Signing in…
-                                </span>
-                            ) : (
-                                'Sign in'
-                            )}
-                        </button>
-                    </form>
-                </div>
-
-                <div className="mt-6 flex flex-col items-stretch gap-3 w-full max-w-sm mx-auto">
                     <button
-                        type="button"
-                        onClick={() => setCurrentView('accident-stories')}
-                        aria-label="Open awareness stories"
-                        className="w-full min-h-[48px] rounded-xl border border-white/15 bg-white/[0.06] px-3 py-2.5 text-[15px] font-medium text-orange-300 active:bg-white/10 transition-colors"
+                        type="submit"
+                        disabled={loading || phone.length !== 10 || password.length !== 6}
+                        className="w-full min-h-[48px] py-3 px-4 nb-btn-primary text-[15px] font-black"
                     >
-                        করুণ কাহিনী
+                        {loading ? (
+                            <span className="flex items-center justify-center gap-2">
+                                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
+                                Signing in…
+                            </span>
+                        ) : (
+                            'Sign in'
+                        )}
                     </button>
-
-                    <a
-                        href={`mailto:${SUPPORT_EMAIL}`}
-                        className="text-center text-xs text-slate-500 hover:text-slate-300 py-2 min-h-[44px] flex items-center justify-center rounded-lg active:bg-white/5 transition-colors"
-                    >
-                        {SUPPORT_EMAIL}
-                    </a>
-                </div>
+                </form>
             </div>
-        </div>
+        </LoginPageShell>
     );
 }
