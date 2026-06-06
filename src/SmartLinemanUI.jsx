@@ -1310,10 +1310,10 @@ export default function SmartLinemanUI() {
                   : user
                     ? 'pb-20 md:pb-0'
                     : 'pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:pb-0'
-              } ${currentView === 'accident-stories' ? 'bg-slate-950' : ''}`}
+              } ${currentView === 'accident-stories' ? 'bg-[#fffdf7]' : ''}`}
             >
               <div
-                className={`h-full relative z-10 w-full view-transition min-h-full ${currentView === 'accident-stories' ? 'bg-slate-950' : ''}`}
+                className={`h-full relative z-10 w-full view-transition min-h-full ${currentView === 'accident-stories' ? 'bg-[#fffdf7]' : ''}`}
                 key={currentView}
               >
                 {renderContent()}
