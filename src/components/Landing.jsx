@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { requestManager } from '../utils/requestManager';
 import { leaderboardService } from '../utils/leaderboardService';
+import { BOARD_IDS, getMonthlyPrizeDisplayList } from '../utils/monthlyEncouragementBoards';
 import { APP_NAME, WEBSITE_URL } from '../config';
 import { storageUtils } from '../utils/storageUtils';
 
@@ -20,7 +21,9 @@ const copy = {
     statsUsers: 'Registered Linemen',
     statsToppers: 'Top Performers',
     statsPrizes: 'Prizes Awarded',
-    topPlayers: 'Monthly Top 3 Performers',
+    topPlayers: 'New Player Leaders',
+    newPlayersTopThree: 'Top 3 New Players',
+    allTimeTopThree: 'All-Time — Top 3',
     login: 'Login',
     exploreLifeSkills: 'Explore Life Skills',
     lifeSkillsTitle: 'Life Skills Hub',
@@ -48,7 +51,9 @@ const copy = {
     statsUsers: 'যোগ দিয়েছেন',
     statsToppers: 'শীর্ষ পারফর্মার',
     statsPrizes: 'পুরস্কার দেওয়া হয়েছে',
-    topPlayers: 'প্রতি মাসে সেরা ৩ জন',
+    topPlayers: 'নতুন সদস্য — সেরা ৩',
+    newPlayersTopThree: 'নতুন সদস্য — সেরা ৩ জন',
+    allTimeTopThree: 'সর্বকালীন সেরা ৩ জন',
     login: 'লগইন',
     exploreLifeSkills: 'লাইফ স্কিল দেখুন',
     lifeSkillsTitle: 'লাইফ স্কিল',
@@ -252,6 +257,159 @@ function formatCount(n) {
   return String(n);
 }
 
+const LANDING_ICON_PATHS = {
+  users: (
+    <>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </>
+  ),
+  userPlus: (
+    <>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M19 8v6" />
+      <path d="M16 11h6" />
+    </>
+  ),
+  gift: (
+    <>
+      <rect x="3" y="8" width="18" height="13" rx="2" />
+      <path d="M12 8v13" />
+      <path d="M3 12h18" />
+      <path d="M12 8c-2-3-6-3-6 0s4 3 6 0z" />
+      <path d="M12 8c2-3 6-3 6 0s-4 3-6 0z" />
+    </>
+  ),
+  trophy: (
+    <>
+      <path d="M8 21h8" />
+      <path d="M12 17v4" />
+      <path d="M7 4h10v5a5 5 0 0 1-10 0V4z" />
+      <path d="M7 4H4.5a2.5 2.5 0 0 0 0 5H7" />
+      <path d="M17 4h2.5a2.5 2.5 0 0 1 0 5H17" />
+    </>
+  ),
+  shield: (
+    <>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <path d="m9 12 2 2 4-4" />
+    </>
+  ),
+  eye: (
+    <>
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </>
+  ),
+  target: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
+    </>
+  ),
+  sparkles: (
+    <>
+      <path d="M12 3v2" />
+      <path d="M12 19v2" />
+      <path d="M3 12h2" />
+      <path d="M19 12h2" />
+      <path d="m5.6 5.6 1.4 1.4" />
+      <path d="m17 17 1.4 1.4" />
+      <path d="m18.4 5.6-1.4 1.4" />
+      <path d="m7 17-1.4 1.4" />
+      <path d="M12 8l1.2 3.6L17 12l-3.8 1.2L12 17l-1.2-3.8L7 12l3.8-1.2L12 8z" />
+    </>
+  ),
+  book: (
+    <>
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      <path d="M8 7h8" />
+      <path d="M8 11h6" />
+    </>
+  ),
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 6v6l4 2" />
+    </>
+  ),
+  headphones: (
+    <>
+      <path d="M3 14h2.5a2 2 0 0 0 2-2V9a7 7 0 0 1 14 0v3a2 2 0 0 0 2 2H21" />
+      <path d="M3 14a2 2 0 0 0 2 2h1v-4H3z" />
+      <path d="M21 14a2 2 0 0 1-2 2h-1v-4h3z" />
+    </>
+  ),
+  mapPin: (
+    <>
+      <path d="M12 21s6-4.35 6-10a6 6 0 1 0-12 0c0 5.65 6 10 6 10z" />
+      <circle cx="12" cy="11" r="2.5" />
+    </>
+  ),
+  chart: (
+    <>
+      <path d="M3 3v18h18" />
+      <path d="M7 15l4-4 3 3 5-6" />
+    </>
+  ),
+  medal: (
+    <>
+      <circle cx="12" cy="9" r="5" />
+      <path d="M8.5 13.5 7 21l5-2.5L17 21l-1.5-7.5" />
+    </>
+  ),
+};
+
+function LandingIcon({ name, className = 'w-5 h-5' }) {
+  const paths = LANDING_ICON_PATHS[name];
+  if (!paths) return null;
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {paths}
+    </svg>
+  );
+}
+
+function SectionIconBadge({ name, gradient = 'from-orange-500 to-amber-500', className = '' }) {
+  return (
+    <div
+      className={`w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-lg shrink-0 ${className}`}
+    >
+      <LandingIcon name={name} className="w-5 h-5 sm:w-[1.35rem] sm:h-[1.35rem]" />
+    </div>
+  );
+}
+
+function RankBadge({ rank, bnFont }) {
+  const configs = [
+    { bg: 'from-amber-400 to-yellow-500', shadow: 'shadow-amber-400/35', label: bnFont ? '১' : '1' },
+    { bg: 'from-slate-300 to-slate-500', shadow: 'shadow-slate-400/30', label: bnFont ? '২' : '2' },
+    { bg: 'from-orange-400 to-amber-600', shadow: 'shadow-orange-400/35', label: bnFont ? '৩' : '3' },
+  ];
+  const config = configs[rank] || configs[2];
+  return (
+    <span
+      className={`inline-flex w-8 h-8 sm:w-9 sm:h-9 items-center justify-center rounded-xl bg-gradient-to-br ${config.bg} text-white text-xs sm:text-sm font-black shadow-md ${config.shadow}`}
+    >
+      {config.label}
+    </span>
+  );
+}
+
 function AnimatedNumber({ value, loading }) {
   const [display, setDisplay] = useState(0);
   const target = typeof value === 'number' && !Number.isNaN(value) ? value : 0;
@@ -281,20 +439,107 @@ function AnimatedNumber({ value, loading }) {
   return <span>{formatCount(display)}</span>;
 }
 
-const StatTile = ({ label, value, icon, accent, loading, sub }) => {
-  let gradientClass = "from-orange-500 to-amber-400";
-  if (label.includes("Top") || label.includes("শীর্ষ")) {
-    gradientClass = "from-amber-500 to-yellow-400";
-  } else if (label.includes("Prizes") || label.includes("পুরস্কার")) {
-    gradientClass = "from-emerald-500 to-teal-400";
+function mapLandingPlayer(row) {
+  return {
+    id: row.user_id || row.id || row.name,
+    name: row.full_name || row.name || '—',
+    points: Number(row.points ?? row.score) || 0,
+    district: row.district || '',
+    avatarUrl: row.avatar_url || row.profile_image_url || row.photo_url || '',
+  };
+}
+
+function pickTopLeaders(list, limit = 3) {
+  return (list || [])
+    .filter((row) => row.standing_rank != null && row.standing_rank <= limit)
+    .sort((a, b) => a.standing_rank - b.standing_rank)
+    .slice(0, limit)
+    .map(mapLandingPlayer);
+}
+
+function LeaderPodiumGrid({ title, iconName, iconGradient, players, ptsLabel, bnFont, showScore = true }) {
+  if (!players?.length) return null;
+
+  const rankColors = [
+    'border-amber-400 bg-gradient-to-br from-amber-50/50 via-white/80 to-amber-50/20 shadow-amber-500/5 ring-4 ring-amber-400/10',
+    'border-slate-300 bg-gradient-to-br from-slate-50/50 via-white/80 to-slate-50/20 shadow-slate-500/5 ring-4 ring-slate-400/5',
+    'border-orange-300 bg-gradient-to-br from-orange-50/50 via-white/80 to-orange-50/20 shadow-orange-500/5 ring-4 ring-orange-400/5',
+  ];
+  const rankBadgeText = bnFont ? ['১ম', '২য়', '৩য়'] : ['1st', '2nd', '3rd'];
+
+  return (
+    <section className="mb-8 sm:mb-10 relative z-10">
+      <h2 className="text-lg sm:text-xl font-black text-slate-900 mb-4 sm:mb-5 flex items-center gap-3">
+        <SectionIconBadge name={iconName} gradient={iconGradient} className="shadow-emerald-500/20" />
+        <span className="leading-snug">{title}</span>
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        {players.map((player, idx) => {
+          const isFirst = idx === 0;
+          return (
+            <div
+              key={`${player.id}-${idx}`}
+              className={`relative overflow-hidden flex flex-row items-center gap-4 sm:gap-5 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border ${rankColors[idx] || rankColors[2]} shadow-md sm:hover:shadow-lg transition-all duration-300 sm:hover:-translate-y-0.5`}
+            >
+              <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 flex items-center gap-1.5">
+                <RankBadge rank={idx} bnFont={bnFont} />
+                <span className="hidden sm:inline text-[10px] font-black uppercase tracking-wider text-slate-400">{rankBadgeText[idx]}</span>
+              </div>
+
+              {player.avatarUrl ? (
+                <div className={`relative shrink-0 ${isFirst ? 'p-1 sm:p-1.5 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-300 shadow-md shadow-amber-500/20' : ''}`}>
+                  <img
+                    src={player.avatarUrl}
+                    alt={player.name}
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl object-cover border-2 border-slate-200"
+                  />
+                </div>
+              ) : (
+                <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl bg-gradient-to-br ${isFirst ? 'from-amber-400 to-yellow-500 text-white' : 'from-slate-100 to-slate-200 text-slate-700'} border-2 border-slate-200/50 flex items-center justify-center font-black text-3xl sm:text-4xl shrink-0 shadow-inner`}>
+                  {(player.name || '?').charAt(0).toUpperCase()}
+                </div>
+              )}
+
+              <div className="min-w-0 flex-1 text-left pr-10 sm:pr-12">
+                <p className="font-black text-lg sm:text-xl text-slate-900 truncate leading-snug">{player.name}</p>
+                {(showScore || player.district) && (
+                  <div className="flex flex-wrap items-center gap-2 mt-1.5 sm:mt-2">
+                    {showScore && (
+                      <p className="text-sm sm:text-base font-black text-orange-600 bg-orange-50 px-2.5 sm:px-3 py-1 rounded-lg border border-orange-100 tabular-nums">
+                        {player.points} {ptsLabel}
+                      </p>
+                    )}
+                    {player.district && (
+                      <span className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg">
+                        <LandingIcon name="mapPin" className="w-3.5 h-3.5 text-orange-500" />
+                        {player.district}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+const StatTile = ({ label, value, iconName, accent, loading, sub }) => {
+  let gradientClass = 'from-orange-500 to-amber-400';
+  if (label.includes('Top') || label.includes('শীর্ষ') || label.includes('নতুন')) {
+    gradientClass = 'from-emerald-500 to-teal-500';
+  } else if (label.includes('Prizes') || label.includes('পুরস্কার')) {
+    gradientClass = 'from-violet-500 to-indigo-500';
   }
 
   return (
     <div className="relative group overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/60 bg-white/90 backdrop-blur-md p-4 sm:p-6 shadow-md sm:hover:shadow-xl transition-all duration-300 sm:hover:-translate-y-1">
       <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-orange-500 to-amber-400 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block" />
       <div className="flex flex-col items-center text-center gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:text-left sm:gap-4">
-        <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-tr ${gradientClass} flex items-center justify-center text-2xl sm:text-4xl shadow-md sm:shadow-lg shrink-0 text-white sm:transform sm:group-hover:scale-110 sm:transition-transform sm:duration-300`}>
-          {icon}
+        <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br ${gradientClass} flex items-center justify-center shadow-md sm:shadow-lg shrink-0 text-white sm:transform sm:group-hover:scale-110 sm:transition-transform sm:duration-300 ring-1 ring-white/20`}>
+          <LandingIcon name={iconName} className="w-6 h-6 sm:w-8 sm:h-8" />
         </div>
         <div className="min-w-0 flex-1 w-full">
           <p className={`text-3xl sm:text-5xl font-black tracking-tight tabular-nums leading-none ${accent}`}>
@@ -313,7 +558,8 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     users: 0,
-    toppers: [],
+    newPlayerTop: [],
+    allTimeTop: [],
     prizesCount: 0,
     prizeMonths: 0,
   });
@@ -366,7 +612,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
     async function loadStats() {
       setLoading(true);
       try {
-        const [profilesResult, leaderboard, hallOfFame] = await Promise.all([
+        const [profilesResult, monthlyLeaderboard, encouragementBoards, allTimeLeaderboard, hallOfFame] = await Promise.all([
           requestManager.fetch(
             'landing_profiles_count',
             async () => {
@@ -377,16 +623,19 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
             },
             { ttl: 10, swr: true }
           ),
+          leaderboardService.fetchMonthly(false).catch(() => []),
+          leaderboardService.fetchEncouragementBoards(false, language).catch(() => null),
           leaderboardService.fetchAllTime(false).catch(() => []),
           leaderboardService.fetchHallOfFame(false).catch(() => []),
         ]);
 
-        const topThree = (leaderboard || []).slice(0, 3).map((row) => ({
-          name: row.full_name || row.name || '—',
-          points: row.points ?? row.score ?? 0,
-          district: row.district || '',
-          avatarUrl: row.avatar_url || row.profile_image_url || row.photo_url || '',
-        }));
+        const newPlayerList = getMonthlyPrizeDisplayList(
+          BOARD_IDS.NEW_PLAYER,
+          monthlyLeaderboard,
+          encouragementBoards
+        );
+        const newPlayerTopThree = pickTopLeaders(newPlayerList, 3);
+        const allTimeTopThree = (allTimeLeaderboard || []).slice(0, 3).map(mapLandingPlayer);
 
         let prizesCount = 0;
         let prizeMonths = 0;
@@ -409,7 +658,8 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
         if (!cancelled) {
           setStats({
             users: profilesResult?.linemen ?? 0,
-            toppers: topThree,
+            newPlayerTop: newPlayerTopThree,
+            allTimeTop: allTimeTopThree,
             prizesCount,
             prizeMonths,
           });
@@ -417,7 +667,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
       } catch (err) {
         console.warn('Landing stats fetch failed:', err);
         if (!cancelled) {
-          setStats((prev) => ({ ...prev, toppers: [] }));
+          setStats((prev) => ({ ...prev, newPlayerTop: [], allTimeTop: [] }));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -441,7 +691,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [language]);
 
   const prizeSub = useMemo(() => {
     if (loading) return '';
@@ -629,7 +879,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
               <div className="absolute -top-3 -right-3 w-12 h-12 bg-amber-500/10 rounded-full blur-lg" />
               <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">🛡️</span>
+                  <SectionIconBadge name="shield" gradient="from-emerald-500 to-teal-600" className="w-9 h-9 shadow-emerald-500/25" />
                   <div>
                     <h4 className="font-black text-slate-800 text-sm">{language === 'bn' ? 'নিরাপত্তা মিটার' : 'Safety Meter'}</h4>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{language === 'bn' ? 'লাইভ দেখুন' : 'Live Display'}</p>
@@ -663,7 +913,10 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                   </div>
                   <div className="flex-1 p-2.5 bg-emerald-50/50 rounded-xl border border-emerald-100 text-center">
                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">{language === 'bn' ? 'র‍্যাঙ্ক' : 'Community Rank'}</p>
-                    <p className="text-xs font-black text-emerald-700">🥇 Top 3</p>
+                    <p className="text-xs font-black text-emerald-700 flex items-center justify-center gap-1">
+                      <LandingIcon name="medal" className="w-3.5 h-3.5" />
+                      Top 3
+                    </p>
                   </div>
                 </div>
               </div>
@@ -673,101 +926,56 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
 
         {/* Dynamic Stats Grid — 3-up on mobile */}
         <section className="grid grid-cols-3 gap-2 sm:gap-5 mb-8 sm:mb-12 relative z-10">
-          <StatTile label={t.statsUsers} value={stats.users} icon="👷" accent="text-orange-600" loading={loading} />
+          <StatTile label={t.statsUsers} value={stats.users} iconName="users" accent="text-orange-600" loading={loading} />
           <StatTile
             label={t.statsToppers}
-            value={stats.toppers.length}
-            icon="🏆"
-            accent="text-amber-600"
+            value={stats.newPlayerTop.length}
+            iconName="userPlus"
+            accent="text-emerald-600"
             loading={loading}
-            sub={!loading && stats.toppers.length ? t.topPlayers : undefined}
+            sub={!loading && stats.newPlayerTop.length ? t.topPlayers : undefined}
           />
           <StatTile
             label={t.statsPrizes}
             value={stats.prizesCount}
-            icon="🎁"
-            accent="text-emerald-600"
+            iconName="gift"
+            accent="text-violet-600"
             loading={loading}
             sub={prizeSub}
           />
         </section>
 
-        {/* Top 3 Performance Podium / Honors Board */}
-        {stats.toppers.length > 0 && (
-          <section className="mb-8 sm:mb-12 relative z-10">
-            <h2 className="text-lg sm:text-xl font-black text-slate-900 mb-4 sm:mb-5 flex items-center gap-2">
-              <span className="text-xl sm:text-2xl shrink-0">🎖️</span>
-              <span className="leading-snug">{t.topPlayers}</span>
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-              {stats.toppers.map((player, idx) => {
-                const medals = ['🥇', '🥈', '🥉'];
-                const rankColors = [
-                  'border-amber-400 bg-gradient-to-br from-amber-50/50 via-white/80 to-amber-50/20 shadow-amber-500/5 ring-4 ring-amber-400/10',
-                  'border-slate-300 bg-gradient-to-br from-slate-50/50 via-white/80 to-slate-50/20 shadow-slate-500/5 ring-4 ring-slate-400/5',
-                  'border-orange-300 bg-gradient-to-br from-orange-50/50 via-white/80 to-orange-50/20 shadow-orange-500/5 ring-4 ring-orange-400/5'
-                ];
-                const rankBadgeText = language === 'bn' ? ['১ম', '২য়', '৩য়'] : ['1st Place', '2nd Place', '3rd Place'];
-                const isFirst = idx === 0;
-
-                return (
-                  <div
-                    key={`${player.name}-${idx}`}
-                    className={`relative overflow-hidden flex flex-row items-center gap-4 sm:gap-5 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border ${rankColors[idx]} shadow-md sm:hover:shadow-lg transition-all duration-300 sm:hover:-translate-y-0.5`}
-                  >
-                    {/* Rank Indicator Badge */}
-                    <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 flex items-center gap-1">
-                      <span className="text-2xl sm:text-3xl">{medals[idx]}</span>
-                      <span className="hidden sm:inline text-[10px] font-black uppercase tracking-wider text-slate-400">{rankBadgeText[idx]}</span>
-                    </div>
-
-                    {player.avatarUrl ? (
-                      <div className={`relative shrink-0 ${isFirst ? 'p-1 sm:p-1.5 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-300 shadow-md shadow-amber-500/20' : ''}`}>
-                        <img
-                          src={player.avatarUrl}
-                          alt={player.name}
-                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl object-cover border-2 border-slate-200"
-                        />
-                      </div>
-                    ) : (
-                      <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl bg-gradient-to-br ${isFirst ? 'from-amber-400 to-yellow-500 text-white' : 'from-slate-100 to-slate-200 text-slate-700'} border-2 border-slate-200/50 flex items-center justify-center font-black text-3xl sm:text-4xl shrink-0 shadow-inner`}>
-                        {(player.name || '?').charAt(0).toUpperCase()}
-                      </div>
-                    )}
-
-                    <div className="min-w-0 flex-1 text-left pr-10 sm:pr-12">
-                      <p className="font-black text-lg sm:text-xl text-slate-900 truncate leading-snug">{player.name}</p>
-                      <div className="flex flex-wrap items-center gap-2 mt-1.5 sm:mt-2">
-                        <p className="text-sm sm:text-base font-black text-orange-600 bg-orange-50 px-2.5 sm:px-3 py-1 rounded-lg border border-orange-100 tabular-nums">
-                          {player.points} {t.pts}
-                        </p>
-                        {player.district && (
-                          <span className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg">
-                            <span className="text-orange-500">📍</span>
-                            {player.district}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
+        {/* Top 3 new players, then all-time top 3 */}
+        <LeaderPodiumGrid
+          title={t.newPlayersTopThree}
+          iconName="userPlus"
+          iconGradient="from-emerald-500 to-teal-600"
+          players={stats.newPlayerTop}
+          ptsLabel={t.pts}
+          bnFont={bnFont}
+          showScore={false}
+        />
+        <LeaderPodiumGrid
+          title={t.allTimeTopThree}
+          iconName="trophy"
+          iconGradient="from-amber-500 to-orange-600"
+          players={stats.allTimeTop}
+          ptsLabel={t.pts}
+          bnFont={bnFont}
+        />
 
         {/* Vision & Mission section */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-12 relative z-10">
           <article className="relative overflow-hidden group p-5 sm:p-7 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-amber-50/40 via-white to-white border border-amber-200/60 shadow-sm sm:hover:shadow-md transition-all duration-300">
             <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-xl group-hover:scale-125 transition-transform" />
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-2xl mb-4 text-amber-700">🔭</div>
+            <SectionIconBadge name="eye" gradient="from-amber-500 to-orange-500" className="mb-4 shadow-amber-500/20" />
             <h2 className="text-xl font-black text-slate-900 mb-2.5">{t.visionTitle}</h2>
             <p className={`text-slate-600 leading-relaxed text-sm sm:text-base font-medium ${bnFont ? 'landing-bn-reading' : ''}`}>{t.vision}</p>
           </article>
           
           <article className="relative overflow-hidden group p-5 sm:p-7 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-cyan-50/40 via-white to-white border border-cyan-200/60 shadow-sm sm:hover:shadow-md transition-all duration-300">
             <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-full blur-xl group-hover:scale-125 transition-transform" />
-            <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 flex items-center justify-center text-2xl mb-4 text-cyan-700">🎯</div>
+            <SectionIconBadge name="target" gradient="from-cyan-500 to-blue-600" className="mb-4 shadow-cyan-500/20" />
             <h2 className="text-xl font-black text-slate-900 mb-2.5">{t.missionTitle}</h2>
             <p className={`text-slate-600 leading-relaxed text-sm sm:text-base font-medium ${bnFont ? 'landing-bn-reading' : ''}`}>{t.mission}</p>
           </article>
@@ -778,9 +986,9 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
           <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 bg-white/80 backdrop-blur-md p-4 sm:p-8 shadow-md">
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
-                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-1.5 flex items-center gap-1.5">
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-1.5 flex items-center gap-2.5">
+                  <SectionIconBadge name="book" gradient="from-indigo-500 to-violet-600" className="w-9 h-9 shadow-indigo-500/25" />
                   {t.lifeSkillsTitle}
-                  <span className="text-lg">✨</span>
                 </h3>
                 <p className="text-sm text-slate-500 max-w-2xl font-medium leading-relaxed">
                   {t.lifeSkillsSubtitle}
@@ -817,7 +1025,8 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                           {catLabel}
                         </span>
                         <span className="text-xs font-bold text-slate-400 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-lg flex items-center gap-1">
-                          ⏱️ {durationText}
+                          <LandingIcon name="clock" className="w-3.5 h-3.5" />
+                          {durationText}
                         </span>
                       </div>
                       <p className="text-xs font-extrabold uppercase tracking-widest text-indigo-600 mb-1">{code}</p>
@@ -827,7 +1036,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                     </div>
                     {highlights && (
                       <p className="text-xs font-semibold text-slate-400 border-t border-slate-100 pt-2.5 mt-2 flex items-center gap-1.5 truncate">
-                        <span className="text-indigo-500">✨</span>
+                        <LandingIcon name="sparkles" className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
                         {highlights}
                       </p>
                     )}
@@ -883,7 +1092,12 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                   <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest text-indigo-600 px-2 sm:px-2.5 py-0.5 rounded-lg bg-indigo-50 border border-indigo-100">{activeLifeSkill.lesson_code || 'LS'}</span>
-                  {activeLifeSkill.duration && <span className="text-[10px] sm:text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">⏱️ {activeLifeSkill.duration}</span>}
+                  {activeLifeSkill.duration && (
+                    <span className="text-[10px] sm:text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md inline-flex items-center gap-1">
+                      <LandingIcon name="clock" className="w-3 h-3" />
+                      {activeLifeSkill.duration}
+                    </span>
+                  )}
                 </div>
                 <h4 className={`text-base sm:text-xl font-black text-slate-900 leading-snug mt-1 sm:mt-1.5 ${bnFont ? 'line-clamp-2 sm:truncate' : 'truncate'}`}>
                   {language === 'bn' ? activeLifeSkill.title_bn : activeLifeSkill.title_en}
@@ -921,7 +1135,9 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                       {language === 'bn' ? 'শুনে শুনে শিখুন' : 'Audio Lesson'}
                     </p>
                     <div className="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-100 text-center">
-                      <span className="text-2xl sm:text-3xl block mb-2 animate-bounce-slow">🎧</span>
+                      <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/25">
+                        <LandingIcon name="headphones" className="w-6 h-6" />
+                      </div>
                       <p className="text-xs font-bold text-slate-500 mb-3 sm:mb-4">{language === 'bn' ? 'মাঠে কাজের সময় শোনার জন্য' : 'Listen on-the-go during field work'}</p>
                       <audio
                         controls
@@ -1030,7 +1246,10 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                                 )}
                                 {!!point.daily_check && (
                                   <div className="text-sm text-indigo-900 mt-3 pl-4 border-l-2 border-indigo-400 bg-indigo-50/30 p-3 rounded-r-xl font-medium">
-                                    <span className="font-bold text-indigo-600 block text-[10px] uppercase tracking-wider mb-0.5">✨ {language === 'bn' ? 'আজই চেক করুন' : 'Daily Check'}</span>
+                                    <span className="font-bold text-indigo-600 flex items-center gap-1 text-[10px] uppercase tracking-wider mb-0.5">
+                                      <LandingIcon name="sparkles" className="w-3 h-3" />
+                                      {language === 'bn' ? 'আজই চেক করুন' : 'Daily Check'}
+                                    </span>
                                     {point.daily_check}
                                   </div>
                                 )}
