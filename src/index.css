@@ -1377,11 +1377,11 @@ body,
 }
 
 .refresh-indicator-content {
-  @apply bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 p-2 flex items-center gap-2 animate-bounce-in;
+  @apply bg-[#fffdf7] rounded-none shadow-[3px_3px_0_#0f172a] border-2 border-slate-900 p-2 flex items-center gap-2 animate-bounce-in;
 }
 
 .refresh-spinner {
-  @apply w-5 h-5 border-2 border-orange-600 border-t-transparent rounded-full animate-spin;
+  @apply w-5 h-5 border-2 border-slate-900 border-t-orange-500 rounded-none animate-spin bg-white;
 }
 
 .animate-slide-up {

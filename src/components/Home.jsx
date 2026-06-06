@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import HomeSkeleton from './loaders/HomeSkeleton';
+import { BrutalLoaderContent } from './loaders/PageLoader';
 import ShareModal from './ShareModal';
 import { DotLottiePlayer } from '@dotlottie/react-player';
 import mailLottie from '../assets/mail.lottie';
@@ -76,18 +77,13 @@ export default function Home({ setCurrentView, language, user, userProfile, t, r
     }, [loading]);
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="neo-brutal min-h-screen flex items-center justify-center bg-[#fffdf7]">
             {loading ? (
                 <div className="p-4 w-full"><HomeSkeleton /></div>
             ) : (
-                <div className="flex flex-col items-center justify-center gap-4 p-8 animate-fadeIn">
-                    <div className="w-16 h-16 border-4 border-orange-100 dark:border-slate-700 rounded-full relative">
-                        <div className="absolute inset-0 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
-                    </div>
-                    <p className={`text-sm font-bold text-slate-500 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        {language === 'en' ? 'Loading Training...' : 'প্রশিক্ষণ লোড হচ্ছে...'}
-                    </p>
-                </div>
+                <BrutalLoaderContent
+                    message={language === 'en' ? 'Loading Training…' : 'প্রশিক্ষণ লোড হচ্ছে…'}
+                />
             )}
 
             {/* Daily Tip Modal */}

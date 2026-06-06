@@ -336,18 +336,18 @@ const getTrainingHeaderLessonCode = (trainingContent, lang) => {
 const TrainingSkeleton = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
         {[...Array(6)].map((_, i) => (
-            <div key={i} className="p-6 rounded-3xl bg-token-bg-surface border border-token-border shadow-sm">
+            <div key={i} className="p-6 nb-card bg-white">
                 <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 bg-slate-200 dark:bg-slate-700 rounded-2xl"></div>
+                    <div className="w-14 h-14 bg-slate-200 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]"></div>
                     <div className="flex-1 space-y-2">
-                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
-                        <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+                        <div className="h-4 bg-slate-200 border border-slate-900 w-3/4"></div>
+                        <div className="h-3 bg-slate-100 border border-slate-300 w-1/2"></div>
                     </div>
                 </div>
-                <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full mb-2"></div>
+                <div className="w-full h-2 bg-slate-100 border border-slate-900 mb-2"></div>
                 <div className="flex justify-between">
-                    <div className="h-3 bg-slate-100 dark:bg-slate-700 rounded w-1/4"></div>
-                    <div className="h-3 bg-slate-100 dark:bg-slate-700 rounded w-1/4"></div>
+                    <div className="h-3 bg-slate-100 border border-slate-300 w-1/4"></div>
+                    <div className="h-3 bg-slate-100 border border-slate-300 w-1/4"></div>
                 </div>
             </div>
         ))}
@@ -2236,29 +2236,31 @@ export default function Training({
                 <div className="animate-fade-in relative z-10">
                     {/* Only show Lottie if we're not loading subchapters within a main chapter */}
                     {!selectedChapter ? (
-                        <div className="loading-container-fixed">
-                            <div className="w-48 h-48 lg:w-64 lg:h-64 mb-4">
-                                {prefersReducedMotion ? (
-                                    <div className="flex h-full w-full items-center justify-center text-7xl" aria-hidden>📖</div>
-                                ) : (
-                                    <DotLottiePlayer
-                                        src={sandyLoading}
-                                        autoplay
-                                        loop
-                                    />
-                                )}
+                        <div className="loading-container-fixed neo-brutal">
+                            <div className="nb-card bg-white p-6 sm:p-8 flex flex-col items-center">
+                                <div className="w-48 h-48 lg:w-64 lg:h-64 mb-4 border-[3px] border-slate-900 bg-orange-50 shadow-[4px_4px_0_#0f172a] flex items-center justify-center overflow-hidden">
+                                    {prefersReducedMotion ? (
+                                        <div className="flex h-full w-full items-center justify-center text-7xl" aria-hidden>📖</div>
+                                    ) : (
+                                        <DotLottiePlayer
+                                            src={sandyLoading}
+                                            autoplay
+                                            loop
+                                        />
+                                    )}
+                                </div>
+                                <p className={`text-slate-800 font-black nb-mono uppercase tracking-widest animate-pulse ${language === 'bn' ? 'font-bengali text-xl normal-case tracking-normal' : 'text-lg'}`}>
+                                    {language === 'en' ? 'Loading lesson…' : 'পাঠ লোড হচ্ছে…'}
+                                </p>
                             </div>
-                            <p className={`text-slate-500 font-black animate-pulse ${language === 'bn' ? 'font-bengali text-xl' : 'text-lg tracking-widest uppercase opacity-70'}`}>
-                                {language === 'en' ? 'Loading lesson…' : 'পাঠ লোড হচ্ছে…'}
-                            </p>
-                            <p className={`mx-auto mt-4 max-w-md px-4 text-center text-sm font-semibold leading-relaxed text-slate-600 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                            <p className={`mx-auto mt-4 max-w-md px-4 text-center text-sm font-semibold leading-relaxed text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                 {LOADING_TIPS[language === 'bn' ? 'bn' : 'en'][loadingTipIndex % LOADING_TIPS.en.length]}
                             </p>
                         </div>
                     ) : (
-                        <div className="space-y-4">
+                        <div className="space-y-4 neo-brutal">
                             <TrainingSkeleton />
-                            <p className={`mx-auto max-w-md px-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                            <p className={`mx-auto max-w-md px-4 text-center text-xs font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                 {LOADING_TIPS[language === 'bn' ? 'bn' : 'en'][loadingTipIndex % LOADING_TIPS.en.length]}
                             </p>
                         </div>

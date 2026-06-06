@@ -1681,8 +1681,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                         {loadingGallery ? (
                             <div className="flex flex-col items-center justify-center py-20 pointer-events-none">
-                                <DotLottiePlayer src={sandyLoading} autoplay loop style={{ width: '120px', height: '120px' }} />
-                                <p className="text-slate-400 font-bold mt-4 animate-pulse uppercase tracking-[0.2em] text-[10px]">{language === 'en' ? 'Opening the Gallery...' : 'গ্যালারি খোলা হচ্ছে...'}</p>
+                                <div className="nb-card bg-white p-6 flex flex-col items-center gap-4">
+                                    <div className="w-[120px] h-[120px] border-[3px] border-slate-900 bg-orange-50 shadow-[3px_3px_0_#0f172a] flex items-center justify-center overflow-hidden">
+                                        <DotLottiePlayer src={sandyLoading} autoplay loop style={{ width: '100px', height: '100px' }} />
+                                    </div>
+                                    <p className="text-slate-800 font-black nb-mono uppercase tracking-[0.2em] text-[10px] animate-pulse">{language === 'en' ? 'Opening the Gallery…' : 'গ্যালারি খোলা হচ্ছে…'}</p>
+                                </div>
                             </div>
                         ) : (
                             <div className="space-y-5 sm:space-y-8 max-w-7xl mx-auto px-0 md:px-8">
@@ -2424,7 +2428,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                                                     </div>
                                                 ) : isNextChallenge ? (
-                                                    <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center border border-amber-200 dark:border-amber-800 overflow-hidden">
+                                                    <div className="w-12 h-12 bg-amber-50 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] overflow-hidden">
                                                         <DotLottiePlayer
                                                             src={sandyLoading}
                                                             autoplay

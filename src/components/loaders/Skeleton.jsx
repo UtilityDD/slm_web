@@ -18,7 +18,7 @@ const Skeleton = ({ width, height, className = '' }) => {
 
   return (
     <div
-      className={`bg-slate-200 dark:bg-slate-700 rounded-md shimmer ${className}`}
+      className={`bg-slate-200 border border-slate-900 shimmer ${className}`}
       style={style}
     />
   );

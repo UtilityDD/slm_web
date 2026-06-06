@@ -24,6 +24,7 @@ import RadioDesktopLaunch from "./components/RadioDesktopLaunch";
 import { LifeSkillRadioProvider, RadioScrollPaddingBridge } from "./context/LifeSkillRadioContext";
 import IdleStoryReminder from "./components/IdleStoryReminder";
 import { libraryService } from "./utils/libraryService";
+import PageLoader from "./components/loaders/PageLoader";
 
 // Lazy load heavy components for code splitting
 const Competitions = lazy(() => import("./components/Competitions"));
@@ -52,26 +53,6 @@ const preloadComponent = (factory) => {
   const component = factory();
   return component;
 };
-
-// Global PageLoader component moved outside to prevent re-creation
-const PageLoader = () => (
-  <div className="fixed inset-0 z-[9999] bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center animate-in fade-in duration-500">
-    <div className="relative">
-      <div className="w-16 h-16 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin"></div>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 bg-orange-500 rounded-full animate-pulse opacity-50"></div>
-      </div>
-    </div>
-    <div className="mt-8 flex flex-col items-center gap-2">
-      <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-widest uppercase">Smart Lineman</h2>
-      <div className="flex gap-1">
-        <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-        <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-        <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce"></div>
-      </div>
-    </div>
-  </div>
-);
 
 export default function SmartLinemanUI() {
   // Background Data Pre-fetching
@@ -1211,16 +1192,16 @@ export default function SmartLinemanUI() {
 
             <div className={`refresh-indicator ${isRefreshing || pullDistance > 20 ? 'visible' : ''}`} style={{ transform: isRefreshing ? 'translateY(0)' : `translateY(${Math.min(pullDistance - 60, 0)}px)`, opacity: Math.min(pullDistance / 60, 1) }}>
               <div className="refresh-indicator-content">
-                {isRefreshing ? <div className="refresh-spinner"></div> : <div className="text-orange-600"><svg className={`w-5 h-5 transition-transform duration-200 ${pullDistance > 60 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>}
-                <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-tighter">{isRefreshing ? (language === 'en' ? 'Updating...' : 'আপডেট হচ্ছে...') : (language === 'en' ? 'Pull to Refresh' : 'রিফ্রেশ করতে টানুন')}</span>
+                {isRefreshing ? <div className="refresh-spinner"></div> : <div className="text-slate-900"><svg className={`w-5 h-5 transition-transform duration-200 ${pullDistance > 60 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>}
+                <span className="text-[10px] font-bold text-slate-900 uppercase tracking-tighter font-mono">{isRefreshing ? (language === 'en' ? 'Updating…' : 'আপডেট হচ্ছে…') : (language === 'en' ? 'Pull to Refresh' : 'রিফ্রেশ করতে টানুন')}</span>
               </div>
             </div>
 
             {globalLoading && (
-              <div className="fixed inset-0 z-[110] bg-white/60 dark:bg-slate-900/60 backdrop-blur-md flex flex-col items-center justify-center animate-fade-in">
-                <div className="relative"><div className="w-16 h-16 border-4 border-orange-100 dark:border-slate-700 rounded-full"></div><div className="absolute top-0 left-0 w-16 h-16 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div></div>
-                <p className="mt-4 font-bold text-slate-600 dark:text-slate-300 animate-pulse">{language === 'en' ? 'Please wait...' : 'দয়া করে অপেক্ষা করুন...'}</p>
-              </div>
+              <PageLoader
+                overlay
+                message={language === 'en' ? 'Please wait…' : 'দয়া করে অপেক্ষা করুন…'}
+              />
             )}
 
             {notification &&
