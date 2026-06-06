@@ -2243,17 +2243,17 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             {/* 1. STICKY SCOREBOARD HEADER */}
             <div className="sticky top-0 z-30 bg-[#fffdf7] border-b-[2.5px] border-slate-900">
                 <div className="nb-hazard" aria-hidden="true" />
-                <div className="px-4 py-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2 min-w-0">
-                            <h1 className="text-xl font-black text-slate-900 flex items-center gap-2 tracking-tight min-w-0">
-                                <span className="text-2xl shrink-0">🏆</span>
-                                <span className="truncate">{language === 'en' ? '5 quizzes every hour' : 'প্রতি ঘণ্টায় ৫ কুইজ'}</span>
+                <div className="px-3 py-2.5 sm:px-4 sm:py-3">
+                    <div className="flex items-center justify-between mb-2.5">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                            <h1 className={`text-base font-black text-slate-900 flex items-center gap-1.5 tracking-tight min-w-0 nb-mono uppercase ${language === 'bn' ? 'font-bengali normal-case' : ''}`}>
+                                <span className="text-lg shrink-0" aria-hidden>🏆</span>
+                                <span className="truncate">{language === 'en' ? '5 Quiz / Hour' : '৫ কুইজ / ঘণ্টা'}</span>
                             </h1>
                             <button
                                 type="button"
                                 onClick={() => setShowHourlyPenaltyInfoModal(true)}
-                                className="shrink-0 flex h-8 w-8 items-center justify-center border-2 border-slate-900 bg-white text-slate-700 shadow-[2px_2px_0_#0f172a] hover:bg-orange-50 transition-colors"
+                                className="shrink-0 flex h-7 w-7 items-center justify-center border-2 border-slate-900 bg-white text-slate-700 shadow-[2px_2px_0_#0f172a] hover:bg-orange-50 transition-colors"
                                 aria-label={language === 'en' ? 'Penalty info' : 'পেনাল্টি তথ্য'}
                             >
                                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
@@ -2274,22 +2274,22 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                         )}
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-3 gap-2">
                         {/* Total Score */}
-                        <div className="nb-card bg-white p-3 text-center">
-                            <p className="nb-stat-label text-[10px] mb-1">{t.points}</p>
-                            <p className="nb-stat-value text-xl tabular-nums">{userRank?.score?.toLocaleString() || 0}</p>
+                        <div className="nb-card bg-white p-2 text-center">
+                            <p className="nb-stat-label text-[9px] mb-0.5 leading-tight">{t.points}</p>
+                            <p className="nb-stat-value text-base tabular-nums leading-none">{userRank?.score?.toLocaleString() || 0}</p>
                         </div>
                         {/* Today's Score */}
-                        <div className="nb-card bg-orange-50 p-3 text-center">
-                            <p className="nb-stat-label text-[10px] text-orange-600 mb-1">{language === 'en' ? 'Today' : 'আজ'}</p>
-                            <p className="nb-stat-value text-xl text-orange-600 tabular-nums">+{getTodayScore().toLocaleString()}</p>
+                        <div className="nb-card bg-orange-50 p-2 text-center">
+                            <p className="nb-stat-label text-[9px] text-orange-600 mb-0.5 leading-tight">{language === 'en' ? 'Today' : 'আজ'}</p>
+                            <p className="nb-stat-value text-base text-orange-600 tabular-nums leading-none">+{getTodayScore().toLocaleString()}</p>
                         </div>
                         {/* Streak */}
-                        <div className="nb-card bg-amber-50 p-3 text-center">
-                            <p className="nb-stat-label text-[10px] text-amber-600 mb-1">{t.streak}</p>
-                            <p className="nb-stat-value text-xl text-amber-600 flex items-center justify-center gap-2">
-                                {getStreak(buildHourlySlots())} <span className="text-lg animate-pulse">🔥</span>
+                        <div className="nb-card bg-amber-50 p-2 text-center">
+                            <p className="nb-stat-label text-[9px] text-amber-600 mb-0.5 leading-tight">{t.streak}</p>
+                            <p className="nb-stat-value text-base text-amber-600 flex items-center justify-center gap-1 leading-none">
+                                {getStreak(buildHourlySlots())} <span className="text-sm animate-pulse">🔥</span>
                             </p>
                         </div>
                     </div>
@@ -2329,15 +2329,15 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 )}
 
                                 {/* Main Card */}
-                                <div className={`relative w-full max-w-[340px] transition-all duration-300 ${isLive ? 'scale-100' : 'scale-[0.98] opacity-95'}`}>
+                                <div className={`relative w-full max-w-[340px] transition-all duration-300 ${isLive ? 'scale-100' : 'scale-[0.99]'}`}>
 
                                     {/* Hour Label Badge */}
                                     <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 text-[10px] font-black uppercase tracking-widest z-20 border-2 border-slate-900 nb-mono
                                         ${isLive ? 'bg-orange-600 text-white shadow-[2px_2px_0_#0f172a]' :
-                                            isPlayed ? 'bg-green-50 text-green-700 shadow-[2px_2px_0_#0f172a]' :
+                                            isPlayed ? 'bg-green-100 text-green-800 shadow-[2px_2px_0_#0f172a]' :
                                                 isNextChallenge ? 'bg-amber-500 text-white shadow-[2px_2px_0_#0f172a]' :
-                                                    isMissed ? 'bg-slate-100 text-slate-500 shadow-[2px_2px_0_#0f172a]' :
-                                                        'bg-white text-slate-400 shadow-[2px_2px_0_#0f172a]'}`}>
+                                                    isMissed ? 'bg-slate-200 text-slate-800 shadow-[2px_2px_0_#0f172a]' :
+                                                        'bg-slate-100 text-slate-800 shadow-[2px_2px_0_#0f172a]'}`}>
                                         {slot.label}
                                     </div>
 
@@ -2352,8 +2352,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             ${isLive ? 'bg-white border-rose-500 shadow-[4px_4px_0_#0f172a] live-card-glow animate-pulse-rose' :
                                                 isPlayed ? 'bg-white shadow-[3px_3px_0_#0f172a] hover:border-green-500' :
                                                     isNextChallenge ? 'bg-white border-amber-500 shadow-[3px_3px_0_#0f172a]' :
-                                                        isMissed ? 'bg-slate-50 border-slate-400 opacity-70 grayscale shadow-[2px_2px_0_#0f172a]' :
-                                                            'bg-slate-50/80 border-slate-200 opacity-40 cursor-default shadow-[2px_2px_0_#0f172a]'}`}
+                                                        isMissed ? 'bg-slate-50 border-slate-600 shadow-[2px_2px_0_#0f172a]' :
+                                                            'bg-white border-slate-500 cursor-default shadow-[2px_2px_0_#0f172a]'}`}
                                     >
                                         <div className="p-4 sm:p-5 flex items-center justify-between gap-4">
                                             <div className="flex-1">
@@ -2390,28 +2390,29 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     </div>
                                                 ) : isMissed ? (
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-12 h-12 bg-slate-50 flex flex-col items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
-                                                            <span className="text-lg font-black text-slate-400">0</span>
+                                                        <div className="w-12 h-12 bg-white flex flex-col items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
+                                                            <span className="text-lg font-black text-slate-700">0</span>
                                                         </div>
+                                                        <span className="text-xs font-bold text-slate-600 nb-mono uppercase">{language === 'en' ? 'Missed' : 'মিস'}</span>
                                                     </div>
                                                 ) : isNextChallenge ? (
                                                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 flex flex-col items-start gap-1">
                                                         <div className="flex items-center gap-2 mb-1 px-2 py-0.5 bg-amber-50 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
                                                             <div className="w-1.5 h-1.5 bg-amber-500 animate-bounce"></div>
-                                                            <span className="text-[10px] font-black text-amber-700 uppercase tracking-tighter nb-mono">{t.nextChallengeLabel}</span>
+                                                            <span className="text-[10px] font-black text-amber-800 uppercase tracking-tighter nb-mono">{t.nextChallengeLabel}</span>
                                                         </div>
                                                         {timeLeft && (
                                                             <div className="flex items-baseline gap-2">
-                                                                <span className="text-2xl font-black text-slate-500 tabular-nums tracking-tighter">
+                                                                <span className="text-2xl font-black text-slate-900 tabular-nums tracking-tighter">
                                                                     {timeLeft}
                                                                 </span>
-                                                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest nb-mono lowercase">{t.startsIn}</span>
+                                                                <span className="text-[9px] font-bold text-slate-700 uppercase tracking-widest nb-mono lowercase">{t.startsIn}</span>
                                                             </div>
                                                         )}
                                                     </div>
                                                 ) : (
                                                     <div>
-                                                        <div className="text-sm font-bold text-slate-400 italic">
+                                                        <div className={`text-sm font-bold text-slate-700 ${language === 'bn' ? 'font-bengali' : 'nb-mono uppercase tracking-wide'}`}>
                                                             {t.upcomingStatus}
                                                         </div>
                                                     </div>
@@ -2424,7 +2425,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         <svg className="w-6 h-6 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /></svg>
                                                     </div>
                                                 ) : isPlayed ? (
-                                                    <div className="w-10 h-10 bg-white flex items-center justify-center text-slate-500 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] group-hover:text-green-600 transition-colors">
+                                                    <div className="w-10 h-10 bg-white flex items-center justify-center text-slate-700 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] group-hover:text-green-700 transition-colors">
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                                                     </div>
                                                 ) : isNextChallenge ? (
@@ -2436,7 +2437,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         />
                                                     </div>
                                                 ) : (
-                                                    <div className="w-10 h-10 bg-slate-100 flex items-center justify-center text-slate-400 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
+                                                    <div className="w-10 h-10 bg-slate-100 flex items-center justify-center text-slate-700 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                                                     </div>
                                                 )}
@@ -2571,7 +2572,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 )}
 
             {showAbortWarningModal && createPortal(
-                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/55 animate-fade-in">
+                <div className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-slate-900/55 animate-fade-in">
                     <div className="neo-brutal w-full max-w-md animate-scale-in" role="dialog" aria-modal="true">
                         <div className="nb-card overflow-hidden p-0 bg-[#fffdf7]">
                             <div className="nb-hazard" aria-hidden="true" />
@@ -2618,7 +2619,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
             {/* Quiz Modal (Keep Portal) */}
             {activeQuiz && createPortal(
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/55 animate-fade-in">
+                <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/55 animate-fade-in">
                     <div className="neo-brutal w-full max-w-2xl max-h-[90vh] flex flex-col animate-scale-in">
                         <div className="nb-card overflow-hidden p-0 bg-[#fffdf7] max-h-[90vh] flex flex-col">
                             <div className="nb-hazard shrink-0" aria-hidden="true" />
@@ -2639,7 +2640,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     <button type="button" onClick={handleAbortQuiz} className="w-8 h-8 flex items-center justify-center border-2 border-slate-900 bg-white text-slate-600 shadow-[2px_2px_0_#0f172a] hover:bg-orange-50 transition-colors">✕</button>
                                 </div>
 
-                                <div className="mb-0 overflow-y-auto flex-1 p-4 sm:p-6">
+                                <div className="mb-0 overflow-y-auto flex-1 p-4 sm:p-6 text-slate-900">
                                     <div className="w-full bg-slate-200 border-2 border-slate-900 h-2 mb-6">
                                         <div className="bg-orange-600 h-full transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}></div>
                                     </div>
@@ -2738,14 +2739,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             const isSelected = userAnswers[quizQuestions[currentQuestionIndex].id] === idx;
                                             const isCorrect = idx === quizQuestions[currentQuestionIndex].correct_option_index;
 
-                                            let buttonClass = 'border-2 border-slate-900 bg-white hover:bg-orange-50 hover:border-orange-600 text-slate-700 shadow-[2px_2px_0_#0f172a]';
+                                            let buttonClass = 'border-2 border-slate-900 bg-white hover:bg-orange-50 hover:border-orange-600 text-slate-900 shadow-[2px_2px_0_#0f172a]';
 
                                             if (reviewMode) {
-                                                if (isCorrect) buttonClass = 'border-2 border-green-600 bg-green-50 text-green-800 font-bold shadow-[2px_2px_0_#16a34a]';
-                                                else if (isSelected && !isCorrect) buttonClass = 'border-2 border-red-600 bg-red-50 text-red-700 shadow-[2px_2px_0_#dc2626]';
-                                                else buttonClass = 'border-2 border-slate-300 bg-white opacity-60';
+                                                if (isCorrect) buttonClass = 'border-2 border-green-600 bg-green-50 text-green-900 font-bold shadow-[2px_2px_0_#16a34a]';
+                                                else if (isSelected && !isCorrect) buttonClass = 'border-2 border-red-600 bg-red-50 text-red-800 font-bold shadow-[2px_2px_0_#dc2626]';
+                                                else buttonClass = 'border-2 border-slate-400 bg-slate-50 text-slate-700';
                                             } else if (isSelected) {
-                                                buttonClass = 'border-2 border-orange-600 bg-orange-50 text-orange-800 font-bold shadow-[3px_3px_0_#ea580c]';
+                                                buttonClass = 'border-2 border-orange-600 bg-orange-50 text-orange-900 font-bold shadow-[3px_3px_0_#ea580c]';
                                             }
 
                                             return (
@@ -2754,9 +2755,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     type="button"
                                                     onClick={() => !reviewMode && handleAnswerSelect(quizQuestions[currentQuestionIndex].id, idx)}
                                                     disabled={reviewMode || hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id)}
-                                                    className={`w-full text-left p-3.5 transition-all duration-200 ${buttonClass} ${hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id) && !reviewMode ? 'cursor-not-allowed opacity-80' : ''}`}
+                                                    className={`w-full text-left p-3.5 transition-all duration-200 ${buttonClass} ${hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id) && !reviewMode ? 'cursor-not-allowed' : ''}`}
                                                 >
-                                                    <span className="mr-3 text-slate-500 font-mono nb-mono">{String.fromCharCode(65 + idx)}.</span>
+                                                    <span className="mr-3 text-slate-800 font-mono nb-mono font-black">{String.fromCharCode(65 + idx)}.</span>
                                                     {isImageOption(option) ? (
                                                         <>
                                                             <img
@@ -2787,7 +2788,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             )}
                                                         </>
                                                     ) : (
-                                                        <span className={`reading-content text-sm sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                        <span className={`reading-content text-sm sm:text-base font-semibold text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                             {option}
                                                         </span>
                                                     )}
