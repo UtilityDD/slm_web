@@ -1606,18 +1606,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         : 'nb-btn-indigo !shadow-[3px_3px_0_#0f172a]'
                                     }`}
                                 >
-                                    <div className="flex flex-col items-center leading-tight">
-                                        <span className={showHallOfFame ? 'text-slate-400 text-[9px]' : 'text-indigo-200 text-[9px]'}>
-                                            {showHallOfFame 
-                                                ? (language === 'en' ? 'Live' : 'লাইভ') 
-                                                : (language === 'en' ? 'Awards' : 'মাসের সেরা')}
-                                        </span>
-                                        <span className="text-xs sm:text-sm font-black tracking-tight">
-                                            {showHallOfFame 
-                                                ? (language === 'en' ? 'Leaderboard' : 'লিডারবোর্ড') 
-                                                : (language === 'en' ? 'Champions' : 'বিজয়ীরা')}
-                                        </span>
-                                    </div>
+                                    <span className="text-xs sm:text-sm font-black tracking-tight">
+                                        {showHallOfFame
+                                            ? (language === 'en' ? 'Leaderboard' : 'লিডারবোর্ড')
+                                            : (language === 'en' ? 'Bijoyi' : 'বিজয়ী')}
+                                    </span>
 
                                     {/* Pulsating Star Accent */}
                                     <div className={`absolute -top-1 -right-1 w-6 h-6 flex items-center justify-center pointer-events-none ${showHallOfFame ? 'text-amber-400' : 'text-indigo-200'}`}>
@@ -1738,24 +1731,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         <div className="nb-card p-4 sm:p-6 md:p-8 bg-white transition-all duration-300">
                                             
                                             {/* Header Section */}
-                                            <div className="flex flex-row items-center justify-between mb-4 sm:mb-6 gap-3 border-b-2 border-slate-900 pb-4">
-                                                <div>
-                                                    <h3 className="text-lg sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tighter">
-                                                        {new Date(entry.year, entry.month - 1).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', { month: 'long', year: 'numeric' })}
-                                                    </h3>
-                                                </div>
-                                                <div className="flex items-center gap-2 bg-orange-50 px-3 py-1.5 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
-                                                    <div className="flex -space-x-2">
-                                                        {monthWinners.map((w, i) => (
-                                                            <div key={i} className="w-6 h-6 border-2 border-slate-900 overflow-hidden shadow-[1px_1px_0_#0f172a]">
-                                                                {w.avatar_url ? <img src={w.avatar_url} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full bg-slate-200"></div>}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                    <p className="hidden xs:block text-[8px] font-bold text-slate-600 uppercase tracking-widest leading-none nb-mono">
-                                                        {encouragementCopy.monthlyTabs[hallOfFameBoardTab]}
-                                                    </p>
-                                                </div>
+                                            <div className="mb-4 sm:mb-6 border-b-2 border-slate-900 pb-3 sm:pb-4">
+                                                <h3 className={`text-lg sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    {new Date(entry.year, entry.month - 1).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', { month: 'long', year: 'numeric' })}
+                                                </h3>
                                             </div>
 
                                             {/* Winners Horizontal Grid */}
@@ -1827,12 +1806,15 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                             );
                                                                         })()}
                                                                     </div>
-                                                                    <div className="flex items-center justify-between gap-2 mt-1 sm:flex-col sm:items-start sm:gap-1">
-                                                                        <p className="text-[9px] font-bold text-slate-400 uppercase tabular-nums">{winner.slm_id || (language === 'en' ? 'SLM-MEMBER' : 'এসএলএম-সদস্য')}</p>
-                                                                        <p className="text-[8px] font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-tight bg-indigo-50 dark:bg-indigo-900/20 px-1.5 py-0.5 rounded">
-                                                                            📍 {winner.district || t.noDistrict}
-                                                                        </p>
-                                                                    </div>
+                                                                    <p className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[10px] font-semibold leading-tight text-slate-500">
+                                                                        <span className="shrink-0 tabular-nums nb-mono text-slate-600">
+                                                                            {winner.slm_id || (language === 'en' ? 'SLM-MEMBER' : 'এসএলএম-সদস্য')}
+                                                                        </span>
+                                                                        <span className="shrink-0 text-slate-300" aria-hidden>·</span>
+                                                                        <span className={`truncate ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                            {winner.district || t.noDistrict}
+                                                                        </span>
+                                                                    </p>
                                                                 </div>
                                                             </div>
 
@@ -2739,14 +2721,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             const isSelected = userAnswers[quizQuestions[currentQuestionIndex].id] === idx;
                                             const isCorrect = idx === quizQuestions[currentQuestionIndex].correct_option_index;
 
-                                            let buttonClass = 'border-2 border-slate-900 bg-white hover:bg-orange-50 hover:border-orange-600 text-slate-900 shadow-[2px_2px_0_#0f172a]';
+                                            let buttonClass = 'border-2 border-slate-900 bg-white hover:bg-orange-50 hover:border-orange-600 text-slate-950 shadow-[2px_2px_0_#0f172a]';
 
                                             if (reviewMode) {
-                                                if (isCorrect) buttonClass = 'border-2 border-green-600 bg-green-50 text-green-900 font-bold shadow-[2px_2px_0_#16a34a]';
-                                                else if (isSelected && !isCorrect) buttonClass = 'border-2 border-red-600 bg-red-50 text-red-800 font-bold shadow-[2px_2px_0_#dc2626]';
-                                                else buttonClass = 'border-2 border-slate-400 bg-slate-50 text-slate-700';
+                                                if (isCorrect) buttonClass = 'border-2 border-green-700 bg-green-50 text-green-950 font-bold shadow-[2px_2px_0_#15803d]';
+                                                else if (isSelected && !isCorrect) buttonClass = 'border-2 border-red-700 bg-red-50 text-red-950 font-bold shadow-[2px_2px_0_#b91c1c]';
+                                                else buttonClass = 'border-2 border-slate-500 bg-slate-50 text-slate-800';
                                             } else if (isSelected) {
-                                                buttonClass = 'border-2 border-orange-600 bg-orange-50 text-orange-900 font-bold shadow-[3px_3px_0_#ea580c]';
+                                                buttonClass = 'border-2 border-orange-600 bg-orange-50 text-orange-950 font-bold shadow-[3px_3px_0_#ea580c]';
                                             }
 
                                             return (
@@ -2757,7 +2739,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     disabled={reviewMode || hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id)}
                                                     className={`w-full text-left p-3.5 transition-all duration-200 ${buttonClass} ${hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id) && !reviewMode ? 'cursor-not-allowed' : ''}`}
                                                 >
-                                                    <span className="mr-3 text-slate-800 font-mono nb-mono font-black">{String.fromCharCode(65 + idx)}.</span>
+                                                    <span className="mr-3 font-mono nb-mono font-black text-inherit opacity-80">{String.fromCharCode(65 + idx)}.</span>
                                                     {isImageOption(option) ? (
                                                         <>
                                                             <img
@@ -2788,7 +2770,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             )}
                                                         </>
                                                     ) : (
-                                                        <span className={`reading-content text-sm sm:text-base font-semibold text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                        <span className={`text-sm sm:text-base font-bold leading-snug text-inherit ${language === 'bn' ? 'font-bengali leading-relaxed' : ''}`}>
                                                             {option}
                                                         </span>
                                                     )}

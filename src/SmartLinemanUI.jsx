@@ -139,6 +139,24 @@ export default function SmartLinemanUI() {
 
   const [isRetiring, setIsRetiring] = useState(false); // To force PWA transition
 
+  const BUILD_VERSION_KEY = 'slm_build_version';
+
+  const applyAppRefresh = () => {
+    try {
+      localStorage.setItem(BUILD_VERSION_KEY, CURRENT_APP_VERSION);
+    } catch {
+      /* storage unavailable */
+    }
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((registration) => registration.unregister());
+        window.location.reload();
+      });
+    } else {
+      window.location.reload();
+    }
+  };
+
   // Check for App Updates (Native & PWA)
   useEffect(() => {
     const checkForUpdates = async () => {
@@ -152,7 +170,21 @@ export default function SmartLinemanUI() {
           return;
         }
 
-        // 2. Service Worker Update Listener (PWA)
+        // 2. Web build version — when CURRENT_APP_VERSION bumps, stale clients must refresh
+        try {
+          const seenBuild = localStorage.getItem(BUILD_VERSION_KEY);
+          if (seenBuild && seenBuild !== CURRENT_APP_VERSION) {
+            setUpdateInfo({ version_name: CURRENT_APP_VERSION, update_url: '#' });
+            setIsForceUpdate(true);
+            setShowUpdateModal(true);
+          } else if (!seenBuild) {
+            localStorage.setItem(BUILD_VERSION_KEY, CURRENT_APP_VERSION);
+          }
+        } catch {
+          /* storage unavailable */
+        }
+
+        // 3. Service Worker Update Listener (PWA)
         if ('serviceWorker' in navigator && !window.Capacitor) {
           const registration = await navigator.serviceWorker.ready;
           const interval = setInterval(() => registration.update(), 60 * 60 * 1000);
@@ -1176,7 +1208,7 @@ export default function SmartLinemanUI() {
                       {isForceUpdate ? (language === 'en' ? `A critical update (v${updateInfo.version_name}) is required to continue using the app.` : `পরবর্তী ধাপের জন্য একটি গুরুত্বপূর্ণ আপডেট (v${updateInfo.version_name}) প্রয়োজন।`) : (language === 'en' ? `A new version is available. Please refresh to apply the latest updates.` : `একটি নতুন সংস্করণ এসেছে। সর্বশেষ আপডেটগুলি পেতে দয়া করে রিফ্রেশ করুন।`)}
                     </p>
                     <div className="space-y-3">
-                      <button onClick={() => { if (isForceUpdate && updateInfo.update_url && updateInfo.update_url !== '#') { Browser.open({ url: updateInfo.update_url }); } else { if ('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then((registrations) => { for (let registration of registrations) { registration.unregister(); } window.location.reload(true); }); } else { window.location.reload(true); } } }} className="block w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-all transform hover:scale-[1.02] shadow-lg shadow-orange-600/20">
+                      <button onClick={() => { if (isForceUpdate && updateInfo.update_url && updateInfo.update_url !== '#') { Browser.open({ url: updateInfo.update_url }); } else { applyAppRefresh(); } }} className="block w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-all transform hover:scale-[1.02] shadow-lg shadow-orange-600/20">
                         {isForceUpdate ? (language === 'en' ? 'Update Now' : 'এখনই আপডেট করুন') : (language === 'en' ? 'Refresh Now' : 'এখনই রিফ্রেশ করুন')}
                       </button>
                       {!isForceUpdate && (
