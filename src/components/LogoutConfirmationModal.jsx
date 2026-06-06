@@ -21,46 +21,64 @@ export default function LogoutConfirmationModal({ onConfirm, onCancel, language,
   const t = translations[language];
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-[1000] p-0 sm:p-4 animate-fade-in">
-      <div 
-        className="bg-white dark:bg-slate-900 w-full sm:max-w-sm rounded-t-[2.5rem] sm:rounded-[2rem] shadow-2xl border-t sm:border border-slate-200 dark:border-slate-800 animate-slide-up-sheet sm:animate-bounce-in overflow-hidden"
+    <div
+      className="fixed inset-0 bg-slate-900/55 flex items-end sm:items-center justify-center z-[1000] p-0 sm:p-4 animate-fade-in"
+      role="presentation"
+      onClick={loading ? undefined : onCancel}
+    >
+      <div
+        className="neo-brutal w-full sm:max-w-sm animate-slide-up-sheet sm:animate-bounce-in"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="logout-modal-title"
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Android Sheet Handle */}
-        <div className="flex justify-center pt-4 pb-2 sm:hidden">
-          <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full opacity-50"></div>
-        </div>
+        <div className="nb-card overflow-hidden p-0 rounded-none sm:rounded-lg border-t-[2.5px] sm:border-[2.5px] border-slate-900 shadow-[0_-4px_0_#0f172a] sm:shadow-[4px_4px_0_#0f172a]">
+          <div className="nb-hazard" aria-hidden="true" />
 
-        <div className="p-8 sm:p-6 text-center sm:text-left">
-          <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto sm:mx-0 mb-6 text-2xl">
-            👋
+          <div className="p-6 sm:p-7 text-center sm:text-left bg-[#fffdf7]">
+            <div className="nb-icon-badge w-14 h-14 flex items-center justify-center mx-auto sm:mx-0 mb-5 bg-red-100 text-red-700">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </div>
+            <h2
+              id="logout-modal-title"
+              className={`text-xl sm:text-2xl font-black text-slate-900 mb-2 ${language === 'bn' ? 'font-bengali' : ''}`}
+            >
+              {t.title}
+            </h2>
+            <p className={`text-slate-600 font-semibold text-sm sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
+              {t.message}
+            </p>
           </div>
-          <h2 className={`text-2xl font-black text-slate-900 dark:text-white mb-2 ${language === 'bn' ? 'font-bengali' : ''}`}>{t.title}</h2>
-          <p className={`text-slate-500 dark:text-slate-400 font-medium ${language === 'bn' ? 'font-bengali text-lg' : ''}`}>{t.message}</p>
-        </div>
 
-        <div className="p-6 sm:p-5 flex flex-col sm:flex-row gap-3 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:pb-5">
-          <button
-            onClick={onConfirm}
-            disabled={loading}
-            className="order-1 sm:order-2 w-full sm:flex-1 py-4 sm:py-2.5 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl transition-all shadow-lg shadow-red-500/20 flex items-center justify-center gap-2 disabled:opacity-70 active:scale-95"
-          >
-            {loading ? (
-              <>
-                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                <span>{t.loggingOut}</span>
-              </>
-            ) : (
-              t.confirm
-            )}
-          </button>
-          
-          <button
-            onClick={onCancel}
-            disabled={loading}
-            className="order-2 sm:order-1 w-full sm:flex-1 py-4 sm:py-2.5 text-slate-500 dark:text-slate-400 font-black hover:bg-black/5 dark:hover:bg-white/5 rounded-2xl transition-all disabled:opacity-50 active:scale-95"
-          >
-            {t.cancel}
-          </button>
+          <div className="p-4 sm:p-5 flex flex-col sm:flex-row gap-3 border-t-2 border-slate-900 bg-white pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-5">
+            <button
+              type="button"
+              onClick={onConfirm}
+              disabled={loading}
+              className="order-1 sm:order-2 w-full sm:flex-1 min-h-[48px] py-3 nb-btn-danger font-black text-base flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
+                  <span>{t.loggingOut}</span>
+                </>
+              ) : (
+                t.confirm
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={loading}
+              className="order-2 sm:order-1 w-full sm:flex-1 min-h-[48px] py-3 nb-btn-secondary font-black text-base disabled:opacity-50"
+            >
+              {t.cancel}
+            </button>
+          </div>
         </div>
       </div>
     </div>

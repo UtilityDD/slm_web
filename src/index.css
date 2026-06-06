@@ -304,6 +304,35 @@ body,
     box-shadow: 2px 2px 0 var(--nb-ink);
   }
 
+  .neo-brutal .nb-btn-danger,
+  .landing-neo-brutal .nb-btn-danger {
+    background: #dc2626;
+    color: #fff;
+    border: var(--nb-border);
+    border-radius: 0.5rem;
+    box-shadow: var(--nb-shadow);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+
+  .neo-brutal .nb-btn-danger:hover,
+  .landing-neo-brutal .nb-btn-danger:hover {
+    background: #ef4444;
+  }
+
+  .neo-brutal .nb-btn-danger:active,
+  .landing-neo-brutal .nb-btn-danger:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--nb-ink);
+  }
+
+  .neo-brutal .nb-btn-danger:disabled,
+  .landing-neo-brutal .nb-btn-danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: var(--nb-shadow-sm);
+  }
+
   .neo-brutal .nb-live-badge,
   .landing-neo-brutal .nb-live-badge {
     background: #dcfce7;
