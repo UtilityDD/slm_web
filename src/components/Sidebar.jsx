@@ -22,10 +22,8 @@ export default function Sidebar({
   const [isMoreExpanded, setIsMoreExpanded] = useState(true);
   const navRef = useRef(null);
 
-  // Auto-scroll to bottom when sidebar opens
   useEffect(() => {
     if (isOpen && navRef.current) {
-      // Add a small delay to allow the sidebar slide-in transition to finish
       const timeoutId = setTimeout(() => {
         if (navRef.current) {
           navRef.current.scrollTo({
@@ -38,7 +36,6 @@ export default function Sidebar({
     }
   }, [isOpen]);
 
-  // Listen for hash changes to update highlighted tab
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
@@ -48,17 +45,17 @@ export default function Sidebar({
       }
     };
 
-    handleHashChange(); // Check initial hash
+    handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
+
   const menuItems = [
     { id: 'training', label: language === 'en' ? '90 Days Training' : '৯০ দিনের প্রশিক্ষণ', icon: '📚', show: true, primary: true },
     { id: 'competitions', label: language === 'en' ? 'Competitions' : 'প্রতিযোগিতা', icon: '🎯', show: true, primary: true },
     { id: 'leaderboard', label: language === 'en' ? 'Leaderboard' : 'লিডারবোর্ড', icon: '🏆', show: true, primary: true },
     { id: 'video-guide', label: language === 'en' ? 'Video Guide' : 'ভিডিও গাইড', icon: '📺', show: true, primary: true },
     { id: 'safety-library', label: language === 'en' ? 'Safety Library' : 'সুরক্ষা লাইব্রেরি', icon: '🛡️', show: true, primary: true },
-    // Secondary Items (Hidden under "More")
     { id: 'notifications', label: language === 'en' ? 'Notifications' : 'বিজ্ঞপ্তি', icon: '🔔', show: true, badge: unreadNotificationsCount > 0 ? unreadNotificationsCount : null, highlight: unreadNotificationsCount > 0 },
     { id: 'community', label: language === 'en' ? 'Community' : 'কমিউনিটি', icon: '👥', show: true },
     { id: 'sops', label: language === 'en' ? 'SOP' : 'এসওপি', icon: '📋', show: true },
@@ -95,70 +92,68 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Sidebar Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] md:hidden"
+          className="fixed inset-0 z-[200] bg-slate-900/55 md:hidden"
           onClick={onClose}
-        ></div>
+          aria-hidden="true"
+        />
       )}
 
-      {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen w-72 bg-white dark:bg-slate-900 shadow-2xl border-r border-slate-200/50 dark:border-slate-700/50 z-[210] transform transition-all duration-300 flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+        className={`neo-brutal fixed left-0 top-0 z-[210] flex h-screen w-72 flex-col border-r-2 border-slate-900 bg-[#fffdf7] shadow-[4px_0_0_#0f172a] transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        aria-hidden={!isOpen}
       >
-        {/* Sidebar Header - Enhanced */}
-        <div className="p-6 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-br from-orange-50 to-white dark:from-slate-800 dark:to-slate-900 shrink-0">
-          {/* User Profile Section */}
-          <div className="flex items-center gap-3 mb-4">
+        <div className="nb-hazard shrink-0" aria-hidden="true" />
+
+        <div className="shrink-0 border-b-2 border-slate-900 bg-orange-50 p-5">
+          <div className="mb-4 flex items-center gap-3">
             <div className="relative">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center font-bold text-xl text-white shrink-0 overflow-hidden shadow-lg ring-2 ring-orange-200 dark:ring-orange-900">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden border-2 border-slate-900 bg-orange-400 text-xl font-bold text-slate-900 shadow-[3px_3px_0_#0f172a]">
                 {userProfile?.avatar_url ? (
-                  <img src={userProfile.avatar_url} alt={userProfile.full_name} className="w-full h-full object-cover" />
+                  <img src={userProfile.avatar_url} alt={userProfile.full_name} className="h-full w-full object-cover" />
                 ) : (
-                  <div className="w-full h-full text-white/90 flex items-center justify-center p-2.5">
-                    <UserIcon className="w-full h-full" />
+                  <div className="flex h-full w-full items-center justify-center p-2.5 text-slate-900">
+                    <UserIcon className="h-full w-full" />
                   </div>
                 )}
               </div>
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white dark:border-slate-900 rounded-full"></div>
+              <div className="absolute -bottom-1 -right-1 h-5 w-5 border-2 border-slate-900 bg-emerald-500" />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate mb-0.5">
+            <div className="min-w-0 flex-1">
+              <p className="mb-0.5 truncate text-sm font-black text-slate-900">
                 {(userProfile?.full_name && !userProfile.full_name.includes('@')) ? userProfile.full_name : 'Guest'}
               </p>
               {displayUserId && (
                 <div className="mb-1">
                   <span
-                    className="inline-flex max-w-full items-center rounded-full border border-slate-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 px-2 py-0.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate"
+                    className="nb-tag inline-flex max-w-full items-center truncate bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-600"
                     title={displayUserId}
                   >
-                    <span className="mr-1 uppercase tracking-wide text-[10px] text-slate-400 dark:text-slate-500">ID</span>
+                    <span className="mr-1 text-[10px] font-black uppercase tracking-wide text-slate-500 nb-mono">ID</span>
                     <span className="truncate">{displayUserId}</span>
                   </span>
                 </div>
               )}
-              <div className="flex flex-col gap-2 transform transition-all duration-300">
+              <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 rounded">
+                  <span className="nb-tag bg-orange-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-orange-700 nb-mono">
                     {userProfile?.role || 'lineman'}
                   </span>
-                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">
+                  <span className="nb-tag bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-slate-600 nb-mono">
                     Lvl {userProfile?.training_level || 1}
                   </span>
                 </div>
-                {/* User Stats Integration */}
-                <div className="flex items-center gap-2 mt-0.5">
-                  <div className="flex items-center gap-1.5 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm px-2 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm transition-all hover:bg-white dark:hover:bg-slate-800">
-                    <span className="text-sm drop-shadow-sm text-orange-500">🏆</span>
-                    <span className="text-[12px] font-black text-slate-800 dark:text-slate-100">
+                <div className="mt-0.5 flex items-center gap-2">
+                  <div className="nb-score-pill flex items-center gap-1.5 px-2 py-1">
+                    <span className="text-sm" aria-hidden>🏆</span>
+                    <span className="text-[12px] font-black tabular-nums text-slate-900">
                       {userProfile ? (userProfile.points || 0).toLocaleString('en-US') : '...'}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm px-2 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm transition-all hover:bg-white dark:hover:bg-slate-800">
-                    <span className="text-sm drop-shadow-sm">📖</span>
-                    <span className="text-[12px] font-black text-slate-800 dark:text-slate-100">
+                  <div className="nb-score-pill flex items-center gap-1.5 px-2 py-1">
+                    <span className="text-sm" aria-hidden>📖</span>
+                    <span className="text-[12px] font-black tabular-nums text-slate-900">
                       {userProfile ? (userProfile.reading_points || 0).toLocaleString('en-US') : '...'}
                     </span>
                   </div>
@@ -166,11 +161,9 @@ export default function Sidebar({
               </div>
             </div>
           </div>
-
         </div>
 
-        {/* Navigation Items - Enhanced */}
-        <nav ref={navRef} className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5 custom-scrollbar">
+        <nav ref={navRef} className="custom-scrollbar flex-1 space-y-1 overflow-y-auto px-3 py-3">
           <button
             type="button"
             disabled={radioLoading}
@@ -178,12 +171,12 @@ export default function Sidebar({
               startRadio();
               onClose();
             }}
-            className="mb-2 flex w-full items-center gap-3 rounded-xl border border-indigo-200/80 bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-3.5 text-left text-white shadow-lg shadow-indigo-500/25 transition-all hover:from-indigo-500 hover:to-violet-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 dark:border-indigo-500/30"
+            className="nb-btn-indigo mb-2 flex w-full items-center gap-3 px-4 py-3.5 text-left disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <span className="text-xl shrink-0" aria-hidden>
+            <span className="shrink-0 text-xl" aria-hidden>
               📻
             </span>
-            <span className={`text-sm font-bold leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+            <span className={`text-sm font-black leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
               {language === 'en' ? 'Listen to SLM Radio' : 'SLM রেডিও শুনুন'}
             </span>
           </button>
@@ -191,54 +184,57 @@ export default function Sidebar({
           {primaryItems.map((item) => (
             <button
               key={item.id}
+              type="button"
               onClick={() => handleNavClick(item)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-left group ${currentView === item.id
-                ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold shadow-lg shadow-orange-500/25'
-                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:translate-x-1'
-                }`}
+              className={`group flex w-full items-center gap-3 px-4 py-3 text-left transition-all duration-200 ${
+                currentView === item.id
+                  ? 'nb-btn-primary font-semibold'
+                  : 'nb-btn-secondary hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5'
+              }`}
             >
-              <span className={`text-xl shrink-0 transition-transform duration-200 ${currentView === item.id ? '' : 'group-hover:scale-110'}`}>
+              <span className={`shrink-0 text-xl transition-transform duration-200 ${currentView === item.id ? '' : 'group-hover:scale-110'}`}>
                 {item.icon}
               </span>
-              <span className="text-sm font-medium">{item.label}</span>
+              <span className="text-sm font-bold">{item.label}</span>
             </button>
           ))}
 
-          {/* More Toggle Button */}
           <button
+            type="button"
             onClick={() => setIsMoreExpanded(!isMoreExpanded)}
-            className="w-full flex items-center justify-center p-3 rounded-xl transition-all duration-300 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 group border border-dashed border-slate-200 dark:border-slate-700/50 mt-2"
+            className="nb-card mt-2 flex w-full items-center justify-center border-dashed bg-white p-3 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5"
             title={isMoreExpanded ? (language === 'en' ? 'Show Less' : 'কম দেখুন') : (language === 'en' ? 'More Items' : 'আরও দেখুন')}
           >
-            <div className={`transform transition-all duration-500 ${isMoreExpanded ? 'rotate-180 scale-110 text-orange-500' : 'rotate-0'}`}>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className={`transform transition-all duration-500 ${isMoreExpanded ? 'rotate-180 text-orange-600' : 'rotate-0 text-slate-500'}`}>
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
               </svg>
             </div>
           </button>
 
-          {/* Secondary Items (Animated expansion) */}
-          <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isMoreExpanded ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
-            <div className="space-y-0.5 pt-1 border-t border-slate-100 dark:border-slate-800/50">
+          <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isMoreExpanded ? 'mt-2 max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className="space-y-1 border-t-2 border-slate-900 pt-2">
               {secondaryItems.map((item) => {
                 const isActive = currentView === item.id;
                 return (
                   <button
                     key={item.id}
+                    type="button"
                     onClick={() => handleNavClick(item)}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 text-left group ${isActive
-                      ? 'bg-slate-100 dark:bg-slate-800 text-orange-600 dark:text-orange-400 font-bold'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                      }`}
+                    className={`group flex w-full items-center gap-3 border-2 px-3 py-2.5 text-left transition-all duration-200 ${
+                      isActive
+                        ? 'border-slate-900 bg-orange-100 font-bold text-orange-800 shadow-[2px_2px_0_#0f172a]'
+                        : 'border-slate-900 bg-white text-slate-700 shadow-[2px_2px_0_#0f172a] hover:-translate-x-0.5 hover:-translate-y-0.5'
+                    } ${item.color || ''}`}
                   >
-                    <span className="text-lg shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
+                    <span className="shrink-0 text-lg opacity-80 transition-opacity group-hover:opacity-100">
                       {item.icon}
                     </span>
-                    <span className="text-xs font-semibold uppercase tracking-tight">
+                    <span className="text-xs font-bold uppercase tracking-tight nb-mono">
                       {item.label}
                     </span>
                     {item.badge && (
-                      <span className="ml-auto bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full ring-2 ring-white dark:ring-slate-900">
+                      <span className="ml-auto border-2 border-slate-900 bg-red-500 px-1.5 py-0.5 text-[9px] font-black text-white">
                         {item.badge}
                       </span>
                     )}
@@ -249,50 +245,50 @@ export default function Sidebar({
           </div>
         </nav>
 
-        {/* Sidebar Footer - Enhanced */}
-        <div className="border-t border-slate-200 dark:border-slate-700 p-3 space-y-2 bg-slate-50 dark:bg-slate-900/50 shrink-0">
+        <div className="shrink-0 space-y-2 border-t-2 border-slate-900 bg-white p-3">
           <button
+            type="button"
             onClick={onToggleLanguageModal}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 transition-all hover:translate-x-1 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-left"
+            className="nb-btn-secondary flex w-full items-center gap-3 px-4 py-2.5 text-left"
             title="Language"
           >
-            <span className="text-xl shrink-0">🌐</span>
-            <span className="text-sm font-medium">
+            <span className="shrink-0 text-xl">🌐</span>
+            <span className="text-sm font-bold">
               {language === 'en' ? 'Language' : 'ভাষা'}
             </span>
           </button>
 
           <button
+            type="button"
             onClick={onLogout}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all hover:translate-x-1 border border-transparent hover:border-red-100 dark:hover:border-red-900/50 text-left"
+            className="flex w-full items-center gap-3 border-2 border-slate-900 bg-red-50 px-4 py-2.5 text-left text-red-700 shadow-[2px_2px_0_#0f172a] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5"
             title="Logout"
           >
-            <span className="text-xl shrink-0">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+            <span className="shrink-0 text-xl">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
             </span>
-            <span className="text-sm font-bold">
+            <span className="text-sm font-black">
               {language === 'en' ? 'Logout' : 'লগ আউট'}
             </span>
           </button>
 
-          {/* Version Display */}
-          <div className="px-4 py-2 text-center border-t border-slate-200 dark:border-slate-700 mt-2">
-            <p className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase flex flex-col gap-1 items-center">
+          <div className="mt-2 border-t-2 border-slate-900 px-4 py-2 text-center">
+            <p className="flex flex-col items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-500 nb-mono">
               <span className="flex items-center gap-1">
                 <span>{APP_NAME.replace('.in', '')}</span>
-                <span className="text-[9px] font-black bg-orange-500/10 text-orange-500 px-1 py-0.5 rounded border border-orange-500/20 lowercase tracking-normal -translate-y-0.5">.in</span>
-                <span className="ml-1 text-orange-500">v{CURRENT_APP_VERSION}</span>
+                <span className="-translate-y-0.5 border border-slate-900 bg-orange-100 px-1 py-0.5 text-[9px] font-black lowercase tracking-normal text-orange-700">.in</span>
+                <span className="ml-1 text-orange-600">v{CURRENT_APP_VERSION}</span>
               </span>
-              <a href={WEBSITE_URL} target="_blank" rel="noopener noreferrer" className="text-orange-500/60 hover:text-orange-500 transition-colors lowercase tracking-normal font-medium mt-1">
+              <a href={WEBSITE_URL} target="_blank" rel="noopener noreferrer" className="mt-1 font-medium lowercase tracking-normal text-orange-600 hover:text-orange-700">
                 {WEBSITE_URL.replace('https://', '')}
               </a>
-              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-slate-500/60 hover:text-slate-400 transition-colors lowercase tracking-normal font-medium">
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium lowercase tracking-normal text-slate-600 hover:text-slate-800">
                 {SUPPORT_EMAIL}
               </a>
             </p>
           </div>
         </div>
-      </aside >
+      </aside>
     </>
   );
 }
