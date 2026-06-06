@@ -32,7 +32,6 @@ import { pickSupplementaryListenSrc } from '../../utils/supplementaryAudioUrl';
 import { useLifeSkillRadio } from '../../context/LifeSkillRadioContext';
 import { getLifetimePoints } from '../../utils/hourlyDifficulty';
 import HourlyPenaltyInfoModal from '../HourlyPenaltyInfoModal';
-import { PRACTICAL_FIELD_CHAPTERS } from '../../data/practicalFieldChapters';
 
 const HOURLY_PENALTY_MODAL_SKIP_KEY = 'slm_hourly_penalty_info_skip';
 
@@ -735,8 +734,6 @@ export default function Training({
         () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
     );
     const [loadingTipIndex, setLoadingTipIndex] = useState(0);
-    const [showPracticalGuidesList, setShowPracticalGuidesList] = useState(false);
-    const [practicalDemoChapter, setPracticalDemoChapter] = useState(null);
 
     const lessonProgressWelcome = useMemo(() => {
         if (!user?.id) return null;
@@ -2611,7 +2608,7 @@ export default function Training({
                     <div className="group mt-12">
                         <button
                             type="button"
-                            onClick={() => setShowPracticalGuidesList(true)}
+                            onClick={() => setCurrentView('aro-janun')}
                             className="nb-card w-full bg-white p-5 text-left transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 sm:p-6 lg:p-8"
                         >
                             <div className="flex flex-col items-center justify-between gap-5 md:flex-row md:gap-6">
@@ -3136,259 +3133,6 @@ export default function Training({
                 dontShowAgain={hourlyPenaltyDontShowAgain}
                 onDontShowAgainChange={setHourlyPenaltyDontShowAgain}
             />
-
-            {showPracticalGuidesList && createPortal(
-                <div className="fixed inset-0 z-[205] flex animate-fade-in items-end justify-center bg-slate-900/55 p-0 sm:items-center sm:p-4">
-                    <div
-                        className="neo-brutal flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden sm:max-h-[88vh] sm:animate-scale-in animate-slide-up-sheet"
-                        role="dialog"
-                        aria-modal="true"
-                        aria-labelledby="practical-guides-list-title"
-                    >
-                        <div className="nb-card flex min-h-0 flex-1 flex-col overflow-hidden bg-[#fffdf7] p-0">
-                            <div className="nb-hazard shrink-0" aria-hidden="true" />
-                            <div className="flex shrink-0 items-start justify-between gap-3 border-b-2 border-slate-900 bg-white p-4 sm:p-5">
-                                <div className="min-w-0">
-                                    <h2
-                                        id="practical-guides-list-title"
-                                        className={`text-lg font-black text-slate-900 sm:text-xl ${language === 'bn' ? 'font-bengali' : ''}`}
-                                    >
-                                        {language === 'en' ? 'Aro Janun' : 'আরো জানুন'}
-                                    </h2>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPracticalGuidesList(false)}
-                                    className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-slate-900 bg-white text-slate-600 shadow-[2px_2px_0_#0f172a] hover:bg-orange-50"
-                                    aria-label={language === 'en' ? 'Close' : 'বন্ধ করুন'}
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                            <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5">
-                                <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-3">
-                                    {PRACTICAL_FIELD_CHAPTERS.map((chapter) => {
-                                        const title = language === 'en' ? chapter.title_en : chapter.title_bn;
-                                        const desc = language === 'en' ? chapter.desc_en : chapter.desc_bn;
-                                        const duration = language === 'en' ? chapter.duration_en : chapter.duration_bn;
-                                        const topics = language === 'en' ? chapter.topics_en : chapter.topics_bn;
-                                        return (
-                                            <button
-                                                key={chapter.id}
-                                                type="button"
-                                                onClick={() => setPracticalDemoChapter(chapter)}
-                                                className="nb-card group flex h-full flex-col bg-white p-4 text-left transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5"
-                                            >
-                                                <div className="mb-3 flex items-start justify-between gap-2">
-                                                    <div className={`nb-icon-badge flex h-11 w-11 shrink-0 items-center justify-center text-xl ${chapter.badgeClass}`}>
-                                                        <span aria-hidden>{chapter.icon}</span>
-                                                    </div>
-                                                    <span className="nb-tag shrink-0 bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-700 nb-mono">
-                                                        {chapter.code}
-                                                    </span>
-                                                </div>
-                                                <h3 className={`mb-1.5 text-base font-black leading-snug text-slate-900 group-hover:text-orange-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                    {title}
-                                                </h3>
-                                                <p className={`mb-3 flex-1 text-xs font-semibold leading-relaxed text-slate-600 line-clamp-2 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                    {desc}
-                                                </p>
-                                                <div className="mb-3 flex flex-wrap gap-1.5">
-                                                    {topics.map((topic) => (
-                                                        <span
-                                                            key={topic}
-                                                            className="border border-slate-900 bg-[#fffdf7] px-1.5 py-0.5 text-[9px] font-bold text-slate-700 nb-mono"
-                                                        >
-                                                            {topic}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                                <div className="flex items-center justify-between border-t-2 border-slate-900 pt-3">
-                                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 nb-mono">{duration}</span>
-                                                    <span className="text-[10px] font-black uppercase tracking-wider text-orange-600 nb-mono">
-                                                        {language === 'en' ? 'Preview' : 'প্রিভিউ'}
-                                                    </span>
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>,
-                document.body
-            )}
-
-            {practicalDemoChapter && createPortal(
-                <div className="fixed inset-0 z-[220] flex animate-fade-in items-end justify-center bg-slate-900/55 p-0 sm:items-center sm:p-4">
-                    {(() => {
-                        const detail = language === 'bn' ? practicalDemoChapter.detail_bn : practicalDemoChapter.detail_en;
-                        const hasDetail = Boolean(detail?.steps?.length);
-                        return (
-                            <div
-                                className={`neo-brutal flex w-full flex-col overflow-hidden bg-[#fffdf7] ${hasDetail ? 'max-h-[92vh] max-w-3xl sm:max-h-[88vh] sm:animate-scale-in animate-slide-up-sheet' : 'max-w-md animate-scale-in'}`}
-                                role="dialog"
-                                aria-modal="true"
-                                aria-labelledby="practical-demo-title"
-                            >
-                                <div className="nb-card flex min-h-0 flex-1 flex-col overflow-hidden bg-[#fffdf7] p-0">
-                                    <div className="nb-hazard shrink-0" aria-hidden="true" />
-                                    <div className="flex shrink-0 items-start justify-between gap-3 border-b-2 border-slate-900 bg-white p-4 sm:p-5">
-                                        <div className="flex min-w-0 items-start gap-3">
-                                            <div className={`nb-icon-badge flex h-12 w-12 shrink-0 items-center justify-center text-xl sm:h-14 sm:w-14 sm:text-2xl ${practicalDemoChapter.badgeClass}`}>
-                                                <span aria-hidden>{practicalDemoChapter.icon}</span>
-                                            </div>
-                                            <div className="min-w-0">
-                                                <span className="nb-tag mb-1.5 inline-flex bg-slate-900 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-white nb-mono">
-                                                    {practicalDemoChapter.code}
-                                                </span>
-                                                <h3
-                                                    id="practical-demo-title"
-                                                    className={`text-lg font-black leading-tight text-slate-900 sm:text-xl ${language === 'bn' ? 'font-bengali' : ''}`}
-                                                >
-                                                    {language === 'en' ? practicalDemoChapter.title_en : practicalDemoChapter.title_bn}
-                                                </h3>
-                                            </div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => setPracticalDemoChapter(null)}
-                                            className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-slate-900 bg-white text-slate-600 shadow-[2px_2px_0_#0f172a] hover:bg-orange-50"
-                                            aria-label={language === 'en' ? 'Close' : 'বন্ধ করুন'}
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
-
-                                    {hasDetail ? (
-                                        <div className={`min-h-0 flex-1 overflow-y-auto p-4 sm:p-6 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                            <p className="mb-5 text-sm font-semibold leading-relaxed text-slate-700 sm:text-base">
-                                                {detail.intro}
-                                            </p>
-
-                                            <section className="mb-6">
-                                                <h4 className="mb-3 text-sm font-black uppercase tracking-wider text-emerald-800 nb-mono">
-                                                    {language === 'en' ? 'Objectives' : 'লক্ষ্য'}
-                                                </h4>
-                                                <ul className="space-y-2">
-                                                    {detail.objectives?.map((item) => (
-                                                        <li key={item} className="flex items-start gap-2 text-sm font-semibold text-slate-800 sm:text-base">
-                                                            <span className="mt-1.5 h-2 w-2 shrink-0 border border-slate-900 bg-emerald-500" aria-hidden />
-                                                            <span>{item}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </section>
-
-                                            {detail.tools?.length > 0 && (
-                                                <section className="mb-6">
-                                                    <h4 className="mb-3 text-sm font-black uppercase tracking-wider text-slate-700 nb-mono">
-                                                        {language === 'en' ? 'Tools' : 'সরঞ্জাম'}
-                                                    </h4>
-                                                    <ul className="nb-card space-y-1.5 bg-white p-4 text-xs font-semibold text-slate-700 sm:text-sm">
-                                                        {detail.tools.map((item) => (
-                                                            <li key={item} className="flex items-start gap-2">
-                                                                <span className="text-orange-500">•</span>
-                                                                <span>{item}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </section>
-                                            )}
-
-                                            {detail.materials?.length > 0 && (
-                                                <section className="mb-6">
-                                                    <h4 className="mb-3 text-sm font-black uppercase tracking-wider text-slate-700 nb-mono">
-                                                        {language === 'en' ? 'Materials' : 'উপকরণ'}
-                                                    </h4>
-                                                    <ul className="nb-card space-y-1.5 bg-white p-4 text-xs font-semibold text-slate-700 sm:text-sm">
-                                                        {detail.materials.map((item) => (
-                                                            <li key={item} className="flex items-start gap-2">
-                                                                <span className="text-orange-500">•</span>
-                                                                <span>{item}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </section>
-                                            )}
-
-                                            {detail.steps?.map((step) => (
-                                                <section key={step.title} className="mb-6">
-                                                    <h4 className="mb-2 text-base font-black text-slate-900 sm:text-lg">
-                                                        {step.title}
-                                                    </h4>
-                                                    {step.note && (
-                                                        <p className="mb-3 border-l-4 border-amber-500 bg-amber-50 px-3 py-2 text-xs font-semibold leading-relaxed text-amber-950 sm:text-sm">
-                                                            {step.note}
-                                                        </p>
-                                                    )}
-                                                    <ol className="space-y-2.5">
-                                                        {step.items.map((item, idx) => (
-                                                            <li key={item} className="flex items-start gap-3 text-sm font-semibold leading-relaxed text-slate-800 sm:text-base">
-                                                                <span className="nb-tag flex h-6 w-6 shrink-0 items-center justify-center bg-slate-900 text-[10px] font-black text-white nb-mono">
-                                                                    {idx + 1}
-                                                                </span>
-                                                                <span className="pt-0.5">{item}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ol>
-                                                </section>
-                                            ))}
-
-                                            {detail.safety?.length > 0 && (
-                                                <section className="mb-2">
-                                                    <h4 className="mb-3 text-sm font-black uppercase tracking-wider text-rose-700 nb-mono">
-                                                        {language === 'en' ? 'Safety' : 'নিরাপত্তা'}
-                                                    </h4>
-                                                    <ul className="nb-card space-y-2 border-rose-200 bg-rose-50 p-4">
-                                                        {detail.safety.map((item) => (
-                                                            <li key={item} className="flex items-start gap-2 text-xs font-semibold text-rose-950 sm:text-sm">
-                                                                <span aria-hidden>⚠</span>
-                                                                <span>{item}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </section>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="p-6 sm:p-7">
-                                            <p className={`mb-4 text-sm font-semibold leading-relaxed text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                {language === 'en' ? practicalDemoChapter.desc_en : practicalDemoChapter.desc_bn}
-                                            </p>
-                                            <ul className={`mb-4 space-y-2 text-sm text-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                {(language === 'en' ? practicalDemoChapter.topics_en : practicalDemoChapter.topics_bn)?.map((topic) => (
-                                                    <li key={topic} className="flex items-start gap-2">
-                                                        <span className="mt-1.5 h-2 w-2 shrink-0 border border-slate-900 bg-orange-500" aria-hidden />
-                                                        <span className="font-semibold">{topic}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                            <p className={`text-xs font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                {language === 'en'
-                                                    ? 'Full chapter content is coming soon.'
-                                                    : 'সম্পূর্ণ অধ্যায় শীঘ্রই আসছে।'}
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    <div className="shrink-0 border-t-2 border-slate-900 bg-white p-4 sm:p-5">
-                                        <button
-                                            type="button"
-                                            onClick={() => setPracticalDemoChapter(null)}
-                                            className="nb-btn-primary w-full px-4 py-3.5 font-bold"
-                                        >
-                                            {language === 'en' ? 'Close' : 'বন্ধ করুন'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })()}
-                </div>,
-                document.body
-            )}
 
             {lockedLessonModal && createPortal(
                 <div className="fixed inset-0 z-[210] flex animate-fade-in items-center justify-center bg-slate-900/55 p-4">

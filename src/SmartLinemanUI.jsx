@@ -45,6 +45,7 @@ const Notifications = lazy(() => import("./components/Notifications"));
 const MyProgress = lazy(() => import("./components/MyProgress"));
 const AwarenessStories = lazy(() => import("./components/safety/AwarenessStories"));
 const VideoGuide = lazy(() => import("./components/safety/VideoGuide"));
+const AroJanun = lazy(() => import("./components/safety/AroJanun"));
 const SafetyLibrary = lazy(() => import("./components/safety/SafetyLibrary"));
 // const SafetyHero = lazy(() => import("./components/safety/SafetyHero"));
 
@@ -968,7 +969,7 @@ export default function SmartLinemanUI() {
   const t = translations[language];
 
   const renderContent = () => {
-    const publicViews = ['landing', 'login', 'update-password', 'verify', 'accident-stories', 'video-guide', 'sops'];
+    const publicViews = ['landing', 'login', 'update-password', 'verify', 'accident-stories', 'video-guide', 'aro-janun', 'sops'];
     const isPublic = publicViews.includes(currentView);
 
     if (!user && !isPublic && !appLoading) {
@@ -1072,6 +1073,8 @@ export default function SmartLinemanUI() {
           );
         case 'video-guide':
           return <VideoGuide language={language} setCurrentView={setCurrentView} />;
+        case 'aro-janun':
+          return <AroJanun language={language} setCurrentView={setCurrentView} />;
         case 'safety-library':
           return <SafetyLibrary language={language} setCurrentView={setCurrentView} />;
         /* case 'safety-hero':
@@ -1323,10 +1326,10 @@ export default function SmartLinemanUI() {
                   : user
                     ? 'pb-20 md:pb-0'
                     : 'pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:pb-0'
-              } ${['accident-stories', 'leaderboard', 'training', 'competitions'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
+              } ${['accident-stories', 'leaderboard', 'training', 'competitions', 'video-guide', 'aro-janun'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
             >
               <div
-                className={`h-full relative z-10 w-full view-transition min-h-full ${['accident-stories', 'leaderboard', 'training', 'competitions'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
+                className={`h-full relative z-10 w-full view-transition min-h-full ${['accident-stories', 'leaderboard', 'training', 'competitions', 'video-guide', 'aro-janun'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
                 key={currentView}
               >
                 {renderContent()}

@@ -1,29 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { videoService } from '../../utils/videoService';
+import { storageUtils } from '../../utils/storageUtils';
+import { BrutalLoaderContent } from '../loaders/PageLoader';
 
 const PlayIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className={className}>
-        <path d="m7 4 12 8-12 8V4z"></path>
+        <path d="m7 4 12 8-12 8V4z" />
     </svg>
 );
 
 const SearchIcon = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
 );
 
 const ChevronLeftIcon = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="m15 18-6-6 6-6"></path>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="m15 18-6-6 6-6" />
     </svg>
 );
 
 const VideoIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="m22 8-6 4 6 4V8Z"></path>
-        <rect width="14" height="12" x="2" y="6" rx="2" ry="2"></rect>
+        <path d="m22 8-6 4 6 4V8Z" />
+        <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
     </svg>
 );
 
@@ -40,22 +42,52 @@ export default function VideoGuide({ language, setCurrentView }) {
 
     const t = {
         en: {
-            title: 'Video Guide',
+            title: 'Video Learning Library',
             searchPlaceholder: 'Search video...',
             noResults: 'No videos found',
             retry: 'Retry',
             back: 'Back',
-            categories: 'Categories'
+            cancel: 'Cancel',
+            categories: 'Categories',
+            loading: 'Loading videos…',
         },
         bn: {
-            title: 'ভিডিও গাইড',
+            title: 'ভিডিও লার্নিং লাইব্রেরি',
             searchPlaceholder: 'ভিডিও খুঁজুন...',
             noResults: 'কোনো ভিডিও পাওয়া যায়নি',
             retry: 'আবার চেষ্টা করুন',
             back: 'ফিরুন',
-            categories: 'বিভাগ'
-        }
+            cancel: 'বাতিল',
+            categories: 'বিভাগ',
+            loading: 'ভিডিও লোড হচ্ছে…',
+        },
     }[language];
+
+    useEffect(() => {
+        const html = document.documentElement;
+        html.classList.remove('dark');
+
+        let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        const previousThemeColor = metaThemeColor?.getAttribute('content') || null;
+        if (!metaThemeColor) {
+            metaThemeColor = document.createElement('meta');
+            metaThemeColor.setAttribute('name', 'theme-color');
+            document.head.appendChild(metaThemeColor);
+        }
+        metaThemeColor.setAttribute('content', '#fffdf7');
+
+        return () => {
+            const savedTheme = storageUtils.getItem('appTheme') || 'dark';
+            if (savedTheme === 'dark') {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+            if (previousThemeColor) {
+                metaThemeColor.setAttribute('content', previousThemeColor);
+            }
+        };
+    }, []);
 
     const loadData = async (force = false) => {
         try {
@@ -64,8 +96,8 @@ export default function VideoGuide({ language, setCurrentView }) {
             const data = await videoService.fetchVideos(force);
             setVideos(data);
             setFilteredVideos(data);
-            
-            const uniqueCats = ['All', ...new Set(data.map(v => v.category))];
+
+            const uniqueCats = ['All', ...new Set(data.map((v) => v.category))];
             setCategories(uniqueCats);
         } catch (err) {
             setError(err.message);
@@ -77,213 +109,221 @@ export default function VideoGuide({ language, setCurrentView }) {
     useEffect(() => { loadData(); }, []);
 
     useEffect(() => {
-        const filtered = videos.filter(v => {
-            const matchesSearch = v.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                v.category.toLowerCase().includes(searchQuery.toLowerCase());
+        const filtered = videos.filter((v) => {
+            const matchesSearch =
+                v.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                v.category.toLowerCase().includes(searchQuery.toLowerCase());
             const matchesCategory = activeCategory === 'All' || v.category === activeCategory;
             return matchesSearch && matchesCategory;
         });
         setFilteredVideos(filtered);
     }, [searchQuery, activeCategory, videos]);
 
+    const searchInputClass =
+        'w-full border-2 border-slate-900 bg-white py-2 pl-9 pr-3 text-sm font-semibold text-slate-900 shadow-[2px_2px_0_#0f172a] outline-none placeholder:text-slate-400 focus:shadow-[3px_3px_0_#0f172a]';
+
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20">
+        <div className="neo-brutal min-h-screen bg-[#fffdf7] pb-24 text-slate-900">
+            <div className="nb-hazard sticky top-0 z-[41]" aria-hidden="true" />
+
             {/* Sticky Header */}
-            <div className="sticky top-0 z-[100] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 py-3 px-4 sm:px-8">
-                <div className="max-w-7xl mx-auto space-y-4">
+            <div className="sticky top-[6px] z-40 border-b-[2.5px] border-slate-900 bg-white">
+                <div className="mx-auto max-w-7xl space-y-3 px-4 py-3 sm:px-8 sm:py-4">
                     <div className="flex items-center justify-between gap-4">
                         {!isSearchExpanded ? (
                             <>
-                                <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4 duration-300">
-                                    <button 
-                                        onClick={() => setCurrentView('training')} 
-                                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 active:scale-90 transition-transform"
+                                <div className="flex min-w-0 items-center gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setCurrentView('training')}
+                                        className="flex h-9 w-9 shrink-0 items-center justify-center border-2 border-slate-900 bg-white text-slate-900 shadow-[2px_2px_0_#0f172a] transition-transform hover:bg-orange-50 active:translate-x-0.5 active:translate-y-0.5"
+                                        aria-label={t.back}
                                     >
-                                        <ChevronLeftIcon className="w-5 h-5" />
+                                        <ChevronLeftIcon className="h-5 w-5" />
                                     </button>
-                                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                                    <h1 className={`truncate text-lg font-black tracking-tight text-slate-900 sm:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {t.title}
                                     </h1>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    {/* Mobile Search Trigger */}
-                                    <button 
+                                <div className="flex shrink-0 items-center gap-2">
+                                    <button
+                                        type="button"
                                         onClick={() => setIsSearchExpanded(true)}
-                                        className="sm:hidden w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 active:scale-90 transition-transform"
+                                        className="flex h-9 w-9 items-center justify-center border-2 border-slate-900 bg-white text-slate-700 shadow-[2px_2px_0_#0f172a] transition-transform hover:bg-orange-50 active:translate-x-0.5 active:translate-y-0.5 sm:hidden"
+                                        aria-label={t.searchPlaceholder}
                                     >
-                                        <SearchIcon className="w-5 h-5" />
+                                        <SearchIcon className="h-5 w-5" />
                                     </button>
-                                    
-                                    {/* Desktop Search Bar */}
-                                    <div className="hidden sm:block relative group max-w-md w-full">
-                                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+
+                                    <div className="relative hidden max-w-md flex-1 sm:block">
+                                        <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                                         <input
                                             type="text"
                                             placeholder={t.searchPlaceholder}
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800/50 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500/20 transition-all"
+                                            className={searchInputClass}
                                         />
                                     </div>
                                 </div>
                             </>
                         ) : (
-                            <div className="flex-1 flex items-center gap-2 animate-in slide-in-from-right-4 duration-300">
-                                <div className="relative flex-1">
-                                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <div className="flex flex-1 items-center gap-2">
+                                <div className="relative min-w-0 flex-1">
+                                    <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                                     <input
                                         autoFocus
                                         type="text"
                                         placeholder={t.searchPlaceholder}
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-9 pr-3 py-2.5 bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500/30 transition-all"
+                                        className={`${searchInputClass} py-2.5`}
                                     />
                                 </div>
-                                <button 
+                                <button
+                                    type="button"
                                     onClick={() => { setIsSearchExpanded(false); setSearchQuery(''); }}
-                                    className="px-3 py-2 text-sm font-bold text-orange-500 dark:text-orange-400 active:scale-95"
+                                    className="shrink-0 px-2 py-2 text-xs font-black text-orange-700 nb-mono uppercase tracking-wide"
                                 >
-                                    Cancel
+                                    {t.cancel}
                                 </button>
                             </div>
                         )}
                     </div>
 
-                    {/* Categories Horizontal Scroll */}
-                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                    {/* Categories */}
+                    <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
                         {categories.map((cat) => (
                             <button
                                 key={cat}
+                                type="button"
                                 onClick={() => setActiveCategory(cat)}
-                                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap border
-                                    ${activeCategory === cat
-                                        ? 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/20'
-                                        : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-100 dark:border-slate-800'}`}
+                                className={`whitespace-nowrap border-2 border-slate-900 px-3 py-1.5 text-[10px] font-black shadow-[2px_2px_0_#0f172a] transition-transform active:translate-x-0.5 active:translate-y-0.5 sm:text-xs ${
+                                    activeCategory === cat
+                                        ? 'bg-orange-500 text-white'
+                                        : 'bg-white text-slate-700 hover:bg-orange-50'
+                                }`}
                             >
-                                {cat}
+                                {cat === 'All' ? (language === 'en' ? 'All' : 'সব') : cat}
                             </button>
                         ))}
                     </div>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto p-4 sm:p-8">
+            <div className="mx-auto max-w-7xl p-4 sm:p-8">
                 {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[1, 2, 3, 4, 5, 6].map(i => (
-                            <div key={i} className="aspect-video bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse" />
-                        ))}
+                    <div className="flex flex-col items-center gap-8 py-12">
+                        <BrutalLoaderContent message={t.loading} compact />
+                        <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                            {[1, 2, 3, 4, 5, 6].map((i) => (
+                                <div key={i} className="nb-card aspect-video animate-pulse bg-white" />
+                            ))}
+                        </div>
                     </div>
                 ) : error ? (
-                    <div className="text-center py-20">
-                        <p className="text-red-500 font-bold mb-4">{error}</p>
-                        <button onClick={() => loadData(true)} className="px-6 py-2 bg-orange-500 text-white rounded-xl font-bold">{t.retry}</button>
+                    <div className="nb-card mx-auto max-w-md bg-white p-8 text-center">
+                        <p className="mb-4 font-bold text-red-700">{error}</p>
+                        <button type="button" onClick={() => loadData(true)} className="nb-btn-primary px-6 py-2.5 font-bold">
+                            {t.retry}
+                        </button>
                     </div>
                 ) : filteredVideos.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                         {filteredVideos.map((video) => (
-                            <div 
+                            <button
                                 key={video.id}
+                                type="button"
                                 onClick={() => setSelectedVideo(video)}
-                                className="group bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 hover:shadow-2xl hover:shadow-orange-500/10 transition-all cursor-pointer active:scale-[0.98]"
+                                className="group nb-card overflow-hidden bg-white p-0 text-left transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5"
                             >
-                                <div className="relative aspect-video overflow-hidden bg-slate-100 dark:bg-slate-800">
-                                    <img 
-                                        src={video.thumbnail} 
-                                        alt={video.title}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                <div className="relative aspect-video overflow-hidden border-b-2 border-slate-900 bg-slate-100">
+                                    <img
+                                        src={video.thumbnail}
+                                        alt=""
+                                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                                     />
-                                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                                        <div className="w-12 h-12 bg-orange-500 text-white rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
-                                            <PlayIcon className="w-6 h-6 ml-1" />
+                                    <div className="absolute inset-0 flex items-center justify-center bg-slate-900/25 transition-colors group-hover:bg-slate-900/40">
+                                        <div className="flex h-12 w-12 items-center justify-center border-2 border-slate-900 bg-orange-500 text-white shadow-[3px_3px_0_#0f172a] transition-transform group-hover:scale-105">
+                                            <PlayIcon className="ml-0.5 h-6 w-6" />
                                         </div>
                                     </div>
-                                    <div className="absolute top-3 left-3">
-                                        <span className="px-2 py-1 bg-black/50 backdrop-blur-md text-[10px] text-white font-bold rounded-lg uppercase tracking-wider">
+                                    <div className="absolute left-3 top-3">
+                                        <span className="nb-tag border-slate-900 bg-white px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-slate-800">
                                             {video.category}
                                         </span>
                                     </div>
                                 </div>
-                                <div className="p-4 space-y-2">
-                                    <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white line-clamp-2 leading-tight group-hover:text-orange-500 transition-colors">
+                                <div className="space-y-1.5 p-4">
+                                    <h3 className={`line-clamp-2 text-sm font-black leading-snug text-slate-900 transition-colors group-hover:text-orange-700 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {video.title}
                                     </h3>
                                     {video.remarks && (
-                                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">
+                                        <p className={`line-clamp-2 text-[10px] font-semibold uppercase tracking-wide text-slate-500 ${language === 'bn' ? 'font-bengali normal-case' : ''}`}>
                                             {video.remarks}
                                         </p>
                                     )}
                                 </div>
-                            </div>
+                            </button>
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-20 text-slate-400">
-                        <VideoIcon className="w-16 h-16 mx-auto mb-4 opacity-10" />
-                        <p className="text-lg font-bold">{t.noResults}</p>
+                    <div className="nb-card mx-auto max-w-md border-dashed bg-amber-50 py-16 text-center">
+                        <VideoIcon className="mx-auto mb-4 h-14 w-14 text-slate-300" />
+                        <p className={`text-base font-black text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>{t.noResults}</p>
                     </div>
                 )}
             </div>
 
-            {/* Video Player Modal - Optimized for Portrait & Landscape UX */}
+            {/* Video Player Modal */}
             {selectedVideo && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-0 sm:p-6 animate-fade-in">
-                    <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-2xl" onClick={() => setSelectedVideo(null)} />
-                    
-                    <div className="relative w-full max-w-5xl max-h-screen sm:max-h-[90vh] bg-black sm:rounded-[2.5rem] overflow-hidden shadow-2xl animate-scale-in flex flex-col">
-                        {/* Header/Close bar for mobile */}
-                        <div className="absolute top-0 left-0 right-0 z-50 p-4 flex justify-between items-start pointer-events-none">
-                            <div className="bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 pointer-events-auto sm:hidden">
-                                <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">{selectedVideo.category}</span>
-                            </div>
-                            <button 
-                                onClick={() => setSelectedVideo(null)}
-                                className="w-10 h-10 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors pointer-events-auto border border-white/10 shadow-lg"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-                            </button>
-                        </div>
-                        
-                        {/* Video Container */}
-                        <div className="w-full aspect-video bg-black flex items-center justify-center">
-                            <iframe
-                                src={`https://www.youtube.com/embed/${selectedVideo.videoId}?autoplay=1&rel=0&modestbranding=1&showinfo=0`}
-                                title={selectedVideo.title}
-                                className="w-full h-full border-none"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                            ></iframe>
-                        </div>
+                <div className="fixed inset-0 z-[150] flex animate-fade-in items-end justify-center bg-slate-900/55 p-0 sm:items-center sm:p-4">
+                    <div className="neo-brutal flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden sm:max-h-[88vh] sm:animate-scale-in animate-slide-up-sheet">
+                        <div className="nb-card flex max-h-[92vh] flex-col overflow-hidden bg-[#fffdf7] p-0 sm:max-h-[88vh]">
+                            <div className="nb-hazard shrink-0" aria-hidden="true" />
 
-                        {/* Metadata Section - Optimized for Portrait reading */}
-                        <div className="flex-1 overflow-y-auto p-6 sm:p-8 pb-24 sm:pb-12 bg-gradient-to-b from-slate-900 to-black text-white custom-scrollbar">
-                            <div className="max-w-3xl mx-auto space-y-4">
-                                <div className="space-y-2">
-                                    <span className="hidden sm:inline-block px-3 py-1 bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[10px] font-black uppercase tracking-[0.2em] rounded-full mb-2">
-                                        {selectedVideo.category}
-                                    </span>
-                                    <h2 className="text-lg sm:text-2xl font-black leading-tight tracking-tight text-white/95">
-                                        {selectedVideo.title}
-                                    </h2>
-                                </div>
-                                
+                            <div className="flex shrink-0 items-center justify-between gap-3 border-b-2 border-slate-900 bg-white px-4 py-3">
+                                <span className="nb-tag bg-orange-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-orange-900">
+                                    {selectedVideo.category}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedVideo(null)}
+                                    className="flex h-8 w-8 items-center justify-center border-2 border-slate-900 bg-white text-slate-600 shadow-[2px_2px_0_#0f172a] hover:bg-orange-50"
+                                    aria-label={language === 'en' ? 'Close' : 'বন্ধ করুন'}
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            <div className="aspect-video w-full shrink-0 border-b-2 border-slate-900 bg-black">
+                                <iframe
+                                    src={`https://www.youtube.com/embed/${selectedVideo.videoId}?autoplay=1&rel=0&modestbranding=1`}
+                                    title={selectedVideo.title}
+                                    className="h-full w-full border-none"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                />
+                            </div>
+
+                            <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+                                <h2 className={`mb-3 text-lg font-black leading-tight text-slate-900 sm:text-xl ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    {selectedVideo.title}
+                                </h2>
+
                                 {selectedVideo.remarks && (
-                                    <div className="pt-4 border-t border-white/5">
-                                        <p className="text-xs sm:text-sm text-slate-400 font-medium leading-relaxed italic">
-                                            "{selectedVideo.remarks}"
-                                        </p>
-                                    </div>
+                                    <p className={`mb-4 border-l-4 border-orange-500 bg-amber-50 px-3 py-2 text-sm font-semibold leading-relaxed text-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {selectedVideo.remarks}
+                                    </p>
                                 )}
 
-                                <div className="pt-6 flex items-center gap-4">
-                                    <button 
-                                        onClick={() => setSelectedVideo(null)}
-                                        className="px-6 py-2.5 bg-white text-black text-xs font-black uppercase tracking-widest rounded-xl hover:bg-orange-500 hover:text-white transition-all active:scale-95"
-                                    >
-                                        {t.back}
-                                    </button>
-                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedVideo(null)}
+                                    className="nb-btn-secondary px-5 py-2.5 text-xs font-black uppercase tracking-wider nb-mono"
+                                >
+                                    {t.back}
+                                </button>
                             </div>
                         </div>
                     </div>
