@@ -512,24 +512,24 @@ function SectionPointFullCard({
     readingComfort = false,
 }) {
     const shell = readingComfort
-        ? 'relative overflow-hidden rounded-xl sm:rounded-2xl border border-orange-200/50 dark:border-orange-900/40 bg-gradient-to-br from-orange-50/30 via-white to-white dark:from-slate-900/80 dark:via-slate-900/65 dark:to-slate-900/55 p-6 sm:p-9 md:p-10 shadow-none ring-0'
-        : 'relative overflow-hidden rounded-2xl sm:rounded-[2rem] border border-orange-100/80 dark:border-orange-900/35 bg-gradient-to-br from-orange-50/40 via-white/90 to-white/95 dark:from-slate-900/90 dark:via-slate-900/70 dark:to-slate-900/50 p-5 sm:p-8 shadow-sm ring-1 ring-orange-500/[0.06] dark:ring-orange-400/10 transition-shadow duration-300 hover:shadow-md';
+        ? 'relative overflow-hidden border-2 border-slate-900 bg-white p-6 sm:p-9 md:p-10 shadow-[3px_3px_0_#0f172a]'
+        : 'relative overflow-hidden border-2 border-slate-900 bg-white p-5 sm:p-8 shadow-[4px_4px_0_#0f172a] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5';
     const stackGap = readingComfort ? 'space-y-7 sm:space-y-10' : 'space-y-6 sm:space-y-8';
     const titleCls = readingComfort
-        ? `text-2xl sm:text-3xl md:text-[1.95rem] font-black text-slate-800 dark:text-slate-100 leading-snug ${language === 'bn' ? 'font-bengali leading-[1.45]' : ''}`
-        : `text-xl sm:text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-100 leading-snug ${language === 'bn' ? 'font-bengali leading-[1.5]' : ''}`;
+        ? `text-2xl sm:text-3xl md:text-[1.95rem] font-black text-slate-900 leading-snug ${language === 'bn' ? 'font-bengali leading-[1.45]' : ''}`
+        : `text-xl sm:text-2xl md:text-3xl font-black text-slate-900 leading-snug ${language === 'bn' ? 'font-bengali leading-[1.5]' : ''}`;
     const specCls = readingComfort
-        ? `text-lg sm:text-xl md:text-[1.35rem] text-slate-700 dark:text-slate-200 leading-[2.05] font-medium ${language === 'bn' ? 'font-bengali text-[1.2rem] sm:text-[1.35rem] leading-[2.15]' : ''}`
-        : `text-lg sm:text-xl text-slate-700 dark:text-slate-300 leading-[1.9] font-medium ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl leading-[2.1]' : ''}`;
-    const boxPad = readingComfort ? 'p-7 sm:p-9 rounded-2xl sm:rounded-[1.75rem]' : 'p-6 sm:p-8 rounded-2xl sm:rounded-[2rem]';
+        ? `text-lg sm:text-xl md:text-[1.35rem] text-slate-700 leading-[2.05] font-medium ${language === 'bn' ? 'font-bengali text-[1.2rem] sm:text-[1.35rem] leading-[2.15]' : ''}`
+        : `text-lg sm:text-xl text-slate-700 leading-[1.9] font-medium ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl leading-[2.1]' : ''}`;
+    const boxPad = readingComfort ? 'p-7 sm:p-9' : 'p-6 sm:p-8';
     const boxBody = readingComfort
-        ? `text-base sm:text-lg md:text-[1.2rem] text-slate-800 dark:text-slate-100 font-bold leading-[1.95] ${language === 'bn' ? 'font-bengali leading-[2.1]' : ''}`
-        : `text-base sm:text-lg md:text-xl text-slate-800 dark:text-slate-200 font-bold leading-[1.8] ${language === 'bn' ? 'font-bengali leading-[2.0]' : ''}`;
+        ? `text-base sm:text-lg md:text-[1.2rem] text-slate-900 font-bold leading-[1.95] ${language === 'bn' ? 'font-bengali leading-[2.1]' : ''}`
+        : `text-base sm:text-lg md:text-xl text-slate-900 font-bold leading-[1.8] ${language === 'bn' ? 'font-bengali leading-[2.0]' : ''}`;
 
     return (
         <div className={shell}>
             <div
-                className={`absolute left-0 top-0 bottom-0 w-[3px] sm:w-1 ${pIdx % 2 === 0 ? 'bg-gradient-to-b from-orange-400 to-amber-500' : 'bg-gradient-to-b from-amber-500 to-orange-400'} opacity-90 dark:opacity-75`}
+                className={`absolute left-0 top-0 bottom-0 w-1 ${pIdx % 2 === 0 ? 'bg-orange-500' : 'bg-amber-500'}`}
                 aria-hidden
             />
             <div className={`flex flex-col ${stackGap} pl-3 sm:pl-4`}>
@@ -561,9 +561,9 @@ function SectionPointFullCard({
 
                         <div className={`grid grid-cols-1 ${readingComfort ? 'gap-7 sm:gap-8' : 'gap-6'}`}>
                             {point.importance && (
-                                <div className={`bg-blue-500/5 dark:bg-blue-400/5 ${boxPad} border border-blue-500/10 backdrop-blur-sm`}>
+                                <div className={`border-2 border-slate-900 bg-blue-50 ${boxPad} shadow-[2px_2px_0_#0f172a]`}>
                                     <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-blue-500/60">{language === 'en' ? 'Strategy' : 'কৌশল'}</span>
+                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-blue-700 nb-mono">{language === 'en' ? 'Strategy' : 'কৌশল'}</span>
                                     </div>
                                     <p className={boxBody}>
                                         {renderTextWithImages(point.importance)}
@@ -571,9 +571,9 @@ function SectionPointFullCard({
                                 </div>
                             )}
                             {point.daily_check && (
-                                <div className={`bg-emerald-500/5 dark:bg-emerald-400/5 ${boxPad} border border-emerald-500/10 backdrop-blur-sm`}>
+                                <div className={`border-2 border-slate-900 bg-emerald-50 ${boxPad} shadow-[2px_2px_0_#0f172a]`}>
                                     <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-emerald-500/60">{language === 'en' ? 'Action Plan' : 'কর্মপরিকল্পনা'}</span>
+                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-emerald-700 nb-mono">{language === 'en' ? 'Action Plan' : 'কর্মপরিকল্পনা'}</span>
                                     </div>
                                     <p className={boxBody}>
                                         {renderTextWithImages(point.daily_check)}
@@ -585,11 +585,11 @@ function SectionPointFullCard({
                 </div>
 
                 {showDoneButton && (
-                    <div className="mt-2 border-t border-orange-200/60 pt-6 dark:border-orange-800/40">
+                    <div className="mt-2 border-t-2 border-slate-900 pt-6">
                         <button
                             type="button"
                             onClick={onStepDone}
-                            className="w-full rounded-2xl bg-orange-600 px-4 py-3.5 text-center text-sm font-black text-white shadow-lg shadow-orange-600/25 transition-transform hover:bg-orange-500 active:scale-[0.99] dark:bg-orange-500 dark:hover:bg-orange-400"
+                            className="nb-btn-primary w-full px-4 py-3.5 text-center text-sm font-black"
                         >
                             {language === 'en' ? 'I have read this — continue' : 'পড়ে ফেলেছি — এগিয়ে যান'}
                         </button>
@@ -893,6 +893,36 @@ export default function Training({
         });
         return () => cancelAnimationFrame(id);
     }, [trainingTab, trainingContent?.isSupplementary, trainingContent?.level_id]);
+
+    const isTrainingNeoBrutalSurface = !showOnboarding;
+
+    useEffect(() => {
+        if (!isTrainingNeoBrutalSurface) return undefined;
+
+        const html = document.documentElement;
+        html.classList.remove('dark');
+
+        let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        const previousThemeColor = metaThemeColor?.getAttribute('content') || null;
+        if (!metaThemeColor) {
+            metaThemeColor = document.createElement('meta');
+            metaThemeColor.setAttribute('name', 'theme-color');
+            document.head.appendChild(metaThemeColor);
+        }
+        metaThemeColor.setAttribute('content', '#fffdf7');
+
+        return () => {
+            const savedTheme = storageUtils.getItem('appTheme') || 'dark';
+            if (savedTheme === 'dark') {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+            if (previousThemeColor) {
+                metaThemeColor.setAttribute('content', previousThemeColor);
+            }
+        };
+    }, [isTrainingNeoBrutalSurface]);
 
     // Fetch user rank for leaderboard preview
     useEffect(() => {
@@ -2235,19 +2265,21 @@ export default function Training({
                     )}
                 </div>
             ) : !selectedChapter && !trainingContent ? (
-                <div className="animate-fade-in-up">
+                <div className="neo-brutal animate-fade-in-up text-slate-900">
+                    <div className="nb-hazard mb-4" aria-hidden="true" />
+
                     {/* Sticky tab row + hourly challenge entry (z-40). Hint stays below in normal flow. */}
-                    <div className="sticky top-4 z-40 mx-auto mb-6 flex w-full max-w-sm flex-col gap-1.5">
+                    <div className="sticky top-[6px] z-40 mx-auto mb-6 flex w-full max-w-sm flex-col gap-1.5">
                         <div
                             className={`flex w-full justify-center ${
                                 showLifeSkillsHint && trainingTab === 'core'
                                     ? prefersReducedMotion
-                                        ? 'rounded-full p-[2px] ring-2 ring-indigo-500/55 dark:ring-indigo-400/45'
-                                        : 'animate-lifeskills-hint-glow rounded-full p-[2px] ring-2 ring-indigo-500/55 dark:ring-indigo-400/45'
+                                        ? 'p-[2px] ring-2 ring-indigo-600'
+                                        : 'animate-lifeskills-hint-glow p-[2px] ring-2 ring-indigo-600'
                                     : ''
                             }`}
                         >
-                            <div className="relative flex w-full rounded-full border border-slate-200/50 bg-white/80 p-1.5 shadow-lg backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/80">
+                            <div className="relative flex w-full border-2 border-slate-900 bg-white p-1 shadow-[3px_3px_0_#0f172a]">
                                 {showLifeSkillsHint && trainingTab === 'core' && (
                                     <span
                                         className="pointer-events-none absolute right-2 top-0 z-20 -translate-y-1/2 rounded-full bg-indigo-600 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-md dark:bg-indigo-500"
@@ -2267,12 +2299,12 @@ export default function Training({
                                     </span>
                                 )}
                                 <div
-                                    className={`absolute inset-y-1.5 w-[calc(50%-6px)] rounded-full bg-orange-600 shadow-sm transition-all duration-300 ease-out ${trainingTab === 'core' ? 'left-1.5' : 'left-[calc(50%+1.5px)]'}`}
+                                    className={`absolute inset-y-1 w-[calc(50%-4px)] bg-orange-500 border-2 border-slate-900 transition-all duration-300 ease-out ${trainingTab === 'core' ? 'left-1' : 'left-[calc(50%+2px)]'}`}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setTrainingTab('core')}
-                                    className={`relative z-10 w-1/2 rounded-full py-2.5 text-xs font-black uppercase tracking-wider transition-colors duration-300 ${trainingTab === 'core' ? 'text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                                    className={`relative z-10 w-1/2 py-2.5 text-xs font-black uppercase tracking-wider nb-mono transition-colors duration-300 ${trainingTab === 'core' ? 'text-white' : 'text-slate-700 hover:text-slate-900'}`}
                                 >
                                     {language === 'en' ? 'Training' : 'প্রশিক্ষণ'}
                                 </button>
@@ -2280,7 +2312,7 @@ export default function Training({
                                     type="button"
                                     onClick={() => setTrainingTab('supplementary')}
                                     aria-describedby={showLifeSkillsHint && trainingTab === 'core' ? 'lifeskills-hint-copy' : undefined}
-                                    className={`relative z-10 w-1/2 rounded-full py-2.5 text-xs font-black uppercase tracking-wider transition-colors duration-300 ${trainingTab === 'supplementary' ? 'text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                                    className={`relative z-10 w-1/2 py-2.5 text-xs font-black uppercase tracking-wider nb-mono transition-colors duration-300 ${trainingTab === 'supplementary' ? 'text-white' : 'text-slate-700 hover:text-slate-900'}`}
                                 >
                                     {language === 'en' ? 'Life Skill ✨' : 'লাইফ স্কিল ✨'}
                                 </button>
@@ -2291,7 +2323,7 @@ export default function Training({
                                 <button
                                     type="button"
                                     onClick={handleHourlyChallengeClick}
-                                    className="rounded-2xl p-0.5 transition-transform duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:focus-visible:ring-offset-slate-900"
+                                    className="border-2 border-slate-900 bg-white p-1 shadow-[2px_2px_0_#0f172a] transition-transform duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffdf7]"
                                     title={language === 'en' ? 'Hourly Challenge' : 'প্রতি ঘণ্টার চ্যালেঞ্জ'}
                                     aria-label={language === 'en' ? 'Hourly Challenge' : 'প্রতি ঘণ্টার চ্যালেঞ্জ'}
                                 >
@@ -2316,19 +2348,19 @@ export default function Training({
                         )}
                     </div>
                     {showLifeSkillsHint && trainingTab === 'core' && (
-                        <div className="mx-auto mb-6 w-full max-w-sm rounded-xl border border-slate-200/90 bg-slate-50/95 px-3 py-2.5 shadow-sm dark:border-slate-700/90 dark:bg-slate-900/85">
+                        <div className="mx-auto mb-6 w-full max-w-sm nb-card border-dashed bg-indigo-50 px-3 py-2.5">
                             <p
                                 id="lifeskills-hint-copy"
-                                className={`text-center text-[11px] font-medium leading-snug text-slate-600 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                className={`text-center text-[11px] font-semibold leading-snug text-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}
                             >
                                 {language === 'en' ? (
                                     <>
                                         Short modules next to training—tap{' '}
-                                        <span className="whitespace-nowrap font-bold text-indigo-700 dark:text-indigo-300">Life Skill</span>.
+                                        <span className="whitespace-nowrap font-bold text-indigo-700">Life Skill</span>.
                                     </>
                                 ) : (
                                     <>
-                                        <span className="font-bold text-indigo-700 dark:text-indigo-300">লাইফ স্কিল</span>
+                                        <span className="font-bold text-indigo-700">লাইফ স্কিল</span>
                                         —প্রশিক্ষণের পাশে ছোট মডিউল; ডান দিকের ট্যাবে।
                                     </>
                                 )}
@@ -2337,7 +2369,7 @@ export default function Training({
                                 <button
                                     type="button"
                                     onClick={dismissLifeSkillsHint}
-                                    className={`text-[11px] font-bold text-indigo-600 underline decoration-indigo-400/50 underline-offset-2 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                    className={`text-[11px] font-bold text-indigo-700 underline decoration-indigo-500 underline-offset-2 transition-colors hover:text-indigo-900 nb-mono ${language === 'bn' ? 'font-bengali' : ''}`}
                                 >
                                     {language === 'en' ? 'Got it' : 'বুঝেছি'}
                                 </button>
@@ -2358,7 +2390,7 @@ export default function Training({
                                 {/* Header */}
                                 <div className="mb-12 px-2 pt-4 md:mb-16">
                                     <h1
-                                        className={`text-center text-3xl font-black leading-tight tracking-tight text-slate-900 dark:text-white sm:text-4xl md:text-5xl ${language === 'bn' ? 'font-bengali' : ''}`}
+                                        className={`text-center text-2xl font-black leading-tight tracking-tight text-slate-900 sm:text-4xl md:text-5xl ${language === 'bn' ? 'font-bengali' : ''}`}
                                     >
                                         {language === 'en' ? 'Grow your professional knowledge' : 'পেশাগত জ্ঞান বাড়ান'}
                                     </h1>
@@ -2392,17 +2424,17 @@ export default function Training({
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowLessonIndex(true)}
-                                                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-100/90 px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest text-slate-600 transition-all hover:bg-slate-200 active:scale-95 dark:border-slate-600 dark:bg-slate-800/90 dark:text-slate-300 dark:hover:bg-slate-700"
+                                                    className="inline-flex items-center gap-2 nb-btn-secondary px-4 py-2.5 text-[11px] font-black uppercase tracking-widest nb-mono"
                                                 >
                                                     <span aria-hidden>📑</span>
                                                     {language === 'en' ? 'Index' : 'সূচীপত্র'}
                                                 </button>
                                                 {totalLessons > 0 ? (
                                                     <span
-                                                        className={`inline-flex items-center rounded-xl border border-orange-200/80 bg-orange-50/90 px-4 py-2.5 text-sm font-black tabular-nums text-orange-800 shadow-sm dark:border-orange-900/50 dark:bg-orange-950/35 dark:text-orange-100 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                        className={`nb-score-pill inline-flex items-center px-4 py-2.5 text-sm font-black tabular-nums ${language === 'bn' ? 'font-bengali' : ''}`}
                                                     >
                                                         {doneStr} / {totalStr}{' '}
-                                                        <span className="ml-1 text-[10px] font-black uppercase tracking-wider text-orange-600/90 dark:text-orange-300/90">
+                                                        <span className="ml-1 text-[10px] font-black uppercase tracking-wider nb-mono">
                                                             {language === 'en' ? 'steps' : 'ধাপ'}
                                                         </span>
                                                     </span>
@@ -2447,7 +2479,7 @@ export default function Training({
                                             strokeWidth="10"
                                             strokeLinecap="round"
                                             fill="none"
-                                            className="text-slate-100 dark:text-slate-800/50"
+                                            className="text-slate-200"
                                         />
 
                                         {/* Dynamic Progress Path */}
@@ -2490,9 +2522,9 @@ export default function Training({
                                                 const milestoneUnlocked = firstLesson ? firstLesson.isUnlocked : true;
                                                 return (
                                                     <div key={`milestone-${item.chapter.number}`} className="absolute transition-all duration-700 z-10" style={{ left: `${xPos}%`, top: yPos, transform: 'translate(-50%, -50%)' }}>
-                                                        <div className={`p-2 px-5 rounded-2xl border-2 backdrop-blur-xl flex flex-col items-center shadow-xl transition-all ${milestoneUnlocked ? `${item.badge.color} scale-105 border-white/80 dark:border-slate-700 animate-node-glow` : 'bg-slate-200/50 dark:bg-slate-800/80 border-slate-300 dark:border-slate-700 grayscale opacity-80'}`}>
+                                                        <div className={`flex flex-col items-center border-2 border-slate-900 px-5 py-2 shadow-[3px_3px_0_#0f172a] transition-all ${milestoneUnlocked ? `${item.badge.color} scale-105 animate-node-glow` : 'border-slate-400 bg-slate-200 grayscale opacity-80'}`}>
                                                             <div className="text-center">
-                                                                <p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-60 mb-0">{language === 'en' ? 'Rank' : 'পদমর্যাদা'}</p>
+                                                                <p className="mb-0 text-[8px] font-black uppercase tracking-[0.2em] opacity-70 nb-mono">{language === 'en' ? 'Rank' : 'পদমর্যাদা'}</p>
                                                                 <h3 className={`font-black whitespace-nowrap ${language === 'bn' ? 'font-bengali text-base' : 'text-xs'}`}>{language === 'en' ? item.badge.en : item.badge.bn}</h3>
                                                             </div>
                                                         </div>
@@ -2519,11 +2551,11 @@ export default function Training({
                                                             });
                                                         }
                                                     }}
-                                                    className={`absolute w-16 h-16 sm:w-20 sm:h-20 rounded-3xl flex flex-col items-center justify-center cursor-pointer transition-all duration-500 z-20 group ${item.isCompleted ? 'bg-gradient-to-br from-emerald-500 to-teal-600 border-4 border-emerald-100 dark:border-emerald-500/30 text-white shadow-xl hover:scale-110' : item.isUnlocked ? `${item.badge.color} border-4 border-white dark:border-slate-700 text-slate-900 dark:text-white shadow-xl hover:scale-110 active:scale-95` : 'bg-slate-200/50 dark:bg-slate-800/80 border-4 border-slate-300/50 dark:border-slate-700/50 text-slate-400 dark:text-slate-500 shadow-inner grayscale cursor-not-allowed opacity-80'} ${isNext ? 'animate-float-y ring-4 ring-orange-500/30' : ''}`}
+                                                    className={`group absolute z-20 flex h-16 w-16 cursor-pointer flex-col items-center justify-center border-2 border-slate-900 transition-all duration-500 sm:h-20 sm:w-20 ${item.isCompleted ? 'bg-emerald-400 text-slate-900 shadow-[3px_3px_0_#0f172a] hover:-translate-x-0.5 hover:-translate-y-0.5' : item.isUnlocked ? `${item.badge.color} text-slate-900 shadow-[3px_3px_0_#0f172a] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5` : 'cursor-not-allowed border-slate-400 bg-slate-200 text-slate-500 opacity-80 shadow-inner grayscale'} ${isNext ? 'animate-float-y ring-2 ring-orange-500 ring-offset-2 ring-offset-[#fffdf7]' : ''}`}
                                                     style={{ left: `${xPos}%`, top: yPos, transform: isNext ? undefined : 'translate(-50%, -50%)' }}
                                                 >
                                                     <span className={`text-base sm:text-lg font-black ${language === 'bn' ? 'font-bengali' : ''}`}>{toBengaliNumber(item.id, language)}</span>
-                                                    <div className={`absolute top-full mt-3 w-32 px-3 py-2 bg-slate-900/90 backdrop-blur-md rounded-xl text-[10px] text-white font-bold text-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl z-50 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    <div className={`pointer-events-none absolute top-full z-50 mt-3 w-32 border-2 border-slate-900 bg-slate-900 px-3 py-2 text-center text-[10px] font-bold text-white opacity-0 shadow-[2px_2px_0_#0f172a] transition-opacity group-hover:opacity-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                         {item.isCompleted ? (
                                                             language === 'en' ? 'Read Again' : 'আবার পড়ুন'
                                                         ) : item.isUnlocked ? (
@@ -2533,7 +2565,7 @@ export default function Training({
                                                         )}
                                                     </div>
                                                     {item.isCompleted && (
-                                                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white shadow-lg text-white">
+                                                        <div className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center border-2 border-slate-900 bg-emerald-500 text-white shadow-[2px_2px_0_#0f172a]">
                                                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg>
                                                         </div>
                                                     )}
@@ -2541,9 +2573,9 @@ export default function Training({
                                                     {/* Floating Profile & Score Bubble for Active Lesson */}
                                                     {isNext && (
                                                         <div 
-                                                            className={`absolute top-1/2 -translate-y-1/2 ${xPos > 50 ? 'right-[120%] mr-2' : 'left-[120%] ml-2'} w-max flex items-center gap-2.5 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl px-3 py-2 rounded-2xl shadow-xl shadow-orange-500/15 border border-orange-500/30 animate-in fade-in zoom-in-95 duration-500 pointer-events-none z-50`}
+                                                            className={`pointer-events-none absolute top-1/2 z-50 flex w-max -translate-y-1/2 animate-in items-center gap-2.5 border-2 border-slate-900 bg-white px-3 py-2 shadow-[3px_3px_0_#0f172a] fade-in zoom-in-95 duration-500 ${xPos > 50 ? 'right-[120%] mr-2' : 'left-[120%] ml-2'}`}
                                                         >
-                                                            <div className="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 shrink-0 overflow-hidden shadow-inner border-2 border-white dark:border-slate-600">
+                                                            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden border-2 border-slate-900 bg-slate-200 text-slate-500 shadow-inner">
                                                                 {profile?.avatar_url ? (
                                                                     <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                                                                 ) : (
@@ -2553,15 +2585,12 @@ export default function Training({
                                                             <div className="flex flex-col items-start pr-1">
                                                                 <div className="flex items-center gap-1.5">
                                                                     <span className="text-sm drop-shadow-sm leading-none">🏆</span>
-                                                                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 leading-none tracking-tight">
+                                                                    <span className="text-sm font-black leading-none tracking-tight text-slate-900">
                                                                         {(userRank?.score || profile?.points || 0).toLocaleString('en-US')}
                                                                     </span>
                                                                 </div>
                                                             </div>
 
-                                                            {/* Arrow Pointer */}
-                                                            <div className={`absolute top-1/2 -translate-y-1/2 ${xPos > 50 ? '-right-[5.5px] border-y-[6px] border-y-transparent border-l-[6px] border-l-orange-500/30' : '-left-[5.5px] border-y-[6px] border-y-transparent border-r-[6px] border-r-orange-500/30'}`}></div>
-                                                            <div className={`absolute top-1/2 -translate-y-1/2 ${xPos > 50 ? '-right-[4px] border-y-[5px] border-y-transparent border-l-[5px] border-l-white dark:border-l-slate-800' : '-left-[4px] border-y-[5px] border-y-transparent border-r-[5px] border-r-white dark:border-r-slate-800'}`}></div>
                                                         </div>
                                                     )}
                                                 </div>
@@ -2574,29 +2603,29 @@ export default function Training({
                     })()}
 
                     {/* Video Library CTA */}
-                    <div className="mt-12 group">
+                    <div className="group mt-12">
                         <button
+                            type="button"
                             onClick={() => setCurrentView('video-guide')}
-                            className="w-full relative overflow-hidden bg-gradient-to-r from-orange-600 to-orange-500 rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.01]"
+                            className="nb-btn-primary w-full p-5 text-left transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 sm:p-6 lg:p-8"
                         >
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-2xl group-hover:bg-white/20 transition-colors"></div>
-                            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                                <div className="flex items-center gap-6 text-center md:text-left">
-                                    <div className="w-16 h-16 lg:w-20 lg:h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-4xl lg:text-5xl shadow-inner">
+                            <div className="flex flex-col items-center justify-between gap-5 md:flex-row md:gap-6">
+                                <div className="flex items-center gap-5 text-center md:text-left">
+                                    <div className="nb-icon-badge flex h-14 w-14 shrink-0 items-center justify-center bg-white/25 text-3xl lg:h-16 lg:w-16 lg:text-4xl">
                                         📺
                                     </div>
                                     <div>
-                                        <h2 className={`text-2xl lg:text-3xl font-black mb-1 lg:mb-2 tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        <h2 className={`mb-1 text-xl font-black tracking-tight lg:mb-2 lg:text-3xl ${language === 'bn' ? 'font-bengali' : ''}`}>
                                             {language === 'en' ? 'Video Learning Library' : 'ভিডিও লার্নিং লাইব্রেরি'}
                                         </h2>
-                                        <p className={`text-orange-50 text-sm lg:text-base font-medium opacity-90 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        <p className={`text-sm font-semibold text-orange-950/80 lg:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
                                             {language === 'en' ? 'Explore topic-wise safety guides and training videos' : 'বিষয়ভিত্তিক নিরাপত্তা গাইড এবং প্রশিক্ষণ ভিডিও দেখুন'}
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-xl font-black uppercase tracking-wider text-sm transition-all border border-white/30 shadow-lg">
+                                <div className="nb-btn-secondary inline-flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-wider nb-mono">
                                     <span>{language === 'en' ? 'Watch Now' : 'এখনই দেখুন'}</span>
-                                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                     </svg>
                                 </div>
@@ -2605,32 +2634,32 @@ export default function Training({
                     </div>
 
                     {/* FAQ CTA Card */}
-                    <div className="mt-8 group">
+                    <div className="group mt-8">
                         <button
+                            type="button"
                             onClick={() => {
                                 const faq = trainingChapters.find(c => c.number === 10);
                                 if (faq) handleChapterClick(faq);
                             }}
-                            className="w-full relative overflow-hidden bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.01]"
+                            className="nb-btn-indigo w-full p-5 text-left transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 sm:p-6 lg:p-8"
                         >
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-2xl group-hover:bg-white/20 transition-colors"></div>
-                            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                                <div className="flex items-center gap-6 text-center md:text-left">
-                                    <div className="w-16 h-16 lg:w-20 lg:h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-4xl lg:text-5xl shadow-inner">
+                            <div className="flex flex-col items-center justify-between gap-5 md:flex-row md:gap-6">
+                                <div className="flex items-center gap-5 text-center md:text-left">
+                                    <div className="nb-icon-badge flex h-14 w-14 shrink-0 items-center justify-center bg-white/25 text-3xl lg:h-16 lg:w-16 lg:text-4xl">
                                         💡
                                     </div>
                                     <div>
-                                        <h2 className={`text-2xl lg:text-3xl font-black mb-1 lg:mb-2 tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        <h2 className={`mb-1 text-xl font-black tracking-tight lg:mb-2 lg:text-3xl ${language === 'bn' ? 'font-bengali' : ''}`}>
                                             {language === 'en' ? 'Quick Help & FAQ' : 'কি, কেন?, কিভাবে?'}
                                         </h2>
-                                        <p className={`text-violet-50 text-sm lg:text-base font-medium opacity-90 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        <p className={`text-sm font-semibold text-indigo-950/80 lg:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
                                             {language === 'en' ? 'Get answers to common safety questions and procedures' : 'আপনার মনে আসা সব প্রশ্নের সহজ সমাধান ও গাইড'}
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-xl font-black uppercase tracking-wider text-sm transition-all border border-white/30 shadow-lg">
+                                <div className="nb-btn-secondary inline-flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-wider nb-mono">
                                     <span>{language === 'en' ? 'Search Answers' : 'উত্তর খুঁজুন'}</span>
-                                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                     </svg>
                                 </div>
@@ -2640,28 +2669,28 @@ export default function Training({
 
 
                         {/* Professional Branding Footer */}
-                        <div className="mt-20 mb-32 text-center relative z-10 animate-fade-in-up">
+                        <div className="relative z-10 mb-32 mt-20 animate-fade-in-up text-center">
                             <div className="flex flex-col items-center gap-4">
-                                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-slate-100 dark:bg-white/5 rounded-full border border-slate-200 dark:border-white/10">
-                                    <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Official Platform</span>
+                                <div className="nb-tag inline-flex items-center gap-2 bg-white px-4 py-1.5">
+                                    <span className="h-2 w-2 animate-pulse bg-orange-500" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] nb-mono">Official Platform</span>
                                 </div>
                                 <a
                                     href={WEBSITE_URL}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-2xl font-black text-slate-900 dark:text-white tracking-tight hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
+                                    className="text-2xl font-black tracking-tight text-slate-900 transition-colors hover:text-orange-600"
                                 >
                                     {WEBSITE_URL.replace('https://', '')}
                                 </a>
-                                <div className="flex flex-col gap-1 items-center">
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">For support and inquiries:</p>
-                                    <a href={`mailto:${SUPPORT_EMAIL}`} className="text-sm font-bold text-orange-600 dark:text-orange-400 hover:text-orange-500 transition-colors">
+                                <div className="flex flex-col items-center gap-1">
+                                    <p className="text-xs font-medium text-slate-600">For support and inquiries:</p>
+                                    <a href={`mailto:${SUPPORT_EMAIL}`} className="text-sm font-bold text-orange-600 transition-colors hover:text-orange-700">
                                         {SUPPORT_EMAIL}
                                     </a>
                                 </div>
-                                <div className="mt-4 w-40 h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent"></div>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                <div className="mt-4 h-0.5 w-40 bg-slate-900" />
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 nb-mono">
                                     {APP_NAME} v{CURRENT_APP_VERSION}
                                 </p>
                             </div>
@@ -2671,12 +2700,12 @@ export default function Training({
                         <>
                             <header className="mx-auto mb-8 max-w-2xl px-4 pt-1 text-center sm:mb-10 sm:pt-2 md:mb-12">
                                 <h1
-                                    className={`text-[2.25rem] font-black leading-[1.06] tracking-tight text-slate-900 dark:text-white sm:text-5xl md:text-6xl ${language === 'bn' ? 'font-bengali' : ''}`}
+                                    className={`text-[2.25rem] font-black leading-[1.06] tracking-tight text-slate-900 sm:text-5xl md:text-6xl ${language === 'bn' ? 'font-bengali' : ''}`}
                                 >
                                     {language === 'en' ? 'Life Skill' : 'লাইফ স্কিল'}
                                 </h1>
                                 <p
-                                    className={`mx-auto mt-3 max-w-md text-base font-bold leading-snug text-slate-500 dark:text-slate-400 sm:mt-4 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}
+                                    className={`mx-auto mt-3 max-w-md text-base font-bold leading-snug text-slate-600 sm:mt-4 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}
                                 >
                                     {language === 'en'
                                         ? 'Without essential knowledge beyond the job, you can never become a truly smart professional.'
@@ -2692,10 +2721,8 @@ export default function Training({
                                         key={module.id}
                                         type="button"
                                         onClick={() => openLifeSkillModule(module, moduleIndex)}
-                                        className={`group relative aspect-[3/4] w-full max-h-[280px] overflow-hidden rounded-2xl text-left shadow-md ring-1 ring-black/5 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:ring-white/10 dark:focus-visible:ring-offset-slate-950 sm:max-h-[320px] sm:rounded-3xl md:aspect-[4/5] md:max-h-[360px] ${
-                                            isCompleted
-                                                ? 'ring-emerald-500/40'
-                                                : 'hover:shadow-xl hover:ring-indigo-400/30 dark:hover:ring-indigo-500/25'
+                                        className={`group relative aspect-[3/4] w-full max-h-[280px] overflow-hidden border-2 border-slate-900 bg-white text-left shadow-[4px_4px_0_#0f172a] transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffdf7] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 sm:max-h-[320px] md:aspect-[4/5] md:max-h-[360px] ${
+                                            isCompleted ? 'ring-2 ring-emerald-500 ring-offset-2 ring-offset-[#fffdf7]' : ''
                                         }`}
                                     >
                                         {/* Full-bleed media */}
@@ -2744,7 +2771,7 @@ export default function Training({
 
                                         {isCompleted && (
                                             <div
-                                                className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-black/25 ring-2 ring-white/90 sm:right-3 sm:top-3 sm:h-9 sm:w-9"
+                                                className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center border-2 border-slate-900 bg-emerald-500 text-white shadow-[2px_2px_0_#0f172a] sm:right-3 sm:top-3 sm:h-9 sm:w-9"
                                                 title={language === 'en' ? 'Completed' : 'সম্পন্ন'}
                                             >
                                                 <span className="sr-only">
@@ -2764,21 +2791,22 @@ export default function Training({
                 </div>
             ) : selectedLesson ? (
                 /* Full Screen Lesson Preview Overlay */
-                <div className="fixed inset-0 z-[200] flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 animate-slide-up-sheet">
-                    <div className={`absolute inset-0 ${selectedLesson.badge?.color || 'bg-orange-500'} opacity-[0.08] dark:opacity-[0.16]`} />
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/85 via-white/70 to-white/90 dark:from-slate-950/90 dark:via-slate-950/80 dark:to-slate-950/95 backdrop-blur-2xl" />
+                <div className="neo-brutal fixed inset-0 z-[200] flex animate-slide-up-sheet flex-col overflow-hidden bg-[#fffdf7]">
+                    <div className={`absolute inset-0 ${selectedLesson.badge?.color || 'bg-orange-500'} opacity-[0.06]`} />
 
                     <div className="relative z-10 flex h-full flex-col safe-area-inset-top safe-area-inset-bottom">
-                        <header className="sticky top-0 z-20 border-b border-black/5 dark:border-white/5 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl">
-                            <div className="relative flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
+                        <header className="sticky top-0 z-20 border-b-2 border-slate-900 bg-white">
+                            <div className="nb-hazard" aria-hidden="true" />
+                            <div className="relative flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
                                 <div className="relative z-10">
                                     <button
+                                        type="button"
                                         onClick={() => {
                                             stopChapterAudio();
                                             setSelectedLesson(null);
                                             setSelectedChapter(null);
                                         }}
-                                        className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                        className="nb-btn-secondary inline-flex items-center gap-2 px-3 py-2 text-sm font-bold"
                                     >
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M15 19l-7-7 7-7" />
@@ -2788,7 +2816,7 @@ export default function Training({
                                 </div>
 
                                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-16 sm:px-24">
-                                    <h1 className={`truncate text-base sm:text-lg font-black text-slate-900 dark:text-white ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <h1 className={`truncate text-base font-black text-slate-900 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {selectedLesson.chapter?.title || selectedLesson.level_title}
                                     </h1>
                                 </div>
@@ -2804,30 +2832,30 @@ export default function Training({
                                 <div className="space-y-8 sm:space-y-10">
                                     <div className="flex justify-center">
                                         <div className="relative">
-                                            <div className={`w-22 h-22 sm:w-28 sm:h-28 rounded-[2rem] ${selectedLesson.badge?.color || 'bg-orange-500'} flex items-center justify-center text-4xl sm:text-5xl text-white shadow-2xl`}>
+                                            <div className={`flex h-22 w-22 items-center justify-center border-2 border-slate-900 text-4xl text-slate-900 shadow-[4px_4px_0_#0f172a] sm:h-28 sm:w-28 sm:text-5xl ${selectedLesson.badge?.color || 'bg-orange-400'}`}>
                                                 📖
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="space-y-4 text-center">
-                                        <div className="flex items-center justify-center gap-2 text-slate-400 dark:text-slate-500">
-                                            <div className="h-px w-10 bg-slate-200 dark:bg-slate-800" />
-                                            <span className={`text-xs font-black uppercase tracking-[0.28em] ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
+                                        <div className="flex items-center justify-center gap-2 text-slate-500">
+                                            <div className="h-0.5 w-10 bg-slate-900" />
+                                            <span className={`text-xs font-black uppercase tracking-[0.28em] nb-mono ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
                                                 {language === 'en' ? 'Chapter Status' : 'পদমর্যাদা'}
                                             </span>
-                                            <div className="h-px w-10 bg-slate-200 dark:bg-slate-800" />
+                                            <div className="h-0.5 w-10 bg-slate-900" />
                                         </div>
-                                        <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white leading-[1.15] tracking-tight ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
+                                        <h2 className={`text-2xl font-black leading-[1.15] tracking-tight text-slate-900 sm:text-4xl lg:text-5xl ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
                                             {language === 'en' ? selectedLesson.badge?.en : selectedLesson.badge?.bn}
                                         </h2>
                                     </div>
 
-                                    <div className="mx-auto max-w-2xl rounded-[2rem] border border-slate-200/70 dark:border-slate-800 bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl px-5 sm:px-8 py-6 sm:py-8 shadow-xl">
-                                        <p className={`text-sm sm:text-base font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500 text-center ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
+                                    <div className="nb-card mx-auto max-w-2xl bg-white px-5 py-6 sm:px-8 sm:py-8">
+                                        <p className={`text-center text-sm font-black uppercase tracking-[0.3em] text-slate-500 nb-mono sm:text-base ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
                                             {language === 'en' ? 'Lesson' : 'পাঠ'} {toBengaliNumber(selectedLesson.level_id || `${selectedLesson.chapterNum}.${selectedLesson.subchapterNum}`, language)}
                                         </p>
-                                        <p className={`mt-3 text-2xl sm:text-4xl font-black text-center text-slate-900 dark:text-white leading-tight ${language === 'bn' ? 'font-bengali leading-[1.45]' : ''}`}>
+                                        <p className={`mt-3 text-center text-2xl font-black leading-tight text-slate-900 sm:text-4xl ${language === 'bn' ? 'font-bengali leading-[1.45]' : ''}`}>
                                             {selectedLesson.level_title}
                                         </p>
                                     </div>
@@ -2835,6 +2863,7 @@ export default function Training({
 
                                 <div className="pt-8 sm:pt-10">
                                     <button
+                                        type="button"
                                         onClick={() => {
                                             stopChapterAudio();
                                             setTrainingContent(selectedLesson);
@@ -2842,7 +2871,7 @@ export default function Training({
                                             setIsJournalMode(true);
                                             setSelectedLesson(null);
                                         }}
-                                        className="w-full sm:w-auto sm:min-w-[280px] mx-auto flex items-center justify-center gap-3 rounded-[1.75rem] bg-slate-900 dark:bg-white px-6 sm:px-8 py-4 sm:py-5 text-white dark:text-slate-900 shadow-2xl hover:scale-[1.01] active:scale-95 transition-all duration-300"
+                                        className="nb-btn-primary mx-auto flex w-full items-center justify-center gap-3 px-6 py-4 sm:w-auto sm:min-w-[280px] sm:px-8 sm:py-5"
                                     >
                                         <span className="text-base sm:text-lg font-black">
                                             {language === 'en' ? 'Start Reading' : 'পড়া শুরু করুন'}
@@ -2858,35 +2887,31 @@ export default function Training({
                 </div>
             ) : selectedChapter && !trainingContent ? (
                 /* Subchapter List View or FAQ View */
-                <div>
+                <div className="neo-brutal text-slate-900">
                     <button
+                        type="button"
                         onClick={() => setSelectedChapter(null)}
-                        className="mb-6 flex items-center gap-2 text-orange-600 hover:text-orange-700 font-bold"
+                        className="nb-btn-secondary mb-6 inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold"
                     >
                         ← {language === 'en' ? 'Back to Chapters' : 'অধ্যায়ে ফিরে যান'}
                     </button>
 
                     {selectedChapter.isFAQ ? (
                         /* Redesigned FAQ View */
-                        <div className="space-y-6 animate-fade-in">
-                            <div className="bg-gradient-to-br from-violet-100/40 via-violet-50/20 to-fuchsia-100/30 dark:from-violet-900/40 dark:via-slate-800/40 dark:to-fuchsia-900/30 p-6 sm:p-8 rounded-[2.5rem] mb-8 border border-violet-200/50 dark:border-violet-700/50 backdrop-blur-3xl shadow-2xl relative overflow-hidden">
-                                {/* Decorative elements */}
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-violet-400/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                                <div className="absolute bottom-0 left-0 w-48 h-48 bg-fuchsia-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
-
+                        <div className="animate-fade-in space-y-6">
+                            <div className="nb-card relative mb-8 overflow-hidden bg-indigo-50 p-6 sm:p-8">
                                 <div className="relative z-10">
-                                    <h2 className="text-3xl font-black text-slate-800 dark:text-violet-100 mb-2 tracking-tight">
+                                    <h2 className="mb-2 text-3xl font-black tracking-tight text-slate-900">
                                         {selectedChapter.content.title}
                                     </h2>
-                                    <p className="text-slate-500 dark:text-violet-300/70 mb-8 font-bold">
+                                    <p className="mb-8 font-bold text-slate-600">
                                         {selectedChapter.content.subtitle}
                                     </p>
 
                                     {/* Modernized Search Input */}
                                     <div className="relative group max-w-2xl">
-                                        <div className="absolute inset-0 bg-violet-500/10 blur-xl group-focus-within:bg-violet-500/20 transition-all rounded-2xl"></div>
-                                        <div className="relative flex items-center bg-white dark:bg-slate-900/80 backdrop-blur-xl border-2 border-slate-100 dark:border-violet-900/30 rounded-2xl overflow-hidden transition-all group-focus-within:border-violet-500 group-focus-within:ring-4 ring-violet-500/10">
-                                            <div className="pl-5 text-violet-400">
+                                        <div className="relative flex items-center overflow-hidden border-2 border-slate-900 bg-white shadow-[3px_3px_0_#0f172a] transition-all group-focus-within:shadow-[4px_4px_0_#0f172a]">
+                                            <div className="pl-5 text-indigo-600">
                                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                                 </svg>
@@ -2896,7 +2921,7 @@ export default function Training({
                                                 placeholder={language === 'en' ? 'Search topics, questions, or tags...' : 'বিষয়, প্রশ্ন বা ট্যাগ খুঁজুন...'}
                                                 value={faqSearchQuery}
                                                 onChange={(e) => setFaqSearchQuery(e.target.value)}
-                                                className={`w-full px-4 py-4 bg-transparent text-slate-900 dark:text-slate-100 font-bold outline-none placeholder:text-slate-300 dark:placeholder:text-slate-600 ${language === 'bn' ? 'font-bengali text-lg' : ''}`}
+                                                className={`nb-input w-full border-0 bg-transparent px-4 py-4 font-bold shadow-none outline-none ${language === 'bn' ? 'font-bengali text-lg' : ''}`}
                                             />
                                             {faqSearchQuery && (
                                                 <button
@@ -2915,12 +2940,13 @@ export default function Training({
                                     <div className="mt-8">
                                         <div className="flex items-center justify-between gap-4 mb-4">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-[10px] font-black text-violet-500 dark:text-violet-400 uppercase tracking-widest pl-2">Popular Keywords</span>
-                                                <div className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse"></div>
+                                                <span className="pl-2 text-[10px] font-black uppercase tracking-widest text-indigo-700 nb-mono">Popular Keywords</span>
+                                                <div className="h-2 w-2 animate-pulse bg-indigo-500" />
                                             </div>
                                             <button
+                                                type="button"
                                                 onClick={() => setIsFaqTagsExpanded(!isFaqTagsExpanded)}
-                                                className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-violet-50 dark:bg-violet-900/30 text-[10px] font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest hover:bg-violet-600 hover:text-white transition-all border border-violet-100 dark:border-violet-800"
+                                                className="nb-btn-secondary flex items-center gap-1.5 px-3 py-1 text-[10px] font-black uppercase tracking-widest nb-mono"
                                             >
                                                 {isFaqTagsExpanded ? (
                                                     <><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 15l7-7 7 7" /></svg> Collapse</>
@@ -2930,7 +2956,7 @@ export default function Training({
                                             </button>
                                         </div>
 
-                                        <div className={`relative ${!isFaqTagsExpanded ? 'after:absolute after:top-0 after:right-0 after:h-full after:w-20 after:bg-gradient-to-l after:from-violet-50/50 dark:after:from-slate-800/50 after:to-transparent after:pointer-events-none' : ''}`}>
+                                        <div className={`relative ${!isFaqTagsExpanded ? 'after:pointer-events-none after:absolute after:right-0 after:top-0 after:h-full after:w-20 after:bg-gradient-to-l after:from-indigo-50 after:to-transparent' : ''}`}>
                                             <div className={`${isFaqTagsExpanded ? 'flex flex-wrap' : 'flex overflow-x-auto scrollbar-hide pb-2 px-1'} gap-2 transition-all duration-500`}>
                                                 {Array.from(new Set(selectedChapter.content.questions.flatMap(q => q.tags || []))).sort().map(tag => {
                                                     const isActive = faqSearchQuery.toLowerCase() === tag.toLowerCase();
@@ -2938,9 +2964,9 @@ export default function Training({
                                                         <button
                                                             key={tag}
                                                             onClick={() => setFaqSearchQuery(isActive ? '' : tag)}
-                                                            className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-black transition-all duration-300 border ${isActive
-                                                                ? 'bg-violet-600 border-violet-600 text-white shadow-lg shadow-violet-600/30 scale-105'
-                                                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-violet-300 dark:hover:border-violet-600 hover:text-violet-600 active:scale-95'
+                                                            className={`whitespace-nowrap border-2 px-4 py-2 text-xs font-black transition-all duration-300 nb-mono ${isActive
+                                                                ? 'border-slate-900 bg-indigo-600 text-white shadow-[2px_2px_0_#0f172a]'
+                                                                : 'border-slate-900 bg-white text-slate-700 shadow-[2px_2px_0_#0f172a] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5'
                                                                 }`}
                                                         >
                                                             #{tag}
@@ -2970,7 +2996,7 @@ export default function Training({
                                         return (
                                             <div
                                                 key={q.id}
-                                                className="bg-white dark:bg-slate-800/80 backdrop-blur-xl rounded-[2rem] border border-slate-200/60 dark:border-slate-700/60 overflow-hidden hover:shadow-2xl hover:border-violet-300 dark:hover:border-violet-500/50 transition-all duration-500 group shadow-lg shadow-slate-200/20 dark:shadow-none"
+                                                className="nb-card overflow-hidden bg-white transition-all hover:-translate-x-0.5 hover:-translate-y-0.5"
                                             >
                                                 <details
                                                     className="group/details"
@@ -2978,14 +3004,14 @@ export default function Training({
                                                 >
                                                     <summary className="flex items-center justify-between p-4 sm:p-6 cursor-pointer list-none select-none">
                                                         <div className="flex items-start sm:items-center gap-3 sm:gap-5">
-                                                            <div className="mt-1 sm:mt-0 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white flex items-center justify-center font-black text-xs sm:text-sm shadow-lg shadow-violet-500/20 transition-all duration-500 group-hover/details:rotate-6 group-hover/details:scale-110 shrink-0">
+                                                            <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center border-2 border-slate-900 bg-indigo-500 text-xs font-black text-white shadow-[2px_2px_0_#0f172a] transition-all duration-500 group-hover/details:scale-105 sm:mt-0 sm:h-12 sm:w-12 sm:text-sm">
                                                                 Q{toBengaliNumber(idx + 1, language)}
                                                             </div>
-                                                            <span className={`font-black text-slate-800 dark:text-slate-100 leading-snug transition-colors group-hover/details:text-violet-600 dark:group-hover/details:text-violet-400 ${language === 'bn' ? 'font-bengali text-lg sm:text-xl' : 'text-base sm:text-lg'}`}>
+                                                            <span className={`font-black leading-snug text-slate-900 transition-colors group-hover/details:text-indigo-700 ${language === 'bn' ? 'font-bengali text-lg sm:text-xl' : 'text-base sm:text-lg'}`}>
                                                                 {q.question}
                                                             </span>
                                                         </div>
-                                                        <div className="ml-4 w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-400 shrink-0 transition-all duration-500 group-open/details:rotate-180 group-open/details:bg-violet-600 group-open/details:text-white">
+                                                        <div className="ml-4 flex h-8 w-8 shrink-0 items-center justify-center border-2 border-slate-900 bg-white text-slate-600 transition-all duration-500 group-open/details:rotate-180 group-open/details:bg-indigo-600 group-open/details:text-white">
                                                             <svg fill="none" height="20" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" viewBox="0 0 24 24" width="20"><path d="M6 9l6 6 6-6"></path></svg>
                                                         </div>
                                                     </summary>
@@ -2996,16 +3022,16 @@ export default function Training({
                                                             </div>
                                                             <div className="flex-1">
                                                                 <div className="flex items-center gap-2 mb-4">
-                                                                    <span className="text-[10px] font-black text-violet-500 uppercase tracking-[0.2em] bg-violet-50 dark:bg-violet-900/30 px-2 py-0.5 rounded-md">Answer</span>
-                                                                    <div className="flex-1 h-px bg-slate-100 dark:bg-slate-700/50"></div>
+                                                                    <span className="nb-tag bg-indigo-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.2em] nb-mono">Answer</span>
+                                                                    <div className="h-0.5 flex-1 bg-slate-900" />
                                                                 </div>
 
-                                                                <div className={`text-slate-600 dark:text-slate-300 leading-relaxed ${language === 'bn' ? 'font-bengali text-lg' : 'font-medium'}`}>
+                                                                <div className={`leading-relaxed text-slate-700 ${language === 'bn' ? 'font-bengali text-lg' : 'font-medium'}`}>
                                                                     {renderTextWithImages(q.answer)}
                                                                 </div>
 
                                                                 {q.image && (
-                                                                    <div className="mt-6 rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden border-2 sm:border-8 border-white dark:border-slate-800 shadow-2xl max-w-full sm:max-w-lg transform hover:scale-[1.01] transition-transform duration-500">
+                                                                    <div className="mt-6 max-w-full overflow-hidden border-2 border-slate-900 shadow-[3px_3px_0_#0f172a] sm:max-w-lg">
                                                                         <img
                                                                             src={`/quizzes/faq_images/${q.image}`}
                                                                             alt={q.question}
@@ -3023,7 +3049,7 @@ export default function Training({
                                                                                 e.preventDefault();
                                                                                 setFaqSearchQuery(tag);
                                                                             }}
-                                                                            className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-wider hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-all border border-slate-100 dark:border-slate-700"
+                                                                            className="nb-tag bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all hover:bg-indigo-600 hover:text-white sm:text-[11px] nb-mono"
                                                                         >
                                                                             #{tag}
                                                                         </button>
@@ -3085,34 +3111,35 @@ export default function Training({
             />
 
             {lockedLessonModal && createPortal(
-                <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xl animate-fade-in">
-                    <div className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-white dark:bg-slate-900 shadow-2xl animate-scale-in">
-                        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-transparent to-violet-500/10" />
-                        <div className="relative p-6 sm:p-7">
-                            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-100 text-3xl text-orange-600 shadow-inner dark:bg-orange-500/10 dark:text-orange-300">
+                <div className="fixed inset-0 z-[210] flex animate-fade-in items-center justify-center bg-slate-900/55 p-4">
+                    <div className="neo-brutal relative w-full max-w-md animate-scale-in" role="dialog" aria-modal="true">
+                        <div className="nb-card overflow-hidden bg-[#fffdf7] p-0">
+                            <div className="nb-hazard" aria-hidden="true" />
+                            <div className="relative p-6 sm:p-7">
+                            <div className="nb-icon-badge mx-auto mb-5 flex h-16 w-16 items-center justify-center bg-orange-100 text-3xl text-orange-700">
                                 🔒
                             </div>
 
-                            <div className="text-center space-y-3">
-                                <div className="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.25em] text-orange-600 dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-300">
+                            <div className="space-y-3 text-center">
+                                <div className="nb-tag inline-flex items-center bg-orange-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.25em] nb-mono">
                                     {language === 'en' ? 'Locked Level' : 'লক করা পাঠ'}
                                 </div>
 
-                                <h3 className={`text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                <h3 className={`text-2xl font-black leading-tight text-slate-900 sm:text-3xl ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {language === 'en' ? 'Complete previous lessons first' : 'আগের পাঠগুলো আগে শেষ করুন'}
                                 </h3>
 
-                                <p className={`text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                <p className={`text-sm leading-relaxed text-slate-600 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {language === 'en'
                                         ? `Lesson ${lockedLessonModal.lessonId} is locked until you finish the lessons before it.`
                                         : `${toBengaliNumber(lockedLessonModal.lessonId, language)} নম্বর পাঠটি এর আগের পাঠগুলো শেষ না করা পর্যন্ত লক থাকবে।`}
                                 </p>
 
-                                <div className="mx-auto mt-4 inline-flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-200">
-                                    <span className="rounded-lg bg-white px-2.5 py-1 text-xs font-black text-orange-600 shadow-sm dark:bg-slate-900 dark:text-orange-300">
+                                <div className="nb-card mx-auto mt-4 inline-flex flex-wrap items-center justify-center gap-2 bg-white px-4 py-3 text-sm font-semibold text-slate-700">
+                                    <span className="nb-tag bg-orange-50 px-2.5 py-1 text-xs font-black text-orange-700">
                                         {lockedLessonModal.chapterLabel}
                                     </span>
-                                    <span className="text-slate-500 dark:text-slate-400">
+                                    <span className="text-slate-600">
                                         {lockedLessonModal.chapterTitle || (language === 'en' ? 'Please continue your journey from earlier lessons.' : 'দয়া করে আগের পাঠগুলো শেষ করুন।')}
                                     </span>
                                 </div>
@@ -3120,11 +3147,13 @@ export default function Training({
 
                             <div className="mt-6">
                                 <button
+                                    type="button"
                                     onClick={() => setLockedLessonModal(null)}
-                                    className="w-full rounded-2xl bg-slate-900 px-4 py-3.5 font-bold text-white transition-all hover:bg-slate-800 active:scale-[0.99] dark:bg-white dark:text-slate-950 dark:hover:bg-white/90"
+                                    className="nb-btn-primary w-full px-4 py-3.5 font-bold"
                                 >
                                     {language === 'en' ? 'Got it' : 'বুঝেছি'}
                                 </button>
+                            </div>
                             </div>
                         </div>
                     </div>
@@ -3139,7 +3168,7 @@ export default function Training({
                         aria-modal="true"
                         aria-live="polite"
                         aria-labelledby="lifeskill-wait-headline"
-                        className="fixed inset-0 z-[215] flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-md animate-fade-in"
+                        className="fixed inset-0 z-[215] flex animate-fade-in items-center justify-center bg-slate-900/55 p-4"
                         onClick={(e) => {
                             if (e.target === e.currentTarget) {
                                 clearLifeSkillWaitTimers();
@@ -3147,37 +3176,38 @@ export default function Training({
                             }
                         }}
                     >
-                        <div className="relative w-full max-w-sm overflow-hidden rounded-[1.75rem] border border-white/10 bg-white shadow-2xl dark:bg-slate-900 animate-scale-in">
-                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-violet-500/10" />
-                            <div className="relative space-y-4 p-6 text-center sm:p-7">
+                        <div className="neo-brutal relative w-full max-w-sm animate-scale-in">
+                            <div className="nb-card overflow-hidden bg-[#fffdf7] p-0">
+                                <div className="nb-hazard" aria-hidden="true" />
+                                <div className="relative space-y-4 p-6 text-center sm:p-7">
                                 <p
                                     id="lifeskill-wait-headline"
-                                    className={`line-clamp-3 text-base font-black leading-snug text-slate-900 dark:text-white sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}
+                                    className={`line-clamp-3 text-base font-black leading-snug text-slate-900 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}
                                 >
                                     {lifeSkillWaitUi.cardTitle}
                                 </p>
-                                <p className="text-5xl font-black tabular-nums text-indigo-600 dark:text-indigo-300 sm:text-6xl">
+                                <p className="text-5xl font-black tabular-nums text-indigo-700 sm:text-6xl">
                                     {language === 'en'
                                         ? lifeSkillWaitUi.secondsLeft
                                         : toBengaliNumber(lifeSkillWaitUi.secondsLeft, 'bn')}
                                 </p>
-                                <div className={`space-y-3 text-left text-sm leading-relaxed text-slate-600 dark:text-slate-300 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                <div className={`space-y-3 text-left text-sm leading-relaxed text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {language === 'en' ? (
                                         <>
                                             <p>
                                                 Your main training badge:{' '}
-                                                <span className="font-black text-indigo-700 dark:text-indigo-300">
+                                                <span className="font-black text-indigo-700">
                                                     {lifeSkillWaitUi.currentBadgeEn}
                                                 </span>
                                                 .
                                             </p>
                                             <p>
                                                 To read or listen to life skills alongside, you will need to reach the{' '}
-                                                <span className="font-black text-slate-800 dark:text-slate-100">
+                                                <span className="font-black text-slate-900">
                                                     {TECHNICIAN_BADGE.en}
                                                 </span>{' '}
                                                 badge. Please wait{' '}
-                                                <span className="font-black text-indigo-700 dark:text-indigo-300">
+                                                <span className="font-black text-indigo-700">
                                                     {lifeSkillWaitUi.secondsLeft}s
                                                 </span>
                                                 . After you finish through lesson{' '}
@@ -3189,17 +3219,17 @@ export default function Training({
                                         <>
                                             <p>
                                                 মূল পাঠে এখন আপনার ব্যাজ{' '}
-                                                <span className="font-black text-indigo-700 dark:text-indigo-300">
+                                                <span className="font-black text-indigo-700">
                                                     {lifeSkillWaitUi.currentBadgeBn}
                                                 </span>
                                                 । লাইফ স্কিল একসঙ্গে দেখতে বা শুনতে{' '}
-                                                <span className="font-black text-slate-800 dark:text-slate-100">
+                                                <span className="font-black text-slate-900">
                                                     {TECHNICIAN_BADGE.bn}
                                                 </span>{' '}
                                                 ব্যাজে যেতে হবে।
                                             </p>
                                             <p>
-                                                <span className="font-black text-indigo-700 dark:text-indigo-300">
+                                                <span className="font-black text-indigo-700">
                                                     {toBengaliNumber(lifeSkillWaitUi.secondsLeft, 'bn')}
                                                 </span>{' '}
                                                 সেকেন্ড অপেক্ষা করুন। মূল পাঠের{' '}
@@ -3215,10 +3245,11 @@ export default function Training({
                                         clearLifeSkillWaitTimers();
                                         setLifeSkillWaitUi(null);
                                     }}
-                                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 transition-all hover:bg-slate-100 active:scale-[0.99] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                                    className="nb-btn-secondary w-full px-4 py-3 text-sm font-bold"
                                 >
                                     {language === 'en' ? 'Cancel' : 'বাতিল'}
                                 </button>
+                                </div>
                             </div>
                         </div>
                     </div>,
@@ -3228,20 +3259,22 @@ export default function Training({
             {/* Safety Journal UI - Immersive Slide-based Experience */}
             {
                 trainingContent && createPortal(
-                    <div className="fixed top-0 md:top-14 inset-x-0 bottom-0 lg:top-16 lg:bottom-6 lg:inset-x-0 lg:mx-auto lg:w-[1000px] lg:max-w-[95vw] lg:rounded-[3rem] lg:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] lg:border lg:border-slate-200 dark:lg:border-white/10 z-[75] bg-slate-50 dark:bg-slate-900 overflow-hidden flex flex-col animate-fade-in-up">
+                    <div className="neo-brutal fixed inset-x-0 bottom-0 top-0 z-[75] flex animate-fade-in-up flex-col overflow-hidden bg-[#fffdf7] md:top-14 lg:inset-x-0 lg:bottom-6 lg:top-16 lg:mx-auto lg:w-[1000px] lg:max-w-[95vw] lg:border-2 lg:border-slate-900 lg:shadow-[8px_8px_0_#0f172a]">
                         {/* Desktop Backdrop Overlay */}
-                        <div className="hidden lg:block fixed inset-0 -z-10 bg-slate-950/40 backdrop-blur-sm" onClick={() => {
+                        <div className="hidden lg:block fixed inset-0 -z-10 bg-slate-900/40" onClick={() => {
                             stop();
                             setTrainingContent(null);
                             setIsJournalMode(false);
                             setSelectedChapter(null);
                             setSelectedLesson(null);
                         }} />
-                        <div className="relative flex flex-col h-full overflow-hidden book-page-texture">
+                        <div className="relative flex h-full flex-col overflow-hidden">
                             {/* Simple Book-like Header */}
-                            <div className="sticky top-0 z-[100] bg-white/40 dark:bg-black/20 backdrop-blur-md border-b border-black/5 dark:border-white/5">
-                                <div className="max-w-5xl mx-auto w-full px-5 py-3 flex items-center h-16">
+                            <div className="sticky top-0 z-[100] border-b-2 border-slate-900 bg-white">
+                                <div className="nb-hazard" aria-hidden="true" />
+                                <div className="mx-auto flex h-16 w-full max-w-5xl items-center px-5 py-3">
                                     <button
+                                        type="button"
                                         onClick={() => {
                                             stop();
                                             setTrainingContent(null);
@@ -3249,23 +3282,24 @@ export default function Training({
                                             setSelectedChapter(null);
                                             setSelectedLesson(null);
                                         }}
-                                        className="w-10 h-10 flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 rounded-full text-slate-500 transition-all active:scale-90"
+                                        className="flex h-10 w-10 items-center justify-center border-2 border-slate-900 bg-white text-slate-700 shadow-[2px_2px_0_#0f172a] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5"
                                     >
                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
 
-                                    <div className="text-center flex-1 mx-4 min-w-0">
-                                        <h2 className={`text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] truncate ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
-                                            <span className="text-orange-500/80 font-black">{getTrainingHeaderLessonCode(trainingContent, language)}</span>
-                                            <span className="mx-1.5 text-slate-300 dark:text-slate-600">·</span>
+                                    <div className="mx-4 min-w-0 flex-1 text-center">
+                                        <h2 className={`truncate text-xs font-bold uppercase tracking-[0.2em] text-slate-500 nb-mono ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
+                                            <span className="font-black text-orange-600">{getTrainingHeaderLessonCode(trainingContent, language)}</span>
+                                            <span className="mx-1.5 text-slate-300">·</span>
                                             {trainingContent.level_title}
                                         </h2>
                                     </div>
 
                                     <div className="flex items-center gap-3">
                                         <button
+                                            type="button"
                                             onClick={() => {
                                                 stop();
                                                 setTrainingContent(null);
@@ -3274,13 +3308,14 @@ export default function Training({
                                                 setSelectedLesson(null);
                                                 setCurrentView('safety-library');
                                             }}
-                                            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-900/30 hover:bg-orange-100 transition-all shadow-sm"
+                                            className="nb-btn-secondary hidden items-center gap-2 px-3 py-1.5 sm:flex"
                                         >
                                             <span className="text-sm animate-rotate-y inline-block">🛡️</span>
-                                            <span className="text-[10px] font-black uppercase tracking-widest">{language === 'en' ? 'Library' : 'লাইব্রেরি'}</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest nb-mono">{language === 'en' ? 'Library' : 'লাইব্রেরি'}</span>
                                         </button>
 
                                         <button
+                                            type="button"
                                             onClick={() => {
                                                 stop();
                                                 setTrainingContent(null);
@@ -3289,14 +3324,14 @@ export default function Training({
                                                 setSelectedLesson(null);
                                                 setCurrentView('safety-library');
                                             }}
-                                            className="sm:hidden w-10 h-10 flex items-center justify-center rounded-full text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-slate-800 transition-all"
+                                            className="flex h-10 w-10 items-center justify-center border-2 border-slate-900 bg-white text-slate-600 shadow-[2px_2px_0_#0f172a] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 sm:hidden"
                                         >
                                             <span className="text-xl animate-rotate-y inline-block">🛡️</span>
                                         </button>
 
                                         {!hideReadAloudForSupplementaryRadio && (
                                             <>
-                                                <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-1 hidden sm:block opacity-50"></div>
+                                                <div className="mx-1 hidden h-6 w-px bg-slate-300 opacity-50 sm:block"></div>
 
                                                 <button
                                                     type="button"
@@ -3307,10 +3342,10 @@ export default function Training({
                                                         : isPlaying && !isPaused
                                                             ? (language === 'en' ? 'Pause reading' : 'পড়া থামান')
                                                             : (language === 'en' ? 'Read aloud' : 'উচ্চস্বরে পড়ুন')}
-                                                    className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-500 ${
-                                                        isLoading ? 'bg-orange-500/20 text-orange-500 animate-pulse' :
-                                                        isPlaying && !isPaused ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/40 scale-105' :
-                                                        'text-slate-400 hover:text-orange-500'
+                                                    className={`relative flex h-10 w-10 items-center justify-center border-2 border-slate-900 transition-all duration-500 ${
+                                                        isLoading ? 'animate-pulse bg-orange-200 text-orange-700 shadow-[2px_2px_0_#0f172a]' :
+                                                        isPlaying && !isPaused ? 'bg-orange-500 text-white shadow-[2px_2px_0_#0f172a]' :
+                                                        'bg-white text-slate-600 shadow-[2px_2px_0_#0f172a] hover:-translate-x-0.5 hover:-translate-y-0.5'
                                                     }`}
                                                 >
                                                     <div className={`absolute inset-0 rounded-full bg-orange-500 animate-ping opacity-20 ${isPlaying && !isPaused && !isLoading ? 'block' : 'hidden'}`}></div>
@@ -3334,13 +3369,11 @@ export default function Training({
                                 </div>
 
                                 {/* Modern Progress Bar */}
-                                <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 relative z-20">
+                                <div className="relative z-20 h-2 w-full border-t-2 border-slate-900 bg-slate-200">
                                     <div
-                                        className="h-full bg-gradient-to-r from-orange-400 to-rose-500 transition-all duration-1000 ease-out relative shadow-[0_0_15px_rgba(249,115,22,0.5)]"
+                                        className="h-full bg-orange-500 transition-all duration-1000 ease-out"
                                         style={{ width: `${((activeSectionIndex + 1) / slides.length) * 100}%` }}
-                                    >
-                                        <div className="absolute top-0 right-0 w-4 h-full bg-white/40 skew-x-12 opacity-50"></div>
-                                    </div>
+                                    />
                                 </div>
 
                                 {trainingContent?.isSupplementary ? (
@@ -3360,11 +3393,11 @@ export default function Training({
                                                 stop();
                                                 setSupplementaryRadioOverlayOpen(true);
                                             }}
-                                            className={`flex w-full items-center justify-center gap-3 rounded-2xl border py-3.5 text-sm font-black uppercase tracking-wide transition ${
+                                            className={`flex w-full items-center justify-center gap-3 border-2 border-slate-900 py-3.5 text-sm font-black uppercase tracking-wide transition shadow-[3px_3px_0_#0f172a] nb-mono ${
                                                 supplementaryRadioSrc
-                                                    ? 'border-indigo-300/80 bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/25 hover:brightness-110 active:scale-[0.99] dark:border-indigo-500/50 dark:from-indigo-500 dark:to-violet-600'
-                                                    : 'cursor-not-allowed border-slate-300/70 bg-slate-200/90 text-slate-500 opacity-75 dark:border-slate-600 dark:bg-slate-800/90 dark:text-slate-500'
-                                            } disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:brightness-100 disabled:active:scale-100`}
+                                                    ? 'nb-btn-indigo hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5'
+                                                    : 'cursor-not-allowed bg-slate-200 text-slate-500 opacity-75'
+                                            } disabled:cursor-not-allowed disabled:opacity-70`}
                                         >
                                             <span className="text-xl" aria-hidden>
                                                 📻
@@ -3390,7 +3423,7 @@ export default function Training({
                                         {!isFirstSlide && (
                                             <button
                                                 onClick={prevSlide}
-                                                className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-slate-500 dark:text-slate-300 hover:text-orange-500 hover:scale-110 active:scale-75 transition-all shadow-xl"
+                                                className="flex h-10 w-10 items-center justify-center border-2 border-slate-900 bg-white text-slate-700 shadow-[3px_3px_0_#0f172a] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 sm:h-14 sm:w-14"
                                                 title="Previous"
                                             >
                                                 <svg className="w-6 h-6 sm:w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
@@ -3415,7 +3448,7 @@ export default function Training({
                                                         ? 'Next'
                                                         : 'পরের পাতা'
                                             }
-                                            className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-slate-500 dark:text-slate-300 transition-all shadow-xl hover:text-orange-500 hover:scale-110 active:scale-75 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:scale-100 disabled:hover:text-slate-500 dark:disabled:hover:text-slate-300"
+                                            className="flex h-10 w-10 items-center justify-center border-2 border-slate-900 bg-white text-slate-700 shadow-[3px_3px_0_#0f172a] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-35 sm:h-14 sm:w-14"
                                         >
                                             <svg className="w-6 h-6 sm:w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
                                         </button>
@@ -3476,7 +3509,7 @@ export default function Training({
                                 return (
                                     <div
                                         ref={lessonScrollRef}
-                                        className={`flex-1 relative book-page-texture book-gutter scroll-smooth transition-colors duration-700 ${
+                                        className={`relative flex-1 scroll-smooth transition-colors duration-700 ${
                                             isSupplementaryCompletion
                                                 ? 'min-h-0 overflow-x-hidden overflow-y-hidden'
                                                 : 'overflow-y-auto'
@@ -3498,22 +3531,22 @@ export default function Training({
                                                 <div className="flex flex-col items-center justify-center pt-6 pb-20 space-y-12">
                                                     <div className="w-full space-y-8 text-center">
                                                         <div className="space-y-4">
-                                                            <p className="text-sm font-black uppercase tracking-[0.4em] text-slate-400 dark:text-slate-600">
+                                                            <p className="text-sm font-black uppercase tracking-[0.4em] text-slate-500 nb-mono">
                                                                 {language === 'en'
                                                                     ? `Lesson ${getTrainingHeaderLessonCode(trainingContent, language)}`
                                                                     : `পাঠ ${getTrainingHeaderLessonCode(trainingContent, language)}`}
                                                             </p>
-                                                            <div className="h-px w-24 bg-slate-200 dark:bg-slate-800 mx-auto"></div>
+                                                            <div className="mx-auto h-0.5 w-24 bg-slate-900"></div>
                                                         </div>
 
-                                                        <h1 className={`text-3xl md:text-5xl font-black text-slate-900 dark:text-slate-100 leading-snug tracking-tight px-4 ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
+                                                        <h1 className={`px-4 text-3xl font-black leading-snug tracking-tight text-slate-900 md:text-5xl ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
                                                             {trainingContent.level_title}
                                                         </h1>
                                                     </div>
 
                                                     <div className="max-w-md w-full relative">
                                                         <div className="absolute inset-0 bg-slate-100 dark:bg-slate-800/30 blur-2xl -z-10 rounded-full"></div>
-                                                        <p className={`text-lg text-slate-800 dark:text-slate-300 leading-[2] text-center font-medium not-italic px-4 ${language === 'bn' ? 'font-bengali text-[1.35rem] leading-[2.2]' : ''}`}>
+                                                        <p className={`px-4 text-center text-lg font-medium not-italic leading-[2] text-slate-800 ${language === 'bn' ? 'font-bengali text-[1.35rem] leading-[2.2]' : ''}`}>
                                                             {renderTextWithImages(trainingContent.mission_briefing)}
                                                         </p>
                                                     </div>
@@ -3530,17 +3563,17 @@ export default function Training({
 
                                             {activeSlide?.type === 'section' && (
                                                 <article className="space-y-5 sm:space-y-7">
-                                                    <header className="relative mb-2 overflow-hidden rounded-2xl border border-orange-100/80 bg-gradient-to-b from-orange-50/70 via-white/60 to-transparent px-4 py-6 dark:border-orange-900/35 dark:from-orange-950/30 dark:via-slate-900/50 dark:to-transparent sm:mb-3 sm:px-6 sm:py-8">
-                                                        <p className={`mb-1.5 text-center font-black text-orange-600 dark:text-orange-400/95 ${language === 'bn' ? 'font-bengali text-xs tracking-normal' : 'text-[10px] uppercase tracking-[0.28em]'}`}>
+                                                    <header className="nb-card relative mb-2 overflow-hidden bg-orange-50 px-4 py-6 sm:mb-3 sm:px-6 sm:py-8">
+                                                        <p className={`mb-1.5 text-center font-black text-orange-700 ${language === 'bn' ? 'font-bengali text-xs tracking-normal' : 'text-[10px] uppercase tracking-[0.28em] nb-mono'}`}>
                                                             {language === 'en' ? 'In this part' : 'এই অংশে'}
                                                         </p>
-                                                        <h3 className={`text-center text-2xl font-black leading-snug tracking-tight text-slate-800 dark:text-slate-100 sm:text-3xl md:text-4xl ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
+                                                        <h3 className={`text-center text-2xl font-black leading-snug tracking-tight text-slate-900 sm:text-3xl md:text-4xl ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
                                                             {activeSlide.title}
                                                         </h3>
                                                     </header>
 
                                                     {sectionReaderMode === 'overview' && sectionPoints.length > 0 && (
-                                                        <div className="sticky top-0 z-20 -mx-2 mb-3 flex justify-center border-b border-orange-200/50 bg-[#fcfaf2]/95 px-2 py-2 backdrop-blur-md dark:border-orange-900/40 dark:bg-slate-900/95 sm:-mx-4">
+                                                        <div className="sticky top-0 z-20 -mx-2 mb-3 flex justify-center border-b-2 border-slate-900 bg-[#fffdf7] px-2 py-2 sm:-mx-4">
                                                             <button
                                                                 type="button"
                                                                 onClick={() => {
@@ -3550,7 +3583,7 @@ export default function Training({
                                                                         lessonScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
                                                                     });
                                                                 }}
-                                                                className={`rounded-lg border border-orange-300 bg-white px-3 py-1.5 text-[11px] font-bold text-orange-900 shadow-sm transition-colors hover:bg-orange-50 dark:border-orange-700 dark:bg-slate-800 dark:text-orange-100 dark:hover:bg-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                className={`nb-btn-secondary px-3 py-1.5 text-[11px] font-bold ${language === 'bn' ? 'font-bengali' : 'nb-mono'}`}
                                                             >
                                                                 {language === 'en' ? '← Step-by-step' : '← ধাপে ধাপে'}
                                                             </button>
@@ -3560,7 +3593,7 @@ export default function Training({
                                                     {sectionPoints.length > 0 && sectionReaderMode === 'guided' && sectionGuidedStepDone < sectionPoints.length && (
                                                         <>
                                                             <div
-                                                                className="sticky top-0 z-20 -mx-2 mb-2 border-b border-orange-200/40 bg-[#fcfaf2]/95 px-2 py-2 backdrop-blur-md dark:border-orange-900/40 dark:bg-slate-900/95 sm:-mx-4 sm:px-3"
+                                                                className="sticky top-0 z-20 -mx-2 mb-2 border-b-2 border-slate-900 bg-[#fffdf7] px-2 py-2 sm:-mx-4 sm:px-3"
                                                                 aria-label={
                                                                     language === 'en'
                                                                         ? `Step ${sectionGuidedStepDone + 1} of ${sectionPoints.length}`
@@ -3572,7 +3605,7 @@ export default function Training({
                                                                         {sectionPoints.map((_, i) => (
                                                                             <div
                                                                                 key={i}
-                                                                                className={`h-full min-w-0 flex-1 rounded-full ${i < sectionGuidedStepDone ? 'bg-emerald-500' : i === sectionGuidedStepDone ? 'bg-orange-500' : 'bg-slate-200 dark:bg-slate-700'}`}
+                                                                                className={`h-full min-w-0 flex-1 ${i < sectionGuidedStepDone ? 'bg-emerald-500' : i === sectionGuidedStepDone ? 'bg-orange-500' : 'bg-slate-200'}`}
                                                                             />
                                                                         ))}
                                                                     </div>
@@ -3589,10 +3622,10 @@ export default function Training({
                                                                         return (
                                                                             <div
                                                                                 key={pIdx}
-                                                                                className="flex items-start gap-3 rounded-2xl border border-emerald-200/90 bg-emerald-50/60 px-4 py-3.5 dark:border-emerald-800/50 dark:bg-emerald-950/25"
+                                                                                className="flex items-start gap-3 border-2 border-slate-900 bg-emerald-50 px-4 py-3.5 shadow-[2px_2px_0_#0f172a]"
                                                                             >
-                                                                                <span className="shrink-0 text-lg text-emerald-600 dark:text-emerald-400" aria-hidden>✓</span>
-                                                                                <h4 className={`min-w-0 flex-1 text-left text-sm font-bold leading-snug text-emerald-900 dark:text-emerald-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                                <span className="shrink-0 text-lg text-emerald-700" aria-hidden>✓</span>
+                                                                                <h4 className={`min-w-0 flex-1 text-left text-sm font-bold leading-snug text-emerald-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                                                     {point.item_name}
                                                                                 </h4>
                                                                             </div>
@@ -3620,7 +3653,7 @@ export default function Training({
                                                                     return (
                                                                         <div
                                                                             key={pIdx}
-                                                                            className="rounded-2xl border border-dashed border-slate-300/90 bg-slate-50/70 px-4 py-4 dark:border-slate-600 dark:bg-slate-900/40"
+                                                                            className="border-2 border-dashed border-slate-400 bg-slate-100 px-4 py-4"
                                                                         >
                                                                             <div className="flex items-start gap-3">
                                                                                 <span className="shrink-0 text-base text-slate-400 dark:text-slate-500" aria-hidden>🔒</span>
@@ -3682,7 +3715,7 @@ export default function Training({
                                                                                     lessonScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
                                                                                 });
                                                                             }}
-                                                                            className={`flex w-full items-start gap-3 rounded-2xl border border-emerald-200/90 bg-emerald-50/60 px-4 py-3 text-left transition-colors hover:border-emerald-400/90 hover:bg-emerald-100/70 active:scale-[0.99] dark:border-emerald-800/50 dark:bg-emerald-950/25 dark:hover:border-emerald-600/50 dark:hover:bg-emerald-950/45 sm:py-3.5 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                            className={`flex w-full items-start gap-3 border-2 border-slate-900 bg-emerald-50 px-4 py-3 text-left shadow-[2px_2px_0_#0f172a] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 sm:py-3.5 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                                         >
                                                                             <span className="shrink-0 text-lg text-emerald-600 dark:text-emerald-400" aria-hidden>
                                                                                 ✓
@@ -3751,9 +3784,9 @@ export default function Training({
 
                                                     <div className="grid grid-cols-1 gap-8">
                                                         {activeSlide.content?.map((tip, idx) => (
-                                                            <div key={idx} className="relative p-8 rounded-[2.5rem] bg-emerald-100/5 dark:bg-emerald-900/5 border border-emerald-500/10 backdrop-blur-md shadow-sm overflow-hidden">
-                                                                <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500/30"></div>
-                                                                <p className={`text-lg sm:text-xl md:text-2xl text-slate-700 dark:text-slate-300 leading-[1.9] font-medium ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl md:text-[1.7rem] leading-[2.1]' : ''}`}>
+                                                            <div key={idx} className="nb-card relative overflow-hidden border-emerald-200 bg-emerald-50 p-8">
+                                                                <div className="absolute left-0 top-0 h-full w-1 bg-emerald-500" />
+                                                                <p className={`text-lg font-medium leading-[1.9] text-slate-800 sm:text-xl md:text-2xl ${language === 'bn' ? 'font-bengali text-xl leading-[2.1] sm:text-2xl md:text-[1.7rem]' : ''}`}>
                                                                     {renderTextWithImages(tip)}
                                                                 </p>
                                                             </div>
@@ -3773,20 +3806,20 @@ export default function Training({
                                                     <div className="space-y-12">
                                                         {activeSlide.myths?.map((item, idx) => (
                                                             <div key={idx} className="space-y-4">
-                                                                <div className="p-8 rounded-[2rem] bg-red-500/[0.03] dark:bg-red-900/[0.03] border border-red-500/10">
-                                                                    <span className="text-[10px] uppercase font-black tracking-widest text-red-500/50 mb-3 block">
+                                                                <div className="nb-card border-rose-200 bg-rose-50 p-8">
+                                                                    <span className="mb-3 block text-[10px] font-black uppercase tracking-widest text-rose-600 nb-mono">
                                                                         {language === 'en' ? 'Perspective' : 'ভুল ধারণা'}
                                                                     </span>
-                                                                    <p className={`text-lg sm:text-xl text-slate-600 dark:text-slate-400 italic font-medium leading-[1.9] ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl leading-[2.1]' : ''}`}>
+                                                                    <p className={`text-lg font-medium italic leading-[1.9] text-slate-700 sm:text-xl ${language === 'bn' ? 'font-bengali text-xl leading-[2.1] sm:text-2xl' : ''}`}>
                                                                         {renderTextWithImages(item.myth)}
                                                                     </p>
                                                                 </div>
 
-                                                                <div className="p-8 rounded-[2rem] bg-emerald-500/[0.03] dark:bg-emerald-900/[0.03] border border-emerald-500/10 shadow-sm">
-                                                                    <span className="text-[10px] uppercase font-black tracking-widest text-emerald-500/50 mb-3 block">
+                                                                <div className="nb-card border-emerald-200 bg-emerald-50 p-8">
+                                                                    <span className="mb-3 block text-[10px] font-black uppercase tracking-widest text-emerald-600 nb-mono">
                                                                         {language === 'en' ? 'Verdict' : 'আসল কথা'}
                                                                     </span>
-                                                                    <p className={`text-lg sm:text-xl text-slate-800 dark:text-slate-200 font-bold leading-[1.9] ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl leading-[2.1]' : ''}`}>
+                                                                    <p className={`text-lg font-bold leading-[1.9] text-slate-900 sm:text-xl ${language === 'bn' ? 'font-bengali text-xl leading-[2.1] sm:text-2xl' : ''}`}>
                                                                         {renderTextWithImages(item.reality || item.fact)}
                                                                     </p>
                                                                 </div>
@@ -3811,8 +3844,8 @@ export default function Training({
                                                                     <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
                                                                     {fact.title}
                                                                 </h4>
-                                                                <div className="p-8 rounded-[2.5rem] bg-indigo-500/[0.02] dark:bg-indigo-400/[0.02] border border-indigo-500/10 shadow-sm backdrop-blur-sm">
-                                                                    <p className={`text-lg sm:text-xl text-slate-700 dark:text-slate-300 leading-[1.9] font-medium ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl leading-[2.1]' : ''}`}>
+                                                                <div className="nb-card border-indigo-200 bg-indigo-50 p-8">
+                                                                    <p className={`text-lg font-medium leading-[1.9] text-slate-800 sm:text-xl ${language === 'bn' ? 'font-bengali text-xl leading-[2.1] sm:text-2xl' : ''}`}>
                                                                         {renderTextWithImages(fact.content)}
                                                                     </p>
                                                                 </div>
@@ -3861,7 +3894,7 @@ export default function Training({
                                                                     setIsJournalMode(false);
                                                                     setTrainingTab('supplementary');
                                                                 }}
-                                                                className={`mx-auto flex min-h-[3rem] w-full max-w-[17.5rem] items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 shadow-sm transition active:scale-[0.99] hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800/90 dark:text-slate-100 dark:hover:bg-slate-800 sm:max-w-xs sm:min-h-[2.75rem] sm:text-base`}
+                                                                className="nb-btn-secondary mx-auto flex min-h-[3rem] w-full max-w-[17.5rem] items-center justify-center gap-2 px-4 py-3 text-sm font-bold sm:max-w-xs sm:min-h-[2.75rem] sm:text-base"
                                                             >
                                                                 <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M15 19l-7-7 7-7" />
@@ -3903,7 +3936,7 @@ export default function Training({
                                                             <button
                                                                 type="button"
                                                                 onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                                                className="flex w-full items-center justify-center gap-3 rounded-2xl bg-slate-900 py-4 text-lg font-black text-white shadow-xl transition-all hover:scale-[1.02] active:scale-95 dark:bg-slate-100 dark:text-slate-900 sm:rounded-[2rem] sm:py-5 sm:text-xl"
+                                                                className="nb-btn-primary flex w-full items-center justify-center gap-3 py-4 text-lg font-black sm:py-5 sm:text-xl"
                                                             >
                                                                 {language === 'en' ? 'Start Challenge' : 'চ্যালেঞ্জ শুরু করুন'}
                                                             </button>
@@ -3972,20 +4005,22 @@ export default function Training({
             {
                 activeImageModal && createPortal(
                     <div
-                        className="fixed inset-0 z-[400] flex items-center justify-center p-4 sm:p-6 bg-slate-900/90 backdrop-blur-md animate-fade-in"
+                        className="fixed inset-0 z-[400] flex animate-fade-in items-center justify-center bg-slate-900/55 p-4 sm:p-6"
                         onClick={() => setActiveImageModal(null)}
                     >
                         <div
-                            className={`relative flex max-h-[min(90vh,900px)] w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-2xl animate-scale-in sm:rounded-3xl ${
+                            className={`neo-brutal relative flex max-h-[min(90vh,900px)] w-full flex-col overflow-hidden animate-scale-in ${
                                 activeImageModal.type === 'image' ? 'max-w-5xl' : 'max-w-lg'
                             }`}
                             onClick={e => e.stopPropagation()}
                         >
+                            <div className="nb-card flex max-h-[min(90vh,900px)] flex-col overflow-hidden bg-[#fffdf7] p-0">
+                            <div className="nb-hazard shrink-0" aria-hidden="true" />
                             {/* Close Button */}
                             <button
                                 type="button"
                                 onClick={() => setActiveImageModal(null)}
-                                className="absolute top-3 right-3 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70 sm:top-4 sm:right-4"
+                                className="absolute right-3 top-3 z-10 border-2 border-slate-900 bg-white p-2 text-slate-900 shadow-[2px_2px_0_#0f172a] sm:right-4 sm:top-4"
                             >
                                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
@@ -3993,28 +4028,29 @@ export default function Training({
                             </button>
 
                             {activeImageModal.type === 'image' ? (
-                                <div className="flex min-h-0 flex-1 items-center justify-center bg-slate-900 p-4 pt-14 sm:p-8 sm:pt-16">
+                                <div className="flex min-h-0 flex-1 items-center justify-center bg-white p-4 pt-14 sm:p-8 sm:pt-16">
                                     <img
                                         src={activeImageModal.value}
                                         alt="Preview"
-                                        className="max-h-[min(78vh,800px)] max-w-full object-contain rounded-xl shadow-2xl"
+                                        className="max-h-[min(78vh,800px)] max-w-full border-2 border-slate-900 object-contain shadow-[4px_4px_0_#0f172a]"
                                     />
                                 </div>
                             ) : (
-                                <div className="min-h-0 flex-1 overflow-y-auto bg-slate-900 p-5 pt-14 sm:p-8 sm:pt-16">
-                                    <div className="mb-3 flex items-center gap-2 text-orange-400">
+                                <div className="min-h-0 flex-1 overflow-y-auto bg-white p-5 pt-14 sm:p-8 sm:pt-16">
+                                    <div className="mb-3 flex items-center gap-2 text-orange-600">
                                         <svg className="h-7 w-7 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
-                                        <span className={`text-xs font-bold uppercase tracking-wider text-slate-400 ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
+                                        <span className={`text-xs font-bold uppercase tracking-wider text-slate-500 nb-mono ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
                                             {language === 'en' ? 'Details' : 'বিস্তারিত'}
                                         </span>
                                     </div>
-                                    <p className={`text-left text-base leading-relaxed text-slate-200 sm:text-lg ${language === 'bn' ? 'font-bengali' : 'font-medium'} whitespace-pre-line`}>
+                                    <p className={`text-left text-base font-medium leading-relaxed text-slate-800 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''} whitespace-pre-line`}>
                                         {activeImageModal.value}
                                     </p>
                                 </div>
                             )}
+                            </div>
                         </div>
                     </div>,
                     document.body
@@ -4023,14 +4059,10 @@ export default function Training({
             {/* Welcome Modal Overlay */}
             {
                 showWelcome && createPortal(
-                    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-50 dark:bg-slate-900 animate-fade-in">
-                        {/* Background Decorative Elements */}
-                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                            <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-[100px] animate-pulse"></div>
-                            <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] animate-pulse-slow"></div>
-                        </div>
+                    <div className="neo-brutal fixed inset-0 z-[1000] flex animate-fade-in items-center justify-center bg-[#fffdf7]">
+                        <div className="nb-hazard absolute inset-x-0 top-0" aria-hidden="true" />
 
-                        <div className="relative w-full max-w-lg px-6 flex flex-col items-center text-center space-y-4 md:space-y-6">
+                        <div className="relative flex w-full max-w-lg flex-col items-center space-y-4 px-6 text-center md:space-y-6">
                             <div className="w-full flex flex-col items-center space-y-4 md:space-y-6">
                                 {/* Lottie Animation */}
                                 <div className="w-full aspect-square max-w-[160px] md:max-w-[240px] mx-auto filter drop-shadow-2xl">
@@ -4044,25 +4076,25 @@ export default function Training({
 
                                 {/* Welcome Text */}
                                 <div className="space-y-1.5 md:space-y-3 animate-entrance-pop" style={{ animationDelay: '100ms' }}>
-                                    <h1 className={`text-2xl md:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <h1 className={`text-2xl font-black leading-tight text-slate-900 md:text-4xl ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {language === 'en' ? 'Welcome!' : 'স্বাগতম!'}
                                     </h1>
-                                    <p className={`text-base md:text-xl font-bold text-slate-600 dark:text-slate-400 ${language === 'bn' ? 'font-bengali opacity-90' : ''}`}>
+                                    <p className={`text-base font-bold text-slate-600 md:text-xl ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {language === 'en' ? "Here's your reading progress." : 'আপনার পড়ার অগ্রগতি এখানে।'}
                                     </p>
                                 </div>
 
                                 {lessonProgressWelcome && (
                                     <div className="grid grid-cols-1 gap-3 animate-entrance-pop text-left w-full max-w-sm" style={{ animationDelay: '200ms' }}>
-                                        <p className={`text-center text-[11px] md:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
+                                        <p className={`text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 nb-mono md:text-xs ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
                                             {language === 'en' ? 'Your reading progress' : 'পড়ার অগ্রগতি'}
                                         </p>
-                                        <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-md p-4 rounded-3xl border border-white/20 dark:border-slate-700/50 flex gap-4 items-center">
-                                            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center text-2xl shrink-0">
+                                        <div className="nb-card flex items-center gap-4 bg-white p-4">
+                                            <div className="nb-icon-badge flex h-12 w-12 shrink-0 items-center justify-center bg-orange-100 text-2xl">
                                                 📖
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className={`text-slate-800 dark:text-white font-black leading-snug ${lessonProgressWelcome.secondary ? 'mb-1' : ''} ${language === 'bn' ? 'font-bengali text-base md:text-lg' : 'text-xs md:text-sm'}`}>
+                                            <div className="min-w-0 flex-1">
+                                                <p className={`font-black leading-snug text-slate-900 ${lessonProgressWelcome.secondary ? 'mb-1' : ''} ${language === 'bn' ? 'font-bengali text-base md:text-lg' : 'text-xs md:text-sm'}`}>
                                                     {lessonProgressWelcome.primary}
                                                 </p>
                                                 {lessonProgressWelcome.secondary && (
@@ -4083,7 +4115,7 @@ export default function Training({
                                         sessionStorage.setItem('hasSeenTrainingWelcome', 'true');
                                         setShowWelcome(false);
                                     }}
-                                    className="w-full material-button-primary py-4 md:py-5 text-xl md:text-2xl font-black shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/40 active:scale-95 transition-all group"
+                                    className="nb-btn-primary group w-full py-4 text-xl font-black md:py-5 md:text-2xl"
                                 >
                                     <span className="flex items-center justify-center gap-3">
                                         {language === 'en' ? 'Proceed' : 'এগিয়ে যান'}
@@ -4119,20 +4151,22 @@ export default function Training({
             }
             {/* Lessons Index Modal */}
             {showLessonIndex && createPortal(
-                <div className="fixed inset-0 z-[120] flex flex-col bg-white dark:bg-slate-900 animate-slide-in-right overflow-hidden mobile-safe-area">
+                <div className="neo-brutal fixed inset-0 z-[120] flex animate-slide-in-right flex-col overflow-hidden bg-[#fffdf7] mobile-safe-area">
                     {/* Header */}
-                    <div className="flex items-center justify-between p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 shrink-0">
+                    <div className="nb-hazard shrink-0" aria-hidden="true" />
+                    <div className="flex shrink-0 items-center justify-between border-b-2 border-slate-900 bg-white p-6">
                         <div>
-                            <h2 className={`text-xl font-black text-slate-900 dark:text-white ${language === 'bn' ? 'font-bengali' : ''}`}>
+                            <h2 className={`text-xl font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                 {language === 'en' ? 'Learning Index' : 'পাঠের সূচীপত্র'}
                             </h2>
-                            <p className="text-[10px] uppercase tracking-widest text-orange-500 font-bold mt-0.5">
+                            <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-orange-600 nb-mono">
                                 {language === 'en' ? 'Complete lessons one by one' : 'একের পর এক পাঠ সম্পন্ন করুন'}
                             </p>
                         </div>
                         <button 
+                            type="button"
                             onClick={() => setShowLessonIndex(false)}
-                            className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                            className="flex h-10 w-10 items-center justify-center border-2 border-slate-900 bg-white text-slate-600 shadow-[2px_2px_0_#0f172a] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
@@ -4160,22 +4194,23 @@ export default function Training({
                             };
 
                             return (
-                                <div key={chapter.number} className="animate-entrance-pop border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden transition-all duration-300">
+                                <div key={chapter.number} className="nb-card animate-entrance-pop overflow-hidden bg-white transition-all duration-300">
                                     {/* Chapter Row */}
                                     <button 
+                                        type="button"
                                         onClick={() => setExpandedChapterIndex(isExpanded ? null : idx)}
-                                        className={`w-full flex items-center justify-between p-3.5 text-left transition-colors ${
-                                            isExpanded ? 'bg-slate-50 dark:bg-slate-800/50' : 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/30'
+                                        className={`flex w-full items-center justify-between p-3.5 text-left transition-colors ${
+                                            isExpanded ? 'bg-orange-50' : 'bg-white hover:bg-orange-50/50'
                                         }`}
                                     >
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0 ${
-                                                isUnlocked ? 'bg-orange-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-400'
+                                        <div className="flex min-w-0 items-center gap-3">
+                                            <div className={`flex h-8 w-8 shrink-0 items-center justify-center border-2 border-slate-900 text-[10px] font-black ${
+                                                isUnlocked ? 'bg-orange-500 text-white shadow-[2px_2px_0_#0f172a]' : 'bg-slate-200 text-slate-400'
                                             }`}>
                                                 {getOrdinal(chapter.number)}
                                             </div>
                                             <div className="min-w-0">
-                                                <h3 className={`text-sm font-black text-slate-900 dark:text-white truncate ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                <h3 className={`truncate text-sm font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                     {chapter.title}
                                                     <span className="ml-2 text-[10px] font-bold text-slate-400 normal-case tracking-normal">
                                                         ({totalLessonsInChapter} {language === 'en' ? 'Lessons' : 'টি পাঠ'})
@@ -4188,7 +4223,7 @@ export default function Training({
                                                 )}
                                             </div>
                                         </div>
-                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-300 ${isExpanded ? 'rotate-180 bg-orange-100 text-orange-600' : 'text-slate-300'}`}>
+                                        <div className={`flex h-6 w-6 items-center justify-center border-2 border-slate-900 transition-transform duration-300 ${isExpanded ? 'rotate-180 bg-orange-500 text-white' : 'bg-white text-slate-400'}`}>
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
                                             </svg>
@@ -4197,7 +4232,7 @@ export default function Training({
 
                                     {/* Lessons Grid (Accordion Content) */}
                                     {isExpanded && (
-                                        <div className="p-4 pt-1 bg-slate-50/50 dark:bg-slate-900/30 grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 border-t border-slate-100 dark:border-slate-800/50 animate-fade-in">
+                                        <div className="grid grid-cols-5 gap-2 border-t-2 border-slate-900 bg-orange-50/40 p-4 pt-1 animate-fade-in min-[420px]:grid-cols-6 md:grid-cols-8 lg:grid-cols-10">
                                             {Array.from({ length: chapter.count }, (_, i) => {
                                                 const lessonNum = i + 1;
                                                 const lessonId = `${chapter.number}.${lessonNum}`;
@@ -4212,12 +4247,12 @@ export default function Training({
                                                             setShowLessonIndex(false);
                                                             handleChapterClick(chapter, lessonNum);
                                                         }}
-                                                        className={`aspect-square rounded-xl flex items-center justify-center text-[10px] font-black transition-all ${
+                                                        className={`flex aspect-square items-center justify-center border-2 border-slate-900 text-[10px] font-black transition-all ${
                                                             isDone 
-                                                                ? 'bg-emerald-500 text-white shadow-md' 
+                                                                ? 'bg-emerald-500 text-white shadow-[2px_2px_0_#0f172a]' 
                                                                 : isLessonUnl 
-                                                                    ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-600 border border-orange-200 dark:border-orange-800 hover:scale-110' 
-                                                                    : 'bg-slate-200 dark:bg-slate-700 text-slate-400 opacity-50 cursor-not-allowed'
+                                                                    ? 'bg-orange-100 text-orange-700 shadow-[2px_2px_0_#0f172a] hover:-translate-x-0.5 hover:-translate-y-0.5' 
+                                                                    : 'cursor-not-allowed border-slate-400 bg-slate-200 text-slate-400 opacity-50'
                                                         }`}
                                                         title={`${language === 'en' ? 'Lesson' : 'পাঠ'} ${lessonId}`}
                                                     >

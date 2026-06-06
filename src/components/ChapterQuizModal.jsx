@@ -522,42 +522,49 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
 
     return createPortal(
         <>
-            <div className={`fixed inset-0 z-[200] animate-fade-in ${isFullscreenScreen ? 'bg-slate-950/95 backdrop-blur-xl' : 'flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm'}`}>
-            <div className={`overflow-hidden border-t sm:border border-token-border shadow-2xl animate-slide-up-sheet sm:animate-scale-in ${isFullscreenScreen ? 'w-full h-full rounded-none border-0 bg-transparent flex flex-col' : 'bg-token-bg-surface rounded-t-[2.5rem] sm:rounded-2xl w-full max-w-lg flex flex-col max-h-[95vh]'}`}>
+            <div className={`neo-brutal fixed inset-0 z-[200] animate-fade-in ${isFullscreenScreen ? 'bg-[#fffdf7]' : 'flex items-end justify-center bg-slate-900/55 p-0 sm:items-center sm:p-4'}`}>
+            <div className={`overflow-hidden animate-slide-up-sheet sm:animate-scale-in ${isFullscreenScreen ? 'flex h-full w-full flex-col border-0 bg-[#fffdf7]' : 'nb-card flex max-h-[95vh] w-full max-w-lg flex-col border-t-2 border-slate-900 bg-[#fffdf7] shadow-[0_-4px_0_#0f172a] sm:border-2 sm:shadow-[4px_4px_0_#0f172a]'}`}>
                 {!isFullscreenScreen && (
-                    <div className="flex justify-center pt-3 pb-1 sm:hidden bg-token-bg-surface">
-                        <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full opacity-50"></div>
+                    <div className="nb-hazard shrink-0 sm:hidden" aria-hidden="true" />
+                )}
+                {isFullscreenScreen && (
+                    <div className="nb-hazard shrink-0" aria-hidden="true" />
+                )}
+                {!isFullscreenScreen && (
+                    <div className="hidden justify-center pt-3 pb-1 sm:flex">
+                        <div className="h-1 w-12 bg-slate-900 opacity-30"></div>
                     </div>
                 )}
                 {loading ? (
-                    <div className={`flex flex-col items-center justify-center space-y-4 ${isFullscreenScreen ? 'flex-1 px-6 py-16 text-white' : 'p-20'}`}>
-                        <svg className={`w-12 h-12 animate-pulse ${isFullscreenScreen ? 'text-orange-300' : 'text-orange-500'}`} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <div className={`flex flex-col items-center justify-center space-y-4 ${isFullscreenScreen ? 'flex-1 px-6 py-16 text-slate-900' : 'p-20'}`}>
+                        <svg className={`h-12 w-12 animate-pulse ${isFullscreenScreen ? 'text-orange-600' : 'text-orange-500'}`} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        <p className={`font-medium ${isFullscreenScreen ? 'text-white/80' : 'text-token-text-muted'}`}>
+                        <p className={`font-medium ${isFullscreenScreen ? 'text-slate-600' : 'text-slate-600'}`}>
                             {isRetryShuffle ? (t.loadingRetry ?? t.loadingText) : t.loadingText}
                         </p>
                     </div>
                 ) : totalQuestions === 0 ? (
-                    <div className={`text-center ${isFullscreenScreen ? 'flex h-full flex-col items-center justify-center px-6 py-12 text-white' : 'p-8'}`}>
-                        <p className={`${isFullscreenScreen ? 'text-white/80' : 'text-token-text-secondary'} mb-6`}>{t.noQuestions}</p>
+                    <div className={`text-center ${isFullscreenScreen ? 'flex h-full flex-col items-center justify-center px-6 py-12 text-slate-900' : 'p-8'}`}>
+                        <p className={`mb-6 ${isFullscreenScreen ? 'text-slate-600' : 'text-slate-600'}`}>{t.noQuestions}</p>
                         <button
+                            type="button"
                             onClick={onClose}
-                            className={`px-6 py-2 font-bold rounded-xl transition-all ${isFullscreenScreen ? 'bg-white text-slate-950 hover:bg-white/90' : 'bg-token-border text-token-text-secondary hover:bg-token-border-strong'}`}
+                            className="nb-btn-secondary px-6 py-2 font-bold"
                         >
                             {t.close}
                         </button>
                     </div>
                 ) : (
                     <>
-                        <div className={`p-4 flex justify-between items-center gap-3 ${isFullscreenScreen ? 'border-b border-white/10 bg-slate-950/70 text-white backdrop-blur-xl' : 'border-b border-token-border bg-token-bg-surface'}`}>
-                            <div className="flex items-center gap-2 min-w-0">
+                        <div className={`flex items-center justify-between gap-3 p-4 ${isFullscreenScreen ? 'border-b-2 border-slate-900 bg-white text-slate-900' : 'border-b-2 border-slate-900 bg-white'}`}>
+                            <div className="flex min-w-0 items-center gap-2">
                                 {lessonId && (
-                                    <span className={`text-xs font-black px-2.5 py-1 rounded-lg border shrink-0 ${isFullscreenScreen ? 'text-orange-200 bg-white/10 border-white/10' : 'text-orange-500 bg-orange-50 dark:bg-orange-500/10 border-orange-100 dark:border-orange-500/20'}`}>
+                                    <span className={`nb-tag shrink-0 bg-orange-50 px-2.5 py-1 text-xs font-black nb-mono ${isFullscreenScreen ? 'text-orange-700' : 'text-orange-700'}`}>
                                         {lessonId}
                                     </span>
                                 )}
-                                <h3 className={`font-bold text-lg truncate ${isFullscreenScreen ? 'text-white' : 'text-token-text-primary'}`}>
+                                <h3 className={`truncate text-lg font-bold ${isFullscreenScreen ? 'text-slate-900' : 'text-slate-900'}`}>
                                     {isReviewMode ? t.reviewTitle : showResult ? t.result : `${t.question} ${currentQuestionIndex + 1}/${totalQuestions}`}
                                 </h3>
                             </div>
@@ -566,7 +573,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                     <button
                                         type="button"
                                         onClick={toggleReadAloudMute}
-                                        className={`inline-flex items-center justify-center w-9 h-9 rounded-full transition-all relative ${isFullscreenScreen ? 'text-white/80 hover:bg-white/10' : 'text-token-text-secondary hover:bg-black/5 dark:hover:bg-white/10'} active:scale-90 ${isLoading ? 'opacity-70' : ''}`}
+                                        className={`inline-flex h-9 w-9 items-center justify-center border-2 border-slate-900 bg-white transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 ${isLoading ? 'opacity-70' : ''} ${isFullscreenScreen ? 'text-slate-700 shadow-[2px_2px_0_#0f172a]' : 'text-slate-600 shadow-[2px_2px_0_#0f172a]'}`}
                                         title={readAloudMuted ? t.readAloudUnmute : isPlaying || isLoading ? t.readAloudPlaying : t.readAloudMute}
                                         aria-pressed={!readAloudMuted}
                                         aria-label={readAloudMuted ? t.readAloudUnmute : t.readAloudMute}
@@ -591,7 +598,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                     <button
                                         type="button"
                                         onClick={() => handleGoogleSearch(currentQuestion?.questionText)}
-                                        className={`inline-flex items-center justify-center w-9 h-9 rounded-full transition-all group ${isFullscreenScreen ? 'text-white/80 hover:bg-white/10' : 'text-token-text-secondary hover:bg-black/5 dark:hover:bg-white/10'} active:scale-90`}
+                                        className={`group inline-flex h-9 w-9 items-center justify-center border-2 border-slate-900 bg-white shadow-[2px_2px_0_#0f172a] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 ${isFullscreenScreen ? 'text-slate-700' : 'text-slate-600'}`}
                                         title={t.searchGoogleTitle}
                                     >
                                         <svg className="w-5 h-5 transition-colors group-hover:text-amber-500" viewBox="0 0 24 24" fill="currentColor">
@@ -605,7 +612,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                 {isReviewMode ? (
                                     <button
                                         onClick={() => setIsReviewMode(false)}
-                                        className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold transition-colors ${isFullscreenScreen ? 'text-white/85 hover:bg-white/10' : 'text-token-text-secondary hover:bg-black/5 dark:hover:bg-white/10'}`}
+                                        className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-bold transition-colors nb-btn-secondary ${isFullscreenScreen ? '' : ''}`}
                                         aria-label={language === 'en' ? 'Back to result' : 'ফলাফলে ফিরে যান'}
                                         title={language === 'en' ? 'Back to result' : 'ফলাফলে ফিরে যান'}
                                     >
@@ -617,7 +624,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                 ) : (
                                     <button
                                         onClick={onClose}
-                                        className={`transition-colors ${isFullscreenScreen ? 'text-white/80 hover:text-white' : 'text-token-text-muted hover:text-token-text-secondary'}`}
+                                        className={`border-2 border-slate-900 bg-white p-1 text-slate-600 shadow-[2px_2px_0_#0f172a] transition-colors hover:-translate-x-0.5 hover:-translate-y-0.5 ${isFullscreenScreen ? '' : ''}`}
                                     >
                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                                     </button>
@@ -627,11 +634,10 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
 
                         <div
                             ref={quizScrollRef}
-                            className={`overflow-y-auto flex-1 overscroll-y-contain touch-pan-y ${isFullscreenScreen ? 'px-4 sm:px-6 lg:px-8 py-6 sm:py-10 text-white' : `p-6 ${isReviewMode ? 'pb-20' : showResult ? 'pb-24' : ''}`}`}
+                            className={`flex-1 overflow-y-auto overscroll-y-contain touch-pan-y ${isFullscreenScreen ? 'px-4 py-6 text-slate-900 sm:px-6 lg:px-8 sm:py-10' : `p-6 ${isReviewMode ? 'pb-20' : showResult ? 'pb-24' : ''}`}`}
                         >
                             {isReviewMode ? (
                                 <div className="relative min-h-full">
-                                    <div className="absolute inset-0 bg-white/5" />
                                     <div className="relative mx-auto flex min-h-full w-full max-w-5xl flex-col justify-between gap-8">
                                         <div className="flex flex-1 items-center justify-center">
                                             <div className="w-full max-w-3xl space-y-4 pb-2">
@@ -640,20 +646,20 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                     const isAnswered = userAnswer !== undefined;
                                                     const isCorrect = isAnswered && userAnswer === q.correctAnswerIndex;
                                                     return (
-                                                        <div key={idx} id={`question-card-${idx}`} className={`p-4 rounded-2xl border backdrop-blur-xl ${isCorrect ? 'border-emerald-400/20 bg-emerald-400/10' : 'border-rose-400/20 bg-rose-400/10'}`}>
+                                                        <div key={idx} id={`question-card-${idx}`} className={`nb-card p-4 ${isCorrect ? 'border-emerald-500 bg-emerald-50' : 'border-rose-400 bg-rose-50'}`}>
                                                             <div className="flex gap-3 mb-3">
-                                                                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${isCorrect ? 'bg-emerald-400 text-slate-950' : 'bg-rose-400 text-slate-950'}`}>
+                                                                <span className={`flex h-6 w-6 shrink-0 items-center justify-center border-2 border-slate-900 text-xs font-bold ${isCorrect ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
                                                                     {idx + 1}
                                                                 </span>
                                                                 <div className="flex-1 min-w-0">
                                                                     <div className="flex items-start justify-between gap-2">
-                                                                        <p className="text-sm sm:text-base lg:text-lg font-medium leading-relaxed text-white break-words">
+                                                                        <p className="min-w-0 flex-1 break-words text-sm font-medium leading-relaxed text-slate-900 sm:text-base lg:text-lg">
                                                                             {q.questionText}
                                                                         </p>
                                                                         <div className="flex gap-1.5 shrink-0">
                                                                             <button
                                                                                 onClick={() => handleGoogleSearch(q.questionText)}
-                                                                                className="p-2 rounded-xl bg-white/5 hover:bg-white/15 text-white/60 hover:text-blue-400 transition-all active:scale-90"
+                                                                                className="border-2 border-slate-900 bg-white p-2 text-slate-600 shadow-[2px_2px_0_#0f172a] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5"
                                                                                 title={t.searchGoogleTitle}
                                                                             >
                                                                                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -665,7 +671,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                                             </button>
                                                                             <button
                                                                                 onClick={() => handleStartReport(idx)}
-                                                                                className="p-2 rounded-xl bg-white/5 hover:bg-white/15 text-white/60 hover:text-orange-300 transition-all active:scale-90"
+                                                                                className="border-2 border-slate-900 bg-white p-2 text-slate-600 shadow-[2px_2px_0_#0f172a] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5"
                                                                                 title={t.reportTitle}
                                                                             >
                                                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -674,18 +680,18 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                                             </button>
                                                                         </div>
                                                                     </div>
-                                                                    <div className={`mt-1 inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${isCorrect ? 'bg-emerald-400/15 text-emerald-200' : 'bg-rose-400/15 text-rose-200'}`}>
+                                                                    <div className={`mt-1 inline-flex items-center px-2.5 py-1 text-[10px] font-black uppercase tracking-wider nb-mono ${isCorrect ? 'nb-tag bg-emerald-100 text-emerald-800' : 'nb-tag bg-rose-100 text-rose-800'}`}>
                                                                         {isCorrect ? t.right : t.wrong}
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                 {q.image && (
-                                                    <div className="mb-4 ml-9 rounded-xl overflow-hidden border border-white/10 max-w-[200px]">
+                                                    <div className="mb-4 ml-9 max-w-[200px] overflow-hidden border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
                                                         <img src={q.image} alt="Question" className="w-full h-auto" />
                                                     </div>
                                                 )}
                                                 {!isAnswered && (
-                                                    <div className="ml-9 mb-3 text-xs font-semibold text-rose-200">
+                                                    <div className="mb-3 ml-9 text-xs font-semibold text-rose-700">
                                                         {t.notAnswered}
                                                     </div>
                                                 )}
@@ -694,9 +700,9 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                         const isSelected = userAnswer === optIdx;
                                                         const optionClass = isSelected
                                                             ? isCorrect
-                                                                ? 'text-emerald-200 font-semibold'
-                                                                : 'text-rose-200 font-semibold'
-                                                            : 'text-white/70';
+                                                                ? 'font-semibold text-emerald-800'
+                                                                : 'font-semibold text-rose-800'
+                                                            : 'text-slate-600';
 
                                                         const isOptionImage = typeof opt === 'string' && (opt.startsWith('/') || opt.includes('.jpg') || opt.includes('.png') || opt.includes('.webp'));
 
@@ -718,19 +724,19 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                             </div>
                                         </div>
 
-                                        <div className="sticky bottom-0 border-t border-white/10 bg-slate-950/85 backdrop-blur-xl px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
+                                        <div className="sticky bottom-0 border-t-2 border-slate-900 bg-white px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
                                             <div className="mx-auto flex max-w-lg gap-2">
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsReviewMode(false)}
-                                                    className="min-w-0 flex-1 rounded-2xl border border-white/15 bg-white/[0.06] py-3 px-2 text-sm font-semibold text-white/95 transition-colors hover:bg-white/[0.1]"
+                                                    className="nb-btn-secondary min-w-0 flex-1 px-2 py-3 text-sm font-semibold"
                                                 >
                                                     {t.backToResult}
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={onClose}
-                                                    className="min-w-0 flex-1 rounded-2xl bg-white py-3 px-2 text-sm font-semibold text-slate-900 shadow-sm transition-colors hover:bg-white/95"
+                                                    className="nb-btn-primary min-w-0 flex-1 px-2 py-3 text-sm font-semibold"
                                                 >
                                                     {t.close}
                                                 </button>
@@ -739,27 +745,8 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                     </div>
                                 </div>
                             ) : showResult ? (
-                                <div className="relative flex min-h-full flex-col bg-slate-950">
-                                    <div
-                                        className={`pointer-events-none absolute inset-0 ${isPassed ? 'bg-[radial-gradient(ellipse_90%_60%_at_50%_-15%,rgba(16,185,129,0.2),transparent_55%)]' : 'bg-[radial-gradient(ellipse_85%_55%_at_50%_-10%,rgba(251,146,60,0.14),transparent_50%)]'}`}
-                                        aria-hidden
-                                    />
-                                    {isPassed && (
-                                        <div className="pointer-events-none absolute inset-0 overflow-hidden sm:rounded-none" aria-hidden>
-                                            {Array.from({ length: 10 }).map((_, i) => (
-                                                <span
-                                                    key={i}
-                                                    className="quiz-result-confetti-piece absolute top-0 h-2 w-2 rounded-sm opacity-0"
-                                                    style={{
-                                                        left: `${6 + i * 9.5}%`,
-                                                        animationDelay: `${0.12 + i * 0.04}s`,
-                                                        background: i % 2 === 0 ? 'rgba(52,211,153,0.85)' : 'rgba(253,224,71,0.75)'
-                                                    }}
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
-                                    <div className="relative z-[1] flex flex-1 flex-col px-4 pt-5 pb-2 sm:pt-8">
+                                <div className="relative flex min-h-full flex-col bg-[#fffdf7]">
+                                    <div className="relative z-[1] flex flex-1 flex-col px-4 pb-2 pt-5 sm:pt-8">
                                         <div className="flex min-h-0 flex-1 flex-col items-center justify-center">
                                             <div
                                                 role="status"
@@ -768,37 +755,37 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                 className="animate-quiz-result-in w-full max-w-md"
                                             >
                                                 <div
-                                                    className={`rounded-3xl border px-6 py-8 shadow-2xl backdrop-blur-md sm:px-8 sm:py-9 ${isPassed ? 'border-emerald-500/30 bg-slate-900/85 shadow-emerald-950/30' : 'border-white/10 bg-slate-900/80'}`}
+                                                    className={`nb-card px-6 py-8 sm:px-8 sm:py-9 ${isPassed ? 'border-emerald-500 bg-emerald-50' : 'bg-white'}`}
                                                 >
                                                     <div className="text-center">
-                                                        <div className="mb-3 text-[2.5rem] leading-none sm:text-[2.75rem] select-none" aria-hidden>
+                                                        <div className="mb-3 select-none text-[2.5rem] leading-none sm:text-[2.75rem]" aria-hidden>
                                                             {isPassed ? '✨' : '💪'}
                                                         </div>
-                                                        <p className={`text-[10px] font-semibold uppercase tracking-[0.14em] sm:text-xs ${isPassed ? 'text-emerald-300/95' : 'text-amber-200/90'}`}>
+                                                        <p className={`text-[10px] font-semibold uppercase tracking-[0.14em] sm:text-xs nb-mono ${isPassed ? 'text-emerald-700' : 'text-amber-700'}`}>
                                                             {isPassed ? t.resultBadgePass : t.resultBadgeRetry}
                                                         </p>
-                                                        <h2 className="mt-2 text-xl font-bold leading-snug tracking-tight text-white sm:text-2xl">
+                                                        <h2 className="mt-2 text-xl font-bold leading-snug tracking-tight text-slate-900 sm:text-2xl">
                                                             {isPassed ? t.completed : t.failed}
                                                         </h2>
-                                                        <p className="mt-2 text-sm font-medium text-white/50">
+                                                        <p className="mt-2 text-sm font-medium text-slate-600">
                                                             {language === 'bn'
                                                                 ? `মোট ${totalQuestions}টির মধ্যে ${score}টি সঠিক`
                                                                 : `${score} of ${totalQuestions} correct`}
                                                         </p>
-                                                        <p className="mt-6 text-5xl font-semibold tabular-nums tracking-tight text-white sm:text-[3.25rem]">
+                                                        <p className="mt-6 text-5xl font-semibold tabular-nums tracking-tight text-slate-900 sm:text-[3.25rem]">
                                                             {Math.round((score / totalQuestions) * 100)}%
                                                         </p>
-                                                        <p className={`mx-auto mt-3 max-w-xs text-xs leading-relaxed sm:text-sm ${isPassed ? 'text-emerald-100/65' : 'text-white/55'}`}>
+                                                        <p className={`mx-auto mt-3 max-w-xs text-xs leading-relaxed sm:text-sm ${isPassed ? 'text-emerald-800' : 'text-slate-600'}`}>
                                                             {isPassed ? t.resultPassHint : t.resultReviewHint}
                                                         </p>
-                                                        <div className="relative mt-8 h-1.5 w-full overflow-visible rounded-full bg-white/[0.08]">
+                                                        <div className="relative mt-8 h-2 w-full overflow-visible border-2 border-slate-900 bg-slate-200">
                                                             <div
-                                                                className={`h-full rounded-full transition-[width] duration-[900ms] ease-out ${isPassed ? 'bg-emerald-400/90' : 'bg-amber-400/85'}`}
+                                                                className={`h-full transition-[width] duration-[900ms] ease-out ${isPassed ? 'bg-emerald-500' : 'bg-amber-400'}`}
                                                                 style={{ width: `${Math.max(0, Math.min(100, (score / totalQuestions) * 100))}%` }}
                                                             />
                                                             {!isPassed && (
                                                                 <div
-                                                                    className="absolute top-1/2 z-[1] h-3 w-px -translate-y-1/2 rounded-full bg-white/40"
+                                                                    className="absolute top-1/2 z-[1] h-4 w-0.5 -translate-y-1/2 bg-slate-900"
                                                                     style={{ left: '90%' }}
                                                                     title={language === 'en' ? 'Pass threshold (90%)' : 'পাসের সীমা (৯০%)'}
                                                                     aria-hidden
@@ -806,18 +793,18 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                             )}
                                                         </div>
                                                         {!isPassed && (
-                                                            <p className="mt-4 px-1 text-xs leading-snug text-white/50">{t.required}</p>
+                                                            <p className="mt-4 px-1 text-xs leading-snug text-slate-600">{t.required}</p>
                                                         )}
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="mx-auto mt-4 w-full max-w-md shrink-0 space-y-2.5 border-t border-white/10 pt-5 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+                                        <div className="mx-auto mt-4 w-full max-w-md shrink-0 space-y-2.5 border-t-2 border-slate-900 pt-5 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
                                             <button
                                                 type="button"
                                                 onClick={() => setIsReviewMode(true)}
-                                                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/[0.06] py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/[0.1]"
+                                                className="nb-btn-secondary flex w-full items-center justify-center gap-2 py-3.5 text-sm font-semibold"
                                             >
                                                 <svg className="h-4 w-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -832,14 +819,14 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                         ref={resultPrimaryRef}
                                                         type="button"
                                                         onClick={onClose}
-                                                        className="w-full rounded-2xl bg-white py-3.5 text-sm font-semibold text-slate-900 shadow-lg transition-colors hover:bg-white/95 active:scale-[0.99]"
+                                                        className="nb-btn-primary w-full py-3.5 text-sm font-semibold"
                                                     >
                                                         {t.close}
                                                     </button>
                                                     <button
                                                         type="button"
                                                         onClick={handleTryAgain}
-                                                        className="w-full rounded-2xl border border-white/15 py-3.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/[0.06]"
+                                                        className="nb-btn-secondary w-full py-3.5 text-sm font-semibold"
                                                     >
                                                         {t.tryAgain}
                                                     </button>
@@ -850,14 +837,14 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                         ref={resultPrimaryRef}
                                                         type="button"
                                                         onClick={handleTryAgain}
-                                                        className="rounded-2xl bg-amber-500 py-3.5 text-sm font-semibold text-white shadow-md shadow-amber-900/20 transition-colors hover:bg-amber-400 active:scale-[0.99]"
+                                                        className="nb-btn-primary rounded-none py-3.5 text-sm font-semibold"
                                                     >
                                                         {t.tryAgain}
                                                     </button>
                                                     <button
                                                         type="button"
                                                         onClick={onClose}
-                                                        className="rounded-2xl border border-white/15 bg-white/[0.06] py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/[0.1]"
+                                                        className="nb-btn-secondary py-3.5 text-sm font-semibold"
                                                     >
                                                         {t.close}
                                                     </button>
@@ -867,7 +854,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                     ref={resultPrimaryRef}
                                                     type="button"
                                                     onClick={handleFinish}
-                                                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-900/25 transition-colors hover:bg-emerald-400 active:scale-[0.99]"
+                                                    className="nb-btn-primary flex w-full items-center justify-center gap-2 py-3.5 text-sm font-semibold"
                                                 >
                                                     <span>{t.continue}</span>
                                                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -887,7 +874,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                     <button
                                                         type="button"
                                                         onClick={onReadAgain || onClose}
-                                                        className="w-full py-2.5 text-sm font-medium text-white/55 transition-colors hover:text-white/90"
+                                                        className="w-full py-2.5 text-sm font-medium text-slate-600 underline underline-offset-2 transition-colors hover:text-slate-900"
                                                     >
                                                         {t.readAgain}
                                                     </button>
@@ -901,12 +888,12 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                     key={currentQuestionIndex}
                                     className="space-y-6 animate-quiz-question-in"
                                 >
-                                    <div className="text-sm sm:text-base lg:text-lg font-medium text-token-text-primary leading-relaxed break-words">
+                                    <div className="text-sm font-medium leading-relaxed text-slate-900 sm:text-base lg:text-lg break-words">
                                         {currentQuestion?.questionText}
                                     </div>
 
                                     {currentQuestion?.image && (
-                                        <div className="rounded-2xl overflow-hidden border-4 border-white dark:border-slate-700 shadow-xl max-h-[220px] flex justify-center bg-slate-100 dark:bg-slate-900">
+                                        <div className="flex max-h-[220px] justify-center overflow-hidden border-2 border-slate-900 bg-white shadow-[3px_3px_0_#0f172a]">
                                             <img
                                                 src={currentQuestion.image}
                                                 alt="Visual aid"
@@ -923,12 +910,12 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                 <button
                                                     key={idx}
                                                     onClick={() => handleOptionSelect(idx)}
-                                                    className={`relative rounded-2xl transition-all border-2 flex group ${userAnswers[currentQuestionIndex] === idx
-                                                        ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300'
-                                                        : 'border-token-border hover:border-orange-200 dark:hover:border-orange-800 hover:bg-token-bg-page text-token-text-secondary'
+                                                    className={`group relative flex border-2 border-slate-900 transition-all ${userAnswers[currentQuestionIndex] === idx
+                                                        ? 'bg-orange-400 text-slate-900 shadow-[3px_3px_0_#0f172a]'
+                                                        : 'bg-white text-slate-700 shadow-[2px_2px_0_#0f172a] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5'
                                                         } ${isImage
                                                             ? 'aspect-square flex-col items-center justify-center p-3'
-                                                            : 'w-full py-4 px-5 items-center justify-start text-left'
+                                                            : 'w-full items-center justify-start px-5 py-4 text-left'
                                                         }`}
                                                 >
                                                     {isImage ? (
@@ -946,13 +933,14 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
 
                         {/* Footer */}
                         {(!showResult && !isReviewMode) && (
-                            <div className="sticky bottom-0 z-10 border-t border-token-border bg-token-bg-page/95 backdrop-blur p-4 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-[calc(1rem+env(safe-area-inset-bottom))]">
+                            <div className="sticky bottom-0 z-10 border-t-2 border-slate-900 bg-white p-4 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-[calc(1rem+env(safe-area-inset-bottom))]">
                                 <button
+                                    type="button"
                                     onClick={handleNext}
                                     disabled={userAnswers[currentQuestionIndex] === undefined}
-                                    className={`w-full py-3 rounded-xl font-bold transition-all ${userAnswers[currentQuestionIndex] !== undefined
-                                        ? 'bg-token-action-primary hover:bg-orange-700 text-token-action-primary-fg shadow-lg shadow-orange-600/20'
-                                        : 'bg-token-border text-token-text-muted cursor-not-allowed'
+                                    className={`w-full py-3 font-bold transition-all ${userAnswers[currentQuestionIndex] !== undefined
+                                        ? 'nb-btn-primary'
+                                        : 'cursor-not-allowed border-2 border-slate-300 bg-slate-200 text-slate-500'
                                         }`}
                                 >
                                     {currentQuestionIndex === totalQuestions - 1 ? t.submit : t.next}
@@ -966,18 +954,16 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
 
         {/* Report Feedback Modal */}
         {showReportModal && (
-            <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-                <div className="bg-slate-900 border-t sm:border border-white/10 rounded-t-[2.5rem] sm:rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl animate-slide-up-sheet sm:animate-scale-in flex flex-col">
-                    <div className="flex justify-center pt-4 sm:hidden">
-                        <div className="w-12 h-1.5 bg-white/10 rounded-full"></div>
-                    </div>
+            <div className="neo-brutal fixed inset-0 z-[300] flex animate-fade-in items-end justify-center bg-slate-900/55 p-0 sm:items-center sm:p-4">
+                <div className="nb-card flex w-full max-w-md animate-slide-up-sheet flex-col overflow-hidden border-t-2 border-slate-900 bg-[#fffdf7] sm:animate-scale-in sm:border-2 sm:shadow-[4px_4px_0_#0f172a]">
+                    <div className="nb-hazard shrink-0" aria-hidden="true" />
                     <div className="p-6 pb-2">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-xl font-bold text-white tracking-tight">{t.reportTitle}</h3>
+                        <div className="mb-4 flex items-center justify-between">
+                            <h3 className="text-xl font-bold tracking-tight text-slate-900">{t.reportTitle}</h3>
                             <button
                                 type="button"
                                 onClick={() => setShowReportModal(false)}
-                                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-white/60 transition-colors hover:bg-white/10"
+                                className="flex h-10 w-10 items-center justify-center border-2 border-slate-900 bg-white text-slate-600 shadow-[2px_2px_0_#0f172a]"
                                 aria-label={t.close}
                             >
                                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -985,11 +971,11 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                 </svg>
                             </button>
                         </div>
-                        <p className="text-sm text-white/70 mb-6">{t.reportSubtitle}</p>
+                        <p className="mb-6 text-sm text-slate-600">{t.reportSubtitle}</p>
                         
-                        <div className="p-4 rounded-2xl bg-white/5 border border-white/10 mb-6">
-                            <p className="text-xs font-black text-orange-400 uppercase tracking-widest mb-2">QUESTION PREVIEW</p>
-                            <p className="text-sm text-white/90 line-clamp-3 leading-relaxed italic">
+                        <div className="nb-card mb-6 bg-white p-4">
+                            <p className="mb-2 text-xs font-black uppercase tracking-widest text-orange-600 nb-mono">QUESTION PREVIEW</p>
+                            <p className="line-clamp-3 text-sm italic leading-relaxed text-slate-800">
                                 "{shuffledQuestions[reportingIndex]?.questionText}"
                             </p>
                         </div>
@@ -1001,17 +987,18 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                     value={reportComment}
                                     onChange={(e) => setReportComment(e.target.value)}
                                     placeholder={t.reportPlaceholder}
-                                    className="w-full min-h-[140px] px-5 py-4 rounded-3xl bg-white/5 border-2 border-transparent focus:border-orange-500/30 focus:bg-white/10 text-white placeholder-white/30 text-sm transition-all outline-none resize-none"
+                                    className="nb-input w-full min-h-[140px] resize-none px-5 py-4 text-sm"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    <div className="p-6 pt-4 border-t border-white/10 mt-2">
+                    <div className="mt-2 border-t-2 border-slate-900 p-6 pt-4">
                         <button
+                            type="button"
                             onClick={handleSendReport}
                             disabled={isSharing}
-                            className={`w-full py-4 rounded-[1.5rem] font-black text-white transition-all active:scale-[0.98] flex items-center justify-center gap-3 shadow-xl ${isSharing ? 'bg-slate-700' : 'bg-[#25D366] hover:bg-[#22c35e] shadow-green-500/20'}`}
+                            className={`flex w-full items-center justify-center gap-3 py-4 font-black text-white transition-all active:scale-[0.98] ${isSharing ? 'bg-slate-500' : 'border-2 border-slate-900 bg-[#25D366] shadow-[3px_3px_0_#0f172a] hover:-translate-x-0.5 hover:-translate-y-0.5'}`}
                         >
                             {isSharing ? (
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -1027,12 +1014,10 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
 
         {/* Google Search Confirmation Modal */}
         {showSearchModal && (
-            <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-                <div className="bg-slate-900 border-t sm:border border-white/10 rounded-t-[2.5rem] sm:rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-2xl animate-slide-up-sheet sm:animate-scale-in flex flex-col p-8 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:pb-8 text-center items-center">
-                    <div className="flex justify-center mb-6 sm:hidden">
-                        <div className="w-12 h-1.5 bg-white/10 rounded-full"></div>
-                    </div>
-                    <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-6 shadow-xl">
+            <div className="neo-brutal fixed inset-0 z-[300] flex animate-fade-in items-end justify-center bg-slate-900/55 p-0 sm:items-center sm:p-4">
+                <div className="nb-card flex w-full max-w-sm animate-slide-up-sheet flex-col items-center overflow-hidden border-t-2 border-slate-900 bg-[#fffdf7] p-8 pb-[calc(2rem+env(safe-area-inset-bottom))] text-center sm:animate-scale-in sm:border-2 sm:pb-8 sm:shadow-[4px_4px_0_#0f172a]">
+                    <div className="nb-hazard mb-4 w-full shrink-0" aria-hidden="true" />
+                    <div className="mb-6 flex h-16 w-16 items-center justify-center border-2 border-slate-900 bg-white shadow-[3px_3px_0_#0f172a]">
                         <svg className="w-9 h-9" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-1 .67-2.28 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -1040,15 +1025,15 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                         </svg>
                     </div>
-                    <h3 className="text-xl font-black text-white mb-2">{searchCount >= MAX_SEARCH_QUOTA ? t.searchExhausted : t.searchLimitTitle}</h3>
-                    <p className="text-white/60 text-sm mb-8">{searchCount >= MAX_SEARCH_QUOTA ? (language === 'en' ? 'Limit reached!' : 'নিজের বুদ্ধি খাটান!') : t.searchConfirm.replace('%s', searchCount)}</p>
-                    <div className="flex flex-col w-full gap-3">
+                    <h3 className="mb-2 text-xl font-black text-slate-900">{searchCount >= MAX_SEARCH_QUOTA ? t.searchExhausted : t.searchLimitTitle}</h3>
+                    <p className="mb-8 text-sm text-slate-600">{searchCount >= MAX_SEARCH_QUOTA ? (language === 'en' ? 'Limit reached!' : 'নিজের বুদ্ধি খাটান!') : t.searchConfirm.replace('%s', searchCount)}</p>
+                    <div className="flex w-full flex-col gap-3">
                         {searchCount < MAX_SEARCH_QUOTA && (
-                            <button onClick={confirmGoogleSearch} className="w-full py-4 rounded-2xl bg-blue-600 text-white font-black">
+                            <button type="button" onClick={confirmGoogleSearch} className="nb-btn-indigo w-full py-4 font-black">
                                 {t.searchProceed}
                             </button>
                         )}
-                        <button onClick={() => setShowSearchModal(false)} className="w-full py-4 rounded-2xl bg-white/10 text-white/70 font-bold">
+                        <button type="button" onClick={() => setShowSearchModal(false)} className="nb-btn-secondary w-full py-4 font-bold">
                             {t.close}
                         </button>
                     </div>
