@@ -2618,7 +2618,7 @@ export default function Training({
                                     </div>
                                     <div>
                                         <h2 className={`text-xl font-black tracking-tight text-slate-900 lg:text-3xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                            {language === 'en' ? 'Aro Janun' : 'আরো জানুন'}
+                                            {language === 'en' ? 'Know More' : 'আরো জানুন'}
                                         </h2>
                                     </div>
                                 </div>

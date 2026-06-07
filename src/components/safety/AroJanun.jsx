@@ -141,7 +141,7 @@ export default function AroJanun({ language, setCurrentView }) {
 
     const t = {
         en: {
-            title: 'Aro Janun',
+            title: 'Know More',
             searchPlaceholder: 'Search chapter...',
             noResults: 'No chapters found',
             back: 'Back',
