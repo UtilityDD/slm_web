@@ -28,21 +28,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 'কংক্রিট চেম্বার তৈরি করে কাস্ট আয়রন কভার ও ফানেল লাগানো',
                 'আর্থ টেস্টার/মেগার ব্যবহার করে মাটির রোধ (Earth Resistance) নিখুঁতভাবে মাপা',
             ],
-            tools: [
-                { name: 'ডাবল-এন্ডেড স্প্যানার সেট (Double-Ended Spanner Set)', image: '/images/plate_earthing/fig_2_5_spanner.png' },
-                { name: 'কম্বিনেশন প্লায়ার্স (Combination Pliers)', image: '/images/cable_laying/fig_2_25_combination_pliers.png' },
-                { name: 'পাইপ রেঞ্চ (Pipe Wrench)', image: '/images/cable_laying/fig_2_27_pipe_wrench.png' },
-                { name: 'পরিমাপক টেপ (Measuring Tape)', image: '/images/cable_laying/fig_2_28_measuring_tape.png' },
-                { name: 'স্লেজ হ্যামার (Sledge Hammer)', image: '/images/cable_laying/fig_2_29_hammer.png' },
-                { name: 'হ্যাকস ফ্রেম ও ব্লেড (Hacksaw Frame)', image: '/images/plate_earthing/fig_hacksaw_workshop.png' },
-                { name: 'সোল্ডারিং পট ও ল্যাডেল (Soldering Ladle & Pot)', image: '/images/plate_earthing/fig_2_12_soldering_iron.png' },
-                { name: 'মই (Ladder)', image: '/images/plate_earthing/fig_2_10_ladder.png' },
-                { name: 'আর্থ টেস্টার (Earth Tester)', image: '/images/plate_earthing/fig_2_8_tester.png' },
-                { name: 'ব্লো-ল্যাম্প (Blowlamp)', image: '/images/plate_earthing/fig_2_13_soldering_station.png' },
-                { name: 'G.I. পাইপ থ্রেডিং ডাই-স্টক সেট (Die Stock)', image: '/images/cable_laying/fig_2_36_ratchet_device.png' },
-                { name: 'ক্রোবার বা শাবল (Crowbar)', image: '/images/cable_laying/fig_2_35_come_along_clamp.png' },
-                { name: 'কোদাল ও বেলচা (Spade/Phawrah)', image: '/images/cable_laying/fig_2_34_tripod.png' },
-            ],
+            tools: [],
             materials: [
                 'G.I. প্লেট (৬০০ মিমি × ৬০০ মিমি × ৬.৩ মিমি) — ১টি (তামার প্লেট হলে ৩.১৫ মিমি পুরু)',
                 'G.I. পাইপ (১২.৭ মিমি ব্যাস) — ৫ মিটার (আর্থিং তারের সুরক্ষার জন্য)',
@@ -152,21 +138,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 'Construct the inspection concrete chamber and fit the Cast Iron cover',
                 'Measure the earth resistance using an earth tester or megger',
             ],
-            tools: [
-                { name: 'Double-Ended Spanner Set', image: '/images/plate_earthing/fig_2_5_spanner.png' },
-                { name: 'Combination Pliers', image: '/images/cable_laying/fig_2_25_combination_pliers.png' },
-                { name: 'Pipe Wrench', image: '/images/cable_laying/fig_2_27_pipe_wrench.png' },
-                { name: 'Measuring Tape', image: '/images/cable_laying/fig_2_28_measuring_tape.png' },
-                { name: 'Sledge Hammer', image: '/images/cable_laying/fig_2_29_hammer.png' },
-                { name: 'Hacksaw Frame with Blade', image: '/images/plate_earthing/fig_hacksaw_workshop.png' },
-                { name: 'Soldering Ladle & Pot', image: '/images/plate_earthing/fig_2_12_soldering_iron.png' },
-                { name: 'Ladder', image: '/images/plate_earthing/fig_2_10_ladder.png' },
-                { name: 'Earth Tester', image: '/images/plate_earthing/fig_2_8_tester.png' },
-                { name: 'Blowlamp', image: '/images/plate_earthing/fig_2_13_soldering_station.png' },
-                { name: 'G.I. Pipe Threading Die Stock', image: '/images/cable_laying/fig_2_36_ratchet_device.png' },
-                { name: 'Crowbar / Digging Bar', image: '/images/cable_laying/fig_2_35_come_along_clamp.png' },
-                { name: 'Spade / Phawrah', image: '/images/cable_laying/fig_2_34_tripod.png' },
-            ],
+            tools: [],
             materials: [
                 'G.I. Plate (600 mm x 600 mm x 6.3 mm) — 1 No.',
                 'G.I. Pipe (12.7 mm dia) — 5 m (for wire protection)',
@@ -982,6 +954,470 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 { type: 'Minimum Size of Earth Electrode Wire', value: '14 SWG (2.9 mm²)' },
                 { type: 'GI Earthing Plate Size (Class XI Manual)', value: '600 mm x 600 mm x 8.30 mm' },
                 { type: 'Copper Earthing Plate Size (Class XI Manual)', value: '600 mm x 600 mm x 3.15 mm' }
+            ]
+        }
+    },
+    {
+        id: 'pf-05',
+        code: 'PF-05',
+        icon: '🛡',
+        badgeClass: 'bg-amber-100 text-amber-800',
+        title_en: 'Guarding — Principles & Types',
+        title_bn: 'গার্ডিং — মূলনীতি ও প্রকারভেদ',
+        desc_en: 'Learn about line guarding mechanisms, Levice guarding types (Carpet, Cradle, Box), road crossing regulations, and safety clearance requirements.',
+        desc_bn: 'ডিস্ট্রিবিউশন লাইনের গার্ডিং মূলনীতি, লেভিস গার্ডিংয়ের প্রকারভেদ (কার্পেট, ক্রেডেল ও বক্স টাইপ), রাস্তা পারাপারের নিয়ম এবং নিরাপত্তা ক্লিয়ারেন্স সংক্রান্ত নির্দেশনাবলী।',
+        topics_en: ['Guarding Basics', 'Levice Guarding', 'Road Crossing Rules', 'Clearance Standards'],
+        topics_bn: ['গার্ডিংয়ের মূলনীতি', 'লেভিস গার্ডিং', 'রাস্তা পারাপারের নিয়ম', 'ক্লিয়ারেন্স স্ট্যান্ডার্ড'],
+        duration_en: '10 min read',
+        duration_bn: '১০ মিনিট পড়া',
+        detail_bn: {
+            intro: 'ডিস্ট্রিবিউশন লাইনের নিরাপত্তা ও সুরক্ষার স্বার্থে ওভারহেড কন্ডাক্টরের নিচে যে বিশেষ তারের জালি বা বেষ্টনী তৈরি করা হয়, তাকেই গার্ডিং বলে। কোনো লাইভ কন্ডাক্টর দুর্ঘটনাবশত ছিঁড়ে নিচে পড়ার সময় এটি সরাসরি মাটিতে বা নিচে থাকা কোনো ব্যক্তি বা অন্য লাইনের ওপর পড়ার আগেই ধাতব গার্ড ফ্রেম বা ক্রেডেলকে স্পর্শ করে। ফলে মেইন লাইনের ফিউজ পুড়ে যায় অথবা সাবস্টেশনের সার্কিট ব্রেকার ট্রিপ করে বিদ্যুৎ সংযোগ বিচ্ছিন্ন করে দেয়। এর ফলে কোনো সজীব বস্তুর ওপর বিদ্যুৎস্পৃষ্ট হওয়ার ঝুঁকি এড়ানো সম্ভব হয়।',
+            objectives: [
+                'গার্ডিংয়ের ধারণা এবং এটি কীভাবে লাইভ কন্ডাক্টর ছিঁড়ে পড়ার পর নিরাপত্তা প্রদান করে তা বোঝা',
+                'লেভিস গার্ডিংয়ের বিভিন্ন প্রকারভেদ (কার্পেট, ক্রেডেল, এবং বক্স টাইপ) ও তাদের গঠন সম্পর্কে জানা',
+                'রাস্তা পারাপারের ক্ষেত্রে গার্ডিংয়ের নিয়মাবলী এবং নির্দিষ্ট কোণ সম্পর্কে জানা',
+                'লেসিং তারের ফাঁক এবং লাইনের ভোল্টেজ ভেদে উপযুক্ত তারের SWG নির্ধারণ করা',
+                'টেলিফোন লাইন ক্রসিংয়ের ক্ষেত্রে প্রয়োজনীয় ক্লিয়ারেন্স এবং উচ্চ ভোল্টেজ লাইনের ব্যতিক্রম শেখা'
+            ],
+            tools: [],
+            materials: [
+                'জি.আই. গার্ড ওয়্যার (G.I. Guarding Wire) — ৬, ৮, ১০ বা ১২ SWG',
+                'জি.আই. ক্রস-আর্ম (G.I. Cross-Arm) — গার্ড তার খুঁটিতে মাউন্ট করার জন্য',
+                'লেসিং ওয়্যার (Lacing Wire) — আড়াআড়ি গার্ড তার বাঁধার জন্য',
+                'আইসোলেটর ও ক্ল্যাম্প — খুঁটির সাথে গার্ড ফ্রেমের সংযোগের জন্য',
+                'ডি-ক্ল্যাম্প এবং স্যাকেল বোল্ট — গার্ড তার আটকানোর জন্য'
+            ],
+            steps: [
+                {
+                    title: 'A — গার্ডিংয়ের মূলনীতি ও কার্যপ্রণালী',
+                    image: '/images/guarding/fig_4_43_cradle_type_guarding.png',
+                    caption: 'চিত্র ১: কন্ডাক্টর ছিঁড়ে নিচে পড়ার সময় মেটাল গার্ড ক্রেডেল স্পর্শ করার নিরাপত্তা মূলক নকশা।',
+                    items: [
+                        'ওভারহেড লাইনের কন্ডাক্টর ছিঁড়ে গেলে তা যেন মাটিতে থাকা মানুষ, পশু বা নিচে থাকা টেলিফোন লাইনের সংস্পর্শে না আসে, তার জন্য লাইনের নিচে জি.আই. তারের একটি জালি তৈরি করা হয়।',
+                        'কন্ডাক্টর ছিঁড়ে গেলে তা প্রথমে এই জি.আই. তারের জাল বা ক্রেডেলকে স্পর্শ করে।',
+                        'যেহেতু ক্রেডেলটি আর্থ করা থাকে, তাই স্পর্শ করার সাথে সাথে একটি শক্তিশালী শর্ট-সার্কিট ঘটে যা লাইনের ফিউজ গলিয়ে দেয় অথবা ব্রেকার ট্রিপ করায়।',
+                        'এর ফলে লাইনটি তাত্ক্ষণিকভাবে নিষ্ক্রিয় (dead) হয়ে যায় এবং বড় দুর্ঘটনা থেকে সুরক্ষা পাওয়া যায়।'
+                    ]
+                },
+                {
+                    title: 'B — লেভিস গার্ডিংয়ের প্রকারভেদ (কার্পেট, ক্রেডেল ও বক্স টাইপ)',
+                    image: '/images/guarding/fig_4_44_carpet_guarding.png',
+                    caption: 'চিত্র ২: রাস্তা পারাপার বা টেলিফোন লাইনের ক্রসিংয়ে ব্যবহৃত কার্পেট গার্ডিংয়ের লেআউট।',
+                    items: [
+                        '১. কার্পেট গার্ডিং (Carpet Guarding): নির্দিষ্ট দৈর্ঘ্যের ক্রস-আর্ম খুঁটির সাথে যুক্ত করে ৪টি জি.আই. তার ব্যবহার করে এই গার্ডিং প্রস্তুত করা হয়। নির্দিষ্ট দূরত্ব পর পর আড়াআড়ি লেসিং তার বাঁধা থাকে। এটি মূলত বিদ্যুৎ লাইনের ক্রসিং বা পাওয়ার ও টেলিফোন লাইনের ক্রসিংয়ে ব্যবহৃত হয় (চিত্র ২)।',
+                        '২. ক্রেডেল গার্ডিং (Cradle Guarding): একে ট্রে বা ক্রেডেল গার্ডিংও বলা হয়। এতে মোট ৬টি গার্ড তার থাকে (নিচে ৪টি এবং ওপরে ২টি)। তিন দিক থেকে আড়াআড়ি ক্রস লেসিং করা থাকে (চিত্র ১)। এর ফলে কন্ডাক্টর ছিঁড়ে লাফিয়ে উঠলেও গার্ড ফ্রেমের বাইরে যেতে পারে না। এটি সাধারণত আবাসিক এলাকা, রাস্তা পারাপার বা রেল ক্রসিংয়ে ব্যবহৃত হয়।',
+                        '৩. বক্স টাইপ গার্ডিং (Box Type Guarding): এটি কম্পোজিট বা মিশ্র লাইনের ক্ষেত্রে ব্যবহৃত হয়। নিচের লাইনের নিচে কার্পেট গার্ডিং করে তার সাথে লম্বালম্বি লেসিং তার টেনে উপরের লাইনের গার্ড তার যুক্ত করা হয়।'
+                    ]
+                },
+                {
+                    title: 'C — রাস্তা পারাপার ও গার্ডিংয়ের সাধারণ নিয়মাবলী',
+                    items: [
+                        'রাস্তা পারাপারের সময় ক্রসিং যেন যতটা সম্ভব সমকোণে (৯০ ডিগ্রি) হয় তা নিশ্চিত করতে হবে। কোনো অবস্থাতেই ক্রসিংয়ের কোণ ৬০ ডিগ্রির কম হওয়া যাবে না।',
+                        'রাস্তা পারাপারে বা রাস্তার সমান্তরালে চলা পাওয়ার লাইনের সুরক্ষার জন্য সবসময় ক্রেডেল গার্ডিং ব্যবহার করতে হবে।',
+                        'তারের পরিমাপ (SWG): এল.টি. লাইনের জন্য ১০ SWG এবং ১১ কেভি থেকে ৩৩ কেভি লাইনের গার্ডিংয়ের জন্য ৮ SWG জি.আই. তার ব্যবহার করতে হবে।'
+                    ]
+                },
+                {
+                    title: 'D — লেসিং তারের দূরত্ব ও উলম্ব ক্লিয়ারেন্স',
+                    items: [
+                        'খুঁটি থেকে প্রথম আড়াআড়ি লেসিং তারটির দূরত্ব হতে হবে ৭৫০ মিমি (২.৫ ফুট)। পরবর্তী প্রতিটি লেসিং তার একে অপরের থেকে ৩ মিটার দূরত্বে স্থাপন করতে হবে।',
+                        'লাইনের মাঝখানে (mid-span) কন্ডাক্টর ও গার্ডিংয়ের মধ্যকার উলম্ব দূরত্ব এল.টি. লাইনের জন্য সর্বনিম্ন ৬১০ মিমি এবং এইচ.টি. লাইনের জন্য সর্বনিম্ন ১২২০ মিমি হতে হবে।',
+                        'এল.টি. লাইনের ক্ষেত্রে গার্ডিং ক্রস-আর্ম ও নিউট্রাল কন্ডাক্টরের মধ্যকার উলম্ব দূরত্ব ৬১০ মিমি (২ ফুট) এবং ক্রস-আর্মের দৈর্ঘ্য ৭৫০ মিমি হতে হবে।',
+                        'এইচ.টি. লাইনের ক্ষেত্রে কন্ডাক্টর ও গার্ডিং ক্রস-আর্মের মধ্যকার ব্যবধান ১১ কেভি লাইনের জন্য ৬৫০ মিমি, ২২ কেভি লাইনের জন্য ৭৫০ মিমি এবং ৩৩ কেভি লাইনের জন্য ৮৪০ মিমি হতে হবে।'
+                    ]
+                },
+                {
+                    title: 'E — টেলিফোন ক্রসিং ক্লিয়ারেন্স এবং উচ্চ ভোল্টেজ লাইনের ব্যতিক্রম',
+                    items: [
+                        'পাওয়ার লাইনের গার্ড তার এবং টেলিফোন লাইনের মধ্যকার ন্যূনতম ব্যবধান হতে হবে ৯২০ মিমি।',
+                        '৬৬ কেভি এবং তার চেয়ে বেশি ভোল্টেজের লাইনের ক্ষেত্রে সাধারণত কোনো ফিজিক্যাল গার্ডিং দেওয়ার প্রয়োজন হয় না। কারণ এই লাইনের সার্কিট ব্রেকারগুলো অত্যন্ত সংবেদনশীল হয়; কন্ডাক্টর ছিঁড়ে যাওয়ার সাথে সাথে ব্রেকার ট্রিপ করে লাইন বিচ্ছিন্ন করে দেয়।',
+                        '৬৬ কেভি ও ১৩২ কেভি পাওয়ার লাইনের সাথে টেলিফোন লাইনের ক্লিয়ারেন্স হতে হবে ২৭৫০ মিমি (৯ ফুট) এবং ২২০ কেভি ও ৪০০ কেভি লাইনের ক্ষেত্রে এই ক্লিয়ারেন্স হতে হবে ৪৫৭৫ মিমি (১৫ ফুট)।',
+                        'বর্তমানে রেললাইন বিদ্যুতায়িত হওয়ার কারণে ১১ কেভি এবং এল.টি. লাইনের রেল ক্রসিং মূলত মাটির নিচের ক্যাবল (underground cable) দিয়ে করা বাধ্যতামূলক।'
+                    ]
+                }
+            ],
+            safety: [
+                'গার্ডিংয়ের কাজ শুরু করার আগে বিদ্যুৎ লাইন সম্পূর্ণরূপে বন্ধ করে লকআউট এবং ট্যাগআউট (LOTO) নিশ্চিত করুন।',
+                'নিশ্চিত করুন যে গার্ডিং ফ্রেম বা ক্রেডেলটি মাটির সাথে অত্যন্ত নিখুঁত ও স্থায়ীভাবে আর্থ সংযোগ করা আছে; দুর্বল আর্থ সংযোগ থাকলে কন্ডাক্টর ছিঁড়ে পড়লেও সুরক্ষামূলক ফিউজ গলবে না বা ব্রেকার ট্রিপ করবে না।',
+                'ঝড়-বৃষ্টি বা বাতাসের সময় গার্ডিংয়ের তার আলগা হয়ে কন্ডাক্টরের সাথে লেগে যেন স্পার্ক না করে, তা নিয়মিত পরিদর্শন করুন।',
+                'টেলিফোন ক্রসিংয়ের কাজের সময় টেলিফোন বিভাগের ক্লিয়ারেন্স গাইডলাইন কঠোরভাবে অনুসরণ করুন।'
+            ],
+            practical_tips: [
+                {
+                    title: 'কেন ৬৬ কেভি লাইনের ওপরে গার্ডিং লাগে না?',
+                    text: 'উচ্চ ভোল্টেজের (৬৬ কেভি বা তার বেশি) লাইনে বিদ্যুৎ প্রবাহ এবং শর্ট-সার্কিট কারেন্ট অনেক বেশি থাকে। এই কারণে সাবস্টেশনে অত্যন্ত আধুনিক ও সংবেদনশীল রিলে এবং ব্রেকার ব্যবহার করা হয় যা কন্ডাক্টর সামান্যতম স্পর্শ বা ছিঁড়ে পড়ার সাথে সাথেই মিলি-সেকেন্ডের মধ্যে বিদ্যুৎ লাইন কেটে দেয়। তাই অতিরিক্ত লোহার জালের কোনো প্রয়োজন হয় না।'
+                },
+                {
+                    title: 'লেসিংয়ের ৩ মিটার দূরত্বের কারণ',
+                    text: 'লেসিং তারগুলোকে ৩ মিটার পর পর দেওয়ার কারণ হলো, যদি মূল কন্ডাক্টর কোনো কারণে ঝুলে পড়ে বা মোচড় খেয়ে নিচে পড়ে, তবে ৩ মিটারের ছোট জালি তাকে সহজে আটকে রাখতে পারে। যদি দূরত্ব বেশি হয়, তবে তার মাঝখান দিয়ে পিছলে মাটিতে পড়ার আশঙ্কা থাকে।'
+                },
+                {
+                    title: 'জি.আই. তারের SWG নির্ধারণের নিয়ম',
+                    text: 'ভোল্টেজ বেশি হলে তারের যান্ত্রিক টান ও ওজন সহ্য করার জন্য মোটা তার (৮ SWG) ব্যবহৃত হয়, আর এল.টি. লাইনের ক্ষেত্রে কিছুটা হালকা তার (১০ SWG) ব্যবহার করলেও চলে।'
+                }
+            ],
+            standard_values_title: 'গার্ডিং ক্লিয়ারেন্স ও স্পেসিংয়ের স্ট্যান্ডার্ড মানসমূহ',
+            standard_values_headers: ['স্পেসিফিকেশন / লাইনের ধরন', 'স্ট্যান্ডার্ড মান'],
+            standard_values: [
+                { type: 'রাস্তা পারাপারের কোণ (Angle of Road Crossing)', value: 'সমকোণ (সর্বনিম্ন ৬০ ডিগ্রি)' },
+                { type: 'এল.টি. লাইনের গার্ড তারের সাইজ', value: '১০ SWG' },
+                { type: '১১ কেভি থেকে ৩৩ কেভি লাইনের গার্ড তারের সাইজ', value: '৮ SWG' },
+                { type: 'খুঁটি থেকে প্রথম লেসিং তারের দূরত্ব', value: '৭৫০ মিমি' },
+                { type: 'পরপর দুটি লেসিং তারের ব্যবধান', value: '৩ মিটার' },
+                { type: 'মাঝ-স্প্যানে এল.টি. লাইনের ন্যূনতম উলম্ব ক্লিয়ারেন্স', value: '৬১০ মিমি' },
+                { type: 'মাঝ-স্প্যানে এইচ.টি. লাইনের ন্যূনতম উলম্ব ক্লিয়ারেন্স', value: '১২২০ মিমি' },
+                { type: 'এল.টি. গার্ডিং ক্রস-আর্ম ও নিউট্রালের দূরত্ব', value: '৬১০ মিমি' },
+                { type: 'এল.টি. গার্ডিং ক্রস-আর্মের দৈর্ঘ্য', value: '৭৫০ মিমি' },
+                { type: '১১ কেভি লাইনের কন্ডাক্টর ও গার্ডিং ক্রস-আর্মের ব্যবধান', value: '৬৫০ মিমি' },
+                { type: '২২ কেভি লাইনের কন্ডাক্টর ও গার্ডিং ক্রস-আর্মের ব্যবধান', value: '৭৫০ মিমি' },
+                { type: '৩৩ কেভি লাইনের কন্ডাক্টর ও গার্ডিং ক্রস-আর্মের ব্যবধান', value: '৮৪০ মিমি' },
+                { type: 'গার্ড তার ও টেলিফোন লাইনের ন্যূনতম ব্যবধান', value: '৯২০ মিমি' },
+                { type: '৬৬ কেভি ও ১৩২ কেভি পাওয়ার লাইনের সাথে টেলিফোন লাইনের ক্লিয়ারেন্স', value: '২৭৫০ মিমি' },
+                { type: '২২০ কেভি ও ৪০০ কেভি পাওয়ার লাইনের সাথে টেলিফোন লাইনের ক্লিয়ারেন্স', value: '৪৫৭৫ মিমি' }
+            ]
+        },
+        detail_en: {
+            intro: 'Guarding is a vital safety mechanism designed for overhead power distribution lines. It forms a protective conductive wire grid or cradle below the live conductors so that if a live conductor snaps or breaks accidentally, it touches this grounded G.I. wire cradle before falling further. This contact immediately trips the circuit breakers or blows the H.T./L.T. fuses, isolating the power supply and preventing severe electric shock or fire hazards on the ground, roads, or telephone lines.',
+            objectives: [
+                'Understand the concept and working principles of distribution line guarding.',
+                'Identify and compare different types of Levice Guarding (Carpet, Cradle, Box) and their applications.',
+                'Learn the regulations and guidelines for power lines crossing roads.',
+                'Determine appropriate G.I. wire sizes (SWG) and horizontal lacing spacing based on line voltage.',
+                'Master vertical safety clearances for telephone crossings and high-voltage line exceptions.'
+            ],
+            tools: [],
+            materials: [
+                'G.I. Guarding Wire — 6, 8, 10, or 12 SWG depending on voltage',
+                'G.I. Cross-Arms — For mounting the guarding wire grid onto the poles',
+                'Lacing Wires — For tying horizontal guard wires at specific intervals',
+                'Suspension Clamps & Insulators — For isolating and securing the frame',
+                'D-Clamps and Shackle Bolts — For structural attachments'
+            ],
+            steps: [
+                {
+                    title: 'A — Guarding Concept and Working Principle',
+                    image: '/images/guarding/fig_4_43_cradle_type_guarding.png',
+                    caption: 'Figure 1: Safe cradle guarding layout capturing a snapped line and causing fuse blow.',
+                    items: [
+                        'Overhead line guarding prevents a broken live conductor from coming into contact with other electric, telephone, or telegraph lines, roads, railway tracks, and pedestrians.',
+                        'Immediately after a conductor snaps, it touches the G.I. wire cradle guard before falling down.',
+                        'Since the cradle is permanently grounded, this contact creates a low-resistance path, resulting in a large fault current.',
+                        'This fault current immediately blows the line fuses or trips the sub-station circuit breakers, completely isolating the snapped conductor.'
+                    ]
+                },
+                {
+                    title: 'B — Levice Guarding Types (Carpet, Cradle, and Box)',
+                    image: '/images/guarding/fig_4_44_carpet_guarding.png',
+                    caption: 'Figure 2: Carpet guarding layout designed for telephone line and power line crossings.',
+                    items: [
+                        '1. Carpet Guarding: Specific length cross arms are fixed on the poles. Four G.I. wires are used for the guard wires, with lacings tied at specific intervals. This type is used for power line or power-to-telephone line crossings (Figure 2).',
+                        '2. Cradle Guarding: It consists of 6 guard wires—four on the lower side and two on the upper side, with cross lacings on three sides. It is also called Tray Guarding. Even if a snapping conductor jumps drastically, it will not exit the cradle. Used for railways, roads, or residential crossings (Figure 1).',
+                        '3. Box Type Guarding: Used for composite lines. By fixing cross arms to the lower line, carpet guarding is done, and the upper guard wire is fixed to the lower via vertical lacing.'
+                    ]
+                },
+                {
+                    title: 'C — Road Crossing and Guarding Guidelines',
+                    items: [
+                        'Road crossings should always be as close to a right angle (90 degrees) as possible, and never less than an angle of 60 degrees.',
+                        'Cradle guarding must always be used for power lines crossing roads or running along roads.',
+                        'G.I. wire sizes: Use 10 SWG G.I. wire for L.T. lines and 8 SWG for H.T. (11 kV to 33 kV) lines.'
+                    ]
+                },
+                {
+                    title: 'D — Spacing and Mid-Span Clearance Standards',
+                    items: [
+                        'The first lacing wire must be tied at a distance of 750 mm (2.5 ft) from the pole, and other subsequent lacings at a distance of 3 meters from each other.',
+                        'The vertical distance between the conductor and guarding in mid-span must be at least 610 mm for L.T. lines and 1220 mm for H.T. lines.',
+                        'The vertical distance between the L.T. guarding cross-arm and the neutral conductor must be 610 mm (2 ft), with a cross-arm length of 750 mm.',
+                        'The clearance between the conductor and guarding cross-arm must be 650 mm for 11 kV, 750 mm for 22 kV, and 840 mm for 33 kV lines.'
+                    ]
+                },
+                {
+                    title: 'E — High-Voltage Exceptions & Telephone Clearances',
+                    items: [
+                        'The distance between the guard wire and any telephone line must be at least 920 mm.',
+                        'Guarding is not required for power lines above 66 kV because their circuit breakers are highly sensitive and trip immediately upon conductor failure, isolating the line.',
+                        'The clearance between the power line and telephone line crossings must be at least 2750 mm (9 ft) for 66/132 kV, and 4575 mm (15 ft) for 220/400 kV lines.',
+                        'Due to railway electrification, all 11 kV and L.T. crossings must be done using underground cables.'
+                    ]
+                }
+            ],
+            safety: [
+                'Always isolate, lockout, and tagout (LOTO) the power supply before performing guarding installations or repairs.',
+                'Ensure the guarding frame is permanently and efficiently earthed. A weak or broken earth connection will prevent the protective breakers/fuses from operating during a snap.',
+                'Inspect guard wires regularly to ensure they do not swing and make contact with live conductors during high wind conditions.',
+                'Always coordinate and follow clearances specified by the Telephone Department during power-telephone crossings.'
+            ],
+            practical_tips: [
+                {
+                    title: 'Why Lines >66 kV Do Not Require Guarding',
+                    text: 'High-voltage lines operate with high current levels and carry sensitive electronic protection relays. If a conductor snaps, it creates an immediate unbalance or earth fault that triggers the substation breaker within milliseconds, cutting off power before the conductor can hit the ground. Physical guarding is therefore redundant and unnecessary.'
+                },
+                {
+                    title: 'Purpose of the 3-Meter Lacing Interval',
+                    text: 'Tying cross-lacings every 3 meters ensures that the resulting openings are small enough to catch and contain any sagging or snapped conductor. If the spacing is too wide, a snapped conductor could slip through the guard wire gaps.'
+                },
+                {
+                    title: 'SWG Selection',
+                    text: 'Thicker G.I. wire (8 SWG) is utilized for 11 kV–33 kV lines to handle high mechanical loads and span weights. Lighter lines like L.T. can safely use 10 SWG wires.'
+                }
+            ],
+            standard_values_title: 'Guarding Clearance and Spacing Standards',
+            standard_values_headers: ['Specification / Line Type', 'Standard Value'],
+            standard_values: [
+                { type: 'Angle of Road Crossing', value: 'Right angle (minimum 60 degrees)' },
+                { type: 'G.I. Guard Wire Size (L.T. Lines)', value: '10 SWG' },
+                { type: 'G.I. Guard Wire Size (11 kV - 33 kV Lines)', value: '8 SWG' },
+                { type: 'First Lacing Distance from Pole', value: '750 mm' },
+                { type: 'Distance between Consecutive Lacings', value: '3 meters' },
+                { type: 'Minimum Mid-span Vertical Clearance (L.T.)', value: '610 mm' },
+                { type: 'Minimum Mid-span Vertical Clearance (H.T.)', value: '1220 mm' },
+                { type: 'Vertical Distance (L.T. Guarding Cross-arm to Neutral)', value: '610 mm' },
+                { type: 'L.T. Guarding Cross-arm Length', value: '750 mm' },
+                { type: 'Clearance (Conductor to Guarding Cross-arm - 11 kV)', value: '650 mm' },
+                { type: 'Clearance (Conductor to Guarding Cross-arm - 22 kV)', value: '750 mm' },
+                { type: 'Clearance (Conductor to Guarding Cross-arm - 33 kV)', value: '840 mm' },
+                { type: 'Minimum Distance (Guard-wire to Telephone Line)', value: '920 mm' },
+                { type: 'Telephone Crossing Clearance (66 kV & 132 kV Power Lines)', value: '2750 mm' },
+                { type: 'Telephone Crossing Clearance (220 kV & 400 kV Power Lines)', value: '4575 mm' }
+            ]
+        }
+    },
+    {
+        id: 'pf-06',
+        code: 'PF-06',
+        icon: '⏚',
+        badgeClass: 'bg-teal-100 text-teal-800',
+        title_en: 'Earthing and its Types (REC Standards)',
+        title_bn: 'আর্থিং ও এর প্রকারভেদ (REC স্ট্যান্ডার্ড)',
+        desc_en: 'Learn about electrical support grounding, neutral grounding, lightning arrestor paths, and REC Standard J-1/J-2 coil and pipe earthing.',
+        desc_bn: 'বৈদ্যুতিক সাপোর্টের আর্থিং, ট্রান্সফর্মার নিউট্রাল আর্থিং, বজ্রপাত সুরক্ষায় লাইটনিং অ্যারেস্টর আর্থিং এবং আরইসি (REC) স্ট্যান্ডার্ড জে-১/জে-২ কয়লা ও পাইপ আর্থিং পদ্ধতি।',
+        topics_en: ['Grounding Types', 'REC Standards', 'Soil Resistance Factors', 'Neutral Grounding'],
+        topics_bn: ['আর্থিংয়ের প্রকারভেদ', 'আরইসি স্ট্যান্ডার্ড', 'রোধের প্রভাবক', 'নিউট্রাল আর্থিং'],
+        duration_en: '12 min read',
+        duration_bn: '১২ মিনিট পড়া',
+        detail_bn: {
+            intro: 'বৈদ্যুতিক নিরাপত্তা ও লাইনের সুষ্ঠু পরিচালন নিশ্চিত করতে বিদ্যুৎ ব্যবস্থার ধাতব কাঠামো, পোল সাপোর্ট বা নিউট্রাল পয়েন্টকে স্থায়ী ও নির্ভরযোগ্যভাবে মাটির সাথে সংযুক্ত করাকে আর্থিং বলে। সঠিক আর্থিং ছাড়া পুরো বৈদ্যুতিক ব্যবস্থা ও যন্ত্রপাতি অত্যন্ত ঝুঁকিপূর্ণ অবস্থায় থাকে। এই অধ্যায়ে আমরা বৈদ্যুতিক সাপোর্টের আর্থিং, ট্রান্সফর্মার নিউট্রাল আর্থিং, বজ্রপাত সুরক্ষায় লাইটনিং অ্যারেস্টর আর্থিং, আরইসি (REC) স্ট্যান্ডার্ড জে-১/জে-২ পদ্ধতি, এবং আর্থ রেজিস্ট্যান্স পরীক্ষা ও কমানোর বাস্তবসম্মত কৌশল শিখবো।',
+            objectives: [
+                'বৈদ্যুতিক খুঁটি, ধাতব বডি, নিউট্রাল এবং লাইটনিং অ্যারেস্টর আর্থিংয়ের গুরুত্ব বোঝা',
+                'আরইসি (REC) জে-১ কোয়েল আর্থিং এবং জে-২ পাইপ/স্পাইক আর্থিংয়ের গঠন ও পার্থক্য শেখা',
+                'মাটির ধরন, আর্দ্রতা ও তাপমাত্রার মতো বিভিন্ন উপাদানের ওপর আর্থ রোধের নির্ভরতা বিশ্লেষণ করা',
+                'বিদ্যুৎ কেন্দ্র, সাব-স্টেশন, পোল ও টাওয়ারের অনুমোদিত সর্বোচ্চ রোধের সীমা মুখস্থ করা',
+                'আর্থ রোধ কমানোর বিভিন্ন বাস্তবসম্মত পদ্ধতি এবং আর্থ টেস্টার/মেগার দিয়ে পরীক্ষা করা শেখা'
+            ],
+            tools: [],
+            materials: [
+                '৮ SWG জি.আই. তার — কোয়েল আর্থিংয়ের জন্য (১০০ Turns, ৩৫০ মিমি লম্বা, ৫০ মিমি ব্যাস)',
+                'জি.আই. পাইপ ইলেকট্রোড (৩৮ মিমি ব্যাস, ২৫০০ মিমি লম্বা) — পাইপ আর্থিংয়ের জন্য',
+                'কয়লা ও খাবার লবণ — আর্দ্রতা ধরে রাখার স্তর তৈরিতে',
+                'ওয়েল্ডিং ক্ল্যাম্প ও জি.আই. টার্মিনাল — সংযোগ মজবুত করতে',
+                'জি.আই. নাট-বোল্ট ও ওয়াশার — প্লেট ও পাইপের সাথে সংযোগের জন্য'
+            ],
+            steps: [
+                {
+                    title: 'A — আর্থিংয়ের গুরুত্ব ও প্রকারভেদ (খুঁটি, নিউট্রাল ও লাইটনিং অ্যারেস্টর)',
+                    items: [
+                        '১. বৈদ্যুতিক সাপোর্ট ও সরঞ্জামের জন্য: কন্ডাক্টরের ইনসুলেশন নষ্ট হলে বা লিকেজ ঘটলে ফল্ট কারেন্ট যেন ন্যূনতম রোধের মাধ্যমে মাটিতে চলে যায় এবং লাইনের ফিউজ পুড়ে বা ব্রেকার ট্রিপ করে ত্রুটিযুক্ত অংশকে লাইভ সার্কিট থেকে বিচ্ছিন্ন করে।',
+                        '২. ট্রান্সফর্মার নিউট্রাল আর্থিং: এটি লিকেজ বা আনব্যালেন্সড কারেন্টের জন্য মাটির সাথে জিরো-রেজিস্ট্যান্স পথ প্রদান করে। ফলে আর্থ ফল্ট রিলে সঠিকভাবে কাজ করে এবং বজ্রপাত বা সুইচিংয়ের ফলে লাইনে অতিরিক্ত ভোল্টেজ সৃষ্টি হওয়া প্রতিরোধ করে ও নিউট্রাল ভোল্টেজ সবসময় শূন্য রাখে।',
+                        '৩. লাইটনিং অ্যারেস্টর আর্থিং: বজ্রপাতের সময় সৃষ্ট বিশাল ভোল্টেজ চার্জকে অত্যন্ত দ্রুত ও কম রোধের মাধ্যমে মাটিতে চালনা করে সাবস্টেশনের মূল্যবান যন্ত্রপাতি ও ট্রান্সফর্মারকে ধ্বংসের হাত থেকে রক্ষা করে।'
+                    ]
+                },
+                {
+                    title: 'B — আরইসি জে-১ কয়েল আর্থিং পদ্ধতি (REC Standard J-1)',
+                    image: '/images/earthing/fig_4_45_coil_earthing.png',
+                    caption: 'চিত্র ১: আরইসি স্ট্যান্ডার্ড জে-১ অনুযায়ী কন্ডাক্টর পোলের গোড়ায় কয়লা ও লবণের স্তরে কোয়েল আর্থিংয়ের ডায়াগ্রাম।',
+                    items: [
+                        'কোয়েল আর্থিং সাধারণত সাধারণ ও সাধারণ ডিস্ট্রিবিউশন পোল বা খুঁটির গোড়ায় আর্থিং করতে ব্যবহৃত হয়।',
+                        'এতে ৮ SWG মানের ১০ মিটার লম্বা জি.আই. তার ব্যবহার করা হয়, যা পেঁচিয়ে ৪৫০ মিমি লম্বা ও ৫০ মিমি ব্যাসের একটি স্পাইরাল কোয়েল (১১৫টি প্যাঁচ বা Turns) তৈরি করা হয়।',
+                        'এই কোয়েলটিকে মাটির নিচে ১৫০০ মিমি (৫ ফুট) গভীরে খাড়াভাবে পোঁতা হয় এবং তার চারপাশে ৩৫০ মিমি দৈর্ঘ্য জুড়ে পর্যায়ক্রমে কয়লা ও লবণের স্তর দেওয়া হয় (চিত্র ১ অনুযায়ী)।'
+                    ]
+                },
+                {
+                    title: 'C — আরইসি জে-২ পাইপ বা স্পাইক আর্থিং পদ্ধতি (REC Standard J-2)',
+                    image: '/images/earthing/fig_4_46_pipe_earthing.png',
+                    caption: 'চিত্র ২: আরইসি স্ট্যান্ডার্ড জে-২ অনুযায়ী স্পাইক বা পাইপ আর্থিংয়ের নিখুঁত গঠন ও পরিমাপ।',
+                    items: [
+                        'পাইপ বা স্পাইক আর্থিং মূলত বিশেষ স্ট্রাকচার (যেমন: ডাবল-পোল ট্রান্সফর্মার পোল, সুইচ গিয়ার পোল) এবং রেল বা নদী ক্রসিংয়ের পোলে ব্যবহৃত হয়।',
+                        'এতে একটি ২৫০০ মিমি (৮.২ ফুট) লম্বা ধাতব পাইপ বা স্পাইক ইলেকট্রোড মাটির নিচে খাড়াভাবে বসানো হয় (চিত্র ২)।',
+                        'ইলেকট্রোডের উপরিভাগে ৩০০ মিমি লম্বা একটি জি.আই. আর্থ টার্মিনাল নাট-বোল্ট দিয়ে সংযোগের জন্য তৈরি করা হয়।',
+                        'পুরো অ্যাসেম্বলিটি মরিচা ও ক্ষয় প্রতিরোধের জন্য হট-ডিপ গ্যালভানাইজড করা আবশ্যক।'
+                    ]
+                },
+                {
+                    title: 'D — আর্থ রোধের প্রভাবকসমূহ',
+                    items: [
+                        'মাটির রোধ বা আর্থ রেজিস্ট্যান্স মূলত ৮টি বিষয়ের ওপর সরাসরি নির্ভর করে:',
+                        '১. মাটির ধরন (বেলে, পলি বা কাদামাটি)।',
+                        '২. মাটির তাপমাত্রা।',
+                        '৩. মাটিতে থাকা আর্দ্রতা বা জলীয় বাষ্পের পরিমাণ।',
+                        '৪. মাটিতে দ্রবীভূত খনিজ লবণের উপস্থিতি।',
+                        '৫. মাটির নিচে ইলেকট্রোডের গভীরতা বা দৈর্ঘ্য।',
+                        '৬. ইলেকট্রোডের নিজস্ব আকৃতি ও ক্ষেত্রফল।',
+                        '৭. দুটি আর্থ ইলেকট্রোডের মধ্যকার পারস্পরিক দূরত্ব।',
+                        '৮. সিস্টেমের জন্য ব্যবহৃত মোট ইলেকট্রোডের সংখ্যা।'
+                    ]
+                },
+                {
+                    title: 'E — আর্থ রোধ কমানোর বাস্তবসম্মত কৌশল',
+                    items: [
+                        '১. আর্থ ইলেকট্রোড এবং আর্থ লিড তারের সংযোগস্থলে থাকা মরিচা বা অক্সিডেশন শিরীষ কাগজ দিয়ে ঘষে পরিষ্কার করে নাট-বোল্ট দিয়ে সংযোগ পুরোপুরি টাইট করতে হবে।',
+                        '২. শুষ্ক মরসুমে আর্থ পিটের ভেতরে পাইপ বা ফানেল দিয়ে পর্যাপ্ত পরিমাণে জল ঢেলে মাটি সবসময় আর্দ্র রাখতে হবে।',
+                        '৩. আর্থ পিটে সাধারণ লবণ ও কয়লার দ্রবণ বা কেমিক্যাল বেন্টোনাইট ক্লে পাউডার ব্যবহার করে পরিবাহিতা বাড়ানো যায়।',
+                        '৪. একাধিক আর্থ ইলেকট্রোডকে সমান্তরাল সংযোগে (parallel connection) যুক্ত করতে হবে। দুটি ইলেকট্রোড সমান্তরালে যুক্ত করলে মোট রোধ প্রায় অর্ধেক হয়ে যায়।'
+                    ]
+                },
+                {
+                    title: 'F — আর্থিং সিস্টেম পরীক্ষা ও নিরাপত্তা বিধি',
+                    items: [
+                        '১. একটি সচল আর্থ রেজিস্ট্যান্স টেস্টার (Megger) দিয়ে নিয়মিত আর্থ পিটের রোধ পরিমাপ করতে হবে। রিডিং নেওয়ার সময় স্পাইকগুলো পিট থেকে যথাক্রমে ১০ ও ২০ মিটার দূরে শক্ত করে পুঁততে হবে।',
+                        '২. পরিবাহী তারের গ্রাউন্ড ও ধারাবাহিকতা (continuity) টেস্ট করার জন্য মেগোহমিমিটার বা Megger ব্যবহার করতে হবে।',
+                        '৩. পরীক্ষার সময় কোনো কর্মী যেন পোলে না চড়েন বা কোনো তার, কন্ডাক্টর, টানা তার (stay wire) বা মেটাল গার্ড স্পর্শ না করেন তা কঠোরভাবে নিশ্চিত করতে হবে।'
+                    ]
+                }
+            ],
+            safety: [
+                'বৈদ্যুতিক সংযোগ পরীক্ষা বা পরিমাপ করার সময় মেইন পাওয়ার সাপ্লাই বন্ধ রেখে সম্পূর্ণ বিচ্ছিন্ন (isolated) করতে হবে।',
+                'মেগার দিয়ে টেস্ট করার সময় কন্ডাক্টর বা লাইনের ধাতু স্পর্শ করলে মারাত্মক শকের দুর্ঘটনা ঘটতে পারে; পরীক্ষার সময় কর্মীদের লাইন থেকে দূরে সরিয়ে রাখুন।',
+                'আর্থ তার ও কন্ডাক্টর লুজ কানেকশন থাকলে তা বিদ্যুৎ লিক হতে বাধা দিতে পারে না, তাই প্রতি ৬ মাস পর পর আর্থিং রেজিস্ট্যান্স টেস্ট করুন।'
+            ],
+            practical_tips: [
+                {
+                    title: 'ট্রান্সফর্মার নিউট্রাল কেন ডাবল আর্থ করা হয়?',
+                    text: 'ট্রান্সফর্মারের নিউট্রাল পয়েন্টে ডাবল আর্থ করা বাধ্যতামূলক। যদি একটি আর্থ তার কোনো কারণে ছিঁড়ে বা আলগা হয়ে যায়, তবে দ্বিতীয় তারটি সিস্টেমকে সুরক্ষিত রাখে এবং নিউট্রাল ভোল্টেজ ভেসে উঠতে (neutral float) দেয় না।'
+                },
+                {
+                    title: 'স্পাইরাল কোয়েল তৈরির পেছনের বিজ্ঞান',
+                    text: 'জি.আই. তারটিকে সোজা না রেখে স্পাইরাল কোয়েল করা হয় কারণ কোয়েল আকৃতি মাটির সংস্পর্শে থাকা তারের কার্যকর ক্ষেত্রফল (surface area) অনেক বাড়িয়ে দেয়। এর ফলে রোধ অনেক কমে যায় এবং স্পেসও কম লাগে।'
+                },
+                {
+                    title: 'সমান্তরাল ইলেকট্রোডের ন্যূনতম দূরত্ব',
+                    text: 'যখন দুটি আর্থ ইলেকট্রোড সমান্তরালে বসানো হয়, তাদের মধ্যকার দূরত্ব যেন অন্তত ৮ ফুট (২.৫ মিটার) হয়। ইলেকট্রোডগুলো খুব কাছাকাছি থাকলে তাদের রেজিস্ট্যান্স গোলক ওভারল্যাপ করে, যার ফলে রোধ কাঙ্ক্ষিত মাত্রায় কমে না।'
+                }
+            ],
+            standard_values_title: 'অনুমোদিত সর্বোচ্চ আর্থ রেজিস্ট্যান্স মানসমূহ',
+            standard_values_headers: ['যন্ত্রপাতি / ইনস্টলেশনের ধরন', 'অনুমোদিত সর্বোচ্চ রোধ'],
+            standard_values: [
+                { type: 'বৃহৎ বিদ্যুৎ কেন্দ্র (Major Power Station)', value: '০.৫ ওহম (Ohms)' },
+                { type: 'প্রধান সাব-স্টেশন (Major Sub-Stations)', value: '১.০ ওহম' },
+                { type: 'ছোট সাব-স্টেশন (Minor Sub-Station)', value: '২.০ ওহম' },
+                { type: 'ট্রান্সফর্মার নিউট্রাল বুশিং (Neutral Bushing)', value: '০.২ ওহম' },
+                { type: 'গ্রাহকের সার্ভিস কানেকশন (Service Connection)', value: '৪.০ ওহম' },
+                { type: 'এল.টি. লাইটনিং অ্যারেস্টর (L.T. Lightning Arrestor)', value: '৪.০ ওহম' },
+                { type: 'এল.টি. পোল সাপোর্ট (L.T. Pole)', value: '৫.০ ওহম' },
+                { type: 'এইচ.টি. পোল সাপোর্ট (H.T. Pole)', value: '১০.০ ওহম' },
+                { type: 'ওভারহেড টাওয়ার (Tower)', value: '২০.০ থেকে ৩০.০ ওহম' }
+            ]
+        },
+        detail_en: {
+            intro: 'Earthing is the process of connecting the non-current carrying metallic parts, supports, or neutral points of electrical equipment solidly to the earth. Without proper earthing, lines and equipment are extremely unsafe for operators and the public. This chapter covers the purpose of electrical support grounding, neutral grounding, lightning arrestor paths, REC Standard J-1/J-2 designs, soil resistance factors, resistance limits, and testing guidelines.',
+            objectives: [
+                'Understand the necessity of grounding supports, neutral points, and lightning arrestors.',
+                'Distinguish between REC Construction Standards J-1 (Coil Earthing) and J-2 (Pipe/Spike Earthing).',
+                'Analyze factors influencing soil resistivity and earth resistance.',
+                'Identify maximum permitted earth resistance limits for power stations, poles, and transmission towers.',
+                'Learn procedures to minimize earth resistance and safely test grounding networks using a Megger.'
+            ],
+            tools: [],
+            materials: [
+                '8 SWG G.I. Wire — For coil earthing (10m length, 115 turns, 450 mm length, 50 mm dia)',
+                'G.I. Pipe/Spike Electrode (38 mm dia, 2500 mm long) — For pipe earthing assembly',
+                'Charcoal & Common Salt — For soil moisture retention layers',
+                'Welded Clamp & G.I. Earth Terminal — For secure connection points',
+                'G.I. Nuts, Bolts, and Washers — For binding leads to electrodes'
+            ],
+            steps: [
+                {
+                    title: 'A — Purpose of Earthing (Supports, Neutrals & L.A.s)',
+                    items: [
+                        '1. Electrical Supports & Equipment: Grounding metallic frames ensures that in the event of an insulation failure or leakage, the fault current flows directly to earth, blowing the fuse or tripping the breaker to isolate the fault.',
+                        '2. Transformer Neutral Earthing: Provides a low-resistance path for leakage or unbalanced current, enabling sensitive protective relays (like Earth Fault Relays) to function. It prevents voltage surges from charging lines to high levels and maintains neutral voltage at zero.',
+                        '3. Lightning Arrestor Grounding: Discharges high-voltage atmospheric lightning strokes into the earth with minimum resistance, preventing severe damage to substation machinery and transformers.'
+                    ]
+                },
+                {
+                    title: 'B — REC Coil Earthing Method (REC Standard J-1)',
+                    image: '/images/earthing/fig_4_45_coil_earthing.png',
+                    caption: 'Figure 1: REC J-1 spiral coil earthing layout showing 115 turns of G.I. wire and coke-salt layers.',
+                    items: [
+                        'Coil earthing is adopted at standard distribution line poles or supports.',
+                        'It consists of a 10-meter length of 8 SWG G.I. wire wound into a spiral coil of 450 mm length and 50 mm diameter (containing approximately 115 turns).',
+                        'The coil is buried vertically at a depth of 1500 mm (5 ft), surrounded by alternating layers of charcoal (or coke) and common salt, 300 mm deep (see Figure 1).'
+                    ]
+                },
+                {
+                    title: 'C — REC Pipe/Spike Earthing Method (REC Standard J-2)',
+                    image: '/images/earthing/fig_4_46_pipe_earthing.png',
+                    caption: 'Figure 2: REC J-2 Pipe/Spike Earthing showing assembly dimensions and hot-dip galvanization details.',
+                    items: [
+                        'Pipe or spike earthing is utilized at special structures (e.g. transformer poles, air-break switches) and major river, railway, or road crossings.',
+                        'A hollow G.I. pipe or solid spike electrode of length 2500 mm is driven vertically into the ground (see Figure 2).',
+                        'A 300 mm long G.I. earth terminal is prepared at the top using nuts, bolts, and washers to connect the grounding lead.',
+                        'The clamp is welded to the spike, and the entire assembly is hot-dip galvanized to prevent underground corrosion.'
+                    ]
+                },
+                {
+                    title: 'D — Factors Influencing Earth Resistance',
+                    items: [
+                        'Earth resistance depends directly on the following eight parameters:',
+                        '1. Type of soil (sandy, clayey, silty, etc.).',
+                        '2. Soil temperature.',
+                        '3. Soil moisture/humidity level.',
+                        '4. Presence of dissolved mineral salts in the soil.',
+                        '5. Depth and length of the electrode buried in the ground.',
+                        '6. Shape and surface area of the electrode.',
+                        '7. Horizontal distance between two parallel electrodes.',
+                        '8. Total number of electrodes connected in the system.'
+                    ]
+                },
+                {
+                    title: 'E — Methods to Minimize Earth Resistance',
+                    items: [
+                        '1. Clean oxidation or rust off the joint surfaces of electrodes and wires using emery paper, then tighten the nuts and bolts.',
+                        '2. Pour sufficient water through the funnel/watering pipe into the pit to maintain soil moisture during hot weather.',
+                        '3. Apply a solution of common salt and coal water, or utilize chemical backfill compounds like bentonite clay to enhance conductivity.',
+                        '4. Connect multiple earth electrodes in parallel. Connecting two parallel electrodes reduces the combined resistance to approximately half.'
+                    ]
+                },
+                {
+                    title: 'F — Earthing System Testing and Safety Regulations',
+                    items: [
+                        '1. Measure the earth resistance periodically with an Earth Tester (Megger) by driving current and potential spikes 10m and 20m from the electrode.',
+                        '2. Test the conductor continuity or check for accidental ground faults using a Megohmmeter (Megger).',
+                        '3. Safety Rule: During Megger testing, ensure no worker climbs the poles or touches any live components, conductor wires, stay wires, or guarding meshes.'
+                    ]
+                }
+            ],
+            safety: [
+                'Ensure the mains power is completely isolated and locked out before conducting earthing resistance measurements.',
+                'Do not climb the pole or touch live parts, conductors, or stay wires during megger testing to avoid electric shock.',
+                'Check and log earth resistance values at least once every 6 months to catch loose joints or dry soils before a fault occurs.'
+            ],
+            practical_tips: [
+                {
+                    title: 'Why Double Earthing for Transformer Neutrals?',
+                    text: 'Transformer neutral points must be earthed with two independent grounding leads. If one lead gets loose or corrodes away, the second one keeps the system grounded, preventing the neutral voltage from floating and destroying customer appliances.'
+                },
+                {
+                    title: 'Science behind the Spiral Coil',
+                    text: 'Winding the G.I. wire into a spiral coil instead of keeping it straight maximizes the wire surface area in contact with the soil. This significantly lowers contact resistance and allows a compact installation.'
+                },
+                {
+                    title: 'Minimum Distance between Parallel Electrodes',
+                    text: 'When connecting multiple electrodes in parallel, place them at least 8 feet (2.5 meters) apart. If driven too close, their resistance shells will overlap, and the combined resistance will not drop as expected.'
+                }
+            ],
+            standard_values_title: 'Maximum Allowed Earth Resistance Standards',
+            standard_values_headers: ['Equipment / Installation Type', 'Max Permissible Resistance'],
+            standard_values: [
+                { type: 'Major Power Station', value: '0.5 Ohm' },
+                { type: 'Major Sub-Stations', value: '1.0 Ohm' },
+                { type: 'Minor Sub-Station', value: '2.0 Ohm' },
+                { type: 'Transformer Neutral Bushing', value: '0.2 Ohm' },
+                { type: 'Customer Service Connection', value: '4.0 Ohm' },
+                { type: 'L.T. Lightning Arrestor', value: '4.0 Ohm' },
+                { type: 'L.T. Pole Support', value: '5.0 Ohm' },
+                { type: 'H.T. Pole Support', value: '10.0 Ohm' },
+                { type: 'Overhead Transmission Tower', value: '20.0 to 30.0 Ohm' }
             ]
         }
     }
