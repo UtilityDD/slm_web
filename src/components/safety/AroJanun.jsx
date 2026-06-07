@@ -65,14 +65,35 @@ function ChapterDetailBody({ chapter, language }) {
                     <h2 className="mb-3 text-sm font-black uppercase tracking-wider text-slate-800 nb-mono">
                         {language === 'en' ? 'Tools' : 'সরঞ্জাম'}
                     </h2>
-                    <ul className="nb-card space-y-1.5 bg-white p-4 text-xs font-semibold text-slate-800 sm:text-sm">
-                        {detail.tools.map((item) => (
-                            <li key={item} className="flex items-start gap-2">
-                                <span className="text-orange-600">•</span>
-                                <span>{item}</span>
-                            </li>
-                        ))}
-                    </ul>
+                    {typeof detail.tools[0] === 'object' ? (
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                            {detail.tools.map((item) => (
+                                <div key={item.name} className="nb-card bg-white p-3 flex flex-col items-center justify-between border-2 border-slate-900 shadow-[3px_3px_0_#0f172a] hover:-translate-y-0.5 transition-transform duration-150">
+                                    {item.image && (
+                                        <div className="h-24 w-full flex items-center justify-center mb-2 overflow-hidden border border-slate-200 p-1">
+                                            <img
+                                                src={item.image}
+                                                alt={item.name}
+                                                className="max-h-full max-w-full object-contain"
+                                            />
+                                        </div>
+                                    )}
+                                    <span className="text-xs font-black text-center text-slate-900 block leading-tight">
+                                        {item.name}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <ul className="nb-card space-y-1.5 bg-white p-4 text-xs font-semibold text-slate-800 sm:text-sm">
+                            {detail.tools.map((item) => (
+                                <li key={item} className="flex items-start gap-2">
+                                    <span className="text-orange-600">•</span>
+                                    <span>{item}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </section>
             )}
 
@@ -102,6 +123,20 @@ function ChapterDetailBody({ chapter, language }) {
                             {step.note}
                         </p>
                     )}
+                    {step.image && (
+                        <div className="my-4 overflow-hidden border-2 border-slate-900 bg-white p-2 shadow-[4px_4px_0_#0f172a] max-w-lg">
+                            <img
+                                src={step.image}
+                                alt={step.caption || step.title}
+                                className="h-auto w-full object-contain"
+                            />
+                            {step.caption && (
+                                <p className="mt-2 text-center text-xs font-black text-slate-600 border-t border-dashed border-slate-300 pt-2 nb-mono">
+                                    {step.caption}
+                                </p>
+                            )}
+                        </div>
+                    )}
                     <ol className="space-y-2.5">
                         {step.items.map((item, idx) => (
                             <li key={item} className="flex items-start gap-3 text-sm font-semibold leading-relaxed text-slate-900 sm:text-base">
@@ -116,7 +151,7 @@ function ChapterDetailBody({ chapter, language }) {
             ))}
 
             {detail.safety?.length > 0 && (
-                <section className="mb-2">
+                <section className="mb-6">
                     <h2 className="mb-3 text-sm font-black uppercase tracking-wider text-rose-700 nb-mono">
                         {language === 'en' ? 'Safety' : 'নিরাপত্তা'}
                     </h2>
@@ -128,6 +163,58 @@ function ChapterDetailBody({ chapter, language }) {
                             </li>
                         ))}
                     </ul>
+                </section>
+            )}
+
+            {detail.practical_tips?.length > 0 && (
+                <section className="mb-6 border-t-2 border-dashed border-slate-900 pt-6">
+                    <h2 className="mb-3 text-sm font-black uppercase tracking-wider text-teal-800 nb-mono">
+                        {language === 'en' ? 'Practical Field Tips' : 'বাস্তবক্ষেত্রের জরুরি টিপস'}
+                    </h2>
+                    <div className="space-y-4">
+                        {detail.practical_tips.map((tip, idx) => (
+                            <div key={idx} className="nb-card border-teal-800 bg-teal-50/40 p-4 text-xs font-semibold text-slate-800 sm:text-sm">
+                                <h3 className="mb-1.5 text-sm font-black text-teal-900 flex items-center gap-1.5">
+                                    <span>⚡</span> {tip.title}
+                                </h3>
+                                <p className="leading-relaxed text-slate-700">{tip.text}</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {detail.standard_values?.length > 0 && (
+                <section className="mb-2">
+                    <h2 className="mb-3 text-sm font-black uppercase tracking-wider text-slate-800 nb-mono">
+                        {detail.standard_values_title || (language === 'en' ? 'Standard Earth Resistance Values' : 'আর্থ রেজিস্ট্যান্সের আদর্শ মান')}
+                    </h2>
+                    <div className="overflow-x-auto border-2 border-slate-900 shadow-[3px_3px_0_#0f172a] bg-white">
+                        <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                            <thead>
+                                <tr className="border-b-2 border-slate-900 bg-amber-50">
+                                    <th className="p-2.5 font-black text-slate-900 border-r-2 border-slate-900">
+                                        {detail.standard_values_headers?.[0] || (language === 'en' ? 'Installation Type' : 'ইনস্টলেশনের ধরন')}
+                                    </th>
+                                    <th className="p-2.5 font-black text-slate-900">
+                                        {detail.standard_values_headers?.[1] || (language === 'en' ? 'Recommended Max Resistance' : 'প্রস্তাবিত সর্বোচ্চ রোধ')}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {detail.standard_values.map((row, idx) => (
+                                    <tr key={idx} className="border-b border-slate-900 last:border-none hover:bg-slate-50/60">
+                                        <td className="p-2.5 font-semibold text-slate-800 border-r-2 border-slate-900">
+                                            {row.type}
+                                        </td>
+                                        <td className="p-2.5 font-black text-emerald-800">
+                                            {row.value}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </section>
             )}
         </div>
