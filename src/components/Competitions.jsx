@@ -2664,7 +2664,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 </div>
                                             )}
                                             <div className="flex items-start justify-between gap-3">
-                                                <h2 className={`reading-content text-lg sm:text-xl font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                <h2 className={`min-w-0 flex-1 text-lg font-black leading-snug tracking-tight text-slate-950 sm:text-xl sm:leading-snug ${language === 'bn' ? 'font-bengali leading-relaxed sm:leading-relaxed' : ''}`}>
                                                     {quizQuestions[currentQuestionIndex]?.question_text}
                                                 </h2>
                                                 <button
