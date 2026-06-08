@@ -588,7 +588,7 @@ const SafetyLibraryLoadingView = ({ language }) => {
                         className="overflow-hidden nb-card bg-white p-0"
                         style={{ animationDelay: `${i * 70}ms` }}
                     >
-                        <div className="relative aspect-square overflow-hidden bg-slate-100 border-b-2 border-slate-900">
+                        <div className="relative aspect-square overflow-hidden bg-slate-100">
                             <SkeletonShimmer className="opacity-90" />
                             <div className="absolute left-2 top-2 h-4 w-14 bg-slate-300 border border-slate-900" />
                         </div>
@@ -612,7 +612,7 @@ const GridImage = ({ images, alt, aspect = 'aspect-square' }) => {
 
     if (!randomImage) {
         return (
-            <div className={`${aspect} bg-slate-100 flex flex-col items-center justify-center p-4 text-slate-400 border-b-2 border-slate-900`}>
+            <div className={`${aspect} bg-slate-100 flex flex-col items-center justify-center p-4 text-slate-400`}>
                 <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">No Image</span>
             </div>
         );
@@ -811,7 +811,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
             <div className="nb-hazard sticky top-0 z-[101]" aria-hidden="true" />
 
             {/* Sticky Header */}
-            <div className="sticky top-[6px] z-[100] bg-white border-b-[2.5px] border-slate-900 py-4 px-4 sm:px-8">
+            <div className="sticky top-[6px] z-[100] bg-[#fffdf7] py-4 px-4 sm:px-8">
                 <div className="max-w-7xl mx-auto space-y-4">
                     <div className="flex items-center justify-between gap-4">
                         {!isSearchExpanded ? (
@@ -952,7 +952,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                 onClick={() => openItemDetail(item)}
                                 className="group nb-card overflow-hidden p-0 flex flex-col cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
                             >
-                                <div className="relative aspect-square border-b-2 border-slate-900">
+                                <div className="relative aspect-square">
                                     <GridImage images={item.images} alt={item.name_bn} aspect="h-full" />
                                     <div className="absolute top-2 left-2">
                                         <span className="nb-tag px-1.5 py-0.5 bg-orange-100 text-orange-800 text-[8px]">

@@ -1582,7 +1582,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 <div className="nb-hazard sticky top-0 z-[41]" aria-hidden="true" />
 
                 {/* Header Section */}
-                <div className="sticky top-[6px] z-40 bg-white border-b-[2.5px] border-slate-900">
+                <div className="sticky top-[6px] z-40 bg-[#fffdf7]">
                     <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
                         <div className="flex flex-col gap-6">
                             <div className="flex items-center justify-between">
