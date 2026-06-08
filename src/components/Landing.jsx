@@ -18,7 +18,7 @@ const copy = {
     missionTitle: 'Our Mission',
     mission:
       'Deliver practical 90-day training, daily safety tools, leaderboards, and rewards—so field work becomes safer and skills are visible.',
-    statsUsers: 'Registered Linemen',
+    statsUsers: 'Registered Users',
     statsToppers: 'Top Performers',
     statsPrizes: 'Prizes Awarded',
     topPlayers: 'New Player Leaders',
@@ -49,7 +49,7 @@ const copy = {
     missionTitle: 'আমরা যা করি',
     mission:
       'মাঠের কাজের জন্য ৯০ দিনের প্রশিক্ষণ, নিরাপত্তার সরঞ্জাম, লিডারবোর্ড আর পুরস্কার—যাতে কাজ নিরাপদ হয় এবং ভালো কাজের কদর হয়।',
-    statsUsers: 'যোগ দিয়েছেন',
+    statsUsers: 'নিবন্ধিত সদস্য',
     statsToppers: 'শীর্ষ পারফর্মার',
     statsPrizes: 'পুরস্কার দেওয়া হয়েছে',
     topPlayers: 'নতুন সদস্য — সেরা ৩',
@@ -617,12 +617,13 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
       try {
         const [profilesResult, monthlyLeaderboard, encouragementBoards, allTimeLeaderboard, hallOfFame] = await Promise.all([
           requestManager.fetch(
-            'landing_profiles_count',
+            'landing_profiles_count_v3',
             async () => {
-              const { data, error } = await supabase.from('profiles').select('role, id');
+              const { count, error } = await supabase
+                .from('profiles')
+                .select('id', { count: 'exact', head: true });
               if (error) throw error;
-              const linemen = (data || []).filter((p) => p.role === 'lineman').length;
-              return { linemen };
+              return { users: count ?? 0 };
             },
             { ttl: 10, swr: true }
           ),
@@ -660,7 +661,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
 
         if (!cancelled) {
           setStats({
-            users: profilesResult?.linemen ?? 0,
+            users: profilesResult?.users ?? 0,
             newPlayerTop: newPlayerTopThree,
             allTimeTop: allTimeTopThree,
             prizesCount,

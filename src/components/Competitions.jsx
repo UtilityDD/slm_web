@@ -1626,7 +1626,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
             {/* Tab Navigation - All-Time vs Monthly */}
             {!showHallOfFame && (
-                <div className="bg-[#fffdf7] border-b-2 border-slate-900 pt-2 pb-3">
+                <div className="bg-[#fffdf7] pt-2 pb-3">
                     <div className="max-w-xs mx-auto px-3">
                         <div className="flex gap-2">
                             <button
