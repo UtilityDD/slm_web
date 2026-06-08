@@ -116,7 +116,6 @@ export default function SmartLinemanUI() {
   const [activeBroadcastNotice, setActiveBroadcastNotice] = useState(null);
   const activeBroadcastShownOnceRef = useRef(false);
   const notificationHideTimerRef = useRef(null);
-  const [showHandbookModal, setShowHandbookModal] = useState(false);
   const [completedLessons, setCompletedLessons] = useState([]);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [updateInfo, setUpdateInfo] = useState(null);
@@ -561,13 +560,8 @@ export default function SmartLinemanUI() {
       }
       if (session) {
         fetchProfile(session.user);
-        if (event === 'SIGNED_IN' && !sessionStorage.getItem('hasSeenHandbook')) {
-          setShowHandbookModal(true);
-          sessionStorage.setItem('hasSeenHandbook', 'true');
-        }
       } else {
         setUserProfile(null);
-        sessionStorage.removeItem('hasSeenHandbook');
       }
     });
 
@@ -642,9 +636,8 @@ export default function SmartLinemanUI() {
   useEffect(() => {
     if (!user?.id || ['login', 'verify', 'update-password'].includes(currentView) || activeBroadcastShownOnceRef.current) return;
     const latest = notificationsHistory[0];
-    if (!latest?.id) return;
+    if (!latest?.id || latest.type !== 'alert') return;
 
-    // Slightly longer delay so Training welcome / login toast can clear first, then show the same broadcast as before.
     const t = window.setTimeout(() => {
       if (activeBroadcastShownOnceRef.current) return;
       activeBroadcastShownOnceRef.current = true;

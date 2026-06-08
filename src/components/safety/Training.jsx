@@ -56,7 +56,26 @@ const LOADING_TIPS = {
 const LIFE_SKILLS_HINT_STORAGE_KEY = 'slm_training_lifeskills_hint_v2';
 const LIFE_SKILLS_HINT_LEGACY_KEY = 'slm_training_lifeskills_hint_v1';
 /** Show hint on core training home for this many visits, then stop (unless dismissed earlier). */
-const MAX_LIFE_SKILLS_HINT_VISITS = 12;
+const MAX_LIFE_SKILLS_HINT_VISITS = 3;
+
+const ONBOARDING_COMPLETE_KEY = 'hasSeenOnboarding';
+const ONBOARDING_LEGACY_DATE_KEY = 'lastOnboardingDate';
+const DAILY_BRIEF_DISMISS_KEY = 'slm_daily_brief_dismissed';
+
+function hasCompletedOnboarding() {
+    if (typeof window === 'undefined') return true;
+    if (localStorage.getItem(ONBOARDING_COMPLETE_KEY) === 'true') return true;
+    if (localStorage.getItem(ONBOARDING_LEGACY_DATE_KEY)) {
+        localStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
+        return true;
+    }
+    return false;
+}
+
+function isDailyBriefDismissedToday() {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem(DAILY_BRIEF_DISMISS_KEY) === new Date().toDateString();
+}
 
 function readLifeSkillsHintState() {
     if (typeof window === 'undefined') return { visits: 0, dismissed: true };
@@ -608,21 +627,8 @@ export default function Training({
     onOpenUserProgress,
     setCurrentView,
 }) {
-    const [showOnboarding, setShowOnboarding] = useState(() => {
-        const today = new Date().toDateString();
-        const lastSeenDate = localStorage.getItem('lastOnboardingDate');
-        return lastSeenDate !== today;
-    });
-    const [showWelcome, setShowWelcome] = useState(() => {
-        // Defer welcome if onboarding is active
-        const today = new Date().toDateString();
-        const lastSeenDate = localStorage.getItem('lastOnboardingDate');
-        if (lastSeenDate !== today) return false;
-
-        // Only show once per session. Use sessionStorage so it resets when browser closes or tab reloads fully.
-        const hasSeenWelcome = sessionStorage.getItem('hasSeenTrainingWelcome');
-        return !hasSeenWelcome;
-    });
+    const [showOnboarding, setShowOnboarding] = useState(() => !hasCompletedOnboarding());
+    const [showDailyBrief, setShowDailyBrief] = useState(() => !isDailyBriefDismissedToday());
     const [trainingChapters, setTrainingChapters] = useState([]);
     const [selectedChapter, setSelectedChapter] = useState(null);
     const [selectedLesson, setSelectedLesson] = useState(null);
@@ -805,6 +811,21 @@ export default function Training({
         writeLifeSkillsHintState({ ...s, dismissed: true });
         setShowLifeSkillsHint(false);
     }, []);
+
+    const dismissDailyBrief = useCallback(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem(DAILY_BRIEF_DISMISS_KEY, new Date().toDateString());
+        }
+        setShowDailyBrief(false);
+    }, []);
+
+    const dailyBriefGreeting = useMemo(() => {
+        const firstName = profile?.full_name?.trim().split(/\s+/)[0];
+        if (language === 'bn') {
+            return firstName ? `স্বাগতম, ${firstName}` : 'স্বাগতম';
+        }
+        return firstName ? `Welcome, ${firstName}` : 'Welcome';
+    }, [profile?.full_name, language]);
 
     const hourlyLifetimePoints = useMemo(
         () => getLifetimePoints(profile, userRank),
@@ -2288,6 +2309,29 @@ export default function Training({
                 <div className="neo-brutal animate-fade-in-up text-slate-900">
                     <div className="nb-hazard mb-4" aria-hidden="true" />
 
+                    {showDailyBrief && trainingTab === 'core' && !trainingLoading && !showOnboarding && (
+                        <div className="mx-auto mb-4 flex w-full max-w-sm items-start gap-2 nb-card bg-orange-50 px-3 py-2.5">
+                            <div className="min-w-0 flex-1">
+                                <p className={`text-sm font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    {dailyBriefGreeting}
+                                </p>
+                                {lessonProgressWelcome && (
+                                    <p className={`mt-0.5 line-clamp-2 text-xs font-semibold leading-snug text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {lessonProgressWelcome.primary}
+                                    </p>
+                                )}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={dismissDailyBrief}
+                                className="shrink-0 rounded border-2 border-slate-900 bg-white px-2 py-0.5 text-sm font-black leading-none text-slate-700 shadow-[1px_1px_0_#0f172a] hover:bg-slate-50"
+                                aria-label={language === 'en' ? 'Dismiss greeting' : 'অভিবাদন বন্ধ করুন'}
+                            >
+                                ×
+                            </button>
+                        </div>
+                    )}
+
                     {/* Sticky tab row + hourly challenge entry (z-40). Hint stays below in normal flow. */}
                     <div className="sticky top-[6px] z-40 mx-auto mb-6 flex w-full max-w-sm flex-col gap-1.5">
                         <div
@@ -2338,7 +2382,7 @@ export default function Training({
                                 </button>
                             </div>
                         </div>
-                        {trainingTab === 'core' && !trainingLoading && !showWelcome && !radioGlobalExpanded && (
+                        {trainingTab === 'core' && !trainingLoading && !radioGlobalExpanded && (
                             <div className="flex w-full justify-end pr-0.5">
                                 <button
                                     type="button"
@@ -4092,95 +4136,14 @@ export default function Training({
                     document.body
                 )
             }
-            {/* Welcome Modal Overlay */}
-            {
-                showWelcome && createPortal(
-                    <div className="neo-brutal fixed inset-0 z-[1000] flex animate-fade-in items-center justify-center bg-[#fffdf7]">
-                        <div className="nb-hazard absolute inset-x-0 top-0" aria-hidden="true" />
-
-                        <div className="relative flex w-full max-w-lg flex-col items-center space-y-4 px-6 text-center md:space-y-6">
-                            <div className="w-full flex flex-col items-center space-y-4 md:space-y-6">
-                                {/* Lottie Animation */}
-                                <div className="w-full aspect-square max-w-[160px] md:max-w-[240px] mx-auto filter drop-shadow-2xl">
-                                    <DotLottiePlayer
-                                        src={readingLottie}
-                                        autoplay
-                                        loop
-                                        className="w-full h-full"
-                                    />
-                                </div>
-
-                                {/* Welcome Text */}
-                                <div className="space-y-1.5 md:space-y-3 animate-entrance-pop" style={{ animationDelay: '100ms' }}>
-                                    <h1 className={`text-2xl font-black leading-tight text-slate-900 md:text-4xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {language === 'en' ? 'Welcome!' : 'স্বাগতম!'}
-                                    </h1>
-                                    <p className={`text-base font-bold text-slate-600 md:text-xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {language === 'en' ? "Here's your reading progress." : 'আপনার পড়ার অগ্রগতি এখানে।'}
-                                    </p>
-                                </div>
-
-                                {lessonProgressWelcome && (
-                                    <div className="grid grid-cols-1 gap-3 animate-entrance-pop text-left w-full max-w-sm" style={{ animationDelay: '200ms' }}>
-                                        <p className={`text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 nb-mono md:text-xs ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
-                                            {language === 'en' ? 'Your reading progress' : 'পড়ার অগ্রগতি'}
-                                        </p>
-                                        <div className="nb-card flex items-center gap-4 bg-white p-4">
-                                            <div className="nb-icon-badge flex h-12 w-12 shrink-0 items-center justify-center bg-orange-100 text-2xl">
-                                                📖
-                                            </div>
-                                            <div className="min-w-0 flex-1">
-                                                <p className={`font-black leading-snug text-slate-900 ${lessonProgressWelcome.secondary ? 'mb-1' : ''} ${language === 'bn' ? 'font-bengali text-base md:text-lg' : 'text-xs md:text-sm'}`}>
-                                                    {lessonProgressWelcome.primary}
-                                                </p>
-                                                {lessonProgressWelcome.secondary && (
-                                                    <p className={`text-[10px] md:text-[11px] font-semibold text-slate-500 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                        {lessonProgressWelcome.secondary}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Proceed Button */}
-                            <div className="w-full max-w-sm pt-0 md:pt-2 animate-entrance-pop" style={{ animationDelay: '300ms' }}>
-                                <button
-                                    onClick={() => {
-                                        sessionStorage.setItem('hasSeenTrainingWelcome', 'true');
-                                        setShowWelcome(false);
-                                    }}
-                                    className="nb-btn-primary group w-full py-4 text-xl font-black md:py-5 md:text-2xl"
-                                >
-                                    <span className="flex items-center justify-center gap-3">
-                                        {language === 'en' ? 'Proceed' : 'এগিয়ে যান'}
-                                        <svg className="w-7 h-7 group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                        </svg>
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>,
-                    document.body
-                )
-            }
-
             {
                 showOnboarding && (
                     <OnboardingSequence
                         language={language}
                         onComplete={() => {
-                            const today = new Date().toDateString();
-                            localStorage.setItem('lastOnboardingDate', today);
-                            localStorage.setItem('hasSeenOnboarding', 'true');
+                            localStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
+                            localStorage.removeItem(ONBOARDING_LEGACY_DATE_KEY);
                             setShowOnboarding(false);
-                            // After onboarding, show the welcome modal if not seen in session
-                            const hasSeenWelcome = sessionStorage.getItem('hasSeenTrainingWelcome');
-                            if (!hasSeenWelcome) {
-                                setShowWelcome(true);
-                            }
                         }}
                     />
                 )

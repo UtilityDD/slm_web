@@ -215,10 +215,6 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                     role: user.role,
                     slm_id: user.slm_id
                 });
-
-                requestAnimationFrame(() => {
-                    showNotification(`Welcome back, ${user.full_name}!`, 'success');
-                });
             }
         } catch (error) {
             console.error('Login error:', error);
