@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { UserIcon } from './icons';
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../config';
 import { useLifeSkillRadio } from '../context/LifeSkillRadioContext';
@@ -18,44 +18,15 @@ export default function Sidebar({
   onLogout
 }) {
   const { startRadio, loading: radioLoading } = useLifeSkillRadio();
-  const [currentTab, setCurrentTab] = useState(null);
-  const [isMoreExpanded, setIsMoreExpanded] = useState(true);
-  const navRef = useRef(null);
-
-  useEffect(() => {
-    if (isOpen && navRef.current) {
-      const timeoutId = setTimeout(() => {
-        if (navRef.current) {
-          navRef.current.scrollTo({
-            top: navRef.current.scrollHeight,
-            behavior: 'smooth'
-          });
-        }
-      }, 350);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash;
-      const tabMatch = hash.match(/[?&]tab=([^&]*)/);
-      if (tabMatch && tabMatch[1]) {
-        setCurrentTab(decodeURIComponent(tabMatch[1]));
-      }
-    };
-
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
 
   const menuItems = [
-    { id: 'training', label: language === 'en' ? '90 Days Training' : '৯০ দিনের প্রশিক্ষণ', icon: '📚', show: true, primary: true },
-    { id: 'competitions', label: language === 'en' ? 'Competitions' : 'প্রতিযোগিতা', icon: '🎯', show: true, primary: true },
-    { id: 'leaderboard', label: language === 'en' ? 'Leaderboard' : 'লিডারবোর্ড', icon: '🏆', show: true, primary: true },
-    { id: 'video-guide', label: language === 'en' ? 'Video Guide' : 'ভিডিও গাইড', icon: '📺', show: true, primary: true },
-    { id: 'safety-library', label: language === 'en' ? 'Safety Library' : 'সুরক্ষা লাইব্রেরি', icon: '🛡️', show: true, primary: true },
+    { id: 'training', label: language === 'en' ? '90 Days Training' : '৯০ দিনের প্রশিক্ষণ', icon: '📚', show: true },
+    { id: 'competitions', label: language === 'en' ? 'Competitions' : 'প্রতিযোগিতা', icon: '🎯', show: true },
+    { id: 'leaderboard', label: language === 'en' ? 'Leaderboard' : 'লিডারবোর্ড', icon: '🏆', show: true },
+    { id: 'video-guide', label: language === 'en' ? 'Video Guide' : 'ভিডিও গাইড', icon: '📺', show: true },
+    { id: 'aro-janun', label: language === 'en' ? 'Know More' : 'আরো জানুন', icon: '🧰', show: true },
+    { id: 'training-faq', label: language === 'en' ? 'Quick Help & FAQ' : 'কি, কেন?, কিভাবে?', icon: '💡', show: true, redirectTo: 'training', tab: 'faq' },
+    { id: 'safety-library', label: language === 'en' ? 'Safety Library' : 'সুরক্ষা লাইব্রেরি', icon: '🛡️', show: true },
     { id: 'notifications', label: language === 'en' ? 'Notifications' : 'বিজ্ঞপ্তি', icon: '🔔', show: true, badge: unreadNotificationsCount > 0 ? unreadNotificationsCount : null, highlight: unreadNotificationsCount > 0 },
     { id: 'community', label: language === 'en' ? 'Community' : 'কমিউনিটি', icon: '👥', show: true },
     { id: 'sops', label: language === 'en' ? 'SOP' : 'এসওপি', icon: '📋', show: true },
@@ -67,8 +38,7 @@ export default function Sidebar({
     { id: 'admin-services', label: language === 'en' ? 'Services' : 'সার্ভিস', icon: '🔄', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
   ];
 
-  const primaryItems = menuItems.filter(item => item.primary && item.show);
-  const secondaryItems = menuItems.filter(item => !item.primary && item.show);
+  const visibleItems = menuItems.filter((item) => item.show);
   const displayUserId = userProfile?.slm_id || userProfile?.id ? String(userProfile?.slm_id || userProfile?.id) : null;
 
   const handleNavClick = (item) => {
@@ -163,7 +133,7 @@ export default function Sidebar({
           </div>
         </div>
 
-        <nav ref={navRef} className="custom-scrollbar flex-1 space-y-1 overflow-y-auto px-3 py-3">
+        <nav className="custom-scrollbar flex-1 space-y-1 overflow-y-auto px-3 py-3">
           <button
             type="button"
             disabled={radioLoading}
@@ -181,68 +151,31 @@ export default function Sidebar({
             </span>
           </button>
 
-          {primaryItems.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => handleNavClick(item)}
-              className={`group flex w-full items-center gap-3 px-4 py-3 text-left transition-all duration-200 ${
-                currentView === item.id
-                  ? 'nb-btn-primary font-semibold'
-                  : 'nb-btn-secondary hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5'
-              }`}
-            >
-              <span className={`shrink-0 text-xl transition-transform duration-200 ${currentView === item.id ? '' : 'group-hover:scale-110'}`}>
-                {item.icon}
-              </span>
-              <span className="text-sm font-bold">{item.label}</span>
-            </button>
-          ))}
-
-          <button
-            type="button"
-            onClick={() => setIsMoreExpanded(!isMoreExpanded)}
-            className="nb-card mt-2 flex w-full items-center justify-center border-dashed bg-white p-3 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5"
-            title={isMoreExpanded ? (language === 'en' ? 'Show Less' : 'কম দেখুন') : (language === 'en' ? 'More Items' : 'আরও দেখুন')}
-          >
-            <div className={`transform transition-all duration-500 ${isMoreExpanded ? 'rotate-180 text-orange-600' : 'rotate-0 text-slate-500'}`}>
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </button>
-
-          <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isMoreExpanded ? 'mt-2 max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-            <div className="space-y-1 border-t-2 border-slate-900 pt-2">
-              {secondaryItems.map((item) => {
-                const isActive = currentView === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => handleNavClick(item)}
-                    className={`group flex w-full items-center gap-3 border-2 px-3 py-2.5 text-left transition-all duration-200 ${
-                      isActive
-                        ? 'border-slate-900 bg-orange-100 font-bold text-orange-800 shadow-[2px_2px_0_#0f172a]'
-                        : 'border-slate-900 bg-white text-slate-700 shadow-[2px_2px_0_#0f172a] hover:-translate-x-0.5 hover:-translate-y-0.5'
-                    } ${item.color || ''}`}
-                  >
-                    <span className="shrink-0 text-lg opacity-80 transition-opacity group-hover:opacity-100">
-                      {item.icon}
-                    </span>
-                    <span className="text-xs font-bold uppercase tracking-tight nb-mono">
-                      {item.label}
-                    </span>
-                    {item.badge && (
-                      <span className="ml-auto border-2 border-slate-900 bg-red-500 px-1.5 py-0.5 text-[9px] font-black text-white">
-                        {item.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          {visibleItems.map((item) => {
+            const isActive = currentView === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleNavClick(item)}
+                className={`group flex w-full items-center gap-3 px-4 py-3 text-left transition-all duration-200 ${
+                  isActive
+                    ? 'nb-btn-primary font-semibold'
+                    : `nb-btn-secondary hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 ${item.color || ''}`
+                }`}
+              >
+                <span className={`shrink-0 text-xl transition-transform duration-200 ${isActive ? '' : 'group-hover:scale-110'}`}>
+                  {item.icon}
+                </span>
+                <span className={`text-sm font-bold ${language === 'bn' ? 'font-bengali' : ''}`}>{item.label}</span>
+                {item.badge && (
+                  <span className="ml-auto border-2 border-slate-900 bg-red-500 px-1.5 py-0.5 text-[9px] font-black text-white">
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </nav>
 
         <div className="shrink-0 space-y-2 border-t-2 border-slate-900 bg-white p-3">

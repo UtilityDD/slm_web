@@ -1935,6 +1935,24 @@ export default function Training({
         }
     };
 
+    useEffect(() => {
+        const openFaqIfRequested = () => {
+            const tabMatch = window.location.hash.match(/[?&]tab=([^&]*)/);
+            if (!tabMatch || decodeURIComponent(tabMatch[1]) !== 'faq') return;
+            if (trainingChapters.length === 0) return;
+
+            const faq = trainingChapters.find((c) => c.number === 10);
+            if (!faq) return;
+
+            window.history.replaceState(null, '', '#/training');
+            handleChapterClick(faq);
+        };
+
+        openFaqIfRequested();
+        window.addEventListener('hashchange', openFaqIfRequested);
+        return () => window.removeEventListener('hashchange', openFaqIfRequested);
+    }, [trainingChapters]);
+
     // TTS Logic: Compile full lesson text
     const normalizeNarrationPart = (value) => {
         if (value === null || value === undefined) return '';
