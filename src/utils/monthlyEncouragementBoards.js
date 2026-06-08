@@ -29,7 +29,7 @@ export const RULES = {
 export function getEncouragementCopy(language = 'bn') {
     const en = language === 'en';
     return {
-        sectionTitle: en ? 'More ways to win this month' : 'এই মাসে আরও চারটে সুযোগ',
+        sectionTitle: en ? 'More ways to win this month' : 'এই মাসে আরও তিনটি সুযোগ',
         prizeTitle: en ? 'Current top 3 (month-end prizes)' : 'এখন যারা এগিয়ে (মাস শেষে পুরস্কার)',
         prizeRule: en
             ? 'Three prizes per list. One prize per person — if you lead multiple lists, you keep your highest award only; the next player moves up on the other lists.'
@@ -104,7 +104,6 @@ export const MONTHLY_SUB_TAB_ORDER = [
     MONTHLY_SUB_TAB.CHAMPION,
     BOARD_IDS.NEW_PLAYER,
     BOARD_IDS.MOST_IMPROVED,
-    BOARD_IDS.TOP_LEARNER,
 ];
 
 /** Map monthly sub-tab id to encouragement board id (Hall of Fame + live monthly). */
