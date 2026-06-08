@@ -28,6 +28,7 @@ import {
     appendSupplementaryCompletion,
 } from '../../utils/supplementaryProgressStorage';
 import { filterCoreCompletedLessonIds, isSupplementaryProgressLessonId } from '../../utils/trainingLessonIds';
+import { logReadingHabitCompletion } from '../../utils/readingHabitLog';
 import { pickSupplementaryListenSrc } from '../../utils/supplementaryAudioUrl';
 import { useLifeSkillRadio } from '../../context/LifeSkillRadioContext';
 import { getLifetimePoints } from '../../utils/hourlyDifficulty';
@@ -2097,6 +2098,7 @@ export default function Training({
 
                     invalidateLeaderboardCaches(user.id);
                     cacheHelper.clear(`profile_${user.id}`);
+                    logReadingHabitCompletion(user.id, lessonId);
 
                     setRecentReward(bonusPoints);
                     // Clear reward message after 5 seconds

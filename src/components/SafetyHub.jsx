@@ -9,6 +9,7 @@ import secureStorage from '../utils/secureStorage';
 import ChapterQuizModal from './ChapterQuizModal';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 import { filterCoreCompletedLessonIds, isSupplementaryProgressLessonId } from '../utils/trainingLessonIds';
+import { logReadingHabitCompletion } from '../utils/readingHabitLog';
 
 const PPESkeleton = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -758,6 +759,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
                     invalidateLeaderboardCaches(user.id);
                     cacheHelper.clear(`profile_${user.id}`);
+                    logReadingHabitCompletion(user.id, lessonId);
 
                     setRecentReward(bonusPoints);
                     // Clear reward message after 5 seconds
