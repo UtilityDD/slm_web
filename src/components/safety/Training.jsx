@@ -2627,52 +2627,48 @@ export default function Training({
                         <button
                             type="button"
                             onClick={() => setCurrentView('aro-janun')}
-                            className="nb-card w-full bg-white p-5 text-left transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 sm:p-6 lg:p-8"
+                            className="nb-card w-full bg-white p-4 text-left transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 sm:p-5 lg:p-6"
                         >
-                            <div className="flex flex-col items-center justify-between gap-5 md:flex-row md:gap-6">
-                                <div className="flex items-center gap-5 text-center md:text-left">
-                                    <div className="nb-icon-badge flex h-14 w-14 shrink-0 items-center justify-center bg-teal-100 text-3xl text-teal-800 lg:h-16 lg:w-16 lg:text-4xl">
-                                        🧰
-                                    </div>
-                                    <div>
-                                        <h2 className={`text-xl font-black tracking-tight text-slate-900 lg:text-3xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                            {language === 'en' ? 'Know More' : 'আরো জানুন'}
-                                        </h2>
-                                    </div>
+                            <div className="flex items-center gap-4 sm:gap-5">
+                                <div className="nb-icon-badge flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center bg-teal-100 text-4xl text-teal-800 sm:h-20 sm:w-20 sm:text-5xl">
+                                    🧰
                                 </div>
-                                <div className="nb-btn-secondary inline-flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-wider nb-mono">
-                                    <span>{language === 'en' ? 'Browse Chapters' : 'অধ্যায় দেখুন'}</span>
-                                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                    </svg>
+                                <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                                    <h2 className={`text-lg font-black leading-tight tracking-tight text-slate-900 sm:text-xl lg:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en' ? 'Know More' : 'আরো জানুন'}
+                                    </h2>
+                                    <span className="nb-btn-secondary inline-flex w-fit shrink-0 items-center gap-2 self-start px-4 py-2 text-[10px] font-black uppercase tracking-wider nb-mono sm:self-center">
+                                        <span>{language === 'en' ? 'Browse Chapters' : 'অধ্যায় দেখুন'}</span>
+                                        <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                        </svg>
+                                    </span>
                                 </div>
                             </div>
                         </button>
                     </div>
 
                     {/* Video Library CTA */}
-                    <div className="group mt-12">
+                    <div className="group mt-8">
                         <button
                             type="button"
                             onClick={() => setCurrentView('video-guide')}
-                            className="nb-btn-primary w-full p-5 text-left transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 sm:p-6 lg:p-8"
+                            className="nb-btn-primary w-full p-4 text-left transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 sm:p-5 lg:p-6"
                         >
-                            <div className="flex flex-col items-center justify-between gap-5 md:flex-row md:gap-6">
-                                <div className="flex items-center gap-5 text-center md:text-left">
-                                    <div className="nb-icon-badge flex h-14 w-14 shrink-0 items-center justify-center bg-white/25 text-3xl lg:h-16 lg:w-16 lg:text-4xl">
-                                        📺
-                                    </div>
-                                    <div>
-                                        <h2 className={`text-xl font-black tracking-tight lg:text-3xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                            {language === 'en' ? 'Video Learning Library' : 'ভিডিও লার্নিং লাইব্রেরি'}
-                                        </h2>
-                                    </div>
+                            <div className="flex items-center gap-4 sm:gap-5">
+                                <div className="nb-icon-badge flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center bg-white/25 text-4xl sm:h-20 sm:w-20 sm:text-5xl">
+                                    📺
                                 </div>
-                                <div className="nb-btn-secondary inline-flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-wider nb-mono">
-                                    <span>{language === 'en' ? 'Watch Now' : 'এখনই দেখুন'}</span>
-                                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                    </svg>
+                                <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                                    <h2 className={`text-lg font-black leading-tight tracking-tight sm:text-xl lg:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en' ? 'Video Learning Library' : 'ভিডিও লার্নিং লাইব্রেরি'}
+                                    </h2>
+                                    <span className="nb-btn-secondary inline-flex w-fit shrink-0 items-center gap-2 self-start px-4 py-2 text-[10px] font-black uppercase tracking-wider nb-mono sm:self-center">
+                                        <span>{language === 'en' ? 'Watch Now' : 'এখনই দেখুন'}</span>
+                                        <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                        </svg>
+                                    </span>
                                 </div>
                             </div>
                         </button>
@@ -2686,24 +2682,22 @@ export default function Training({
                                 const faq = trainingChapters.find(c => c.number === 10);
                                 if (faq) handleChapterClick(faq);
                             }}
-                            className="nb-btn-indigo w-full p-5 text-left transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 sm:p-6 lg:p-8"
+                            className="nb-btn-indigo w-full p-4 text-left transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 sm:p-5 lg:p-6"
                         >
-                            <div className="flex flex-col items-center justify-between gap-5 md:flex-row md:gap-6">
-                                <div className="flex items-center gap-5 text-center md:text-left">
-                                    <div className="nb-icon-badge flex h-14 w-14 shrink-0 items-center justify-center bg-white/25 text-3xl lg:h-16 lg:w-16 lg:text-4xl">
-                                        💡
-                                    </div>
-                                    <div>
-                                        <h2 className={`text-xl font-black tracking-tight lg:text-3xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                            {language === 'en' ? 'Quick Help & FAQ' : 'কি, কেন?, কিভাবে?'}
-                                        </h2>
-                                    </div>
+                            <div className="flex items-center gap-4 sm:gap-5">
+                                <div className="nb-icon-badge flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center bg-white/25 text-4xl sm:h-20 sm:w-20 sm:text-5xl">
+                                    💡
                                 </div>
-                                <div className="nb-btn-secondary inline-flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-wider nb-mono">
-                                    <span>{language === 'en' ? 'Search Answers' : 'উত্তর খুঁজুন'}</span>
-                                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                    </svg>
+                                <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                                    <h2 className={`text-lg font-black leading-tight tracking-tight sm:text-xl lg:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en' ? 'Quick Help & FAQ' : 'কি, কেন?, কিভাবে?'}
+                                    </h2>
+                                    <span className="nb-btn-secondary inline-flex w-fit shrink-0 items-center gap-2 self-start px-4 py-2 text-[10px] font-black uppercase tracking-wider nb-mono sm:self-center">
+                                        <span>{language === 'en' ? 'Search Answers' : 'উত্তর খুঁজুন'}</span>
+                                        <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                        </svg>
+                                    </span>
                                 </div>
                             </div>
                         </button>
