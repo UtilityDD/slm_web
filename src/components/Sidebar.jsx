@@ -178,32 +178,34 @@ export default function Sidebar({
           })}
         </nav>
 
-        <div className="shrink-0 space-y-2 border-t-2 border-slate-900 bg-white p-3">
-          <button
-            type="button"
-            onClick={onToggleLanguageModal}
-            className="nb-btn-secondary flex w-full items-center gap-3 px-4 py-2.5 text-left"
-            title="Language"
-          >
-            <span className="shrink-0 text-xl">🌐</span>
-            <span className="text-sm font-bold">
-              {language === 'en' ? 'Language' : 'ভাষা'}
-            </span>
-          </button>
+        <div className="shrink-0 border-t-2 border-slate-900 bg-white p-3">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onToggleLanguageModal}
+              className="nb-btn-secondary flex flex-1 items-center justify-center gap-2 px-3 py-2.5"
+              title="Language"
+            >
+              <span className="shrink-0 text-lg" aria-hidden>🌐</span>
+              <span className={`text-xs font-bold leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                {language === 'en' ? 'Language' : 'ভাষা'}
+              </span>
+            </button>
 
-          <button
-            type="button"
-            onClick={onLogout}
-            className="flex w-full items-center gap-3 border-2 border-slate-900 bg-red-50 px-4 py-2.5 text-left text-red-700 shadow-[2px_2px_0_#0f172a] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5"
-            title="Logout"
-          >
-            <span className="shrink-0 text-xl">
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-            </span>
-            <span className="text-sm font-black">
-              {language === 'en' ? 'Logout' : 'লগ আউট'}
-            </span>
-          </button>
+            <button
+              type="button"
+              onClick={onLogout}
+              className="flex flex-1 items-center justify-center gap-2 border-2 border-slate-900 bg-red-50 px-3 py-2.5 text-red-700 shadow-[2px_2px_0_#0f172a] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5"
+              title="Logout"
+            >
+              <span className="shrink-0" aria-hidden>
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+              </span>
+              <span className={`text-xs font-black leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                {language === 'en' ? 'Logout' : 'লগ আউট'}
+              </span>
+            </button>
+          </div>
 
           <div className="mt-2 border-t-2 border-slate-900 px-4 py-2 text-center">
             <p className="flex flex-col items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-500 nb-mono">
