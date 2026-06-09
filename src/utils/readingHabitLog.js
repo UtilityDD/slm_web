@@ -1,4 +1,6 @@
 import { supabase } from '../supabaseClient';
+import { writeLocalGateActivity } from './readingGateStorage';
+import { advanceReviewCycle } from './readingReviewCycle';
 
 const CORE_LESSON_ID = /^\d+\.\d+$/;
 
@@ -11,19 +13,56 @@ export function logReadingHabitCompletion(userId, lessonId) {
     const id = String(lessonId).trim();
     if (!CORE_LESSON_ID.test(id)) return;
 
+    writeLocalGateActivity(userId, id, 'app');
+
     void (async () => {
         try {
-            const { error } = await supabase.from('reading_habit_completions').insert({
-                user_id: userId,
-                lesson_id: id,
-                completed_at: new Date().toISOString(),
-                source: 'app',
+            const { data, error } = await supabase.rpc('log_reading_habit_completion', {
+                p_user_id: userId,
+                p_lesson_id: id,
+                p_kind: 'app',
             });
-            if (error && error.code !== '23505') {
-                console.warn('[reading_habit] insert failed:', error.message);
+            if (error) {
+                console.warn('[reading_habit] rpc failed:', error.message);
+                return;
+            }
+            if (data && data.success === false) {
+                console.warn('[reading_habit] rpc failed:', data.error || 'unknown');
             }
         } catch (err) {
-            console.warn('[reading_habit] insert failed:', err);
+            console.warn('[reading_habit] rpc failed:', err);
+        }
+    })();
+}
+
+/**
+ * Graduate review — refreshes 48h gate via local storage; best-effort habit row insert.
+ * No points RPC; does not change lesson unlock or scoring.
+ */
+export function logReadingHabitReview(userId, lessonId) {
+    if (!userId || !lessonId) return;
+    const id = String(lessonId).trim();
+    if (!CORE_LESSON_ID.test(id)) return;
+
+    writeLocalGateActivity(userId, id, 'review');
+    advanceReviewCycle(userId, id);
+
+    void (async () => {
+        try {
+            const { data, error } = await supabase.rpc('log_reading_habit_completion', {
+                p_user_id: userId,
+                p_lesson_id: id,
+                p_kind: 'review',
+            });
+            if (error) {
+                console.warn('[reading_habit] review rpc failed:', error.message);
+                return;
+            }
+            if (data && data.success === false) {
+                console.warn('[reading_habit] review rpc failed:', data.error || 'unknown');
+            }
+        } catch (err) {
+            console.warn('[reading_habit] review rpc failed:', err);
         }
     })();
 }

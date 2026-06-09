@@ -20,6 +20,9 @@ import sandyLoading from '../assets/SandyLoading.lottie';
 import HourlyPenaltyInfoModal from './HourlyPenaltyInfoModal';
 import { MonthlyBoardHeader } from './MonthlyEncouragementBoards';
 import MonthlyBoardInfoModal from './MonthlyBoardInfoModal';
+import { checkReadingGate } from '../utils/readingHabitGate';
+import { filterCoreCompletedLessonIds } from '../utils/trainingLessonIds';
+import ReadingGateModal from './ReadingGateModal';
 import {
     getEncouragementCopy,
     getHallOfFameWinners,
@@ -212,7 +215,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [showAbortWarningModal, setShowAbortWarningModal] = useState(false);
     const [imageRetryTick, setImageRetryTick] = useState({});
     const [failedImageKeys, setFailedImageKeys] = useState({});
-    
+    const [readingGateBlock, setReadingGateBlock] = useState(null);
+
     // Search Quota State
     const [searchCount, setSearchCount] = useState(0);
     const [showSearchModal, setShowSearchModal] = useState(false);
@@ -1088,6 +1092,18 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         if (isFullLeaderboard) return;
         if (!user) {
             setCurrentView('login');
+            return;
+        }
+        const completedLessons = filterCoreCompletedLessonIds(
+            Array.isArray(userProfile?.completed_lessons) ? userProfile.completed_lessons : []
+        );
+        const gate = await checkReadingGate({
+            userId: user.id,
+            completedLessons,
+            trainingChapters: null,
+        });
+        if (!gate.allowed) {
+            setReadingGateBlock({ ...gate, userId: user.id });
             return;
         }
         setHourlyQuizRefreshBusy(true);
@@ -2952,6 +2968,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 language={language}
                 lifetimePoints={hourlyLifetimePoints}
                 onClose={() => setShowHourlyPenaltyInfoModal(false)}
+            />
+            <ReadingGateModal
+                block={readingGateBlock}
+                language={language}
+                onClose={() => setReadingGateBlock(null)}
+                setCurrentView={setCurrentView}
             />
             <MonthlyBoardInfoModal
                 open={showMonthlyBoardInfoModal}

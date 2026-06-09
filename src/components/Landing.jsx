@@ -718,6 +718,23 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
     setCurrentView(user ? 'training' : 'login');
   };
 
+  const scrollToLifeSkillsSection = () => {
+    const section = document.getElementById('life-skills');
+    const scroller = document.getElementById('main-scroll-container');
+    if (!section) return;
+    const headerOffset = 80;
+    if (scroller) {
+      const top =
+        section.getBoundingClientRect().top -
+        scroller.getBoundingClientRect().top +
+        scroller.scrollTop -
+        headerOffset;
+      scroller.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      return;
+    }
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   const openLifeSkillPreview = (module) => {
     if (!module || typeof module !== 'object') return;
     resetLifeSkillScroll();
@@ -858,13 +875,14 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
               >
                 {t.login}
               </button>
-              <a
-                href="#life-skills"
+              <button
+                type="button"
+                onClick={scrollToLifeSkillsSection}
                 className="w-full sm:w-auto min-h-[48px] px-6 py-3.5 sm:py-4 nb-btn-secondary font-bold text-center flex items-center justify-center gap-2 touch-manipulation"
               >
                 {t.exploreLifeSkills}
                 <svg className="w-4 h-4 text-slate-400 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
-              </a>
+              </button>
             </div>
           </div>
 

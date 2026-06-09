@@ -28,7 +28,10 @@ import {
     appendSupplementaryCompletion,
 } from '../../utils/supplementaryProgressStorage';
 import { filterCoreCompletedLessonIds, isSupplementaryProgressLessonId } from '../../utils/trainingLessonIds';
-import { logReadingHabitCompletion } from '../../utils/readingHabitLog';
+import { logReadingHabitCompletion, logReadingHabitReview } from '../../utils/readingHabitLog';
+import { checkReadingGate } from '../../utils/readingHabitGate';
+import { consumeGateNavigation, consumeGateReviewTarget } from '../../utils/readingGateStorage';
+import ReadingGateModal from '../ReadingGateModal';
 import { pickSupplementaryListenSrc } from '../../utils/supplementaryAudioUrl';
 import { useLifeSkillRadio } from '../../context/LifeSkillRadioContext';
 import { getLifetimePoints } from '../../utils/hourlyDifficulty';
@@ -732,6 +735,7 @@ export default function Training({
     const [isAudioPlaying, setIsAudioPlaying] = useState(false);
     const [activeAudioChapter, setActiveAudioChapter] = useState(null);
     const [isHourlyPending, setIsHourlyPending] = useState(false);
+    const [readingGateBlock, setReadingGateBlock] = useState(null);
     const [showHourlyPenaltyModal, setShowHourlyPenaltyModal] = useState(false);
     const [hourlyPenaltyDontShowAgain, setHourlyPenaltyDontShowAgain] = useState(false);
     const [userRank, setUserRank] = useState(null);
@@ -832,14 +836,24 @@ export default function Training({
         () => getLifetimePoints(profile, userRank),
         [profile, userRank]
     );
-    const handleHourlyChallengeClick = useCallback(() => {
-        if (user?.id && !storageUtils.getItem(`${HOURLY_PENALTY_MODAL_SKIP_KEY}_${user.id}`)) {
+    const handleHourlyChallengeClick = useCallback(async () => {
+        if (!user?.id) return;
+        const gate = await checkReadingGate({
+            userId: user.id,
+            completedLessons,
+            trainingChapters,
+        });
+        if (!gate.allowed) {
+            setReadingGateBlock({ ...gate, userId: user.id });
+            return;
+        }
+        if (!storageUtils.getItem(`${HOURLY_PENALTY_MODAL_SKIP_KEY}_${user.id}`)) {
             setHourlyPenaltyDontShowAgain(false);
             setShowHourlyPenaltyModal(true);
             return;
         }
         setCurrentView('competitions');
-    }, [user?.id, setCurrentView]);
+    }, [user?.id, completedLessons, trainingChapters, setCurrentView]);
 
     const closeHourlyPenaltyModalAndGo = useCallback(() => {
         if (hourlyPenaltyDontShowAgain && user?.id) {
@@ -1958,6 +1972,15 @@ export default function Training({
     };
 
     useEffect(() => {
+        if (!user?.id || !trainingChapters?.length) return;
+        const nav = consumeGateNavigation(user.id);
+        if (!nav?.chapterNum || !nav?.lessonNum) return;
+        const chapter = trainingChapters.find((c) => c.number === nav.chapterNum);
+        if (!chapter) return;
+        handleChapterClick(chapter, nav.lessonNum);
+    }, [user?.id, trainingChapters]);
+
+    useEffect(() => {
         const openFaqIfRequested = () => {
             const tabMatch = window.location.hash.match(/[?&]tab=([^&]*)/);
             if (!tabMatch || decodeURIComponent(tabMatch[1]) !== 'faq') return;
@@ -2158,6 +2181,16 @@ export default function Training({
             }
             if (onProgressUpdate) {
                 onProgressUpdate(updated, true); // Added true for forceRefresh
+            }
+        } else if (user && consumeGateReviewTarget(user.id, lessonId)) {
+            logReadingHabitReview(user.id, lessonId);
+            if (typeof showNotification === 'function') {
+                showNotification(
+                    language === 'en'
+                        ? 'Review saved — hourly quiz unlocked.'
+                        : 'রিভিউ সংরক্ষিত — ঘণ্টাভিত্তিক কুইজ খোলা হয়েছে।',
+                    'success'
+                );
             }
         }
         setShowQuizModal(false);
@@ -3190,6 +3223,13 @@ export default function Training({
                 showDontShowAgain
                 dontShowAgain={hourlyPenaltyDontShowAgain}
                 onDontShowAgainChange={setHourlyPenaltyDontShowAgain}
+            />
+
+            <ReadingGateModal
+                block={readingGateBlock}
+                language={language}
+                onClose={() => setReadingGateBlock(null)}
+                setCurrentView={setCurrentView}
             />
 
             {lockedLessonModal && createPortal(
