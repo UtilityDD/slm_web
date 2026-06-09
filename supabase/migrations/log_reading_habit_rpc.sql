@@ -57,7 +57,8 @@ SET search_path = public
 AS $$
     SELECT max(completed_at)
     FROM public.reading_habit_completions
-    WHERE user_id = COALESCE(p_user_id, auth.uid());
+    WHERE user_id = COALESCE(p_user_id, auth.uid())
+      AND source IN ('app', 'backfill_quiz_attempts');
 $$;
 
 GRANT EXECUTE ON FUNCTION public.log_reading_habit_completion(uuid, text, text) TO anon, authenticated, service_role;

@@ -62,6 +62,7 @@ function hasCompletedAllCoreLessons(completedLessons, trainingChapters) {
     return countCoreLessonsCompleted(completedLessons) >= total;
 }
 
+/** DB gate clock: app + backfill_quiz_attempts only (backfill_profile excluded). */
 async function fetchLatestHabitActivity(userId) {
     try {
         const { data, error } = await supabase.rpc('get_latest_reading_habit_at', {
