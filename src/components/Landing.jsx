@@ -39,35 +39,35 @@ const copy = {
     followFacebook: 'Follow on Facebook',
   },
   bn: {
-    tagline: 'পশ্চিমবঙ্গের লাইনম্যানদের নিরাপদ কাজের সঙ্গী',
+    tagline: 'পশ্চিমবঙ্গের বিদ্যুৎ কর্মীদের নিরাপত্তা-প্রথম প্ল্যাটফর্ম',
     heroTitle: 'প্রশিক্ষণ নিন। প্রতিযোগিতা করুন। নিরাপদ থাকুন।',
     heroSubtitle:
-      'স্মার্ট লাইনম্যানে নিরাপত্তার অভ্যাস গড়ে উঠবে, ধাপে ধাপে প্রশিক্ষণ হবে, আর ন্যায্য প্রতিযোগিতায় আপনার পরিশ্রমের স্বীকৃতি মিলবে।',
-    visionTitle: 'আমাদের স্বপ্ন',
+      'স্মার্টলাইনম্যান বিদ্যুৎ কর্মীদের নিরাপত্তার অভ্যাস গড়ে তুলতে, সুবিন্যস্ত প্রশিক্ষণ সম্পন্ন করতে এবং সুস্থ প্রতিযোগিতার মাধ্যমে কাজের সঠিক স্বীকৃতি অর্জনে সাহায্য করে।',
+    visionTitle: 'আমাদের রূপকল্প (Vision)',
     vision:
-      'পশ্চিমবঙ্গের প্রতিটি লাইনম্যান যেন আত্মবিশ্বাসে কাজ করে—আধুনিক নিরাপত্তা জানে, সহকর্মীর সাহায্য পায়, দুর্ঘটনা কমে, পরিবার নিরাপদ থাকে।',
-    missionTitle: 'আমরা যা করি',
+      'পশ্চিমবঙ্গের প্রতিটি বিদ্যুৎ কর্মী যেন আধুনিক নিরাপত্তা জ্ঞান ও সহকর্মীদের সহযোগিতায় আত্মবিশ্বাসের সাথে কাজ করতে পারেন—যার ফলে কর্মক্ষেত্রের দুর্ঘটনা হ্রাস পাবে এবং তাদের পরিবার সুরক্ষিত থাকবে।',
+    missionTitle: 'আমাদের অভিলক্ষ্য (Mission)',
     mission:
-      'মাঠের কাজের জন্য ৯০ দিনের প্রশিক্ষণ, নিরাপত্তার সরঞ্জাম, লিডারবোর্ড আর পুরস্কার—যাতে কাজ নিরাপদ হয় এবং ভালো কাজের কদর হয়।',
-    statsUsers: 'নিবন্ধিত সদস্য',
+      'বাস্তবধর্মী ৯০ দিনের প্রশিক্ষণ, দৈনন্দিন নিরাপত্তা সরঞ্জাম, লিডারবোর্ড এবং পুরস্কার প্রদানের মাধ্যমে মাঠপর্যায়ের কাজকে নিরাপদ করা এবং কর্মীদের দক্ষতা সবার সামনে তুলে ধরা।',
+    statsUsers: 'মোট নিবন্ধিত কর্মী',
     statsToppers: 'শীর্ষ পারফর্মার',
-    statsPrizes: 'পুরস্কার দেওয়া হয়েছে',
-    topPlayers: 'নতুন সদস্য — সেরা ৩',
-    newPlayersTopThree: 'নতুন সদস্য — সেরা ৩ জন',
-    allTimeTopThree: 'সর্বকালীন সেরা ৩ জন',
+    statsPrizes: 'বিতরণকৃত পুরস্কার',
+    topPlayers: 'নতুন পারফর্মারদের লিডারবোর্ড',
+    newPlayersTopThree: 'নতুনদের মধ্যে শীর্ষ ৩ জন',
+    allTimeTopThree: 'সর্বকালের শীর্ষ ৩ জন',
     login: 'লগইন',
-    exploreLifeSkills: 'লাইফ স্কিল দেখুন',
-    lifeSkillsTitle: 'লাইফ স্কিল',
-    lifeSkillsSubtitle: 'প্রশিক্ষণ বিভাগের ছোট ছোট পাঠ—সিদ্ধান্ত নেওয়া, কথা বলা আর মাঠে আত্মবিশ্বাস বাড়ায়।',
-    lifeSkillsTrack: 'প্রশিক্ষণে সব লাইফ স্কিল',
-    lifeSkillsHint: 'সব লাইফ স্কিল খুলতে লগইন করুন ✨',
+    exploreLifeSkills: 'লাইফ স্কিলসমূহ দেখুন',
+    lifeSkillsTitle: 'লাইফ স্কিল হাব',
+    lifeSkillsSubtitle: 'প্রশিক্ষণের অধীনে থাকা সংক্ষিপ্ত লাইফ স্কিল মডিউল, যা মাঠপর্যায়ে দ্রুত সিদ্ধান্ত গ্রহণ, পারস্পরিক যোগাযোগ এবং কাজের আত্মবিশ্বাস বাড়াতে সাহায্য করে।',
+    lifeSkillsTrack: 'প্রশিক্ষণের সব লাইফ স্কিল দেখুন',
+    lifeSkillsHint: 'সকল লাইফ স্কিল মডিউল অ্যাক্সেস করতে লগইন করুন ✨',
     language: 'ভাষা',
-    live: 'এখনই লাইভ',
-    loading: 'একটু অপেক্ষা…',
-    pts: 'পয়েন্ট',
-    prizeMonths: 'টি মাসে পুরস্কার',
-    footer: 'নিরাপত্তা, শেখা আর স্বীকৃতি—লাইনম্যানের পাশে থাকি।',
-    followFacebook: 'Facebook পেজ',
+    live: 'লাইভ কমিউনিটি পরিসংখ্যান',
+    loading: 'লোড হচ্ছে…',
+    pts: 'পয়েন্ট',
+    prizeMonths: 'টি মাসে পুরস্কার বিতরণ করা হয়েছে',
+    footer: 'নিরাপত্তা, শিক্ষা এবং স্বীকৃতির মাধ্যমে লাইনম্যানদের ক্ষমতায়ন।',
+    followFacebook: 'ফেসবুক পেজ ফলো করুন',
   },
 };
 
@@ -244,13 +244,13 @@ const EN_PUBLIC_LIFE_SKILL_CONTENT = {
 };
 
 const categoryThemes = {
-  mental: { label_en: 'Mental Fitness', label_bn: 'মানসিক স্বাস্থ্য', color: 'bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100/50' },
-  financial: { label_en: 'Family Protection', label_bn: 'টাকা-পয়সা', color: 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100/50' },
-  digital: { label_en: 'Cyber Security', label_bn: 'অনলাইন নিরাপত্তা', color: 'bg-orange-50 text-orange-700 border-orange-100 hover:bg-orange-100/50' },
-  social: { label_en: 'Professionalism', label_bn: 'কাজের আদব', color: 'bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100/50' },
-  health: { label_en: 'Field Health', label_bn: 'স্বাস্থ্য', color: 'bg-rose-50 text-rose-700 border-rose-100 hover:bg-rose-100/50' },
-  family: { label_en: 'Child Security', label_bn: 'সন্তানের ভবিষ্যৎ', color: 'bg-purple-50 text-purple-700 border-purple-100 hover:bg-purple-100/50' },
-  personal: { label_en: 'Healthy Life', label_bn: 'সুস্থ জীবন', color: 'bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-100/50' },
+  mental: { label_en: 'Mental Fitness', label_bn: 'মানসিক সুস্থতা', color: 'bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100/50' },
+  financial: { label_en: 'Family Protection', label_bn: 'পারিবারিক সুরক্ষা', color: 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100/50' },
+  digital: { label_en: 'Cyber Security', label_bn: 'সাইবার নিরাপত্তা', color: 'bg-orange-50 text-orange-700 border-orange-100 hover:bg-orange-100/50' },
+  social: { label_en: 'Professionalism', label_bn: 'পেশাদারিত্ব', color: 'bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100/50' },
+  health: { label_en: 'Field Health', label_bn: 'মাঠপর্যায়ের স্বাস্থ্য', color: 'bg-rose-50 text-rose-700 border-rose-100 hover:bg-rose-100/50' },
+  family: { label_en: 'Child Security', label_bn: 'সন্তানের ভবিষ্যৎ ও সুরক্ষা', color: 'bg-purple-50 text-purple-700 border-purple-100 hover:bg-purple-100/50' },
+  personal: { label_en: 'Healthy Life', label_bn: 'সুস্থ জীবনযাপন', color: 'bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-100/50' },
 };
 
 function formatCount(n) {
@@ -490,7 +490,7 @@ function LeaderPodiumGrid({ title, iconName, iconTone, players, ptsLabel, bnFont
           return (
             <div
               key={`${player.id}-${idx}`}
-              className={`relative overflow-hidden flex flex-row items-center gap-4 sm:gap-5 p-4 sm:p-5 ${rankCardClass[idx] || rankCardClass[2]}`}
+              className={`relative overflow-hidden flex flex-row sm:flex-col items-center sm:text-center gap-4 sm:gap-3 p-4 sm:p-5 sm:pt-7 ${rankCardClass[idx] || rankCardClass[2]}`}
             >
               <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 flex items-center gap-1.5">
                 <RankBadge rank={idx} bnFont={bnFont} />
@@ -511,17 +511,17 @@ function LeaderPodiumGrid({ title, iconName, iconTone, players, ptsLabel, bnFont
                 </div>
               )}
 
-              <div className="min-w-0 flex-1 text-left pr-10 sm:pr-12">
+              <div className="min-w-0 flex-1 text-left sm:text-center pr-10 sm:pr-0 sm:w-full">
                 <p className="font-black text-lg sm:text-xl text-slate-900 truncate leading-snug">{player.name}</p>
                 {(showScore || player.district) && (
-                  <div className="flex flex-wrap items-center gap-2 mt-1.5 sm:mt-2">
+                  <div className="flex flex-wrap items-center sm:justify-center gap-2 mt-1.5 sm:mt-2">
                     {showScore && (
                       <p className="nb-score-pill text-sm sm:text-base px-2.5 sm:px-3 py-1 tabular-nums">
                         {player.points} {ptsLabel}
                       </p>
                     )}
                     {player.district && (
-                      <span className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-slate-700 bg-white px-2 py-0.5 rounded-md border-2 border-slate-900 nb-mono">
+                      <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-700 bg-white px-2 py-0.5 rounded-md border-2 border-slate-900 nb-mono">
                         <LandingIcon name="mapPin" className="w-3.5 h-3.5 text-orange-500" />
                         {player.district}
                       </span>
@@ -539,17 +539,17 @@ function LeaderPodiumGrid({ title, iconName, iconTone, players, ptsLabel, bnFont
 
 const StatTile = ({ label, value, iconName, tone = 'orange', loading, sub }) => {
   return (
-    <div className="nb-card p-3 sm:p-5">
-      <div className="flex flex-col items-center text-center gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:text-left sm:gap-3">
-        <div className={`nb-icon-badge w-11 h-11 sm:w-14 sm:h-14 flex items-center justify-center shrink-0 text-white ${ICON_TONES[tone] || ICON_TONES.orange}`}>
-          <LandingIcon name={iconName} className="w-5 h-5 sm:w-7 sm:h-7" strokeWidth={2} />
+    <div className="nb-card p-4 sm:p-5">
+      <div className="flex flex-row items-center gap-4 sm:gap-5 text-left">
+        <div className={`nb-icon-badge w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center shrink-0 text-white ${ICON_TONES[tone] || ICON_TONES.orange}`}>
+          <LandingIcon name={iconName} className="w-5.5 h-5.5 sm:w-7 sm:h-7" strokeWidth={2} />
         </div>
-        <div className="min-w-0 flex-1 w-full">
-          <p className="nb-stat-value text-2xl sm:text-4xl text-slate-900 leading-none">
+        <div className="min-w-0 flex-1">
+          <p className="nb-stat-value text-2xl sm:text-3xl lg:text-4xl text-slate-900 leading-none">
             <AnimatedNumber value={value} loading={loading} />
           </p>
-          <p className="nb-stat-label mt-1.5 sm:mt-1 line-clamp-2 sm:line-clamp-none">{label}</p>
-          {sub && <p className="hidden sm:block text-[10px] font-bold text-slate-600 mt-1 truncate nb-mono">{sub}</p>}
+          <p className="nb-stat-label mt-1.5 sm:mt-2 text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider line-clamp-1">{label}</p>
+          {sub && <p className="text-[10px] font-bold text-slate-600 mt-1 truncate nb-mono">{sub}</p>}
         </div>
       </div>
     </div>
@@ -849,95 +849,44 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
 
       <div className="max-w-5xl mx-auto px-3 sm:px-6 pb-8 sm:pb-16 relative">
 
-        {/* Hero Section Grid */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center pt-5 sm:pt-12 pb-8 sm:pb-12 relative z-10">
-          <div className="lg:col-span-7 text-center lg:text-left">
-            <h1 className={`font-black text-slate-900 leading-[1.2] sm:leading-tight mb-3 sm:mb-4 tracking-tight text-balance ${bnFont ? 'text-[1.6rem] sm:text-4xl md:text-6xl' : 'text-3xl sm:text-5xl md:text-6xl'}`}>
-              {language === 'bn' ? (
-                <>
-                  প্রশিক্ষণ নিন। প্রতিযোগিতা করুন। <span className="text-orange-600">নিরাপদ থাকুন।</span>
-                </>
-              ) : (
-                <>
-                  Train. Compete. <span className="text-orange-600">Stay Safe.</span>
-                </>
-              )}
-            </h1>
-            
-            <p className="hidden sm:block text-slate-500 text-sm font-semibold tracking-wider uppercase mb-2">{t.tagline}</p>
-            <p className={`text-base sm:text-lg text-slate-600 max-w-2xl leading-relaxed mb-6 sm:mb-8 font-medium mx-auto lg:mx-0 ${bnFont ? 'landing-bn-reading' : ''}`}>{t.heroSubtitle}</p>
-            
-            <div className="flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
-              <button
-                type="button"
-                onClick={() => setCurrentView('login')}
-                className="hidden sm:inline-flex w-full sm:w-auto min-h-[48px] px-8 py-4 nb-btn-primary font-black text-lg touch-manipulation items-center justify-center"
-              >
-                {t.login}
-              </button>
-              <button
-                type="button"
-                onClick={scrollToLifeSkillsSection}
-                className="w-full sm:w-auto min-h-[48px] px-6 py-3.5 sm:py-4 nb-btn-secondary font-bold text-center flex items-center justify-center gap-2 touch-manipulation"
-              >
-                {t.exploreLifeSkills}
-                <svg className="w-4 h-4 text-slate-400 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Desktop Right side preview mock card */}
-          <div className="lg:col-span-5 hidden lg:block">
-            <div className="nb-card p-6 select-none">
-              <div className="flex items-center justify-between border-b-2 border-slate-900 pb-4 mb-4">
-                <div className="flex items-center gap-2">
-                  <SectionIconBadge name="shield" tone="emerald" className="w-9 h-9" />
-                  <div>
-                    <h4 className="font-black text-slate-900 text-sm">{language === 'bn' ? 'নিরাপত্তা মিটার' : 'Safety Meter'}</h4>
-                    <p className="text-[10px] text-slate-600 font-bold uppercase tracking-wider nb-mono">{language === 'bn' ? 'লাইভ দেখুন' : 'Live Display'}</p>
-                  </div>
-                </div>
-                <span className="nb-live-badge text-[10px] px-2 py-1">99.8% SAFE</span>
-              </div>
-              <div className="space-y-3.5">
-                <div className="p-3 bg-white border-2 border-slate-900 rounded-md shadow-[3px_3px_0_#0f172a]">
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-1.5 nb-mono">
-                    <span>{language === 'bn' ? 'আজ পিপিই ঠিক আছে কি না' : 'Daily PPE Checklist'}</span>
-                    <span className="text-orange-600">100%</span>
-                  </div>
-                  <div className="w-full bg-slate-200 h-3 border-2 border-slate-900 overflow-hidden">
-                    <div className="bg-orange-500 h-full" style={{ width: '100%' }} />
-                  </div>
-                </div>
-                <div className="p-3 bg-white border-2 border-slate-900 rounded-md shadow-[3px_3px_0_#0f172a]">
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-1.5 nb-mono">
-                    <span>{language === 'bn' ? '৯০ দিনের নিরাপত্তা স্কোর' : '90 Days Safety Score'}</span>
-                    <span className="text-indigo-600">940 pts</span>
-                  </div>
-                  <div className="w-full bg-slate-200 h-3 border-2 border-slate-900 overflow-hidden">
-                    <div className="bg-indigo-600 h-full" style={{ width: '85%' }} />
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <div className="flex-1 p-2.5 bg-orange-100 border-2 border-slate-900 rounded-md text-center shadow-[2px_2px_0_#0f172a]">
-                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-0.5 nb-mono">{language === 'bn' ? 'আজকের পাঠ' : 'Today\'s Lesson'}</p>
-                    <p className="text-xs font-black text-slate-900">LS01 Stress</p>
-                  </div>
-                  <div className="flex-1 p-2.5 bg-emerald-100 border-2 border-slate-900 rounded-md text-center shadow-[2px_2px_0_#0f172a]">
-                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-0.5 nb-mono">{language === 'bn' ? 'র‍্যাঙ্ক' : 'Community Rank'}</p>
-                    <p className="text-xs font-black text-slate-900 flex items-center justify-center gap-1">
-                      <LandingIcon name="medal" className="w-3.5 h-3.5" />
-                      Top 3
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+        {/* Hero Section */}
+        <section className="text-center max-w-3xl mx-auto pt-5 sm:pt-12 pb-8 sm:pb-12 relative z-10">
+          <h1 className={`font-black text-slate-900 leading-[1.2] sm:leading-tight mb-3 sm:mb-4 tracking-tight text-balance ${bnFont ? 'text-[1.6rem] sm:text-4xl md:text-6xl' : 'text-3xl sm:text-5xl md:text-6xl'}`}>
+            {language === 'bn' ? (
+              <>
+                প্রশিক্ষণ নিন। প্রতিযোগিতা করুন। <span className="text-orange-600">নিরাপদ থাকুন।</span>
+              </>
+            ) : (
+              <>
+                Train. Compete. <span className="text-orange-600">Stay Safe.</span>
+              </>
+            )}
+          </h1>
+          
+          <p className="hidden sm:block text-slate-500 text-sm font-semibold tracking-wider uppercase mb-2">{t.tagline}</p>
+          <p className={`text-base sm:text-lg text-slate-600 leading-relaxed mb-6 sm:mb-8 font-medium mx-auto ${bnFont ? 'landing-bn-reading' : ''}`}>{t.heroSubtitle}</p>
+          
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              type="button"
+              onClick={() => setCurrentView('login')}
+              className="hidden sm:inline-flex min-h-[48px] px-8 py-4 nb-btn-primary font-black text-lg touch-manipulation items-center justify-center"
+            >
+              {t.login}
+            </button>
+            <button
+              type="button"
+              onClick={scrollToLifeSkillsSection}
+              className="w-full sm:w-auto min-h-[48px] px-6 py-3.5 sm:py-4 nb-btn-secondary font-bold text-center flex items-center justify-center gap-2 touch-manipulation"
+            >
+              {t.exploreLifeSkills}
+              <svg className="w-4 h-4 text-slate-400 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
+            </button>
           </div>
         </section>
 
-        {/* Dynamic Stats Grid — 3-up on mobile */}
-        <section className="grid grid-cols-3 gap-2 sm:gap-5 mb-8 sm:mb-12 relative z-10">
+        {/* Dynamic Stats Grid */}
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-8 sm:mb-12 relative z-10">
           <StatTile label={t.statsUsers} value={stats.users} iconName="users" tone="orange" loading={loading} />
           <StatTile
             label={t.statsToppers}
@@ -1006,7 +955,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
               </div>
             </div>
             
-            <div className="landing-life-skills-scroll flex sm:grid sm:grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-6 -mx-1 px-1 sm:mx-0 sm:px-0 overflow-x-auto sm:overflow-visible pb-1 sm:pb-0 snap-x snap-mandatory">
+            <div className="landing-life-skills-scroll flex sm:grid sm:grid-cols-3 gap-4 mb-5 sm:mb-6 -mx-3 px-3 sm:mx-0 sm:px-0 overflow-x-auto sm:overflow-visible pb-3 sm:pb-0 snap-x snap-mandatory">
               {(lifeSkillModules.length
                 ? lifeSkillModules
                 : [
@@ -1133,7 +1082,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                 onClick={() => setActiveLifeSkill(null)}
                 className="min-h-[40px] px-3 sm:px-4 py-2 nb-btn-secondary text-xs sm:text-sm font-bold shrink-0 touch-manipulation"
               >
-                {language === 'bn' ? 'বন্ধ' : 'Close'}
+                {language === 'bn' ? 'বন্ধ করুন' : 'Close'}
                 </button>
               </div>
             </header>
@@ -1144,11 +1093,11 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                 {/* Duration & Info */}
                 <div className="nb-card p-4 sm:p-5">
                   <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-600 mb-2 nb-mono">
-                    {language === 'bn' ? 'এই পাঠ সম্পর্কে' : 'Module Info'}
+                    {language === 'bn' ? 'পাঠ পরিচিতি' : 'Module Info'}
                   </p>
                   {!!activeLifeSkill.duration && (
                     <p className="text-sm text-slate-600 font-bold">
-                      <span>{language === 'bn' ? 'সময়' : 'Duration'}:</span> {activeLifeSkill.duration}
+                      <span>{language === 'bn' ? 'সময়কাল' : 'Duration'}:</span> {activeLifeSkill.duration}
                     </p>
                   )}
                 </div>
@@ -1157,13 +1106,13 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                 {!!(activeLifeSkill.audio_url_en || activeLifeSkill.audio_url_bn) && (
                   <div className="nb-card p-4 sm:p-5">
                     <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-600 mb-2.5 nb-mono">
-                      {language === 'bn' ? 'শুনে শুনে শিখুন' : 'Audio Lesson'}
+                      {language === 'bn' ? 'অডিও লেসন (শ্রুতিপাঠ)' : 'Audio Lesson'}
                     </p>
                     <div className="bg-indigo-50 p-3 sm:p-4 border-2 border-slate-900 rounded-md text-center shadow-[3px_3px_0_#0f172a]">
                       <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center nb-icon-badge bg-indigo-600">
                         <LandingIcon name="headphones" className="w-6 h-6" strokeWidth={2} />
                       </div>
-                      <p className="text-xs font-bold text-slate-500 mb-3 sm:mb-4">{language === 'bn' ? 'মাঠে কাজের সময় শোনার জন্য' : 'Listen on-the-go during field work'}</p>
+                      <p className="text-xs font-bold text-slate-500 mb-3 sm:mb-4">{language === 'bn' ? 'মাঠপর্যায়ে কাজের সময় সহজে শোনার জন্য' : 'Listen on-the-go during field work'}</p>
                       <audio
                         controls
                         preload="none"
@@ -1177,7 +1126,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                 {/* Trusted Blurb guidance — desktop sidebar */}
                 {!!(activeLifeSkill.trusted_blurb_en || activeLifeSkill.trusted_blurb_bn) && (
                   <div className="hidden lg:block nb-card border-dashed p-5 text-xs text-slate-600 leading-relaxed font-semibold">
-                    <p className="font-extrabold text-slate-500 mb-1.5">{language === 'bn' ? 'তথ্যের উৎস' : 'Information Trust'}</p>
+                    <p className="font-extrabold text-slate-500 mb-1.5">{language === 'bn' ? 'তথ্যের নির্ভরযোগ্যতা ও উৎস' : 'Information Trust'}</p>
                     {language === 'bn' ? activeLifeSkill.trusted_blurb_bn : activeLifeSkill.trusted_blurb_en}
                   </div>
                 )}
@@ -1196,7 +1145,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                     onClick={() => setActiveLifeSkill(null)}
                     className="w-full py-3.5 nb-btn-secondary text-sm font-bold"
                   >
-                      {language === 'bn' ? 'বন্ধ' : 'Close'}
+                      {language === 'bn' ? 'বন্ধ করুন' : 'Close'}
                     </button>
                   </div>
                 </aside>
@@ -1228,7 +1177,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                 {activeLifeSkillLoading && (
                   <div className="nb-card p-4 sm:p-6 flex items-center justify-center gap-3 text-slate-600 font-bold text-sm sm:text-base">
                     <span className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin shrink-0"></span>
-                    {language === 'bn' ? 'লোড হচ্ছে…' : 'Loading full content...'}
+                    {language === 'bn' ? 'লোড হচ্ছে...' : 'Loading full content...'}
                   </div>
                 )}
 
@@ -1237,7 +1186,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                     {!!translatedLifeSkillContent.mission_briefing && (
                       <article className={`nb-card p-4 sm:p-6 ${bnFont ? 'landing-bn-reading' : ''}`}>
                         <h5 className={`text-[10px] font-extrabold uppercase tracking-widest text-slate-600 mb-3 nb-mono ${bnFont ? 'landing-bn-ui' : ''}`}>
-                          {language === 'bn' ? 'শুরুর কথা' : 'Mission Briefing'}
+                          {language === 'bn' ? 'মূল ধারণা (Briefing)' : 'Mission Briefing'}
                         </h5>
                         <p className="text-sm sm:text-base leading-relaxed text-slate-700 font-medium">{translatedLifeSkillContent.mission_briefing}</p>
                       </article>
@@ -1259,13 +1208,13 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                                 </p>
                                 {!!point.specifications && (
                                   <div className="text-sm text-slate-600 mt-2.5 pl-4 border-l-2 border-slate-200 font-medium">
-                                    <span className="font-bold text-slate-400 block text-[10px] uppercase tracking-wider mb-0.5">{language === 'bn' ? 'কী করবেন' : 'Specifications'}</span>
+                                    <span className="font-bold text-slate-400 block text-[10px] uppercase tracking-wider mb-0.5">{language === 'bn' ? 'করণীয় বিষয়' : 'Specifications'}</span>
                                     {point.specifications}
                                   </div>
                                 )}
                                 {!!point.importance && (
                                   <div className="text-sm text-slate-600 mt-3 pl-4 border-l-2 border-amber-300 font-medium">
-                                    <span className="font-bold text-amber-500 block text-[10px] uppercase tracking-wider mb-0.5">{language === 'bn' ? 'কেন জরুরি' : 'Importance'}</span>
+                                    <span className="font-bold text-amber-500 block text-[10px] uppercase tracking-wider mb-0.5">{language === 'bn' ? 'প্রয়োজনীয়তা ও গুরুত্ব' : 'Importance'}</span>
                                     {point.importance}
                                   </div>
                                 )}
@@ -1273,7 +1222,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                                   <div className="text-sm text-indigo-900 mt-3 pl-4 border-l-2 border-indigo-400 bg-indigo-50/30 p-3 rounded-r-xl font-medium">
                                     <span className="font-bold text-indigo-600 flex items-center gap-1 text-[10px] uppercase tracking-wider mb-0.5">
                                       <LandingIcon name="sparkles" className="w-3 h-3" />
-                                      {language === 'bn' ? 'আজই চেক করুন' : 'Daily Check'}
+                                      {language === 'bn' ? 'আজকের যাচাই' : 'Daily Check'}
                                     </span>
                                     {point.daily_check}
                                   </div>
@@ -1289,15 +1238,15 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                 {!activeLifeSkillLoading && !activeLifeSkillContent && (
                   <div className="nb-card border-dashed p-4 sm:p-6 text-center text-slate-500 font-bold text-sm">
                     {activeLifeSkillError
-                      ? (language === 'bn' ? 'এখন এই পাঠ লোড হচ্ছে না। একটু পর আবার চেষ্টা করুন।' : 'Unable to load this content right now.')
+                      ? (language === 'bn' ? 'এই মুহূর্তে পাঠটি লোড করা সম্ভব হচ্ছে না। অনুগ্রহ করে কিছু ক্ষণ পর আবার চেষ্টা করুন।' : 'Unable to load this content right now.')
                       : (language === 'bn'
-                          ? 'এই পাঠের বাকি অংশ প্রশিক্ষণ বিভাগে পাবেন।'
+                          ? 'এই মডিউলের সম্পূর্ণ বিষয়বস্তু প্রশিক্ষণ বিভাগে পাওয়া যাবে।'
                           : 'Full reading content for this module is available inside Training.')}
                   </div>
                 )}
                 {!!(activeLifeSkill.trusted_blurb_en || activeLifeSkill.trusted_blurb_bn) && (
                   <div className="lg:hidden nb-card border-dashed p-4 text-xs text-slate-600 leading-relaxed font-semibold">
-                    <p className="font-extrabold text-slate-500 mb-1.5">{language === 'bn' ? 'তথ্যের উৎস' : 'Information Trust'}</p>
+                    <p className="font-extrabold text-slate-500 mb-1.5">{language === 'bn' ? 'তথ্যের নির্ভরযোগ্যতা ও উৎস' : 'Information Trust'}</p>
                     {language === 'bn' ? activeLifeSkill.trusted_blurb_bn : activeLifeSkill.trusted_blurb_en}
                   </div>
                 )}
