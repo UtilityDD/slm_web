@@ -125,16 +125,16 @@ function ChapterDetailBody({ chapter, language }) {
                     )}
                     {step.image && (
                         <div className="my-4 overflow-hidden border-2 border-slate-900 bg-white p-2 shadow-[4px_4px_0_#0f172a] max-w-lg">
+                            {step.caption && (
+                                <p className="mb-2 text-center text-xs font-black text-slate-600 border-b border-dashed border-slate-300 pb-2 nb-mono">
+                                    {step.caption}
+                                </p>
+                            )}
                             <img
                                 src={step.image}
                                 alt={step.caption || step.title}
                                 className="h-auto w-full object-contain"
                             />
-                            {step.caption && (
-                                <p className="mt-2 text-center text-xs font-black text-slate-600 border-t border-dashed border-slate-300 pt-2 nb-mono">
-                                    {step.caption}
-                                </p>
-                            )}
                         </div>
                     )}
                     <ol className="space-y-2.5">

@@ -1420,5 +1420,181 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 { type: 'Overhead Transmission Tower', value: '20.0 to 30.0 Ohm' }
             ]
         }
+    },
+    {
+        id: 'pf-07',
+        code: 'PF-07',
+        icon: '⛯',
+        badgeClass: 'bg-indigo-100 text-indigo-800',
+        title_en: 'Substations (Types & Equipment)',
+        title_bn: 'সাব-স্টেশন ও এর সরঞ্জাম (প্রকারভেদ ও যন্ত্রপাতি)',
+        desc_en: 'Learn about substation classifications, indoor vs outdoor comparisons, pole-mounted substation construction, key equipment, and drawing symbols.',
+        desc_bn: 'সাব-স্টেশনের প্রকারভেদ, ইনডোর ও আউটডোর সাব-স্টেশনের তুলনা, পোল-মাউন্টেড সাব-স্টেশনের গঠন, প্রধান প্রধান সরঞ্জাম এবং স্ট্যান্ডার্ড প্রতীকসমূহ জানুন।',
+        topics_en: ['Substation Classifications', 'Key Equipment', 'Equipment Symbols'],
+        topics_bn: ['সাব-স্টেশন প্রকারভেদ', 'প্রধান সরঞ্জামসমূহ', 'যন্ত্রপাতির প্রতীক'],
+        duration_en: '10 min read',
+        duration_bn: '১০ মিনিট পড়া',
+        detail_bn: {
+            intro: 'বৈদ্যুতিক বিদ্যুৎ সঞ্চালন ও বিতরণ ব্যবস্থায় ভোল্টেজ পরিবর্তন (স্টেপ-আপ বা স্টেপ-ডাউন), সুইচিং, সার্কিট নিয়ন্ত্রণ এবং সুরক্ষার জন্য ব্যবহৃত বিশেষ কেন্দ্রকে সাব-স্টেশন বা উপকেন্দ্র বলে। সঠিক সাব-স্টেশন ডিজাইন ও সরঞ্জামের বিন্যাস সিস্টেমের নির্ভরযোগ্যতা নিশ্চিত করে। এই অধ্যায়ে আমরা বিভিন্ন ধরণের সাব-স্টেশন (ইনডোর, আউটডোর, পোল-মাউন্টেড), প্রধান সরঞ্জামের কার্যপ্রণালী এবং একক পরিবাহী কী ডায়াগ্রামে ব্যবহৃত স্ট্যান্ডার্ড ড্রয়িং প্রতীকসমূহ সম্পর্কে বিস্তারিত শিখবো।',
+            objectives: [
+                'সাব-স্টেশনের গুরুত্ব এবং এর বিভিন্ন প্রকারভেদ (সার্ভিস ও গঠন অনুযায়ী) বোঝা।',
+                'ইনডোর ও আউটডোর সাব-স্টেশনের মধ্যে তুলনামূলক সুবিধা ও অসুবিধা বিশ্লেষণ করা।',
+                'পোল-মাউন্টেড সাব-স্টেশনের গঠন, সরঞ্জাম (ট্রান্সফর্মার, ড্রপ-আউট ফিউজ, লাইটনিং অ্যারেস্টর) ও পরিচালনার নিয়ম শেখা।',
+                'সাব-স্টেশনের প্রধান প্রধান সরঞ্জাম (সার্কিট ব্রেকার, আইসোলেটর, কারেন্ট ও ভোল্টেজ ট্রান্সফর্মার, বাস বার ও রিলে) এবং ড্রয়িং প্রতীকসমূহ চিহ্নিত করা।'
+            ],
+            tools: [],
+            materials: [
+                'চীনামাটির তৈরি ইনসুলেটর (পোস্ট, পেডেস্টাল, সাসপেনশন) — ইনসুলেশন ও যান্ত্রিক সাপোর্টের জন্য',
+                'গ্যাং অপারেটেড আইসোলেটর হ্যান্ডেল — সার্কিট অফ-লোড অবস্থায় বিচ্ছিন্ন করতে',
+                'কপার ও অ্যালুমিনিয়াম কানেক্টর ক্ল্যাম্প — সংযোগস্থল টাইট করার জন্য',
+                'কন্ট্রোল কেবল ও প্রোটেকশন রিলে লিংক — নিরাপত্তা সার্কিট চালু করতে'
+            ],
+            steps: [
+                {
+                    title: 'A — সাব-স্টেশনের প্রকারভেদ ও তুলনা',
+                    items: [
+                        '১. সার্ভিস অনুযায়ী প্রকারভেদ: ট্রান্সফর্মার সাব-স্টেশন (ভোল্টেজ পরিবর্তন), সুইচিং সাব-স্টেশন (লাইন চালু/বন্ধ), কনভার্টিং সাব-স্টেশন (এসি থেকে ডিসি), পাওয়ার ফ্যাক্টর কারেকশন সাব-স্টেশন, ফ্রিকোয়েন্সি চেঞ্জার এবং ইন্ডাস্ট্রিয়াল সাব-স্টেশন।',
+                        '২. গঠন অনুযায়ী প্রকারভেদ: আউটডোর সাব-স্টেশন (৬৬ কেভির উপরে বড় দূরত্বের জন্য সাশ্রয়ী), ইনডোর সাব-স্টেশন (১১ কেভি/৩৩ কেভি পর্যন্ত, আবদ্ধ রুমে সুরক্ষিত), আন্ডারগ্রাউন্ড সাব-স্টেশন (ঘন জনবসতি ও বেশি জমির দাম যেখানে সেখানে মাটির নিচে করা হয়) এবং পোল-মাউন্টেড সাব-স্টেশন।',
+                        '৩. ইনডোর ও আউটডোর তুলনা: আউটডোর সাব-স্টেশনে জায়গা বেশি লাগে কিন্তু নির্মাণ সময় ও খরচ কম, ফল্ট সহজে চিহ্নিত করা যায় এবং ভবিষ্যতে বড় করা সহজ। ইনডোর সাব-স্টেশনে উল্টো বৈশিষ্ট্য দেখা যায়।'
+                    ]
+                },
+                {
+                    title: 'B — পোল-মাউন্টেড সাব-স্টেশন',
+                    image: '/images/substation/fig_substation_pole_mounted.png',
+                    caption: 'চিত্র ১: পোল-মাউন্টেড ডিস্ট্রিবিউশন সাব-স্টেশনের এইচ-পোল আর্কিটেকচার ও সরঞ্জাম ডায়াগ্রাম।',
+                    items: [
+                        '১১ কেভি (কিছু ক্ষেত্রে ৩৩ কেভি) বিতরণ ব্যবস্থার জন্য পোল-মাউন্টেড সাব-স্টেশন সবচেয়ে সস্তা ও বহুল ব্যবহৃত রূপ।',
+                        'একটি এইচ-পোল (H-Pole) বা ৪-পোল কাঠামোর ওপর ডিস্ট্রিবিউশন ট্রান্সফর্মার (সাধারণত ২০০ কেভিএ পর্যন্ত, ১১ কেভি/৪০০ ভোল্ট) খাড়াভাবে মাউন্ট করা থাকে।',
+                        '১১ কেভি এইচ.টি. কন্ডাক্টর প্রথমে গ্যাং অপারেটেড আইসোলেটর (G.O.D) এবং ড্রপ-আউট (D.O.) ফিউজের মাধ্যমে ট্রান্সফর্মার প্রাইমারি টার্মিনালের সাথে যুক্ত হয়।',
+                        'বজ্রপাত থেকে সুরক্ষার জন্য এইচ.টি. লাইনে লাইটনিং অ্যারেস্টর (L.A.) এবং এল.টি. বা আউটপুট সাইডে নিরাপত্তা ও ওভারলোড ট্রিপিং নিশ্চিত করার জন্য অয়েল সার্কিট ব্রেকার বা এমসিসিবি ব্যবহার করা হয়।'
+                    ]
+                },
+                {
+                    title: 'C — সাব-স্টেশনের প্রধান সরঞ্জামসমূহ',
+                    image: '/images/substation/fig_substation_equipments_combined.png',
+                    caption: 'চিত্র ২: সাব-স্টেশনের প্রধান সরঞ্জামসমূহ (বামে: উচ্চ-ভোল্টেজ বুশিং/ইনসুলেটর, মাঝে: ক্যাবলের চারপাশে রিং-টাইপ সিটি, ডানে: পোল-মাউন্টেড পটেনশিয়াল ট্রান্সফর্মার বা পিটি)।',
+                    items: [
+                        'সাব-স্টেশনে ব্যবহৃত প্রধান সরঞ্জামগুলোর কাজ ও গঠন নিচে দেওয়া হলো:',
+                        '১. বাস বার (Bus Bar): সাধারণ জংশন যা একই ভোল্টেজে কাজ করা বহু লাইনকে সংযুক্ত করে।',
+                        '২. ইনসুলেটর (Insulator): বাস বার ও পরিবাহীকে ধাতব ফ্রেম থেকে পৃথক রাখে এবং যান্ত্রিক সাপোর্ট দেয়।',
+                        '৩. আইসোলেটিং সুইচ (Isolator): সম্পূর্ণ অফ-লোড অবস্থায় সার্কিটের কোনো অংশকে রক্ষণাবেক্ষণের জন্য বিচ্ছিন্ন করে।',
+                        '৪. সার্কিট ব্রেকার (Circuit Breaker): স্বাভাবিক এবং ফল্ট বা শর্ট সার্কিট উভয় অবস্থাতেই লাইনের বিদ্যুৎ প্রবাহ সংযোগ বা বিচ্ছিন্ন করতে পারে।',
+                        '৫. ইনস্ট্রুমেন্ট ট্রান্সফর্মার: পরিমাপের জন্য উচ্চ ভোল্টেজকে পিটি (P.T.) এবং উচ্চ কারেন্টকে সিটি (C.T.) দিয়ে স্টেপ-ডাউন করা হয়।'
+                    ]
+                },
+                {
+                    title: 'D — যন্ত্রপাতির স্ট্যান্ডার্ড প্রতীকসমূহ',
+                    image: '/images/substation/fig_substation_symbols_combined.png',
+                    caption: 'চিত্র ৩: সাব-স্টেশন সিঙ্গেল লাইন ডায়াগ্রাম বা কী ডায়াগ্রামে ব্যবহৃত স্ট্যান্ডার্ড ড্রয়িং প্রতীকসমূহ।',
+                    items: [
+                        'সাব-স্টেশনের সিঙ্গেল লাইন ডায়াগ্রাম বা কী ডায়াগ্রাম পড়ার জন্য উপরোক্ত স্ট্যান্ডার্ড ড্রয়িং প্রতীকসমূহ মুখস্থ রাখা আবশ্যক।',
+                        'এই প্রতীকগুলো ব্যবহার করে উপকেন্দ্রের বিভিন্ন লাইভ ও প্রোটেকশন পার্টস চিহ্নিত করা হয়।'
+                    ]
+                }
+            ],
+            safety: [
+                'সাব-স্টেশনের যেকোনো রক্ষণাবেক্ষণ শুরু করার আগে সংশ্লিষ্ট সমস্ত ব্রেকার এবং ইনকামিং ফিডার সম্পূর্ণ বন্ধ ও লক-আউট (LOTO) করতে হবে।',
+                'সার্কিট ব্রেকার লোডেড বা অন থাকা অবস্থায় কখনোই আইসোলেটর সুইচ খুলবেন না; এতে বড় ধরণের বৈদ্যুতিক বিস্ফোরণ বা আর্ক সংঘটিত হতে পারে।',
+                'বাস বার বা সরঞ্জামের লাইভ অংশ থেকে ভোল্টেজ অনুযায়ী নিরাপদ দূরত্ব বজায় রাখা বাধ্যতামূলক।'
+            ],
+            practical_tips: [
+                {
+                    title: 'আইসোলেটর ও ব্রেকারের সঠিক সিকোয়েন্স',
+                    text: 'লাইন অন করার সময়: প্রথমে অফ-লোড আইসোলেটর ক্লোজ করতে হবে এবং তারপর সার্কিট ব্রেকার অন করতে হবে। লাইন বন্ধ করার সময়: প্রথমে সার্কিট ব্রেকার অফ করতে হবে এবং তারপর আইসোলেটর ওপেন করতে হবে।'
+                },
+                {
+                    title: 'সিটি ও পিটির মূল কাজ',
+                    text: 'সিটি (Current Transformer) লাইনের উচ্চ বিদ্যুৎ প্রবাহকে কম মাত্রায় (সাধারণত ৫ অ্যাম্পিয়ার) নামিয়ে আনে এবং পিটি (Potential Transformer) উচ্চ ভোল্টেজকে নিরাপদ পরিমাপে (সাধারণত ১১০ ভোল্ট) নামিয়ে আনে। ফলে সাধারণ মিটার ও প্রোটেকশন রিলে নিরাপদে চলতে পারে।'
+                },
+                {
+                    title: 'চীনামাটির ইনসুলেটর পরিষ্কার রাখা',
+                    text: 'সাব-স্টেশনের ইনসুলেটরের ওপর ধূলিকণা বা লবণের আস্তরণ জমলে বৃষ্টির দিনে ক্রিপেজ কারেন্ট বা ফ্ল্যাশওভার হতে পারে। তাই নিয়মিত এগুলো ঘষে পরিষ্কার রাখা জরুরি।'
+                }
+            ],
+            standard_values_title: '',
+            standard_values_headers: [],
+            standard_values: []
+        },
+        detail_en: {
+            intro: 'A substation is a critical installation in electrical power transmission and distribution systems that changes voltage levels (step-up or step-down), performs switching operations, controls circuits, and provides protection. Proper substation design and equipment layout ensure system reliability. In this chapter, we will learn about substation classifications (indoor, outdoor, pole-mounted), key equipment operations, and drawing symbols.',
+            objectives: [
+                'Understand the necessity and classifications of substations based on service and construction.',
+                'Analyze the technical and economic comparisons between indoor and outdoor substations.',
+                'Learn the construction, components (transformer, DO fuse, lightning arrester) and operation of pole-mounted substations.',
+                'Identify major substation equipment (Circuit Breaker, Isolator, CT, PT, Busbar, Relays) and their drawing symbols.'
+            ],
+            tools: [],
+            materials: [
+                'Porcelain Insulators (Post, Pedestal, Suspension) — For bus bar mounting and support insulation',
+                'Gang-Operated Isolator Handle — For off-load line segment isolation',
+                'Copper & Aluminum Connector Clamps — For securing low-resistance joint connections',
+                'Control Cables & Protection Relay Links — For initiating safety tripping systems'
+            ],
+            steps: [
+                {
+                    title: 'A — Substation Classification and Comparison',
+                    items: [
+                        '1. Service Requirement: Transformer S/S (modifies voltage), Switching S/S (line operations), Converting S/S (AC to DC for traction/electrolysis), Power Factor Correction S/S, Frequency Changer S/S, and Industrial S/S.',
+                        '2. Constructional Features: Outdoor S/S (standard for >66kV due to safety clearances), Indoor S/S (standard for <=11kV, or up to 66kV in heavily polluted atmospheres), Underground S/S (used in dense populated areas with high land cost), and Pole-Mounted S/S.',
+                        '3. Outdoor vs. Indoor Comparison: Outdoor substations require more land but have lower erection costs, faster installation, easier fault location, and simpler future expansions. Indoor substations provide better weather protection but have higher building costs.'
+                    ]
+                },
+                {
+                    title: 'B — Pole-Mounted Substation Construction',
+                    image: '/images/substation/fig_substation_pole_mounted.png',
+                    caption: 'Figure 1: Pole-mounted distribution substation structure with H-pole design and equipment layouts.',
+                    items: [
+                        'Pole-mounted substations are the most economical choice for local distribution up to 11kV (or 33kV in some cases).',
+                        'A distribution transformer (typically <=200 kVA, 11kV/400V) is mounted vertically on an H-pole or 4-pole structure.',
+                        'The 11kV HT incoming line connects to the transformer primary bushings through a gang-operated isolator (G.O.D) and drop-out (D.O.) fuses.',
+                        'Lightning arresters (L.A.) are installed on the HT side for protection against surges, while an oil circuit breaker (OCB) or MCCB protects the LT distribution side.'
+                    ]
+                },
+                {
+                    title: 'C — Substation Key Equipment',
+                    image: '/images/substation/fig_substation_equipments_combined.png',
+                    caption: 'Figure 2: Key substation equipment (Left: High-Voltage Bushing/Insulator, Center: Ring-Type Current Transformers, Right: Pole-Mounted Potential Transformer).',
+                    items: [
+                        'Key equipment in a transformer substation serves the following functions:',
+                        '1. Bus Bar: A conductor that serves as a common connection point for multiple incoming and outgoing lines at a constant voltage.',
+                        '2. Insulators: Support the bus bars/conductors mechanically while isolating them from the support structures.',
+                        '3. Isolator (Isolating Switch): Manually operated switch to isolate a line segment for maintenance, operated strictly under off-load conditions.',
+                        '4. Circuit Breaker: Automatically opens/closes lines under normal and fault conditions, isolating short circuits safely.',
+                        '5. Instrument Transformers: Step down high line variables to low metrics (110V for PTs, 5A for CTs) to interface with metering and protection relays.'
+                    ]
+                },
+                {
+                    title: 'D — Substation Equipment Standard Symbols',
+                    image: '/images/substation/fig_substation_symbols_combined.png',
+                    caption: 'Figure 3: Standard drawing symbols used for key equipment in substation single-line diagrams.',
+                    items: [
+                        'Understanding these symbols is essential to read and interpret single-line key diagrams of substations.',
+                        'Refer to the symbols chart above to understand and memorize standard graphical representations of this equipment in single-line key diagrams.'
+                    ]
+                }
+            ],
+            safety: [
+                'Ensure all incoming lines, circuit breakers, and isolators are isolated, grounded, and locked out (LOTO) before commencing work.',
+                'Never operate an isolator switch while the associated circuit breaker is closed; doing so under load causes destructive electric arcs.',
+                'Maintain strict safe approach clearances from live bus bars and bushings based on the specific voltage level.'
+            ],
+            practical_tips: [
+                {
+                    title: 'Correct Isolator & Breaker Operating Sequence',
+                    text: 'To power on: Always close the off-load isolator first, then turn on the circuit breaker. To power off: Always turn off the circuit breaker first, then open the isolator.'
+                },
+                {
+                    title: 'Role of CT and PT',
+                    text: 'CTs (Current Transformers) scale down high current values to low levels (typically 5A) and PTs (Potential Transformers) scale down high voltages to safe values (typically 110V). This allows standard meters and protective relays to operate safely.'
+                },
+                {
+                    title: 'Cleaning Porcelain Insulators',
+                    text: 'Dirt, dust, or salt deposits on insulator surfaces can cause creepage currents or flashovers, especially in wet weather. Regular inspection and cleaning is essential.'
+                }
+            ],
+            standard_values_title: '',
+            standard_values_headers: [],
+            standard_values: []
+        }
     }
 ];
