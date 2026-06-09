@@ -30,7 +30,13 @@ import {
 import { filterCoreCompletedLessonIds, isSupplementaryProgressLessonId } from '../../utils/trainingLessonIds';
 import { logReadingHabitCompletion, logReadingHabitReview } from '../../utils/readingHabitLog';
 import { checkReadingGate } from '../../utils/readingHabitGate';
-import { consumeGateNavigation, consumeGateReviewTarget } from '../../utils/readingGateStorage';
+import {
+    consumeGateNavigation,
+    consumeGateReviewTarget,
+    consumeGateUnlockPending,
+    peekGateUnlockPending,
+    parseCoreLessonId as parseGateLessonId,
+} from '../../utils/readingGateStorage';
 import ReadingGateModal from '../ReadingGateModal';
 import { pickSupplementaryListenSrc } from '../../utils/supplementaryAudioUrl';
 import { useLifeSkillRadio } from '../../context/LifeSkillRadioContext';
@@ -627,6 +633,7 @@ export default function Training({
     language = 'en',
     user,
     userProfile: profile,
+    showNotification,
     onProgressUpdate,
     onOpenUserProgress,
     setCurrentView,
@@ -736,6 +743,23 @@ export default function Training({
     const [activeAudioChapter, setActiveAudioChapter] = useState(null);
     const [isHourlyPending, setIsHourlyPending] = useState(false);
     const [readingGateBlock, setReadingGateBlock] = useState(null);
+    const [gateFocusTick, setGateFocusTick] = useState(0);
+    const gateFocusPending = useMemo(
+        () => (user?.id ? peekGateUnlockPending(user.id) : null),
+        [user?.id, gateFocusTick]
+    );
+    const gateOpenAttemptRef = useRef(null);
+
+    const notifyGateFocusRequired = useCallback(() => {
+        if (!gateFocusPending?.lessonId) return;
+        if (typeof showNotification !== 'function') return;
+        showNotification(
+            language === 'en'
+                ? `Complete lesson ${gateFocusPending.lessonId} to unlock the hourly quiz.`
+                : `ঘণ্টাভিত্তিক কুইজ খুলতে পাঠ ${gateFocusPending.lessonId} শেষ করুন।`,
+            'info'
+        );
+    }, [gateFocusPending?.lessonId, language, showNotification]);
     const [showHourlyPenaltyModal, setShowHourlyPenaltyModal] = useState(false);
     const [hourlyPenaltyDontShowAgain, setHourlyPenaltyDontShowAgain] = useState(false);
     const [userRank, setUserRank] = useState(null);
@@ -1785,7 +1809,26 @@ export default function Training({
     }, [language]);
 
 
-    const handleChapterClick = async (chapter, targetLessonNum = null) => {
+    const handleChapterClick = async (chapter, targetLessonNum = null, options = {}) => {
+        const { autoStartReading = false } = options;
+
+        const focusPending = user?.id ? peekGateUnlockPending(user.id) : null;
+        if (focusPending?.lessonId) {
+            const focusParsed = parseGateLessonId(focusPending.lessonId);
+            if (focusParsed) {
+                const wrongChapter = chapter.number !== focusParsed.chapterNum;
+                const wrongLesson = targetLessonNum != null && targetLessonNum !== focusParsed.lessonNum;
+                if (wrongChapter || wrongLesson) {
+                    const assignedChapter = trainingChapters.find((c) => c.number === focusParsed.chapterNum);
+                    if (assignedChapter) {
+                        return handleChapterClick(assignedChapter, focusParsed.lessonNum, { autoStartReading: true });
+                    }
+                } else if (targetLessonNum == null && chapter.number === focusParsed.chapterNum) {
+                    return handleChapterClick(chapter, focusParsed.lessonNum, { autoStartReading: true });
+                }
+            }
+        }
+
         // Local access to badge levels for enrichment
         const badgeLevels = [
             { level: 1, en: "Trainee", bn: "ট্রেইনি", color: "bg-slate-500", count: 0 },
@@ -1799,6 +1842,21 @@ export default function Training({
             { level: 9, en: "Expert", bn: "এক্সপার্ট", color: "bg-orange-600", count: 100 }
         ];
         const currentBadge = badgeLevels.find(b => b.level === chapter.number) || badgeLevels[0];
+
+        const openLessonTarget = (lesson) => {
+            if (!lesson) return;
+            const enriched = { ...lesson, badge: currentBadge, chapter };
+            if (autoStartReading) {
+                stopChapterAudio();
+                setTrainingContent(enriched);
+                setActiveSectionIndex(0);
+                setIsJournalMode(true);
+                setSelectedLesson(null);
+                setSelectedChapter(null);
+            } else {
+                setSelectedLesson(enriched);
+            }
+        };
 
         setTrainingLoading(true);
 
@@ -1875,10 +1933,7 @@ export default function Training({
                 const sorted = subchapters.sort((a, b) => a.subchapterNum - b.subchapterNum);
                 setSelectedChapter({ ...chapter, subchapters: sorted });
                 if (targetLessonNum) {
-                    const lesson = sorted.find(s => s.subchapterNum === targetLessonNum);
-                    if (lesson) {
-                        setSelectedLesson({ ...lesson, badge: currentBadge, chapter: chapter });
-                    }
+                    openLessonTarget(sorted.find(s => s.subchapterNum === targetLessonNum));
                 }
                 setTrainingLoading(false);
                 return;
@@ -1913,10 +1968,7 @@ export default function Training({
                 const sorted = processed.sort((a, b) => a.subchapterNum - b.subchapterNum);
                 setSelectedChapter({ ...chapter, subchapters: sorted });
                 if (targetLessonNum) {
-                    const lesson = sorted.find(s => s.subchapterNum === targetLessonNum);
-                    if (lesson) {
-                        setSelectedLesson({ ...lesson, badge: currentBadge, chapter: chapter });
-                    }
+                    openLessonTarget(sorted.find(s => s.subchapterNum === targetLessonNum));
                 }
             } else {
                 // Fallback to legacy file fetch if DB returns empty
@@ -1934,10 +1986,7 @@ export default function Training({
                     .filter(Boolean);
                 setSelectedChapter({ ...chapter, subchapters: processed });
                 if (targetLessonNum && processed) {
-                    const lesson = processed.find(s => s.subchapterNum === targetLessonNum);
-                    if (lesson) {
-                        setSelectedLesson({ ...lesson, badge: currentBadge, chapter: chapter });
-                    }
+                    openLessonTarget(processed.find(s => s.subchapterNum === targetLessonNum));
                 }
             }
         } catch (err) {
@@ -1958,10 +2007,7 @@ export default function Training({
                     .filter(Boolean);
                 setSelectedChapter({ ...chapter, subchapters: processed });
                 if (targetLessonNum && processed) {
-                    const lesson = processed.find(s => s.subchapterNum === targetLessonNum);
-                    if (lesson) {
-                        setSelectedLesson({ ...lesson, badge: currentBadge, chapter: chapter });
-                    }
+                    openLessonTarget(processed.find(s => s.subchapterNum === targetLessonNum));
                 }
             } catch (fallbackErr) {
                 console.error("Critical failure loading subchapters:", fallbackErr);
@@ -1973,12 +2019,28 @@ export default function Training({
 
     useEffect(() => {
         if (!user?.id || !trainingChapters?.length) return;
+
+        const pending = peekGateUnlockPending(user.id);
+        if (pending?.lessonId) {
+            if (trainingContent?.level_id === pending.lessonId) return;
+            const parsed = parseGateLessonId(pending.lessonId);
+            if (!parsed) return;
+            const chapter = trainingChapters.find((c) => c.number === parsed.chapterNum);
+            if (!chapter) return;
+            if (!trainingContent && !selectedLesson && !selectedChapter) {
+                gateOpenAttemptRef.current = pending.lessonId;
+                handleChapterClick(chapter, parsed.lessonNum, { autoStartReading: true });
+            }
+            return;
+        }
+
+        gateOpenAttemptRef.current = null;
         const nav = consumeGateNavigation(user.id);
         if (!nav?.chapterNum || !nav?.lessonNum) return;
         const chapter = trainingChapters.find((c) => c.number === nav.chapterNum);
         if (!chapter) return;
-        handleChapterClick(chapter, nav.lessonNum);
-    }, [user?.id, trainingChapters]);
+        handleChapterClick(chapter, nav.lessonNum, { autoStartReading: true });
+    }, [user?.id, trainingChapters, trainingContent?.level_id, selectedLesson, selectedChapter]);
 
     useEffect(() => {
         const openFaqIfRequested = () => {
@@ -2099,10 +2161,29 @@ export default function Training({
         const current = Array.isArray(completedLessons) ? completedLessons : [];
         const updated = filterCoreCompletedLessonIds([...new Set([...current, lessonId])].filter(Boolean));
         const alreadyCompleted = completedLessons.includes(lessonId);
+        const gateUnlock = user ? consumeGateUnlockPending(user.id, lessonId) : null;
+        const gateReviewTarget = user && !gateUnlock ? consumeGateReviewTarget(user.id, lessonId) : false;
+        const gateDrivenReview = alreadyCompleted && (gateUnlock?.kind === 'review' || gateReviewTarget);
+
+        if (gateDrivenReview) {
+            logReadingHabitReview(user.id, lessonId);
+            if (typeof showNotification === 'function') {
+                showNotification(
+                    language === 'en'
+                        ? 'Review saved — hourly quiz unlocked.'
+                        : 'রিভিউ সংরক্ষিত — ঘণ্টাভিত্তিক কুইজ খোলা হয়েছে।',
+                    'success'
+                );
+            }
+            setShowQuizModal(false);
+            setPendingLessonId(null);
+            setGateFocusTick((t) => t + 1);
+            return;
+        }
 
         if (!alreadyCompleted) {
-            // First time completion bonus
             const bonusPoints = 20;
+            let pointsAwarded = false;
 
             if (user) {
                 try {
@@ -2113,76 +2194,93 @@ export default function Training({
 
                     if (rpcError) {
                         console.error('Error awarding lesson bonus:', rpcError);
-                        if (typeof showNotification === 'function') {
-                            showNotification(language === 'en' ? 'Error saving points' : 'পয়েন্ট সেভ করতে ত্রুটি', 'error');
+                        if (!gateUnlock) {
+                            if (typeof showNotification === 'function') {
+                                showNotification(language === 'en' ? 'Error saving points' : 'পয়েন্ট সেভ করতে ত্রুটি', 'error');
+                            }
+                            return;
                         }
-                        return; // Prevent marking as complete if points failed
+                    } else {
+                        pointsAwarded = true;
+                        invalidateLeaderboardCaches(user.id);
+                        cacheHelper.clear(`profile_${user.id}`);
+                        setRecentReward(bonusPoints);
+                        setTimeout(() => setRecentReward(null), 5000);
                     }
 
-                    invalidateLeaderboardCaches(user.id);
-                    cacheHelper.clear(`profile_${user.id}`);
-                    logReadingHabitCompletion(user.id, lessonId);
-
-                    setRecentReward(bonusPoints);
-                    // Clear reward message after 5 seconds
-                    setTimeout(() => setRecentReward(null), 5000);
+                    if (pointsAwarded || gateUnlock) {
+                        logReadingHabitCompletion(user.id, lessonId);
+                        if (gateUnlock && !pointsAwarded && typeof showNotification === 'function') {
+                            showNotification(
+                                language === 'en'
+                                    ? 'Lesson saved — hourly quiz unlocked.'
+                                    : 'পাঠ সংরক্ষিত — ঘণ্টাভিত্তিক কুইজ খোলা হয়েছে।',
+                                'success'
+                            );
+                        }
+                    }
                 } catch (err) {
                     console.error('Critical error in point awarding:', err);
-                    return;
-                }
-
-                setCompletedLessons(updated);
-                
-                storageUtils.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
-
-                // Sync to Supabase (Level + Detailed Progress)
-                const newLevel = calculateLevelFromProgress(updated, trainingChapters);
-                
-                // Fail-proof: Only update level if it's higher than what we currently have
-                const currentStoredLevel = profile?.training_level || 0;
-                const updatePayload = {
-                    completed_lessons: updated
-                };
-                
-                if (newLevel > currentStoredLevel) {
-                    updatePayload.training_level = newLevel;
-                }
-
-                console.log('📝 Syncing progress to Supabase...', updatePayload);
-                // Transient network/RLS failures here used to leave reading_points awarded
-                // (RPC) while completed_lessons never persisted — retries reduce that drift.
-                let updateError = null;
-                for (let attempt = 1; attempt <= 3; attempt++) {
-                    const { error } = await supabase
-                        .from('profiles')
-                        .update(updatePayload)
-                        .eq('id', user.id);
-                    if (!error) {
-                        updateError = null;
-                        console.log('✅ Progress synced successfully!');
-                        break;
-                    }
-                    updateError = error;
-                    console.warn(`Profile sync attempt ${attempt}/3 failed:`, error);
-                    await new Promise((r) => setTimeout(r, 350 * attempt));
-                }
-
-                if (updateError) {
-                    console.error('❌ Failed to sync progress to Supabase after retries:', updateError);
+                    if (!gateUnlock) return;
+                    logReadingHabitCompletion(user.id, lessonId);
                     if (typeof showNotification === 'function') {
                         showNotification(
                             language === 'en'
-                                ? 'Points were saved but lesson progress did not sync. Refresh the app or try again; contact support if this continues.'
-                                : 'পয়েন্ট সেভ হয়েছে কিন্তু পাঠের অগ্রগতি সার্ভারে যায়নি। অ্যাপ রিফ্রেশ করুন বা আবার চেষ্টা করুন।',
-                            'error'
+                                ? 'Lesson saved — hourly quiz unlocked.'
+                                : 'পাঠ সংরক্ষিত — ঘণ্টাভিত্তিক কুইজ খোলা হয়েছে।',
+                            'success'
                         );
                     }
                 }
+
+                if (pointsAwarded) {
+                    setCompletedLessons(updated);
+                    storageUtils.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
+
+                    const newLevel = calculateLevelFromProgress(updated, trainingChapters);
+                    const currentStoredLevel = profile?.training_level || 0;
+                    const updatePayload = {
+                        completed_lessons: updated
+                    };
+
+                    if (newLevel > currentStoredLevel) {
+                        updatePayload.training_level = newLevel;
+                    }
+
+                    console.log('📝 Syncing progress to Supabase...', updatePayload);
+                    let updateError = null;
+                    for (let attempt = 1; attempt <= 3; attempt++) {
+                        const { error } = await supabase
+                            .from('profiles')
+                            .update(updatePayload)
+                            .eq('id', user.id);
+                        if (!error) {
+                            updateError = null;
+                            console.log('✅ Progress synced successfully!');
+                            break;
+                        }
+                        updateError = error;
+                        console.warn(`Profile sync attempt ${attempt}/3 failed:`, error);
+                        await new Promise((r) => setTimeout(r, 350 * attempt));
+                    }
+
+                    if (updateError) {
+                        console.error('❌ Failed to sync progress to Supabase after retries:', updateError);
+                        if (typeof showNotification === 'function') {
+                            showNotification(
+                                language === 'en'
+                                    ? 'Points were saved but lesson progress did not sync. Refresh the app or try again; contact support if this continues.'
+                                    : 'পয়েন্ট সেভ হয়েছে কিন্তু পাঠের অগ্রগতি সার্ভারে যায়নি। অ্যাপ রিফ্রেশ করুন বা আবার চেষ্টা করুন।',
+                                'error'
+                            );
+                        }
+                    }
+                }
             }
-            if (onProgressUpdate) {
-                onProgressUpdate(updated, true); // Added true for forceRefresh
+            if (pointsAwarded && onProgressUpdate) {
+                onProgressUpdate(updated, true);
             }
-        } else if (user && consumeGateReviewTarget(user.id, lessonId)) {
+        } else if (gateUnlock) {
             logReadingHabitReview(user.id, lessonId);
             if (typeof showNotification === 'function') {
                 showNotification(
@@ -2195,6 +2293,7 @@ export default function Training({
         }
         setShowQuizModal(false);
         setPendingLessonId(null);
+        setGateFocusTick((t) => t + 1);
     };
 
     const initiateLessonCompletion = async (lessonId) => {
@@ -2343,6 +2442,16 @@ export default function Training({
             ) : !selectedChapter && !trainingContent ? (
                 <div className="neo-brutal animate-fade-in-up text-slate-900">
                     <div className="nb-hazard mb-4" aria-hidden="true" />
+
+                    {gateFocusPending?.lessonId && (
+                        <div className={`mx-auto mb-4 max-w-2xl rounded border-2 border-orange-500 bg-orange-50 px-4 py-3 text-center ${language === 'bn' ? 'font-bengali' : ''}`}>
+                            <p className="text-sm font-black text-slate-900">
+                                {language === 'en'
+                                    ? `Hourly quiz locked — opening lesson ${gateFocusPending.lessonId}…`
+                                    : `ঘণ্টাভিত্তিক কুইজ লক — পাঠ ${gateFocusPending.lessonId} খোলা হচ্ছে…`}
+                            </p>
+                        </div>
+                    )}
 
                     {showDailyBrief && trainingTab === 'core' && !trainingLoading && !showOnboarding && (
                         <div className="mx-auto mb-4 flex w-full max-w-sm items-start gap-2 nb-card bg-orange-50 px-3 py-2.5">
@@ -2917,6 +3026,10 @@ export default function Training({
                                     <button
                                         type="button"
                                         onClick={() => {
+                                            if (gateFocusPending?.lessonId) {
+                                                notifyGateFocusRequired();
+                                                return;
+                                            }
                                             stopChapterAudio();
                                             setSelectedLesson(null);
                                             setSelectedChapter(null);
@@ -3384,6 +3497,10 @@ export default function Training({
                     <div className="neo-brutal fixed inset-x-0 bottom-0 top-0 z-[75] flex animate-fade-in-up flex-col overflow-hidden bg-[#fffdf7] md:top-14 lg:inset-x-0 lg:bottom-6 lg:top-16 lg:mx-auto lg:w-[1000px] lg:max-w-[95vw] lg:border-2 lg:border-slate-900 lg:shadow-[8px_8px_0_#0f172a]">
                         {/* Desktop Backdrop Overlay */}
                         <div className="hidden lg:block fixed inset-0 -z-10 bg-slate-900/40" onClick={() => {
+                            if (gateFocusPending?.lessonId) {
+                                notifyGateFocusRequired();
+                                return;
+                            }
                             stop();
                             setTrainingContent(null);
                             setIsJournalMode(false);
@@ -3398,6 +3515,10 @@ export default function Training({
                                     <button
                                         type="button"
                                         onClick={() => {
+                                            if (gateFocusPending?.lessonId) {
+                                                notifyGateFocusRequired();
+                                                return;
+                                            }
                                             stop();
                                             setTrainingContent(null);
                                             setIsJournalMode(false);
@@ -3412,6 +3533,13 @@ export default function Training({
                                     </button>
 
                                     <div className="mx-4 min-w-0 flex-1 text-center">
+                                        {gateFocusPending?.lessonId && (
+                                            <p className={`mb-0.5 truncate text-[10px] font-black uppercase tracking-wide text-orange-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                {language === 'en'
+                                                    ? 'Complete this lesson to unlock hourly quiz'
+                                                    : 'ঘণ্টাভিত্তিক কুইজ খুলতে এই পাঠ শেষ করুন'}
+                                            </p>
+                                        )}
                                         <h2 className={`truncate text-xs font-bold uppercase tracking-[0.2em] text-slate-500 nb-mono ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
                                             <span className="font-black text-orange-600">{getTrainingHeaderLessonCode(trainingContent, language)}</span>
                                             <span className="mx-1.5 text-slate-300">·</span>

@@ -4,6 +4,8 @@ export const READING_GATE_MS = 48 * 60 * 60 * 1000;
 const GATE_STATE_PREFIX = 'slm_reading_gate_v1_';
 const GATE_NAV_KEY = 'slm_reading_gate_nav_v1';
 const GATE_REVIEW_TARGET_PREFIX = 'slm_gate_review_target_';
+const GATE_UNLOCK_PREFIX = 'slm_gate_unlock_pending_v1_';
+const GATE_UNLOCK_TTL_MS = 24 * 60 * 60 * 1000;
 
 export function gateStateKey(userId) {
     return `${GATE_STATE_PREFIX}${userId}`;
@@ -100,4 +102,61 @@ export function consumeGateReviewTarget(userId, lessonId) {
     if (target !== String(lessonId)) return false;
     storageUtils.removeItem(key);
     return true;
+}
+
+/** Set when user accepts a gate block — consumed only after quiz pass on that lesson. */
+export function setGateUnlockPending(userId, lessonId, kind = 'next') {
+    if (!userId || !lessonId) return;
+    const m = String(lessonId).match(/^(\d+)\.(\d+)$/);
+    if (!m) return;
+    storageUtils.setItem(
+        `${GATE_UNLOCK_PREFIX}${userId}`,
+        JSON.stringify({
+            lessonId: String(lessonId),
+            kind: kind === 'review' ? 'review' : 'next',
+            ts: Date.now(),
+        })
+    );
+}
+
+/**
+ * @returns {{ kind: 'next' | 'review' } | null}
+ */
+export function consumeGateUnlockPending(userId, lessonId) {
+    if (!userId || !lessonId) return null;
+    const key = `${GATE_UNLOCK_PREFIX}${userId}`;
+    try {
+        const raw = storageUtils.getItem(key);
+        if (!raw) return null;
+        const o = JSON.parse(raw);
+        if (!o || o.lessonId !== String(lessonId)) return null;
+        if (Date.now() - (o.ts || 0) > GATE_UNLOCK_TTL_MS) {
+            storageUtils.removeItem(key);
+            return null;
+        }
+        storageUtils.removeItem(key);
+        return { kind: o.kind === 'review' ? 'review' : 'next' };
+    } catch {
+        return null;
+    }
+}
+
+export function peekGateUnlockPending(userId) {
+    if (!userId) return null;
+    try {
+        const raw = storageUtils.getItem(`${GATE_UNLOCK_PREFIX}${userId}`);
+        if (!raw) return null;
+        const o = JSON.parse(raw);
+        if (!o?.lessonId || Date.now() - (o.ts || 0) > GATE_UNLOCK_TTL_MS) return null;
+        return { lessonId: String(o.lessonId), kind: o.kind === 'review' ? 'review' : 'next' };
+    } catch {
+        return null;
+    }
+}
+
+/** @returns {{ chapterNum: number, lessonNum: number } | null} */
+export function parseCoreLessonId(lessonId) {
+    const m = String(lessonId).match(/^(\d+)\.(\d+)$/);
+    if (!m) return null;
+    return { chapterNum: parseInt(m[1], 10), lessonNum: parseInt(m[2], 10) };
 }

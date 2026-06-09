@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { setGateNavigation, setGateReviewTarget } from '../utils/readingGateStorage';
+import { setGateNavigation, setGateReviewTarget, setGateUnlockPending } from '../utils/readingGateStorage';
 
 export default function ReadingGateModal({
     block,
@@ -16,6 +16,7 @@ export default function ReadingGateModal({
     const handleContinue = () => {
         if (block.lessonId && block.userId) {
             setGateNavigation({ userId: block.userId, lessonId: block.lessonId });
+            setGateUnlockPending(block.userId, block.lessonId, isReview ? 'review' : 'next');
             if (isReview) {
                 setGateReviewTarget(block.userId, block.lessonId);
             }
@@ -75,8 +76,8 @@ export default function ReadingGateModal({
                             className="nb-btn-primary w-full py-3 text-sm font-black"
                         >
                             {isReview
-                                ? (language === 'en' ? 'Start review →' : 'রিভিউ শুরু করুন →')
-                                : (language === 'en' ? 'Continue training →' : 'প্রশিক্ষণে যান →')}
+                                ? (language === 'en' ? 'Open assigned lesson →' : 'নির্ধারিত পাঠ খুলুন →')
+                                : (language === 'en' ? 'Open your next lesson →' : 'পরের পাঠ খুলুন →')}
                         </button>
                         <button
                             type="button"

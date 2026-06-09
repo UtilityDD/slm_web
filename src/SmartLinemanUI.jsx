@@ -1027,6 +1027,7 @@ export default function SmartLinemanUI() {
             language={language} 
             user={user} 
             userProfile={userProfile}
+            showNotification={showNotification}
             onProgressUpdate={(newProgress, forceRefresh = false) => { 
               const coreProgress = filterCoreCompletedLessonIds(Array.isArray(newProgress) ? newProgress : []);
               setCompletedLessons(coreProgress); 
