@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { getBadgeByLevel } from '../utils/badgeUtils';
@@ -179,6 +179,87 @@ const formatLastActive = (dateString, language) => {
     // Default to short date
     return date.toLocaleDateString(isBn ? 'bn-BD' : 'en-US', { day: 'numeric', month: 'short' });
 };
+
+function formatChaseDisplayName(fullName) {
+    const trimmed = (fullName || '').trim();
+    if (!trimmed || trimmed.includes('@')) return null;
+    const first = trimmed.split(/\s+/)[0];
+    return first.length > 18 ? `${first.slice(0, 16)}…` : first;
+}
+
+/** Display-only: read rival one rank above for chase banner. Never used for scoring or writes. */
+async function fetchRivalAheadForDisplay(myScoreValue) {
+    const { data: rivalRow, error: rivalError } = await supabase
+        .from('leaderboard_view')
+        .select('user_id, full_name, score')
+        .gt('score', myScoreValue)
+        .order('score', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+    if (rivalError) throw rivalError;
+    if (!rivalRow) return null;
+
+    const rivalScore = rivalRow.score ?? 0;
+    const { count: rivalAheadCount, error: rivalRankError } = await supabase
+        .from('leaderboard_view')
+        .select('*', { count: 'exact', head: true })
+        .gt('score', rivalScore);
+
+    if (rivalRankError) throw rivalRankError;
+
+    return {
+        user_id: rivalRow.user_id,
+        full_name: rivalRow.full_name,
+        score: rivalScore,
+        rank: rivalAheadCount + 1,
+        gap: rivalScore - myScoreValue,
+    };
+}
+
+function buildHourlyChaseMessage({ language, userRank, hoursLeft }) {
+    if (!userRank) return null;
+
+    const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+    const isBn = language === 'bn';
+
+    if (userRank.rank === 1) {
+        return isBn
+            ? 'আপনি এখন শীর্ষে! প্রতি ঘণ্টার কুইজ খেলতে থাকুন — এক নম্বর ধরে রাখতে হবে।'
+            : "You're #1 right now — keep playing every hour to stay on top.";
+    }
+
+    const rival = userRank.rival;
+    if (!rival?.full_name) {
+        return isBn
+            ? (hoursLeft > 0
+                ? `আজ আরও ${fmt(hoursLeft)}টা ঘণ্টার কুইজ বাকি। খেলতে থাকুন, পয়েন্ট জমতে থাকবে।`
+                : 'আজকের সব ঘণ্টা শেষ — কাল আবার শুরু করুন, পয়েন্ট জমতে থাকবে।')
+            : (hoursLeft > 0
+                ? `${fmt(hoursLeft)} hour${hoursLeft === 1 ? '' : 's'} left today — keep playing to climb the board.`
+                : "Today's hours are done — come back tomorrow and keep building your score.");
+    }
+
+    const name = formatChaseDisplayName(rival.full_name) || (isBn ? 'সহপ্রতিযোগী' : 'the player ahead');
+    const gap = Math.max(0, rival.gap ?? 0);
+    const rankLabel = rival.rank ? `#${rival.rank}` : '';
+    const hoursBitBn = hoursLeft > 0
+        ? ` আজ আরও ${fmt(hoursLeft)}টা ঘণ্টা বাকি — খেললে কাছে আসা সম্ভব।`
+        : '';
+    const hoursBitEn = hoursLeft > 0
+        ? ` ${fmt(hoursLeft)} hour${hoursLeft === 1 ? '' : 's'} left today — play them to close the gap.`
+        : '';
+
+    if (gap <= 10) {
+        return isBn
+            ? `${name}${rankLabel ? ` (${rankLabel})` : ''} এর থেকে মাত্র ${fmt(gap)} পয়েন্ট পিছিয়ে! ভালো খেললে এক ঘণ্টাই যথেষ্ট।${hoursBitBn}`
+            : `Only ${fmt(gap)} point${gap === 1 ? '' : 's'} behind ${name}${rankLabel ? ` (${rankLabel})` : ''}! One strong hour could do it.${hoursBitEn}`;
+    }
+
+    return isBn
+        ? `${name}${rankLabel ? ` (${rankLabel})` : ''} এর চেয়ে ${fmt(gap)} পয়েন্ট কম।${hoursBitBn || ' ধীরে ধীরে ঘণ্টা ঘণ্টা খেললে জমে উঠবে।'}`
+        : `You're ${fmt(gap)} points behind ${name}${rankLabel ? ` (${rankLabel})` : ''}.${hoursBitEn || ' Steady hour-by-hour play adds up.'}`;
+}
 
 export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile, onOpenUserProgress }) {
     const [loading, setLoading] = useState(true);
@@ -778,6 +859,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         return streak;
     };
 
+    const hourlyChaseMessage = useMemo(() => {
+        if (isFullLeaderboard || !user || loading || !userRank) return null;
+        const hoursLeft = buildHourlySlots().filter((slot) => (
+            slot.status === 'live' || slot.status === 'upcoming' || slot.status === 'upcoming-next'
+        )).length;
+        return buildHourlyChaseMessage({ language, userRank, hoursLeft });
+    }, [isFullLeaderboard, user, loading, language, userRank, todayAttempts, lastAttemptTime, serverTimeOffset]);
+
 
     /**
      * Direct submission logic for Hourly Quiz
@@ -1217,17 +1306,23 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                     if (countError) throw countError;
 
-                    return { 
-                        rank: count + 1, 
+                    return {
+                        rank: count + 1,
                         score: myScoreValue,
-                        reading_points: myData.reading_points || 0 
+                        reading_points: myData.reading_points || 0,
                     };
                 },
                 { ttl: 5, swr: true, forceRefresh }
             );
 
             if (rankData) {
-                setUserRank(rankData);
+                const rival = await requestManager.fetch(
+                    `user_rival_ahead_${user.id}`,
+                    () => fetchRivalAheadForDisplay(rankData.score),
+                    { ttl: 5, swr: true, forceRefresh }
+                ).catch(() => null);
+
+                setUserRank({ ...rankData, rival: rival || null });
             } else {
                 setUserRank(null);
             }
@@ -2239,233 +2334,244 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     return (
         <div className="neo-brutal max-w-md mx-auto min-h-screen relative pb-[calc(11rem+env(safe-area-inset-bottom))] md:pb-24 bg-[#fffdf7] text-slate-900">
             {/* 1. STICKY SCOREBOARD HEADER */}
-            <div className="sticky top-0 z-30 bg-[#fffdf7] border-b-[2.5px] border-slate-900">
-                <div className="nb-hazard" aria-hidden="true" />
+            <div className="sticky top-0 z-30 border-b-2 border-slate-900 bg-[#fffdf7]">
+                <div className="nb-hazard shrink-0" aria-hidden="true" />
                 <div className="px-3 py-2.5 sm:px-4 sm:py-3">
-                    <div className="flex items-center justify-between mb-2.5">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                            <h1 className={`text-base font-black text-slate-900 flex items-center gap-1.5 tracking-tight min-w-0 nb-mono uppercase ${language === 'bn' ? 'font-bengali normal-case' : ''}`}>
-                                <span className="text-lg shrink-0" aria-hidden>🏆</span>
+                    <div className="mb-2.5 flex items-center justify-between gap-2">
+                        <div className="flex min-w-0 items-center gap-1.5">
+                            <h1 className={`flex min-w-0 items-center gap-1.5 text-base font-black tracking-tight text-slate-900 ${language === 'bn' ? 'font-bengali normal-case' : 'nb-mono uppercase'}`}>
+                                <span className="shrink-0 text-lg" aria-hidden>🏆</span>
                                 <span className="truncate">{language === 'en' ? '5 Quiz / Hour' : '৫ কুইজ / ঘণ্টা'}</span>
                             </h1>
                             <button
                                 type="button"
                                 onClick={() => setShowHourlyPenaltyInfoModal(true)}
-                                className="shrink-0 flex h-7 w-7 items-center justify-center border-2 border-slate-900 bg-white text-slate-700 shadow-[2px_2px_0_#0f172a] hover:bg-orange-50 transition-colors"
+                                className="flex h-7 w-7 shrink-0 items-center justify-center border-2 border-slate-900 bg-white text-slate-700 shadow-[2px_2px_0_#0f172a] transition-colors hover:bg-orange-50"
                                 aria-label={language === 'en' ? 'Penalty info' : 'পেনাল্টি তথ্য'}
                             >
-                                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
                                     <circle cx="12" cy="12" r="10" />
                                     <path strokeLinecap="round" d="M12 6v6l4 2" />
                                 </svg>
                             </button>
                         </div>
                         {userRank && (
-                            <div className="flex flex-col items-end gap-1">
-                                <div className="flex items-center gap-2">
-                                    <span className={`nb-tag px-2 py-0.5 text-[10px] font-bold ${currentUserBadge.color}`}>
-                                        {language === 'en' ? currentUserBadge.en : currentUserBadge.bn}
-                                    </span>
-                                    <span className="nb-rank-badge text-sm font-black text-slate-800 px-2 py-0.5 bg-white">#{userRank.rank}</span>
-                                </div>
+                            <div className="flex shrink-0 items-center gap-1.5">
+                                <span className={`nb-tag px-2 py-0.5 text-[10px] font-bold ${currentUserBadge.color}`}>
+                                    {language === 'en' ? currentUserBadge.en : currentUserBadge.bn}
+                                </span>
+                                <span className="nb-rank-badge bg-white px-2 py-0.5 text-sm font-black text-slate-800">#{userRank.rank}</span>
                             </div>
                         )}
                     </div>
 
                     <div className="grid grid-cols-3 gap-2">
-                        {/* Total Score */}
                         <div className="nb-card bg-white p-2 text-center">
-                            <p className="nb-stat-label text-[9px] mb-0.5 leading-tight">{t.points}</p>
+                            <p className="nb-stat-label mb-0.5 text-[9px] leading-tight">{t.points}</p>
                             <p className="nb-stat-value text-base tabular-nums leading-none">{userRank?.score?.toLocaleString() || 0}</p>
                         </div>
-                        {/* Today's Score */}
                         <div className="nb-card bg-orange-50 p-2 text-center">
-                            <p className="nb-stat-label text-[9px] text-orange-600 mb-0.5 leading-tight">{language === 'en' ? 'Today' : 'আজ'}</p>
-                            <p className="nb-stat-value text-base text-orange-600 tabular-nums leading-none">+{getTodayScore().toLocaleString()}</p>
+                            <p className="nb-stat-label mb-0.5 text-[9px] leading-tight text-orange-600">{language === 'en' ? 'Today' : 'আজ'}</p>
+                            <p className="nb-stat-value text-base tabular-nums leading-none text-orange-600">+{getTodayScore().toLocaleString()}</p>
                         </div>
-                        {/* Streak */}
                         <div className="nb-card bg-amber-50 p-2 text-center">
-                            <p className="nb-stat-label text-[9px] text-amber-600 mb-0.5 leading-tight">{t.streak}</p>
-                            <p className="nb-stat-value text-base text-amber-600 flex items-center justify-center gap-1 leading-none">
-                                {getStreak(buildHourlySlots())} <span className="text-sm animate-pulse">🔥</span>
+                            <p className="nb-stat-label mb-0.5 text-[9px] leading-tight text-amber-600">{t.streak}</p>
+                            <p className="nb-stat-value flex items-center justify-center gap-1 text-base leading-none text-amber-600">
+                                {getStreak(buildHourlySlots())} <span className="text-sm">🔥</span>
                             </p>
                         </div>
                     </div>
+
+                    {hourlyChaseMessage && (
+                        <div className="mt-2.5 border-t-2 border-dashed border-slate-900/25 pt-2.5">
+                            <div className="nb-card border-dashed bg-gradient-to-br from-orange-50 via-[#fffdf7] to-amber-50 px-2.5 py-2">
+                                <div className="flex items-start gap-2">
+                                    <span className="mt-0.5 shrink-0 text-sm leading-none" aria-hidden>💪</span>
+                                    <div className="min-w-0 flex-1">
+                                        <p className={`text-[11px] font-semibold leading-snug text-slate-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {hourlyChaseMessage}
+                                        </p>
+                                        {userRank?.rank > 1 && userRank?.rival && (
+                                            <button
+                                                type="button"
+                                                onClick={goToGlobalLeaderboard}
+                                                className={`mt-1 text-[10px] font-bold text-orange-600 transition-colors hover:text-orange-700 ${language === 'bn' ? 'font-bengali' : 'nb-mono uppercase tracking-wide'}`}
+                                            >
+                                                {language === 'en' ? 'See full rankings →' : 'পুরো লিডারবোর্ড দেখুন →'}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* 2. INFINITE SCROLL LADDER */}
-            <div className="px-4 py-10 relative space-y-0" ref={ladderRef}>
-                {/* Center Line Shadow */}
-                <div className="absolute left-1/2 top-0 bottom-0 w-2 bg-orange-100/60 -translate-x-1/2 z-0 blur-sm"></div>
-                <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-300 -translate-x-1/2 z-0"></div>
+            {/* 2. HOURLY TIMELINE */}
+            <div className="relative px-4 py-5" ref={ladderRef}>
+                <div className="mb-3 flex flex-wrap items-center justify-center gap-2">
+                    <span className="nb-tag flex items-center gap-1.5 bg-emerald-50 px-2 py-0.5 text-[9px] font-black text-emerald-800">
+                        <span className="h-2 w-2 border border-slate-900 bg-emerald-500" aria-hidden />
+                        {language === 'en' ? 'Done' : 'সম্পন্ন'}
+                    </span>
+                    <span className="nb-tag flex items-center gap-1.5 bg-orange-50 px-2 py-0.5 text-[9px] font-black text-orange-800">
+                        <span className="h-2 w-2 border border-slate-900 bg-orange-500" aria-hidden />
+                        {language === 'en' ? 'Live' : 'লাইভ'}
+                    </span>
+                    <span className="nb-tag flex items-center gap-1.5 bg-white px-2 py-0.5 text-[9px] font-black text-slate-600">
+                        <span className="h-2 w-2 border border-dashed border-slate-500 bg-white" aria-hidden />
+                        {language === 'en' ? 'Upcoming' : 'আসছে'}
+                    </span>
+                </div>
 
                 {loading ? (
-                    Array(6).fill(0).map((_, i) => (
-                        <div key={i} className="relative z-10 flex min-h-[100px] items-center justify-center">
-                            <div className="nb-card w-full max-w-[280px] h-20 bg-white animate-pulse"></div>
-                        </div>
-                    ))
+                    <div className="space-y-2 pl-7">
+                        {Array(6).fill(0).map((_, i) => (
+                            <div key={i} className="nb-card h-11 animate-pulse bg-white" />
+                        ))}
+                    </div>
                 ) : (
-                    buildHourlySlots().map((slot, index, arr) => {
-                        const isLive = slot.status === 'live';
-                        const isPlayed = slot.status === 'played';
-                        const isMissed = slot.status === 'missed';
-                        const isUpcoming = slot.status === 'upcoming';
-                        const isNextChallenge = slot.status === 'upcoming-next';
+                    <div className="relative pl-7">
+                        <div className="absolute bottom-2 left-[9px] top-2 w-0.5 bg-slate-300" aria-hidden />
 
-                        return (
-                            <div key={slot.hour} id={isLive ? 'node-live' : (isNextChallenge ? 'node-upcoming-next' : undefined)} className={`relative z-10 flex items-center justify-center py-5 ${isLive ? 'node-live py-8 my-2' : isNextChallenge ? 'py-6 my-1' : ''}`}>
+                        {buildHourlySlots().map((slot) => {
+                            const isLive = slot.status === 'live';
+                            const isPlayed = slot.status === 'played';
+                            const isMissed = slot.status === 'missed';
+                            const isNextChallenge = slot.status === 'upcoming-next';
+                            const isPast = isPlayed || isMissed;
 
-                                {/* Connector Line to next node (if not last) */}
-                                {index < arr.length - 1 && (
-                                    <div className={`absolute top-1/2 left-1/2 w-1 -translate-x-1/2 h-[calc(100%+40px)] -z-10
-                                        ${isUpcoming ? 'border-l-2 border-dashed border-slate-300' :
-                                            isMissed ? 'bg-slate-300' :
-                                                'bg-gradient-to-b from-orange-500 to-orange-200'}`}>
-                                    </div>
-                                )}
+                            return (
+                                <div
+                                    key={slot.hour}
+                                    id={isLive ? 'node-live' : (isNextChallenge ? 'node-upcoming-next' : undefined)}
+                                    className={`relative ${isLive ? 'node-live py-2.5' : isNextChallenge ? 'py-2' : isPast ? 'py-1' : 'py-1'}`}
+                                >
+                                    <div
+                                        className={`absolute left-[-19px] top-1/2 z-10 -translate-y-1/2 border-2 border-slate-900 ${
+                                            isLive
+                                                ? 'h-3.5 w-3.5 bg-orange-500 shadow-[2px_2px_0_#0f172a]'
+                                                : isPlayed
+                                                    ? 'h-2.5 w-2.5 bg-emerald-400 shadow-[1px_1px_0_#0f172a]'
+                                                    : isMissed
+                                                        ? 'h-2 w-2 bg-slate-300'
+                                                        : isNextChallenge
+                                                            ? 'h-3 w-3 bg-amber-300 shadow-[2px_2px_0_#0f172a]'
+                                                            : 'h-2 w-2 border-dashed bg-white'
+                                        }`}
+                                        aria-hidden
+                                    />
 
-                                {/* Main Card */}
-                                <div className={`relative w-full max-w-[340px] transition-all duration-300 ${isLive ? 'scale-100' : 'scale-[0.99]'}`}>
-
-                                    {/* Hour Label Badge */}
-                                    <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 text-[10px] font-black uppercase tracking-widest z-20 border-2 border-slate-900 nb-mono
-                                        ${isLive ? 'bg-orange-600 text-white shadow-[2px_2px_0_#0f172a]' :
-                                            isPlayed ? 'bg-green-100 text-green-800 shadow-[2px_2px_0_#0f172a]' :
-                                                isNextChallenge ? 'bg-amber-500 text-white shadow-[2px_2px_0_#0f172a]' :
-                                                    isMissed ? 'bg-slate-200 text-slate-800 shadow-[2px_2px_0_#0f172a]' :
-                                                        'bg-slate-100 text-slate-800 shadow-[2px_2px_0_#0f172a]'}`}>
-                                        {slot.label}
-                                    </div>
-
-                                    {/* Card Content */}
-                                    <button
-                                        disabled={(!isLive && !isPlayed) || (isLive && hourlyQuizRefreshBusy)}
-                                        onClick={() => {
-                                            if (isLive) void beginHourlyQuiz();
-                                            else if (isPlayed) startReview();
-                                        }}
-                                        className={`w-full overflow-hidden relative group text-left transition-all active:scale-[0.98] border-[2.5px] border-slate-900
-                                            ${isLive ? 'bg-white border-rose-500 shadow-[4px_4px_0_#0f172a] live-card-glow animate-pulse-rose' :
-                                                isPlayed ? 'bg-white shadow-[3px_3px_0_#0f172a] hover:border-green-500' :
-                                                    isNextChallenge ? 'bg-white border-amber-500 shadow-[3px_3px_0_#0f172a]' :
-                                                        isMissed ? 'bg-slate-50 border-slate-600 shadow-[2px_2px_0_#0f172a]' :
-                                                            'bg-white border-slate-500 cursor-default shadow-[2px_2px_0_#0f172a]'}`}
-                                    >
-                                        <div className="p-4 sm:p-5 flex items-center justify-between gap-4">
-                                            <div className="flex-1">
-                                                {isLive ? (
-                                                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 flex flex-col items-start gap-1">
-                                                        {hourlyQuizRefreshBusy && (
-                                                            <div className="mb-1 text-[10px] font-bold text-amber-700 nb-mono">
-                                                                {language === 'en' ? 'Updating quiz for this hour…' : 'এই ঘণ্টার কুইজ আপডেট হচ্ছে…'}
-                                                            </div>
-                                                        )}
-                                                        <div className="flex items-center gap-2 mb-1 px-2.5 py-1 bg-rose-50 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
-                                                            <div className="w-1.5 h-1.5 bg-rose-500 animate-pulse"></div>
-                                                            <span className="text-[10px] font-black text-rose-600 tracking-tighter uppercase nb-mono">{t.liveNow}</span>
-                                                        </div>
-                                                        {timeLeft && (
-                                                            <div className="flex items-baseline gap-2">
-                                                                <span className="text-3xl font-black text-slate-900 tabular-nums tracking-tighter">
-                                                                    {timeLeft}
-                                                                </span>
-                                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest nb-mono">{t.timeLeft}</span>
-                                                            </div>
-                                                        )}
+                                    {isLive ? (
+                                        <button
+                                            type="button"
+                                            disabled={hourlyQuizRefreshBusy}
+                                            onClick={() => { void beginHourlyQuiz(); }}
+                                            className="live-card-glow w-full border-2 border-rose-500 bg-white p-3.5 text-left shadow-[4px_4px_0_#0f172a] transition-transform active:translate-x-0.5 active:translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                                        >
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                                                        <span className="nb-tag bg-white px-2 py-0.5 text-[10px] font-black tabular-nums text-slate-800">{slot.label}</span>
+                                                        <span className="inline-flex items-center gap-1 border-2 border-slate-900 bg-rose-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-rose-700 shadow-[1px_1px_0_#0f172a]">
+                                                            <span className="h-1.5 w-1.5 animate-pulse bg-rose-500" aria-hidden />
+                                                            {t.liveNow}
+                                                        </span>
                                                     </div>
-                                                ) : isPlayed ? (
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-12 h-12 bg-green-50 flex flex-col items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
-                                                            <span className="text-lg font-black text-green-600">+{slot.score}</span>
+                                                    {hourlyQuizRefreshBusy && (
+                                                        <p className="mb-1 text-[10px] font-bold text-amber-700 nb-mono">
+                                                            {language === 'en' ? 'Updating quiz for this hour…' : 'এই ঘণ্টার কুইজ আপডেট হচ্ছে…'}
+                                                        </p>
+                                                    )}
+                                                    {timeLeft && (
+                                                        <div className="flex items-baseline gap-2">
+                                                            <span className="text-3xl font-black tabular-nums tracking-tight text-slate-900">{timeLeft}</span>
+                                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 nb-mono">{t.timeLeft}</span>
                                                         </div>
-                                                        {slot.penalty > 0 && (
-                                                            <div className="text-xs font-bold text-red-500 nb-mono">
-                                                                -{slot.penalty}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ) : isMissed ? (
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-12 h-12 bg-white flex flex-col items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
-                                                            <span className="text-lg font-black text-slate-700">0</span>
-                                                        </div>
-                                                        <span className="text-xs font-bold text-slate-600 nb-mono uppercase">{language === 'en' ? 'Missed' : 'মিস'}</span>
-                                                    </div>
-                                                ) : isNextChallenge ? (
-                                                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 flex flex-col items-start gap-1">
-                                                        <div className="flex items-center gap-2 mb-1 px-2 py-0.5 bg-amber-50 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
-                                                            <div className="w-1.5 h-1.5 bg-amber-500 animate-bounce"></div>
-                                                            <span className="text-[10px] font-black text-amber-800 uppercase tracking-tighter nb-mono">{t.nextChallengeLabel}</span>
-                                                        </div>
-                                                        {timeLeft && (
-                                                            <div className="flex items-baseline gap-2">
-                                                                <span className="text-2xl font-black text-slate-900 tabular-nums tracking-tighter">
-                                                                    {timeLeft}
-                                                                </span>
-                                                                <span className="text-[9px] font-bold text-slate-700 uppercase tracking-widest nb-mono lowercase">{t.startsIn}</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ) : (
-                                                    <div>
-                                                        <div className={`text-sm font-bold text-slate-700 ${language === 'bn' ? 'font-bengali' : 'nb-mono uppercase tracking-wide'}`}>
-                                                            {t.upcomingStatus}
-                                                        </div>
-                                                    </div>
-                                                )}
+                                                    )}
+                                                </div>
+                                                <div className="flex h-11 w-11 shrink-0 items-center justify-center border-2 border-slate-900 bg-orange-600 text-white shadow-[3px_3px_0_#0f172a]">
+                                                    <svg className="ml-0.5 h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M8 5v14l11-7z" /></svg>
+                                                </div>
                                             </div>
-
-                                            <div className="shrink-0">
-                                                {isLive ? (
-                                                    <div className="w-12 h-12 bg-orange-600 flex items-center justify-center text-white border-2 border-slate-900 shadow-[3px_3px_0_#0f172a] animate-pulse active:scale-90 transition-transform">
-                                                        <svg className="w-6 h-6 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /></svg>
+                                        </button>
+                                    ) : isNextChallenge ? (
+                                        <div className="border-2 border-amber-500 bg-amber-50 px-3 py-2.5 shadow-[3px_3px_0_#0f172a]">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="mb-1 flex flex-wrap items-center gap-2">
+                                                        <span className="nb-tag bg-white px-2 py-0.5 text-[10px] font-black tabular-nums">{slot.label}</span>
+                                                        <span className="text-[10px] font-black uppercase tracking-wide text-amber-800 nb-mono">{t.nextChallengeLabel}</span>
                                                     </div>
-                                                ) : isPlayed ? (
-                                                    <div className="w-10 h-10 bg-white flex items-center justify-center text-slate-700 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] group-hover:text-green-700 transition-colors">
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                                                    </div>
-                                                ) : isNextChallenge ? (
-                                                    <div className="w-12 h-12 bg-amber-50 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] overflow-hidden">
-                                                        <DotLottiePlayer
-                                                            src={sandyLoading}
-                                                            autoplay
-                                                            loop
-                                                        />
-                                                    </div>
-                                                ) : (
-                                                    <div className="w-10 h-10 bg-slate-100 flex items-center justify-center text-slate-700 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                                    </div>
-                                                )}
+                                                    {timeLeft && (
+                                                        <div className="flex items-baseline gap-2">
+                                                            <span className="text-xl font-black tabular-nums text-slate-900">{timeLeft}</span>
+                                                            <span className="text-[10px] font-bold text-slate-600 nb-mono">{t.startsIn}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="h-10 w-10 shrink-0 overflow-hidden border-2 border-slate-900 bg-white shadow-[2px_2px_0_#0f172a]">
+                                                    <DotLottiePlayer src={sandyLoading} autoplay loop />
+                                                </div>
                                             </div>
                                         </div>
-                                    </button>
+                                    ) : isPlayed ? (
+                                        <button
+                                            type="button"
+                                            onClick={startReview}
+                                            className="nb-btn-secondary group flex w-full items-center gap-2.5 px-2.5 py-2 text-left hover:border-emerald-600 hover:bg-emerald-50"
+                                        >
+                                            <span className="w-[3.25rem] shrink-0 text-[10px] font-black tabular-nums text-slate-600 nb-mono">{slot.label}</span>
+                                            <span className="text-sm font-black tabular-nums text-emerald-600">+{slot.score}</span>
+                                            {slot.penalty > 0 && (
+                                                <span className="text-xs font-bold tabular-nums text-red-500 nb-mono">−{slot.penalty}</span>
+                                            )}
+                                            <span className="ml-auto flex items-center gap-1 text-[10px] font-bold text-slate-500 transition-colors group-hover:text-emerald-700 nb-mono">
+                                                {language === 'en' ? 'Review' : 'দেখুন'}
+                                                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
+                                            </span>
+                                        </button>
+                                    ) : isMissed ? (
+                                        <div className="flex items-center gap-2.5 border-2 border-dashed border-slate-400 bg-slate-100 px-2.5 py-1.5 opacity-75 shadow-[1px_1px_0_#0f172a]">
+                                            <span className="w-[3.25rem] shrink-0 text-[10px] font-bold tabular-nums text-slate-500 nb-mono">{slot.label}</span>
+                                            <span className="text-[10px] font-black uppercase tracking-wide text-slate-500 nb-mono">{language === 'en' ? 'Missed' : 'মিস'}</span>
+                                            <span className="ml-auto text-xs font-black tabular-nums text-slate-500">0</span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-2.5 border-2 border-dashed border-slate-300 bg-white px-2.5 py-1.5 opacity-60">
+                                            <span className="w-[3.25rem] shrink-0 text-[10px] font-bold tabular-nums text-slate-400 nb-mono">{slot.label}</span>
+                                            <span className={`text-[10px] font-bold text-slate-500 ${language === 'bn' ? 'font-bengali' : 'nb-mono uppercase'}`}>{t.upcomingStatus}</span>
+                                            <div className="ml-auto flex h-7 w-7 items-center justify-center border-2 border-slate-300 bg-slate-50 text-slate-400">
+                                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        );
-                    })
+                            );
+                        })}
+                    </div>
                 )}
             </div>
 
-            {/* 3. MINI LEADERBOARD PREVIEW - COMPACT MOBILE */}
-            <div className="px-4 mb-16 animate-slide-up-fade" style={{ animationDelay: '200ms' }}>
+            {/* 3. MINI LEADERBOARD PREVIEW */}
+            <div className="mb-16 animate-slide-up-fade px-4" style={{ animationDelay: '200ms' }}>
                 <div className="nb-card bg-white p-4">
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="mb-3 flex items-center justify-between">
                         <div>
-                            <h3 className="font-black text-slate-800 text-sm tracking-tight nb-mono uppercase">{t.topPlayersToday}</h3>
-                            <div className="h-0.5 w-6 bg-orange-500 mt-0.5"></div>
+                            <h3 className="text-sm font-black tracking-tight text-slate-800 nb-mono uppercase">{t.topPlayersToday}</h3>
+                            <div className="mt-0.5 h-0.5 w-6 bg-orange-500" />
                         </div>
                         <button
+                            type="button"
                             onClick={goToGlobalLeaderboard}
-                            className="nb-btn-secondary px-3 py-1 text-[10px] font-black bg-orange-50 text-orange-700 hover:bg-orange-100"
+                            className="nb-btn-secondary px-3 py-1 text-[10px] font-black text-orange-700 hover:bg-orange-100"
                         >
                             {t.viewAll}
                         </button>
                     </div>
 
-                    <div className="space-y-2.5">
+                    <div className="space-y-2">
                         {loading ? (
                             Array(3).fill(0).map((_, i) => <SkeletonRow key={i} />)
                         ) : leaderboard.length > 0 ? (
@@ -2481,21 +2587,16 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     <div
                                         key={idx}
                                         onClick={() => openUserProgress(item.user_id)}
-                                        className="flex items-center gap-3 group cursor-pointer p-2 border-2 border-transparent hover:border-slate-900 hover:bg-orange-50/50 transition-colors"
+                                        className="group flex cursor-pointer items-center gap-3 border-2 border-transparent p-2 transition-colors hover:border-slate-900 hover:bg-orange-50/50"
                                     >
-                                        <div className={`w-6 h-6 flex items-center justify-center text-xs font-black border-2 transition-transform group-hover:scale-110 shadow-[2px_2px_0_#0f172a] nb-mono ${rankColors}`}>
+                                        <div className={`flex h-6 w-6 shrink-0 items-center justify-center border-2 text-xs font-black shadow-[2px_2px_0_#0f172a] nb-mono ${rankColors}`}>
                                             {rank}
                                         </div>
                                         <div className="relative h-8 w-8 shrink-0">
                                             {rank === 1 && (
-                                                <span
-                                                    className="pointer-events-none absolute -right-2 -top-2 z-20 text-sm leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
-                                                    aria-hidden
-                                                >
-                                                    👑
-                                                </span>
+                                                <span className="pointer-events-none absolute -right-2 -top-2 z-20 text-sm leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]" aria-hidden>👑</span>
                                             )}
-                                            <div className="absolute inset-0 overflow-hidden border-2 border-slate-900 bg-slate-100 transition-all group-hover:shadow-[2px_2px_0_#0f172a]">
+                                            <div className="h-full w-full overflow-hidden border-2 border-slate-900 bg-slate-100 transition-all group-hover:shadow-[2px_2px_0_#0f172a]">
                                                 {item.avatar_url ? (
                                                     <img src={item.avatar_url} className="h-full w-full object-cover" alt="" />
                                                 ) : (
@@ -2512,62 +2613,44 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                                                 return isToday && (
                                                     <span className="absolute -bottom-0.5 -right-0.5 z-10 flex h-2.5 w-2.5">
-                                                        {isOnline && <span className="absolute inline-flex h-full w-full animate-ping bg-green-400 opacity-75"></span>}
-                                                        <span className={`relative inline-flex h-2.5 w-2.5 border-2 border-white ${isOnline ? 'bg-green-500' : 'bg-green-500/60'}`}></span>
+                                                        {isOnline && <span className="absolute inline-flex h-full w-full animate-ping bg-green-400 opacity-75" />}
+                                                        <span className={`relative inline-flex h-2.5 w-2.5 border-2 border-white ${isOnline ? 'bg-green-500' : 'bg-green-500/60'}`} />
                                                     </span>
                                                 );
                                             })()}
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="text-xs font-black text-slate-800 truncate group-hover:text-orange-600 transition-colors leading-tight">
+                                        <div className="min-w-0 flex-1">
+                                            <div className="truncate text-xs font-black leading-tight text-slate-800 transition-colors group-hover:text-orange-600">
                                                 {item.full_name}
                                             </div>
-                                            <div className="flex items-center gap-1.5 mt-0.5">
-                                                <span className="text-[10px] font-black text-slate-900 tabular-nums leading-none">
+                                            <div className="mt-0.5 flex items-center gap-1.5">
+                                                <span className="text-[10px] font-black tabular-nums leading-none text-slate-900">
                                                     {item.points.toLocaleString()}
                                                 </span>
-                                                <div className="flex items-center gap-1 mt-1">
-                                                    {(item.last_active || item.last_login_at) && (
-                                                        <span className="text-[9px] font-bold text-slate-500 mr-2">
-                                                            {formatLastActive(item.last_active || item.last_login_at, language)}
-                                                        </span>
-                                                    )}
-                                                    <div className="flex items-center gap-0.5 px-1 py-0.5 border border-slate-900 bg-slate-50 text-[9px] font-bold text-slate-600">
-                                                        <span>📖</span>
-                                                        <span className="tabular-nums">{(item.reading_points || 0).toLocaleString()}</span>
-                                                    </div>
+                                                {(item.last_active || item.last_login_at) && (
+                                                    <span className="text-[9px] font-bold text-slate-500">
+                                                        {formatLastActive(item.last_active || item.last_login_at, language)}
+                                                    </span>
+                                                )}
+                                                <div className="flex items-center gap-0.5 border border-slate-900 bg-slate-50 px-1 py-0.5 text-[9px] font-bold text-slate-600">
+                                                    <span>📖</span>
+                                                    <span className="tabular-nums">{(item.reading_points || 0).toLocaleString()}</span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="text-slate-400 transition-transform group-hover:translate-x-0.5">
-                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
+                                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
                                         </div>
                                     </div>
                                 );
                             })
                         ) : (
-                            <div className="py-3 text-center text-slate-500 text-xs font-medium italic">{language === 'en' ? 'No activity today' : 'আজ কোনো কার্যকলাপ নেই'}</div>
+                            <div className="py-3 text-center text-xs font-medium italic text-slate-500">{language === 'en' ? 'No activity today' : 'আজ কোনো কার্যকলাপ নেই'}</div>
                         )}
                     </div>
                 </div>
             </div>
 
-
-            {/* Portal to body: parent .view-transition uses transform, which breaks fixed positioning and makes FABs jump when the animation ends */}
-            {typeof document !== 'undefined' &&
-                createPortal(
-                    <a
-                        href="https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="fixed bottom-[calc(8.25rem+env(safe-area-inset-bottom,0px))] right-[max(0.75rem,env(safe-area-inset-right))] z-[105] flex h-12 w-12 items-center justify-center border-2 border-slate-900 bg-[#25D366] text-white shadow-[3px_3px_0_#0f172a] transition-all hover:-translate-y-0.5 active:scale-95 md:bottom-8 md:right-8"
-                        title={language === 'en' ? 'WhatsApp Community' : 'WhatsApp গ্রুপ'}
-                        aria-label={language === 'en' ? 'WhatsApp Community' : 'WhatsApp গ্রুপ'}
-                    >
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
-                    </a>,
-                    document.body
-                )}
 
             {showAbortWarningModal && createPortal(
                 <div className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-slate-900/55 animate-fade-in">
