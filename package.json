@@ -21,6 +21,7 @@
     "@capacitor/status-bar": "^6.0.3",
     "@dotlottie/react-player": "^1.6.19",
     "@supabase/supabase-js": "^2.87.1",
+    "@upstash/redis": "^1.38.0",
     "crypto-js": "^4.2.0",
     "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.12.1",

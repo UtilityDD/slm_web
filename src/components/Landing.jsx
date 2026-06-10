@@ -6,6 +6,8 @@ import { BOARD_IDS, getMonthlyPrizeDisplayList } from '../utils/monthlyEncourage
 import { APP_NAME, WEBSITE_URL } from '../config';
 import { storageUtils } from '../utils/storageUtils';
 import LandingPrizeCarousel from './LandingPrizeCarousel';
+import LandingVisitCounter from './LandingVisitCounter';
+import { fetchVisitCount } from '../utils/landingVisitService';
 
 const copy = {
   en: {
@@ -38,6 +40,7 @@ const copy = {
     prizeMonths: 'months with winners',
     footer: 'Empowering linemen through safety, learning, and recognition.',
     followFacebook: 'Follow on Facebook',
+    visitLabel: 'Visit:',
   },
   bn: {
     tagline: 'পশ্চিমবঙ্গের বিদ্যুৎ কর্মীদের নিরাপত্তা-প্রথম প্ল্যাটফর্ম',
@@ -69,6 +72,7 @@ const copy = {
     prizeMonths: 'টি মাসে পুরস্কার বিতরণ করা হয়েছে',
     footer: 'নিরাপত্তা, শিক্ষা এবং স্বীকৃতির মাধ্যমে লাইনম্যানদের ক্ষমতায়ন।',
     followFacebook: 'ফেসবুক পেজ ফলো করুন',
+    visitLabel: 'ভিজিট:',
   },
 };
 
@@ -563,6 +567,8 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
     prizeMonths: 0,
     hallOfFameData: [],
   });
+  const [visitCount, setVisitCount] = useState(null);
+  const [visitLoading, setVisitLoading] = useState(true);
   const [lifeSkillModules, setLifeSkillModules] = useState([]);
   const [activeLifeSkill, setActiveLifeSkill] = useState(null);
   const [activeLifeSkillContent, setActiveLifeSkillContent] = useState(null);
@@ -605,6 +611,36 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
       }
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setVisitLoading(true);
+    fetchVisitCount()
+      .then((count) => {
+        if (!cancelled) {
+          setVisitCount(count);
+          setVisitLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setVisitLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (visitCount != null || visitLoading || !stats.users) return;
+    let cancelled = false;
+    fetchVisitCount({ registeredUsers: stats.users })
+      .then((count) => {
+        if (!cancelled && count != null) setVisitCount(count);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [stats.users, visitCount, visitLoading]);
 
   useEffect(() => {
     let cancelled = false;
@@ -795,52 +831,55 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
 
   return (
     <div
-      className={`landing-page-light landing-neo-brutal min-h-full text-slate-900 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] sm:pb-16 ${bnFont ? 'lang-bn' : 'font-sans'}`}
+      className={`landing-page-light landing-neo-brutal min-h-full text-slate-900 pb-[calc(9.5rem+env(safe-area-inset-bottom,0px))] sm:pb-16 ${bnFont ? 'lang-bn' : 'font-sans'}`}
     >
       <div className="nb-hazard" aria-hidden="true" />
 
       {/* Top bar */}
       <div className="sticky top-0 z-20 border-b-[2.5px] border-slate-900 bg-white safe-area-inset-top">
-        <div className="max-w-5xl mx-auto px-3 sm:px-6 min-h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-3">
-          <div className="flex items-baseline gap-1.5 select-none min-w-0">
-            <span className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate">SmartLineMan</span>
-            <span className="text-[9px] sm:text-[10px] font-black text-slate-900 bg-orange-400 px-1.5 py-0.5 rounded border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] shrink-0 nb-mono">.in</span>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <div
-              className="flex border-2 border-slate-900 rounded-md overflow-hidden bg-white text-[11px] sm:text-xs font-bold nb-mono shadow-[3px_3px_0_#0f172a]"
-              role="group"
-              aria-label={t.language}
-            >
+        <div className="max-w-5xl mx-auto px-3 sm:px-6">
+          <div className="h-12 sm:h-16 flex items-center justify-between gap-2 sm:gap-3">
+            <div className="flex items-baseline gap-1 sm:gap-1.5 select-none min-w-0">
+              <span className="text-base sm:text-2xl font-black text-slate-900 tracking-tight truncate">SmartLineMan</span>
+              <span className="text-[8px] sm:text-[10px] font-black text-slate-900 bg-orange-400 px-1 sm:px-1.5 py-0.5 rounded border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] shrink-0 nb-mono">.in</span>
+            </div>
+
+            <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+              <div
+                className="inline-flex items-center rounded-full border border-slate-200/90 bg-slate-50/90 p-0.5 text-[9px] sm:text-[10px] font-semibold nb-mono shadow-[0_1px_2px_rgba(15,23,42,0.05)]"
+                role="group"
+                aria-label={t.language}
+              >
+                <button
+                  type="button"
+                  onClick={() => onLanguageChange('en')}
+                  className={`min-h-[26px] min-w-[26px] sm:min-h-0 sm:min-w-0 px-2 sm:px-2.5 py-0.5 rounded-full touch-manipulation transition-colors ${language === 'en' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/80' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  EN
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onLanguageChange('bn')}
+                  className={`min-h-[26px] min-w-[26px] sm:min-h-0 sm:min-w-0 px-2 sm:px-2.5 py-0.5 rounded-full touch-manipulation transition-colors ${language === 'bn' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/80' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  বাং
+                </button>
+              </div>
               <button
                 type="button"
-                onClick={() => onLanguageChange('en')}
-                className={`min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 px-2.5 sm:px-3 py-1.5 touch-manipulation border-r-2 border-slate-900 ${language === 'en' ? 'bg-orange-500 text-white' : 'bg-white text-slate-900 hover:bg-orange-50'}`}
+                onClick={() => setCurrentView('login')}
+                className="inline-flex sm:hidden items-center min-h-[32px] px-2.5 py-1 nb-btn-primary text-[11px] font-bold touch-manipulation"
               >
-                EN
+                {t.login}
               </button>
               <button
                 type="button"
-                onClick={() => onLanguageChange('bn')}
-                className={`min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 px-2.5 sm:px-3 py-1.5 touch-manipulation ${language === 'bn' ? 'bg-orange-500 text-white' : 'bg-white text-slate-900 hover:bg-orange-50'}`}
+                onClick={() => setCurrentView('login')}
+                className="hidden sm:inline-flex items-center px-5 py-2 nb-btn-primary text-sm font-bold"
               >
-                বাং
+                {t.login}
               </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setCurrentView('login')}
-              className="inline-flex sm:hidden items-center min-h-[36px] px-3 py-1.5 nb-btn-primary text-xs font-bold touch-manipulation"
-            >
-              {t.login}
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentView('login')}
-              className="hidden sm:inline-flex items-center px-5 py-2 nb-btn-primary text-sm font-bold"
-            >
-              {t.login}
-            </button>
           </div>
         </div>
       </div>
@@ -1023,7 +1062,18 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
           </div>
         </section>
 
-        <footer className="nb-footer text-center sm:text-left text-xs pt-6 sm:pt-8 pb-8 mt-8 sm:mt-12">
+        {(visitLoading || visitCount != null) && (
+          <div className="hidden sm:flex justify-center mt-10 sm:mt-12">
+            <LandingVisitCounter
+              value={visitCount ?? 0}
+              loading={visitLoading}
+              label={t.visitLabel}
+              className={bnFont ? 'font-bengali' : 'font-mono'}
+            />
+          </div>
+        )}
+
+        <footer className="nb-footer text-center sm:text-left text-xs pt-6 sm:pt-8 pb-8 mt-6 sm:mt-8">
           <p className="font-semibold text-slate-200">{t.footer}</p>
           <div className="mt-4 flex flex-col sm:flex-row items-center sm:items-start gap-3">
             <a
@@ -1049,9 +1099,19 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
         </footer>
       </div>
 
-      {/* Mobile sticky Login CTA */}
+      {/* Mobile sticky visit counter + Login CTA */}
       {!activeLifeSkill && (
-        <div className="sm:hidden fixed bottom-0 inset-x-0 z-30 px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-[#fffdf7] border-t-[2.5px] border-slate-900">
+        <div className="sm:hidden fixed bottom-0 inset-x-0 z-30 px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-[#fffdf7] border-t-[2.5px] border-slate-900">
+          {(visitLoading || visitCount != null) && (
+            <div className="flex justify-center mb-2">
+              <LandingVisitCounter
+                value={visitCount ?? 0}
+                loading={visitLoading}
+                label={t.visitLabel}
+                className={bnFont ? 'font-bengali' : 'font-mono'}
+              />
+            </div>
+          )}
           <button
             type="button"
             onClick={() => setCurrentView('login')}

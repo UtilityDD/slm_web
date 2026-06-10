@@ -24,6 +24,7 @@ import RadioDesktopLaunch from "./components/RadioDesktopLaunch";
 import { LifeSkillRadioProvider, RadioScrollPaddingBridge } from "./context/LifeSkillRadioContext";
 import IdleStoryReminder from "./components/IdleStoryReminder";
 import { libraryService } from "./utils/libraryService";
+import { trackAppVisit } from "./utils/landingVisitService";
 import PageLoader from "./components/loaders/PageLoader";
 
 // Lazy load heavy components for code splitting
@@ -60,6 +61,11 @@ export default function SmartLinemanUI() {
   useEffect(() => {
     // Fetch safety library in background to warm up cache
     libraryService.fetchLibrary().catch(err => console.warn('Background library pre-fetch failed:', err));
+  }, []);
+
+  // Count every app open once per browser session (guest + logged in)
+  useEffect(() => {
+    trackAppVisit().catch(() => {});
   }, []);
 
   const [globalLoading, setGlobalLoading] = useState(false);
