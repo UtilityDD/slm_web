@@ -1715,6 +1715,97 @@ body,
   animation: node-glow 3s ease-in-out infinite;
 }
 
+@keyframes rank-badge-in {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.92);
+  }
+
+  70% {
+    transform: translateY(-2px) scale(1.04);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-rank-badge-in {
+  animation: rank-badge-in 0.55s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+@keyframes rank-medal-glow {
+
+  0%,
+  100% {
+    box-shadow: 3px 3px 0 #0f172a, 0 0 0 rgba(249, 115, 22, 0);
+  }
+
+  50% {
+    box-shadow: 4px 4px 0 #0f172a, 0 0 18px rgba(249, 115, 22, 0.45);
+  }
+}
+
+.animate-rank-medal-glow {
+  animation: rank-medal-glow 2.8s ease-in-out infinite;
+}
+
+.training-rank-badge {
+  overflow: visible;
+  padding-top: 1.35rem;
+}
+
+.training-rank-badge > div {
+  border-radius: 0.375rem;
+}
+
+@keyframes roadmap-marker-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-roadmap-marker-in {
+  animation: roadmap-marker-in 0.5s ease-out both;
+}
+
+@keyframes roadmap-marker-float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-roadmap-marker-float {
+  animation: roadmap-marker-float 3s ease-in-out infinite;
+}
+
+@media (max-width: 480px) {
+  .roadmap-next-marker {
+    min-width: max-content;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .animate-rank-badge-in,
+  .animate-rank-medal-glow,
+  .animate-roadmap-marker-in,
+  .animate-roadmap-marker-float {
+    animation: none;
+  }
+}
+
 @keyframes glow-pulse {
 
   0%,

@@ -1,5 +1,21 @@
 import { filterCoreCompletedLessonIds } from './trainingLessonIds';
 
+/** Learning-path milestone badges (medal + ribbon on Training roadmap). */
+export const roadmapBadgeLevels = [
+    { level: 1, en: 'Trainee', bn: 'ট্রেইনি', icon: '🌱', color: 'bg-slate-400', medalText: 'text-white' },
+    { level: 2, en: 'Junior', bn: 'জুনিয়র', icon: '⭐', color: 'bg-blue-500', medalText: 'text-white' },
+    { level: 3, en: 'Technician', bn: 'টেকনিশিয়ান', icon: '🔧', color: 'bg-cyan-500', medalText: 'text-white' },
+    { level: 4, en: 'Skilled', bn: 'স্কিলড', icon: '✅', color: 'bg-emerald-500', medalText: 'text-white' },
+    { level: 5, en: 'Advanced', bn: 'অ্যাডভান্সড', icon: '🚀', color: 'bg-indigo-500', medalText: 'text-white' },
+    { level: 6, en: 'Senior', bn: 'সিনিয়র', icon: '🏅', color: 'bg-violet-500', medalText: 'text-white' },
+    { level: 7, en: 'Supervisor', bn: 'সুপারভাইজার', icon: '👑', color: 'bg-purple-600', medalText: 'text-white' },
+    { level: 8, en: 'Specialist', bn: 'স্পেশালিস্ট', icon: '💎', color: 'bg-rose-500', medalText: 'text-white' },
+    { level: 9, en: 'Expert', bn: 'এক্সপার্ট', icon: '🏆', color: 'bg-orange-500', medalText: 'text-white' },
+];
+
+export const getRoadmapBadgeByLevel = (level) =>
+    roadmapBadgeLevels.find((b) => b.level === level) || roadmapBadgeLevels[0];
+
 export const badgeLevels = [
     { level: 1, en: "Trainee", bn: "ট্রেইনি", color: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700" },
     { level: 2, en: "Junior", bn: "জুনিয়র", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800" },

@@ -4,7 +4,7 @@ import secureStorage from '../../utils/secureStorage';
 import { supabase } from '../../supabaseClient';
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../../config';
 import HomeSkeleton from '../loaders/HomeSkeleton';
-import { badgeLevels, calculateLevelFromProgress, getBadgeByLevel } from '../../utils/badgeUtils';
+import { badgeLevels, calculateLevelFromProgress, getBadgeByLevel, getRoadmapBadgeByLevel } from '../../utils/badgeUtils';
 import { cacheHelper } from '../../utils/cacheHelper';
 import { invalidateLeaderboardCaches } from '../../utils/leaderboardCacheKeys';
 import { storageUtils } from '../../utils/storageUtils';
@@ -529,6 +529,215 @@ const TrainingSubChapterCard = React.memo(({ subchapter, isUnlocked, isCompleted
     );
 });
 
+/** Rank milestone on the learning path — unified medal-on-box badge. */
+function RankMilestone({ badge, language, isUnlocked, isCurrent, prefersReducedMotion }) {
+    const name = language === 'en' ? badge.en : badge.bn;
+    const tier = badge.level;
+    const medalSize =
+        tier >= 8 ? 'h-12 w-12 text-2xl' :
+        tier >= 5 ? 'h-11 w-11 text-xl' :
+        'h-10 w-10 text-lg';
+    const shadowClass = tier >= 7 ? 'shadow-[4px_4px_0_#0f172a]' : 'shadow-[3px_3px_0_#0f172a]';
+    const animateIn = isUnlocked && !prefersReducedMotion;
+    const isActiveRank = isCurrent && isUnlocked;
+    const borderClass = isActiveRank ? 'border-orange-600' : isUnlocked ? 'border-slate-900' : 'border-slate-400';
+    const activeShadow = isActiveRank ? 'shadow-[4px_4px_0_#ea580c] sm:shadow-[5px_5px_0_#ea580c]' : shadowClass;
+    const shellClass = isUnlocked
+        ? `${badge.color} ${badge.medalText}`
+        : 'bg-slate-200 text-slate-500 grayscale opacity-85';
+    const namePad = language === 'bn'
+        ? 'px-4 pb-2.5 pt-7 sm:px-5 sm:pb-3 sm:pt-8'
+        : 'px-3.5 pb-2 pt-6 sm:px-4 sm:pb-2.5 sm:pt-6';
+    const nameSize = language === 'bn'
+        ? 'font-bengali text-[0.95rem] sm:text-base leading-[1.4]'
+        : 'text-xs sm:text-sm leading-tight';
+
+    return (
+        <div
+            className={`training-rank-badge relative ${animateIn ? 'animate-rank-badge-in' : ''}`}
+            role="img"
+            aria-label={name}
+        >
+            <div className={`relative min-w-[6.75rem] border-2 text-center sm:min-w-[7.25rem] ${borderClass} ${activeShadow} ${shellClass}`}>
+                <div
+                    className={`absolute left-1/2 top-0 z-10 flex ${medalSize} -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 ${borderClass} ${isUnlocked ? `${badge.color} ${badge.medalText}` : 'bg-slate-200 text-slate-500'} ${isUnlocked && tier >= 9 && !prefersReducedMotion ? 'animate-rank-medal-glow' : ''}`}
+                >
+                    <span aria-hidden className="leading-none select-none">
+                        {isUnlocked ? badge.icon : '🔒'}
+                    </span>
+                </div>
+                <p className={`mb-0 font-black ${namePad} ${nameSize} whitespace-nowrap`}>
+                    {name}
+                </p>
+            </div>
+        </div>
+    );
+}
+
+/** Open trail companion beside the next lesson — profile photo or lineman emoji + score. */
+function RoadmapNextMarker({ language, score, prefersReducedMotion, anchorRight, avatarUrl }) {
+    const pointsLabel = language === 'en' ? 'points' : 'পয়েন্ট';
+    const formattedScore = (score || 0).toLocaleString('en-US');
+    const floatClass = !prefersReducedMotion ? 'sm:animate-roadmap-marker-float' : '';
+
+    return (
+        <div
+            className={[
+                'roadmap-next-marker pointer-events-none absolute z-50',
+                'max-[480px]:left-1/2 max-[480px]:top-[calc(100%+0.875rem)] max-[480px]:-translate-x-1/2',
+                'min-[481px]:top-1/2 min-[481px]:-translate-y-1/2',
+                anchorRight
+                    ? 'min-[481px]:right-full min-[481px]:mr-4 sm:mr-0 sm:right-[110%]'
+                    : 'min-[481px]:left-full min-[481px]:ml-4 sm:ml-0 sm:left-[110%]',
+            ].join(' ')}
+            role="status"
+            aria-label={`${formattedScore} ${pointsLabel}`}
+        >
+            <div
+                className={[
+                    'animate-roadmap-marker-in flex items-center gap-2.5 px-0.5 py-1',
+                    'max-[480px]:gap-3 max-[480px]:px-1 max-[480px]:py-1.5',
+                    'sm:gap-3 sm:px-0 sm:py-0',
+                    floatClass,
+                ].join(' ')}
+            >
+                {!anchorRight && (
+                    <span className="hidden h-0 w-5 shrink-0 border-t-2 border-dashed border-orange-500/60 sm:block" aria-hidden />
+                )}
+
+                <div
+                    className={[
+                        'relative flex items-center gap-2.5',
+                        'max-[480px]:gap-3',
+                        anchorRight ? 'sm:flex-row-reverse sm:gap-3' : 'sm:gap-3',
+                    ].join(' ')}
+                >
+                    <div className="relative h-10 w-10 shrink-0 sm:h-14 sm:w-14">
+                        <div className="absolute inset-0 rounded-full bg-orange-400/15 blur-md" aria-hidden />
+                        <div className="relative h-full w-full overflow-hidden rounded-full ring-2 ring-orange-400/70 ring-offset-2 ring-offset-[#fffdf7]">
+                            {avatarUrl ? (
+                                <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                                <span
+                                    className="flex h-full w-full items-center justify-center bg-orange-50 text-xl leading-none sm:text-2xl"
+                                    aria-hidden
+                                >
+                                    👷
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    <div
+                        className={[
+                            'flex min-w-0 flex-col gap-1',
+                            anchorRight ? 'sm:items-end sm:text-right' : 'sm:items-start sm:text-left',
+                        ].join(' ')}
+                    >
+                        <span className="text-sm font-black tabular-nums leading-none text-slate-900 sm:text-xl nb-mono">
+                            {formattedScore}
+                        </span>
+                        <span
+                            className={`text-[10px] font-bold leading-none text-orange-700/90 sm:text-[11px] ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-wide nb-mono'}`}
+                        >
+                            {pointsLabel}
+                        </span>
+                    </div>
+                </div>
+
+                {anchorRight && (
+                    <span className="hidden h-0 w-5 shrink-0 border-t-2 border-dashed border-orange-500/60 sm:block" aria-hidden />
+                )}
+            </div>
+        </div>
+    );
+}
+
+/** Inline ((media|label)) chip — compact in prose; thumbnail or icon only unless author set a label. */
+function TrainingInlineMediaChip({ isImage, resolvedMedia, labelText, authorLabel, tapHint, language, onClick }) {
+    const ariaLabel = `${labelText} — ${tapHint}`;
+    const showLabel = Boolean(authorLabel);
+
+    if (isImage) {
+        return (
+            <button
+                type="button"
+                aria-label={ariaLabel}
+                title={ariaLabel}
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onClick();
+                }}
+                className={`group mx-0.5 inline-flex max-w-[9rem] cursor-pointer items-center gap-1 align-middle transition-transform duration-150 hover:-translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 ${language === 'bn' ? 'font-bengali' : ''}`}
+            >
+                <span className="relative inline-flex h-7 w-7 shrink-0 overflow-hidden rounded-sm border border-slate-900 bg-white shadow-[1px_1px_0_#0f172a] ring-2 ring-orange-400 ring-offset-1">
+                    <img src={resolvedMedia} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-900/0 transition-colors group-hover:bg-slate-900/15" aria-hidden>
+                        <svg className="h-3 w-3 text-white opacity-0 drop-shadow transition-opacity group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </span>
+                </span>
+                {showLabel && (
+                    <span className="min-w-0 truncate border-b border-dashed border-orange-400 text-[0.82em] font-semibold leading-tight text-orange-700">
+                        {labelText}
+                    </span>
+                )}
+            </button>
+        );
+    }
+
+    return (
+        <button
+            type="button"
+            aria-label={ariaLabel}
+            title={ariaLabel}
+            onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onClick();
+            }}
+            className={`group mx-0.5 inline-flex cursor-pointer items-center gap-1 align-middle transition-transform duration-150 hover:-translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 ${showLabel ? 'max-w-[9rem]' : ''} ${language === 'bn' ? 'font-bengali' : ''}`}
+        >
+            <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-900 bg-orange-100 text-orange-800 shadow-[1px_1px_0_#0f172a] ring-2 ring-orange-300 ring-offset-1 group-hover:bg-orange-200">
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </span>
+            {showLabel && (
+                <span className="min-w-0 truncate border-b border-dashed border-orange-400 text-[0.82em] font-semibold leading-tight text-orange-700">
+                    {labelText}
+                </span>
+            )}
+        </button>
+    );
+}
+
+/** Lesson figure — matches Know More chapter step images (AroJanun). Tap opens enlarge modal. */
+function TrainingLessonFigure({ src, alt, caption, onClick, language, className = '', inlineFloat = false }) {
+    const enlargeLabel = language === 'en' ? 'Tap to enlarge' : 'বড় করে দেখতে ট্যাপ করুন';
+    return (
+        <button
+            type="button"
+            onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onClick?.();
+            }}
+            title={enlargeLabel}
+            className={`my-4 block w-full max-w-lg overflow-hidden border-2 border-slate-900 bg-white p-2 text-left shadow-[4px_4px_0_#0f172a] transition-transform duration-150 hover:-translate-y-0.5 ${inlineFloat ? 'sm:float-right sm:ml-5 sm:mr-0 sm:shrink-0' : 'clear-both'} ${className}`}
+        >
+            {caption && (
+                <p className="mb-2 border-b border-dashed border-slate-300 pb-2 text-center text-xs font-black text-slate-600 nb-mono">
+                    {caption}
+                </p>
+            )}
+            <img src={src} alt={alt} className="h-auto w-full object-contain" loading="lazy" />
+        </button>
+    );
+}
+
 /** Full topic card body — reused in guided (one step) and overview (all open) modes */
 function SectionPointFullCard({
     point,
@@ -568,17 +777,13 @@ function SectionPointFullCard({
 
                 <div className="relative transition-all duration-500">
                     {point.image_name && (
-                        <div
-                            className={`${readingComfort ? 'mb-7 sm:mb-9 rounded-xl sm:rounded-2xl' : 'mb-8 sm:mb-10 rounded-2xl sm:rounded-[2.5rem]'} overflow-hidden cursor-zoom-in shadow-lg shadow-black/5`}
+                        <TrainingLessonFigure
+                            src={resolveTrainingMediaSrc(point.image_name)}
+                            alt={point.item_name}
+                            language={language}
+                            className={readingComfort ? 'mb-7 sm:mb-9' : 'mb-8 sm:mb-10'}
                             onClick={() => setActiveImageModal({ type: 'image', value: resolveTrainingMediaSrc(point.image_name) })}
-                        >
-                            <img
-                                src={resolveTrainingMediaSrc(point.image_name)}
-                                alt={point.item_name}
-                                className="w-full h-auto object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-700"
-                                loading="lazy"
-                            />
-                        </div>
+                        />
                     )}
 
                     <div className={readingComfort ? 'space-y-7 sm:space-y-10' : 'space-y-6 sm:space-y-8'}>
@@ -1131,22 +1336,8 @@ export default function Training({
         const journeyChapters = trainingChapters.filter(c => c.number !== 10);
         const items = [];
 
-        const badgeLevels = [
-            { level: 1, en: "Trainee", bn: "ট্রেইনি", color: "bg-slate-500", count: 0 },
-            { level: 2, en: "Junior", bn: "জুনিয়র", color: "bg-blue-600", count: 2 },
-            { level: 3, en: "Technician", bn: "টেকনিশিয়ান", color: "bg-cyan-600", count: 5 },
-            { level: 4, en: "Skilled", bn: "স্কিলড", color: "bg-emerald-600", count: 10 },
-            { level: 5, en: "Advanced", bn: "অ্যাডভান্সড", color: "bg-indigo-600", count: 20 },
-            { level: 6, en: "Senior", bn: "সিনিয়র", color: "bg-violet-600", count: 35 },
-            { level: 7, en: "Supervisor", bn: "সুপারভাইজার", color: "bg-purple-600", count: 50 },
-            { level: 8, en: "Specialist", bn: "স্পেশালিস্ট", color: "bg-rose-600", count: 70 },
-            { level: 9, en: "Expert", bn: "এক্সপার্ট", color: "bg-orange-600", count: 100 }
-        ];
-
-        const getBadgeByLevel = (lvl) => badgeLevels.find(b => b.level === lvl) || badgeLevels[0];
-
         journeyChapters.forEach((chapter) => {
-            const badge = getBadgeByLevel(chapter.number);
+            const badge = getRoadmapBadgeByLevel(chapter.number);
             const isChapterUnlocked = isLessonUnlocked(chapter.number, 1);
             items.push({
                 type: 'milestone',
@@ -1176,7 +1367,8 @@ export default function Training({
             return (item.isCompleted || item.isUnlocked) ? idx : max;
         }, 0);
 
-        const nodeVerticalGap = 120;
+        const nodeVerticalGap =
+            typeof window !== 'undefined' && window.innerWidth < 640 ? 136 : 120;
         const height = items.length * nodeVerticalGap + 200;
 
         return { items, height, maxPath, nodeVerticalGap, journeyChapters };
@@ -1628,37 +1820,22 @@ export default function Training({
                 const tapHint = language === 'en' ? 'Tap to open' : 'খুলতে ট্যাপ করুন';
 
                 return (
-                    <button
+                    <TrainingInlineMediaChip
                         key={index}
-                        type="button"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
+                        isImage={isImage}
+                        resolvedMedia={resolvedMedia}
+                        labelText={labelText}
+                        authorLabel={authorLabel}
+                        tapHint={tapHint}
+                        language={language}
+                        onClick={() => {
                             if (isImage) {
                                 setActiveImageModal({ type: 'image', value: resolvedMedia });
                             } else {
                                 setActiveImageModal({ type: 'text', value: raw });
                             }
                         }}
-                        title={`${labelText} — ${tapHint}`}
-                        className={`mx-0.5 inline-flex max-w-[10rem] cursor-pointer items-center gap-1 rounded-md border border-orange-200/80 bg-orange-50/90 py-0.5 pl-0.5 pr-1.5 align-middle text-[10px] font-semibold leading-tight text-orange-900 shadow-none transition-colors hover:border-orange-300 hover:bg-orange-100 dark:border-orange-800/50 dark:bg-orange-950/45 dark:text-orange-100 dark:hover:border-orange-600 dark:hover:bg-orange-900/55 ${language === 'bn' ? 'font-bengali' : ''}`}
-                    >
-                        <span className="flex h-4 w-4 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-white/90 ring-1 ring-orange-200/60 dark:bg-slate-900/80 dark:ring-orange-800/50">
-                            {isImage ? (
-                                <img
-                                    src={resolvedMedia}
-                                    alt=""
-                                    className="h-full w-full object-cover"
-                                    loading="lazy"
-                                />
-                            ) : (
-                                <svg className="h-3 w-3 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            )}
-                        </span>
-                        <span className="min-w-0 truncate">{labelText}</span>
-                    </button>
+                    />
                 );
             } else if (part.startsWith('[[') && part.endsWith(']]')) {
                 const inner = part.slice(2, -2).trim();
@@ -1671,51 +1848,25 @@ export default function Training({
 
                 if (isInlineFigure) {
                     return (
-                        <button
+                        <TrainingLessonFigure
                             key={index}
-                            type="button"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                openModal();
-                            }}
-                            title={language === 'en' ? 'Tap to enlarge' : 'বড় করে দেখতে ট্যাপ করুন'}
-                            className="group my-4 mx-auto block w-full max-w-[13.5rem] overflow-hidden rounded-2xl border-2 border-orange-200/90 bg-white/95 text-left shadow-md ring-1 ring-orange-500/10 transition-transform hover:border-orange-300 hover:shadow-lg active:scale-[0.99] dark:border-orange-900/50 dark:bg-slate-900/80 dark:ring-orange-400/10 dark:hover:border-orange-700 sm:float-right sm:ml-5 sm:mr-0 sm:max-w-[14rem] sm:shrink-0"
-                        >
-                            <span className="relative block aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-slate-800/80">
-                                <img
-                                    src={resolvedSrc}
-                                    alt=""
-                                    className={`h-full w-full object-cover ${prefersReducedMotion ? '' : 'transition-transform duration-500 group-hover:scale-105'}`}
-                                    loading="lazy"
-                                />
-                                <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wide text-white/95">
-                                    {language === 'en' ? 'View' : 'দেখুন'}
-                                </span>
-                            </span>
-                        </button>
+                            src={resolvedSrc}
+                            alt=""
+                            language={language}
+                            inlineFloat
+                            onClick={openModal}
+                        />
                     );
                 }
 
                 return (
-                    <div key={index} className="clear-both my-10 group relative cursor-pointer" onClick={openModal}>
-                        <div className={`absolute inset-0 bg-orange-500/20 blur-3xl rounded-[3rem] scale-90 opacity-0 transition-all duration-700 group-hover:opacity-30 group-hover:scale-100 ${prefersReducedMotion ? 'hidden' : ''}`}></div>
-                        <div className={`relative overflow-hidden rounded-[2.5rem] border-4 border-white shadow-2xl dark:border-slate-800 ${prefersReducedMotion ? '' : 'transition-all duration-500 group-hover:scale-[1.02]'}`}>
-                            <img
-                                src={resolvedSrc}
-                                alt="Inline lesson helper"
-                                className={`w-full h-auto object-cover max-h-[500px] ${prefersReducedMotion ? '' : 'transition-transform duration-700 group-hover:scale-110'}`}
-                            />
-                            <div className={`absolute inset-0 flex flex-col items-center justify-end bg-gradient-to-t from-black/60 via-transparent to-transparent pb-8 ${prefersReducedMotion ? 'opacity-100' : 'opacity-0 transition-opacity duration-500 group-hover:opacity-100'}`}>
-                                <div className={`rounded-full bg-white/20 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-white backdrop-blur-md flex items-center gap-2 ${prefersReducedMotion ? '' : 'transform translate-y-4 transition-transform duration-500 group-hover:translate-y-0'}`}>
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                    {language === 'en' ? 'Enlarge' : 'বড় করে দেখুন'}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <TrainingLessonFigure
+                        key={index}
+                        src={resolvedSrc}
+                        alt="Inline lesson helper"
+                        language={language}
+                        onClick={openModal}
+                    />
                 );
             }
             // Handle plain text: detect bullets, numbered lists, and newlines
@@ -1754,7 +1905,7 @@ export default function Training({
             }
             return part;
         });
-    }, [language, prefersReducedMotion, setActiveImageModal]);
+    }, [language, setActiveImageModal]);
 
     useEffect(() => {
         if (user?.id) {
@@ -1829,19 +1980,7 @@ export default function Training({
             }
         }
 
-        // Local access to badge levels for enrichment
-        const badgeLevels = [
-            { level: 1, en: "Trainee", bn: "ট্রেইনি", color: "bg-slate-500", count: 0 },
-            { level: 2, en: "Junior", bn: "জুনিয়র", color: "bg-blue-600", count: 2 },
-            { level: 3, en: "Technician", bn: "টেকনিশিয়ান", color: "bg-cyan-600", count: 5 },
-            { level: 4, en: "Skilled", bn: "স্কিলড", color: "bg-emerald-600", count: 10 },
-            { level: 5, en: "Advanced", bn: "অ্যাডভান্সড", color: "bg-indigo-600", count: 20 },
-            { level: 6, en: "Senior", bn: "সিনিয়র", color: "bg-violet-600", count: 35 },
-            { level: 7, en: "Supervisor", bn: "সুপারভাইজার", color: "bg-purple-600", count: 50 },
-            { level: 8, en: "Specialist", bn: "স্পেশালিস্ট", color: "bg-rose-600", count: 70 },
-            { level: 9, en: "Expert", bn: "এক্সপার্ট", color: "bg-orange-600", count: 100 }
-        ];
-        const currentBadge = badgeLevels.find(b => b.level === chapter.number) || badgeLevels[0];
+        const currentBadge = getRoadmapBadgeByLevel(chapter.number);
 
         const openLessonTarget = (lesson) => {
             if (!lesson) return;
@@ -2591,10 +2730,11 @@ export default function Training({
                     {(() => {
                         const isMobile = window.innerWidth < 768;
                         const { items: roadmapItems, height: roadmapHeight, maxPath: maxPathIndex, nodeVerticalGap, journeyChapters } = roadmapData;
+                        const currentTrainingLevel = calculateLevelFromProgress(completedLessons, trainingChapters);
 
                         // Main Journey View
                         return (
-                            <div className="relative max-w-2xl mx-auto pb-32">
+                            <div className="relative mx-auto max-w-2xl px-4 pb-32 sm:px-2">
                                 {/* Header */}
                                 <div className="mb-12 px-2 pt-4 md:mb-16">
                                     <h1
@@ -2728,14 +2868,20 @@ export default function Training({
                                             if (item.type === 'milestone') {
                                                 const firstLesson = roadmapItems[index + 1];
                                                 const milestoneUnlocked = firstLesson ? firstLesson.isUnlocked : true;
+                                                const isCurrentRank = currentTrainingLevel === item.chapter.number;
                                                 return (
-                                                    <div key={`milestone-${item.chapter.number}`} className="absolute transition-all duration-700 z-10" style={{ left: `${xPos}%`, top: yPos, transform: 'translate(-50%, -50%)' }}>
-                                                        <div className={`flex flex-col items-center border-2 border-slate-900 px-5 py-2 shadow-[3px_3px_0_#0f172a] transition-all ${milestoneUnlocked ? `${item.badge.color} scale-105 animate-node-glow` : 'border-slate-400 bg-slate-200 grayscale opacity-80'}`}>
-                                                            <div className="text-center">
-                                                                <p className="mb-0 text-[8px] font-black uppercase tracking-[0.2em] opacity-70 nb-mono">{language === 'en' ? 'Rank' : 'পদমর্যাদা'}</p>
-                                                                <h3 className={`font-black whitespace-nowrap ${language === 'bn' ? 'font-bengali text-base' : 'text-xs'}`}>{language === 'en' ? item.badge.en : item.badge.bn}</h3>
-                                                            </div>
-                                                        </div>
+                                                    <div
+                                                        key={`milestone-${item.chapter.number}`}
+                                                        className="absolute z-10 transition-all duration-700"
+                                                        style={{ left: `${xPos}%`, top: yPos, transform: 'translate(-50%, -50%)' }}
+                                                    >
+                                                        <RankMilestone
+                                                            badge={item.badge}
+                                                            language={language}
+                                                            isUnlocked={milestoneUnlocked}
+                                                            isCurrent={isCurrentRank}
+                                                            prefersReducedMotion={prefersReducedMotion}
+                                                        />
                                                     </div>
                                                 );
                                             }
@@ -2759,8 +2905,8 @@ export default function Training({
                                                             });
                                                         }
                                                     }}
-                                                    className={`group absolute z-20 flex h-16 w-16 cursor-pointer flex-col items-center justify-center border-2 border-slate-900 transition-all duration-500 sm:h-20 sm:w-20 ${item.isCompleted ? 'bg-emerald-400 text-slate-900 shadow-[3px_3px_0_#0f172a] hover:-translate-x-0.5 hover:-translate-y-0.5' : item.isUnlocked ? `${item.badge.color} text-slate-900 shadow-[3px_3px_0_#0f172a] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5` : 'cursor-not-allowed border-slate-400 bg-slate-200 text-slate-500 opacity-80 shadow-inner grayscale'} ${isNext ? 'animate-float-y ring-2 ring-orange-500 ring-offset-2 ring-offset-[#fffdf7]' : ''}`}
-                                                    style={{ left: `${xPos}%`, top: yPos, transform: isNext ? undefined : 'translate(-50%, -50%)' }}
+                                                    className={`group absolute z-20 flex h-16 w-16 cursor-pointer flex-col items-center justify-center border-2 transition-all duration-500 sm:h-20 sm:w-20 ${item.isCompleted ? 'border-slate-900 bg-emerald-400 text-slate-900 shadow-[3px_3px_0_#0f172a] hover:-translate-x-0.5 hover:-translate-y-0.5' : item.isUnlocked ? `border-slate-900 ${item.badge.color} text-slate-900 shadow-[3px_3px_0_#0f172a] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5` : 'cursor-not-allowed border-slate-400 bg-slate-200 text-slate-500 opacity-80 shadow-inner grayscale'} ${isNext ? 'animate-float-y border-orange-600 shadow-[4px_4px_0_#ea580c]' : ''}`}
+                                                    style={{ left: `${xPos}%`, top: yPos, transform: 'translate(-50%, -50%)' }}
                                                 >
                                                     <span className={`text-base sm:text-lg font-black ${language === 'bn' ? 'font-bengali' : ''}`}>{toBengaliNumber(item.id, language)}</span>
                                                     <div className={`pointer-events-none absolute top-full z-50 mt-3 w-32 border-2 border-slate-900 bg-slate-900 px-3 py-2 text-center text-[10px] font-bold text-white opacity-0 shadow-[2px_2px_0_#0f172a] transition-opacity group-hover:opacity-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
@@ -2778,28 +2924,14 @@ export default function Training({
                                                         </div>
                                                     )}
                                                     
-                                                    {/* Floating Profile & Score Bubble for Active Lesson */}
                                                     {isNext && (
-                                                        <div 
-                                                            className={`pointer-events-none absolute top-1/2 z-50 flex w-max -translate-y-1/2 animate-in items-center gap-2.5 border-2 border-slate-900 bg-white px-3 py-2 shadow-[3px_3px_0_#0f172a] fade-in zoom-in-95 duration-500 ${xPos > 50 ? 'right-[120%] mr-2' : 'left-[120%] ml-2'}`}
-                                                        >
-                                                            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden border-2 border-slate-900 bg-slate-200 text-slate-500 shadow-inner">
-                                                                {profile?.avatar_url ? (
-                                                                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                                                                ) : (
-                                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                                                                )}
-                                                            </div>
-                                                            <div className="flex flex-col items-start pr-1">
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <span className="text-sm drop-shadow-sm leading-none">🏆</span>
-                                                                    <span className="text-sm font-black leading-none tracking-tight text-slate-900">
-                                                                        {(userRank?.score || profile?.points || 0).toLocaleString('en-US')}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-
-                                                        </div>
+                                                        <RoadmapNextMarker
+                                                            language={language}
+                                                            score={userRank?.score || profile?.points || 0}
+                                                            prefersReducedMotion={prefersReducedMotion}
+                                                            anchorRight={xPos > 50}
+                                                            avatarUrl={profile?.avatar_url}
+                                                        />
                                                     )}
                                                 </div>
                                             );

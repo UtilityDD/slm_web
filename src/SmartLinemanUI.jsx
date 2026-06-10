@@ -863,17 +863,6 @@ export default function SmartLinemanUI() {
     setShowLanguageModal(false);
   };
 
-  const handleThemeToggle = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    storageUtils.setItem('appTheme', newTheme);
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
-
   const handleLogout = () => {
     setShowLogoutModal(true);
   };
@@ -1300,7 +1289,6 @@ export default function SmartLinemanUI() {
                     <div className="flex-grow"></div>
                     <div className="flex items-center gap-1 sm:gap-2">
                       {user && <RadioDesktopLaunch language={language} currentView={currentView} />}
-                      <button onClick={handleThemeToggle} className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 ${currentView === 'home' ? 'bg-white/10 hover:bg-white/20' : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600'} rounded-lg transition-all touch-target`} title="Toggle Theme"><span className="text-lg sm:text-xl">{theme === 'light' ? '🌙' : '☀️'}</span></button>
                       {user ? (
                         <div className="flex items-center gap-2 pl-1 sm:pl-2"><button onClick={handleLogout} className="flex items-center justify-center p-1 bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-all touch-target border border-slate-200 dark:border-slate-600 shadow-sm" title="Logout"><div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white shrink-0 overflow-hidden shadow-sm">{userProfile?.avatar_url ? <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" /> : <UserIcon className="w-5 h-5 text-white" />}</div></button></div>
                       ) : (
