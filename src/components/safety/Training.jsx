@@ -574,11 +574,49 @@ function RankMilestone({ badge, language, isUnlocked, isCurrent, prefersReducedM
     );
 }
 
+const LINEMAN_EMOJI_FALLBACK = '👷';
+
 /** Open trail companion beside the next lesson — profile photo or lineman emoji + score. */
-function RoadmapNextMarker({ language, score, prefersReducedMotion, anchorRight, avatarUrl }) {
+function RoadmapNextMarker({ language, score, prefersReducedMotion, anchorRight, avatarUrl, userId }) {
     const pointsLabel = language === 'en' ? 'points' : 'পয়েন্ট';
     const formattedScore = (score || 0).toLocaleString('en-US');
     const floatClass = !prefersReducedMotion ? 'sm:animate-roadmap-marker-float' : '';
+    const [resolvedAvatarUrl, setResolvedAvatarUrl] = useState(() => avatarUrl?.trim() || '');
+    const [avatarFailed, setAvatarFailed] = useState(false);
+
+    useEffect(() => {
+        setAvatarFailed(false);
+        const trimmed = avatarUrl?.trim() || '';
+        if (trimmed) {
+            setResolvedAvatarUrl(trimmed);
+            return undefined;
+        }
+
+        if (!userId) {
+            setResolvedAvatarUrl('');
+            return undefined;
+        }
+
+        let cancelled = false;
+        supabase
+            .from('profiles')
+            .select('avatar_url')
+            .eq('id', userId)
+            .maybeSingle()
+            .then(({ data }) => {
+                if (cancelled) return;
+                setResolvedAvatarUrl(data?.avatar_url?.trim() || '');
+            })
+            .catch(() => {
+                if (!cancelled) setResolvedAvatarUrl('');
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [avatarUrl, userId]);
+
+    const showProfilePhoto = Boolean(resolvedAvatarUrl) && !avatarFailed;
 
     return (
         <div
@@ -615,14 +653,20 @@ function RoadmapNextMarker({ language, score, prefersReducedMotion, anchorRight,
                     <div className="relative h-10 w-10 shrink-0 sm:h-14 sm:w-14">
                         <div className="absolute inset-0 rounded-full bg-orange-400/15 blur-md" aria-hidden />
                         <div className="relative h-full w-full overflow-hidden rounded-full ring-2 ring-orange-400/70 ring-offset-2 ring-offset-[#fffdf7]">
-                            {avatarUrl ? (
-                                <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                            {showProfilePhoto ? (
+                                <img
+                                    src={resolvedAvatarUrl}
+                                    alt=""
+                                    className="h-full w-full object-cover"
+                                    loading="lazy"
+                                    onError={() => setAvatarFailed(true)}
+                                />
                             ) : (
                                 <span
                                     className="flex h-full w-full items-center justify-center bg-orange-50 text-xl leading-none sm:text-2xl"
                                     aria-hidden
                                 >
-                                    👷
+                                    {LINEMAN_EMOJI_FALLBACK}
                                 </span>
                             )}
                         </div>
@@ -2931,6 +2975,7 @@ export default function Training({
                                                             prefersReducedMotion={prefersReducedMotion}
                                                             anchorRight={xPos > 50}
                                                             avatarUrl={profile?.avatar_url}
+                                                            userId={user?.id}
                                                         />
                                                     )}
                                                 </div>
