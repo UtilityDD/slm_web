@@ -1831,10 +1831,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                 </div>
 
-                                <div className="mx-auto flex max-w-lg items-center gap-2 px-1">
+                                <div className="mx-auto max-w-lg space-y-2 px-1 sm:flex sm:items-center sm:gap-2 sm:space-y-0">
                                     {hallOfFamePrizeView !== 'by_user' && (
-                                        <div className="min-w-0 flex-1 overflow-x-auto">
-                                            <div className="flex min-w-max gap-1.5">
+                                        <div className="w-full overflow-x-auto sm:min-w-0 sm:flex-1">
+                                            <div className="flex min-w-max gap-1.5 pb-0.5">
                                                 {MONTHLY_SUB_TAB_ORDER.map((tabId) => (
                                                     <button
                                                         key={tabId}
@@ -1850,7 +1850,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     )}
 
                                     <div
-                                        className={`relative grid h-10 shrink-0 grid-cols-3 border-2 border-slate-900 bg-white p-0.5 shadow-[2px_2px_0_#0f172a] ${hallOfFamePrizeView === 'by_user' ? 'mx-auto w-[7.75rem]' : 'w-[7.75rem]'}`}
+                                        className={`relative grid h-10 shrink-0 grid-cols-3 border-2 border-slate-900 bg-white p-0.5 shadow-[2px_2px_0_#0f172a] ${
+                                            hallOfFamePrizeView === 'by_user'
+                                                ? 'mx-auto w-[7.75rem]'
+                                                : 'ml-auto w-[7.75rem] sm:ml-0'
+                                        }`}
                                         role="group"
                                         aria-label={language === 'en' ? 'Hall of Fame view' : 'হল অফ ফেম দেখার ধরন'}
                                     >
