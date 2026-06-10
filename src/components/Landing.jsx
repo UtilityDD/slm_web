@@ -5,6 +5,7 @@ import { leaderboardService } from '../utils/leaderboardService';
 import { BOARD_IDS, getMonthlyPrizeDisplayList } from '../utils/monthlyEncouragementBoards';
 import { APP_NAME, WEBSITE_URL } from '../config';
 import { storageUtils } from '../utils/storageUtils';
+import LandingPrizeCarousel from './LandingPrizeCarousel';
 
 const copy = {
   en: {
@@ -512,21 +513,16 @@ function LeaderPodiumGrid({ title, iconName, iconTone, players, ptsLabel, bnFont
               )}
 
               <div className="min-w-0 flex-1 text-left sm:text-center pr-10 sm:pr-0 sm:w-full">
-                <p className="font-black text-lg sm:text-xl text-slate-900 truncate leading-snug">{player.name}</p>
-                {(showScore || player.district) && (
-                  <div className="flex flex-wrap items-center sm:justify-center gap-2 mt-1.5 sm:mt-2">
-                    {showScore && (
-                      <p className="nb-score-pill text-sm sm:text-base px-2.5 sm:px-3 py-1 tabular-nums">
-                        {player.points} {ptsLabel}
-                      </p>
-                    )}
-                    {player.district && (
-                      <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-700 bg-white px-2 py-0.5 rounded-md border-2 border-slate-900 nb-mono">
-                        <LandingIcon name="mapPin" className="w-3.5 h-3.5 text-orange-500" />
-                        {player.district}
-                      </span>
-                    )}
-                  </div>
+                <p className={`font-black text-lg sm:text-xl text-slate-900 truncate leading-snug ${bnFont ? 'font-bengali' : ''}`}>{player.name}</p>
+                {showScore && (
+                  <p className="nb-score-pill mt-1.5 sm:mt-2 inline-block text-sm sm:text-base px-2.5 sm:px-3 py-1 tabular-nums">
+                    {player.points} {ptsLabel}
+                  </p>
+                )}
+                {player.district && (
+                  <p className={`mt-1 text-xs font-medium text-slate-500 truncate ${bnFont ? 'font-bengali' : ''}`}>
+                    {player.district}
+                  </p>
                 )}
               </div>
             </div>
@@ -565,6 +561,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
     allTimeTop: [],
     prizesCount: 0,
     prizeMonths: 0,
+    hallOfFameData: [],
   });
   const [lifeSkillModules, setLifeSkillModules] = useState([]);
   const [activeLifeSkill, setActiveLifeSkill] = useState(null);
@@ -666,6 +663,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
             allTimeTop: allTimeTopThree,
             prizesCount,
             prizeMonths,
+            hallOfFameData: Array.isArray(hallOfFame) ? hallOfFame : [],
           });
         }
       } catch (err) {
@@ -905,6 +903,12 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
             sub={prizeSub}
           />
         </section>
+
+        <LandingPrizeCarousel
+          language={language}
+          hallOfFameData={stats.hallOfFameData}
+          loading={loading}
+        />
 
         {/* Top 3 new players, then all-time top 3 */}
         <LeaderPodiumGrid

@@ -1,0 +1,243 @@
+{
+
+  "prizes": [
+
+    {
+
+      "year": 2026,
+
+      "month": 3,
+
+      "boardId": "main_champion",
+
+      "prizeRank": 1,
+
+      "title_bn": "নন-কন্টাক্ট ভোল্টেজ টেস্টার (৭০ভি–১০০০ভি)",
+
+      "title_en": "Non-Contact Voltage Tester (70V–1000V)",
+
+      "sponsor_bn": "অরিত্র ব্যানার্জী, রায়গঞ্জ",
+
+      "sponsor_en": "Aritra Banerjee, Raiganj",
+
+      "imageUrl": "/prizes/2026-03-champion-1",
+
+      "imageAlt_bn": "লাইনে স্পর্শ না করেই ভোল্টেজ যাচাইয়ের টুল",
+
+      "imageAlt_en": "Detect voltage safely without touching the line"
+
+    },
+
+    {
+
+      "year": 2026,
+
+      "month": 3,
+
+      "boardId": "main_champion",
+
+      "prizeRank": 2,
+
+      "title_bn": "হেলমেট মাউন্টেড লাইট",
+
+      "title_en": "Helmet Mounted Light",
+
+      "sponsor_bn": "অরিত্র ব্যানার্জী, রায়গঞ্জ",
+
+      "sponsor_en": "Aritra Banerjee, Raiganj",
+
+      "imageUrl": "/prizes/2026-03-champion-2.jpg",
+
+      "imageAlt_bn": "রাতের কাজে হ্যান্ডস-ফ্রি লাইট",
+
+      "imageAlt_en": "Hands-free light for night and low-light work"
+
+    },
+
+    {
+
+      "year": 2026,
+
+      "month": 3,
+
+      "boardId": "main_champion",
+
+      "prizeRank": 3,
+
+      "title_bn": "কাট-রেজিস্ট্যান্ট হ্যান্ড গ্লাভস (২ জোড়া)",
+
+      "title_en": "Cut-Resistant Hand Gloves (2 pairs)",
+
+      "sponsor_bn": "অরিত্র ব্যানার্জী, রায়গঞ্জ",
+
+      "sponsor_en": "Aritra Banerjee, Raiganj",
+
+      "imageUrl": "/prizes/2026-03-champion-3.png",
+
+      "imageAlt_bn": "কন্ডাক্টর, কেবল ও ধারালো মেটাল হ্যান্ডেল থেকে হাত সুরক্ষা",
+
+      "imageAlt_en": "Hand protection when handling conductors, cable and sharp metal"
+
+    },
+
+    {
+
+      "year": 2026,
+
+      "month": 4,
+
+      "boardId": "main_champion",
+
+      "prizeRank": 1,
+
+      "title_bn": "MECO 27-Auto ডিজিটাল ক্ল্যাম্প মিটার (টং টেস্টার)",
+
+      "title_en": "MECO 27-Auto Digital Clamp Meter (Tong Tester)",
+
+      "sponsor_bn": "প্রভাত কুমার দাস, Assistant Cash Officer, Berhampore Zonal Office, WBSEDCL",
+
+      "sponsor_en": "Prabhat Kumar Das, Assistant Cash Officer, Berhampore Zonal Office, WBSEDCL",
+
+      "imageUrl": "/prizes/2026-04-champion-1.jpg",
+
+      "imageAlt_bn": "লাইভ লাইনে কন্ডাক্টর না কেটেই কারেন্ট মাপার টুল",
+
+      "imageAlt_en": "Measure current on live lines without cutting the conductor"
+
+    },
+
+    {
+
+      "year": 2026,
+
+      "month": 4,
+
+      "boardId": "main_champion",
+
+      "prizeRank": 2,
+
+      "title_bn": "সেলফ অ্যাডজাস্টিং ওয়্যার স্ট্রিপার (৩-ইন-১ টুল)",
+
+      "title_en": "Self Adjusting Wire Stripper (3-in-1 Tool)",
+
+      "sponsor_bn": "প্রভাত কুমার দাস, Assistant Cash Officer, Berhampore Zonal Office, WBSEDCL",
+
+      "sponsor_en": "Prabhat Kumar Das, Assistant Cash Officer, Berhampore Zonal Office, WBSEDCL",
+
+      "imageUrl": "/prizes/2026-04-champion-2.png",
+
+      "imageAlt_bn": "১০–২৪ AWG তার কাটিং, স্ট্রিপিং ও ক্রিম্পিং একসাথে",
+
+      "imageAlt_en": "Cut, strip and crimp 10–24 AWG wire in one tool"
+
+    },
+
+    {
+
+      "year": 2026,
+
+      "month": 4,
+
+      "boardId": "main_champion",
+
+      "prizeRank": 3,
+
+      "title_bn": "Eveready DL89 রিচার্জেবল হেডল্যাম্প",
+
+      "title_en": "Eveready DL89 Rechargeable Headlamp",
+
+      "sponsor_bn": "প্রভাত কুমার দাস, Assistant Cash Officer, Berhampore Zonal Office, WBSEDCL",
+
+      "sponsor_en": "Prabhat Kumar Das, Assistant Cash Officer, Berhampore Zonal Office, WBSEDCL",
+
+      "imageUrl": "/prizes/2026-04-champion-3.jpg",
+
+      "imageAlt_bn": "৯০° টিল্ট ও হ্যান্ডস-ফ্রি লাইট — হেলমেট ছাড়াও ব্যবহারযোগ্য",
+
+      "imageAlt_en": "90° tilt headlamp — usable with or without a helmet"
+
+    },
+
+    {
+
+      "year": 2026,
+
+      "month": 5,
+
+      "boardId": "main_champion",
+
+      "prizeRank": 1,
+
+      "title_bn": "FOSTER FHT-905 হ্যান্ড টুল কিট (৮২ টুল — ইলেকট্রিশিয়ান ও প্লাম্বার)",
+
+      "title_en": "FOSTER FHT-905 Hand Tool Kit (82 Tools — Electrician & Plumber)",
+
+      "sponsor_bn": "পার্বতী চরণ ব্যানার্জী, Assistant Manager (O.O), Bidhannagar-I Division, WBSEDCL",
+
+      "sponsor_en": "Parbati Charan Banerjee, Assistant Manager (O.O), Bidhannagar-I Division, WBSEDCL",
+
+      "imageUrl": "/prizes/2026-05-champion-1",
+
+      "imageAlt_bn": "১৫০ পিস কম্বো কিট — মাঠের কাজে দরকারি স্ক্রুড্রাইভার, র‍্যাচেট ও হ্যান্ড টুল একসাথে",
+
+      "imageAlt_en": "150-piece combo kit with ratchet screwdrivers and essential field tools"
+
+    },
+
+    {
+
+      "year": 2026,
+
+      "month": 5,
+
+      "boardId": "main_champion",
+
+      "prizeRank": 2,
+
+      "title_bn": "IBELL HT17-30 হ্যান্ড টুল কিট (১৪ পিস)",
+
+      "title_en": "IBELL HT17-30 Hand Tool Kit (14 Pieces)",
+
+      "sponsor_bn": "পার্বতী চরণ ব্যানার্জী, Assistant Manager (O.O), Bidhannagar-I Division, WBSEDCL",
+
+      "sponsor_en": "Parbati Charan Banerjee, Assistant Manager (O.O), Bidhannagar-I Division, WBSEDCL",
+
+      "imageUrl": "/prizes/2026-05-champion-2",
+
+      "imageAlt_bn": "১৪ পিসের কমপ্যাক্ট টুল কিট — দৈনন্দিন মেরামত ও লাইন কাজে সহজে নেওয়া যায়",
+
+      "imageAlt_en": "Compact 14-piece kit for everyday repairs and line work"
+
+    },
+
+    {
+
+      "year": 2026,
+
+      "month": 5,
+
+      "boardId": "main_champion",
+
+      "prizeRank": 3,
+
+      "title_bn": "Purvish হাই কোয়ালিটি ২০ পিস কম্বো হ্যান্ড টুল কিট",
+
+      "title_en": "Purvish High Quality 20 Piece Combo Hand Tool Kit",
+
+      "sponsor_bn": "পার্বতী চরণ ব্যানার্জী, Assistant Manager (O.O), Bidhannagar-I Division, WBSEDCL",
+
+      "sponsor_en": "Parbati Charan Banerjee, Assistant Manager (O.O), Bidhannagar-I Division, WBSEDCL",
+
+      "imageUrl": "/prizes/2026-05-champion-3",
+
+      "imageAlt_bn": "২০ পিসের কম্বিনেশন টুল কিট — বাড়ি ও ক্ষেতের ছোটখাটো কাজের জন্য উপযোগী",
+
+      "imageAlt_en": "20-piece combination tool kit for home and field tasks"
+
+    }
+
+  ]
+
+}
+
+

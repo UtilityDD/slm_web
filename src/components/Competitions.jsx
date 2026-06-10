@@ -37,6 +37,14 @@ import {
     MONTHLY_SUB_TAB,
     MONTHLY_SUB_TAB_ORDER,
 } from '../utils/monthlyEncouragementBoards';
+import {
+    HOF_PRIZE_VIEW_STORAGE_KEY,
+    HOF_VIEW_MODES,
+    getHallOfFamePrizeViewCopy,
+    normalizeHallOfFameViewMode,
+} from '../utils/hallOfFamePrizes';
+import HallOfFameWinnerCard from './HallOfFameWinnerCard';
+import HallOfFameUserPrizesView from './HallOfFameUserPrizesView';
 
 const LiveIndicator = () => (
     <div className="live-pulse" title="Live Now">
@@ -312,6 +320,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [maximizedAvatar, setMaximizedAvatar] = useState(null);
     const [showHallCelebration, setShowHallCelebration] = useState(false);
     const hallCelebrationShownRef = React.useRef(false);
+    const [hallOfFamePrizeView, setHallOfFamePrizeView] = useState(() => {
+        const saved = storageUtils.getItem(HOF_PRIZE_VIEW_STORAGE_KEY);
+        return normalizeHallOfFameViewMode(saved);
+    });
+    const [hallOfFameUserPrizeFilter, setHallOfFameUserPrizeFilter] = useState(null);
+    const hallOfFamePrizeViewCopy = getHallOfFamePrizeViewCopy(language);
 
     React.useEffect(() => {
         hourlyQuizRef.current = hourlyQuiz;
@@ -1419,6 +1433,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         }
     };
 
+    const openUserPrizeHistory = (userId) => {
+        setHallOfFameUserPrizeFilter(userId);
+        setHallOfFamePrizeView('by_user');
+        storageUtils.setItem(HOF_PRIZE_VIEW_STORAGE_KEY, 'by_user');
+    };
+
     const openUserProgress = (userId) => {
         if (typeof onOpenUserProgress === 'function') {
             onOpenUserProgress(userId);
@@ -1811,26 +1831,110 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                 </div>
 
-                                <div className="max-w-lg mx-auto overflow-x-auto px-1">
-                                    <div className="flex min-w-max gap-1.5">
-                                        {MONTHLY_SUB_TAB_ORDER.map((tabId) => (
+                                <div className="mx-auto flex max-w-lg items-center gap-2 px-1">
+                                    {hallOfFamePrizeView !== 'by_user' && (
+                                        <div className="min-w-0 flex-1 overflow-x-auto">
+                                            <div className="flex min-w-max gap-1.5">
+                                                {MONTHLY_SUB_TAB_ORDER.map((tabId) => (
+                                                    <button
+                                                        key={tabId}
+                                                        type="button"
+                                                        onClick={() => setHallOfFameBoardTab(tabId)}
+                                                        className={`whitespace-nowrap px-2.5 py-1.5 text-[10px] sm:text-xs font-black border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 ${hallOfFameBoardTab === tabId ? 'bg-orange-500 text-white' : 'bg-white text-slate-700 hover:bg-orange-50'}`}
+                                                    >
+                                                        {encouragementCopy.monthlyTabs[tabId]}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div
+                                        className={`relative grid h-10 shrink-0 grid-cols-3 border-2 border-slate-900 bg-white p-0.5 shadow-[2px_2px_0_#0f172a] ${hallOfFamePrizeView === 'by_user' ? 'mx-auto w-[7.75rem]' : 'w-[7.75rem]'}`}
+                                        role="group"
+                                        aria-label={language === 'en' ? 'Hall of Fame view' : 'হল অফ ফেম দেখার ধরন'}
+                                    >
+                                        <span
+                                            className={`pointer-events-none absolute bottom-0.5 top-0.5 w-[calc(33.333%-2px)] border-2 border-slate-900 bg-slate-900 transition-transform duration-200 ease-out ${
+                                                hallOfFamePrizeView === 'detailed'
+                                                    ? 'translate-x-[calc(100%+4px)]'
+                                                    : hallOfFamePrizeView === 'by_user'
+                                                        ? 'translate-x-[calc(200%+8px)]'
+                                                        : 'translate-x-0.5'
+                                            }`}
+                                            aria-hidden
+                                        />
+                                        {HOF_VIEW_MODES.map((mode) => (
                                             <button
-                                                key={tabId}
+                                                key={mode}
                                                 type="button"
-                                                onClick={() => setHallOfFameBoardTab(tabId)}
-                                                className={`whitespace-nowrap px-2.5 py-1.5 text-[10px] sm:text-xs font-black border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 ${hallOfFameBoardTab === tabId ? 'bg-orange-500 text-white' : 'bg-white text-slate-700 hover:bg-orange-50'}`}
+                                                title={
+                                                    mode === 'compact'
+                                                        ? hallOfFamePrizeViewCopy.compact
+                                                        : mode === 'detailed'
+                                                            ? hallOfFamePrizeViewCopy.detailed
+                                                            : hallOfFamePrizeViewCopy.byUser
+                                                }
+                                                aria-label={
+                                                    mode === 'compact'
+                                                        ? hallOfFamePrizeViewCopy.compact
+                                                        : mode === 'detailed'
+                                                            ? hallOfFamePrizeViewCopy.detailed
+                                                            : hallOfFamePrizeViewCopy.byUser
+                                                }
+                                                aria-pressed={hallOfFamePrizeView === mode}
+                                                onClick={() => {
+                                                    setHallOfFamePrizeView(mode);
+                                                    storageUtils.setItem(HOF_PRIZE_VIEW_STORAGE_KEY, mode);
+                                                    if (mode !== 'by_user') setHallOfFameUserPrizeFilter(null);
+                                                }}
+                                                className={`relative z-10 flex items-center justify-center transition-colors ${
+                                                    hallOfFamePrizeView === mode ? 'text-white' : 'text-slate-500 hover:text-orange-600'
+                                                }`}
                                             >
-                                                {encouragementCopy.monthlyTabs[tabId]}
+                                                {mode === 'compact' && (
+                                                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                                                        <path d="M4 7h16M4 12h16M4 17h10" />
+                                                    </svg>
+                                                )}
+                                                {mode === 'detailed' && (
+                                                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                                                        <path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6" />
+                                                        <path d="M12 22V12" />
+                                                        <path d="M12 12H7.5a2.5 2.5 0 010-5C9.5 7 12 12 12 12z" />
+                                                        <path d="M12 12h4.5a2.5 2.5 0 000-5C14.5 7 12 12 12 12z" />
+                                                        <path d="M8 12H6a2 2 0 00-2 2v1h16v-1a2 2 0 00-2-2h-2" />
+                                                    </svg>
+                                                )}
+                                                {mode === 'by_user' && (
+                                                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                                                        <path d="M20 21a8 8 0 10-16 0" />
+                                                        <circle cx="12" cy="7" r="4" />
+                                                    </svg>
+                                                )}
                                             </button>
                                         ))}
                                     </div>
                                 </div>
 
-                                <p className={`text-center text-[10px] sm:text-[11px] text-slate-600 font-semibold px-4 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                    {encouragementCopy.hallOfFamePrizeNote}
-                                </p>
+                                {hallOfFamePrizeView === 'detailed' && (
+                                    <p className={`text-center text-[10px] text-slate-500 font-medium px-3 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {encouragementCopy.hallOfFamePrizeNote}
+                                    </p>
+                                )}
 
-                            <div className="grid grid-cols-1 gap-6 sm:gap-8">
+                            {hallOfFamePrizeView === 'by_user' ? (
+                                <HallOfFameUserPrizesView
+                                    hallOfFameData={hallOfFameData}
+                                    language={language}
+                                    monthlyTabs={encouragementCopy.monthlyTabs}
+                                    filterUserId={hallOfFameUserPrizeFilter}
+                                    onClearFilter={() => setHallOfFameUserPrizeFilter(null)}
+                                    onOpenUserProgress={openUserProgress}
+                                    onMaximizeImage={setMaximizedAvatar}
+                                />
+                            ) : (
+                            <div className="grid grid-cols-1 gap-4 sm:gap-6">
                                 {hallOfFameData.map((entry, idx) => {
                                     const monthWinners = getHallOfFameWinners(entry, hallOfFameBoardTab);
                                     return (
@@ -1839,118 +1943,44 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         className="animate-slide-up"
                                         style={{ animationDelay: `${idx * 100}ms` }}
                                     >
-                                        <div className="nb-card p-4 sm:p-6 md:p-8 bg-white transition-all duration-300">
+                                        <div className="nb-card p-3 sm:p-6 md:p-8 bg-white transition-all duration-300">
                                             
                                             {/* Header Section */}
-                                            <div className="mb-4 sm:mb-6 border-b-2 border-slate-900 pb-3 sm:pb-4">
-                                                <h3 className={`text-lg sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            <div className="mb-3 sm:mb-5 border-b-2 border-slate-900 pb-2 sm:pb-4">
+                                                <h3 className={`text-base sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                     {new Date(entry.year, entry.month - 1).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', { month: 'long', year: 'numeric' })}
                                                 </h3>
                                             </div>
 
-                                            {/* Winners Horizontal Grid */}
-                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                                            {/* Winners / prize cards */}
+                                            <div className={`grid gap-3 ${hallOfFamePrizeView === 'detailed' ? 'grid-cols-1 sm:grid-cols-3 sm:gap-4' : 'grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3'}`}>
                                                 {monthWinners.length === 0 ? (
                                                     <p className="col-span-full nb-card border-dashed bg-amber-50 px-4 py-8 text-center text-xs text-slate-600 font-semibold">
                                                         {language === 'en' ? 'No winners for this category that month.' : 'সেই মাসে এই তালিকায় কেউ উঠেননি।'}
                                                     </p>
-                                                ) : monthWinners.map((winner, winIdx) => {
-                                                    const superseded = isPrizeSuperseded(winner);
-                                                    const prizeRecipient = isPrizeRecipient(winner);
-                                                    const medalRank = superseded
-                                                        ? winner.standing_rank
-                                                        : (winner.prize_rank || winner.standing_rank || winIdx + 1);
-                                                    const isGold = !superseded && medalRank === 1;
-                                                    
-                                                    return (
-                                                        <div 
-                                                            key={`${winner.user_id}-${winner.prize_status || 'row'}-${winIdx}`} 
-                                                            onClick={() => openUserProgress(winner.user_id)}
-                                                            className={`relative p-3 sm:p-4 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] transition-colors cursor-pointer flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-4 group active:translate-x-0.5 active:translate-y-0.5 ${
-                                                                superseded
-                                                                    ? 'bg-slate-100 opacity-60 grayscale hover:opacity-75'
-                                                                    : prizeRecipient
-                                                                        ? 'bg-orange-50 hover:bg-orange-100'
-                                                                        : 'bg-white hover:bg-orange-50/40'
-                                                            }`}
-                                                        >
-                                                            <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl shrink-0 shadow-sm bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                                                                <span className={`text-lg ${superseded ? 'opacity-50' : ''}`}>
-                                                                    {getRankMedal(medalRank)}
-                                                                </span>
-                                                            </div>
-
-                                                            <div className="flex flex-1 sm:w-full items-center sm:items-start gap-3 min-w-0">
-                                                                <div 
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        if (winner.avatar_url) setMaximizedAvatar(winner.avatar_url);
-                                                                    }}
-                                                                    className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm cursor-zoom-in active:scale-95 transition-transform"
-                                                                >
-                                                                    {winner.avatar_url ? <img src={winner.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-black text-slate-400">{(winner.full_name || '?')[0]}</div>}
-                                                                </div>
-                                                                
-                                                                <div className="min-w-0 flex-1">
-                                                                    <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                                                                        <p className={`text-xs sm:text-sm font-black truncate transition-colors ${
-                                                                            superseded
-                                                                                ? 'text-slate-500 dark:text-slate-400 line-through decoration-slate-400/70'
-                                                                                : 'text-slate-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400'
-                                                                        }`}>{winner.full_name || 'Anonymous'}</p>
-                                                                        {superseded && (
-                                                                            <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold bg-slate-200/80 text-slate-500 dark:bg-slate-700 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                                {encouragementCopy.prizeSuperseded}
-                                                                            </span>
-                                                                        )}
-                                                                        {winner.prize_status === PRIZE_STATUS.REPLACEMENT && (
-                                                                            <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                                {encouragementCopy.prizeReplacement}
-                                                                            </span>
-                                                                        )}
-                                                                        {(() => {
-                                                                            const badge = getBadgeByLevel(winner.training_level || 0, winner.all_time_reading_points || 0);
-                                                                            return badge && (
-                                                                                <span className={`text-[8px] px-1 py-0.5 rounded font-bold uppercase ${badge.color}`}>
-                                                                                    {language === 'en' ? badge.en : badge.bn}
-                                                                                </span>
-                                                                            );
-                                                                        })()}
-                                                                    </div>
-                                                                    <p className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[10px] font-semibold leading-tight text-slate-500">
-                                                                        <span className="shrink-0 tabular-nums nb-mono text-slate-600">
-                                                                            {winner.slm_id || (language === 'en' ? 'SLM-MEMBER' : 'এসএলএম-সদস্য')}
-                                                                        </span>
-                                                                        <span className="shrink-0 text-slate-300" aria-hidden>·</span>
-                                                                        <span className={`truncate ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                            {winner.district || t.noDistrict}
-                                                                        </span>
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="text-right sm:text-left shrink-0">
-                                                                <p className={`text-base sm:text-xl font-black tabular-nums ${
-                                                                    superseded
-                                                                        ? 'text-slate-400 dark:text-slate-500'
-                                                                        : isGold
-                                                                            ? 'text-amber-600 dark:text-amber-500'
-                                                                            : medalRank === 2
-                                                                                ? 'text-slate-600 dark:text-slate-400'
-                                                                                : 'text-orange-600 dark:text-orange-500'
-                                                                }`}>
-                                                                    {formatMonthlyPlayerScore(winner, hallOfFameBoardTab)}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
+                                                ) : monthWinners.map((winner, winIdx) => (
+                                                    <HallOfFameWinnerCard
+                                                        key={`${winner.user_id}-${winner.prize_status || 'row'}-${winIdx}`}
+                                                        winner={winner}
+                                                        winIdx={winIdx}
+                                                        entry={entry}
+                                                        boardTab={hallOfFameBoardTab}
+                                                        language={language}
+                                                        noDistrictLabel={t.noDistrict}
+                                                        encouragementCopy={encouragementCopy}
+                                                        viewMode={hallOfFamePrizeView}
+                                                        onOpenUserProgress={openUserProgress}
+                                                        onMaximizeImage={setMaximizedAvatar}
+                                                        onViewUserPrizes={openUserPrizeHistory}
+                                                    />
+                                                ))}
                                             </div>
                                         </div>
                                     </div>
                                     );
                                 })}
                             </div>
+                            )}
                             </div>
                         )}
 

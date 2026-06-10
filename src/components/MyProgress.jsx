@@ -6,6 +6,7 @@ import { supabase } from '../supabaseClient';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 import { requestManager } from '../utils/requestManager';
 import { WEBSITE_URL } from '../config';
+import UserProfilePrizeList from './UserProfilePrizeList';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -72,7 +73,7 @@ const MetricCard = ({ label, value, hint, accent = 'slate' }) => {
     );
 };
 
-export default function MyProgress({ language = 'bn', user, targetUserId, setCurrentView }) {
+export default function MyProgress({ language = 'bn', user, targetUserId, setCurrentView, returnView = 'leaderboard' }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [profile, setProfile] = useState(null);
@@ -133,6 +134,27 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
 
     const resolvedUserId = targetUserId || user?.id;
     const isCurrentUser = user?.id === resolvedUserId;
+
+    const backLabel = language === 'en' ? 'Back to leaderboard' : 'লিডারবোর্ডে ফিরুন';
+
+    const handleBack = () => {
+        if (typeof setCurrentView === 'function') {
+            setCurrentView(returnView);
+        }
+    };
+
+    const renderBackButton = () => (
+        !isCurrentUser ? (
+            <button
+                type="button"
+                onClick={handleBack}
+                className={`inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 ${language === 'bn' ? 'font-bengali' : ''}`}
+            >
+                <span aria-hidden>←</span>
+                {backLabel}
+            </button>
+        ) : null
+    );
 
     useEffect(() => {
         let active = true;
@@ -263,7 +285,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
     const labels = {
         title: language === 'en' ? 'My Progress' : 'আমার শেখার অগ্রগতি',
         subtitle: language === 'en' ? 'Learning summary and history' : 'শেখার সারাংশ ও ইতিহাস',
-        back: language === 'en' ? 'Back to leaderboard' : 'লিডারবোর্ডে ফিরুন',
+        back: backLabel,
         joined: language === 'en' ? 'Date of joining' : 'কবে যোগ দিয়েছেন',
         contact: language === 'en' ? 'Contact number' : 'ফোন নম্বর',
         district: language === 'en' ? 'District' : 'জেলা',
@@ -278,12 +300,15 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
     if (loading) {
         return (
             <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-4 sm:px-6 py-6 sm:py-8">
-                <div className="max-w-6xl mx-auto animate-pulse space-y-4 sm:space-y-6">
+                <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
+                    {renderBackButton()}
+                    <div className="animate-pulse space-y-4 sm:space-y-6">
                     <div className="h-44 rounded-[2rem] bg-slate-200 dark:bg-slate-800" />
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {Array.from({ length: 4 }).map((_, idx) => <div key={idx} className="h-28 rounded-2xl bg-slate-200 dark:bg-slate-800" />)}
                     </div>
                     <div className="h-80 rounded-[2rem] bg-slate-200 dark:bg-slate-800" />
+                    </div>
                 </div>
             </main>
         );
@@ -292,16 +317,21 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
     if (error || !profile) {
         return (
             <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-4 sm:px-6 py-8">
-                <div className="max-w-3xl mx-auto rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl p-6 sm:p-8 text-center">
+                <div className="max-w-3xl mx-auto space-y-4">
+                    {renderBackButton()}
+                <div className="rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl p-6 sm:p-8 text-center">
                     <div className="text-5xl mb-4">📊</div>
                     <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-2">{labels.title}</h1>
                     <p className="text-slate-500 dark:text-slate-400">{labels.noData}</p>
                     <button
-                        onClick={() => setCurrentView('home')}
+                        onClick={isCurrentUser ? () => setCurrentView('home') : handleBack}
                         className="mt-6 px-5 py-3 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors"
                     >
-                        {language === 'en' ? 'Back to Home' : 'হোমে ফিরুন'}
+                        {isCurrentUser
+                            ? (language === 'en' ? 'Back to Home' : 'হোমে ফিরুন')
+                            : backLabel}
                     </button>
+                </div>
                 </div>
             </main>
         );
@@ -319,7 +349,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
 
             <div className="relative z-10 max-w-6xl mx-auto space-y-5 sm:space-y-6">
                 <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1"></div>
+                    {renderBackButton() || <div className="flex-1" />}
 
                     {isCurrentUser && (
                         <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold uppercase tracking-widest">
@@ -521,6 +551,10 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                         <MetricCard label={language === 'en' ? 'Chapters Read' : 'পড়া অধ্যায়'} value={formatNumber(stats.chaptersRead)} hint={language === 'en' ? 'Distinct chapters reached' : 'যেসব অধ্যায় পর্যন্ত এগিয়েছেন'} accent="orange" />
                     </div>
                 </section>
+                )}
+
+                {profile?.id && (
+                    <UserProfilePrizeList userId={profile.id} language={language} />
                 )}
 
                 <section className="grid lg:grid-cols-[1.15fr_0.85fr] gap-5 sm:gap-6">

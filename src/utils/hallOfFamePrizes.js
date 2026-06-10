@@ -1,0 +1,258 @@
+/**
+ * Hall of Fame prize catalog (bundled JSON). Edit src/data/hallOfFamePrizes.json when month-end prizes are set.
+ * Keys: year, month, boardId (main_champion | new_player | most_improved | top_learner), prizeRank (1–3).
+ * Images: place files under public/prizes/. imageUrl may include or omit the extension —
+ * the app tries .webp, .jpg, .jpeg, and .png automatically (e.g. "/prizes/2026-03-champion-1").
+ */
+import prizeCatalog from '../data/hallOfFamePrizes.json';
+import {
+    BOARD_IDS,
+    BOARD_ORDER,
+    getHallOfFameBoardKey,
+    getEncouragementCopy,
+    isPrizeRecipient,
+} from './monthlyEncouragementBoards';
+
+export const HOF_PRIZE_VIEW_STORAGE_KEY = 'slm_hof_prize_view';
+export const HOF_VIEW_MODES = ['compact', 'detailed', 'by_user'];
+
+const PRIZE_IMAGE_EXTENSIONS = ['webp', 'jpg', 'jpeg', 'png'];
+
+export function getPrizeImageBasePath(imageUrl = '') {
+    const trimmed = imageUrl.trim();
+    if (!trimmed) return '';
+    return trimmed.replace(/\.(webp|jpe?g|png)$/i, '');
+}
+
+/** Ordered URLs to try — declared extension first, then webp/jpg/png fallbacks. */
+export function getPrizeImageCandidates(imageUrl = '') {
+    const trimmed = imageUrl.trim();
+    if (!trimmed) return [];
+
+    const base = getPrizeImageBasePath(trimmed);
+    const declaredMatch = trimmed.match(/\.(webp|jpe?g|png)$/i);
+    const declaredExt = declaredMatch?.[1]?.toLowerCase() || null;
+
+    const extensions = declaredExt
+        ? [
+            declaredExt,
+            ...PRIZE_IMAGE_EXTENSIONS.filter((ext) => ext !== declaredExt && !(declaredExt === 'jpeg' && ext === 'jpg') && !(declaredExt === 'jpg' && ext === 'jpeg')),
+        ]
+        : PRIZE_IMAGE_EXTENSIONS;
+
+    const seen = new Set();
+    return extensions
+        .map((ext) => `${base}.${ext}`)
+        .filter((url) => {
+            if (seen.has(url)) return false;
+            seen.add(url);
+            return true;
+        });
+}
+
+const prizeIndex = new Map(
+    (prizeCatalog.prizes || []).map((entry) => [
+        `${entry.year}-${entry.month}-${entry.boardId}-${entry.prizeRank}`,
+        entry,
+    ])
+);
+
+export function lookupHallOfFamePrize(year, month, boardId, prizeRank) {
+    if (!year || !month || !boardId || prizeRank == null) return null;
+    return prizeIndex.get(`${year}-${month}-${boardId}-${prizeRank}`) || null;
+}
+
+export function lookupHallOfFamePrizeForWinner(entry, boardTab, winner) {
+    if (!entry || !winner?.prize_rank) return null;
+    const boardId = getHallOfFameBoardKey(boardTab);
+    return lookupHallOfFamePrize(entry.year, entry.month, boardId, winner.prize_rank);
+}
+
+export function resolvePrizeDisplay(prize, language = 'bn') {
+    if (!prize) return null;
+    const isBn = language === 'bn';
+    const title = (isBn ? prize.title_bn : prize.title_en)?.trim() || '';
+    const sponsor = (isBn ? prize.sponsor_bn : prize.sponsor_en)?.trim() || '';
+    const imageUrl = prize.imageUrl?.trim() || '';
+    const imageCandidates = getPrizeImageCandidates(imageUrl);
+    const imageAlt = (isBn ? prize.imageAlt_bn : prize.imageAlt_en)?.trim() || title || sponsor;
+
+    if (!title && !sponsor && imageCandidates.length === 0) return null;
+
+    return {
+        title,
+        sponsor,
+        imageUrl: imageCandidates[0] || null,
+        imageCandidates,
+        imageAlt,
+    };
+}
+
+export function formatPrizeMonthLabel(year, month, language = 'bn') {
+    return new Date(year, month - 1).toLocaleDateString(
+        language === 'bn' ? 'bn-BD' : 'en-US',
+        { month: 'long', year: 'numeric' }
+    );
+}
+
+export function getBoardTabLabel(boardId, monthlyTabs = {}) {
+    if (boardId === BOARD_IDS.MAIN) return monthlyTabs.champion || monthlyTabs[BOARD_IDS.MAIN];
+    return monthlyTabs[boardId] || boardId;
+}
+
+/** All prize wins across months and boards (only rows with catalog + prize recipient). */
+export function collectAllUserPrizeWins(hallOfFameData, language = 'bn') {
+    const wins = [];
+
+    for (const entry of hallOfFameData || []) {
+        for (const boardId of BOARD_ORDER) {
+            const winners = entry.boards?.[boardId] || [];
+            for (const winner of winners) {
+                if (!isPrizeRecipient(winner)) continue;
+
+                const rawPrize = lookupHallOfFamePrize(entry.year, entry.month, boardId, winner.prize_rank);
+                const prize = resolvePrizeDisplay(rawPrize, language);
+                if (!prize) continue;
+
+                wins.push({
+                    userId: winner.user_id,
+                    fullName: winner.full_name,
+                    avatarUrl: winner.avatar_url,
+                    slmId: winner.slm_id,
+                    district: winner.district,
+                    year: entry.year,
+                    month: entry.month,
+                    monthLabel: formatPrizeMonthLabel(entry.year, entry.month, language),
+                    boardId,
+                    prizeRank: winner.prize_rank,
+                    prize,
+                });
+            }
+        }
+    }
+
+    return wins;
+}
+
+export function groupPrizeWinsByUser(wins) {
+    const map = new Map();
+
+    for (const win of wins) {
+        if (!win.userId) continue;
+        if (!map.has(win.userId)) {
+            map.set(win.userId, {
+                userId: win.userId,
+                fullName: win.fullName,
+                avatarUrl: win.avatarUrl,
+                slmId: win.slmId,
+                district: win.district,
+                prizes: [],
+            });
+        }
+        map.get(win.userId).prizes.push(win);
+    }
+
+    return [...map.values()]
+        .map((user) => ({
+            ...user,
+            prizes: user.prizes.sort((a, b) => {
+                const dateCmp = `${b.year}-${String(b.month).padStart(2, '0')}`.localeCompare(
+                    `${a.year}-${String(a.month).padStart(2, '0')}`
+                );
+                if (dateCmp !== 0) return dateCmp;
+                if (a.boardId !== b.boardId) return a.boardId.localeCompare(b.boardId);
+                return a.prizeRank - b.prizeRank;
+            }),
+        }))
+        .sort((a, b) => {
+            if (b.prizes.length !== a.prizes.length) return b.prizes.length - a.prizes.length;
+            return (a.fullName || '').localeCompare(b.fullName || '', 'bn');
+        });
+}
+
+export function getHallOfFamePrizeViewCopy(language = 'bn') {
+    if (language === 'en') {
+        return {
+            compact: 'Compact',
+            detailed: 'With prizes',
+            byUser: 'By winner',
+            userPrizesTitle: 'Prizes by winner',
+            userPrizesSearch: 'Search winner name or SLM ID',
+            userPrizesEmpty: 'No prize records yet.',
+            userPrizesCount: 'prizes',
+            sponsorPrefix: 'Courtesy of',
+            prizeChip: 'Prize',
+            noPrizeInfo: 'Prize details for this month are not added yet.',
+        };
+    }
+    return {
+        compact: 'সংক্ষেপে',
+        detailed: 'পুরস্কারসহ',
+        byUser: 'বিজয়ী অনুযায়ী',
+        userPrizesTitle: 'বিজয়ীদের পুরস্কার তালিকা',
+        userPrizesSearch: 'নাম বা এসএলএম আইডি খুঁজুন',
+        userPrizesEmpty: 'এখনও কোনো পুরস্কারের তথ্য নেই।',
+        userPrizesCount: 'টি পুরস্কার',
+        sponsorPrefix: 'সৌজন্যে',
+        prizeChip: 'পুরস্কার',
+        noPrizeInfo: 'এই মাসের পুরস্কারের তথ্য এখনও যোগ হয়নি।',
+    };
+}
+
+export function getUserPrizeWins(hallOfFameData, userId, language = 'bn') {
+    if (!userId) return [];
+    return collectAllUserPrizeWins(hallOfFameData, language).filter((win) => win.userId === userId);
+}
+
+export function normalizeHallOfFameViewMode(mode) {
+    return HOF_VIEW_MODES.includes(mode) ? mode : 'compact';
+}
+
+/** Public landing carousel — catalog prizes enriched with winner names when available. */
+export function buildLandingPrizeSlides(language = 'bn', hallOfFameData = []) {
+    const monthlyTabs = getEncouragementCopy(language).monthlyTabs;
+    const winnerByKey = new Map();
+
+    for (const entry of hallOfFameData || []) {
+        for (const boardId of BOARD_ORDER) {
+            for (const winner of entry.boards?.[boardId] || []) {
+                if (!isPrizeRecipient(winner)) continue;
+                winnerByKey.set(
+                    `${entry.year}-${entry.month}-${boardId}-${winner.prize_rank}`,
+                    winner.full_name || null
+                );
+            }
+        }
+    }
+
+    const rankLabels = language === 'en'
+        ? { 1: '1st Prize', 2: '2nd Prize', 3: '3rd Prize' }
+        : { 1: '১ম পুরস্কার', 2: '২য় পুরস্কার', 3: '৩য় পুরস্কার' };
+
+    return (prizeCatalog.prizes || [])
+        .map((entry) => {
+            const prize = resolvePrizeDisplay(entry, language);
+            if (!prize) return null;
+            const key = `${entry.year}-${entry.month}-${entry.boardId}-${entry.prizeRank}`;
+            return {
+                id: key,
+                year: entry.year,
+                month: entry.month,
+                prizeRank: entry.prizeRank,
+                rankLabel: rankLabels[entry.prizeRank] || rankLabels[3],
+                monthLabel: formatPrizeMonthLabel(entry.year, entry.month, language),
+                boardLabel: getBoardTabLabel(entry.boardId, monthlyTabs),
+                winnerName: winnerByKey.get(key) || null,
+                ...prize,
+            };
+        })
+        .filter(Boolean)
+        .sort((a, b) => {
+            const monthCmp = `${b.year}-${String(b.month).padStart(2, '0')}`.localeCompare(
+                `${a.year}-${String(a.month).padStart(2, '0')}`
+            );
+            if (monthCmp !== 0) return monthCmp;
+            if (a.prizeRank !== b.prizeRank) return a.prizeRank - b.prizeRank;
+            return a.boardLabel.localeCompare(b.boardLabel, language === 'bn' ? 'bn' : 'en');
+        });
+}
