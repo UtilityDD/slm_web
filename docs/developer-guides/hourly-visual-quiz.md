@@ -107,6 +107,20 @@ If all fail, a visible retry button is shown for question/option images.
 3. Use `quiz_management/live_sheet_image_map.csv` to replace Drive URLs in the **live Google Sheet** (gid `160776708`).
 4. Rollback: revert sheet cells to Drive URLs (no redeploy required).
 
+### Cutover helper
+
+```bash
+node scripts/maintenance/generate_visual_quiz_sheet_cutover.mjs
+```
+
+Writes `quiz_management/live_sheet_cutover_guide.txt` — find/replace pairs for rows with images on disk. Rows marked **SKIP** keep Drive URLs until files are added.
+
+```bash
+node scripts/maintenance/retry_missing_visual_quiz_images.mjs
+```
+
+Retries failed downloads using thumbnail / uc / lh3 URLs.
+
 ## Extension points
 
 - To change the visual ratio:

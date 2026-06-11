@@ -1,0 +1,214 @@
+LIVE GOOGLE SHEET CUTOVER GUIDE
+Tab: visual quiz (gid 160776708)
+
+Prerequisites:
+  - App deploy 30dc57c+ is live on Vercel
+  - public/images/quizzes/ images deployed
+
+SAFE METHOD (Google Sheets Find & Replace):
+  1. Open the live sheet tab
+  2. Edit → Find and replace
+  3. For each READY row below: Find the drive_id fragment, Replace with local_filename
+  4. Use "Replace all" per ID (matches /file/d/ID and thumbnail?id=ID variants)
+  5. Do NOT replace SKIP rows — leave Drive URLs until files exist
+
+READY TO REPLACE (59 images):
+
+  Find:    1GN9r25E-vhH3o0PmYTh_CeHpvAREF_Dr
+  Replace: img_1GN9r25E-vhH3o0PmYTh_CeHpvAREF_Dr.jpg
+
+  Find:    13QNSikc8W6cAWqM6MXSYMdx7Mzs9OKx5
+  Replace: img_13QNSikc8W6cAWqM6MXSYMdx7Mzs9OKx5.jpg
+
+  Find:    1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd
+  Replace: img_1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd.jpg
+
+  Find:    13w1fWNGZg5UQXWuZxEyF6hk3IwncdefC
+  Replace: img_13w1fWNGZg5UQXWuZxEyF6hk3IwncdefC.jpg
+
+  Find:    1PygiMYqqr1QClPDVser-ZExOWwbl0btA
+  Replace: img_1PygiMYqqr1QClPDVser-ZExOWwbl0btA.jpg
+
+  Find:    1cDG-6DqYt9ddMpeUH_KuPJlUqWJeWSuT
+  Replace: img_1cDG-6DqYt9ddMpeUH_KuPJlUqWJeWSuT.jpg
+
+  Find:    1MAUYMbUWD91sOWrr2S07vFnLFke6hReM
+  Replace: img_1MAUYMbUWD91sOWrr2S07vFnLFke6hReM.jpg
+
+  Find:    1wq2z9I0Y4vE2eUm1OlDXny_s10KkTmY6
+  Replace: img_1wq2z9I0Y4vE2eUm1OlDXny_s10KkTmY6.jpg
+
+  Find:    1A3FquGBwOyJm0bB0tQiiOUYZImaFR3jC
+  Replace: img_1A3FquGBwOyJm0bB0tQiiOUYZImaFR3jC.jpg
+
+  Find:    1Aa4Dp-sGgkRvMY7jDd-rWrkaeXR1SQf1
+  Replace: img_1Aa4Dp-sGgkRvMY7jDd-rWrkaeXR1SQf1.jpg
+
+  Find:    1b7cOO6uqLMLfor74YOkRX-o6t-WqE3a7
+  Replace: img_1b7cOO6uqLMLfor74YOkRX-o6t-WqE3a7.jpg
+
+  Find:    1GHcG6C5lMGNcG0PuWjEZwD883g6GiWr5
+  Replace: img_1GHcG6C5lMGNcG0PuWjEZwD883g6GiWr5.jpg
+
+  Find:    1OJKuzJl2KJWr8j_VYbM6n4PyCjIsKFKK
+  Replace: img_1OJKuzJl2KJWr8j_VYbM6n4PyCjIsKFKK.jpg
+
+  Find:    1XScwrEuTsvBz-2eFw0SOp300YRDtG7yI
+  Replace: img_1XScwrEuTsvBz-2eFw0SOp300YRDtG7yI.jpg
+
+  Find:    1JSmzPpPfrxTPs9V_Sk8k5xakiNsZ6pIh
+  Replace: img_1JSmzPpPfrxTPs9V_Sk8k5xakiNsZ6pIh.jpg
+
+  Find:    1U_MIUBgX9Vm83lNewQxL9oVEPgEQnRdQ
+  Replace: img_1U_MIUBgX9Vm83lNewQxL9oVEPgEQnRdQ.jpg
+
+  Find:    1TVa3MNiJO-SNNF5GXH8nle4K3_erkO9v
+  Replace: img_1TVa3MNiJO-SNNF5GXH8nle4K3_erkO9v.jpg
+
+  Find:    1rooazqy8K-rwxib_z1d8_r2j0WLe9IG2
+  Replace: img_1rooazqy8K-rwxib_z1d8_r2j0WLe9IG2.jpg
+
+  Find:    1FXYlMORkJ1XI4mPna9IMCAV4XaR7rjFc
+  Replace: img_1FXYlMORkJ1XI4mPna9IMCAV4XaR7rjFc.jpg
+
+  Find:    1ph1HlGtDILcPhA7Prdjm1woSMkT9jlbq
+  Replace: img_1ph1HlGtDILcPhA7Prdjm1woSMkT9jlbq.jpg
+
+  Find:    1qB2r3FmwBNPIxQPQhON4ZRP4z4W1JnRp
+  Replace: img_1qB2r3FmwBNPIxQPQhON4ZRP4z4W1JnRp.jpg
+
+  Find:    1HNyXF76GKzNFWWP1J8EabNv3nkGankU6
+  Replace: img_1HNyXF76GKzNFWWP1J8EabNv3nkGankU6.jpg
+
+  Find:    1Gqr9P1QQ6uIOZ4YjBekaR8dbb0SouEDx
+  Replace: img_1Gqr9P1QQ6uIOZ4YjBekaR8dbb0SouEDx.jpg
+
+  Find:    1mdOcnBpdzvbzTGKiHI_L4on-HU6vdMsz
+  Replace: img_1mdOcnBpdzvbzTGKiHI_L4on-HU6vdMsz.jpg
+
+  Find:    1I76aLipndV0iVXXQpbY0y8evnNn1Zf-v
+  Replace: img_1I76aLipndV0iVXXQpbY0y8evnNn1Zf-v.jpg
+
+  Find:    1hze6ij_rw6SvZ5k5gFrF6Y5dGW55uGPW
+  Replace: img_1hze6ij_rw6SvZ5k5gFrF6Y5dGW55uGPW.jpg
+
+  Find:    1NU5KJYvyGcXpdFFB-FkVj5MmOWcMwRsb
+  Replace: img_1NU5KJYvyGcXpdFFB-FkVj5MmOWcMwRsb.jpg
+
+  Find:    1ZHCEE91yTuKAFLtfTJIzWEGeP9hd4ke8
+  Replace: img_1ZHCEE91yTuKAFLtfTJIzWEGeP9hd4ke8.jpg
+
+  Find:    1VVaIWA5Glq6Fc1gpxZId0kOIcp2I9glI
+  Replace: img_1VVaIWA5Glq6Fc1gpxZId0kOIcp2I9glI.jpg
+
+  Find:    1EtxY0Gm7TNdLea7f-zk3q81HiZauX7j2
+  Replace: img_1EtxY0Gm7TNdLea7f-zk3q81HiZauX7j2.jpg
+
+  Find:    1MzTJ3tvUGf3sTbYSDEGQ4AlON6mgoQmu
+  Replace: img_1MzTJ3tvUGf3sTbYSDEGQ4AlON6mgoQmu.jpg
+
+  Find:    1xXsWEVB2mkhYZqwN-hC-XZaGlYheSGdH
+  Replace: img_1xXsWEVB2mkhYZqwN-hC-XZaGlYheSGdH.jpg
+
+  Find:    1eGaUNv_BadZ1bz_xaksCBIDXEZ2xQqJ4
+  Replace: img_1eGaUNv_BadZ1bz_xaksCBIDXEZ2xQqJ4.jpg
+
+  Find:    13CDnu-6m778I9EERIIeN4ph2noFSEr2U
+  Replace: img_13CDnu-6m778I9EERIIeN4ph2noFSEr2U.jpg
+
+  Find:    1jq1UvH_SmJ4BZB7L1e_5zW7S_1cvOIm9
+  Replace: img_1jq1UvH_SmJ4BZB7L1e_5zW7S_1cvOIm9.jpg
+
+  Find:    1gIjMqtPr0ZwO2dHpNIgucG-QqfK8vgGv
+  Replace: img_1gIjMqtPr0ZwO2dHpNIgucG-QqfK8vgGv.jpg
+
+  Find:    1tALpI6Qs6ImzmZUM1NNfHnSY3V9d4iIk
+  Replace: img_1tALpI6Qs6ImzmZUM1NNfHnSY3V9d4iIk.jpg
+
+  Find:    1bMetcuEvRyPg7mq7aZua_bKrtpPoUt5a
+  Replace: img_1bMetcuEvRyPg7mq7aZua_bKrtpPoUt5a.jpg
+
+  Find:    1Dfhxu5D6S7chFTvAsiU8NnC-WQL5t63W
+  Replace: img_1Dfhxu5D6S7chFTvAsiU8NnC-WQL5t63W.jpg
+
+  Find:    1huM6UPzvH8npa1bvCqUXp9Xwt1PNAECW
+  Replace: img_1huM6UPzvH8npa1bvCqUXp9Xwt1PNAECW.jpg
+
+  Find:    1AySIs_eUz5TFlrY-nqR3oHmxfEyrrVga
+  Replace: img_1AySIs_eUz5TFlrY-nqR3oHmxfEyrrVga.jpg
+
+  Find:    1_D6yyIjFF87-hV7sF5fxwYBAIZ1AdQYp
+  Replace: img_1_D6yyIjFF87-hV7sF5fxwYBAIZ1AdQYp.jpg
+
+  Find:    1vPDRrgJbz6-ByxhWSAHXIww1859rKoZl
+  Replace: img_1vPDRrgJbz6-ByxhWSAHXIww1859rKoZl.jpg
+
+  Find:    14kd0t6Bgigsom__5htI-ERZdO7ai2O0v
+  Replace: img_14kd0t6Bgigsom__5htI-ERZdO7ai2O0v.jpg
+
+  Find:    1QnkOm0ImKOGOSdydswUmfbCntb8ilRde
+  Replace: img_1QnkOm0ImKOGOSdydswUmfbCntb8ilRde.jpg
+
+  Find:    1J0-c4BAjwlbOUoNrfOn-h4zVs1FUDYug
+  Replace: img_1J0-c4BAjwlbOUoNrfOn-h4zVs1FUDYug.jpg
+
+  Find:    1EOb7wHq_TAOVzd-RMrhJ7eHTd93I9lMf
+  Replace: img_1EOb7wHq_TAOVzd-RMrhJ7eHTd93I9lMf.jpg
+
+  Find:    1ySsN6GFO8Rm-9M6jW1alVi_IgIzp5E9b
+  Replace: img_1ySsN6GFO8Rm-9M6jW1alVi_IgIzp5E9b.jpg
+
+  Find:    1UsgT9FrXx7c148VPL7mOk7_--FdnCClI
+  Replace: img_1UsgT9FrXx7c148VPL7mOk7_--FdnCClI.jpg
+
+  Find:    1Rz3eMVcEuQrm6O4U8860Ey4U2mVox1AR
+  Replace: img_1Rz3eMVcEuQrm6O4U8860Ey4U2mVox1AR.jpg
+
+  Find:    1bwj8c1cT7Hp3ezioZrfIgsAOd6DVVMic
+  Replace: img_1bwj8c1cT7Hp3ezioZrfIgsAOd6DVVMic.jpg
+
+  Find:    17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L
+  Replace: img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+  Find:    1HXCk5EiYsV1wasApwmSaJXoOt3kG1tTN
+  Replace: img_1HXCk5EiYsV1wasApwmSaJXoOt3kG1tTN.jpg
+
+  Find:    1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy
+  Replace: img_1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy.jpg
+
+  Find:    1geVE4nF5seM65VDNFSWJpV6v_Zhi4VIv
+  Replace: img_1geVE4nF5seM65VDNFSWJpV6v_Zhi4VIv.jpg
+
+  Find:    12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA
+  Replace: img_12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA.jpg
+
+  Find:    1-GjE5CLrPGUNX0nNHUrh_8pCgJul4ihP
+  Replace: img_1-GjE5CLrPGUNX0nNHUrh_8pCgJul4ihP.jpg
+
+  Find:    1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV
+  Replace: img_1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV.jpg
+
+  Find:    1fBmcnKPfCD8-sTl8xnUQ-uufHJjCo9aq
+  Replace: img_1fBmcnKPfCD8-sTl8xnUQ-uufHJjCo9aq.jpg
+
+SKIP — keep Drive URL (9 images):
+
+  1Wer49Sbnu4yRKcSlr8lxRRnlRag69CyC → img_1Wer49Sbnu4yRKcSlr8lxRRnlRag69CyC.jpg (file missing — Drive fallback only)
+  1YqmArOdsGwgqGfOWhiSHdCOVvQSgSuKo → img_1YqmArOdsGwgqGfOWhiSHdCOVvQSgSuKo.jpg (file missing — Drive fallback only)
+  10SJ-Ka6oUugk1ChuhRLlmH90_7Fk4H_n → img_10SJ-Ka6oUugk1ChuhRLlmH90_7Fk4H_n.jpg (file missing — Drive fallback only)
+  1yIJvreDeoecIjV71jYBg--Q9xed8B1iD → img_1yIJvreDeoecIjV71jYBg--Q9xed8B1iD.jpg (file missing — Drive fallback only)
+  1BjCWDA_L1UKchy9DhSB5yiIlF-F7v60b → img_1BjCWDA_L1UKchy9DhSB5yiIlF-F7v60b.jpg (file missing — Drive fallback only)
+  1L0fF0_n8a1Jwh316-c6zo8ae4UeyO-4g → img_1L0fF0_n8a1Jwh316-c6zo8ae4UeyO-4g.jpg (file missing — Drive fallback only)
+  16u1vH7ZuzvR3OlKaSbspKGgZ5OrQZpoI → img_16u1vH7ZuzvR3OlKaSbspKGgZ5OrQZpoI.jpg (file missing — Drive fallback only)
+  1DL3OWr1tS56qzN1a1qBZ0UkcwBkxlhH1 → img_1DL3OWr1tS56qzN1a1qBZ0UkcwBkxlhH1.jpg (file missing — Drive fallback only)
+  18RNlBVLSZ4Gb5qVVBr0tjf0AxH2AYDJJ → img_18RNlBVLSZ4Gb5qVVBr0tjf0AxH2AYDJJ.jpg (file missing — Drive fallback only)
+
+Columns to check after replace:
+  question_image_url, option_1, option_2, option_3, option_4
+  preview_q, preview_o1..preview_o4 (optional editor columns)
+
+Verify:
+  - Open hourly quiz as guest, start quiz, confirm images load
+  - Wait ~60s or hard refresh if sheet was just published
+
+Rollback: reverse each Replace (local_filename → drive_id in full URL)
