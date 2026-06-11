@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url';
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const mapPath = path.join(root, 'quiz_management', 'live_sheet_image_map.csv');
 const imagesDir = path.join(root, 'public', 'images', 'quizzes');
-const TIMEOUT_MS = 60000;
+const TIMEOUT_MS = 20000;
 
 function downloadOnce(url, dest) {
     return new Promise((resolve, reject) => {

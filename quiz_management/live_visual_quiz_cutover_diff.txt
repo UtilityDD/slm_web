@@ -1,0 +1,876 @@
+VISUAL QUIZ CUTOVER DIFF (preview only)
+
+Apply these changes to the LIVE Google Sheet image columns, or paste from live_visual_quiz_migrated_preview.csv after review.
+
+vq-001 | question_image_url
+  before: https://drive.google.com/file/d/1GN9r25E-vhH3o0PmYTh_CeHpvAREF_Dr/view?usp=drivesdk
+  after:  img_1GN9r25E-vhH3o0PmYTh_CeHpvAREF_Dr.jpg
+
+vq-001 | preview_q
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1GN9r25E-vhH3o0PmYTh_CeHpvAREF_Dr&sz=w400")
+  after:  img_1GN9r25E-vhH3o0PmYTh_CeHpvAREF_Dr.jpg
+
+vq-002 | option_1
+  before: https://drive.google.com/file/d/13QNSikc8W6cAWqM6MXSYMdx7Mzs9OKx5/view?usp=drivesdk
+  after:  img_13QNSikc8W6cAWqM6MXSYMdx7Mzs9OKx5.jpg
+
+vq-002 | option_2
+  before: https://drive.google.com/file/d/1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd/view?usp=drivesdk
+  after:  img_1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd.jpg
+
+vq-002 | option_3
+  before: https://drive.google.com/file/d/13w1fWNGZg5UQXWuZxEyF6hk3IwncdefC/view?usp=drivesdk
+  after:  img_13w1fWNGZg5UQXWuZxEyF6hk3IwncdefC.jpg
+
+vq-002 | option_4
+  before: https://drive.google.com/file/d/1PygiMYqqr1QClPDVser-ZExOWwbl0btA/view?usp=drivesdk
+  after:  img_1PygiMYqqr1QClPDVser-ZExOWwbl0btA.jpg
+
+vq-002 | preview_o1
+  before: =IMAGE("https://drive.google.com/thumbnail?id=13QNSikc8W6cAWqM6MXSYMdx7Mzs9OKx5&sz=w400")
+  after:  img_13QNSikc8W6cAWqM6MXSYMdx7Mzs9OKx5.jpg
+
+vq-002 | preview_o2
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd&sz=w400")
+  after:  img_1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd.jpg
+
+vq-002 | preview_o3
+  before: =IMAGE("https://drive.google.com/thumbnail?id=13w1fWNGZg5UQXWuZxEyF6hk3IwncdefC&sz=w400")
+  after:  img_13w1fWNGZg5UQXWuZxEyF6hk3IwncdefC.jpg
+
+vq-002 | preview_o4
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1PygiMYqqr1QClPDVser-ZExOWwbl0btA&sz=w400")
+  after:  img_1PygiMYqqr1QClPDVser-ZExOWwbl0btA.jpg
+
+vq-003 | question_image_url
+  before: https://drive.google.com/file/d/1cDG-6DqYt9ddMpeUH_KuPJlUqWJeWSuT/view?usp=drivesdk
+  after:  img_1cDG-6DqYt9ddMpeUH_KuPJlUqWJeWSuT.jpg
+
+vq-003 | preview_q
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1cDG-6DqYt9ddMpeUH_KuPJlUqWJeWSuT&sz=w400")
+  after:  img_1cDG-6DqYt9ddMpeUH_KuPJlUqWJeWSuT.jpg
+
+vq-004 | option_1
+  before: https://drive.google.com/file/d/1MAUYMbUWD91sOWrr2S07vFnLFke6hReM/view?usp=drivesdk
+  after:  img_1MAUYMbUWD91sOWrr2S07vFnLFke6hReM.jpg
+
+vq-004 | option_2
+  before: https://drive.google.com/file/d/1wq2z9I0Y4vE2eUm1OlDXny_s10KkTmY6/view?usp=drivesdk
+  after:  img_1wq2z9I0Y4vE2eUm1OlDXny_s10KkTmY6.jpg
+
+vq-004 | option_3
+  before: https://drive.google.com/file/d/1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd/view?usp=drivesdk
+  after:  img_1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd.jpg
+
+vq-004 | option_4
+  before: https://drive.google.com/file/d/1A3FquGBwOyJm0bB0tQiiOUYZImaFR3jC/view?usp=drivesdk
+  after:  img_1A3FquGBwOyJm0bB0tQiiOUYZImaFR3jC.jpg
+
+vq-004 | preview_o1
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1MAUYMbUWD91sOWrr2S07vFnLFke6hReM&sz=w400")
+  after:  img_1MAUYMbUWD91sOWrr2S07vFnLFke6hReM.jpg
+
+vq-004 | preview_o2
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1wq2z9I0Y4vE2eUm1OlDXny_s10KkTmY6&sz=w400")
+  after:  img_1wq2z9I0Y4vE2eUm1OlDXny_s10KkTmY6.jpg
+
+vq-004 | preview_o3
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd&sz=w400")
+  after:  img_1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd.jpg
+
+vq-004 | preview_o4
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1A3FquGBwOyJm0bB0tQiiOUYZImaFR3jC&sz=w400")
+  after:  img_1A3FquGBwOyJm0bB0tQiiOUYZImaFR3jC.jpg
+
+vq-005 | question_image_url
+  before: https://drive.google.com/file/d/1Aa4Dp-sGgkRvMY7jDd-rWrkaeXR1SQf1/view?usp=drivesdk
+  after:  img_1Aa4Dp-sGgkRvMY7jDd-rWrkaeXR1SQf1.jpg
+
+vq-005 | preview_q
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1Aa4Dp-sGgkRvMY7jDd-rWrkaeXR1SQf1&sz=w400")
+  after:  img_1Aa4Dp-sGgkRvMY7jDd-rWrkaeXR1SQf1.jpg
+
+vq-006 | option_1
+  before: https://drive.google.com/file/d/1b7cOO6uqLMLfor74YOkRX-o6t-WqE3a7/view?usp=drivesdk
+  after:  img_1b7cOO6uqLMLfor74YOkRX-o6t-WqE3a7.jpg
+
+vq-006 | option_2
+  before: https://drive.google.com/file/d/1GHcG6C5lMGNcG0PuWjEZwD883g6GiWr5/view?usp=drivesdk
+  after:  img_1GHcG6C5lMGNcG0PuWjEZwD883g6GiWr5.jpg
+
+vq-006 | option_3
+  before: https://drive.google.com/file/d/13QNSikc8W6cAWqM6MXSYMdx7Mzs9OKx5/view?usp=drivesdk
+  after:  img_13QNSikc8W6cAWqM6MXSYMdx7Mzs9OKx5.jpg
+
+vq-006 | option_4
+  before: https://drive.google.com/file/d/1PygiMYqqr1QClPDVser-ZExOWwbl0btA/view?usp=drivesdk
+  after:  img_1PygiMYqqr1QClPDVser-ZExOWwbl0btA.jpg
+
+vq-006 | preview_o1
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1b7cOO6uqLMLfor74YOkRX-o6t-WqE3a7&sz=w400")
+  after:  img_1b7cOO6uqLMLfor74YOkRX-o6t-WqE3a7.jpg
+
+vq-006 | preview_o2
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1GHcG6C5lMGNcG0PuWjEZwD883g6GiWr5&sz=w400")
+  after:  img_1GHcG6C5lMGNcG0PuWjEZwD883g6GiWr5.jpg
+
+vq-006 | preview_o3
+  before: =IMAGE("https://drive.google.com/thumbnail?id=13QNSikc8W6cAWqM6MXSYMdx7Mzs9OKx5&sz=w400")
+  after:  img_13QNSikc8W6cAWqM6MXSYMdx7Mzs9OKx5.jpg
+
+vq-006 | preview_o4
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1PygiMYqqr1QClPDVser-ZExOWwbl0btA&sz=w400")
+  after:  img_1PygiMYqqr1QClPDVser-ZExOWwbl0btA.jpg
+
+vq-007 | question_image_url
+  before: https://drive.google.com/file/d/1OJKuzJl2KJWr8j_VYbM6n4PyCjIsKFKK/view?usp=drivesdk
+  after:  img_1OJKuzJl2KJWr8j_VYbM6n4PyCjIsKFKK.jpg
+
+vq-007 | preview_q
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1OJKuzJl2KJWr8j_VYbM6n4PyCjIsKFKK&sz=w400")
+  after:  img_1OJKuzJl2KJWr8j_VYbM6n4PyCjIsKFKK.jpg
+
+vq-008 | option_1
+  before: https://drive.google.com/file/d/1XScwrEuTsvBz-2eFw0SOp300YRDtG7yI/view?usp=drivesdk
+  after:  img_1XScwrEuTsvBz-2eFw0SOp300YRDtG7yI.jpg
+
+vq-008 | option_2
+  before: https://drive.google.com/file/d/1Aa4Dp-sGgkRvMY7jDd-rWrkaeXR1SQf1/view?usp=drivesdk
+  after:  img_1Aa4Dp-sGgkRvMY7jDd-rWrkaeXR1SQf1.jpg
+
+vq-008 | option_3
+  before: https://drive.google.com/file/d/1JSmzPpPfrxTPs9V_Sk8k5xakiNsZ6pIh/view?usp=drivesdk
+  after:  img_1JSmzPpPfrxTPs9V_Sk8k5xakiNsZ6pIh.jpg
+
+vq-008 | option_4
+  before: https://drive.google.com/file/d/1U_MIUBgX9Vm83lNewQxL9oVEPgEQnRdQ/view?usp=drivesdk
+  after:  img_1U_MIUBgX9Vm83lNewQxL9oVEPgEQnRdQ.jpg
+
+vq-008 | preview_o1
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1XScwrEuTsvBz-2eFw0SOp300YRDtG7yI&sz=w400")
+  after:  img_1XScwrEuTsvBz-2eFw0SOp300YRDtG7yI.jpg
+
+vq-008 | preview_o2
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1Aa4Dp-sGgkRvMY7jDd-rWrkaeXR1SQf1&sz=w400")
+  after:  img_1Aa4Dp-sGgkRvMY7jDd-rWrkaeXR1SQf1.jpg
+
+vq-008 | preview_o3
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1JSmzPpPfrxTPs9V_Sk8k5xakiNsZ6pIh&sz=w400")
+  after:  img_1JSmzPpPfrxTPs9V_Sk8k5xakiNsZ6pIh.jpg
+
+vq-008 | preview_o4
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1U_MIUBgX9Vm83lNewQxL9oVEPgEQnRdQ&sz=w400")
+  after:  img_1U_MIUBgX9Vm83lNewQxL9oVEPgEQnRdQ.jpg
+
+vq-009 | question_image_url
+  before: https://drive.google.com/file/d/13w1fWNGZg5UQXWuZxEyF6hk3IwncdefC/view?usp=drivesdk
+  after:  img_13w1fWNGZg5UQXWuZxEyF6hk3IwncdefC.jpg
+
+vq-009 | preview_q
+  before: =IMAGE("https://drive.google.com/thumbnail?id=13w1fWNGZg5UQXWuZxEyF6hk3IwncdefC&sz=w400")
+  after:  img_13w1fWNGZg5UQXWuZxEyF6hk3IwncdefC.jpg
+
+vq-010 | option_1
+  before: https://drive.google.com/file/d/1TVa3MNiJO-SNNF5GXH8nle4K3_erkO9v/view?usp=drivesdk
+  after:  img_1TVa3MNiJO-SNNF5GXH8nle4K3_erkO9v.jpg
+
+vq-010 | option_2
+  before: https://drive.google.com/file/d/1rooazqy8K-rwxib_z1d8_r2j0WLe9IG2/view?usp=drivesdk
+  after:  img_1rooazqy8K-rwxib_z1d8_r2j0WLe9IG2.jpg
+
+vq-010 | option_3
+  before: https://drive.google.com/file/d/1FXYlMORkJ1XI4mPna9IMCAV4XaR7rjFc/view?usp=drivesdk
+  after:  img_1FXYlMORkJ1XI4mPna9IMCAV4XaR7rjFc.jpg
+
+vq-010 | option_4
+  before: https://drive.google.com/file/d/1GN9r25E-vhH3o0PmYTh_CeHpvAREF_Dr/view?usp=drivesdk
+  after:  img_1GN9r25E-vhH3o0PmYTh_CeHpvAREF_Dr.jpg
+
+vq-010 | preview_o1
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1TVa3MNiJO-SNNF5GXH8nle4K3_erkO9v&sz=w400")
+  after:  img_1TVa3MNiJO-SNNF5GXH8nle4K3_erkO9v.jpg
+
+vq-010 | preview_o2
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1rooazqy8K-rwxib_z1d8_r2j0WLe9IG2&sz=w400")
+  after:  img_1rooazqy8K-rwxib_z1d8_r2j0WLe9IG2.jpg
+
+vq-010 | preview_o3
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1FXYlMORkJ1XI4mPna9IMCAV4XaR7rjFc&sz=w400")
+  after:  img_1FXYlMORkJ1XI4mPna9IMCAV4XaR7rjFc.jpg
+
+vq-010 | preview_o4
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1GN9r25E-vhH3o0PmYTh_CeHpvAREF_Dr&sz=w400")
+  after:  img_1GN9r25E-vhH3o0PmYTh_CeHpvAREF_Dr.jpg
+
+vq-011 | question_image_url
+  before: https://drive.google.com/file/d/1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd/view?usp=drivesdk
+  after:  img_1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd.jpg
+
+vq-011 | preview_q
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd&sz=w400")
+  after:  img_1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd.jpg
+
+vq-012 | option_1
+  before: https://drive.google.com/file/d/1ph1HlGtDILcPhA7Prdjm1woSMkT9jlbq/view?usp=sharing
+  after:  img_1ph1HlGtDILcPhA7Prdjm1woSMkT9jlbq.jpg
+
+vq-012 | option_2
+  before: https://drive.google.com/file/d/1qB2r3FmwBNPIxQPQhON4ZRP4z4W1JnRp/view?usp=sharing
+  after:  img_1qB2r3FmwBNPIxQPQhON4ZRP4z4W1JnRp.jpg
+
+vq-012 | option_3
+  before: https://drive.google.com/file/d/1HNyXF76GKzNFWWP1J8EabNv3nkGankU6/view?usp=sharing
+  after:  img_1HNyXF76GKzNFWWP1J8EabNv3nkGankU6.jpg
+
+vq-012 | option_4
+  before: https://drive.google.com/file/d/1Gqr9P1QQ6uIOZ4YjBekaR8dbb0SouEDx/view?usp=sharing
+  after:  img_1Gqr9P1QQ6uIOZ4YjBekaR8dbb0SouEDx.jpg
+
+vq-012 | preview_o1
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1ph1HlGtDILcPhA7Prdjm1woSMkT9jlbq&sz=w400")
+  after:  img_1ph1HlGtDILcPhA7Prdjm1woSMkT9jlbq.jpg
+
+vq-012 | preview_o2
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1qB2r3FmwBNPIxQPQhON4ZRP4z4W1JnRp&sz=w400")
+  after:  img_1qB2r3FmwBNPIxQPQhON4ZRP4z4W1JnRp.jpg
+
+vq-012 | preview_o3
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1HNyXF76GKzNFWWP1J8EabNv3nkGankU6&sz=w400")
+  after:  img_1HNyXF76GKzNFWWP1J8EabNv3nkGankU6.jpg
+
+vq-012 | preview_o4
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1Gqr9P1QQ6uIOZ4YjBekaR8dbb0SouEDx&sz=w400")
+  after:  img_1Gqr9P1QQ6uIOZ4YjBekaR8dbb0SouEDx.jpg
+
+vq-013 | question_image_url
+  before: https://drive.google.com/file/d/1FXYlMORkJ1XI4mPna9IMCAV4XaR7rjFc/view?usp=drivesdk
+  after:  img_1FXYlMORkJ1XI4mPna9IMCAV4XaR7rjFc.jpg
+
+vq-013 | preview_q
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1FXYlMORkJ1XI4mPna9IMCAV4XaR7rjFc&sz=w400")
+  after:  img_1FXYlMORkJ1XI4mPna9IMCAV4XaR7rjFc.jpg
+
+vq-014 | option_1
+  before: https://drive.google.com/file/d/1mdOcnBpdzvbzTGKiHI_L4on-HU6vdMsz/view?usp=sharing
+  after:  img_1mdOcnBpdzvbzTGKiHI_L4on-HU6vdMsz.jpg
+
+vq-014 | option_3
+  before: https://drive.google.com/file/d/1I76aLipndV0iVXXQpbY0y8evnNn1Zf-v/view?usp=sharing
+  after:  img_1I76aLipndV0iVXXQpbY0y8evnNn1Zf-v.jpg
+
+vq-014 | option_4
+  before: https://drive.google.com/file/d/1hze6ij_rw6SvZ5k5gFrF6Y5dGW55uGPW/view?usp=sharing
+  after:  img_1hze6ij_rw6SvZ5k5gFrF6Y5dGW55uGPW.jpg
+
+vq-014 | preview_o1
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1mdOcnBpdzvbzTGKiHI_L4on-HU6vdMsz&sz=w400")
+  after:  img_1mdOcnBpdzvbzTGKiHI_L4on-HU6vdMsz.jpg
+
+vq-014 | preview_o3
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1I76aLipndV0iVXXQpbY0y8evnNn1Zf-v&sz=w400")
+  after:  img_1I76aLipndV0iVXXQpbY0y8evnNn1Zf-v.jpg
+
+vq-014 | preview_o4
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1hze6ij_rw6SvZ5k5gFrF6Y5dGW55uGPW&sz=w400")
+  after:  img_1hze6ij_rw6SvZ5k5gFrF6Y5dGW55uGPW.jpg
+
+vq-015 | question_image_url
+  before: https://drive.google.com/file/d/1NU5KJYvyGcXpdFFB-FkVj5MmOWcMwRsb/view?usp=sharing
+  after:  img_1NU5KJYvyGcXpdFFB-FkVj5MmOWcMwRsb.jpg
+
+vq-015 | preview_q
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1NU5KJYvyGcXpdFFB-FkVj5MmOWcMwRsb&sz=w400")
+  after:  img_1NU5KJYvyGcXpdFFB-FkVj5MmOWcMwRsb.jpg
+
+vq-016 | option_1
+  before: https://drive.google.com/file/d/1ZHCEE91yTuKAFLtfTJIzWEGeP9hd4ke8/view?usp=drivesdk
+  after:  img_1ZHCEE91yTuKAFLtfTJIzWEGeP9hd4ke8.jpg
+
+vq-016 | option_2
+  before: https://drive.google.com/file/d/1VVaIWA5Glq6Fc1gpxZId0kOIcp2I9glI/view?usp=drivesdk
+  after:  img_1VVaIWA5Glq6Fc1gpxZId0kOIcp2I9glI.jpg
+
+vq-016 | option_3
+  before: https://drive.google.com/file/d/1rooazqy8K-rwxib_z1d8_r2j0WLe9IG2/view?usp=drivesdk
+  after:  img_1rooazqy8K-rwxib_z1d8_r2j0WLe9IG2.jpg
+
+vq-016 | option_4
+  before: https://drive.google.com/file/d/1FXYlMORkJ1XI4mPna9IMCAV4XaR7rjFc/view?usp=drivesdk
+  after:  img_1FXYlMORkJ1XI4mPna9IMCAV4XaR7rjFc.jpg
+
+vq-016 | preview_o1
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1ZHCEE91yTuKAFLtfTJIzWEGeP9hd4ke8&sz=w400")
+  after:  img_1ZHCEE91yTuKAFLtfTJIzWEGeP9hd4ke8.jpg
+
+vq-016 | preview_o2
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1VVaIWA5Glq6Fc1gpxZId0kOIcp2I9glI&sz=w400")
+  after:  img_1VVaIWA5Glq6Fc1gpxZId0kOIcp2I9glI.jpg
+
+vq-016 | preview_o3
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1rooazqy8K-rwxib_z1d8_r2j0WLe9IG2&sz=w400")
+  after:  img_1rooazqy8K-rwxib_z1d8_r2j0WLe9IG2.jpg
+
+vq-016 | preview_o4
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1FXYlMORkJ1XI4mPna9IMCAV4XaR7rjFc&sz=w400")
+  after:  img_1FXYlMORkJ1XI4mPna9IMCAV4XaR7rjFc.jpg
+
+vq-017 | question_image_url
+  before: https://drive.google.com/file/d/1I76aLipndV0iVXXQpbY0y8evnNn1Zf-v/view?usp=sharing
+  after:  img_1I76aLipndV0iVXXQpbY0y8evnNn1Zf-v.jpg
+
+vq-017 | preview_q
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1I76aLipndV0iVXXQpbY0y8evnNn1Zf-v&sz=w400")
+  after:  img_1I76aLipndV0iVXXQpbY0y8evnNn1Zf-v.jpg
+
+vq-018 | option_1
+  before: https://drive.google.com/file/d/1EtxY0Gm7TNdLea7f-zk3q81HiZauX7j2/view?usp=drivesdk
+  after:  img_1EtxY0Gm7TNdLea7f-zk3q81HiZauX7j2.jpg
+
+vq-018 | option_2
+  before: https://drive.google.com/file/d/1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd/view?usp=drivesdk
+  after:  img_1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd.jpg
+
+vq-018 | option_3
+  before: https://drive.google.com/file/d/13w1fWNGZg5UQXWuZxEyF6hk3IwncdefC/view?usp=drivesdk
+  after:  img_13w1fWNGZg5UQXWuZxEyF6hk3IwncdefC.jpg
+
+vq-018 | option_4
+  before: https://drive.google.com/file/d/1PygiMYqqr1QClPDVser-ZExOWwbl0btA/view?usp=drivesdk
+  after:  img_1PygiMYqqr1QClPDVser-ZExOWwbl0btA.jpg
+
+vq-018 | preview_o1
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1EtxY0Gm7TNdLea7f-zk3q81HiZauX7j2&sz=w400")
+  after:  img_1EtxY0Gm7TNdLea7f-zk3q81HiZauX7j2.jpg
+
+vq-018 | preview_o2
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd&sz=w400")
+  after:  img_1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd.jpg
+
+vq-018 | preview_o3
+  before: =IMAGE("https://drive.google.com/thumbnail?id=13w1fWNGZg5UQXWuZxEyF6hk3IwncdefC&sz=w400")
+  after:  img_13w1fWNGZg5UQXWuZxEyF6hk3IwncdefC.jpg
+
+vq-018 | preview_o4
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1PygiMYqqr1QClPDVser-ZExOWwbl0btA&sz=w400")
+  after:  img_1PygiMYqqr1QClPDVser-ZExOWwbl0btA.jpg
+
+vq-019 | question_image_url
+  before: https://drive.google.com/file/d/1MzTJ3tvUGf3sTbYSDEGQ4AlON6mgoQmu/view?usp=drivesdk
+  after:  img_1MzTJ3tvUGf3sTbYSDEGQ4AlON6mgoQmu.jpg
+
+vq-019 | preview_q
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1MzTJ3tvUGf3sTbYSDEGQ4AlON6mgoQmu&sz=w400")
+  after:  img_1MzTJ3tvUGf3sTbYSDEGQ4AlON6mgoQmu.jpg
+
+vq-020 | option_1
+  before: https://drive.google.com/file/d/1VVaIWA5Glq6Fc1gpxZId0kOIcp2I9glI/view?usp=drivesdk
+  after:  img_1VVaIWA5Glq6Fc1gpxZId0kOIcp2I9glI.jpg
+
+vq-020 | option_2
+  before: https://drive.google.com/file/d/1ZHCEE91yTuKAFLtfTJIzWEGeP9hd4ke8/view?usp=drivesdk
+  after:  img_1ZHCEE91yTuKAFLtfTJIzWEGeP9hd4ke8.jpg
+
+vq-020 | option_3
+  before: https://drive.google.com/file/d/1cDG-6DqYt9ddMpeUH_KuPJlUqWJeWSuT/view?usp=drivesdk
+  after:  img_1cDG-6DqYt9ddMpeUH_KuPJlUqWJeWSuT.jpg
+
+vq-020 | option_4
+  before: https://drive.google.com/file/d/1TVa3MNiJO-SNNF5GXH8nle4K3_erkO9v/view?usp=drivesdk
+  after:  img_1TVa3MNiJO-SNNF5GXH8nle4K3_erkO9v.jpg
+
+vq-020 | preview_o1
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1VVaIWA5Glq6Fc1gpxZId0kOIcp2I9glI&sz=w400")
+  after:  img_1VVaIWA5Glq6Fc1gpxZId0kOIcp2I9glI.jpg
+
+vq-020 | preview_o2
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1ZHCEE91yTuKAFLtfTJIzWEGeP9hd4ke8&sz=w400")
+  after:  img_1ZHCEE91yTuKAFLtfTJIzWEGeP9hd4ke8.jpg
+
+vq-020 | preview_o3
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1cDG-6DqYt9ddMpeUH_KuPJlUqWJeWSuT&sz=w400")
+  after:  img_1cDG-6DqYt9ddMpeUH_KuPJlUqWJeWSuT.jpg
+
+vq-020 | preview_o4
+  before: =IMAGE("https://drive.google.com/thumbnail?id=1TVa3MNiJO-SNNF5GXH8nle4K3_erkO9v&sz=w400")
+  after:  img_1TVa3MNiJO-SNNF5GXH8nle4K3_erkO9v.jpg
+
+vq-021 | option_1
+  before: https://drive.google.com/file/d/1xXsWEVB2mkhYZqwN-hC-XZaGlYheSGdH/view?usp=drivesdk
+  after:  img_1xXsWEVB2mkhYZqwN-hC-XZaGlYheSGdH.jpg
+
+vq-021 | option_2
+  before: https://drive.google.com/file/d/1eGaUNv_BadZ1bz_xaksCBIDXEZ2xQqJ4/view?usp=drivesdk
+  after:  img_1eGaUNv_BadZ1bz_xaksCBIDXEZ2xQqJ4.jpg
+
+vq-021 | option_3
+  before: https://drive.google.com/file/d/13CDnu-6m778I9EERIIeN4ph2noFSEr2U/view?usp=drivesdk
+  after:  img_13CDnu-6m778I9EERIIeN4ph2noFSEr2U.jpg
+
+vq-021 | option_4
+  before: https://drive.google.com/file/d/1A3FquGBwOyJm0bB0tQiiOUYZImaFR3jC/view?usp=drivesdk
+  after:  img_1A3FquGBwOyJm0bB0tQiiOUYZImaFR3jC.jpg
+
+vq-022 | question_image_url
+  before: https://drive.google.com/file/d/1jq1UvH_SmJ4BZB7L1e_5zW7S_1cvOIm9/view?usp=drivesdk
+  after:  img_1jq1UvH_SmJ4BZB7L1e_5zW7S_1cvOIm9.jpg
+
+vq-023 | option_1
+  before: https://drive.google.com/file/d/1gIjMqtPr0ZwO2dHpNIgucG-QqfK8vgGv/view?usp=drivesdk
+  after:  img_1gIjMqtPr0ZwO2dHpNIgucG-QqfK8vgGv.jpg
+
+vq-023 | option_2
+  before: https://drive.google.com/file/d/1GN9r25E-vhH3o0PmYTh_CeHpvAREF_Dr/view?usp=drivesdk
+  after:  img_1GN9r25E-vhH3o0PmYTh_CeHpvAREF_Dr.jpg
+
+vq-023 | option_3
+  before: https://drive.google.com/file/d/1OJKuzJl2KJWr8j_VYbM6n4PyCjIsKFKK/view?usp=drivesdk
+  after:  img_1OJKuzJl2KJWr8j_VYbM6n4PyCjIsKFKK.jpg
+
+vq-023 | option_4
+  before: https://drive.google.com/file/d/1TVa3MNiJO-SNNF5GXH8nle4K3_erkO9v/view?usp=drivesdk
+  after:  img_1TVa3MNiJO-SNNF5GXH8nle4K3_erkO9v.jpg
+
+vq-024 | question_image_url
+  before: https://drive.google.com/file/d/1HNyXF76GKzNFWWP1J8EabNv3nkGankU6/view?usp=sharing
+  after:  img_1HNyXF76GKzNFWWP1J8EabNv3nkGankU6.jpg
+
+vq-025 | option_1
+  before: https://drive.google.com/file/d/1Gqr9P1QQ6uIOZ4YjBekaR8dbb0SouEDx/view?usp=sharing
+  after:  img_1Gqr9P1QQ6uIOZ4YjBekaR8dbb0SouEDx.jpg
+
+vq-025 | option_2
+  before: https://drive.google.com/file/d/1qB2r3FmwBNPIxQPQhON4ZRP4z4W1JnRp/view?usp=sharing
+  after:  img_1qB2r3FmwBNPIxQPQhON4ZRP4z4W1JnRp.jpg
+
+vq-025 | option_3
+  before: https://drive.google.com/file/d/1ph1HlGtDILcPhA7Prdjm1woSMkT9jlbq/view?usp=sharing
+  after:  img_1ph1HlGtDILcPhA7Prdjm1woSMkT9jlbq.jpg
+
+vq-025 | option_4
+  before: https://drive.google.com/file/d/1OJKuzJl2KJWr8j_VYbM6n4PyCjIsKFKK/view?usp=drivesdk
+  after:  img_1OJKuzJl2KJWr8j_VYbM6n4PyCjIsKFKK.jpg
+
+vq-026 | option_1
+  before: https://drive.google.com/file/d/1tALpI6Qs6ImzmZUM1NNfHnSY3V9d4iIk/view?usp=drivesdk
+  after:  img_1tALpI6Qs6ImzmZUM1NNfHnSY3V9d4iIk.jpg
+
+vq-026 | option_2
+  before: https://drive.google.com/file/d/1bMetcuEvRyPg7mq7aZua_bKrtpPoUt5a/view?usp=drivesdk
+  after:  img_1bMetcuEvRyPg7mq7aZua_bKrtpPoUt5a.jpg
+
+vq-026 | option_3
+  before: https://drive.google.com/file/d/1Dfhxu5D6S7chFTvAsiU8NnC-WQL5t63W/view?usp=drivesdk
+  after:  img_1Dfhxu5D6S7chFTvAsiU8NnC-WQL5t63W.jpg
+
+vq-026 | option_4
+  before: https://drive.google.com/file/d/1A3FquGBwOyJm0bB0tQiiOUYZImaFR3jC/view?usp=drivesdk
+  after:  img_1A3FquGBwOyJm0bB0tQiiOUYZImaFR3jC.jpg
+
+vq-027 | option_1
+  before: https://drive.google.com/file/d/1hze6ij_rw6SvZ5k5gFrF6Y5dGW55uGPW/view?usp=sharing
+  after:  img_1hze6ij_rw6SvZ5k5gFrF6Y5dGW55uGPW.jpg
+
+vq-027 | option_2
+  before: https://drive.google.com/file/d/1mdOcnBpdzvbzTGKiHI_L4on-HU6vdMsz/view?usp=sharing
+  after:  img_1mdOcnBpdzvbzTGKiHI_L4on-HU6vdMsz.jpg
+
+vq-027 | option_4
+  before: https://drive.google.com/file/d/1I76aLipndV0iVXXQpbY0y8evnNn1Zf-v/view?usp=sharing
+  after:  img_1I76aLipndV0iVXXQpbY0y8evnNn1Zf-v.jpg
+
+vq-028 | question_image_url
+  before: https://drive.google.com/file/d/1huM6UPzvH8npa1bvCqUXp9Xwt1PNAECW/view?usp=sharing
+  after:  img_1huM6UPzvH8npa1bvCqUXp9Xwt1PNAECW.jpg
+
+vq-029 | option_1
+  before: https://drive.google.com/file/d/1AySIs_eUz5TFlrY-nqR3oHmxfEyrrVga/view?usp=sharing
+  after:  img_1AySIs_eUz5TFlrY-nqR3oHmxfEyrrVga.jpg
+
+vq-029 | option_2
+  before: https://drive.google.com/file/d/1_D6yyIjFF87-hV7sF5fxwYBAIZ1AdQYp/view?usp=sharing
+  after:  img_1_D6yyIjFF87-hV7sF5fxwYBAIZ1AdQYp.jpg
+
+vq-029 | option_4
+  before: https://drive.google.com/file/d/1vPDRrgJbz6-ByxhWSAHXIww1859rKoZl/view?usp=sharing
+  after:  img_1vPDRrgJbz6-ByxhWSAHXIww1859rKoZl.jpg
+
+vq-030 | question_image_url
+  before: https://drive.google.com/file/d/1vPDRrgJbz6-ByxhWSAHXIww1859rKoZl/view?usp=sharing
+  after:  img_1vPDRrgJbz6-ByxhWSAHXIww1859rKoZl.jpg
+
+vq-031 | option_1
+  before: https://drive.google.com/file/d/14kd0t6Bgigsom__5htI-ERZdO7ai2O0v/view?usp=drivesdk
+  after:  img_14kd0t6Bgigsom__5htI-ERZdO7ai2O0v.jpg
+
+vq-031 | option_2
+  before: https://drive.google.com/file/d/1rooazqy8K-rwxib_z1d8_r2j0WLe9IG2/view?usp=drivesdk
+  after:  img_1rooazqy8K-rwxib_z1d8_r2j0WLe9IG2.jpg
+
+vq-031 | option_3
+  before: https://drive.google.com/file/d/1FXYlMORkJ1XI4mPna9IMCAV4XaR7rjFc/view?usp=drivesdk
+  after:  img_1FXYlMORkJ1XI4mPna9IMCAV4XaR7rjFc.jpg
+
+vq-031 | option_4
+  before: https://drive.google.com/file/d/1cDG-6DqYt9ddMpeUH_KuPJlUqWJeWSuT/view?usp=drivesdk
+  after:  img_1cDG-6DqYt9ddMpeUH_KuPJlUqWJeWSuT.jpg
+
+vq-032 | question_image_url
+  before: https://drive.google.com/file/d/1GHcG6C5lMGNcG0PuWjEZwD883g6GiWr5/view?usp=drivesdk
+  after:  img_1GHcG6C5lMGNcG0PuWjEZwD883g6GiWr5.jpg
+
+vq-033 | option_1
+  before: https://drive.google.com/file/d/1xXsWEVB2mkhYZqwN-hC-XZaGlYheSGdH/view?usp=drivesdk
+  after:  img_1xXsWEVB2mkhYZqwN-hC-XZaGlYheSGdH.jpg
+
+vq-033 | option_2
+  before: https://drive.google.com/file/d/1QnkOm0ImKOGOSdydswUmfbCntb8ilRde/view?usp=drivesdk
+  after:  img_1QnkOm0ImKOGOSdydswUmfbCntb8ilRde.jpg
+
+vq-033 | option_3
+  before: https://drive.google.com/file/d/1PygiMYqqr1QClPDVser-ZExOWwbl0btA/view?usp=drivesdk
+  after:  img_1PygiMYqqr1QClPDVser-ZExOWwbl0btA.jpg
+
+vq-033 | option_4
+  before: https://drive.google.com/file/d/1J0-c4BAjwlbOUoNrfOn-h4zVs1FUDYug/view?usp=drivesdk
+  after:  img_1J0-c4BAjwlbOUoNrfOn-h4zVs1FUDYug.jpg
+
+vq-034 | question_image_url
+  before: https://drive.google.com/file/d/1EOb7wHq_TAOVzd-RMrhJ7eHTd93I9lMf/view?usp=sharing
+  after:  img_1EOb7wHq_TAOVzd-RMrhJ7eHTd93I9lMf.jpg
+
+vq-035 | option_1
+  before: https://drive.google.com/file/d/1J0-c4BAjwlbOUoNrfOn-h4zVs1FUDYug/view?usp=drivesdk
+  after:  img_1J0-c4BAjwlbOUoNrfOn-h4zVs1FUDYug.jpg
+
+vq-035 | option_2
+  before: https://drive.google.com/file/d/1EtxY0Gm7TNdLea7f-zk3q81HiZauX7j2/view?usp=drivesdk
+  after:  img_1EtxY0Gm7TNdLea7f-zk3q81HiZauX7j2.jpg
+
+vq-035 | option_3
+  before: https://drive.google.com/file/d/1ySsN6GFO8Rm-9M6jW1alVi_IgIzp5E9b/view?usp=drivesdk
+  after:  img_1ySsN6GFO8Rm-9M6jW1alVi_IgIzp5E9b.jpg
+
+vq-035 | option_4
+  before: https://drive.google.com/file/d/1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd/view?usp=drivesdk
+  after:  img_1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd.jpg
+
+vq-036 | question_image_url
+  before: https://drive.google.com/file/d/1A3FquGBwOyJm0bB0tQiiOUYZImaFR3jC/view?usp=drivesdk
+  after:  img_1A3FquGBwOyJm0bB0tQiiOUYZImaFR3jC.jpg
+
+vq-037 | option_1
+  before: https://drive.google.com/file/d/1QnkOm0ImKOGOSdydswUmfbCntb8ilRde/view?usp=drivesdk
+  after:  img_1QnkOm0ImKOGOSdydswUmfbCntb8ilRde.jpg
+
+vq-037 | option_2
+  before: https://drive.google.com/file/d/1PygiMYqqr1QClPDVser-ZExOWwbl0btA/view?usp=drivesdk
+  after:  img_1PygiMYqqr1QClPDVser-ZExOWwbl0btA.jpg
+
+vq-037 | option_3
+  before: https://drive.google.com/file/d/1UsgT9FrXx7c148VPL7mOk7_--FdnCClI/view?usp=drivesdk
+  after:  img_1UsgT9FrXx7c148VPL7mOk7_--FdnCClI.jpg
+
+vq-037 | option_4
+  before: https://drive.google.com/file/d/13QNSikc8W6cAWqM6MXSYMdx7Mzs9OKx5/view?usp=drivesdk
+  after:  img_13QNSikc8W6cAWqM6MXSYMdx7Mzs9OKx5.jpg
+
+vq-038 | question_image_url
+  before: https://drive.google.com/file/d/1Rz3eMVcEuQrm6O4U8860Ey4U2mVox1AR/view?usp=drivesdk
+  after:  img_1Rz3eMVcEuQrm6O4U8860Ey4U2mVox1AR.jpg
+
+vq-039 | option_1
+  before: https://drive.google.com/file/d/1bwj8c1cT7Hp3ezioZrfIgsAOd6DVVMic/view?usp=drivesdk
+  after:  img_1bwj8c1cT7Hp3ezioZrfIgsAOd6DVVMic.jpg
+
+vq-039 | option_2
+  before: https://drive.google.com/file/d/1OJKuzJl2KJWr8j_VYbM6n4PyCjIsKFKK/view?usp=drivesdk
+  after:  img_1OJKuzJl2KJWr8j_VYbM6n4PyCjIsKFKK.jpg
+
+vq-039 | option_3
+  before: https://drive.google.com/file/d/1GN9r25E-vhH3o0PmYTh_CeHpvAREF_Dr/view?usp=drivesdk
+  after:  img_1GN9r25E-vhH3o0PmYTh_CeHpvAREF_Dr.jpg
+
+vq-039 | option_4
+  before: https://drive.google.com/file/d/14kd0t6Bgigsom__5htI-ERZdO7ai2O0v/view?usp=drivesdk
+  after:  img_14kd0t6Bgigsom__5htI-ERZdO7ai2O0v.jpg
+
+vq-077 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-078 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-079 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-080 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-081 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-082 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-083 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-084 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-085 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-086 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-087 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-088 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-089 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-090 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-091 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-092 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-093 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-094 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-095 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-096 | question_image_url
+  before: https://drive.google.com/file/d/17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L/view?usp=drive_link
+  after:  img_17qyHjE-mQFkd1gJuY8wm2r7X_NFbK20L.jpg
+
+vq-097 | question_image_url
+  before: https://drive.google.com/file/d/1HXCk5EiYsV1wasApwmSaJXoOt3kG1tTN/view?usp=drive_link
+  after:  img_1HXCk5EiYsV1wasApwmSaJXoOt3kG1tTN.jpg
+
+vq-098 | question_image_url
+  before: https://drive.google.com/file/d/1HXCk5EiYsV1wasApwmSaJXoOt3kG1tTN/view?usp=drive_link
+  after:  img_1HXCk5EiYsV1wasApwmSaJXoOt3kG1tTN.jpg
+
+vq-099 | question_image_url
+  before: https://drive.google.com/file/d/1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy/view?usp=drive_link
+  after:  img_1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy.jpg
+
+vq-100 | question_image_url
+  before: https://drive.google.com/file/d/1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy/view?usp=drive_link
+  after:  img_1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy.jpg
+
+vq-101 | question_image_url
+  before: https://drive.google.com/file/d/1geVE4nF5seM65VDNFSWJpV6v_Zhi4VIv/view?usp=drive_link
+  after:  img_1geVE4nF5seM65VDNFSWJpV6v_Zhi4VIv.jpg
+
+vq-102 | question_image_url
+  before: https://drive.google.com/file/d/1geVE4nF5seM65VDNFSWJpV6v_Zhi4VIv/view?usp=drive_link
+  after:  img_1geVE4nF5seM65VDNFSWJpV6v_Zhi4VIv.jpg
+
+vq-103 | question_image_url
+  before: https://drive.google.com/file/d/12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA/view?usp=drive_link
+  after:  img_12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA.jpg
+
+vq-104 | question_image_url
+  before: https://drive.google.com/file/d/12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA/view?usp=drive_link
+  after:  img_12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA.jpg
+
+vq-105 | question_image_url
+  before: https://drive.google.com/file/d/1-GjE5CLrPGUNX0nNHUrh_8pCgJul4ihP/view?usp=drive_link
+  after:  img_1-GjE5CLrPGUNX0nNHUrh_8pCgJul4ihP.jpg
+
+vq-106 | question_image_url
+  before: https://drive.google.com/file/d/1-GjE5CLrPGUNX0nNHUrh_8pCgJul4ihP/view?usp=drive_link
+  after:  img_1-GjE5CLrPGUNX0nNHUrh_8pCgJul4ihP.jpg
+
+vq-107 | question_image_url
+  before: https://drive.google.com/file/d/1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV/view?usp=drive_link
+  after:  img_1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV.jpg
+
+vq-108 | question_image_url
+  before: https://drive.google.com/file/d/1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV/view?usp=drive_link
+  after:  img_1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV.jpg
+
+vq-109 | question_image_url
+  before: https://drive.google.com/file/d/1fBmcnKPfCD8-sTl8xnUQ-uufHJjCo9aq/view?usp=drive_link
+  after:  img_1fBmcnKPfCD8-sTl8xnUQ-uufHJjCo9aq.jpg
+
+vq-110 | question_image_url
+  before: https://drive.google.com/file/d/1fBmcnKPfCD8-sTl8xnUQ-uufHJjCo9aq/view?usp=drive_link
+  after:  img_1fBmcnKPfCD8-sTl8xnUQ-uufHJjCo9aq.jpg
+
+vq-111 | option_1
+  before: https://drive.google.com/file/d/1-GjE5CLrPGUNX0nNHUrh_8pCgJul4ihP/view?usp=drive_link
+  after:  img_1-GjE5CLrPGUNX0nNHUrh_8pCgJul4ihP.jpg
+
+vq-111 | option_2
+  before: https://drive.google.com/file/d/12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA/view?usp=drive_link
+  after:  img_12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA.jpg
+
+vq-111 | option_3
+  before: https://drive.google.com/file/d/1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV/view?usp=drive_link
+  after:  img_1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV.jpg
+
+vq-111 | option_4
+  before: https://drive.google.com/file/d/1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy/view?usp=drive_link
+  after:  img_1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy.jpg
+
+vq-112 | option_1
+  before: https://drive.google.com/file/d/1HXCk5EiYsV1wasApwmSaJXoOt3kG1tTN/view?usp=drive_link
+  after:  img_1HXCk5EiYsV1wasApwmSaJXoOt3kG1tTN.jpg
+
+vq-112 | option_2
+  before: https://drive.google.com/file/d/1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV/view?usp=drive_link
+  after:  img_1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV.jpg
+
+vq-112 | option_3
+  before: https://drive.google.com/file/d/1geVE4nF5seM65VDNFSWJpV6v_Zhi4VIv/view?usp=drive_link
+  after:  img_1geVE4nF5seM65VDNFSWJpV6v_Zhi4VIv.jpg
+
+vq-112 | option_4
+  before: https://drive.google.com/file/d/1fBmcnKPfCD8-sTl8xnUQ-uufHJjCo9aq/view?usp=drive_link
+  after:  img_1fBmcnKPfCD8-sTl8xnUQ-uufHJjCo9aq.jpg
+
+vq-113 | option_1
+  before: https://drive.google.com/file/d/12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA/view?usp=drive_link
+  after:  img_12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA.jpg
+
+vq-113 | option_2
+  before: https://drive.google.com/file/d/1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy/view?usp=drive_link
+  after:  img_1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy.jpg
+
+vq-113 | option_3
+  before: https://drive.google.com/file/d/1fBmcnKPfCD8-sTl8xnUQ-uufHJjCo9aq/view?usp=drive_link
+  after:  img_1fBmcnKPfCD8-sTl8xnUQ-uufHJjCo9aq.jpg
+
+vq-113 | option_4
+  before: https://drive.google.com/file/d/1-GjE5CLrPGUNX0nNHUrh_8pCgJul4ihP/view?usp=drive_link
+  after:  img_1-GjE5CLrPGUNX0nNHUrh_8pCgJul4ihP.jpg
+
+vq-114 | option_1
+  before: https://drive.google.com/file/d/1geVE4nF5seM65VDNFSWJpV6v_Zhi4VIv/view?usp=drive_link
+  after:  img_1geVE4nF5seM65VDNFSWJpV6v_Zhi4VIv.jpg
+
+vq-114 | option_2
+  before: https://drive.google.com/file/d/1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV/view?usp=drive_link
+  after:  img_1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV.jpg
+
+vq-114 | option_3
+  before: https://drive.google.com/file/d/1HXCk5EiYsV1wasApwmSaJXoOt3kG1tTN/view?usp=drive_link
+  after:  img_1HXCk5EiYsV1wasApwmSaJXoOt3kG1tTN.jpg
+
+vq-114 | option_4
+  before: https://drive.google.com/file/d/12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA/view?usp=drive_link
+  after:  img_12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA.jpg
+
+vq-115 | option_1
+  before: https://drive.google.com/file/d/1geVE4nF5seM65VDNFSWJpV6v_Zhi4VIv/view?usp=drive_link
+  after:  img_1geVE4nF5seM65VDNFSWJpV6v_Zhi4VIv.jpg
+
+vq-115 | option_2
+  before: https://drive.google.com/file/d/1fBmcnKPfCD8-sTl8xnUQ-uufHJjCo9aq/view?usp=drive_link
+  after:  img_1fBmcnKPfCD8-sTl8xnUQ-uufHJjCo9aq.jpg
+
+vq-115 | option_3
+  before: https://drive.google.com/file/d/1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy/view?usp=drive_link
+  after:  img_1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy.jpg
+
+vq-115 | option_4
+  before: https://drive.google.com/file/d/1HXCk5EiYsV1wasApwmSaJXoOt3kG1tTN/view?usp=drive_link
+  after:  img_1HXCk5EiYsV1wasApwmSaJXoOt3kG1tTN.jpg
+
+vq-116 | option_1
+  before: https://drive.google.com/file/d/1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV/view?usp=drive_link
+  after:  img_1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV.jpg
+
+vq-116 | option_2
+  before: https://drive.google.com/file/d/1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy/view?usp=drive_link
+  after:  img_1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy.jpg
+
+vq-116 | option_3
+  before: https://drive.google.com/file/d/12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA/view?usp=drive_link
+  after:  img_12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA.jpg
+
+vq-116 | option_4
+  before: https://drive.google.com/file/d/1-GjE5CLrPGUNX0nNHUrh_8pCgJul4ihP/view?usp=drive_link
+  after:  img_1-GjE5CLrPGUNX0nNHUrh_8pCgJul4ihP.jpg
+
+vq-117 | option_1
+  before: https://drive.google.com/file/d/1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy/view?usp=drive_link
+  after:  img_1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy.jpg
+
+vq-117 | option_2
+  before: https://drive.google.com/file/d/12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA/view?usp=drive_link
+  after:  img_12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA.jpg
+
+vq-117 | option_3
+  before: https://drive.google.com/file/d/1HXCk5EiYsV1wasApwmSaJXoOt3kG1tTN/view?usp=drive_link
+  after:  img_1HXCk5EiYsV1wasApwmSaJXoOt3kG1tTN.jpg
+
+vq-117 | option_4
+  before: https://drive.google.com/file/d/1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV/view?usp=drive_link
+  after:  img_1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV.jpg
+
+vq-118 | option_1
+  before: https://drive.google.com/file/d/1HXCk5EiYsV1wasApwmSaJXoOt3kG1tTN/view?usp=drive_link
+  after:  img_1HXCk5EiYsV1wasApwmSaJXoOt3kG1tTN.jpg
+
+vq-118 | option_2
+  before: https://drive.google.com/file/d/1-GjE5CLrPGUNX0nNHUrh_8pCgJul4ihP/view?usp=drive_link
+  after:  img_1-GjE5CLrPGUNX0nNHUrh_8pCgJul4ihP.jpg
+
+vq-118 | option_3
+  before: https://drive.google.com/file/d/1fBmcnKPfCD8-sTl8xnUQ-uufHJjCo9aq/view?usp=drive_link
+  after:  img_1fBmcnKPfCD8-sTl8xnUQ-uufHJjCo9aq.jpg
+
+vq-118 | option_4
+  before: https://drive.google.com/file/d/1geVE4nF5seM65VDNFSWJpV6v_Zhi4VIv/view?usp=drive_link
+  after:  img_1geVE4nF5seM65VDNFSWJpV6v_Zhi4VIv.jpg
+
+vq-119 | option_1
+  before: https://drive.google.com/file/d/1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV/view?usp=drive_link
+  after:  img_1SuK7lA0Vla32JVV0TBKiwFOjYmdT4wxV.jpg
+
+vq-119 | option_2
+  before: https://drive.google.com/file/d/12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA/view?usp=drive_link
+  after:  img_12YYOC6BFIItCNHgHoMTJrHPt3_AJTjlA.jpg
+
+vq-119 | option_3
+  before: https://drive.google.com/file/d/1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy/view?usp=drive_link
+  after:  img_1qZ1fKzqcwvRaRlm6UHEvJWr8VaOHYncy.jpg
+
+vq-119 | option_4
+  before: https://drive.google.com/file/d/1fBmcnKPfCD8-sTl8xnUQ-uufHJjCo9aq/view?usp=drive_link
+  after:  img_1fBmcnKPfCD8-sTl8xnUQ-uufHJjCo9aq.jpg
+

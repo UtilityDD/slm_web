@@ -121,6 +121,18 @@ node scripts/maintenance/retry_missing_visual_quiz_images.mjs
 
 Retries failed downloads using thumbnail / uc / lh3 URLs.
 
+```bash
+node scripts/maintenance/apply_visual_quiz_local_urls.mjs
+```
+
+Fetches the live sheet and writes `live_visual_quiz_migrated_preview.csv` + `live_visual_quiz_cutover_diff.txt` for manual review before you edit the Google Sheet.
+
+```bash
+node scripts/maintenance/validate_visual_quiz_sheet.mjs
+```
+
+Run after updating the live sheet to confirm local filenames exist and ready Drive URLs were migrated.
+
 ## Extension points
 
 - To change the visual ratio:
