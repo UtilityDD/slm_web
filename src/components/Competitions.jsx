@@ -113,7 +113,7 @@ const toLocalQuizImagePath = (ref) => {
     return driveId ? `${LOCAL_QUIZ_IMAGE_DIR}img_${driveId}.jpg` : '';
 };
 
-/** Local path first, then Drive fallbacks — safe during sheet migration. */
+/** Local file first, then Drive fallbacks — works for both img_* and Drive sheet cells. */
 const buildImageFallbackCandidates = (rawUrl) => {
     const trimmed = String(rawUrl || '').trim();
     if (!trimmed) return [];
