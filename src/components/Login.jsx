@@ -14,6 +14,32 @@ function LoginLogo() {
     );
 }
 
+function HeroImageCrossfade({ images, activeIndex }) {
+    useEffect(() => {
+        images.forEach((src) => {
+            const img = new Image();
+            img.src = src;
+        });
+    }, [images]);
+
+    return (
+        <div className="relative w-full h-36 sm:h-40 bg-slate-900 overflow-hidden">
+            {images.map((src, i) => (
+                <img
+                    key={src}
+                    src={src}
+                    alt=""
+                    aria-hidden={i !== activeIndex}
+                    decoding="async"
+                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${
+                        i === activeIndex ? 'opacity-100 z-[1]' : 'opacity-0 z-0'
+                    }`}
+                />
+            ))}
+        </div>
+    );
+}
+
 function LoginPageShell({
     emotionalImageIndex,
     emotionalImages,
@@ -45,19 +71,13 @@ function LoginPageShell({
                     <button
                         type="button"
                         onClick={onOpenAwarenessStories}
-                        className="nb-card overflow-hidden p-0 w-full text-left group relative touch-manipulation"
+                        className="nb-card overflow-hidden p-0 w-full text-left relative block touch-manipulation active:scale-[0.99] transition-transform"
                         aria-label="Open awareness stories — Korun Kahini"
                     >
-                        <img
-                            src={emotionalImages[emotionalImageIndex]}
-                            alt=""
-                            className="w-full h-36 sm:h-40 object-cover transition-opacity duration-1000 ease-in-out group-active:opacity-90"
-                            key={emotionalImageIndex}
-                        />
-                        <div className="absolute inset-x-0 bottom-0 border-t-2 border-slate-900 bg-orange-500 px-3 py-2.5 flex items-center justify-between gap-2">
-                            <span className="font-black text-white text-sm sm:text-base">করুণ কাহিনী</span>
-                            <span className="text-white text-xs font-bold nb-mono uppercase tracking-wide">Read →</span>
-                        </div>
+                        <HeroImageCrossfade images={emotionalImages} activeIndex={emotionalImageIndex} />
+                        <span className="pointer-events-none absolute bottom-2 right-2 z-20 rounded border-2 border-slate-900 bg-slate-900/80 px-2 py-1 text-[10px] font-bold text-white shadow-[2px_2px_0_#0f172a] sm:text-xs">
+                            করুণ কাহিনী →
+                        </span>
                     </button>
                 )}
 
