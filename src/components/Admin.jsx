@@ -772,6 +772,16 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
             )}
             {userProfile?.role === 'admin' && (
               <button
+                onClick={() => setCurrentView('visual-quiz-preview')}
+                className="px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold shadow-lg shadow-violet-500/20 transition-all flex items-center gap-2 text-sm"
+                title={language === 'en' ? 'Preview visual quiz CSV drafts' : 'ভিজুয়াল কুইজ প্রিভিউ'}
+              >
+                <span>🖼️</span>
+                {language === 'en' ? 'Quiz Preview' : 'কুইজ প্রিভিউ'}
+              </button>
+            )}
+            {userProfile?.role === 'admin' && (
+              <button
                 onClick={() => setCurrentView('admin-services')}
                 className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg shadow-red-500/20 transition-all flex items-center gap-2 text-sm"
               >

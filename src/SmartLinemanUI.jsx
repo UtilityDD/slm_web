@@ -38,6 +38,7 @@ const Training = lazy(() => import("./components/safety/Training"));
 const Login = lazy(() => import("./components/Login"));
 const Landing = lazy(() => import("./components/Landing"));
 const Admin = lazy(() => import("./components/Admin"));
+const VisualQuizPreview = lazy(() => import("./components/VisualQuizPreview"));
 const AdminServices = lazy(() => import("./components/AdminServices"));
 const Home = lazy(() => import("./components/Home"));
 const Guide = lazy(() => import("./components/Guide"));
@@ -1036,6 +1037,9 @@ export default function SmartLinemanUI() {
         case 'admin':
           if (!['admin', 'safety mitra', 'lineman'].includes(userProfile?.role)) { setCurrentView('home'); return null; }
           return <Admin language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;
+        case 'visual-quiz-preview':
+          if (userProfile?.role !== 'admin') { setCurrentView('home'); return null; }
+          return <VisualQuizPreview language={language} setCurrentView={setCurrentView} />;
         case 'admin-services':
           if (!['admin', 'safety mitra'].includes(userProfile?.role)) { setCurrentView('home'); return null; }
           return <AdminServices language={language} userProfile={userProfile} />;
