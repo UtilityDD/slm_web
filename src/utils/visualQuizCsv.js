@@ -4,6 +4,7 @@ export const VISUAL_QUIZ_LIVE_CSV_URL =
     'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjxPeFNRSNfOgc80sT-WLmqf0bQqN-YjjSbQoE6i432tL-sK1zg1zHfaQxv4l1YMThgwa1DyreVgCk/pub?gid=160776708&single=true&output=csv';
 
 export const VISUAL_QUIZ_BATCH_02_URL = '/quiz_management/visual_quiz_batch_02.csv';
+export const VISUAL_QUIZ_BATCH_03_URL = '/quiz_management/visual_quiz_batch_03.csv';
 
 const splitCSVLine = (line) => {
     const result = [];

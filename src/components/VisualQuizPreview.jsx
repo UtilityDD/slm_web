@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     VISUAL_QUIZ_BATCH_02_URL,
+    VISUAL_QUIZ_BATCH_03_URL,
     VISUAL_QUIZ_LIVE_CSV_URL,
     parseVisualQuizCSV,
     rowsToVisualQuestions,
@@ -18,13 +19,14 @@ import {
 const SOURCES = {
     live: { id: 'live', labelBn: 'লাইভ Google Sheet', labelEn: 'Live Google Sheet', url: VISUAL_QUIZ_LIVE_CSV_URL },
     batch02: { id: 'batch02', labelBn: 'Draft: Batch 02 (vq-120+)', labelEn: 'Draft: Batch 02 (vq-120+)', url: VISUAL_QUIZ_BATCH_02_URL },
+    batch03: { id: 'batch03', labelBn: 'Draft: Batch 03 — TCEE Unit 3 Symbols (vq-138+)', labelEn: 'Draft: Batch 03 — TCEE Unit 3 Symbols (vq-138+)', url: VISUAL_QUIZ_BATCH_03_URL },
 };
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D'];
 
 export default function VisualQuizPreview({ language = 'bn', setCurrentView }) {
     const isBn = language === 'bn';
-    const [sourceId, setSourceId] = useState('batch02');
+    const [sourceId, setSourceId] = useState('batch03');
     const [includeDisabled, setIncludeDisabled] = useState(true);
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
