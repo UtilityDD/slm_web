@@ -84,31 +84,72 @@ const stringToSeed = (str) => {
     return Math.abs(hash);
 };
 
+const LOCAL_QUIZ_IMAGE_DIR = '/images/quizzes/';
+
 const extractDriveFileId = (url) => {
     if (!url || typeof url !== 'string') return '';
     const match = url.match(/\/d\/([a-zA-Z0-9_-]+)\/|[?&]id=([a-zA-Z0-9_-]+)/);
     return match ? (match[1] || match[2] || '') : '';
 };
 
-const buildDriveImageCandidates = (url) => {
-    const trimmed = String(url || '').trim();
+const extractDriveIdFromMediaRef = (ref) => {
+    const trimmed = String(ref || '').trim();
+    if (!trimmed) return '';
+    const fromDrive = extractDriveFileId(trimmed);
+    if (fromDrive) return fromDrive;
+    const localMatch = trimmed.match(/(?:^|\/)img_([a-zA-Z0-9_-]+)\.(?:jpg|jpeg|png|webp)$/i);
+    return localMatch ? localMatch[1] : '';
+};
+
+const toLocalQuizImagePath = (ref) => {
+    const trimmed = String(ref || '').trim();
+    if (!trimmed) return '';
+    if (trimmed.startsWith(`${LOCAL_QUIZ_IMAGE_DIR}`)) return trimmed;
+    if (trimmed.startsWith('/')) return trimmed;
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+        return `${LOCAL_QUIZ_IMAGE_DIR}${trimmed}`;
+    }
+    const driveId = extractDriveIdFromMediaRef(trimmed);
+    return driveId ? `${LOCAL_QUIZ_IMAGE_DIR}img_${driveId}.jpg` : '';
+};
+
+/** Local path first, then Drive fallbacks — safe during sheet migration. */
+const buildImageFallbackCandidates = (rawUrl) => {
+    const trimmed = String(rawUrl || '').trim();
     if (!trimmed) return [];
-    if (!trimmed.includes('drive.google.com')) return [trimmed];
 
-    const id = extractDriveFileId(trimmed);
-    if (!id) return [trimmed];
+    const candidates = [];
+    const localPath = toLocalQuizImagePath(trimmed);
+    if (localPath) candidates.push(localPath);
 
-    return [
-        `https://drive.google.com/thumbnail?id=${id}&sz=w1200`,
-        `https://drive.google.com/uc?export=view&id=${id}`,
-        `https://lh3.googleusercontent.com/d/${id}=w1200`
-    ];
+    const driveId = extractDriveIdFromMediaRef(trimmed);
+    if (driveId) {
+        [
+            `https://drive.google.com/thumbnail?id=${driveId}&sz=w1200`,
+            `https://drive.google.com/uc?export=view&id=${driveId}`,
+            `https://lh3.googleusercontent.com/d/${driveId}=w1200`,
+        ].forEach((url) => {
+            if (!candidates.includes(url)) candidates.push(url);
+        });
+    } else if (trimmed.includes('drive.google.com')) {
+        const id = extractDriveFileId(trimmed);
+        if (id) {
+            [
+                `https://drive.google.com/thumbnail?id=${id}&sz=w1200`,
+                `https://drive.google.com/uc?export=view&id=${id}`,
+                `https://lh3.googleusercontent.com/d/${id}=w1200`,
+            ].forEach((url) => {
+                if (!candidates.includes(url)) candidates.push(url);
+            });
+        }
+    } else if ((trimmed.startsWith('http://') || trimmed.startsWith('https://')) && !candidates.includes(trimmed)) {
+        candidates.push(trimmed);
+    }
+
+    return candidates;
 };
 
-const toDisplayImageUrl = (url) => {
-    const candidates = buildDriveImageCandidates(url);
-    return candidates[0] || '';
-};
+const toDisplayImageUrl = (url) => buildImageFallbackCandidates(url)[0] || '';
 
 const isImageOption = (option) => {
     const value = String(option || '').trim().toLowerCase();
@@ -150,7 +191,7 @@ const handleImageLoadError = (event, originalUrl) => {
     const img = event.currentTarget;
     if (!img) return false;
 
-    const candidates = buildDriveImageCandidates(originalUrl);
+    const candidates = buildImageFallbackCandidates(originalUrl);
     if (!candidates.length) return true;
 
     const currentIndex = Number.parseInt(img.dataset.fallbackIndex || '0', 10);
