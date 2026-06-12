@@ -14,6 +14,15 @@ function LoginLogo() {
     );
 }
 
+/** Per-slide object-position — faces sit high in these square crops; wide hero strips top/bottom by default. */
+const HERO_IMAGE_FOCUS = {
+    '/assets/emotional/lineman.png': 'center 42%',
+    '/assets/emotional/child.png': 'center 14%',
+    '/assets/emotional/wife.png': '38% 32%',
+    '/assets/emotional/mother.png': 'center 10%',
+    '/assets/emotional/eyes.png': 'center 12%',
+};
+
 function HeroImageCrossfade({ images, activeIndex }) {
     useEffect(() => {
         images.forEach((src) => {
@@ -23,7 +32,7 @@ function HeroImageCrossfade({ images, activeIndex }) {
     }, [images]);
 
     return (
-        <div className="relative w-full h-36 sm:h-40 bg-slate-900 overflow-hidden">
+        <div className="relative w-full h-40 sm:h-44 bg-slate-900 overflow-hidden">
             {images.map((src, i) => (
                 <img
                     key={src}
@@ -34,6 +43,7 @@ function HeroImageCrossfade({ images, activeIndex }) {
                     className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${
                         i === activeIndex ? 'opacity-100 z-[1]' : 'opacity-0 z-0'
                     }`}
+                    style={{ objectPosition: HERO_IMAGE_FOCUS[src] || 'center 20%' }}
                 />
             ))}
         </div>
