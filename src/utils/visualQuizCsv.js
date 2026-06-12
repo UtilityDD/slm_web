@@ -7,6 +7,7 @@ export const VISUAL_QUIZ_BATCH_02_URL = '/quiz_management/visual_quiz_batch_02.c
 export const VISUAL_QUIZ_BATCH_03_URL = '/quiz_management/visual_quiz_batch_03.csv';
 export const VISUAL_QUIZ_BATCH_04_URL = '/quiz_management/visual_quiz_batch_04.csv';
 export const VISUAL_QUIZ_BATCH_05_URL = '/quiz_management/visual_quiz_batch_05.csv';
+export const VISUAL_QUIZ_BATCH_06_URL = '/quiz_management/visual_quiz_batch_06.csv';
 
 const splitCSVLine = (line) => {
     const result = [];

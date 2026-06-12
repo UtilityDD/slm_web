@@ -4,6 +4,7 @@ import {
     VISUAL_QUIZ_BATCH_03_URL,
     VISUAL_QUIZ_BATCH_04_URL,
     VISUAL_QUIZ_BATCH_05_URL,
+    VISUAL_QUIZ_BATCH_06_URL,
     VISUAL_QUIZ_LIVE_CSV_URL,
     parseVisualQuizCSV,
     rowsToVisualQuestions,
@@ -24,13 +25,14 @@ const SOURCES = {
     batch03: { id: 'batch03', labelBn: 'Draft: Batch 03 — TCEE Unit 3 Symbols (vq-138+)', labelEn: 'Draft: Batch 03 — TCEE Unit 3 Symbols (vq-138+)', url: VISUAL_QUIZ_BATCH_03_URL },
     batch04: { id: 'batch04', labelBn: 'Draft: Batch 04 — Lineman Hand Tools (vq-162+)', labelEn: 'Draft: Batch 04 — Lineman Hand Tools (vq-162+)', url: VISUAL_QUIZ_BATCH_04_URL },
     batch05: { id: 'batch05', labelBn: 'Draft: Batch 05 — ACSR Conductors (vq-185+)', labelEn: 'Draft: Batch 05 — ACSR Conductors (vq-185+)', url: VISUAL_QUIZ_BATCH_05_URL },
+    batch06: { id: 'batch06', labelBn: 'Draft: Batch 06 — DTR Parts (vq-225+)', labelEn: 'Draft: Batch 06 — DTR Parts (vq-225+)', url: VISUAL_QUIZ_BATCH_06_URL },
 };
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D'];
 
 export default function VisualQuizPreview({ language = 'bn', setCurrentView }) {
     const isBn = language === 'bn';
-    const [sourceId, setSourceId] = useState('batch05');
+    const [sourceId, setSourceId] = useState('batch06');
     const [includeDisabled, setIncludeDisabled] = useState(true);
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
