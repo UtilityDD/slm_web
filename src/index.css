@@ -301,6 +301,34 @@ body,
     }
   }
 
+  .landing-facebook-link {
+    color: #fff;
+    background: #1877f2;
+    border: 2.5px solid #0f172a;
+    border-radius: 0.75rem;
+    box-shadow: 3px 3px 0 #0f172a;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .landing-facebook-link:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 #0f172a;
+  }
+
+  .landing-facebook-link:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 #0f172a;
+  }
+
+  .landing-text-link {
+    text-underline-offset: 3px;
+    transition: color 0.15s ease;
+  }
+
+  .landing-text-link:hover {
+    text-decoration: underline;
+  }
+
   /* Neo-brutal theme (landing, login, etc.) */
   .neo-brutal,
   .landing-neo-brutal {

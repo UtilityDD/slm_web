@@ -15,7 +15,6 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
     const touchStartX = useRef(null);
 
     const title = language === 'en' ? 'Monthly prizes' : 'মাসের পুরস্কার';
-    const sectionLabel = language === 'en' ? 'Hall of fame' : 'হল অফ ফেম';
 
     const goTo = useCallback((next) => {
         if (slides.length === 0) return;
@@ -58,7 +57,6 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
 
     return (
         <section className="relative z-10 mb-6 sm:mb-8" aria-label={title}>
-            <p className="landing-section-title mb-3">{sectionLabel}</p>
             <div
                 className="nb-card overflow-hidden bg-white rounded-xl"
                 onMouseEnter={() => setPaused(true)}
