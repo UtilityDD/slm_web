@@ -477,25 +477,28 @@ function LeaderPodiumGrid({ title, iconName, iconTone, players, ptsLabel, bnFont
   if (!players?.length) return null;
 
   const rankCardClass = [
-    'nb-card bg-amber-100',
-    'nb-card bg-slate-100',
-    'nb-card bg-orange-100',
+    'nb-card bg-amber-50/90',
+    'nb-card bg-slate-50/90',
+    'nb-card bg-orange-50/90',
   ];
   const rankBadgeText = bnFont ? ['১ম', '২য়', '৩য়'] : ['1st', '2nd', '3rd'];
 
   return (
     <section className="mb-8 sm:mb-10 relative z-10">
-      <h2 className="text-base sm:text-lg font-black text-slate-900 mb-4 sm:mb-5 flex items-center gap-3">
-        <SectionIconBadge name={iconName} tone={iconTone} />
-        <span className="leading-snug nb-mono uppercase tracking-wide">{title}</span>
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+      <div className="flex items-center gap-3 mb-4 sm:mb-5">
+        <SectionIconBadge name={iconName} tone={iconTone} className="rounded-lg" />
+        <div>
+          <p className="landing-section-title">{bnFont ? 'লিডারবোর্ড' : 'Leaderboard'}</p>
+          <h2 className={`text-base sm:text-lg font-black text-slate-900 leading-snug ${bnFont ? 'font-bengali' : ''}`}>{title}</h2>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {players.map((player, idx) => {
           const isFirst = idx === 0;
           return (
             <div
               key={`${player.id}-${idx}`}
-              className={`relative overflow-hidden flex flex-row sm:flex-col items-center sm:text-center gap-4 sm:gap-3 p-4 sm:p-5 sm:pt-7 ${rankCardClass[idx] || rankCardClass[2]}`}
+              className={`landing-podium-card relative overflow-hidden flex flex-row sm:flex-col items-center sm:text-center gap-3 sm:gap-3 p-4 sm:p-5 sm:pt-6 rounded-xl ${rankCardClass[idx] || rankCardClass[2]}`}
             >
               <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 flex items-center gap-1.5">
                 <RankBadge rank={idx} bnFont={bnFont} />
@@ -539,17 +542,17 @@ function LeaderPodiumGrid({ title, iconName, iconTone, players, ptsLabel, bnFont
 
 const StatTile = ({ label, value, iconName, tone = 'orange', loading, sub }) => {
   return (
-    <div className="nb-card p-4 sm:p-5">
-      <div className="flex flex-row items-center gap-4 sm:gap-5 text-left">
-        <div className={`nb-icon-badge w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center shrink-0 text-white ${ICON_TONES[tone] || ICON_TONES.orange}`}>
-          <LandingIcon name={iconName} className="w-5.5 h-5.5 sm:w-7 sm:h-7" strokeWidth={2} />
+    <div className="nb-card landing-stat-card p-4 sm:p-5 rounded-xl">
+      <div className="flex flex-row items-center gap-3.5 sm:gap-4 text-left">
+        <div className={`nb-icon-badge w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center shrink-0 text-white rounded-lg ${ICON_TONES[tone] || ICON_TONES.orange}`}>
+          <LandingIcon name={iconName} className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="nb-stat-value text-2xl sm:text-3xl lg:text-4xl text-slate-900 leading-none">
+          <p className="nb-stat-value text-2xl sm:text-3xl text-slate-900 leading-none tabular-nums">
             <AnimatedNumber value={value} loading={loading} />
           </p>
-          <p className="nb-stat-label mt-1.5 sm:mt-2 text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider line-clamp-1">{label}</p>
-          {sub && <p className="text-[10px] font-bold text-slate-600 mt-1 truncate nb-mono">{sub}</p>}
+          <p className="nb-stat-label mt-1.5 text-[10px] sm:text-[11px] line-clamp-2">{label}</p>
+          {sub && <p className="text-[10px] font-semibold text-slate-500 mt-1 truncate">{sub}</p>}
         </div>
       </div>
     </div>
@@ -831,17 +834,22 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
 
   return (
     <div
-      className={`landing-page-light landing-neo-brutal min-h-full text-slate-900 pb-[calc(9.5rem+env(safe-area-inset-bottom,0px))] sm:pb-16 ${bnFont ? 'lang-bn' : 'font-sans'}`}
+      className={`landing-page-light landing-neo-brutal landing-modern min-h-full text-slate-900 pb-[calc(9.5rem+env(safe-area-inset-bottom,0px))] sm:pb-16 ${bnFont ? 'lang-bn' : 'font-sans'}`}
     >
       <div className="nb-hazard" aria-hidden="true" />
 
       {/* Top bar */}
-      <div className="sticky top-0 z-20 border-b-[2.5px] border-slate-900 bg-white safe-area-inset-top">
+      <div className="sticky top-0 z-20 landing-header-bar safe-area-inset-top">
         <div className="max-w-5xl mx-auto px-3 sm:px-6">
-          <div className="h-12 sm:h-16 flex items-center justify-between gap-2 sm:gap-3">
-            <div className="flex items-baseline gap-1 sm:gap-1.5 select-none min-w-0">
-              <span className="text-base sm:text-2xl font-black text-slate-900 tracking-tight truncate">SmartLineMan</span>
-              <span className="text-[8px] sm:text-[10px] font-black text-slate-900 bg-orange-400 px-1 sm:px-1.5 py-0.5 rounded border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] shrink-0 nb-mono">.in</span>
+          <div className="h-12 sm:h-14 flex items-center justify-between gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 select-none min-w-0">
+              <div className="nb-icon-badge w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-orange-500 text-white rounded-lg shrink-0">
+                <LandingIcon name="shield" className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
+              </div>
+              <div className="flex items-baseline gap-1 min-w-0">
+                <span className="text-sm sm:text-xl font-black text-slate-900 tracking-tight truncate">SmartLineMan</span>
+                <span className="text-[8px] sm:text-[10px] font-black text-slate-900 bg-orange-400 px-1 py-0.5 rounded border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] shrink-0 nb-mono">.in</span>
+              </div>
             </div>
 
             <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
@@ -887,8 +895,13 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
       <div className="max-w-5xl mx-auto px-3 sm:px-6 pb-8 sm:pb-16 relative">
 
         {/* Hero Section */}
-        <section className="text-center max-w-3xl mx-auto pt-5 sm:pt-12 pb-8 sm:pb-12 relative z-10">
-          <h1 className={`font-black text-slate-900 leading-[1.2] sm:leading-tight mb-3 sm:mb-4 tracking-tight text-balance ${bnFont ? 'text-[1.6rem] sm:text-4xl md:text-6xl' : 'text-3xl sm:text-5xl md:text-6xl'}`}>
+        <section className="relative text-center max-w-3xl mx-auto pt-6 sm:pt-12 pb-8 sm:pb-10 z-10">
+          <div className="landing-hero-glow" aria-hidden="true" />
+          <div className="landing-hero-badge">
+            <span className="landing-hero-badge-dot" aria-hidden="true" />
+            {t.live}
+          </div>
+          <h1 className={`font-black text-slate-900 leading-[1.25] sm:leading-tight mb-3 sm:mb-4 tracking-tight text-balance ${bnFont ? 'text-xl sm:text-3xl md:text-4xl' : 'text-2xl sm:text-4xl md:text-[2.75rem]'}`}>
             {language === 'bn' ? (
               <>
                 প্রশিক্ষণ নিন। প্রতিযোগিতা করুন। <span className="text-orange-600">নিরাপদ থাকুন।</span>
@@ -899,31 +912,33 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
               </>
             )}
           </h1>
-          
-          <p className="hidden sm:block text-slate-500 text-sm font-semibold tracking-wider uppercase mb-2">{t.tagline}</p>
-          <p className={`text-base sm:text-lg text-slate-600 leading-relaxed mb-6 sm:mb-8 font-medium mx-auto ${bnFont ? 'landing-bn-reading' : ''}`}>{t.heroSubtitle}</p>
-          
+
+          <p className="text-slate-500 text-xs sm:text-sm font-semibold tracking-wide uppercase mb-2 nb-mono">{t.tagline}</p>
+          <p className={`text-sm sm:text-base text-slate-600 leading-relaxed mb-6 sm:mb-8 font-medium mx-auto max-w-2xl ${bnFont ? 'landing-bn-reading' : ''}`}>{t.heroSubtitle}</p>
+
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               type="button"
               onClick={() => setCurrentView('login')}
-              className="hidden sm:inline-flex min-h-[48px] px-8 py-4 nb-btn-primary font-black text-lg touch-manipulation items-center justify-center"
+              className="hidden sm:inline-flex min-h-[44px] px-7 py-3 nb-btn-primary font-black text-base touch-manipulation items-center justify-center rounded-lg"
             >
               {t.login}
             </button>
             <button
               type="button"
               onClick={scrollToLifeSkillsSection}
-              className="w-full sm:w-auto min-h-[48px] px-6 py-3.5 sm:py-4 nb-btn-secondary font-bold text-center flex items-center justify-center gap-2 touch-manipulation"
+              className="w-full sm:w-auto min-h-[44px] px-6 py-3 nb-btn-secondary font-bold text-center flex items-center justify-center gap-2 touch-manipulation rounded-lg text-sm sm:text-base"
             >
               {t.exploreLifeSkills}
-              <svg className="w-4 h-4 text-slate-400 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
+              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
             </button>
           </div>
         </section>
 
         {/* Dynamic Stats Grid */}
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-8 sm:mb-12 relative z-10">
+        <section className="mb-8 sm:mb-10 relative z-10">
+          <p className="landing-section-title mb-3 sm:mb-4">{bnFont ? 'কমিউনিটি সংখ্যা' : 'Community at a glance'}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <StatTile label={t.statsUsers} value={stats.users} iconName="users" tone="orange" loading={loading} />
           <StatTile
             label={t.statsToppers}
@@ -941,6 +956,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
             loading={loading}
             sub={prizeSub}
           />
+          </div>
         </section>
 
         <LandingPrizeCarousel
@@ -969,29 +985,28 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
         />
 
         {/* Vision & Mission section */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-12 relative z-10">
-          <article className="nb-card p-5 sm:p-7 bg-amber-50">
-            <SectionIconBadge name="eye" tone="amber" className="mb-4" />
-            <h2 className="text-xl font-black text-slate-900 mb-2.5">{t.visionTitle}</h2>
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5 mb-8 sm:mb-12 relative z-10">
+          <article className="nb-card landing-podium-card p-5 sm:p-6 bg-amber-50/80 rounded-xl">
+            <SectionIconBadge name="eye" tone="amber" className="mb-4 rounded-lg" />
+            <h2 className="text-lg sm:text-xl font-black text-slate-900 mb-2">{t.visionTitle}</h2>
             <p className={`text-slate-700 leading-relaxed text-sm sm:text-base font-medium ${bnFont ? 'landing-bn-reading' : ''}`}>{t.vision}</p>
           </article>
-          
-          <article className="nb-card p-5 sm:p-7 bg-cyan-50">
-            <SectionIconBadge name="target" tone="cyan" className="mb-4" />
-            <h2 className="text-xl font-black text-slate-900 mb-2.5">{t.missionTitle}</h2>
+
+          <article className="nb-card landing-podium-card p-5 sm:p-6 bg-cyan-50/80 rounded-xl">
+            <SectionIconBadge name="target" tone="cyan" className="mb-4 rounded-lg" />
+            <h2 className="text-lg sm:text-xl font-black text-slate-900 mb-2">{t.missionTitle}</h2>
             <p className={`text-slate-700 leading-relaxed text-sm sm:text-base font-medium ${bnFont ? 'landing-bn-reading' : ''}`}>{t.mission}</p>
           </article>
         </section>
 
         {/* Life Skills Course grid */}
         <section id="life-skills" className="mb-8 sm:mb-12 relative z-10 scroll-mt-20">
-          <div className="nb-card p-4 sm:p-8 bg-white">
-            <div className="flex items-start justify-between gap-4 mb-6">
-              <div>
-                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-1.5 flex items-center gap-2.5">
-                  <SectionIconBadge name="book" tone="indigo" className="w-9 h-9" />
-                  <span className="nb-mono uppercase tracking-wide text-base sm:text-xl">{t.lifeSkillsTitle}</span>
-                </h3>
+          <div className="nb-card p-4 sm:p-6 bg-white rounded-xl">
+            <div className="flex items-start gap-3 sm:gap-4 mb-5 sm:mb-6">
+              <SectionIconBadge name="book" tone="indigo" className="w-10 h-10 rounded-lg shrink-0" />
+              <div className="min-w-0">
+                <p className="landing-section-title mb-1">{bnFont ? 'প্রশিক্ষণ' : 'Training'}</p>
+                <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-1">{t.lifeSkillsTitle}</h3>
                 <p className="text-sm text-slate-500 max-w-2xl font-medium leading-relaxed">
                   {t.lifeSkillsSubtitle}
                 </p>
@@ -1019,7 +1034,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                     type="button"
                     onClick={() => openLifeSkillPreview(module)}
                     key={module?.id || code}
-                    className="group relative text-left p-4 sm:p-6 nb-card bg-indigo-50 hover:bg-indigo-100 active:translate-x-0.5 active:translate-y-0.5 flex flex-col justify-between min-h-[168px] sm:min-h-[180px] w-[min(78vw,280px)] sm:w-auto shrink-0 sm:shrink snap-center touch-manipulation"
+                    className="group relative text-left p-4 sm:p-5 nb-card bg-indigo-50/90 hover:bg-indigo-100/90 active:translate-x-0.5 active:translate-y-0.5 flex flex-col justify-between min-h-[160px] sm:min-h-[172px] w-[min(78vw,280px)] sm:w-auto shrink-0 sm:shrink snap-center touch-manipulation rounded-xl landing-podium-card"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-3">
@@ -1047,11 +1062,11 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
               })}
             </div>
             
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 border-t-2 border-slate-900 pt-5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 border-t-2 border-slate-900/10 pt-4 sm:pt-5">
               <button
                 type="button"
                 onClick={openLifeSkills}
-                className="px-6 py-3 nb-btn-indigo text-sm font-black"
+                className="px-5 py-2.5 nb-btn-indigo text-sm font-black rounded-lg"
               >
                 {t.lifeSkillsTrack}
               </button>
@@ -1073,14 +1088,14 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
           </div>
         )}
 
-        <footer className="nb-footer text-center sm:text-left text-xs pt-6 sm:pt-8 pb-8 mt-6 sm:mt-8">
-          <p className="font-semibold text-slate-200">{t.footer}</p>
+        <footer className="landing-footer-modern text-center sm:text-left text-xs pt-2 pb-2 mt-6 sm:mt-10">
+          <p className="font-semibold text-slate-200/90">{t.footer}</p>
           <div className="mt-4 flex flex-col sm:flex-row items-center sm:items-start gap-3">
             <a
               href="https://www.facebook.com/smartlineman"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 border-2 border-slate-900 bg-white px-4 py-2.5 text-slate-900 font-bold shadow-[3px_3px_0_#0f172a] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5"
+              className="inline-flex items-center gap-2 border-2 border-slate-900 bg-white px-3.5 py-2 text-slate-900 font-bold shadow-[3px_3px_0_#0f172a] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 rounded-lg"
             >
               <span className="flex h-8 w-8 items-center justify-center border-2 border-slate-900 bg-[#1877F2] text-white shadow-[2px_2px_0_#0f172a]">
                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -1101,7 +1116,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
 
       {/* Mobile sticky visit counter + Login CTA */}
       {!activeLifeSkill && (
-        <div className="sm:hidden fixed bottom-0 inset-x-0 z-30 px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-[#fffdf7] border-t-[2.5px] border-slate-900">
+        <div className="sm:hidden fixed bottom-0 inset-x-0 z-30 px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] landing-sticky-cta">
           {(visitLoading || visitCount != null) && (
             <div className="flex justify-center mb-2">
               <LandingVisitCounter

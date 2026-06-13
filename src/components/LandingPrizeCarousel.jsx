@@ -15,6 +15,7 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
     const touchStartX = useRef(null);
 
     const title = language === 'en' ? 'Monthly prizes' : 'মাসের পুরস্কার';
+    const sectionLabel = language === 'en' ? 'Hall of fame' : 'হল অফ ফেম';
 
     const goTo = useCallback((next) => {
         if (slides.length === 0) return;
@@ -43,9 +44,9 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
     if (loading) {
         return (
             <section className="relative z-10 mb-6 sm:mb-8">
-                <div className="nb-card animate-pulse bg-white p-3 sm:p-4">
-                    <div className="mb-3 h-5 w-32 rounded bg-slate-200" />
-                    <div className="aspect-[5/3] rounded-lg bg-slate-100" />
+                <div className="nb-card animate-pulse bg-white p-3 sm:p-4 rounded-xl">
+                    <div className="mb-3 h-4 w-28 rounded bg-slate-200" />
+                    <div className="aspect-[4/3] rounded-lg bg-slate-100" />
                 </div>
             </section>
         );
@@ -57,8 +58,9 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
 
     return (
         <section className="relative z-10 mb-6 sm:mb-8" aria-label={title}>
+            <p className="landing-section-title mb-3">{sectionLabel}</p>
             <div
-                className="nb-card overflow-hidden bg-white"
+                className="nb-card overflow-hidden bg-white rounded-xl"
                 onMouseEnter={() => setPaused(true)}
                 onMouseLeave={() => setPaused(false)}
                 onFocusCapture={() => setPaused(true)}
@@ -77,7 +79,7 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
                     else goPrev();
                 }}
             >
-                <div className="flex items-center justify-between gap-2 border-b-2 border-slate-900 bg-amber-50 px-3 py-2 sm:px-4">
+                <div className="flex items-center justify-between gap-2 border-b-2 border-slate-900/10 bg-amber-50/60 px-3 py-2.5 sm:px-4">
                     <h2 className={`truncate text-sm font-black text-slate-900 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
                         🎁 {title}
                     </h2>
@@ -85,7 +87,7 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
                         <button
                             type="button"
                             onClick={goPrev}
-                            className="flex h-8 w-8 items-center justify-center border-2 border-slate-900 bg-white text-lg leading-none text-slate-800 shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5"
+                            className="flex h-8 w-8 items-center justify-center border-2 border-slate-900 bg-white text-lg leading-none text-slate-800 shadow-[2px_2px_0_#0f172a] rounded-md active:translate-x-0.5 active:translate-y-0.5"
                             aria-label={language === 'en' ? 'Previous' : 'আগের'}
                         >
                             ‹
@@ -93,7 +95,7 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
                         <button
                             type="button"
                             onClick={() => goTo()}
-                            className="flex h-8 w-8 items-center justify-center border-2 border-slate-900 bg-white text-lg leading-none text-slate-800 shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5"
+                            className="flex h-8 w-8 items-center justify-center border-2 border-slate-900 bg-white text-lg leading-none text-slate-800 shadow-[2px_2px_0_#0f172a] rounded-md active:translate-x-0.5 active:translate-y-0.5"
                             aria-label={language === 'en' ? 'Next' : 'পরের'}
                         >
                             ›
@@ -107,17 +109,15 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
                         style={{ transform: `translateX(-${index * 100}%)` }}
                     >
                         {slides.map((item) => (
-                            <article key={item.id} className="w-full shrink-0 px-3 py-3 sm:px-4 sm:py-4">
-                                <div className="grid grid-cols-[5.5rem_1fr] items-center gap-3 sm:grid-cols-[7.5rem_1fr] sm:gap-4">
-                                    <div className="relative">
-                                        <div className="aspect-square overflow-hidden border-2 border-slate-900 bg-white p-2 shadow-[2px_2px_0_#0f172a]">
-                                            <HallOfFamePrizeImage
-                                                candidates={item.imageCandidates || []}
-                                                alt={item.imageAlt || item.title || ''}
-                                                className="h-full w-full object-contain"
-                                            />
-                                        </div>
-                                        <span className="absolute -left-1.5 -top-1.5 text-base leading-none" aria-hidden>
+                            <article key={item.id} className="w-full shrink-0 px-3 py-3 sm:px-5 sm:py-4">
+                                <div className="grid grid-cols-[6.5rem_1fr] items-center gap-3 sm:grid-cols-[9.5rem_1fr] sm:gap-5">
+                                    <div className="relative flex items-center justify-center w-[6.5rem] h-[6.5rem] sm:w-[9.5rem] sm:h-[9.5rem] shrink-0">
+                                        <HallOfFamePrizeImage
+                                            candidates={item.imageCandidates || []}
+                                            alt={item.imageAlt || item.title || ''}
+                                            className="max-h-full max-w-full w-auto h-auto object-contain"
+                                        />
+                                        <span className="absolute -left-1 -top-1 text-lg sm:text-xl leading-none drop-shadow-sm" aria-hidden>
                                             {getRankMedal(item.prizeRank)}
                                         </span>
                                     </div>
@@ -133,6 +133,10 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
                                         </h3>
                                         {item.sponsor && (
                                             <p className={`mt-1 truncate text-[10px] font-semibold text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                <span className={`font-bold text-slate-500 ${language === 'en' ? 'nb-mono uppercase tracking-wide' : ''}`}>
+                                                    {language === 'en' ? 'Sponsor' : 'সৌজন্যে'}
+                                                </span>
+                                                <span className="mx-1 text-slate-300" aria-hidden>·</span>
                                                 {item.sponsor}
                                             </p>
                                         )}
@@ -149,7 +153,7 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
                 </div>
 
                 {slides.length > 1 && (
-                    <div className="flex items-center justify-center gap-1.5 border-t border-slate-200 px-3 py-2">
+                    <div className="flex items-center justify-center gap-1.5 border-t border-slate-200/80 px-3 py-2.5">
                         {slides.map((item, dotIdx) => (
                             <button
                                 key={item.id}
