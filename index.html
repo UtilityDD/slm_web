@@ -6,15 +6,16 @@
   <link rel="icon" type="image/png" href="/icon-192.png" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0F172A" />
-  <!-- App Version: 1.3.70-neural-tts -->
+  <meta name="theme-color" content="#ffffff" />
+  <!-- App Version: 1.3.73 -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="SmartLineman" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="image" href="/images/loader/helmet.webp" type="image/webp" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet" />
   <title>SmartLineman</title>
@@ -29,84 +30,99 @@
       box-sizing: border-box;
       min-height: 100dvh;
       padding: calc(1.5rem + env(safe-area-inset-top, 0px)) 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
-      background: #020617;
-      color: #f8fafc;
+      background: #fff;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", sans-serif;
       text-align: center;
       -webkit-font-smoothing: antialiased;
+      transition: opacity 0.2s ease-out;
+    }
+    #static-shell.static-shell-hide {
+      opacity: 0;
+      pointer-events: none;
     }
     #static-shell .static-shell-inner {
-      max-width: 22rem;
-      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
     }
-    #static-shell .static-shell-spinner-wrap {
+    #static-shell .static-shell-carousel {
       position: relative;
-      width: 4rem;
-      height: 4rem;
-      margin: 0 auto;
+      width: 11rem;
+      height: 11rem;
     }
-    #static-shell .static-shell-spinner {
-      width: 4rem;
-      height: 4rem;
-      box-sizing: border-box;
-      border: 4px solid rgba(249, 115, 22, 0.22);
-      border-top-color: #f97316;
-      border-radius: 50%;
-      animation: static-shell-spin 0.85s linear infinite;
+    @media (min-width: 640px) {
+      #static-shell .static-shell-carousel {
+        width: 13rem;
+        height: 13rem;
+      }
     }
-    @keyframes static-shell-spin {
-      to { transform: rotate(360deg); }
-    }
-    #static-shell .static-shell-dot {
+    #static-shell .static-shell-carousel img {
       position: absolute;
       inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      opacity: 0;
+      transition: opacity 0.15s ease-out;
+    }
+    #static-shell .static-shell-carousel img.is-active {
+      opacity: 1;
+    }
+    #static-shell .static-shell-dots {
       display: flex;
       align-items: center;
       justify-content: center;
-      pointer-events: none;
+      gap: 0.5rem;
     }
-    #static-shell .static-shell-dot-inner {
-      width: 2rem;
-      height: 2rem;
+    #static-shell .static-shell-dots span {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 9999px;
       background: #f97316;
-      border-radius: 50%;
-      opacity: 0.45;
-      animation: static-shell-pulse 1.2s ease-in-out infinite;
+      animation: static-shell-dot-pulse 0.7s ease-in-out infinite;
     }
-    @keyframes static-shell-pulse {
-      50% { opacity: 0.12; transform: scale(0.92); }
+    #static-shell .static-shell-dots span:nth-child(2) {
+      animation-delay: 0.12s;
     }
-    #static-shell .static-shell-brand {
-      margin-top: 1.5rem;
-      font-size: 1.125rem;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: #fff;
+    #static-shell .static-shell-dots span:nth-child(3) {
+      animation-delay: 0.24s;
+    }
+    @keyframes static-shell-dot-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
     }
     #static-shell-message {
-      margin-top: 1rem;
-      font-size: 0.9375rem;
-      line-height: 1.55;
-      color: #cbd5e1;
+      display: none;
+      max-width: 20rem;
+      margin: 0;
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      color: #64748b;
       font-weight: 500;
     }
     #static-shell-retry {
       display: none;
-      margin: 1.5rem auto 0;
-      padding: 0.875rem 1.5rem;
-      font-size: 0.9375rem;
-      font-weight: 700;
+      margin: 0;
+      padding: 0.75rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 600;
       color: #fff;
-      background: linear-gradient(to right, #ea580c, #f97316);
+      background: #f97316;
       border: none;
-      border-radius: 1rem;
+      border-radius: 0.75rem;
       cursor: pointer;
-      box-shadow: 0 12px 28px rgba(234, 88, 12, 0.28);
       font-family: inherit;
     }
     #static-shell-retry:active {
       transform: scale(0.98);
+    }
+    #static-shell[data-offline="true"] #static-shell-message,
+    #static-shell[data-offline="true"] #static-shell-retry {
+      display: block;
+    }
+    #static-shell[data-offline="true"] .static-shell-inner {
+      gap: 1rem;
     }
     #static-shell[data-offline="true"] #static-shell-retry {
       display: inline-flex;
@@ -118,51 +134,118 @@
 </head>
 
 <body>
-  <div id="root">
-    <div id="static-shell" data-offline="false" aria-live="polite">
-      <div class="static-shell-inner">
-        <div class="static-shell-spinner-wrap" aria-hidden="true">
-          <div class="static-shell-spinner"></div>
-          <div class="static-shell-dot">
-            <div class="static-shell-dot-inner"></div>
-          </div>
-        </div>
-        <p class="static-shell-brand">Smart Lineman</p>
-        <p id="static-shell-message"></p>
-        <button type="button" id="static-shell-retry">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          Retry
-        </button>
+  <div id="static-shell" data-offline="false" aria-live="polite" aria-busy="true" role="status">
+    <div class="static-shell-inner">
+      <div class="static-shell-carousel" id="static-shell-carousel" aria-hidden="true">
+        <img src="/images/loader/helmet.webp" alt="" class="is-active" decoding="sync" fetchpriority="high" />
       </div>
+      <div class="static-shell-dots" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <p id="static-shell-message"></p>
+      <button type="button" id="static-shell-retry">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Retry
+      </button>
     </div>
   </div>
+  <div id="root"></div>
   <script>
     (function () {
+      var LOADER_IMAGES = [
+        '/images/loader/helmet.webp',
+        '/images/loader/goggles.webp',
+        '/images/loader/gloves.webp',
+        '/images/loader/rubber-gloves.webp',
+        '/images/loader/vest.webp',
+        '/images/loader/harness.webp',
+        '/images/loader/safety-shoes.webp',
+        '/images/loader/face-shield.webp',
+        '/images/loader/lanyard.webp',
+        '/images/loader/ladder.webp',
+        '/images/loader/rope.webp',
+        '/images/loader/cones.webp',
+        '/images/loader/ball-chain.webp',
+        '/images/loader/link-chain.webp',
+        '/images/loader/caution-tape.webp'
+      ];
+      var CYCLE_MS = 280;
+
+      function shuffle(list) {
+        var arr = list.slice();
+        for (var i = arr.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var tmp = arr[i];
+          arr[i] = arr[j];
+          arr[j] = tmp;
+        }
+        return arr;
+      }
+
       var shell = document.getElementById('static-shell');
+      var carousel = document.getElementById('static-shell-carousel');
       var msg = document.getElementById('static-shell-message');
-      function update() {
+      var sequence = shuffle(LOADER_IMAGES);
+      var index = Math.floor(Math.random() * sequence.length);
+
+      LOADER_IMAGES.forEach(function (src) {
+        var img = new Image();
+        img.src = src;
+      });
+
+      if (carousel) {
+        carousel.innerHTML = '';
+        sequence.forEach(function (src, i) {
+          var img = document.createElement('img');
+          img.src = src;
+          img.alt = '';
+          img.decoding = 'async';
+          if (i === index) img.className = 'is-active';
+          carousel.appendChild(img);
+        });
+
+        setInterval(function () {
+          var imgs = carousel.querySelectorAll('img');
+          if (!imgs.length) return;
+          imgs[index].classList.remove('is-active');
+          index = (index + 1) % imgs.length;
+          imgs[index].classList.add('is-active');
+        }, CYCLE_MS);
+      }
+
+      function updateOfflineState() {
         var online = typeof navigator !== 'undefined' && navigator.onLine;
         if (shell) shell.setAttribute('data-offline', online ? 'false' : 'true');
         if (!msg) return;
-        if (online) {
+        if (!online) {
           msg.textContent =
-            'Loading Smart Lineman. If this message stays for a long time, check your internet connection and try refreshing the page.';
+            "You're offline. Connect to the internet, then tap Retry.";
         } else {
-          msg.textContent =
-            "You're offline. The first time you open this page (or after an update), you need the internet so the app can download. Connect to Wi‑Fi or mobile data, then tap Retry. If you already added Smart Lineman to your home screen, try opening it from there.";
+          msg.textContent = '';
         }
       }
-      update();
-      window.addEventListener('online', update);
-      window.addEventListener('offline', update);
+
+      updateOfflineState();
+      window.addEventListener('online', updateOfflineState);
+      window.addEventListener('offline', updateOfflineState);
+
       var retry = document.getElementById('static-shell-retry');
       if (retry) {
         retry.addEventListener('click', function () {
           window.location.reload();
         });
       }
+
+      window.__hideStaticShell = function () {
+        if (!shell) return;
+        shell.classList.add('static-shell-hide');
+        shell.setAttribute('aria-busy', 'false');
+        window.setTimeout(function () {
+          if (shell && shell.parentNode) shell.parentNode.removeChild(shell);
+        }, 220);
+      };
     })();
   </script>
   <script type="module" src="/src/main.jsx"></script>

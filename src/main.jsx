@@ -13,6 +13,14 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   </React.StrictMode>,
 )
 
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    if (typeof window.__hideStaticShell === 'function') {
+      window.__hideStaticShell()
+    }
+  })
+})
+
 // Register service worker for PWA (localhost + production; skip native Capacitor shell)
 if ('serviceWorker' in navigator && !window.Capacitor) {
   window.addEventListener('load', () => {

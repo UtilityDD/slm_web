@@ -1,58 +1,113 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { LOADER_IMAGES } from './loaderImages';
+
+const CYCLE_MS = 280;
+
+const shuffle = (items) => {
+  const list = [...items];
+  for (let i = list.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [list[i], list[j]] = [list[j], list[i]];
+  }
+  return list;
+};
 
 export const BrutalSpinner = ({ className = 'h-16 w-16' }) => (
-  <div
-    className={`relative bg-white border-[3px] border-slate-900 shadow-[4px_4px_0_#0f172a] ${className}`}
-    role="status"
-    aria-label="Loading"
-  >
-    <div className="absolute inset-[3px] border-[3px] border-slate-900 border-t-orange-500 animate-spin" />
+  <div className={`relative ${className}`} role="status" aria-label="Loading">
+    <div className="absolute inset-0 rounded-full border-2 border-slate-200 border-t-orange-500 animate-spin" />
   </div>
 );
 
-const BrutalLoaderDots = () => (
-  <div className="flex gap-1.5" aria-hidden>
+const LoaderDots = () => (
+  <div className="flex items-center gap-2" aria-hidden>
     {[0, 1, 2].map((i) => (
       <span
         key={i}
-        className="h-2 w-2 border-2 border-slate-900 bg-orange-500 animate-bounce"
-        style={{ animationDelay: `${i * 0.12 - 0.24}s` }}
+        className="h-2 w-2 rounded-full bg-orange-500 animate-pulse"
+        style={{ animationDelay: `${i * 0.12}s`, animationDuration: '0.7s' }}
       />
     ))}
   </div>
 );
 
-export const BrutalLoaderContent = ({ title = 'Smart Lineman', message, compact = false }) => (
-  <div className={`nb-card bg-white flex flex-col items-center text-center ${compact ? 'gap-4 p-6' : 'gap-5 p-8'}`}>
-    <BrutalSpinner className={compact ? 'h-12 w-12' : 'h-16 w-16'} />
-    <div className="space-y-2">
-      <h2 className={`font-black uppercase tracking-widest text-slate-900 nb-mono ${compact ? 'text-base' : 'text-xl'}`}>
-        {title}
-      </h2>
-      {message && (
-        <p className={`font-bold text-slate-600 nb-mono ${compact ? 'text-xs' : 'text-sm'}`}>{message}</p>
-      )}
-      {!compact && <BrutalLoaderDots />}
+const SafetyItemCarousel = ({ compact = false }) => {
+  const sequence = useMemo(() => shuffle(LOADER_IMAGES), []);
+  const [index, setIndex] = useState(() => Math.floor(Math.random() * sequence.length));
+
+  useEffect(() => {
+    sequence.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, [sequence]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current + 1) % sequence.length);
+    }, CYCLE_MS);
+    return () => window.clearInterval(timer);
+  }, [sequence.length]);
+
+  const frameClass = compact ? 'h-28 w-28' : 'h-44 w-44 sm:h-52 sm:w-52';
+
+  return (
+    <div
+      className={`relative ${frameClass}`}
+      role="img"
+      aria-label="Loading safety equipment"
+    >
+      {sequence.map((src, i) => (
+        <img
+          key={src}
+          src={src}
+          alt=""
+          aria-hidden
+          decoding="async"
+          fetchPriority={i === index ? 'high' : 'low'}
+          className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-150 ease-out ${
+            i === index ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+      ))}
     </div>
+  );
+};
+
+export const BrutalLoaderContent = ({ message, compact = false }) => (
+  <div className={`flex flex-col items-center text-center ${compact ? 'gap-4' : 'gap-6'}`}>
+    <SafetyItemCarousel compact={compact} />
+    <LoaderDots />
+    {message && (
+      <p className={`font-medium text-slate-500 ${compact ? 'text-xs' : 'text-sm'}`}>{message}</p>
+    )}
   </div>
 );
 
-const PageLoader = ({ overlay = false, message, title = 'Smart Lineman' }) => {
+const PageLoader = ({ overlay = false, message }) => {
+  useEffect(() => {
+    if (typeof window.__hideStaticShell === 'function') {
+      window.__hideStaticShell();
+    }
+  }, []);
+
   if (overlay) {
     return (
-      <div className="fixed inset-0 z-[110] bg-slate-900/45 flex items-center justify-center animate-fade-in p-4">
-        <div className="neo-brutal w-full max-w-xs">
-          <div className="nb-hazard" aria-hidden />
-          <BrutalLoaderContent title={title} message={message} compact />
+      <div className="fixed inset-0 z-[110] bg-white/80 backdrop-blur-sm flex items-center justify-center animate-fade-in">
+        <div role="status" aria-live="polite" aria-busy="true">
+          <BrutalLoaderContent message={message} compact />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="neo-brutal fixed inset-0 z-[9999] flex flex-col items-center justify-center animate-in fade-in duration-500">
-      <div className="nb-hazard absolute top-0 inset-x-0" aria-hidden />
-      <BrutalLoaderContent title={title} message={message} />
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-white animate-in fade-in duration-300"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <BrutalLoaderContent message={message} />
     </div>
   );
 };

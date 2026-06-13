@@ -1,8 +1,26 @@
-const CACHE_NAME = 'suraksha-sathi-v24-1.3.72';
+const CACHE_NAME = 'suraksha-sathi-v25-1.3.73';
+const LOADER_IMAGES = [
+  '/images/loader/helmet.webp',
+  '/images/loader/goggles.webp',
+  '/images/loader/gloves.webp',
+  '/images/loader/rubber-gloves.webp',
+  '/images/loader/vest.webp',
+  '/images/loader/harness.webp',
+  '/images/loader/safety-shoes.webp',
+  '/images/loader/face-shield.webp',
+  '/images/loader/lanyard.webp',
+  '/images/loader/ladder.webp',
+  '/images/loader/rope.webp',
+  '/images/loader/cones.webp',
+  '/images/loader/ball-chain.webp',
+  '/images/loader/link-chain.webp',
+  '/images/loader/caution-tape.webp',
+];
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
+  ...LOADER_IMAGES,
   '/audio/safety/start.wav',
   '/audio/safety/oath_1.wav',
   '/audio/safety/check_items.wav',
