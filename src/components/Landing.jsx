@@ -826,14 +826,9 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
       <div className="sticky top-0 z-20 landing-header-bar safe-area-inset-top">
         <div className="max-w-5xl mx-auto px-3 sm:px-6">
           <div className="h-12 sm:h-14 flex items-center justify-between gap-2 sm:gap-3">
-            <div className="flex items-center gap-2 select-none min-w-0">
-              <div className="nb-icon-badge w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-orange-500 text-white rounded-lg shrink-0">
-                <LandingIcon name="shield" className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
-              </div>
-              <div className="flex items-baseline gap-1 min-w-0">
-                <span className="text-sm sm:text-xl font-black text-slate-900 tracking-tight truncate">SmartLineMan</span>
-                <span className="text-[8px] sm:text-[10px] font-black text-slate-900 bg-orange-400 px-1 py-0.5 rounded border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] shrink-0 nb-mono">.in</span>
-              </div>
+            <div className="flex items-baseline gap-1 select-none min-w-0">
+              <span className="text-sm sm:text-xl font-black text-slate-900 tracking-tight truncate">SmartLineMan</span>
+              <span className="text-[8px] sm:text-[10px] font-black text-slate-900 bg-orange-400 px-1 py-0.5 rounded border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] shrink-0 nb-mono">.in</span>
             </div>
 
             <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
