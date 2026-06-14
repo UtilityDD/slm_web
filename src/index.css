@@ -329,6 +329,83 @@ body,
     text-decoration: underline;
   }
 
+  /* App bottom navigation (neo-brutal tab bar) */
+  .app-bottom-nav {
+    background: #fffdf7;
+    border-top: var(--nb-border, 2.5px solid #0f172a);
+    box-shadow: 0 -4px 0 #0f172a;
+  }
+
+  .app-bottom-nav__inner {
+    padding-top: 0.125rem;
+    padding-bottom: max(0.375rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .app-bottom-nav__item {
+    position: relative;
+    display: flex;
+    flex: 1 1 0;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    min-height: 3.25rem;
+    padding: 0.35rem 0.25rem 0.4rem;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    outline: none;
+    transition: color 0.15s ease;
+  }
+
+  .app-bottom-nav__item:active {
+    opacity: 0.85;
+  }
+
+  .app-bottom-nav__item--active {
+    color: #ea580c;
+  }
+
+  .app-bottom-nav__item--active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1.75rem;
+    height: 3px;
+    background: #f97316;
+    border-radius: 0 0 3px 3px;
+    box-shadow: 0 1px 0 #0f172a;
+  }
+
+  .app-bottom-nav__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+  }
+
+  .app-bottom-nav__item--active .app-bottom-nav__icon {
+    transform: translateY(-1px);
+  }
+
+  .app-bottom-nav__label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+  }
+
+  .app-bottom-nav__item--active .app-bottom-nav__label {
+    font-weight: 800;
+  }
+
   /* Neo-brutal theme (landing, login, etc.) */
   .neo-brutal,
   .landing-neo-brutal {
