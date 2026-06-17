@@ -237,11 +237,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [reviewMode, setReviewMode] = useState(false);
     const [userRank, setUserRank] = useState(null);
     const [fullLeaderboard, setFullLeaderboard] = useState([]);
-    const [loadingFull, setLoadingFull] = useState(isFullLeaderboard);
+    const [loadingFull, setLoadingFull] = useState(false);
     const [serverTimeOffset, setServerTimeOffset] = useState(0);
     const [fetchError, setFetchError] = useState(false);
     const [showCompactView, setShowCompactView] = useState(!isFullLeaderboard);
-    const [leaderboardTab, setLeaderboardTab] = useState('all-time'); // 'all-time' or 'monthly'
+    const [leaderboardTab, setLeaderboardTab] = useState('monthly'); // 'monthly' | 'all-time'
     const [monthlyBoardTab, setMonthlyBoardTab] = useState(MONTHLY_SUB_TAB.CHAMPION);
     const [monthlyLeaderboard, setMonthlyLeaderboard] = useState([]);
     const [encouragementBoards, setEncouragementBoards] = useState(null);
@@ -608,7 +608,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             ];
 
             if (isFullLeaderboard) {
-                promises.push(fetchFullLeaderboard(forceRefresh));
+                promises.push(fetchMonthlyLeaderboard(forceRefresh));
             } else {
                 promises.push(fetchHourlyQuiz());
             }
@@ -619,9 +619,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 promises.push(fetchTodayAttempts());
                 promises.push(fetchUserRank(forceRefresh));
                 
-                // Background Pre-fetching for smoother experience
-                // These won't block the main UI if they take longer
-                fetchMonthlyLeaderboard(forceRefresh);
+                // Background pre-fetch for smoother experience
+                if (!isFullLeaderboard) {
+                    fetchMonthlyLeaderboard(forceRefresh);
+                }
                 fetchHallOfFameGallery(forceRefresh);
             }
 
@@ -1380,6 +1381,17 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         }
     };
 
+    const switchToMonthlyLeaderboard = () => {
+        setLeaderboardTab('monthly');
+    };
+
+    const switchToAllTimeLeaderboard = () => {
+        setLeaderboardTab('all-time');
+        if (fullLeaderboard.length === 0) {
+            fetchFullLeaderboard();
+        }
+    };
+
     const openUserPrizeHistory = (userId) => {
         setHallOfFameUserPrizeFilter(userId);
         setHallOfFamePrizeView('by_user');
@@ -1659,92 +1671,98 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             <main className="neo-brutal min-h-screen text-slate-900">
                 <div className="nb-hazard sticky top-0 z-[41]" aria-hidden="true" />
 
-                {/* Header Section */}
-                <div className="sticky top-[6px] z-40 bg-[#fffdf7]">
-                    <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
-                        <div className="flex flex-col gap-6">
-                            <div className="flex items-center justify-between">
-                                <div className="flex flex-col">
-                                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2 tracking-tight">
-                                        {showHallOfFame 
-                                            ? <><span className="text-2xl sm:text-3xl">✨</span> {language === 'en' ? 'Monthly Stars' : 'মাসের সেরারা'}</>
-                                            : <><span className="text-2xl sm:text-3xl inline-block animate-spin-slow">🌍</span> {language === 'en' ? 'Global Rankings' : 'গ্লোবাল র‍্যাঙ্কিং'}</>
-                                        }
-                                    </h1>
-                                </div>
-                                
-                                <button 
-                                    onClick={() => {
-                                        if (!showHallOfFame) fetchHallOfFameGallery();
-                                        setShowHallOfFame(!showHallOfFame);
-                                    }}
-                                    className={`group relative flex items-center justify-center text-center px-3 sm:px-5 py-2 sm:py-2.5 text-[10px] sm:text-xs font-black transition-all active:translate-x-0.5 active:translate-y-0.5 ${
-                                        showHallOfFame
-                                        ? 'nb-btn-secondary !shadow-[3px_3px_0_#0f172a]'
-                                        : 'nb-btn-indigo !shadow-[3px_3px_0_#0f172a]'
-                                    }`}
-                                >
-                                    <span className="text-xs sm:text-sm font-black tracking-tight">
-                                        {showHallOfFame
-                                            ? (language === 'en' ? 'Leaderboard' : 'লিডারবোর্ড')
-                                            : (language === 'en' ? 'Bijoyi' : 'বিজয়ী')}
-                                    </span>
-
-                                    {/* Pulsating Star Accent */}
-                                    <div className={`absolute -top-1 -right-1 w-6 h-6 flex items-center justify-center pointer-events-none ${showHallOfFame ? 'text-amber-400' : 'text-indigo-200'}`}>
-                                        <svg className="w-full h-full star-pulsate" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 2l2.4 7.4h7.6l-6.2 4.5 2.4 7.4-6.2-4.5-6.2 4.5 2.4-7.4-6.2-4.5h7.6z"/>
-                                        </svg>
+                {/* Sticky controls — tabs first, no page title */}
+                <div className="sticky top-[6px] z-40 bg-[#fffdf7] border-b border-slate-200/80">
+                    <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+                        {!showHallOfFame && leaderboardTab === 'monthly' && (
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex flex-1 min-w-0 gap-1 p-0.5 bg-slate-100 rounded-xl">
+                                        {MONTHLY_SUB_TAB_ORDER.map((tabId) => (
+                                            <button
+                                                key={tabId}
+                                                type="button"
+                                                onClick={() => setMonthlyBoardTab(tabId)}
+                                                className={`flex-1 min-w-0 px-2 py-2.5 text-[10px] sm:text-xs font-bold rounded-lg transition-all truncate ${
+                                                    monthlyBoardTab === tabId
+                                                        ? 'bg-white text-orange-600 shadow-sm'
+                                                        : 'text-slate-600 hover:text-slate-900'
+                                                } ${language === 'bn' ? 'font-bengali' : ''}`}
+                                            >
+                                                {encouragementCopy.monthlyTabs[tabId]}
+                                            </button>
+                                        ))}
                                     </div>
+                                    <button
+                                        type="button"
+                                        aria-label={language === 'en' ? 'Past winners' : 'বিজয়ী'}
+                                        title={language === 'en' ? 'Past winners' : 'বিজয়ী'}
+                                        onClick={() => {
+                                            fetchHallOfFameGallery();
+                                            setShowHallOfFame(true);
+                                        }}
+                                        className="shrink-0 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-100 via-orange-50 to-rose-100 border border-amber-200/80 text-amber-600 shadow-[0_2px_8px_rgba(245,158,11,0.18)] hover:from-amber-200 hover:via-orange-100 hover:to-rose-100 hover:shadow-[0_3px_12px_rgba(245,158,11,0.28)] active:scale-95 transition-all"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5" fill="none" aria-hidden>
+                                            <path d="M4 11h16v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9z" fill="currentColor" fillOpacity="0.2" />
+                                            <path d="M4 11h16v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9z" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" />
+                                            <path d="M12 11v10M4 15h16" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+                                            <path d="M20 11H4V9a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2z" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" />
+                                            <path d="M12 11V6" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+                                            <path d="M12 6c-1.8-2.8-5.5-2.8-5.5 0C6.5 8.8 10.2 10.5 12 6c1.8 4.5 5.5 2.8 5.5 0 17.5-2.8 13.8-2.8 12 6z" fill="currentColor" fillOpacity="0.35" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {!showHallOfFame && leaderboardTab === 'all-time' && (
+                            <div className="flex items-center justify-between gap-3">
+                                <button
+                                    type="button"
+                                    onClick={switchToMonthlyLeaderboard}
+                                    className={`inline-flex items-center gap-1 text-xs font-bold text-orange-600 hover:text-orange-700 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 shrink-0" aria-hidden>
+                                        <path d="m15 18-6-6 6-6" />
+                                    </svg>
+                                    {language === 'en' ? 'Monthly leaderboard' : 'মাসিক লিডারবোর্ড'}
+                                </button>
+                                <button
+                                    type="button"
+                                    aria-label={language === 'en' ? 'Past winners' : 'বিজয়ী'}
+                                    title={language === 'en' ? 'Past winners' : 'বিজয়ী'}
+                                    onClick={() => {
+                                        fetchHallOfFameGallery();
+                                        setShowHallOfFame(true);
+                                    }}
+                                    className="shrink-0 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-100 via-orange-50 to-rose-100 border border-amber-200/80 text-amber-600 shadow-[0_2px_8px_rgba(245,158,11,0.18)] hover:from-amber-200 hover:via-orange-100 hover:to-rose-100 hover:shadow-[0_3px_12px_rgba(245,158,11,0.28)] active:scale-95 transition-all"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5" fill="none" aria-hidden>
+                                        <path d="M4 11h16v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9z" fill="currentColor" fillOpacity="0.2" />
+                                        <path d="M4 11h16v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9z" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" />
+                                        <path d="M12 11v10M4 15h16" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+                                        <path d="M20 11H4V9a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2z" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" />
+                                        <path d="M12 11V6" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+                                        <path d="M12 6c-1.8-2.8-5.5-2.8-5.5 0C6.5 8.8 10.2 10.5 12 6c1.8 4.5 5.5 2.8 5.5 0 17.5-2.8 13.8-2.8 12 6z" fill="currentColor" fillOpacity="0.35" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                                    </svg>
                                 </button>
                             </div>
-                        </div>
-                    </div>
-                </div>
+                        )}
 
-            {/* Tab Navigation - All-Time vs Monthly */}
-            {!showHallOfFame && (
-                <div className="bg-[#fffdf7] pt-2 pb-3">
-                    <div className="max-w-xs mx-auto px-3">
-                        <div className="flex gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setLeaderboardTab('all-time')}
-                                className={`flex-1 py-2 text-xs sm:text-sm font-black border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 ${leaderboardTab === 'all-time' ? 'bg-orange-500 text-white' : 'bg-white text-slate-700 hover:bg-orange-50'}`}
-                            >
-                                {language === 'en' ? 'All-Time' : 'সর্বকালীন'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setLeaderboardTab('monthly');
-                                    if (monthlyLeaderboard.length === 0) fetchMonthlyLeaderboard();
-                                }}
-                                className={`flex-1 py-2 text-xs sm:text-sm font-black border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 ${leaderboardTab === 'monthly' ? 'bg-orange-500 text-white' : 'bg-white text-slate-700 hover:bg-orange-50'}`}
-                            >
-                                {language === 'en' ? 'This Month' : 'এই মাস'}
-                            </button>
-                        </div>
-                    </div>
-
-                    {leaderboardTab === 'monthly' && (
-                        <div className="mt-2 max-w-lg mx-auto px-3 overflow-x-auto">
-                            <div className="flex min-w-max gap-1.5">
-                                {MONTHLY_SUB_TAB_ORDER.map((tabId) => (
-                                    <button
-                                        key={tabId}
-                                        type="button"
-                                        onClick={() => setMonthlyBoardTab(tabId)}
-                                        className={`whitespace-nowrap px-2.5 py-1.5 text-[10px] sm:text-xs font-black border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 ${monthlyBoardTab === tabId ? 'bg-orange-500 text-white' : 'bg-white text-slate-700 hover:bg-orange-50'}`}
-                                    >
-                                        {encouragementCopy.monthlyTabs[tabId]}
-                                    </button>
-                                ))}
+                        {showHallOfFame && (
+                            <div className="flex items-center justify-end">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowHallOfFame(false)}
+                                    className={`text-xs font-bold text-slate-600 hover:text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                >
+                                    {language === 'en' ? '← Leaderboard' : '← লিডারবোর্ড'}
+                                </button>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
-            )}
 
             {showHallOfFame ? (
                     <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
@@ -1939,13 +1957,15 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     </div>
                 ) : (
                     <>
-                    <div className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-3 pb-48 md:pb-56">
+                    <div className={`max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-3 ${leaderboardTab === 'all-time' ? 'pb-48 md:pb-56' : 'pb-24 md:pb-28'}`}>
                     {leaderboardTab === 'monthly' && !loadingMonthly && monthlyBoardMeta && (
                         <div className="max-w-2xl mx-auto px-2">
                             <MonthlyBoardHeader
                                 meta={monthlyBoardMeta}
                                 language={language}
+                                monthlyBoardTab={monthlyBoardTab}
                                 onInfoClick={() => setShowMonthlyBoardInfoModal(true)}
+                                onAllTimeClick={switchToAllTimeLeaderboard}
                             />
                         </div>
                     )}

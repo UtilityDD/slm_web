@@ -49,16 +49,16 @@ export function getEncouragementCopy(language = 'bn') {
             [BOARD_IDS.NEW_PLAYER]: {
                 title: en ? 'New Player Champion' : 'নতুন সদস্য',
                 logic: en
-                    ? 'Joined ≤90 days · excludes monthly top 3 · top 3 win prizes · qualify: 500 pts OR 15 hourlies OR 5 lessons'
-                    : 'গত ৯০ দিনে যোগ করা সদস্য—মাসের শীর্ষ তিনজন বাদে। ৫০০ পয়েন্ট, ১৫টা ঘণ্টার কুইজ বা ৫টা পাঠ—যেকোনোটা করলেই চলে।',
+                    ? 'Joined ≤90 days · not monthly top 3 · 500 pts, 15 hourlies, or 5 lessons'
+                    : '৯০ দিনের নতুন সদস্য (মাসের সেরা ৩ জন বাদে)। ৫০০ পয়েন্ট, ১৫ কুইজ বা ৫ পাঠ শেষ করেছেন।',
                 rankBy: en ? 'Ranked by: monthly points' : 'নতুন সদস্যদের মাসিক পয়েন্টে সাজানো',
                 prize: en ? 'Top 3 win prizes' : 'প্রথম তিনজন পুরস্কার পাবেন',
             },
             [BOARD_IDS.MOST_IMPROVED]: {
                 title: en ? 'Most Improved' : 'সবচেয়ে এগিয়ে',
                 logic: en
-                    ? 'Account >30 days · top 3 win prizes · last month 200+ & this month 500+ · ranked by growth'
-                    : 'গত মাসে ২০০+ পয়েন্ট, এই মাসে ৫০০+—তারপর কে গত মাসের চেয়ে সবচেয়ে বেশি এগিয়েছে।',
+                    ? 'Beat last month’s pace — 200+ last month, 500+ this month'
+                    : 'গত মাসে ২০০+ ছিল, এই মাসে ৫০০+ হয়েছে। তাদের মধ্যে সেরা তিন।',
                 rankBy: en ? 'Ranked by: growth vs last month' : 'গত মাসের চেয়ে কত পয়েন্ট বেড়েছে সেটায় সাজানো',
                 prize: en ? 'Top 3 win prizes' : 'প্রথম তিনজন পুরস্কার পাবেন',
             },
@@ -73,8 +73,8 @@ export function getEncouragementCopy(language = 'bn') {
             [BOARD_IDS.MAIN]: {
                 title: en ? 'Monthly Champion' : 'মাসের সেরা',
                 logic: en
-                    ? 'Top 3 win prizes · highest total points (hourly quizzes + reading)'
-                    : 'এই মাসে মোট পয়েন্টে সেরা তিনজন—ঘণ্টার কুইজ আর পড়া, দুটোই গণনায়।',
+                    ? 'Top 3 by total points — quizzes + reading'
+                    : 'এই মাসে মোট পয়েন্টে সেরা ৩—কুইজ আর পড়া দুটোই যোগ।',
                 rankBy: en ? 'Ranked by: total monthly points' : 'মাসের মোট পয়েন্টে সাজানো',
                 prize: en ? 'Top 3 win prizes' : 'প্রথম তিনজন পুরস্কার পাবেন',
             },
