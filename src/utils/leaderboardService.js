@@ -10,6 +10,145 @@ import {
     monthBounds,
 } from "./monthlyEncouragementBoards";
 
+/** Paginate quiz_attempts — PostgREST defaults to 1000 rows max per request. */
+async function fetchMonthlyActivityAttempts(start, end) {
+    const pageSize = 1000;
+    let offset = 0;
+    const all = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .from('quiz_attempts')
+            .select('user_id, quiz_id, score')
+            .gte('created_at', start)
+            .lt('created_at', end)
+            .or('quiz_id.like.hourly-challenge-%,quiz_id.like.lesson_bonus%')
+            .range(offset, offset + pageSize - 1);
+
+        if (error) throw error;
+        if (!data?.length) break;
+        all.push(...data);
+        if (data.length < pageSize) break;
+        offset += pageSize;
+    }
+
+    return all;
+}
+
+/** Same fields / resolution order as all-time leaderboard rows from leaderboard_view. */
+async function fetchLeaderboardActivityByUserIds(userIds) {
+    const unique = [...new Set((userIds || []).filter(Boolean))];
+    if (unique.length === 0) return {};
+
+    const map = {};
+    const chunkSize = 80;
+
+    try {
+        for (let i = 0; i < unique.length; i += chunkSize) {
+            const chunk = unique.slice(i, i + chunkSize);
+            const { data, error } = await supabase
+                .from('leaderboard_view')
+                .select('*')
+                .in('user_id', chunk);
+
+            if (error) {
+                console.warn('[leaderboard] activity lookup failed:', error.message);
+                continue;
+            }
+
+            for (const row of data || []) {
+                if (!row?.user_id) continue;
+                map[row.user_id] = {
+                    last_active: row.last_active || null,
+                    last_login_at: row.last_login_at || null,
+                };
+            }
+        }
+    } catch (err) {
+        console.warn('[leaderboard] activity lookup failed:', err);
+    }
+
+    return map;
+}
+
+function applyLeaderboardActivity(row, activityByUser) {
+    if (!row?.user_id) return row;
+    const activity = activityByUser[row.user_id];
+    if (!activity) return row;
+    return {
+        ...row,
+        last_active: activity.last_active,
+        last_login_at: activity.last_login_at,
+    };
+}
+
+function applyLeaderboardActivityToRows(rows, activityByUser) {
+    return (rows || []).map((row) => applyLeaderboardActivity(row, activityByUser));
+}
+
+function collectEncouragementUserIds(encouragement) {
+    const ids = new Set();
+    for (const board of Object.values(encouragement?.boards || {})) {
+        if (board?.leader?.user_id) ids.add(board.leader.user_id);
+        for (const player of board?.ranked || []) {
+            if (player?.user_id) ids.add(player.user_id);
+        }
+        for (const player of board?.prizePool || []) {
+            if (player?.user_id) ids.add(player.user_id);
+        }
+    }
+    for (const winner of encouragement?.prizeWinners?.winners || []) {
+        if (winner?.player?.user_id) ids.add(winner.player.user_id);
+    }
+    return [...ids];
+}
+
+function enrichEncouragementWithActivity(encouragement, activityByUser) {
+    if (!encouragement || !activityByUser || Object.keys(activityByUser).length === 0) {
+        return encouragement;
+    }
+
+    const enrichPlayer = (player) => (player ? applyLeaderboardActivity(player, activityByUser) : player);
+
+    const boards = Object.fromEntries(
+        Object.entries(encouragement.boards || {}).map(([boardId, board]) => [
+            boardId,
+            {
+                ...board,
+                leader: board?.leader ? enrichPlayer(board.leader) : board?.leader,
+                ranked: (board?.ranked || []).map(enrichPlayer),
+                prizePool: (board?.prizePool || []).map(enrichPlayer),
+            },
+        ])
+    );
+
+    const prizeWinners = encouragement.prizeWinners
+        ? {
+              ...encouragement.prizeWinners,
+              winners: (encouragement.prizeWinners.winners || []).map((winner) => ({
+                  ...winner,
+                  player: enrichPlayer(winner?.player),
+              })),
+              byBoard: Object.fromEntries(
+                  Object.entries(encouragement.prizeWinners.byBoard || {}).map(([boardId, winners]) => [
+                      boardId,
+                      (winners || []).map((winner) => ({
+                          ...winner,
+                          player: enrichPlayer(winner?.player),
+                      })),
+                  ])
+              ),
+          }
+        : encouragement.prizeWinners;
+
+    return {
+        ...encouragement,
+        boards,
+        prizeWinners,
+        tokenWinners: prizeWinners,
+    };
+}
+
 /**
  * Service to handle leaderboard data fetching with caching
  */
@@ -67,7 +206,7 @@ export const leaderboardService = {
                 // filter, so points can under-count reading while profiles.reading_points is correct.
                 const startOfMonth = new Date(y, m - 1, 1).getTime();
 
-                return data.map(item => {
+                const rows = data.map(item => {
                     const basePoints = Number(item.points) || 0;
                     const viewReadingInMonth = Number(item.reading_points) || 0;
                     const profileReading = Number(item.profiles?.reading_points) || 0;
@@ -88,6 +227,9 @@ export const leaderboardService = {
                         is_new_user: isNewUser
                     };
                 }).sort((a, b) => b.points - a.points);
+
+                const activityByUser = await fetchLeaderboardActivityByUserIds(rows.map((row) => row.user_id));
+                return applyLeaderboardActivityToRows(rows, activityByUser);
             },
             { ttl: 5, swr: true, forceRefresh }
         );
@@ -238,7 +380,7 @@ export const leaderboardService = {
                 const cutoff = getNewPlayerCutoff(y, m);
                 const { start, end } = monthBounds(y, m);
 
-                const [currentRes, prevRes, joinersRes, activityRes] = await Promise.all([
+                const [currentRes, prevRes, joinersRes, activityRows] = await Promise.all([
                     supabase
                         .from('monthly_leaderboard_view')
                         .select('*, profiles(reading_points, district, created_at, slm_id)')
@@ -257,22 +399,16 @@ export const leaderboardService = {
                         .from('profiles')
                         .select('id, full_name, avatar_url, district, training_level, slm_id, created_at, reading_points')
                         .gte('created_at', cutoff.toISOString()),
-                    supabase
-                        .from('quiz_attempts')
-                        .select('user_id, quiz_id, score')
-                        .gte('created_at', start)
-                        .lt('created_at', end)
-                        .or('quiz_id.like.hourly-challenge-%,quiz_id.like.lesson_bonus%'),
+                    fetchMonthlyActivityAttempts(start, end),
                 ]);
 
                 if (currentRes.error) throw currentRes.error;
                 if (prevRes.error) throw prevRes.error;
                 if (joinersRes.error) throw joinersRes.error;
-                if (activityRes.error) throw activityRes.error;
 
-                const activity = aggregateActivityAttempts(activityRes.data);
+                const activity = aggregateActivityAttempts(activityRows);
 
-                return buildEncouragementBoards({
+                const encouragement = buildEncouragementBoards({
                     currentRows: currentRes.data || [],
                     previousRows: prevRes.data || [],
                     joinerProfiles: joinersRes.data || [],
@@ -283,6 +419,11 @@ export const leaderboardService = {
                     prevMonth: prevM,
                     language,
                 });
+
+                const activityByUser = await fetchLeaderboardActivityByUserIds(
+                    collectEncouragementUserIds(encouragement)
+                );
+                return enrichEncouragementWithActivity(encouragement, activityByUser);
             },
             { ttl: 5, swr: true, forceRefresh }
         );

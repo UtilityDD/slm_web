@@ -35,6 +35,7 @@ import {
     getMonthlyPrizeDisplayList,
     getMonthlyStandingsForPodium,
     formatMonthlyPlayerScore,
+    formatHourlyAvgPerDay,
     getRankMedal,
     isPrizeSuperseded,
     isPrizeRecipient,
@@ -134,6 +135,26 @@ const formatLastActive = (dateString, language) => {
     // Default to short date
     return date.toLocaleDateString(isBn ? 'bn-BD' : 'en-US', { day: 'numeric', month: 'short' });
 };
+
+function formatLeaderboardDistrict(district) {
+    const value = (district || '').trim();
+    return value || null;
+}
+
+function MonthlyHourlyAvgPill({ hourly, language, encouragementBoards }) {
+    const label = formatHourlyAvgPerDay(
+        hourly,
+        language,
+        encouragementBoards?.year,
+        encouragementBoards?.month
+    );
+    if (!label) return null;
+    return (
+        <div className="nb-score-pill px-1.5 py-0.5 shrink-0 !text-[9px]">
+            <span className="text-[9px] font-black tabular-nums">{label}</span>
+        </div>
+    );
+}
 
 function formatChaseDisplayName(fullName) {
     const trimmed = (fullName || '').trim();
@@ -1346,12 +1367,22 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const fetchMonthlyLeaderboard = async (forceRefresh = false) => {
         setLoadingMonthly(true);
         try {
-            const [data, boards] = await Promise.all([
+            const [monthlyResult, boardsResult] = await Promise.allSettled([
                 leaderboardService.fetchMonthly(forceRefresh),
                 leaderboardService.fetchEncouragementBoards(forceRefresh, language),
             ]);
-            if (data) setMonthlyLeaderboard(data);
-            if (boards) setEncouragementBoards(boards);
+
+            if (monthlyResult.status === 'fulfilled' && monthlyResult.value) {
+                setMonthlyLeaderboard(monthlyResult.value);
+            } else if (monthlyResult.status === 'rejected') {
+                console.error('Error fetching monthly standings:', monthlyResult.reason);
+            }
+
+            if (boardsResult.status === 'fulfilled' && boardsResult.value) {
+                setEncouragementBoards(boardsResult.value);
+            } else if (boardsResult.status === 'rejected') {
+                console.error('Error fetching encouragement boards:', boardsResult.reason);
+            }
         } catch (error) {
             console.error('Error fetching monthly leaderboard:', error);
         } finally {
@@ -2024,7 +2055,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                     {player.avatar_url ? <img src={player.avatar_url} className="h-full w-full object-cover" alt="" /> : <div className="flex h-full w-full items-center justify-center bg-slate-200 text-xl font-bold text-slate-400 dark:bg-slate-800">{player.full_name?.[0]}</div>}
 
                                                                     {/* Status Indicator in Corner */}
-                                                                    {(() => {
+                                                                    {leaderboardTab === 'monthly' && (() => {
                                                                         const lastActiveDate = player.last_active || player.last_login_at;
                                                                         if (!lastActiveDate) return null;
                                                                         const date = new Date(lastActiveDate);
@@ -2053,16 +2084,16 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 ? 'text-slate-500 dark:text-slate-400 line-through'
                                                                 : 'text-slate-900 dark:text-white'
                                                         }`}>{player.full_name}</p>
+                                                        {leaderboardTab === 'all-time' && formatLeaderboardDistrict(player.district) && (
+                                                            <p className={`text-[8px] sm:text-[9px] font-bold text-slate-500 truncate max-w-full text-center px-1 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                {formatLeaderboardDistrict(player.district)}
+                                                            </p>
+                                                        )}
                                                         {superseded && (
                                                             <p className={`text-[8px] font-bold text-slate-400 mt-0.5 text-center ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                                 {encouragementCopy.prizeSuperseded}
                                                             </p>
                                                         )}
-                                                        {leaderboardTab === 'monthly' && (
-                                                            <p className="text-[7px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-[0.1em] mt-0.5">
-                                                                {player.district || t.noDistrict}
-                                                            </p>
-                                                         )}
                                                         <div className="flex items-center gap-1 mb-1">
                                                             {(() => {
                                                                 const badge = getBadgeByLevel(
@@ -2082,6 +2113,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                     ? formatMonthlyPlayerScore(player, monthlyBoardTab)
                                                                     : (player.points || player.score || 0).toLocaleString()}
                                                             </p>
+                                                            {leaderboardTab === 'monthly' && (
+                                                                <MonthlyHourlyAvgPill
+                                                                    hourly={player.hourly}
+                                                                    language={language}
+                                                                    encouragementBoards={encouragementBoards}
+                                                                />
+                                                            )}
                                                             {leaderboardTab === 'all-time' && (
                                                                 <div className="flex items-center gap-1 mt-0.5 opacity-80 scale-90">
                                                                     <span className="text-[9px]">📖</span>
@@ -2132,7 +2170,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
                                                 
                                                 {/* Status Indicator in Corner */}
-                                                {(item.last_active || item.last_login_at) && (() => {
+                                                {leaderboardTab === 'monthly' && (item.last_active || item.last_login_at) && (() => {
                                                     const lastActiveDate = item.last_active || item.last_login_at;
                                                     const date = new Date(lastActiveDate);
                                                     const now = new Date();
@@ -2180,23 +2218,22 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             );
                                                         })()}
                                                     </div>
-                                                    {leaderboardTab === 'monthly' && (
-                                                       <>
-                                                           <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5 flex items-center gap-1">
-                                                               <span className="w-1 h-1 rounded-full bg-orange-400"></span>
-                                                               {item.district || t.noDistrict}
-                                                           </p>
-                                                           {item.eligibility_note && (
-                                                               <p className="text-[9px] font-medium text-amber-600 dark:text-amber-400 mt-0.5">
-                                                                   {item.eligibility_note}
-                                                               </p>
-                                                           )}
-                                                       </>
+                                                    {leaderboardTab === 'monthly' && item.eligibility_note && (
+                                                        <p className="text-[9px] font-medium text-amber-600 dark:text-amber-400 mt-0.5">
+                                                            {item.eligibility_note}
+                                                        </p>
                                                     )}
                                                 </div>
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex items-center gap-1.5 shrink-0">
-                                                        {(item.last_active || item.last_login_at) && (() => {
+                                                        {leaderboardTab === 'all-time' ? (
+                                                            formatLeaderboardDistrict(item.district) && (
+                                                                <span className={`text-[10px] font-bold text-slate-500 truncate max-w-[9rem] ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                    {formatLeaderboardDistrict(item.district)}
+                                                                </span>
+                                                            )
+                                                        ) : (
+                                                        (item.last_active || item.last_login_at) && (() => {
                                                             const lastActiveDate = item.last_active || item.last_login_at;
                                                             const date = new Date(lastActiveDate);
                                                             const now = new Date();
@@ -2214,8 +2251,16 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                     </span>
                                                                 </div>
                                                             );
-                                                        })()}
+                                                        })()
+                                                        )}
                                                     </div>
+                                                    {leaderboardTab === 'monthly' && (
+                                                        <MonthlyHourlyAvgPill
+                                                            hourly={item.hourly}
+                                                            language={language}
+                                                            encouragementBoards={encouragementBoards}
+                                                        />
+                                                    )}
                                                     {leaderboardTab === 'all-time' && (
                                                         <div className="nb-score-pill flex items-center gap-1 px-1.5 py-0.5 shrink-0 !text-[9px]">
                                                             <span className="text-[9px]">📖</span>
@@ -2326,6 +2371,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 encouragementData={encouragementBoards}
                 userId={user?.id}
                 timeInfo={monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION ? t.leaderboardTimeInfo : null}
+                hourlyAvgInfo={encouragementCopy.hourlyAvgNote}
                 onClose={() => setShowMonthlyBoardInfoModal(false)}
             />
         </main>
@@ -2604,21 +2650,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     <div className="flex h-full w-full items-center justify-center text-xs font-bold uppercase text-slate-400">{item.full_name?.[0] || 'U'}</div>
                                                 )}
                                             </div>
-                                            {(item.last_active || item.last_login_at) && (() => {
-                                                const lastActiveDate = item.last_active || item.last_login_at;
-                                                const d = new Date(lastActiveDate);
-                                                const now = new Date();
-                                                const diffInSeconds = Math.floor((now - d) / 1000);
-                                                const isOnline = diffInSeconds < 300;
-                                                const isToday = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-
-                                                return isToday && (
-                                                    <span className="absolute -bottom-0.5 -right-0.5 z-10 flex h-2.5 w-2.5">
-                                                        {isOnline && <span className="absolute inline-flex h-full w-full animate-ping bg-green-400 opacity-75" />}
-                                                        <span className={`relative inline-flex h-2.5 w-2.5 border-2 border-white ${isOnline ? 'bg-green-500' : 'bg-green-500/60'}`} />
-                                                    </span>
-                                                );
-                                            })()}
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <div className="truncate text-xs font-black leading-tight text-slate-800 transition-colors group-hover:text-orange-600">
@@ -2628,9 +2659,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 <span className="text-[10px] font-black tabular-nums leading-none text-slate-900">
                                                     {item.points.toLocaleString()}
                                                 </span>
-                                                {(item.last_active || item.last_login_at) && (
-                                                    <span className="text-[9px] font-bold text-slate-500">
-                                                        {formatLastActive(item.last_active || item.last_login_at, language)}
+                                                {formatLeaderboardDistrict(item.district) && (
+                                                    <span className={`text-[9px] font-bold text-slate-500 truncate max-w-[6rem] ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                        {formatLeaderboardDistrict(item.district)}
                                                     </span>
                                                 )}
                                                 <div className="flex items-center gap-0.5 border border-slate-900 bg-slate-50 px-1 py-0.5 text-[9px] font-bold text-slate-600">
@@ -3066,6 +3097,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 encouragementData={encouragementBoards}
                 userId={user?.id}
                 timeInfo={monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION ? t.leaderboardTimeInfo : null}
+                hourlyAvgInfo={encouragementCopy.hourlyAvgNote}
                 onClose={() => setShowMonthlyBoardInfoModal(false)}
             />
         </div>

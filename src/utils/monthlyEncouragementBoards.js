@@ -37,6 +37,9 @@ export function getEncouragementCopy(language = 'bn') {
         prizeNote: en
             ? 'Final at month-end · updates live'
             : 'মাস শেষে চূড়ান্ত হবে · খেলতে থাকলে তালিকা বদলাবে',
+        hourlyAvgNote: en
+            ? 'Hourly avg = this month’s hourly quiz records in the database ÷ days so far. Each hour slot is one record (retries in the same hour update that record).'
+            : 'ঘণ্টার কুইজ গড় = এই মাসে ডাটাবেসের ঘণ্টার কুইজ রেকর্ড ÷ আজ পর্যন্ত দিন। প্রতি ঘণ্টার স্লটে একটি রেকর্ড (একই ঘণ্টায় আবার খেললে সেই রেকর্ড আপডেট হয়)।',
         hallOfFamePrizeNote: en
             ? 'Grayed names led this list but won on a higher list; highlighted names received the prize (including next eligible players).'
             : 'ধূসর নামেরা এই তালিকায় এগিয়ে ছিলেন কিন্তু উচ্চতর তালিকায় পুরস্কার পেয়েছেন; হাইলাইট নামগুলো প্রকৃত পুরস্কার প্রাপক।',
@@ -232,12 +235,13 @@ export function getMonthlyLeaderboardList(monthlyBoardTab, monthlyLeaderboard, e
 
 /** Flat list for monthly UI: standings with prize flags + replacement winners appended. */
 export function getMonthlyPrizeDisplayList(monthlyBoardTab, monthlyLeaderboard, encouragementBoards) {
+    let list;
     if (monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION) {
         const prizeWinners = encouragementBoards?.prizeWinners;
         const prizeIds = new Set(
             (prizeWinners?.byBoard?.[BOARD_IDS.MAIN] || []).map((w) => w.player.user_id)
         );
-        return (monthlyLeaderboard || []).map((player, idx) => {
+        list = (monthlyLeaderboard || []).map((player, idx) => {
             const standingRank = idx + 1;
             const prizeRank = prizeIds.has(player.user_id) && standingRank <= RULES.TOP_N ? standingRank : null;
             return {
@@ -247,25 +251,26 @@ export function getMonthlyPrizeDisplayList(monthlyBoardTab, monthlyLeaderboard, 
                 prize_status: prizeRank ? PRIZE_STATUS.WINNER : null,
             };
         });
+    } else {
+        const boardId = monthlyBoardTab;
+        const boards = encouragementBoards?.boards || {};
+        const prizeWinners = encouragementBoards?.prizeWinners;
+        list = buildBoardDisplayList(boardId, boards, prizeWinners).map(
+            ({ player, standing_rank, prize_rank, prize_status }) => ({
+                ...player,
+                standing_rank,
+                prize_rank,
+                prize_status,
+            })
+        );
     }
-
-    const boardId = monthlyBoardTab;
-    const boards = encouragementBoards?.boards || {};
-    const prizeWinners = encouragementBoards?.prizeWinners;
-    return buildBoardDisplayList(boardId, boards, prizeWinners).map(
-        ({ player, standing_rank, prize_rank, prize_status }) => ({
-            ...player,
-            standing_rank,
-            prize_rank,
-            prize_status,
-        })
-    );
+    return attachMonthlyHourlyCount(list, encouragementBoards);
 }
 
 export function getMonthlyStandingsForPodium(monthlyBoardTab, monthlyLeaderboard, encouragementBoards) {
     const display = getMonthlyPrizeDisplayList(monthlyBoardTab, monthlyLeaderboard, encouragementBoards);
     if (monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION) {
-        return monthlyLeaderboard;
+        return attachMonthlyHourlyCount(monthlyLeaderboard, encouragementBoards);
     }
     return display
         .filter((item) => item.standing_rank != null)
@@ -286,6 +291,56 @@ export function formatMonthlyPlayerScore(item, monthlyBoardTab) {
         return `+${score.toLocaleString()}`;
     }
     return score.toLocaleString();
+}
+
+/** Days elapsed in calendar month (including today) for display-only hourly averages. */
+export function getDaysElapsedInMonth(year, month, refDate = new Date()) {
+    const ref = refDate instanceof Date ? refDate : new Date(refDate);
+    if (ref.getFullYear() === year && ref.getMonth() + 1 === month) {
+        return Math.max(1, ref.getDate());
+    }
+    return new Date(year, month, 0).getDate();
+}
+
+export function getHourlyAvgPerDay(hourlyCount, year, month, refDate = new Date()) {
+    const count = Number(hourlyCount) || 0;
+    if (count <= 0) return null;
+    const days = getDaysElapsedInMonth(year, month, refDate);
+    return count / days;
+}
+
+export function formatHourlyAvgPerDay(hourlyCount, language = 'bn', year, month, refDate = new Date()) {
+    const y = year ?? new Date().getFullYear();
+    const m = month ?? new Date().getMonth() + 1;
+    const count = Number(hourlyCount) || 0;
+    if (count <= 0) return null;
+
+    const avg = getHourlyAvgPerDay(hourlyCount, y, m, refDate);
+    if (avg == null) return null;
+
+    const rounded = Math.round(avg);
+    if (rounded <= 0) {
+        return language === 'bn' ? '< ১ ঘণ্টা/দিন' : '< 1 hr/day';
+    }
+
+    const formatted = language === 'bn'
+        ? rounded.toLocaleString('bn-BD', { maximumFractionDigits: 0 })
+        : rounded.toLocaleString('en-US', { maximumFractionDigits: 0 });
+    return language === 'bn' ? `${formatted} ঘণ্টা/দিন` : `${formatted} hrs/day`;
+}
+
+function resolveMonthlyHourlyCount(player, encouragementBoards) {
+    if (!player) return 0;
+    if (player.hourly != null) return Number(player.hourly) || 0;
+    const activity = encouragementBoards?.monthlyActivity || {};
+    return Number(activity[player.user_id]?.hourly) || 0;
+}
+
+export function attachMonthlyHourlyCount(players, encouragementBoards) {
+    return (players || []).map((player) => ({
+        ...player,
+        hourly: resolveMonthlyHourlyCount(player, encouragementBoards),
+    }));
 }
 
 export function getMonthlyBoardMeta(monthlyBoardTab, language, encouragementBoards) {
@@ -542,7 +597,7 @@ export function buildEncouragementBoards({
     };
 
     const prizeWinners = resolvePrizeWinners(boards);
-    return { boards, prizeWinners, tokenWinners: prizeWinners, year, month };
+    return { boards, prizeWinners, tokenWinners: prizeWinners, year, month, monthlyActivity: activity };
 }
 
 function isPrizeEligibleForBoard(boardId, player) {
