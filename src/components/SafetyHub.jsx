@@ -1402,9 +1402,9 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                 activeTab === 'dashboard'
                     ? 'compact-container'
                     : activeTab === 'my_ppe'
-                        ? 'max-w-lg mx-auto px-2 sm:px-3'
+                        ? 'max-w-full mx-auto px-0'
                         : 'max-w-7xl mx-auto px-4 sm:px-6'
-            } ${activeTab === 'my_ppe' ? 'py-2 sm:py-3' : 'py-6 sm:py-10'} md:mb-6 transition-all duration-500`}>
+            } ${activeTab === 'my_ppe' ? 'py-0' : 'py-6 sm:py-10'} md:mb-6 transition-all duration-500`}>
                 {/* Header Section */}
                 {activeTab !== 'my_ppe' && (
                 <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">

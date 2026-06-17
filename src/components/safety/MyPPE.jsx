@@ -7,7 +7,7 @@ import { PPE_ITEMS, CONDITIONS, AGE_OPTIONS, buildAnswersFromRows } from '../../
 import LinemanPPEView from './ppe/LinemanPPEView';
 
 // Phase: 'character' | 'welcome' | 'wizard' | 'summary'
-const MyPPE = ({ user, language = 'bn', onClose }) => {
+const MyPPE = ({ user, language = 'bn', onClose, setCurrentView }) => {
     const [phase, setPhase] = useState('character');
     const [currentStep, setCurrentStep] = useState(0);
     const [answers, setAnswers] = useState([]); // {name, available, count, condition, age_months, usage}
@@ -263,6 +263,7 @@ const MyPPE = ({ user, language = 'bn', onClose }) => {
                 user={user}
                 language={language}
                 onClose={onClose}
+                setCurrentView={setCurrentView}
             />
         );
     }

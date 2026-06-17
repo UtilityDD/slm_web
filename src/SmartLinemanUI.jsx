@@ -1015,7 +1015,7 @@ export default function SmartLinemanUI() {
         case 'sops':
           return <SOPs language={language} user={user} setCurrentView={setCurrentView} />;
         case 'my_ppe':
-          return <MyPPE language={language} user={user} userProfile={userProfile} />;
+          return <MyPPE language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;
         case 'my_tools':
           return <MyTools language={language} user={user} userProfile={userProfile} />;
         case 'training':
@@ -1324,7 +1324,7 @@ export default function SmartLinemanUI() {
             >
               <div
                 className={`h-full relative z-10 w-full view-transition ${
-                  currentView === 'my_ppe' ? 'overflow-hidden' : 'min-h-full'
+                  currentView === 'my_ppe' ? 'overflow-hidden flex flex-col min-h-0' : 'min-h-full'
                 } ${['accident-stories', 'leaderboard', 'training', 'competitions', 'video-guide', 'aro-janun'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
                 key={currentView}
               >

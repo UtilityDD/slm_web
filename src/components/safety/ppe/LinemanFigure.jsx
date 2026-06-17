@@ -6,19 +6,19 @@ import LinemanIllustration from './LinemanIllustration';
 // Figure occupies a 240-wide scene; side gutters hold callout badges.
 const FIG_W = 240;
 const FIG_H = 400;
-const GUTTER = 48;
-const VB_W = FIG_W + GUTTER * 2; // 336
+const GUTTER = 40;
+const VB_W = FIG_W + GUTTER * 2; // 320
 const VB_H = FIG_H;
-const VIEW_PAD = 18; // keep badges + pulse rings inside the viewport
+const VIEW_PAD = 8; // keep badges + pulse rings inside the viewport
 
 // Which rail each item's badge sits in (keeps leader lines from crossing the body).
 const RAIL_LAYOUT = {
     left: ['Safety Helmet', 'Discharge Rod', 'Insulated Gloves', 'Safety Shoes/Boots'],
-    right: ['Safety Goggles', 'Reflective Jacket', 'Voltage Detector', 'Full Body Harness']
+    right: ['Reflective Jacket', 'Voltage Detector', 'Full Body Harness']
 };
 
-const RAIL_X = { left: 28, right: VB_W - 28 };
-const RAIL_TOP = 68;
+const RAIL_X = { left: 24, right: VB_W - 24 };
+const RAIL_TOP = 58;
 const RAIL_BOTTOM = 340;
 
 function buildSlots(names) {
@@ -46,29 +46,13 @@ const BADGE_POSITIONS = (() => {
  */
 export default function LinemanFigure({ answers, selectedName, onSelectItem, language = 'bn', equipAnim = null }) {
     const answerMap = Object.fromEntries((answers || []).map((a) => [a.name, a]));
-    const equippedCount = CORE_PPE_ITEMS.filter((p) => answerMap[p.name]?.available).length;
-    const essentialMissing = CORE_PPE_ITEMS.filter((p) => p.essential && !answerMap[p.name]?.available).length;
 
     return (
         <div className="relative h-full w-full min-h-0 select-none overflow-visible">
-            <div className="absolute top-1 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 pointer-events-none">
-                <div className="px-2 py-0.5 rounded-full bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm border border-orange-200 dark:border-orange-800 shadow-sm">
-                    <span className="text-[9px] sm:text-[10px] font-black text-orange-600 dark:text-orange-400">
-                        {equippedCount}/{CORE_PPE_ITEMS.length}{' '}
-                        {language === 'en' ? 'equipped' : 'সজ্জিত'}
-                    </span>
-                </div>
-                {essentialMissing > 0 && (
-                    <div className="px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[9px] sm:text-[10px] font-black shadow-sm animate-pulse">
-                        {essentialMissing} {language === 'en' ? 'missing' : 'নেই'}
-                    </div>
-                )}
-            </div>
-
             <svg
                 viewBox={`${-VIEW_PAD} ${-VIEW_PAD} ${VB_W + VIEW_PAD * 2} ${VB_H + VIEW_PAD * 2}`}
                 className="w-full h-full block overflow-visible"
-                preserveAspectRatio="xMidYMid meet"
+                preserveAspectRatio="xMidYMin meet"
                 overflow="visible"
                 role="img"
                 aria-label={language === 'en' ? 'Lineman safety gear' : 'লাইনম্যান সুরক্ষা সরঞ্জাম'}
@@ -167,9 +151,9 @@ export default function LinemanFigure({ answers, selectedName, onSelectItem, lan
                                     cx={badge.x}
                                     cy={badge.y}
                                     r={r}
-                                    fill={answer?.available ? color : '#f1f5f9'}
+                                    fill={answer?.available ? color : '#fee2e2'}
                                     fillOpacity={answer?.available ? 0.18 : 1}
-                                    stroke={isSelected ? '#ea580c' : badgeEquip ? '#22c55e' : badgeUnequip ? '#ef4444' : answer?.available ? color : '#94a3b8'}
+                                    stroke={isSelected ? '#ea580c' : badgeEquip ? '#22c55e' : badgeUnequip ? '#ef4444' : answer?.available ? color : '#ef4444'}
                                     strokeWidth={isSelected || isAnimTarget ? 2.5 : 1.8}
                                 />
 

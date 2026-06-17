@@ -17,7 +17,7 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
       ),
     },
     {
-      id: 'safety-library',
+      id: 'my_ppe',
       label: language === 'en' ? 'Safety' : 'সুরক্ষা',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
@@ -68,7 +68,7 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
 
   const isItemActive = (item) =>
     (currentView === item.id && !isViewingOthersProgress) ||
-    (item.id === 'safety-library' && ['safety-library', 'my_ppe', 'my_tools'].includes(currentView)) ||
+    (item.id === 'my_ppe' && ['safety-library', 'my_ppe', 'my_tools'].includes(currentView)) ||
     (item.id === 'training' && (currentView === 'home' || currentView === 'competitions')) ||
     (item.id === 'leaderboard' && (currentView === 'leaderboard' || isViewingOthersProgress));
 

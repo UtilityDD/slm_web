@@ -301,21 +301,6 @@ export default function LinemanIllustration({ answerMap = {}, equipAnim = null }
                     <ellipse cx="103" cy="32" rx="9" ry="5" fill="#fef9c3" opacity="0.6" transform="rotate(-25 103 32)" />
                 </GearLayer>
 
-                {/* ===== SAFETY GOGGLES ===== */}
-                <GearLayer
-                    name="Safety Goggles"
-                    show={has('Safety Goggles')}
-                    anim={equipAnim}
-                    ox={pivot('Safety Goggles').x}
-                    oy={pivot('Safety Goggles').y}
-                >
-                    <path d="M98 66 Q98 59 108 59 L120 59 Q130 59 130 66 Q130 74 120 74 L108 74 Q98 74 98 66 Z" fill="#7dd3fc" opacity="0.7" stroke="#0369a1" strokeWidth="1.5" />
-                    <line x1="114" y1="59" x2="114" y2="74" stroke="#0369a1" strokeWidth="1.2" />
-                    <path d="M98 63 Q90 61 86 65" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M130 63 Q138 61 142 65" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
-                    <ellipse cx="104" cy="64" rx="4" ry="2.5" fill="#fff" opacity="0.5" />
-                </GearLayer>
-
                 {/* ===== RAINCOAT ===== */}
                 <GearLayer
                     name="Raincoat"

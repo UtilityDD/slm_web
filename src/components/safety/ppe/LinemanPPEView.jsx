@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useCallback, useEffect, useState } from 'react';
-import { CORE_PPE_ITEMS, buildAnswersFromRows } from '../../../data/ppeItems';
+import { CORE_PPE_ITEMS, OTHER_PPE_ITEMS, buildAnswersFromRows } from '../../../data/ppeItems';
 import LinemanFigure from './LinemanFigure';
 import PPEItemSheet from './PPEItemSheet';
 import PPECompactList from './PPECompactList';
@@ -10,7 +10,7 @@ import { fetchUserPPE, saveSinglePPEItem } from './ppeSave';
  * Interactive lineman PPE hub — tap gear on the figure, update one item at a time.
  * Uses existing user_ppe table only; no score/profile/quiz changes.
  */
-export default function LinemanPPEView({ user, language = 'bn', onClose }) {
+export default function LinemanPPEView({ user, language = 'bn', onClose, setCurrentView }) {
     const [loading, setLoading] = useState(true);
     const [answers, setAnswers] = useState([]);
     const [selectedName, setSelectedName] = useState(null);
@@ -92,9 +92,12 @@ export default function LinemanPPEView({ user, language = 'bn', onClose }) {
     const equipped = displayAnswers.filter((a) => a.available && coreNames.has(a.name)).length;
     const pct = Math.round((equipped / CORE_PPE_ITEMS.length) * 100);
 
+    const otherNames = new Set(OTHER_PPE_ITEMS.map((p) => p.name));
+    const otherEquipped = displayAnswers.filter((a) => a.available && otherNames.has(a.name)).length;
+
     if (loading) {
         return (
-            <div className="h-[calc(100dvh-5.25rem-env(safe-area-inset-bottom,0px))] md:h-[calc(100dvh-3rem)] flex items-center justify-center">
+            <div className="h-full min-h-0 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-14 h-14 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
                     <p className="text-sm font-bold text-slate-500">
@@ -131,21 +134,27 @@ export default function LinemanPPEView({ user, language = 'bn', onClose }) {
     }
 
     return (
-        <div className="flex flex-col w-full max-w-lg md:max-w-xl mx-auto px-2 sm:px-3 pt-1.5 pb-1 animate-fadeIn overflow-hidden h-[calc(100dvh-5.25rem-env(safe-area-inset-bottom,0px))] md:h-[calc(100dvh-3rem)]">
+        <div className="flex flex-col w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-0 animate-fadeIn overflow-hidden h-full min-h-0">
             {/* Header */}
-            <div className="shrink-0 flex items-center justify-between gap-2 mb-0.5">
-                <div className="min-w-0">
-                    <h1 className={`text-base font-black text-slate-900 dark:text-white leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+            <div className="shrink-0 flex items-center justify-between gap-4 mb-3 sm:mb-4">
+                <div className="flex items-center gap-2 min-w-0">
+                    {setCurrentView && (
+                        <button
+                            type="button"
+                            onClick={() => setCurrentView('safety-library')}
+                            aria-label={language === 'en' ? 'Safety Library' : 'সুরক্ষা লাইব্রেরি'}
+                            className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden>
+                                <path d="m15 18-6-6 6-6" />
+                            </svg>
+                        </button>
+                    )}
+                    <h1 className={`text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight truncate ${language === 'bn' ? 'font-bengali' : ''}`}>
                         {language === 'en' ? 'My PPE' : 'আমার পিপিই'}
                     </h1>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                        {language === 'en' ? 'Tap a badge to update' : 'ব্যাজে ট্যাপ করে আপডেট করুন'}
-                    </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                    <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg px-2.5 py-1 text-white text-center leading-none">
-                        <div className="text-base font-black">{pct}%</div>
-                    </div>
                     <button
                         type="button"
                         onClick={() => setView('list')}
@@ -156,8 +165,28 @@ export default function LinemanPPEView({ user, language = 'bn', onClose }) {
                 </div>
             </div>
 
-            {/* Lineman figure — fills remaining viewport height */}
-            <div className="flex-1 min-h-0 w-full relative overflow-visible">
+            {/* Equipped progress status */}
+            <div className="shrink-0 w-full max-w-xs mx-auto">
+                <div className="flex items-center justify-between mb-1">
+                    <span className={`text-[11px] font-bold text-slate-500 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        {equipped}/{CORE_PPE_ITEMS.length} {language === 'en' ? 'equipped' : 'সজ্জিত'}
+                    </span>
+                    <span className="text-[11px] font-black text-orange-600 dark:text-orange-400 tabular-nums">{pct}%</span>
+                </div>
+                <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                    <div
+                        className="h-full rounded-full bg-gradient-to-r from-orange-500 to-orange-600 transition-all duration-500"
+                        style={{ width: `${pct}%` }}
+                    />
+                </div>
+            </div>
+
+            <p className={`shrink-0 text-center text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-tight mt-1.5 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                {language === 'en' ? 'Tap a badge to update' : 'ব্যাজে ট্যাপ করে আপডেট করুন'}
+            </p>
+
+            {/* Lineman figure — fills remaining viewport height, sits right below the hint */}
+            <div className="flex-1 min-h-0 w-full relative overflow-visible flex items-start justify-center">
                 <div className={`h-full w-full transition-transform duration-300 overflow-visible ${saveFlash?.action === 'equip' ? 'scale-[1.02]' : ''}`}>
                     <LinemanFigure
                         answers={displayAnswers}
@@ -179,6 +208,30 @@ export default function LinemanPPEView({ user, language = 'bn', onClose }) {
                     </div>
                 )}
             </div>
+
+            {OTHER_PPE_ITEMS.length > 0 && (
+                <button
+                    type="button"
+                    onClick={() => setView('list')}
+                    className="shrink-0 mt-2 mb-1 w-full max-w-xs mx-auto flex items-center justify-between gap-2 px-3 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-[0.98] transition-all"
+                >
+                    <span className="flex items-center gap-2 min-w-0">
+                        <span className="text-base shrink-0">🧰</span>
+                        <span className={`text-xs font-bold text-slate-700 dark:text-slate-200 truncate ${language === 'bn' ? 'font-bengali' : ''}`}>
+                            {language === 'en' ? 'Other gear' : 'অন্যান্য সরঞ্জাম'}
+                        </span>
+                        <span className="text-[11px] font-black text-orange-600 dark:text-orange-400 tabular-nums shrink-0">
+                            {otherEquipped}/{OTHER_PPE_ITEMS.length}
+                        </span>
+                    </span>
+                    <span className={`flex items-center gap-1 text-[11px] font-bold text-slate-500 dark:text-slate-400 shrink-0 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        {language === 'en' ? 'View & update' : 'দেখুন ও আপডেট করুন'}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5" aria-hidden>
+                            <path d="m9 18 6-6-6-6" />
+                        </svg>
+                    </span>
+                </button>
+            )}
 
             {selectedName && (
                 <PPEItemSheet

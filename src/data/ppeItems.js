@@ -106,7 +106,7 @@ export const AGE_OPTIONS = [
 ];
 
 // Items shown on the lineman figure (core) vs. the supplementary "other gear" list.
-const OTHER_PPE_NAMES = new Set(['Safety Belt', 'Raincoat', 'Torch/Emergency Light']);
+const OTHER_PPE_NAMES = new Set(['Safety Belt', 'Raincoat', 'Torch/Emergency Light', 'Safety Goggles']);
 
 export const CORE_PPE_ITEMS = PPE_ITEMS.filter((i) => !OTHER_PPE_NAMES.has(i.name));
 export const OTHER_PPE_ITEMS = PPE_ITEMS.filter((i) => OTHER_PPE_NAMES.has(i.name));
