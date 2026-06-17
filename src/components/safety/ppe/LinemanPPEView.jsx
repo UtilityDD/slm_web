@@ -4,6 +4,7 @@ import { CORE_PPE_ITEMS, OTHER_PPE_ITEMS, buildAnswersFromRows } from '../../../
 import LinemanFigure from './LinemanFigure';
 import PPEItemSheet from './PPEItemSheet';
 import PPECompactList from './PPECompactList';
+import SafetyTopTabs from '../SafetyTopTabs';
 import { fetchUserPPE, saveSinglePPEItem } from './ppeSave';
 
 /**
@@ -134,42 +135,50 @@ export default function LinemanPPEView({ user, language = 'bn', onClose, setCurr
     }
 
     return (
-        <div className="flex flex-col w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-0 animate-fadeIn overflow-hidden h-full min-h-0">
-            {/* Header */}
-            <div className="shrink-0 flex items-center justify-between gap-4 mb-3 sm:mb-4">
-                <div className="flex items-center gap-2 min-w-0">
-                    {setCurrentView && (
-                        <button
-                            type="button"
-                            onClick={() => setCurrentView('safety-library')}
-                            aria-label={language === 'en' ? 'Safety Library' : 'সুরক্ষা লাইব্রেরি'}
-                            className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden>
-                                <path d="m15 18-6-6 6-6" />
-                            </svg>
-                        </button>
-                    )}
-                    <h1 className={`text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight truncate ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        {language === 'en' ? 'My PPE' : 'আমার পিপিই'}
-                    </h1>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                    <button
-                        type="button"
-                        onClick={() => setView('list')}
-                        className="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all"
-                    >
-                        {language === 'en' ? 'List' : 'তালিকা'}
-                    </button>
+        <div className="neo-brutal flex flex-col w-full h-full min-h-0 overflow-hidden text-slate-900 animate-fadeIn">
+            <div className="nb-hazard" aria-hidden="true" />
+
+            {/* Header band — identical to Safety Library */}
+            <div className="shrink-0 bg-[#fffdf7] py-4 px-4 sm:px-8">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex items-center justify-between gap-4">
+                        {setCurrentView ? (
+                            <div className="flex items-center gap-3 flex-1 min-w-0 animate-in fade-in slide-in-from-left-4 duration-300">
+                                <SafetyTopTabs
+                                    current="my_ppe"
+                                    onNavigate={setCurrentView}
+                                    language={language}
+                                    className="flex-1 min-w-0 max-w-sm"
+                                />
+                            </div>
+                        ) : (
+                            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                                {language === 'en' ? 'My PPE' : 'আমার পিপিই'}
+                            </h1>
+                        )}
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setView('list')}
+                                className="shrink-0 px-3 py-2 border-2 border-slate-900 bg-white text-slate-900 text-xs font-black shadow-[3px_3px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0_#0f172a] transition-transform"
+                            >
+                                {language === 'en' ? 'List' : 'তালিকা'}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            {/* Body */}
+            <div className="flex-1 min-h-0 flex flex-col w-full max-w-7xl mx-auto px-4 sm:px-6 pt-3 pb-0">
 
             {/* Equipped progress status */}
             <div className="shrink-0 w-full max-w-xs mx-auto">
                 <div className="flex items-center justify-between mb-1">
                     <span className={`text-[11px] font-bold text-slate-500 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        {equipped}/{CORE_PPE_ITEMS.length} {language === 'en' ? 'equipped' : 'সজ্জিত'}
+                        {language === 'en'
+                            ? `${equipped}/${CORE_PPE_ITEMS.length} equipped`
+                            : `${CORE_PPE_ITEMS.length}টির মধ্যে ${equipped}টি আছে`}
                     </span>
                     <span className="text-[11px] font-black text-orange-600 dark:text-orange-400 tabular-nums">{pct}%</span>
                 </div>
@@ -232,6 +241,7 @@ export default function LinemanPPEView({ user, language = 'bn', onClose, setCurr
                     </span>
                 </button>
             )}
+            </div>
 
             {selectedName && (
                 <PPEItemSheet

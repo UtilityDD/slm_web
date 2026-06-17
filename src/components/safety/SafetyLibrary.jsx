@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
 import { libraryService } from '../../utils/libraryService';
 import { storageUtils } from '../../utils/storageUtils';
+import SafetyTopTabs from './SafetyTopTabs';
 
 const SearchIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -820,17 +821,13 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                     <div className="flex items-center justify-between gap-4">
                         {!isSearchExpanded ? (
                             <>
-                                <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4 duration-300">
-                                    <button
-                                        type="button"
-                                        onClick={() => setCurrentView('training')}
-                                        className="w-9 h-9 flex items-center justify-center border-2 border-slate-900 bg-white text-slate-900 shadow-[3px_3px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0_#0f172a] transition-transform"
-                                    >
-                                        <ChevronLeftIcon className="w-5 h-5" />
-                                    </button>
-                                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                                        {t.title}
-                                    </h1>
+                                <div className="flex items-center gap-3 flex-1 min-w-0 animate-in fade-in slide-in-from-left-4 duration-300">
+                                    <SafetyTopTabs
+                                        current="safety-library"
+                                        onNavigate={setCurrentView}
+                                        language={language}
+                                        className="flex-1 min-w-0 max-w-sm"
+                                    />
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button
@@ -917,28 +914,6 @@ export default function SafetyLibrary({ language, setCurrentView }) {
             </div>
 
             <div className="max-w-7xl mx-auto p-3 sm:p-8">
-                <button
-                    type="button"
-                    onClick={() => setCurrentView('my_ppe')}
-                    className="mb-4 sm:mb-6 w-full nb-card p-4 flex items-center justify-between gap-3 cursor-pointer active:translate-x-0.5 active:translate-y-0.5 bg-emerald-50 hover:bg-emerald-100/80 border-emerald-600 text-left"
-                >
-                    <div className="flex items-center gap-3.5 min-w-0">
-                        <div className="w-10 h-10 border-2 border-slate-900 bg-white text-emerald-600 flex items-center justify-center shrink-0 shadow-[2px_2px_0_#0f172a] text-xl">
-                            🦺
-                        </div>
-                        <div className="min-w-0">
-                            <h3 className={`font-black text-sm sm:text-base leading-tight text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                {t.myPpeTitle}
-                            </h3>
-                            <p className={`text-[11px] sm:text-xs text-slate-600 mt-0.5 line-clamp-2 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                {t.myPpeSubtitle}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="w-8 h-8 border-2 border-slate-900 bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-[2px_2px_0_#0f172a]">
-                        <ChevronRightIcon className="w-4 h-4" />
-                    </div>
-                </button>
 
                 {loading ? (
                     <SafetyLibraryLoadingView language={language} />
