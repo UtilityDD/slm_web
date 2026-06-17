@@ -717,7 +717,9 @@ export default function SafetyLibrary({ language, setCurrentView }) {
             zoomOutAria: 'Zoom out',
             zoomToolbarAria: 'Image zoom controls',
             relatedOpenAriaPrefix: 'Open related item:',
-            backPreviousAria: 'Previous item'
+            backPreviousAria: 'Previous item',
+            myPpeTitle: 'My PPE',
+            myPpeSubtitle: 'Tap gear on your lineman to update'
         },
         bn: {
             title: 'সুরক্ষা লাইব্রেরি',
@@ -732,7 +734,9 @@ export default function SafetyLibrary({ language, setCurrentView }) {
             zoomOutAria: 'ছোট করুন',
             zoomToolbarAria: 'ছবির জুম নিয়ন্ত্রণ',
             relatedOpenAriaPrefix: 'খুলুন:',
-            backPreviousAria: 'আগের আইটেমে ফিরুন'
+            backPreviousAria: 'আগের আইটেমে ফিরুন',
+            myPpeTitle: 'আমার পিপিই',
+            myPpeSubtitle: 'লাইনম্যানে সরঞ্জামে ট্যাপ করে আপডেট করুন'
         }
     }[language];
 
@@ -913,6 +917,29 @@ export default function SafetyLibrary({ language, setCurrentView }) {
             </div>
 
             <div className="max-w-7xl mx-auto p-3 sm:p-8">
+                <button
+                    type="button"
+                    onClick={() => setCurrentView('my_ppe')}
+                    className="mb-4 sm:mb-6 w-full nb-card p-4 flex items-center justify-between gap-3 cursor-pointer active:translate-x-0.5 active:translate-y-0.5 bg-emerald-50 hover:bg-emerald-100/80 border-emerald-600 text-left"
+                >
+                    <div className="flex items-center gap-3.5 min-w-0">
+                        <div className="w-10 h-10 border-2 border-slate-900 bg-white text-emerald-600 flex items-center justify-center shrink-0 shadow-[2px_2px_0_#0f172a] text-xl">
+                            🦺
+                        </div>
+                        <div className="min-w-0">
+                            <h3 className={`font-black text-sm sm:text-base leading-tight text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                {t.myPpeTitle}
+                            </h3>
+                            <p className={`text-[11px] sm:text-xs text-slate-600 mt-0.5 line-clamp-2 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                {t.myPpeSubtitle}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="w-8 h-8 border-2 border-slate-900 bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-[2px_2px_0_#0f172a]">
+                        <ChevronRightIcon className="w-4 h-4" />
+                    </div>
+                </button>
+
                 {loading ? (
                     <SafetyLibraryLoadingView language={language} />
                 ) : (

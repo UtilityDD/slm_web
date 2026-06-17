@@ -3,38 +3,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../../supabaseClient';
 import { cacheHelper } from '../../utils/cacheHelper';
+import { PPE_ITEMS, CONDITIONS, AGE_OPTIONS, buildAnswersFromRows } from '../../data/ppeItems';
+import LinemanPPEView from './ppe/LinemanPPEView';
 
-const PPE_ITEMS = [
-    { name: "Safety Helmet", icon: "🪖", essential: true, bn: "সেফটি হেলমেট", tip: { en: "Protects your head from falling objects", bn: "পড়ন্ত বস্তু থেকে মাথা রক্ষা করে" } },
-    { name: "Safety Shoes/Boots", icon: "🥾", essential: true, bn: "সেফটি জুতো/বুট", tip: { en: "Prevents electric shock through feet", bn: "পায়ের মাধ্যমে বিদ্যুৎ শক প্রতিরোধ করে" } },
-    { name: "Insulated Gloves", icon: "🧤", essential: true, bn: "ইনসুলেটেড গ্লাভস", tip: { en: "Your lifeline when working on live wires", bn: "লাইভ তারে কাজ করার সময় আপনার জীবনরেখা" } },
-    { name: "Reflective Jacket", icon: "🦺", essential: true, bn: "রিফ্লেক্টিভ জ্যাকেট", tip: { en: "Makes you visible in dark and traffic", bn: "অন্ধকারে ও ট্রাফিকে দৃশ্যমান রাখে" } },
-    { name: "Safety Belt", icon: "🧗", essential: true, bn: "সেফটি বেল্ট", tip: { en: "Prevents falls from height", bn: "উচ্চতা থেকে পড়া প্রতিরোধ করে" } },
-    { name: "Full Body Harness", icon: "🧗‍♂️", essential: true, bn: "ফুল বডি হারনেস", tip: { en: "Full protection when climbing poles", bn: "পোলে ওঠার সময় সম্পূর্ণ সুরক্ষা" } },
-    { name: "Voltage Detector", icon: "🔌", essential: true, bn: "ভোল্টেজ ডিটেক্টর", tip: { en: "Detects live current before you touch", bn: "স্পর্শ করার আগে লাইভ কারেন্ট সনাক্ত করে" } },
-    { name: "Discharge Rod", icon: "🦯", essential: true, bn: "ডিসচার্জ রড", tip: { en: "Safely discharges stored electrical energy", bn: "সঞ্চিত বৈদ্যুতিক শক্তি নিরাপদে ডিসচার্জ করে" } },
-    { name: "Safety Goggles", icon: "🥽", essential: true, bn: "সেফটি গগলস", tip: { en: "Protects eyes from sparks and debris", bn: "স্পার্ক ও ধ্বংসাবশেষ থেকে চোখ রক্ষা করে" } },
-    { name: "Raincoat", icon: "🧥", essential: false, bn: "রেইনকোট", tip: { en: "Stay dry during monsoon work", bn: "বর্ষায় কাজের সময় শুকনো থাকুন" } },
-    { name: "Torch/Emergency Light", icon: "🔦", essential: false, bn: "টর্চ/জরুরী আলো", tip: { en: "Essential for night emergency work", bn: "রাতের জরুরি কাজের জন্য অপরিহার্য" } }
-];
-
-const CONDITIONS = [
-    { value: 'Good', en: 'Good ✨', bn: 'ভালো ✨', color: 'bg-emerald-500', emoji: '💪' },
-    { value: 'Fair', en: 'Fair 👍', bn: 'মোটামুটি 👍', color: 'bg-amber-500', emoji: '🤔' },
-    { value: 'Poor', en: 'Poor ⚠️', bn: 'খারাপ ⚠️', color: 'bg-red-500', emoji: '😟' },
-    { value: 'Expired', en: 'Expired 🚫', bn: 'মেয়াদোত্তীর্ণ 🚫', color: 'bg-slate-500', emoji: '💀' }
-];
-
-const AGE_OPTIONS = [
-    { value: 3, en: '< 6 months', bn: '৬ মাসের কম', emoji: '🆕' },
-    { value: 9, en: '6-12 months', bn: '৬-১২ মাস', emoji: '📅' },
-    { value: 18, en: '1-2 years', bn: '১-২ বছর', emoji: '📆' },
-    { value: 36, en: '> 2 years', bn: '২ বছরের বেশি', emoji: '⏰' }
-];
-
-// Phase: 'welcome' | 'wizard' | 'summary'
+// Phase: 'character' | 'welcome' | 'wizard' | 'summary'
 const MyPPE = ({ user, language = 'bn', onClose }) => {
-    const [phase, setPhase] = useState('welcome');
+    const [phase, setPhase] = useState('character');
     const [currentStep, setCurrentStep] = useState(0);
     const [answers, setAnswers] = useState([]); // {name, available, count, condition, age_months, usage}
     const [subStep, setSubStep] = useState(0); // 0=have?, 1=condition, 2=quantity, 3=age, 4=usage, 5=confirm
@@ -88,27 +62,8 @@ const MyPPE = ({ user, language = 'bn', onClose }) => {
     };
 
     const initAnswers = (data) => {
-        const initial = PPE_ITEMS.map(item => {
-            const existing = data.find(d => d.name === item.name);
-            const usage = existing?.details?.includes('Usage:')
-                ? existing.details.split('Usage:')[1].split('|')[0].trim()
-                : 'Personal';
-            return {
-                name: item.name,
-                available: !!existing,
-                id: existing?.id || null,
-                count: existing?.count || 1,
-                condition: existing?.condition || 'Good',
-                age_months: existing?.age_months || 3,
-                usage: usage
-            };
-        });
-        setAnswers(initial);
-
-        // If user already has data, go straight to summary
-        if (data.length > 0) {
-            setPhase('summary');
-        }
+        setAnswers(buildAnswersFromRows(data));
+        setPhase('character');
     };
 
     const handleHave = (hasIt) => {
@@ -251,6 +206,7 @@ const MyPPE = ({ user, language = 'bn', onClose }) => {
                 await fetchExistingData();
                 setShowConfetti(true);
                 setTimeout(() => setShowConfetti(false), 3000);
+                setPhase('character');
             }
 
         } catch (err) {
@@ -264,8 +220,6 @@ const MyPPE = ({ user, language = 'bn', onClose }) => {
         setPhase('wizard');
         setCurrentStep(0);
         setSubStep(0);
-        // Reset all to unanswered for fresh wizard run
-        setAnswers(prev => prev.map(a => ({ ...a, available: false, count: 1, condition: 'Good', age_months: 3, usage: 'Personal' })));
     };
 
     const editFromSummary = () => {
@@ -300,6 +254,16 @@ const MyPPE = ({ user, language = 'bn', onClose }) => {
                     </p>
                 </div>
             </div>
+        );
+    }
+
+    if (phase === 'character') {
+        return (
+            <LinemanPPEView
+                user={user}
+                language={language}
+                onClose={onClose}
+            />
         );
     }
 
@@ -773,6 +737,12 @@ const MyPPE = ({ user, language = 'bn', onClose }) => {
 
                 {/* Action Buttons */}
                 <div className="space-y-3 mt-8">
+                    <button
+                        onClick={() => setPhase('character')}
+                        className="w-full py-3 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 rounded-xl font-bold text-sm hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-all"
+                    >
+                        {language === 'en' ? '← Back to Lineman' : '← আমার পিপিই-তে ফিরে যান'}
+                    </button>
                     <button
                         onClick={editFromSummary}
                         className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl font-black text-sm shadow-lg shadow-orange-600/20 active:scale-95 transition-all flex items-center justify-center gap-2"

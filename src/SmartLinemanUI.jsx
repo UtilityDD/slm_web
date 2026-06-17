@@ -1313,6 +1313,8 @@ export default function SmartLinemanUI() {
             <div
               id="main-scroll-container"
               className={`flex-1 overflow-y-auto overflow-x-hidden relative ${
+                currentView === 'my_ppe' ? 'overflow-hidden' : ''
+              } ${
                 currentView === 'leaderboard'
                   ? 'pb-[calc(10rem+env(safe-area-inset-bottom))] md:pb-8'
                   : user
@@ -1321,7 +1323,9 @@ export default function SmartLinemanUI() {
               } ${['accident-stories', 'leaderboard', 'training', 'competitions', 'video-guide', 'aro-janun'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
             >
               <div
-                className={`h-full relative z-10 w-full view-transition min-h-full ${['accident-stories', 'leaderboard', 'training', 'competitions', 'video-guide', 'aro-janun'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
+                className={`h-full relative z-10 w-full view-transition ${
+                  currentView === 'my_ppe' ? 'overflow-hidden' : 'min-h-full'
+                } ${['accident-stories', 'leaderboard', 'training', 'competitions', 'video-guide', 'aro-janun'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
                 key={currentView}
               >
                 {renderContent()}

@@ -10,27 +10,7 @@ import ChapterQuizModal from './ChapterQuizModal';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 import { filterCoreCompletedLessonIds, isSupplementaryProgressLessonId } from '../utils/trainingLessonIds';
 import { logReadingHabitCompletion } from '../utils/readingHabitLog';
-
-const PPESkeleton = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-600 shadow-sm relative overflow-hidden">
-                <div className="flex justify-between items-start mb-4">
-                    <div className="h-6 w-32 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
-                    <div className="h-5 w-16 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
-                </div>
-                <div className="space-y-2 mb-4">
-                    <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
-                    <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
-                </div>
-                <div className="absolute bottom-4 right-4 flex gap-2">
-                    <div className="w-5 h-5 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
-                    <div className="w-5 h-5 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div>
-                </div>
-            </div>
-        ))}
-    </div>
-);
+import LinemanPPEView from './safety/ppe/LinemanPPEView';
 
 const SOPCard = React.memo(({ level, index, onClick }) => (
     <div
@@ -467,12 +447,8 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
     const initialTab = getTabFromUrl() || (mode === 'training' ? 'training' : 'dashboard');
     const [activeTab, setActiveTab] = useState(initialTab);
-    const [ppeList, setPpeList] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [editingId, setEditingId] = useState(null);
     const [userProfile, setUserProfile] = useState(initialUserProfile);
-    const [isEditMode, setIsEditMode] = useState(false);
 
     // Sync userProfile state if prop changes
     useEffect(() => {
@@ -535,14 +511,6 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         fetchUserProfile();
     }, [user, userProfile]);
 
-    const [newItem, setNewItem] = useState({
-        name: '',
-        age_months: '',
-        condition: 'Good',
-        details: '',
-        count: 1
-    });
-    const [ppeChecklist, setPpeChecklist] = useState([]);
     const [toolsChecklist, setToolsChecklist] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
     const [currentRuleIndex, setCurrentRuleIndex] = useState(0);
@@ -1110,20 +1078,6 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         setCurrentRuleIndex((prev) => (prev - 1 + activeRules.length) % activeRules.length);
     };
 
-    const PPE_ITEMS = [
-        { name: "Safety Helmet", icon: "🪖" },
-        { name: "Safety Shoes/Boots", icon: "🥾" },
-        { name: "Insulated Gloves", icon: "🧤" },
-        { name: "Reflective Jacket", icon: "🦺" },
-        { name: "Safety Belt", icon: "🧗" },
-        { name: "Full Body Harness", icon: "🧗‍♂️" },
-        { name: "Voltage Detector", icon: "🔌" },
-        { name: "Discharge Rod", icon: "🦯" },
-        { name: "Safety Goggles", icon: "🥽" },
-        { name: "Raincoat", icon: "🧥" },
-        { name: "Torch/Emergency Light", icon: "🔦" }
-    ];
-
     const TOOLS_ITEMS = [
         { name: "Pliers", icon: "🔧" },
         { name: "Screwdriver Set", icon: "🪛" },
@@ -1138,63 +1092,10 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
     ];
 
     useEffect(() => {
-        if (activeTab === 'my_ppe' && user) {
-            fetchPPE();
-        }
-    }, [activeTab, user]);
-
-    useEffect(() => {
         if (activeTab === 'my_tools' && user) {
             fetchTools();
         }
     }, [activeTab, user]);
-
-    const fetchPPE = async () => {
-        if (!user) return;
-        const cacheKey = `user_ppe_${user.id}`;
-        const cachedPPE = cacheHelper.get(cacheKey);
-
-        let data = cachedPPE;
-        if (!data) {
-            setLoading(true);
-            try {
-                const { data: fetchedData, error } = await supabase
-                    .from('user_ppe')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-                data = fetchedData || [];
-                cacheHelper.set(cacheKey, data, 10);
-            } catch (error) {
-                console.error('Error fetching PPE:', error);
-                data = [];
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        setPpeList(data);
-
-        // Initialize checklist based on fetched data
-        const checklist = PPE_ITEMS.map(item => {
-            const existing = data.find(p => p.name === item.name);
-            return {
-                ...item,
-                available: !!existing,
-                id: existing?.id || null,
-                count: existing?.count || 1,
-                condition: existing?.condition || 'Good',
-                age: existing?.age_months ?
-                    (existing.age_months <= 6 ? '<6m' :
-                        existing.age_months <= 12 ? '6-12m' :
-                            existing.age_months <= 24 ? '1-2y' : '>2y') : '<6m',
-                usage: existing?.details?.includes('Usage:') ?
-                    existing.details.split('Usage:')[1].trim() : 'Personal'
-            };
-        });
-        setPpeChecklist(checklist);
-    };
 
     const fetchTools = async () => {
         if (!user) return;
@@ -1239,82 +1140,6 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
             };
         });
         setToolsChecklist(checklist);
-    };
-
-    const handleSavePPE = async () => {
-        if (!user) {
-            setCurrentView('login');
-            return;
-        }
-        setIsSaving(true);
-
-        try {
-            // Prepare data for batch operations
-            const upsertItems = [];
-            const deleteIds = [];
-
-            for (const item of ppeChecklist) {
-                const ageMonths = item.age === '<6m' ? 3 :
-                    item.age === '6-12m' ? 9 :
-                        item.age === '1-2y' ? 18 : 36;
-
-                const details = `Usage: ${item.usage}`;
-
-                if (item.available) {
-                    // Prepare for upsert (handles both insert and update)
-                    upsertItems.push({
-                        id: item.id || undefined, // Include ID for updates, undefined for inserts
-                        user_id: user.id,
-                        name: item.name,
-                        count: parseInt(item.count),
-                        condition: item.condition,
-                        age_months: ageMonths,
-                        details: details
-                    });
-                } else if (item.id) {
-                    // Collect IDs for deletion
-                    deleteIds.push(item.id);
-                }
-            }
-
-            // Execute batch operations
-            const operations = [];
-
-            // Batch upsert (insert/update)
-            if (upsertItems.length > 0) {
-                operations.push(
-                    supabase
-                        .from('user_ppe')
-                        .upsert(upsertItems, {
-                            onConflict: 'id',
-                            ignoreDuplicates: false
-                        })
-                );
-            }
-
-            // Batch delete
-            if (deleteIds.length > 0) {
-                operations.push(
-                    supabase
-                        .from('user_ppe')
-                        .delete()
-                        .in('id', deleteIds)
-                );
-            }
-
-            // Execute all operations concurrently
-            await Promise.all(operations);
-
-            cacheHelper.clear(`user_ppe_${user.id}`);
-            await fetchPPE();
-            setIsEditMode(false);
-            alert('PPE Status updated successfully!');
-        } catch (error) {
-            console.error('Error saving PPE:', error);
-            alert('Failed to save PPE status');
-        } finally {
-            setIsSaving(false);
-        }
     };
 
     const handleSaveTools = async () => {
@@ -1383,7 +1208,6 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
             cacheHelper.clear(`user_tools_${user.id}`);
             await fetchTools();
-            setIsEditMode(false);
             alert('Tools Status updated successfully!');
         } catch (error) {
             console.error('Error saving Tools:', error);
@@ -1393,47 +1217,10 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         }
     };
 
-    const handleChecklistChange = (index, field, value) => {
-        const updated = [...ppeChecklist];
-        updated[index] = { ...updated[index], [field]: value };
-        setPpeChecklist(updated);
-    };
-
     const handleToolsChecklistChange = (index, field, value) => {
         const updated = [...toolsChecklist];
         updated[index] = { ...updated[index], [field]: value };
         setToolsChecklist(updated);
-    };
-
-    const handleEditPPE = (item) => {
-        setNewItem({
-            name: item.name,
-            age_months: item.age_months,
-            condition: item.condition,
-            details: item.details,
-            count: item.count
-        });
-        setEditingId(item.id);
-        setShowAddModal(true);
-    };
-
-    const handleDeletePPE = async (id) => {
-        if (!confirm('Are you sure you want to remove this item?')) return;
-        try {
-            const { error } = await supabase
-                .from('user_ppe')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
-
-            // Clear PPE cache
-            cacheHelper.clear(`user_ppe_${user.id}`);
-
-            fetchPPE();
-        } catch (error) {
-            console.error('Error deleting PPE:', error);
-        }
     };
 
     const t = {
@@ -1611,9 +1398,15 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
     return (
         <>
-            <div className={`${activeTab === 'dashboard' ? 'compact-container' : 'max-w-7xl mx-auto px-4 sm:px-6'} py-6 sm:py-10 md:mb-6 transition-all duration-500`}>
+            <div className={`${
+                activeTab === 'dashboard'
+                    ? 'compact-container'
+                    : activeTab === 'my_ppe'
+                        ? 'max-w-lg mx-auto px-2 sm:px-3'
+                        : 'max-w-7xl mx-auto px-4 sm:px-6'
+            } ${activeTab === 'my_ppe' ? 'py-2 sm:py-3' : 'py-6 sm:py-10'} md:mb-6 transition-all duration-500`}>
                 {/* Header Section */}
-                {/* Header Section */}
+                {activeTab !== 'my_ppe' && (
                 <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
@@ -1629,6 +1422,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                         </h1>
                     </div>
                 </div>
+                )}
 
                 {/* Network Error UI */}
                 {fetchError && (
@@ -2006,139 +1800,28 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                     {
                         activeTab === 'my_ppe' && (
                             <div className="w-full animate-fade-in">
-                                <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-                                    <div className="p-6 sm:p-8 border-b border-slate-50 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                        <div>
-                                            <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 leading-tight">{t.my_ppe.title}</h2>
-                                            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Keep your gear status updated</p>
-                                        </div>
+                                {!user ? (
+                                    <div className="py-16 text-center px-6">
+                                        <div className="text-5xl mb-4">🦺</div>
+                                        <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">
+                                            {language === 'en' ? 'Sign in to manage your gear' : 'সরঞ্জাম ম্যানেজ করতে লগইন করুন'}
+                                        </h3>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                                            {language === 'en'
+                                                ? 'Tap gear on your lineman to equip and update.'
+                                                : 'লাইনম্যানে সরঞ্জামে ট্যাপ করে আপডেট করুন।'}
+                                        </p>
                                         <button
-                                            onClick={() => {
-                                                if (isEditMode) {
-                                                    handleSavePPE();
-                                                } else {
-                                                    setIsEditMode(true);
-                                                }
-                                            }}
-                                            className={`px-6 py-2.5 rounded-2xl text-sm font-black transition-all shadow-sm active:scale-95 flex items-center gap-2 ${isEditMode
-                                                ? 'bg-orange-600 text-white shadow-orange-900/20'
-                                                : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:border-orange-300'
-                                                }`}
+                                            type="button"
+                                            onClick={() => setCurrentView('login')}
+                                            className="px-6 py-3 bg-orange-600 text-white rounded-2xl font-black shadow-lg shadow-orange-900/20 active:scale-95 transition-all"
                                         >
-                                            {isEditMode ? (
-                                                <><span>✓</span> {language === 'en' ? 'Finish Editing' : 'সম্পন্ন করুন'}</>
-                                            ) : (
-                                                <><span>⚙️</span> {language === 'en' ? 'Manage Gear' : 'ম্যানেজ করুন'}</>
-                                            )}
+                                            {language === 'en' ? 'Login' : 'লগইন'}
                                         </button>
                                     </div>
-
-                                    <div className="grid grid-cols-1 divide-y divide-slate-50 dark:divide-slate-700/50">
-                                        {loading ? (
-                                            <div className="p-20 text-center animate-pulse">
-                                                <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-2xl mx-auto mb-4"></div>
-                                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Loading Gear...</p>
-                                            </div>
-                                        ) : (
-                                            ppeChecklist.map((item, idx) => (
-                                                <div key={item.name} className={`p-5 sm:p-6 transition-all duration-300 ${item.available ? 'bg-orange-50/10 dark:bg-orange-900/5' : 'opacity-40'}`}>
-                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-                                                        {/* Availability Switch */}
-                                                        {isEditMode ? (
-                                                            <div className="flex items-center gap-3">
-                                                                <button
-                                                                    onClick={() => handleChecklistChange(idx, 'available', !item.available)}
-                                                                    className={`w-12 h-6 rounded-full transition-all relative ${item.available ? 'bg-orange-600' : 'bg-slate-300 dark:bg-slate-600'}`}
-                                                                >
-                                                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${item.available ? 'left-7' : 'left-1'}`}></div>
-                                                                </button>
-                                                                <span className="text-[10px] font-black uppercase text-slate-400">Available</span>
-                                                            </div>
-                                                        ) : (
-                                                            <div className={`w-3 h-3 rounded-full ${item.available ? 'bg-emerald-500 shadow-lg shadow-emerald-500/50' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
-                                                        )}
-
-                                                        {/* Icon & Name */}
-                                                        <div className="flex items-center gap-4 flex-1">
-                                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-sm border ${item.available ? 'bg-white dark:bg-slate-700 border-slate-100 dark:border-slate-600' : 'bg-slate-50 dark:bg-slate-800 border-transparent'}`}>
-                                                                {item.icon}
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <h3 className={`font-black text-base sm:text-lg leading-tight ${item.available ? 'text-slate-800 dark:text-slate-100' : 'text-slate-400'}`}>
-                                                                    {language === 'bn' ? t.my_ppe.items[item.name] : item.name}
-                                                                </h3>
-                                                                {!item.available && !isEditMode && <span className="text-[10px] font-bold text-slate-400 uppercase">Not in inventory</span>}
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Stats Container */}
-                                                        {item.available && (
-                                                            <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 sm:mt-0">
-                                                                {isEditMode ? (
-                                                                    <div className="grid grid-cols-2 sm:flex sm:items-center gap-3 w-full sm:w-auto">
-                                                                        {/* Qty */}
-                                                                        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-xl p-2 flex items-center gap-2">
-                                                                            <span className="text-[9px] font-black uppercase text-slate-400">Qty</span>
-                                                                            <input
-                                                                                type="number"
-                                                                                min="1"
-                                                                                value={item.count}
-                                                                                onChange={(e) => handleChecklistChange(idx, 'count', e.target.value)}
-                                                                                className="w-10 bg-transparent text-sm font-black focus:outline-none"
-                                                                            />
-                                                                        </div>
-
-                                                                        {/* Condition */}
-                                                                        <select
-                                                                            value={item.condition}
-                                                                            onChange={(e) => handleChecklistChange(idx, 'condition', e.target.value)}
-                                                                            className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-xl p-2 text-xs font-black focus:outline-none"
-                                                                        >
-                                                                            <option value="Good">Good</option>
-                                                                            <option value="Fair">Fair</option>
-                                                                            <option value="Damaged">Damaged</option>
-                                                                        </select>
-
-                                                                        {/* Age */}
-                                                                        <select
-                                                                            value={item.age}
-                                                                            onChange={(e) => handleChecklistChange(idx, 'age', e.target.value)}
-                                                                            className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-xl p-2 text-xs font-black focus:outline-none"
-                                                                        >
-                                                                            <option value="<6m">&lt;6m</option>
-                                                                            <option value="6-12m">6-12m</option>
-                                                                            <option value="1-2y">1-2y</option>
-                                                                            <option value=">2y">&gt;2y</option>
-                                                                        </select>
-                                                                    </div>
-                                                                ) : (
-                                                                    <div className="flex items-center gap-4">
-                                                                        <div className="flex flex-col items-end">
-                                                                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">Inventory</span>
-                                                                            <span className="text-sm font-black text-slate-800 dark:text-slate-100">{item.count} Units</span>
-                                                                        </div>
-                                                                        <div className="h-8 w-px bg-slate-100 dark:bg-slate-700"></div>
-                                                                        <div className="flex flex-col items-end">
-                                                                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">Condition</span>
-                                                                            <span className={`text-sm font-black ${item.condition === 'Good' ? 'text-emerald-500' : item.condition === 'Fair' ? 'text-amber-500' : 'text-red-500'}`}>
-                                                                                {item.condition}
-                                                                            </span>
-                                                                        </div>
-                                                                        <div className="h-8 w-px bg-slate-100 dark:bg-slate-700"></div>
-                                                                        <div className="flex flex-col items-end">
-                                                                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">Age</span>
-                                                                            <span className="text-sm font-black text-slate-800 dark:text-slate-100">{item.age}</span>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-                                </div>
+                                ) : (
+                                    <LinemanPPEView user={user} language={language} />
+                                )}
                             </div>
                         )
                     }
