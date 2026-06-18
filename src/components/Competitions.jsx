@@ -51,6 +51,7 @@ import {
 } from '../utils/hallOfFamePrizes';
 import HallOfFameWinnerCard from './HallOfFameWinnerCard';
 import HallOfFameUserPrizesView from './HallOfFameUserPrizesView';
+import LeaderboardUserSheet from './LeaderboardUserSheet';
 
 const LiveIndicator = () => (
     <div className="live-pulse" title="Live Now">
@@ -607,6 +608,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const hourlyStakesUi = getHourlyStakesUi(hourlyLifetimePoints, language);
     const [showHourlyPenaltyInfoModal, setShowHourlyPenaltyInfoModal] = useState(false);
     const [showMonthlyBoardInfoModal, setShowMonthlyBoardInfoModal] = useState(false);
+    const [leaderboardUserSheet, setLeaderboardUserSheet] = useState(null);
     const encouragementCopy = getEncouragementCopy(language);
     const activeMonthlyList = leaderboardTab === 'monthly'
         ? getMonthlyPrizeDisplayList(monthlyBoardTab, monthlyLeaderboard, encouragementBoards)
@@ -1429,7 +1431,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         storageUtils.setItem(HOF_PRIZE_VIEW_STORAGE_KEY, 'by_user');
     };
 
-    const openUserProgress = (userId) => {
+    const openUserProgress = (userId, preview = null, rank = null) => {
+        if (isFullLeaderboard) {
+            setLeaderboardUserSheet({ userId, preview, rank });
+            return;
+        }
         if (typeof onOpenUserProgress === 'function') {
             onOpenUserProgress(userId);
         }
@@ -2032,7 +2038,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 const superseded = leaderboardTab === 'monthly' && isPrizeSuperseded(player);
                                                 
                                                 return (
-                                                    <div key={player.user_id} className={`flex flex-col items-center ${isWinner && !superseded ? 'scale-110 mb-2' : 'mb-0'} ${superseded ? 'opacity-50 grayscale' : isWinner ? '' : 'opacity-90'}`}>
+                                                    <div
+                                                        key={player.user_id}
+                                                        role="button"
+                                                        tabIndex={0}
+                                                        onClick={() => openUserProgress(player.user_id, player, rank)}
+                                                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') openUserProgress(player.user_id, player, rank); }}
+                                                        className={`flex flex-col items-center cursor-pointer active:scale-[0.98] transition-transform ${isWinner && !superseded ? 'scale-110 mb-2' : 'mb-0'} ${superseded ? 'opacity-50 grayscale' : isWinner ? '' : 'opacity-90'}`}
+                                                    >
                                                         <div className="relative mb-3 flex flex-col items-center">
                                                             <div className="relative h-14 w-14 sm:h-20 sm:w-20 shrink-0">
                                                                 {rank === 1 && (
@@ -2146,7 +2159,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         return (
                                         <div 
                                             key={`${item.user_id}-${item.prize_status || 'row'}-${idx}`}
-                                            onClick={() => openUserProgress(item.user_id)}
+                                            onClick={() => openUserProgress(item.user_id, item, rankLabel)}
                                             className={`flex items-center gap-2 sm:gap-4 p-2.5 sm:p-4 border-b-2 border-slate-900 last:border-b-0 transition-colors cursor-pointer group active:bg-orange-50/50 ${
                                                 superseded
                                                     ? 'bg-slate-100 opacity-60 grayscale hover:opacity-75'
@@ -2373,6 +2386,21 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 timeInfo={monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION ? t.leaderboardTimeInfo : null}
                 hourlyAvgInfo={encouragementCopy.hourlyAvgNote}
                 onClose={() => setShowMonthlyBoardInfoModal(false)}
+            />
+
+            <LeaderboardUserSheet
+                open={Boolean(leaderboardUserSheet)}
+                userId={leaderboardUserSheet?.userId}
+                preview={leaderboardUserSheet?.preview}
+                rank={leaderboardUserSheet?.rank}
+                language={language}
+                context={{
+                    tab: leaderboardTab,
+                    monthlyBoardTab,
+                    boardTitle: monthlyBoardMeta?.title,
+                }}
+                encouragementBoards={encouragementBoards}
+                onClose={() => setLeaderboardUserSheet(null)}
             />
         </main>
         );
