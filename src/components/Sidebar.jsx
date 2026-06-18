@@ -182,7 +182,7 @@ export default function Sidebar({
         </nav>
 
         <div className="shrink-0 border-t-2 border-slate-900 bg-white px-2.5 py-2">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-center gap-2">
             <a
               href={FACEBOOK_PAGE_URL}
               target="_blank"
@@ -211,38 +211,31 @@ export default function Sidebar({
             <button
               type="button"
               onClick={onToggleLanguageModal}
-              className="nb-btn-secondary flex min-w-0 flex-1 items-center justify-center gap-1.5 px-2 py-1.5"
-              title="Language"
+              title={language === 'en' ? 'Language' : 'ভাষা'}
+              aria-label={language === 'en' ? 'Language' : 'ভাষা'}
+              className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-slate-900 bg-white text-slate-800 shadow-[2px_2px_0_#0f172a] transition-colors hover:bg-orange-50"
             >
-              <span className="shrink-0 text-sm leading-none" aria-hidden>🌐</span>
-              <span className={`truncate text-[10px] font-bold leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                {language === 'en' ? 'Language' : 'ভাষা'}
-              </span>
+              <span className="text-base leading-none" aria-hidden>🌐</span>
             </button>
 
             <button
               type="button"
               onClick={onLogout}
-              className="flex min-w-0 flex-1 items-center justify-center gap-1.5 border-2 border-slate-900 bg-red-50 px-2 py-1.5 text-red-700 shadow-[2px_2px_0_#0f172a] transition-colors hover:bg-red-100"
-              title="Logout"
+              title={language === 'en' ? 'Logout' : 'লগ আউট'}
+              aria-label={language === 'en' ? 'Logout' : 'লগ আউট'}
+              className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-slate-900 bg-red-50 text-red-700 shadow-[2px_2px_0_#0f172a] transition-colors hover:bg-red-100"
             >
-              <span className="shrink-0" aria-hidden>
-                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-              </span>
-              <span className={`truncate text-[10px] font-black leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                {language === 'en' ? 'Logout' : 'লগ আউট'}
-              </span>
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
             </button>
           </div>
 
           <p className="mt-1.5 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 text-center text-[9px] font-semibold text-slate-500 nb-mono">
-            <span className="text-slate-700">{APP_NAME.replace('.in', '')}</span>
-            <span className="border border-slate-900 bg-orange-100 px-1 py-px text-[8px] font-black lowercase text-orange-700">.in</span>
-            <span className="text-orange-600">v{CURRENT_APP_VERSION}</span>
-            <span className="text-slate-300" aria-hidden>·</span>
-            <a href={WEBSITE_URL} target="_blank" rel="noopener noreferrer" className="font-medium lowercase tracking-normal text-orange-600 hover:text-orange-700">
-              {WEBSITE_URL.replace('https://', '')}
+            <a href={WEBSITE_URL} target="_blank" rel="noopener noreferrer" className="font-black text-slate-700 hover:text-orange-700">
+              {APP_NAME}
             </a>
+            <span className="text-orange-600">v{CURRENT_APP_VERSION}</span>
             <span className="text-slate-300" aria-hidden>·</span>
             <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium lowercase tracking-normal text-slate-600 hover:text-slate-800">
               {SUPPORT_EMAIL}
