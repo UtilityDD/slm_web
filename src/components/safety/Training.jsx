@@ -2636,29 +2636,6 @@ export default function Training({
                         </div>
                     )}
 
-                    {showDailyBrief && trainingTab === 'core' && !trainingLoading && !showOnboarding && (
-                        <div className="mx-auto mb-4 flex w-full max-w-sm items-start gap-2 nb-card bg-orange-50 px-3 py-2.5">
-                            <div className="min-w-0 flex-1">
-                                <p className={`text-sm font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                    {dailyBriefGreeting}
-                                </p>
-                                {lessonProgressWelcome && (
-                                    <p className={`mt-0.5 line-clamp-2 text-xs font-semibold leading-snug text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {lessonProgressWelcome.primary}
-                                    </p>
-                                )}
-                            </div>
-                            <button
-                                type="button"
-                                onClick={dismissDailyBrief}
-                                className="shrink-0 rounded border-2 border-slate-900 bg-white px-2 py-0.5 text-sm font-black leading-none text-slate-700 shadow-[1px_1px_0_#0f172a] hover:bg-slate-50"
-                                aria-label={language === 'en' ? 'Dismiss greeting' : 'অভিবাদন বন্ধ করুন'}
-                            >
-                                ×
-                            </button>
-                        </div>
-                    )}
-
                     {/* Sticky tab row + hourly challenge entry (z-40). Hint stays below in normal flow. */}
                     <div className="sticky top-[6px] z-40 mx-auto mb-6 flex w-full max-w-sm flex-col gap-1.5">
                         <div
@@ -3521,6 +3498,62 @@ export default function Training({
                 onClose={() => setReadingGateBlock(null)}
                 setCurrentView={setCurrentView}
             />
+
+            {showDailyBrief && trainingTab === 'core' && !trainingLoading && !showOnboarding && !selectedChapter && !trainingContent && createPortal(
+                <div
+                    className="fixed inset-0 z-[118] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-[2px] animate-fade-in"
+                    onClick={dismissDailyBrief}
+                >
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="training-welcome-title"
+                        className="neo-brutal relative w-full max-w-sm animate-scale-in"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="nb-card overflow-hidden bg-[#fffdf7] p-0 shadow-[4px_4px_0_#0f172a]">
+                            <div className="nb-hazard" aria-hidden="true" />
+                            <div className="relative px-5 pb-5 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={dismissDailyBrief}
+                                    className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center border-2 border-slate-900 bg-white text-sm font-black text-slate-700 shadow-[2px_2px_0_#0f172a] hover:bg-slate-50"
+                                    aria-label={language === 'en' ? 'Dismiss greeting' : 'অভিবাদন বন্ধ করুন'}
+                                >
+                                    ×
+                                </button>
+                                <p className="mb-1 text-[10px] font-black uppercase tracking-wider text-orange-600 nb-mono">
+                                    {language === 'en' ? 'Your reading journey' : 'আপনার পড়ার যাত্রা'}
+                                </p>
+                                <h2
+                                    id="training-welcome-title"
+                                    className={`pr-8 text-lg font-black leading-tight text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                >
+                                    {dailyBriefGreeting}
+                                </h2>
+                                {lessonProgressWelcome?.primary && (
+                                    <p className={`mt-2 text-sm font-semibold leading-snug text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {lessonProgressWelcome.primary}
+                                    </p>
+                                )}
+                                {lessonProgressWelcome?.secondary && (
+                                    <p className={`mt-2 inline-flex rounded border border-slate-900 bg-orange-50 px-2 py-0.5 text-[11px] font-bold text-orange-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {lessonProgressWelcome.secondary}
+                                    </p>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={dismissDailyBrief}
+                                    className={`nb-btn-primary mt-4 w-full py-2.5 text-sm font-black ${language === 'bn' ? 'font-bengali' : ''}`}
+                                >
+                                    {language === 'en' ? 'Continue' : 'চলুন'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
 
             {lockedLessonModal && createPortal(
                 <div className="fixed inset-0 z-[210] flex animate-fade-in items-center justify-center bg-slate-900/55 p-4">

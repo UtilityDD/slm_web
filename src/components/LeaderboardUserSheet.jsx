@@ -14,6 +14,7 @@ import {
 import { fetchUserPPE } from './safety/ppe/ppeSave';
 import {
     formatHourlyAvgPerDay,
+    formatLeaderboardNumber,
     formatMonthlyPlayerScore,
     getEncouragementCopy,
     getRankMedal,
@@ -37,7 +38,7 @@ const TOOL_ICONS = {
 
 const formatDate = (value, language = 'bn') => {
     if (!value) return '—';
-    return new Date(value).toLocaleDateString(language === 'en' ? 'en-US' : 'bn-BD', {
+    return new Date(value).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
@@ -303,7 +304,7 @@ export default function LeaderboardUserSheet({
 
     const displayScore = tab === 'monthly'
         ? formatMonthlyPlayerScore(merged, monthlyBoardTab)
-        : Number(merged.points || merged.score || 0).toLocaleString();
+        : formatLeaderboardNumber(merged.points || merged.score || 0);
 
     const phone = merged.phone_number || merged.phone || '';
     const labels = {
@@ -449,15 +450,15 @@ export default function LeaderboardUserSheet({
                     <ProfileSection
                         icon="🏆"
                         title={labels.scores}
-                        summary={`${Number(merged.points || 0).toLocaleString()} ${bn ? 'মোট' : 'total'}`}
+                        summary={`${formatLeaderboardNumber(merged.points || 0)} ${bn ? 'মোট' : 'total'}`}
                         defaultOpen
                     >
-                        <KV label={labels.total} value={Number(merged.points || 0).toLocaleString()} />
+                        <KV label={labels.total} value={formatLeaderboardNumber(merged.points || 0)} />
                         {tab !== 'monthly' && (
-                            <KV label={labels.readingPts} value={Number(merged.reading_points || 0).toLocaleString()} />
+                            <KV label={labels.readingPts} value={formatLeaderboardNumber(merged.reading_points || 0)} />
                         )}
-                        <KV label={labels.quizPts} value={Number(merged.quiz_points || 0).toLocaleString()} />
-                        <KV label={labels.penalty} value={Number(stats.totalPenaltySum || merged.total_penalties || 0).toLocaleString()} />
+                        <KV label={labels.quizPts} value={formatLeaderboardNumber(merged.quiz_points || 0)} />
+                        <KV label={labels.penalty} value={formatLeaderboardNumber(stats.totalPenaltySum || merged.total_penalties || 0)} />
                         {tab === 'monthly' && (
                             <KV label={labels.monthly} value={displayScore} valueClass="text-orange-600" />
                         )}
@@ -476,7 +477,7 @@ export default function LeaderboardUserSheet({
                         <KV label={labels.activeDays} value={String(stats.readingDays)} />
                         <KV
                             label={labels.perDay}
-                            value={stats.lessonsPerActiveDay ? stats.lessonsPerActiveDay.toFixed(1) : '—'}
+                            value={stats.lessonsPerActiveDay ? formatLeaderboardNumber(stats.lessonsPerActiveDay, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '—'}
                         />
                         {stats.chapterBreakdown.length > 0 && (
                             <div className="pt-1">
@@ -503,7 +504,7 @@ export default function LeaderboardUserSheet({
                         summary={`${stats.hourlyAttempts} ${labels.attempts}${monthlyHourly != null ? ` · ${monthlyHourly} ${bn ? 'এ মাসে' : 'mo.'}` : ''}`}
                     >
                         <KV label={labels.attempts} value={String(stats.hourlyAttempts)} />
-                        <KV label={labels.avgScore} value={stats.avgHourlyScore ? stats.avgHourlyScore.toFixed(1) : '—'} />
+                        <KV label={labels.avgScore} value={stats.avgHourlyScore ? formatLeaderboardNumber(stats.avgHourlyScore, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '—'} />
                         <KV label={labels.penalty} value={String(stats.totalPenaltySum)} />
                         {tab === 'monthly' && monthlyHourly != null && (
                             <>

@@ -36,6 +36,8 @@ import {
     getMonthlyStandingsForPodium,
     formatMonthlyPlayerScore,
     formatHourlyAvgPerDay,
+    formatLeaderboardNumber,
+    getHourlyAvgPerDay,
     getRankMedal,
     isPrizeSuperseded,
     isPrizeRecipient,
@@ -113,6 +115,11 @@ const getQuestionImageKeys = (question) => {
     return [...new Set(keys)];
 };
 
+const LEADERBOARD_BN_MONTHS = [
+    'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+    'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর',
+];
+
 // Utility to format last active date
 const formatLastActive = (dateString, language) => {
     if (!dateString) return null;
@@ -133,8 +140,8 @@ const formatLastActive = (dateString, language) => {
     }
     if (diffInDays < 7) return isBn ? `${diffInDays} দিন আগে` : `${diffInDays}d ago`;
     
-    // Default to short date
-    return date.toLocaleDateString(isBn ? 'bn-BD' : 'en-US', { day: 'numeric', month: 'short' });
+    // Default to short date — Latin digits on leaderboard
+    return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
 };
 
 function formatLeaderboardDistrict(district) {
@@ -142,18 +149,34 @@ function formatLeaderboardDistrict(district) {
     return value || null;
 }
 
-function MonthlyHourlyAvgPill({ hourly, language, encouragementBoards }) {
-    const label = formatHourlyAvgPerDay(
-        hourly,
-        language,
-        encouragementBoards?.year,
-        encouragementBoards?.month
-    );
-    if (!label) return null;
+function MonthlyHourlyAvgPill({ hourly, language, encouragementBoards, align = 'center' }) {
+    const year = encouragementBoards?.year;
+    const month = encouragementBoards?.month;
+    const fullLabel = formatHourlyAvgPerDay(hourly, language, year, month);
+    if (!fullLabel) return null;
+
+    const avg = getHourlyAvgPerDay(hourly, year, month);
+    if (avg == null) return null;
+
+    const rounded = Math.round(avg);
+    const valueText = rounded <= 0
+        ? '<1'
+        : formatLeaderboardNumber(rounded, { maximumFractionDigits: 0 });
+    const unitText = language === 'bn' ? 'ঘ/দিন' : 'hr/d';
+
     return (
-        <div className="nb-score-pill px-1.5 py-0.5 shrink-0 !text-[9px]">
-            <span className="text-[9px] font-black tabular-nums">{label}</span>
-        </div>
+        <span
+            title={fullLabel}
+            aria-label={fullLabel}
+            className={`inline-flex items-baseline gap-0.5 leading-none ${
+                align === 'end' ? 'justify-end' : 'justify-center'
+            }`}
+        >
+            <span className="text-[10px] font-black tabular-nums text-slate-600">{valueText}</span>
+            <span className={`text-[8px] font-bold text-slate-400 ${language === 'bn' ? 'font-bengali' : 'nb-mono uppercase tracking-tight'}`}>
+                {unitText}
+            </span>
+        </span>
     );
 }
 
@@ -197,7 +220,7 @@ async function fetchRivalAheadForDisplay(myScoreValue) {
 function buildHourlyChaseMessage({ language, userRank, hoursLeft }) {
     if (!userRank) return null;
 
-    const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+    const fmt = (n) => formatLeaderboardNumber(n);
     const isBn = language === 'bn';
 
     if (userRank.rank === 1) {
@@ -1954,7 +1977,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             {/* Header Section */}
                                             <div className="mb-3 sm:mb-5 border-b-2 border-slate-900 pb-2 sm:pb-4">
                                                 <h3 className={`text-base sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                    {new Date(entry.year, entry.month - 1).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', { month: 'long', year: 'numeric' })}
+                                                    {language === 'bn'
+                                                        ? `${LEADERBOARD_BN_MONTHS[entry.month - 1]} ${entry.year}`
+                                                        : new Date(entry.year, entry.month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                                                 </h3>
                                             </div>
 
@@ -2124,19 +2149,21 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             <p className="text-[11px] font-black text-orange-600 dark:text-orange-400 tabular-nums">
                                                                 {leaderboardTab === 'monthly'
                                                                     ? formatMonthlyPlayerScore(player, monthlyBoardTab)
-                                                                    : (player.points || player.score || 0).toLocaleString()}
+                                                                    : formatLeaderboardNumber(player.points || player.score || 0)}
                                                             </p>
                                                             {leaderboardTab === 'monthly' && (
-                                                                <MonthlyHourlyAvgPill
-                                                                    hourly={player.hourly}
-                                                                    language={language}
-                                                                    encouragementBoards={encouragementBoards}
-                                                                />
+                                                                <div className="mt-0.5">
+                                                                    <MonthlyHourlyAvgPill
+                                                                        hourly={player.hourly}
+                                                                        language={language}
+                                                                        encouragementBoards={encouragementBoards}
+                                                                    />
+                                                                </div>
                                                             )}
                                                             {leaderboardTab === 'all-time' && (
                                                                 <div className="flex items-center gap-1 mt-0.5 opacity-80 scale-90">
                                                                     <span className="text-[9px]">📖</span>
-                                                                    <span className="text-[9px] font-black text-slate-500 dark:text-slate-400">{(player.reading_points || 0).toLocaleString()}</span>
+                                                                    <span className="text-[9px] font-black text-slate-500 dark:text-slate-400">{formatLeaderboardNumber(player.reading_points || 0)}</span>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -2267,18 +2294,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         })()
                                                         )}
                                                     </div>
-                                                    {leaderboardTab === 'monthly' && (
-                                                        <MonthlyHourlyAvgPill
-                                                            hourly={item.hourly}
-                                                            language={language}
-                                                            encouragementBoards={encouragementBoards}
-                                                        />
-                                                    )}
                                                     {leaderboardTab === 'all-time' && (
                                                         <div className="nb-score-pill flex items-center gap-1 px-1.5 py-0.5 shrink-0 !text-[9px]">
                                                             <span className="text-[9px]">📖</span>
                                                             <span className="text-[9px] font-black tabular-nums">
-                                                                {(item.reading_points || 0).toLocaleString()}
+                                                                {formatLeaderboardNumber(item.reading_points || 0)}
                                                             </span>
                                                         </div>
                                                     )}
@@ -2290,8 +2310,16 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 }`}>
                                                     {leaderboardTab === 'monthly'
                                                         ? formatMonthlyPlayerScore(item, monthlyBoardTab)
-                                                        : (item.points || item.score || 0).toLocaleString()}
+                                                        : formatLeaderboardNumber(item.points || item.score || 0)}
                                                 </p>
+                                                {leaderboardTab === 'monthly' && (
+                                                    <MonthlyHourlyAvgPill
+                                                        hourly={item.hourly}
+                                                        language={language}
+                                                        encouragementBoards={encouragementBoards}
+                                                        align="end"
+                                                    />
+                                                )}
                                             </div>
                                         </div>
                                     );
@@ -2332,11 +2360,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     </span>
                                                 )}
                                                 <div className="flex items-center gap-2 flex-wrap">
-                                                    <p className="text-sm font-black text-slate-800 ml-1 tabular-nums nb-mono">{(userRank.score || 0).toLocaleString()}</p>
+                                                    <p className="text-sm font-black text-slate-800 ml-1 tabular-nums nb-mono">{formatLeaderboardNumber(userRank.score || 0)}</p>
                                                     <div className="nb-score-pill flex items-center gap-1 px-1.5 py-0.5 !text-[9px]">
                                                         <span className="text-[10px]">📖</span>
                                                         <span className="text-[9px] font-black tabular-nums">
-                                                            {(userRank.reading_points || 0).toLocaleString()} <span className="text-[8px] opacity-70 ml-0.5">{language === 'en' ? 'RDG' : 'রিডিং'}</span>
+                                                            {formatLeaderboardNumber(userRank.reading_points || 0)} <span className="text-[8px] opacity-70 ml-0.5">{language === 'en' ? 'RDG' : 'রিডিং'}</span>
                                                         </span>
                                                     </div>
                                                 </div>
@@ -2443,11 +2471,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     <div className="grid grid-cols-3 gap-2">
                         <div className="nb-card bg-white p-2 text-center">
                             <p className="nb-stat-label mb-0.5 text-[9px] leading-tight">{t.points}</p>
-                            <p className="nb-stat-value text-base tabular-nums leading-none">{userRank?.score?.toLocaleString() || 0}</p>
+                            <p className="nb-stat-value text-base tabular-nums leading-none">{formatLeaderboardNumber(userRank?.score)}</p>
                         </div>
                         <div className="nb-card bg-orange-50 p-2 text-center">
                             <p className="nb-stat-label mb-0.5 text-[9px] leading-tight text-orange-600">{language === 'en' ? 'Today' : 'আজ'}</p>
-                            <p className="nb-stat-value text-base tabular-nums leading-none text-orange-600">+{getTodayScore().toLocaleString()}</p>
+                            <p className="nb-stat-value text-base tabular-nums leading-none text-orange-600">+{formatLeaderboardNumber(getTodayScore())}</p>
                         </div>
                         <div className="nb-card bg-amber-50 p-2 text-center">
                             <p className="nb-stat-label mb-0.5 text-[9px] leading-tight text-amber-600">{t.streak}</p>
@@ -2685,7 +2713,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             </div>
                                             <div className="mt-0.5 flex items-center gap-1.5">
                                                 <span className="text-[10px] font-black tabular-nums leading-none text-slate-900">
-                                                    {item.points.toLocaleString()}
+                                                    {formatLeaderboardNumber(item.points)}
                                                 </span>
                                                 {formatLeaderboardDistrict(item.district) && (
                                                     <span className={`text-[9px] font-bold text-slate-500 truncate max-w-[6rem] ${language === 'bn' ? 'font-bengali' : ''}`}>
@@ -2694,7 +2722,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 )}
                                                 <div className="flex items-center gap-0.5 border border-slate-900 bg-slate-50 px-1 py-0.5 text-[9px] font-bold text-slate-600">
                                                     <span>📖</span>
-                                                    <span className="tabular-nums">{(item.reading_points || 0).toLocaleString()}</span>
+                                                    <span className="tabular-nums">{formatLeaderboardNumber(item.reading_points || 0)}</span>
                                                 </div>
                                             </div>
                                         </div>

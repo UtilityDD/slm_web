@@ -285,12 +285,17 @@ export function getMonthlyPlayerScore(item, monthlyBoardTab) {
     return Number(item.points ?? item.score) || 0;
 }
 
+/** Leaderboard UI always uses Latin digits (0–9), even when language is bn. */
+export function formatLeaderboardNumber(value, options = {}) {
+    return Number(value ?? 0).toLocaleString('en-US', options);
+}
+
 export function formatMonthlyPlayerScore(item, monthlyBoardTab) {
     const score = getMonthlyPlayerScore(item, monthlyBoardTab);
     if (monthlyBoardTab === BOARD_IDS.MOST_IMPROVED) {
-        return `+${score.toLocaleString()}`;
+        return `+${formatLeaderboardNumber(score)}`;
     }
-    return score.toLocaleString();
+    return formatLeaderboardNumber(score);
 }
 
 /** Days elapsed in calendar month (including today) for display-only hourly averages. */
@@ -320,12 +325,10 @@ export function formatHourlyAvgPerDay(hourlyCount, language = 'bn', year, month,
 
     const rounded = Math.round(avg);
     if (rounded <= 0) {
-        return language === 'bn' ? '< ১ ঘণ্টা/দিন' : '< 1 hr/day';
+        return language === 'bn' ? '< 1 ঘণ্টা/দিন' : '< 1 hr/day';
     }
 
-    const formatted = language === 'bn'
-        ? rounded.toLocaleString('bn-BD', { maximumFractionDigits: 0 })
-        : rounded.toLocaleString('en-US', { maximumFractionDigits: 0 });
+    const formatted = formatLeaderboardNumber(rounded, { maximumFractionDigits: 0 });
     return language === 'bn' ? `${formatted} ঘণ্টা/দিন` : `${formatted} hrs/day`;
 }
 
