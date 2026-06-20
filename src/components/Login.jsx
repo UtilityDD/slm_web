@@ -5,6 +5,27 @@ import { DotLottiePlayer } from '@dotlottie/react-player';
 import noInternetLottie from '../assets/no_internet.lottie';
 import { SUPPORT_EMAIL } from '../config';
 
+/**
+ * Single-device session: generate a unique id for this device, persist it
+ * locally, and claim it on the server. Other devices logged into the same
+ * account detect the mismatch and sign themselves out.
+ * Failures here must never block login, so the server write is best-effort.
+ */
+async function claimDeviceSession(userId) {
+    const sessionId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : `${userId}-${Date.now()}`;
+    storageUtils.setItem('slm_session_id', sessionId);
+    try {
+        await supabase
+            .from('profiles')
+            .update({ current_session_id: sessionId })
+            .eq('id', userId);
+    } catch (err) {
+        console.warn('Could not claim device session on server:', err);
+    }
+}
+
 function LoginLogo() {
     return (
         <div className="flex justify-center items-baseline gap-1.5 select-none">
@@ -237,6 +258,9 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                 storageUtils.setItem('session_token', user.session_token);
                 storageUtils.setItem('user_id', user.user_id);
 
+                // Claim this device as the single active session
+                await claimDeviceSession(user.user_id);
+
                 // Trigger app login (parent may switch view / nav); toast after layout
                 onLogin({
                     id: user.user_id,
@@ -292,6 +316,9 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
             // Store session and auto-login
             storageUtils.setItem('session_token', currentUser.session_token);
             storageUtils.setItem('user_id', currentUser.user_id);
+
+            // Claim this device as the single active session
+            await claimDeviceSession(currentUser.user_id);
 
             onLogin({
                 id: currentUser.user_id,

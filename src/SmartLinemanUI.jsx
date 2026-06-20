@@ -112,6 +112,7 @@ export default function SmartLinemanUI() {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showSessionEndedModal, setShowSessionEndedModal] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [notification, setNotification] = useState(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -881,16 +882,18 @@ export default function SmartLinemanUI() {
       setUser(null);
       setUserProfile(null);
       storageUtils.removeItem('slm_session_id');
+      storageUtils.removeItem('session_token');
+      storageUtils.removeItem('user_id');
       cacheHelper.clearAll();
       setShowLogoutModal(false);
       setCurrentView('landing');
-      requestAnimationFrame(() => {
-        if (isAutomatic === true) {
-          showNotification(language === 'en' ? 'Logged in from another device' : 'অন্য ডিভাইস থেকে লগ ইন করা হয়েছে', 'error');
-        } else {
+      if (isAutomatic === true) {
+        setShowSessionEndedModal(true);
+      } else {
+        requestAnimationFrame(() => {
           showNotification(language === 'en' ? 'Logged out successfully' : 'সফলভাবে লগ আউট হয়েছে');
-        }
-      });
+        });
+      }
     } catch (error) {
       showNotification(error.message, 'error');
     } finally {
@@ -993,7 +996,9 @@ export default function SmartLinemanUI() {
           initialView={currentView === 'update-password' ? 'update' : 'login'}
           onLogin={(u) => {
             setUser(u);
-            fetchProfile(u);
+            // Force a fresh read so the just-claimed session id is authoritative
+            // and a stale cached profile can't trigger a false self-logout.
+            fetchProfile(u, true);
             setCurrentView('training');
           }}
           showNotification={showNotification}
@@ -1163,6 +1168,36 @@ export default function SmartLinemanUI() {
           <div className="flex-1 flex flex-col h-full overflow-hidden">
             {showLogoutModal && (
               <LogoutConfirmationModal onConfirm={() => confirmLogout(false)} onCancel={cancelLogout} language={language} loading={isLoggingOut} />
+            )}
+
+            {showSessionEndedModal && (
+              <div className="fixed inset-0 z-[400] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="session-ended-title">
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 text-center border border-slate-200 dark:border-slate-700 relative overflow-hidden">
+                  <div className="absolute -top-24 -right-24 w-48 h-48 bg-rose-500/10 blur-[100px] rounded-full pointer-events-none" />
+                  <div className="relative">
+                    <div className="w-20 h-20 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <svg className="w-10 h-10 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <h2 id="session-ended-title" className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+                      {language === 'en' ? 'Signed out' : 'সাইন আউট হয়েছে'}
+                    </h2>
+                    <p className="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
+                      {language === 'en'
+                        ? 'Your account was just signed in on another device. For your security, only one device can stay signed in at a time.'
+                        : 'আপনার অ্যাকাউন্টটি এইমাত্র অন্য একটি ডিভাইসে সাইন ইন করা হয়েছে। নিরাপত্তার জন্য একসাথে কেবল একটি ডিভাইসে সাইন ইন থাকা যায়।'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowSessionEndedModal(false)}
+                      className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-orange-600/20"
+                    >
+                      {language === 'en' ? 'OK' : 'ঠিক আছে'}
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
 
             {showActiveBroadcastModal && activeBroadcastNotice && (
