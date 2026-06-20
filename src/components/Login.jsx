@@ -139,7 +139,6 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
     const [mustChangePassword, setMustChangePassword] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(true);
     const [emotionalImageIndex, setEmotionalImageIndex] = useState(0);
     const [connectionError, setConnectionError] = useState(false);
 
@@ -152,7 +151,8 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
     ];
 
     useEffect(() => {
-        // Load remembered credentials
+        // Prefill the last-used credentials (always remembered now that the
+        // "Stay signed in" checkbox has been removed).
         const savedPhone = storageUtils.getItem('slm_remembered_phone');
         const savedPin = storageUtils.getItem('slm_remembered_pin');
 
@@ -251,14 +251,9 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                 setCurrentUser(user);
                 showNotification('Please set a new password to continue', 'info');
             } else {
-                // Remember credentials if checkbox is checked
-                if (rememberMe) {
-                    storageUtils.setItem('slm_remembered_phone', phone);
-                    storageUtils.setItem('slm_remembered_pin', password);
-                } else {
-                    storageUtils.removeItem('slm_remembered_phone');
-                    storageUtils.removeItem('slm_remembered_pin');
-                }
+                // Remember credentials for prefill on next visit
+                storageUtils.setItem('slm_remembered_phone', phone);
+                storageUtils.setItem('slm_remembered_pin', password);
 
                 // Store session
                 storageUtils.setItem('session_token', user.session_token);
@@ -313,11 +308,9 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
 
             if (error) throw error;
 
-            // Remember credentials if checkbox is checked
-            if (rememberMe) {
-                storageUtils.setItem('slm_remembered_phone', phone);
-                storageUtils.setItem('slm_remembered_pin', newPassword);
-            }
+            // Remember credentials for prefill on next visit
+            storageUtils.setItem('slm_remembered_phone', phone);
+            storageUtils.setItem('slm_remembered_pin', newPassword);
 
             // Store session and auto-login
             storageUtils.setItem('session_token', currentUser.session_token);
@@ -518,24 +511,6 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                                 )}
                             </button>
                         </div>
-                    </div>
-
-                    <div className="flex items-center justify-center pt-0.5">
-                        <label className="flex items-center gap-2.5 cursor-pointer min-h-[44px] px-1">
-                            <span className="relative inline-flex h-5 w-5 shrink-0 items-center justify-center">
-                                <input
-                                    type="checkbox"
-                                    checked={rememberMe}
-                                    onChange={(e) => setRememberMe(e.target.checked)}
-                                    className="peer sr-only"
-                                />
-                                <span className="pointer-events-none absolute inset-0 rounded border-2 border-slate-900 bg-white shadow-[2px_2px_0_#0f172a] transition-colors peer-checked:bg-orange-500 peer-checked:border-slate-900" aria-hidden />
-                                <svg className="pointer-events-none relative z-10 h-3 w-3 text-white opacity-0 transition-opacity peer-checked:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                                </svg>
-                            </span>
-                            <span className="text-sm font-semibold text-slate-700">Stay signed in</span>
-                        </label>
                     </div>
 
                     <button
