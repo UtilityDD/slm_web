@@ -270,6 +270,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const [quizSubmitted, setQuizSubmitted] = useState(false);
     const [score, setScore] = useState(0);
     const [quizResults, setQuizResults] = useState(null);
+    const [submitRejected, setSubmitRejected] = useState(null); // { type: 'time' | 'other', message }
     const [leaderboard, setLeaderboard] = useState([]);
     const [hourlyQuiz, setHourlyQuiz] = useState(null);
     const hourlyQuizRef = React.useRef(null);
@@ -885,6 +886,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         setIsSyncing(true);
         setSyncStatus('syncing');
         setSyncErrorMessage(null);
+        setSubmitRejected(null);
 
         // 1. Strict ID for the current hour
         const quizId = getHourlyQuizId();
@@ -908,11 +910,27 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
         try {
             // 3. Direct RPC Call
-            const { error } = await supabase.rpc('submit_quiz_result_v2', params);
+            const { data, error } = await supabase.rpc('submit_quiz_result_v2', params);
 
             if (error) throw error;
 
-            // 3. Success: Lock the UI immediately
+            // 3a. Server accepted the call but refused to award (e.g. device clock changed).
+            //     The DB returns { success: false, error } without a SQL error, so handle it here.
+            if (data && data.success === false) {
+                const isTimeBlock = data.error === 'hourly_time_mismatch';
+                setSyncStatus('failed');
+                setSubmitRejected({
+                    type: isTimeBlock ? 'time' : 'other',
+                    message: isTimeBlock
+                        ? (language === 'en'
+                            ? 'This score was not counted. Your device clock does not match the real time, so this hourly play is invalid. Please set your phone date & time to "Automatic" and play during the live hour.'
+                            : 'ফোনের সময় ঠিক নেই বলে এই স্কোর গণনা হয়নি। সময় "স্বয়ংক্রিয়" করে চলতি ঘণ্টায় খেলুন।')
+                        : (data.message || data.error || (language === 'en' ? 'Submission was not accepted.' : 'জমা গ্রহণ করা হয়নি।')),
+                });
+                return;
+            }
+
+            // 3b. Success: Lock the UI immediately
             setSyncStatus('success');
 
             // Update local state to show "Locked" view
@@ -1571,6 +1589,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         setUserAnswers({});
         setQuizSubmitted(false);
         setScore(0);
+        setSubmitRejected(null);
         setReviewMode(false);
         setShowHint(false);
         setHintViewedQuestions(new Set());
@@ -1685,6 +1704,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         // Final score for UI display
         const netScore = Math.max(0, calculatedScore - penalty);
         setScore(netScore);
+        setSubmitRejected(null);
 
         setQuizResults({
             correct: correctCount,
@@ -3028,6 +3048,28 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     )}
                                 </div>
                             </>
+                        ) : submitRejected ? (
+                            <div className="text-center py-6 px-4 sm:px-6 overflow-y-auto">
+                                <div className="nb-icon-badge w-20 h-20 bg-red-50 text-red-600 text-4xl flex items-center justify-center mx-auto mb-4">⛔</div>
+                                <h2 className={`text-2xl font-black text-slate-900 mb-3 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    {submitRejected.type === 'time'
+                                        ? (language === 'en' ? 'Score not counted' : 'স্কোর গণনা হয়নি')
+                                        : (language === 'en' ? 'Not saved' : 'সংরক্ষণ হয়নি')}
+                                </h2>
+                                <p className={`mx-auto mb-6 max-w-md text-sm leading-relaxed text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    {submitRejected.message}
+                                </p>
+                                {submitRejected.type === 'time' && (
+                                    <div className={`mx-auto mb-6 max-w-md rounded-xl border-2 border-amber-300 bg-amber-50 p-3 text-left text-xs text-amber-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en'
+                                            ? 'How to fix: Phone Settings → Date & time → turn ON "Set automatically". Then reopen the hourly challenge.'
+                                            : 'সমাধান: ফোন সেটিংস → তারিখ ও সময় → "স্বয়ংক্রিয়ভাবে সেট করুন" চালু করুন। তারপর আবার ঘণ্টার চ্যালেঞ্জ খুলুন।'}
+                                    </div>
+                                )}
+                                <button type="button" onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); setSubmitRejected(null); }} className="w-full py-3 nb-btn-primary font-bold">
+                                    {t.close}
+                                </button>
+                            </div>
                         ) : (
                             <div className="text-center py-6 px-4 sm:px-6 overflow-y-auto">
                                 <div className="nb-icon-badge w-20 h-20 bg-green-50 text-green-600 text-4xl flex items-center justify-center mx-auto mb-4">🎉</div>
