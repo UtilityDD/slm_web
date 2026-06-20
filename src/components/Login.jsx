@@ -17,10 +17,16 @@ async function claimDeviceSession(userId) {
         : `${userId}-${Date.now()}`;
     storageUtils.setItem('slm_session_id', sessionId);
     try {
-        await supabase
-            .from('profiles')
-            .update({ current_session_id: sessionId })
-            .eq('id', userId);
+        // Custom auth means auth.uid() is null, so a direct profiles update is
+        // blocked by RLS. Write via the SECURITY DEFINER RPC instead.
+        const { data, error } = await supabase.rpc('set_current_session_id', {
+            p_user_id: userId,
+            p_session_id: sessionId,
+        });
+        if (error) throw error;
+        if (data && data.success === false) {
+            console.warn('Could not claim device session on server:', data.error);
+        }
     } catch (err) {
         console.warn('Could not claim device session on server:', err);
     }
