@@ -806,6 +806,45 @@ export default function SmartLinemanUI() {
     };
   }, []);
 
+  // Single-device enforcement fallback: the realtime listener delivers an
+  // instant kick, but it can be missed (websocket reconnect, backgrounded tab,
+  // sleeping device). This does a fresh, uncached read of current_session_id on
+  // focus and on a timer so a superseded device is reliably signed out.
+  // It never signs out on errors/uncertainty to avoid false logouts.
+  useEffect(() => {
+    const validateDeviceSession = async () => {
+      const localSessionId = storageUtils.getItem('slm_session_id');
+      const storedUserId = user?.id || storageUtils.getItem('user_id');
+      if (!localSessionId || !storedUserId) return;
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('current_session_id')
+          .eq('id', storedUserId)
+          .single();
+        if (error) return;
+        const remoteSessionId = data?.current_session_id;
+        if (remoteSessionId && remoteSessionId !== localSessionId) {
+          confirmLogout(true);
+        }
+      } catch {
+        // best-effort; never sign out on a failed check
+      }
+    };
+
+    const handleSessionVisibility = () => {
+      if (document.visibilityState === 'visible') validateDeviceSession();
+    };
+
+    document.addEventListener('visibilitychange', handleSessionVisibility);
+    const intervalId = setInterval(validateDeviceSession, 60000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleSessionVisibility);
+      clearInterval(intervalId);
+    };
+  }, [user]);
+
   // Check LocalStorage for Language on mount
   useEffect(() => {
     const savedLang = storageUtils.getItem('appLanguage');
