@@ -758,16 +758,162 @@ function TrainingInlineMediaChip({ isImage, resolvedMedia, labelText, authorLabe
     );
 }
 
-/** Lesson figure — full-width card on topic cards; inline figures span their text box. Tap opens enlarge modal. */
+/** Pinch, scroll, and drag zoom for lesson image preview modal. */
+function TrainingImageZoomViewer({ src, alt, language }) {
+    const containerRef = useRef(null);
+    const [scale, setScale] = useState(1);
+    const [pos, setPos] = useState({ x: 0, y: 0 });
+    const pinchRef = useRef({ startDist: 0, startScale: 1 });
+    const dragRef = useRef({ active: false, startX: 0, startY: 0, originX: 0, originY: 0 });
+    const lastTapRef = useRef(0);
+
+    useEffect(() => {
+        setScale(1);
+        setPos({ x: 0, y: 0 });
+    }, [src]);
+
+    useEffect(() => {
+        if (scale <= 1) setPos({ x: 0, y: 0 });
+    }, [scale]);
+
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+        const onWheel = (e) => {
+            e.preventDefault();
+            setScale((s) => Math.min(4, Math.max(1, s + (e.deltaY < 0 ? 0.12 : -0.12))));
+        };
+        el.addEventListener('wheel', onWheel, { passive: false });
+        return () => el.removeEventListener('wheel', onWheel);
+    }, [src]);
+
+    const zoomHint = language === 'en'
+        ? 'Pinch or scroll to zoom · drag to move · double-tap to reset'
+        : 'চেপে/স্ক্রল করে জুম · টেনে সরান · দুবার ট্যাপে রিসেট';
+
+    const clampScale = (value) => Math.min(4, Math.max(1, value));
+
+    const onTouchStart = (e) => {
+        if (e.touches.length === 2) {
+            pinchRef.current = {
+                startDist: Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                ),
+                startScale: scale,
+            };
+            return;
+        }
+        if (e.touches.length === 1 && scale > 1) {
+            dragRef.current = {
+                active: true,
+                startX: e.touches[0].clientX,
+                startY: e.touches[0].clientY,
+                originX: pos.x,
+                originY: pos.y,
+            };
+        }
+    };
+
+    const onTouchMove = (e) => {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            const dist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            const ratio = dist / (pinchRef.current.startDist || dist);
+            setScale(clampScale(pinchRef.current.startScale * ratio));
+            return;
+        }
+        if (e.touches.length === 1 && dragRef.current.active) {
+            e.preventDefault();
+            const dx = e.touches[0].clientX - dragRef.current.startX;
+            const dy = e.touches[0].clientY - dragRef.current.startY;
+            setPos({ x: dragRef.current.originX + dx, y: dragRef.current.originY + dy });
+        }
+    };
+
+    const onTouchEnd = (e) => {
+        dragRef.current.active = false;
+        if (e.changedTouches.length !== 1) return;
+        const now = Date.now();
+        if (now - lastTapRef.current < 300) {
+            setScale(1);
+            setPos({ x: 0, y: 0 });
+            lastTapRef.current = 0;
+        } else {
+            lastTapRef.current = now;
+        }
+    };
+
+    const onMouseDown = (e) => {
+        if (scale <= 1) return;
+        e.preventDefault();
+        dragRef.current = {
+            active: true,
+            startX: e.clientX,
+            startY: e.clientY,
+            originX: pos.x,
+            originY: pos.y,
+        };
+    };
+
+    const onMouseMove = (e) => {
+        if (!dragRef.current.active) return;
+        setPos({
+            x: dragRef.current.originX + (e.clientX - dragRef.current.startX),
+            y: dragRef.current.originY + (e.clientY - dragRef.current.startY),
+        });
+    };
+
+    const stopDrag = () => {
+        dragRef.current.active = false;
+    };
+
+    return (
+        <div className="flex min-h-0 w-full flex-1 flex-col">
+            <p className={`mb-2 text-center text-[10px] font-medium text-slate-400 sm:text-xs ${language === 'bn' ? 'font-bengali' : ''}`}>
+                {zoomHint}
+            </p>
+            <div
+                ref={containerRef}
+                className={`relative min-h-[min(50vh,420px)] w-full flex-1 overflow-hidden bg-white touch-none ${scale > 1 ? 'cursor-grab active:cursor-grabbing' : 'cursor-zoom-in'}`}
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+                onMouseDown={onMouseDown}
+                onMouseMove={onMouseMove}
+                onMouseUp={stopDrag}
+                onMouseLeave={stopDrag}
+            >
+                <img
+                    src={src}
+                    alt={alt}
+                    draggable={false}
+                    className="mx-auto max-h-[min(70vh,760px)] max-w-full select-none rounded-sm object-contain"
+                    style={{
+                        transform: `translate(${pos.x}px, ${pos.y}px) scale(${scale})`,
+                        transformOrigin: 'center center',
+                    }}
+                />
+            </div>
+        </div>
+    );
+}
+
+/** Lesson figure — full-width on topic cards and inline in text boxes. Tap opens enlarge modal. */
 function TrainingLessonFigure({ src, alt, caption, onClick, language, className = '', inlineFloat = false }) {
     const enlargeLabel = language === 'en' ? 'Tap to enlarge' : 'বড় করে দেখতে ট্যাপ করুন';
+    const inlineHint = language === 'en' ? 'Tap to view large' : 'বড় ছবি দেখতে ট্যাপ করুন';
     const isInline = inlineFloat;
 
     const buttonClass = isInline
-        ? `my-4 block w-full overflow-hidden bg-transparent p-0 text-left ${className}`
-        : `my-4 block w-full max-w-lg overflow-hidden bg-transparent p-0 text-left clear-both ${className}`;
+        ? `my-3 sm:my-4 block w-full overflow-hidden bg-transparent p-0 text-left ${className}`
+        : `my-3 sm:my-4 block w-full max-w-lg overflow-hidden bg-transparent p-0 text-left clear-both ${className}`;
 
-    const captionClass = `mb-2 text-center text-xs font-black text-slate-600 nb-mono ${language === 'bn' ? 'font-bengali' : ''}`;
+    const captionClass = `mb-1.5 sm:mb-2 text-center text-[10px] sm:text-xs font-black text-slate-600 nb-mono ${language === 'bn' ? 'font-bengali' : ''}`;
+    const hintClass = `mt-1.5 text-center text-[10px] font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`;
 
     return (
         <button
@@ -787,6 +933,11 @@ function TrainingLessonFigure({ src, alt, caption, onClick, language, className 
                 </p>
             )}
             <img src={src} alt={alt} className="h-auto w-full rounded-sm object-contain" loading="lazy" />
+            {isInline && (
+                <p className={hintClass}>
+                    {inlineHint}
+                </p>
+            )}
         </button>
     );
 }
@@ -803,19 +954,19 @@ function SectionPointFullCard({
     readingComfort = false,
 }) {
     const shell = readingComfort
-        ? 'relative overflow-hidden border-2 border-slate-900 bg-white p-6 sm:p-9 md:p-10 shadow-[3px_3px_0_#0f172a]'
-        : 'relative overflow-hidden border-2 border-slate-900 bg-white p-5 sm:p-8 shadow-[4px_4px_0_#0f172a] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5';
-    const stackGap = readingComfort ? 'space-y-7 sm:space-y-10' : 'space-y-6 sm:space-y-8';
+        ? 'relative overflow-hidden border-2 border-slate-900 bg-white p-4 sm:p-6 md:p-10 shadow-[3px_3px_0_#0f172a]'
+        : 'relative overflow-hidden border-2 border-slate-900 bg-white p-4 sm:p-6 md:p-8 shadow-[4px_4px_0_#0f172a] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5';
+    const stackGap = readingComfort ? 'space-y-4 sm:space-y-7 md:space-y-10' : 'space-y-4 sm:space-y-6 md:space-y-8';
     const titleCls = readingComfort
-        ? `text-2xl sm:text-3xl md:text-[1.95rem] font-black text-slate-900 leading-snug ${language === 'bn' ? 'font-bengali leading-[1.45]' : ''}`
-        : `text-xl sm:text-2xl md:text-3xl font-black text-slate-900 leading-snug ${language === 'bn' ? 'font-bengali leading-[1.5]' : ''}`;
+        ? `text-xl sm:text-2xl md:text-[1.95rem] font-black text-slate-900 leading-snug ${language === 'bn' ? 'font-bengali leading-[1.45]' : ''}`
+        : `text-lg sm:text-2xl md:text-3xl font-black text-slate-900 leading-snug ${language === 'bn' ? 'font-bengali leading-[1.5]' : ''}`;
     const specCls = readingComfort
-        ? `text-lg sm:text-xl md:text-[1.35rem] text-slate-700 leading-[2.05] font-medium ${language === 'bn' ? 'font-bengali text-[1.2rem] sm:text-[1.35rem] leading-[2.15]' : ''}`
-        : `text-lg sm:text-xl text-slate-700 leading-[1.9] font-medium ${language === 'bn' ? 'font-bengali text-xl sm:text-2xl leading-[2.1]' : ''}`;
-    const boxPad = readingComfort ? 'p-7 sm:p-9' : 'p-6 sm:p-8';
+        ? `text-sm sm:text-lg md:text-[1.35rem] text-slate-700 leading-[1.75] sm:leading-[2.05] font-medium ${language === 'bn' ? 'font-bengali sm:text-[1.2rem] md:text-[1.35rem] leading-[1.8] sm:leading-[2.15]' : ''}`
+        : `text-sm sm:text-lg md:text-xl text-slate-700 leading-[1.7] sm:leading-[1.9] font-medium ${language === 'bn' ? 'font-bengali sm:text-xl md:text-2xl leading-[1.85] sm:leading-[2.1]' : ''}`;
+    const boxPad = readingComfort ? 'p-3.5 sm:p-6 md:p-9' : 'p-3.5 sm:p-5 md:p-8';
     const boxBody = readingComfort
-        ? `text-base sm:text-lg md:text-[1.2rem] text-slate-900 font-bold leading-[1.95] ${language === 'bn' ? 'font-bengali leading-[2.1]' : ''}`
-        : `text-base sm:text-lg md:text-xl text-slate-900 font-bold leading-[1.8] ${language === 'bn' ? 'font-bengali leading-[2.0]' : ''}`;
+        ? `text-sm sm:text-base md:text-[1.2rem] text-slate-900 font-bold leading-[1.65] sm:leading-[1.95] ${language === 'bn' ? 'font-bengali leading-[1.7] sm:leading-[2.1]' : ''}`
+        : `text-sm sm:text-base md:text-lg text-slate-900 font-bold leading-[1.6] sm:leading-[1.8] ${language === 'bn' ? 'font-bengali leading-[1.65] sm:leading-[2.0]' : ''}`;
 
     return (
         <div className={shell}>
@@ -835,7 +986,7 @@ function SectionPointFullCard({
                             alt={point.image_caption || point.item_name}
                             caption={point.image_caption}
                             language={language}
-                            className={readingComfort ? 'mb-7 sm:mb-9' : 'mb-8 sm:mb-10'}
+                            className={readingComfort ? 'mb-4 sm:mb-7 md:mb-9' : 'mb-4 sm:mb-6 md:mb-10'}
                             onClick={() => setActiveImageModal({
                                 type: 'image',
                                 value: resolveTrainingMediaSrc(point.image_name),
@@ -844,18 +995,18 @@ function SectionPointFullCard({
                         />
                     )}
 
-                    <div className={readingComfort ? 'space-y-7 sm:space-y-10' : 'space-y-6 sm:space-y-8'}>
+                    <div className={readingComfort ? 'space-y-4 sm:space-y-7 md:space-y-10' : 'space-y-4 sm:space-y-6 md:space-y-8'}>
                         {point.specifications && (
-                            <div className={`${specCls} space-y-2`}>
+                            <div className={`${specCls} space-y-1.5 sm:space-y-2`}>
                                 {renderTextWithImages(point.specifications)}
                             </div>
                         )}
 
-                        <div className={`grid grid-cols-1 ${readingComfort ? 'gap-7 sm:gap-8' : 'gap-6'}`}>
+                        <div className={`grid grid-cols-1 ${readingComfort ? 'gap-3 sm:gap-6 md:gap-8' : 'gap-3 sm:gap-5 md:gap-6'}`}>
                             {point.importance && (
                                 <div className={`border-2 border-slate-900 bg-blue-50 ${boxPad} shadow-[2px_2px_0_#0f172a]`}>
-                                    <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-blue-700 nb-mono">{language === 'en' ? 'Strategy' : 'কৌশল'}</span>
+                                    <div className="mb-2 flex items-center gap-2 sm:mb-3 md:mb-4">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 nb-mono sm:text-xs">{language === 'en' ? 'Strategy' : 'কৌশল'}</span>
                                     </div>
                                     <div className={boxBody}>
                                         {renderTextWithImages(point.importance)}
@@ -864,8 +1015,8 @@ function SectionPointFullCard({
                             )}
                             {point.daily_check && (
                                 <div className={`border-2 border-slate-900 bg-emerald-50 ${boxPad} shadow-[2px_2px_0_#0f172a]`}>
-                                    <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-emerald-700 nb-mono">{language === 'en' ? 'Action Plan' : 'কর্মপরিকল্পনা'}</span>
+                                    <div className="mb-2 flex items-center gap-2 sm:mb-3 md:mb-4">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 nb-mono sm:text-xs">{language === 'en' ? 'Action Plan' : 'কর্মপরিকল্পনা'}</span>
                                     </div>
                                     <div className={boxBody}>
                                         {renderTextWithImages(point.daily_check)}
@@ -4285,20 +4436,20 @@ export default function Training({
                                                     <div className="space-y-12">
                                                         {activeSlide.myths?.map((item, idx) => (
                                                             <div key={idx} className="space-y-4">
-                                                                <div className="nb-card border-rose-200 bg-rose-50 p-8">
-                                                                    <span className="mb-3 block text-[10px] font-black uppercase tracking-widest text-rose-600 nb-mono">
+                                                                <div className="nb-card border-rose-200 bg-rose-50 p-4 sm:p-6 md:p-8">
+                                                                    <span className="mb-2 block text-[10px] font-black uppercase tracking-widest text-rose-600 nb-mono sm:mb-3">
                                                                         {language === 'en' ? 'Perspective' : 'ভুল ধারণা'}
                                                                     </span>
-                                                                    <p className={`text-lg font-medium italic leading-[1.9] text-slate-700 sm:text-xl ${language === 'bn' ? 'font-bengali text-xl leading-[2.1] sm:text-2xl' : ''}`}>
+                                                                    <p className={`text-sm font-medium italic leading-[1.65] text-slate-700 sm:text-lg sm:leading-[1.9] md:text-xl ${language === 'bn' ? 'font-bengali sm:text-xl sm:leading-[2.1] md:text-2xl' : ''}`}>
                                                                         {renderTextWithImages(item.myth)}
                                                                     </p>
                                                                 </div>
 
-                                                                <div className="nb-card border-emerald-200 bg-emerald-50 p-8">
-                                                                    <span className="mb-3 block text-[10px] font-black uppercase tracking-widest text-emerald-600 nb-mono">
+                                                                <div className="nb-card border-emerald-200 bg-emerald-50 p-4 sm:p-6 md:p-8">
+                                                                    <span className="mb-2 block text-[10px] font-black uppercase tracking-widest text-emerald-600 nb-mono sm:mb-3">
                                                                         {language === 'en' ? 'Verdict' : 'আসল কথা'}
                                                                     </span>
-                                                                    <div className={`text-lg font-bold leading-[1.9] text-slate-900 sm:text-xl ${language === 'bn' ? 'font-bengali text-xl leading-[2.1] sm:text-2xl' : ''}`}>
+                                                                    <div className={`text-sm font-bold leading-[1.65] text-slate-900 sm:text-lg sm:leading-[1.9] md:text-xl ${language === 'bn' ? 'font-bengali sm:text-xl sm:leading-[2.1] md:text-2xl' : ''}`}>
                                                                         {renderTextWithImages(item.reality || item.fact)}
                                                                     </div>
                                                                 </div>
@@ -4507,16 +4658,16 @@ export default function Training({
                             </button>
 
                             {activeImageModal.type === 'image' ? (
-                                <div className="flex min-h-0 flex-1 flex-col items-center justify-center bg-white p-4 pt-14 sm:p-8 sm:pt-16">
+                                <div className="flex min-h-0 flex-1 flex-col bg-white p-4 pt-14 sm:p-8 sm:pt-16">
                                     {activeImageModal.caption && (
-                                        <p className={`mb-3 max-w-full px-2 text-center text-xs font-black text-slate-600 nb-mono sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        <p className={`mb-2 max-w-full px-2 text-center text-xs font-black text-slate-600 nb-mono sm:mb-3 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                                             {activeImageModal.caption}
                                         </p>
                                     )}
-                                    <img
+                                    <TrainingImageZoomViewer
                                         src={activeImageModal.value}
                                         alt={activeImageModal.caption || 'Preview'}
-                                        className="max-h-[min(78vh,800px)] max-w-full rounded-sm object-contain"
+                                        language={language}
                                     />
                                 </div>
                             ) : (
