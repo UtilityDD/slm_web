@@ -562,13 +562,25 @@ export default function SmartLinemanUI() {
     initSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
       if (event === 'PASSWORD_RECOVERY') {
         setCurrentView('update-password');
       }
-      if (session) {
+
+      if (session?.user) {
+        setUser(session.user);
         fetchProfile(session.user);
-      } else {
+        return;
+      }
+
+      // This app uses custom auth, so onAuthStateChange fires INITIAL_SESSION
+      // with a null session on load. Do NOT wipe a valid custom session that
+      // was restored from localStorage, otherwise auto-login is undone and the
+      // user is bounced to the landing screen. Only clear state on a real
+      // sign-out, i.e. when no custom session token remains.
+      const hasCustomSession =
+        storageUtils.getItem('user_id') && storageUtils.getItem('session_token');
+      if (!hasCustomSession) {
+        setUser(null);
         setUserProfile(null);
       }
     });
