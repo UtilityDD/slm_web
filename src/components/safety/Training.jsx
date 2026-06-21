@@ -758,9 +758,17 @@ function TrainingInlineMediaChip({ isImage, resolvedMedia, labelText, authorLabe
     );
 }
 
-/** Lesson figure — matches Know More chapter step images (AroJanun). Tap opens enlarge modal. */
+/** Lesson figure — full-width card on topic cards; inline figures span their text box. Tap opens enlarge modal. */
 function TrainingLessonFigure({ src, alt, caption, onClick, language, className = '', inlineFloat = false }) {
     const enlargeLabel = language === 'en' ? 'Tap to enlarge' : 'বড় করে দেখতে ট্যাপ করুন';
+    const isInline = inlineFloat;
+
+    const buttonClass = isInline
+        ? `my-4 block w-full overflow-hidden bg-transparent p-0 text-left ${className}`
+        : `my-4 block w-full max-w-lg overflow-hidden bg-transparent p-0 text-left clear-both ${className}`;
+
+    const captionClass = `mb-2 text-center text-xs font-black text-slate-600 nb-mono ${language === 'bn' ? 'font-bengali' : ''}`;
+
     return (
         <button
             type="button"
@@ -770,14 +778,15 @@ function TrainingLessonFigure({ src, alt, caption, onClick, language, className 
                 onClick?.();
             }}
             title={enlargeLabel}
-            className={`my-4 block w-full max-w-lg overflow-hidden border-2 border-slate-900 bg-white p-2 text-left shadow-[4px_4px_0_#0f172a] transition-transform duration-150 hover:-translate-y-0.5 ${inlineFloat ? 'sm:float-right sm:ml-5 sm:mr-0 sm:shrink-0' : 'clear-both'} ${className}`}
+            aria-label={caption ? `${caption} — ${enlargeLabel}` : enlargeLabel}
+            className={buttonClass}
         >
             {caption && (
-                <p className="mb-2 border-b border-dashed border-slate-300 pb-2 text-center text-xs font-black text-slate-600 nb-mono">
+                <p className={captionClass}>
                     {caption}
                 </p>
             )}
-            <img src={src} alt={alt} className="h-auto w-full object-contain" loading="lazy" />
+            <img src={src} alt={alt} className="h-auto w-full rounded-sm object-contain" loading="lazy" />
         </button>
     );
 }
@@ -823,18 +832,23 @@ function SectionPointFullCard({
                     {point.image_name && (
                         <TrainingLessonFigure
                             src={resolveTrainingMediaSrc(point.image_name)}
-                            alt={point.item_name}
+                            alt={point.image_caption || point.item_name}
+                            caption={point.image_caption}
                             language={language}
                             className={readingComfort ? 'mb-7 sm:mb-9' : 'mb-8 sm:mb-10'}
-                            onClick={() => setActiveImageModal({ type: 'image', value: resolveTrainingMediaSrc(point.image_name) })}
+                            onClick={() => setActiveImageModal({
+                                type: 'image',
+                                value: resolveTrainingMediaSrc(point.image_name),
+                                caption: point.image_caption,
+                            })}
                         />
                     )}
 
                     <div className={readingComfort ? 'space-y-7 sm:space-y-10' : 'space-y-6 sm:space-y-8'}>
                         {point.specifications && (
-                            <p className={specCls}>
+                            <div className={`${specCls} space-y-2`}>
                                 {renderTextWithImages(point.specifications)}
-                            </p>
+                            </div>
                         )}
 
                         <div className={`grid grid-cols-1 ${readingComfort ? 'gap-7 sm:gap-8' : 'gap-6'}`}>
@@ -843,9 +857,9 @@ function SectionPointFullCard({
                                     <div className="flex items-center gap-3 mb-3 sm:mb-4">
                                         <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-blue-700 nb-mono">{language === 'en' ? 'Strategy' : 'কৌশল'}</span>
                                     </div>
-                                    <p className={boxBody}>
+                                    <div className={boxBody}>
                                         {renderTextWithImages(point.importance)}
-                                    </p>
+                                    </div>
                                 </div>
                             )}
                             {point.daily_check && (
@@ -853,9 +867,9 @@ function SectionPointFullCard({
                                     <div className="flex items-center gap-3 mb-3 sm:mb-4">
                                         <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-emerald-700 nb-mono">{language === 'en' ? 'Action Plan' : 'কর্মপরিকল্পনা'}</span>
                                     </div>
-                                    <p className={boxBody}>
+                                    <div className={boxBody}>
                                         {renderTextWithImages(point.daily_check)}
-                                    </p>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -1883,19 +1897,23 @@ export default function Training({
                 );
             } else if (part.startsWith('[[') && part.endsWith(']]')) {
                 const inner = part.slice(2, -2).trim();
-                const pipeIdx = inner.indexOf('|');
-                const imgPathRaw = pipeIdx >= 0 ? inner.slice(0, pipeIdx).trim() : inner;
-                const layoutFlag = pipeIdx >= 0 ? inner.slice(pipeIdx + 1).trim().toLowerCase() : '';
-                const isInlineFigure = layoutFlag === 'inline';
+                const segments = inner.split('|').map((s) => s.trim());
+                const imgPathRaw = segments[0];
+                const isInlineFigure = segments.some((s) => s.toLowerCase() === 'inline');
+                const figureCaption = segments
+                    .slice(1)
+                    .filter((s) => s.toLowerCase() !== 'inline')
+                    .join(' | ') || undefined;
                 const resolvedSrc = resolveTrainingMediaSrc(imgPathRaw);
-                const openModal = () => setActiveImageModal({ type: 'image', value: resolvedSrc });
+                const openModal = () => setActiveImageModal({ type: 'image', value: resolvedSrc, caption: figureCaption });
 
                 if (isInlineFigure) {
                     return (
                         <TrainingLessonFigure
                             key={index}
                             src={resolvedSrc}
-                            alt=""
+                            alt={figureCaption || ''}
+                            caption={figureCaption}
                             language={language}
                             inlineFloat
                             onClick={openModal}
@@ -1907,7 +1925,8 @@ export default function Training({
                     <TrainingLessonFigure
                         key={index}
                         src={resolvedSrc}
-                        alt="Inline lesson helper"
+                        alt={figureCaption || 'Inline lesson helper'}
+                        caption={figureCaption}
                         language={language}
                         onClick={openModal}
                     />
@@ -4279,9 +4298,9 @@ export default function Training({
                                                                     <span className="mb-3 block text-[10px] font-black uppercase tracking-widest text-emerald-600 nb-mono">
                                                                         {language === 'en' ? 'Verdict' : 'আসল কথা'}
                                                                     </span>
-                                                                    <p className={`text-lg font-bold leading-[1.9] text-slate-900 sm:text-xl ${language === 'bn' ? 'font-bengali text-xl leading-[2.1] sm:text-2xl' : ''}`}>
+                                                                    <div className={`text-lg font-bold leading-[1.9] text-slate-900 sm:text-xl ${language === 'bn' ? 'font-bengali text-xl leading-[2.1] sm:text-2xl' : ''}`}>
                                                                         {renderTextWithImages(item.reality || item.fact)}
-                                                                    </p>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         ))}
@@ -4488,11 +4507,16 @@ export default function Training({
                             </button>
 
                             {activeImageModal.type === 'image' ? (
-                                <div className="flex min-h-0 flex-1 items-center justify-center bg-white p-4 pt-14 sm:p-8 sm:pt-16">
+                                <div className="flex min-h-0 flex-1 flex-col items-center justify-center bg-white p-4 pt-14 sm:p-8 sm:pt-16">
+                                    {activeImageModal.caption && (
+                                        <p className={`mb-3 max-w-full px-2 text-center text-xs font-black text-slate-600 nb-mono sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {activeImageModal.caption}
+                                        </p>
+                                    )}
                                     <img
                                         src={activeImageModal.value}
-                                        alt="Preview"
-                                        className="max-h-[min(78vh,800px)] max-w-full border-2 border-slate-900 object-contain shadow-[4px_4px_0_#0f172a]"
+                                        alt={activeImageModal.caption || 'Preview'}
+                                        className="max-h-[min(78vh,800px)] max-w-full rounded-sm object-contain"
                                     />
                                 </div>
                             ) : (

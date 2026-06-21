@@ -13,13 +13,15 @@ export function getGoogleDriveDirectLink(url) {
 }
 
 /**
- * @param {string} mediaRef – filename under public quizzes, or https://... (Drive / CDN)
+ * @param {string} mediaRef – filename under public quizzes/images, or https://... (Drive / CDN)
  * @returns {string} URL safe for <img src>
  */
 export function resolveTrainingMediaSrc(mediaRef) {
     if (!mediaRef || typeof mediaRef !== 'string') return '';
     const s = mediaRef.trim();
     if (/^https?:\/\//i.test(s)) return getGoogleDriveDirectLink(s);
+    if (s.startsWith('/')) return s;
+    if (s.startsWith('images/')) return `/${s}`;
     return `/quizzes/${s.replace(/^\//, '')}`;
 }
 
