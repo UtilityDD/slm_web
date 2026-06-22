@@ -13,7 +13,7 @@ const srcDir = path.join(root, 'public/images/quizzes');
 const outDir = path.join(root, 'public/images/loader');
 
 const ITEMS = [
-  { src: 'img_13QNSikc8W6cAWqM6MXSYMdx7Mzs9OKx5.jpg', out: 'helmet.webp' },
+  { src: '../../quizzes/faq_images/Safety_Helmet.webp', out: 'helmet.webp' },
   { src: 'img_1hBHudBeDSB1bkGqX4qTvhEM0F2sHnkcd.jpg', out: 'goggles.webp' },
   { src: 'img_1wq2z9I0Y4vE2eUm1OlDXny_s10KkTmY6.jpg', out: 'gloves.webp' },
   { src: 'img_1MAUYMbUWD91sOWrr2S07vFnLFke6hReM.jpg', out: 'rubber-gloves.webp' },
