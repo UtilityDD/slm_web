@@ -4433,6 +4433,21 @@ export default function Training({
                                                         </h3>
                                                     </header>
 
+                                                    {activeSlide.image_name && (
+                                                        <TrainingLessonFigure
+                                                            src={resolveTrainingMediaSrc(activeSlide.image_name)}
+                                                            alt={activeSlide.image_caption || activeSlide.title}
+                                                            caption={activeSlide.image_caption}
+                                                            language={language}
+                                                            className="mx-auto max-w-lg"
+                                                            onClick={() => setActiveImageModal({
+                                                                type: 'image',
+                                                                value: resolveTrainingMediaSrc(activeSlide.image_name),
+                                                                caption: activeSlide.image_caption,
+                                                            })}
+                                                        />
+                                                    )}
+
                                                     <div className="space-y-12">
                                                         {activeSlide.myths?.map((item, idx) => (
                                                             <div key={idx} className="space-y-4">
