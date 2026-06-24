@@ -3874,7 +3874,7 @@ export default function Training({
             {/* Safety Journal UI - Immersive Slide-based Experience */}
             {
                 trainingContent && createPortal(
-                    <div className="neo-brutal fixed inset-x-0 bottom-0 top-0 z-[75] flex animate-fade-in-up flex-col overflow-hidden bg-[#fffdf7] md:top-14 lg:inset-x-0 lg:bottom-6 lg:top-16 lg:mx-auto lg:w-[1000px] lg:max-w-[95vw] lg:border-2 lg:border-slate-900 lg:shadow-[8px_8px_0_#0f172a]">
+                    <div className="neo-brutal fixed inset-x-0 bottom-0 top-0 z-[120] flex animate-fade-in-up flex-col overflow-hidden bg-[#fffdf7] md:top-14 lg:inset-x-0 lg:bottom-6 lg:top-16 lg:mx-auto lg:w-[1000px] lg:max-w-[95vw] lg:border-2 lg:border-slate-900 lg:shadow-[8px_8px_0_#0f172a]">
                         {/* Desktop Backdrop Overlay */}
                         <div className="hidden lg:block fixed inset-0 -z-10 bg-slate-900/40" onClick={() => {
                             if (gateFocusPending?.lessonId) {
@@ -3928,42 +3928,8 @@ export default function Training({
                                     </div>
 
                                     <div className="flex items-center gap-3">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                stop();
-                                                setTrainingContent(null);
-                                                setIsJournalMode(false);
-                                                setSelectedChapter(null);
-                                                setSelectedLesson(null);
-                                                setCurrentView('safety-library');
-                                            }}
-                                            className="nb-btn-secondary hidden items-center gap-2 px-3 py-1.5 sm:flex"
-                                        >
-                                            <span className="text-sm animate-rotate-y inline-block">🛡️</span>
-                                            <span className="text-[10px] font-black uppercase tracking-widest nb-mono">{language === 'en' ? 'Library' : 'লাইব্রেরি'}</span>
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                stop();
-                                                setTrainingContent(null);
-                                                setIsJournalMode(false);
-                                                setSelectedChapter(null);
-                                                setSelectedLesson(null);
-                                                setCurrentView('safety-library');
-                                            }}
-                                            className="flex h-10 w-10 items-center justify-center border-2 border-slate-900 bg-white text-slate-600 shadow-[2px_2px_0_#0f172a] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 sm:hidden"
-                                        >
-                                            <span className="text-xl animate-rotate-y inline-block">🛡️</span>
-                                        </button>
-
-                                        {!hideReadAloudForSupplementaryRadio && (
-                                            <>
-                                                <div className="mx-1 hidden h-6 w-px bg-slate-300 opacity-50 sm:block"></div>
-
-                                                <button
+                                        {!hideReadAloudForSupplementaryRadio ? (
+                                            <button
                                                     type="button"
                                                     onClick={handleReadLesson}
                                                     disabled={isLoading}
@@ -3993,7 +3959,8 @@ export default function Training({
                                                         )}
                                                     </div>
                                                 </button>
-                                            </>
+                                        ) : (
+                                            <div className="h-10 w-10 shrink-0" aria-hidden />
                                         )}
                                     </div>
                                 </div>
@@ -4046,46 +4013,6 @@ export default function Training({
                                     </div>
                                 ) : null}
                             </div>
-                            {/* Side prev/next arrows — omitted on final slide (completion uses in-content actions). */}
-                            {!isLastSlide && (
-                                <div className="pointer-events-none fixed inset-0 z-[110] flex items-center justify-between px-2 sm:px-8">
-                                    <div className="pointer-events-auto">
-                                        {!isFirstSlide && (
-                                            <button
-                                                onClick={prevSlide}
-                                                className="flex h-10 w-10 items-center justify-center border-2 border-slate-900 bg-white text-slate-700 shadow-[3px_3px_0_#0f172a] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 sm:h-14 sm:w-14"
-                                                title="Previous"
-                                            >
-                                                <svg className="w-6 h-6 sm:w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
-                                            </button>
-                                        )}
-                                    </div>
-                                    <div className="pointer-events-auto">
-                                        <button
-                                            type="button"
-                                            disabled={isNextDisabledByLessonRules}
-                                            onClick={nextSlide}
-                                            title={
-                                                isNextDisabledByLessonRules
-                                                    ? language === 'en'
-                                                        ? isLessonSectionAdvanceBlocked()
-                                                            ? 'Finish all topic cards on this page first.'
-                                                            : 'Scroll to the bottom of this page to go on.'
-                                                        : isLessonSectionAdvanceBlocked()
-                                                            ? 'আগে এই পাতার সব কার্ড শেষ করুন।'
-                                                            : 'পরের পাতায় যেতে আগে নিচে স্ক্রল করে পড়ুন।'
-                                                    : language === 'en'
-                                                        ? 'Next'
-                                                        : 'পরের পাতা'
-                                            }
-                                            className="flex h-10 w-10 items-center justify-center border-2 border-slate-900 bg-white text-slate-700 shadow-[3px_3px_0_#0f172a] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-35 sm:h-14 sm:w-14"
-                                        >
-                                            <svg className="w-6 h-6 sm:w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-
                             {lessonNavBlockedReason && (
                                 <div className="pointer-events-none fixed inset-x-0 top-20 z-[118] flex justify-center px-3 sm:top-24">
                                     <div
@@ -4130,6 +4057,7 @@ export default function Training({
                             )}
 
                             {/* Slide Content Area */}
+                            <div className="relative flex min-h-0 flex-1 flex-col">
                             {(() => {
                                 const activeSlide = slides[activeSectionIndex];
                                 const sectionPoints =
@@ -4154,7 +4082,7 @@ export default function Training({
                                             className={`max-w-4xl mx-auto animate-fade-in-up relative px-4 sm:px-10 md:px-14 ${
                                                 isSupplementaryCompletion
                                                     ? 'flex h-full min-h-0 flex-col items-center overflow-hidden py-3 pb-4 sm:py-8 sm:pb-10'
-                                                    : 'px-6 py-10 pb-20 sm:py-14 sm:pb-24'
+                                                    : 'px-6 py-10 pb-8 sm:py-14 sm:pb-10'
                                             }`}
                                         >
                                             {activeSlide?.type === 'hero' && (
@@ -4476,21 +4404,21 @@ export default function Training({
 
                                             {activeSlide?.type === 'advanced' && (
                                                 <div className="space-y-16 py-10">
-                                                    <header className="text-center mb-8">
-                                                        <h3 className={`text-3xl md:text-4xl font-black text-slate-800 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    <header className="mb-8 text-center">
+                                                        <h3 className={`text-2xl font-black text-slate-800 dark:text-slate-100 sm:text-3xl md:text-4xl ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
                                                             {activeSlide.title}
                                                         </h3>
                                                     </header>
 
-                                                    <div className="grid grid-cols-1 gap-10">
+                                                    <div className="grid grid-cols-1 gap-6 sm:gap-8">
                                                         {activeSlide.facts?.map((fact, idx) => (
                                                             <div key={idx} className="group">
-                                                                <h4 className={`text-2xl font-black text-indigo-600 dark:text-indigo-400 mb-6 flex items-center gap-3 ${language === 'bn' ? 'font-bengali text-3xl' : ''}`}>
-                                                                    <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                                                                <h4 className={`mb-4 flex items-center gap-3 text-lg font-black text-indigo-600 dark:text-indigo-400 sm:mb-5 sm:text-2xl md:text-3xl ${language === 'bn' ? 'font-bengali leading-[1.45]' : ''}`}>
+                                                                    <div className="h-2 w-2 shrink-0 rounded-full bg-indigo-500"></div>
                                                                     {fact.title}
                                                                 </h4>
-                                                                <div className="nb-card border-indigo-200 bg-indigo-50 p-8">
-                                                                    <p className={`text-lg font-medium leading-[1.9] text-slate-800 sm:text-xl ${language === 'bn' ? 'font-bengali text-xl leading-[2.1] sm:text-2xl' : ''}`}>
+                                                                <div className="nb-card border-indigo-200 bg-indigo-50 p-5 sm:p-8">
+                                                                    <p className={`text-sm font-medium leading-[1.7] text-slate-800 sm:text-lg sm:leading-[1.9] md:text-xl ${language === 'bn' ? 'font-bengali leading-[1.85] sm:text-xl sm:leading-[2.1]' : ''}`}>
                                                                         {renderTextWithImages(fact.content)}
                                                                     </p>
                                                                 </div>
@@ -4610,6 +4538,78 @@ export default function Training({
                                 );
                             })()}
 
+                            {!isLastSlide && (
+                                <div className="pointer-events-none absolute inset-y-8 inset-x-0 z-20 flex items-center justify-between px-1 sm:px-2">
+                                    <div className="pointer-events-auto">
+                                        <button
+                                            type="button"
+                                            onClick={prevSlide}
+                                            disabled={isFirstSlide}
+                                            aria-label={language === 'en' ? 'Previous page' : 'আগের পাতা'}
+                                            className={`flex h-10 w-10 items-center justify-center rounded-full border-2 bg-white/90 text-slate-700 shadow-md backdrop-blur-sm transition-all sm:h-11 sm:w-11 ${
+                                                isFirstSlide
+                                                    ? 'pointer-events-none border-transparent opacity-0'
+                                                    : 'border-slate-900 hover:-translate-x-0.5 active:translate-x-0.5'
+                                            }`}
+                                        >
+                                            <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div className="pointer-events-auto">
+                                        <button
+                                            type="button"
+                                            disabled={isNextDisabledByLessonRules}
+                                            onClick={nextSlide}
+                                            aria-label={language === 'en' ? 'Next page' : 'পরের পাতা'}
+                                            title={
+                                                isNextDisabledByLessonRules
+                                                    ? language === 'en'
+                                                        ? isLessonSectionAdvanceBlocked()
+                                                            ? 'Finish all topic cards on this page first.'
+                                                            : 'Scroll to the bottom of this page to go on.'
+                                                        : isLessonSectionAdvanceBlocked()
+                                                            ? 'আগে এই পাতার সব কার্ড শেষ করুন।'
+                                                            : 'পরের পাতায় যেতে আগে নিচে স্ক্রল করে পড়ুন।'
+                                                    : language === 'en'
+                                                        ? 'Next page'
+                                                        : 'পরের পাতা'
+                                            }
+                                            className={`flex h-10 w-10 items-center justify-center rounded-full border-2 shadow-md backdrop-blur-sm transition-all sm:h-11 sm:w-11 ${
+                                                isNextDisabledByLessonRules
+                                                    ? 'cursor-not-allowed border-slate-300 bg-white/70 text-slate-400'
+                                                    : 'border-slate-900 bg-orange-500 text-white hover:translate-x-0.5 active:-translate-x-0.5'
+                                            }`}
+                                        >
+                                            <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                            </div>
+
+                            {!isLastSlide && slides.length > 1 && (
+                                <div className="shrink-0 border-t-2 border-slate-900 bg-white px-4 py-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-3">
+                                    <div className="mx-auto flex max-w-5xl items-center justify-center gap-4">
+                                        <p className={`text-xs font-black tabular-nums text-slate-500 nb-mono ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {language === 'en' ? 'Page' : 'পাতা'}
+                                            <span className="mx-1.5 text-orange-600">{activeSectionIndex + 1}</span>
+                                            <span className="text-slate-300">/</span>
+                                            <span className="ml-1.5">{slides[slides.length - 1]?.type === 'completion' ? slides.length - 1 : slides.length}</span>
+                                        </p>
+                                        {isNextDisabledByLessonRules && (
+                                            <p className={`text-[10px] font-semibold text-amber-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                {isLessonSectionAdvanceBlocked()
+                                                    ? (language === 'en' ? 'Finish cards to continue' : 'কার্ড শেষ করুন')
+                                                    : (language === 'en' ? 'Scroll down to continue' : 'নিচে স্ক্রল করুন')}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
 
                         </div>
                     </div>,
