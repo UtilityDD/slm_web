@@ -67,6 +67,8 @@ function ReviewOptionMarker({ isSelected, isCorrect }) {
     );
 }
 
+const LESSON_QUIZ_PASS_RATE = 0.7;
+
 const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions = [], language = 'en', isPractice = false, lessonId = '' }) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [userAnswers, setUserAnswers] = useState({});
@@ -178,7 +180,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
             failed: 'Pass Mark Not Reached',
             score: 'You scored',
             outOf: 'out of',
-            required: '90% correct answers required to pass.',
+            required: '70% correct answers required to pass.',
             continue: 'Continue to Next Lesson',
             tryAgain: 'Try Again',
             readAgain: 'Read Again',
@@ -225,7 +227,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
             failed: 'পাস মার্ক অর্জিত হয়নি',
             score: 'আপনার স্কোর',
             outOf: 'এর মধ্যে',
-            required: 'পাস করার জন্য ৯০% সঠিক উত্তর প্রয়োজন।',
+            required: 'পাস করার জন্য ৭০% সঠিক উত্তর প্রয়োজন।',
             continue: 'পরবর্তী পাঠে যান',
             tryAgain: 'আবার চেষ্টা করুন',
             readAgain: 'আবার পড়ুন',
@@ -295,7 +297,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
 
     const currentQuestion = shuffledQuestions[currentQuestionIndex];
     const totalQuestions = shuffledQuestions.length;
-    const passThreshold = Math.ceil(totalQuestions * 0.9);
+    const passThreshold = Math.ceil(totalQuestions * LESSON_QUIZ_PASS_RATE);
     const isPassed = score >= passThreshold;
     const isFullscreenScreen = showResult || isReviewMode;
 
@@ -786,8 +788,8 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                                             {!isPassed && (
                                                                 <div
                                                                     className="absolute top-1/2 z-[1] h-4 w-0.5 -translate-y-1/2 bg-slate-900"
-                                                                    style={{ left: '90%' }}
-                                                                    title={language === 'en' ? 'Pass threshold (90%)' : 'পাসের সীমা (৯০%)'}
+                                                                    style={{ left: `${LESSON_QUIZ_PASS_RATE * 100}%` }}
+                                                                    title={language === 'en' ? 'Pass threshold (70%)' : 'পাসের সীমা (৭০%)'}
                                                                     aria-hidden
                                                                 />
                                                             )}
