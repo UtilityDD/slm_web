@@ -1065,7 +1065,7 @@ export default function SmartLinemanUI() {
         case 'my-progress':
           return <MyProgress language={language} user={user} targetUserId={selectedProgressUserId || user?.id} setCurrentView={setCurrentView} returnView="leaderboard" />;
         case 'community':
-          return <Community language={language} user={user} setCurrentView={setCurrentView} />;
+          return <Community language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;
         case 'emergency':
           return <Emergency language={language} user={user} setCurrentView={setCurrentView} />;
         case 'sops':
@@ -1205,7 +1205,10 @@ export default function SmartLinemanUI() {
               isOpen={sidebarOpen}
               onClose={() => setSidebarOpen(false)}
               currentView={currentView}
-              setCurrentView={setCurrentView}
+              setCurrentView={(view) => {
+                if (view === 'my-progress') setSelectedProgressUserId(user?.id || null);
+                setCurrentView(view);
+              }}
               userProfile={userProfile}
               language={language}
               t={translations[language]}
@@ -1456,16 +1459,13 @@ export default function SmartLinemanUI() {
             {user && <RadioScrollPaddingBridge currentView={currentView} />}
 
             {user && !['login', 'verify'].includes(currentView) && (
-              <RadioMiniPlayer language={language} />
+              <RadioMiniPlayer language={language} currentView={currentView} />
             )}
 
             {user && !['login', 'verify'].includes(currentView) && (
               <BottomNavigation 
                 currentView={currentView} 
-                setCurrentView={(view) => {
-                  if (view === 'my-progress') setSelectedProgressUserId(user?.id);
-                  setCurrentView(view);
-                }} 
+                setCurrentView={setCurrentView} 
                 language={language} 
                 userId={user?.id}
                 selectedProgressUserId={selectedProgressUserId}

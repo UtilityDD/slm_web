@@ -194,7 +194,8 @@ function RadioExpandedSheet({ language, title, track, audioRef, onMinimize, togg
   );
 }
 
-export default function RadioMiniPlayer({ language }) {
+export default function RadioMiniPlayer({ language, currentView }) {
+  const hideChrome = currentView === 'community';
   const {
     audioRef,
     bgAudioRef,
@@ -332,7 +333,7 @@ export default function RadioMiniPlayer({ language }) {
         onPause={() => setPlaying(false)}
       />
 
-      {error && !visible ? (
+      {error && !visible && !hideChrome ? (
         <div className="fixed bottom-24 left-0 right-0 z-[140] flex justify-center px-4 md:bottom-10">
           <div className="flex max-w-sm items-center gap-3 rounded-2xl border border-rose-200/80 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-900 shadow-lg dark:border-rose-900/50 dark:bg-rose-950/90 dark:text-rose-100">
             <span className={`min-w-0 flex-1 ${language === 'bn' ? 'font-bengali' : ''}`}>{error}</span>
@@ -347,7 +348,7 @@ export default function RadioMiniPlayer({ language }) {
         </div>
       ) : null}
 
-      {!visible && !loading ? (
+      {!hideChrome && !visible && !loading ? (
         <button
           type="button"
           onClick={() => startRadio()}
@@ -369,7 +370,7 @@ export default function RadioMiniPlayer({ language }) {
         </button>
       ) : null}
 
-      {visible && currentTrack ? (
+      {visible && currentTrack && !hideChrome ? (
         <>
           {expanded ? (
             <RadioExpandedSheet
@@ -498,7 +499,7 @@ export default function RadioMiniPlayer({ language }) {
         </>
       ) : null}
 
-      {loading ? (
+      {!hideChrome && loading ? (
         <div className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))] left-0 right-0 z-[135] flex justify-center px-4 md:bottom-24 md:justify-end md:pr-8">
           <p className="rounded-full bg-slate-900/90 px-4 py-2 text-xs font-bold text-white shadow-lg">
             {language === 'bn' ? 'লোড হচ্ছে…' : 'Loading…'}

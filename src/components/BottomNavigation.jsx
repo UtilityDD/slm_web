@@ -41,12 +41,11 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
       ),
     },
     {
-      id: 'my-progress',
-      label: language === 'en' ? 'Progress' : 'অগ্রগতি',
+      id: 'community',
+      label: language === 'en' ? 'Forum' : 'প্রশ্নোত্তর',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
-          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-          <polyline points="16 7 22 7 22 13" />
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
       ),
     },

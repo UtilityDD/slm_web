@@ -49,7 +49,8 @@ export function RadioScrollPaddingBridge({ currentView }) {
     const apply = () => {
       const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
       const isLeader = currentView === 'leaderboard';
-      if (visible && isMobile && !isLeader) {
+      const hideRadioChrome = currentView === 'community';
+      if (visible && isMobile && !isLeader && !hideRadioChrome) {
         el.style.setProperty(
           'padding-bottom',
           'calc(5rem + 3.25rem + env(safe-area-inset-bottom, 0px))'

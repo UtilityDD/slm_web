@@ -26,12 +26,12 @@ export default function Sidebar({
     { id: 'training', label: language === 'en' ? '90 Days Training' : '৯০ দিনের প্রশিক্ষণ', icon: '📚', show: true },
     { id: 'competitions', label: language === 'en' ? 'Competitions' : 'প্রতিযোগিতা', icon: '🎯', show: true },
     { id: 'leaderboard', label: language === 'en' ? 'Leaderboard' : 'লিডারবোর্ড', icon: '🏆', show: true },
+    { id: 'my-progress', label: language === 'en' ? 'My Progress' : 'আমার অগ্রগতি', icon: '📈', show: true },
     { id: 'video-guide', label: language === 'en' ? 'Video Guide' : 'ভিডিও গাইড', icon: '📺', show: true },
     { id: 'aro-janun', label: language === 'en' ? 'Know More' : 'আরো জানুন', icon: '🧰', show: true },
     { id: 'training-faq', label: language === 'en' ? 'Quick Help & FAQ' : 'কি, কেন?, কিভাবে?', icon: '💡', show: true, redirectTo: 'training', tab: 'faq' },
     { id: 'safety-library', label: language === 'en' ? 'Safety Library' : 'সুরক্ষা লাইব্রেরি', icon: '🛡️', show: true },
     { id: 'notifications', label: language === 'en' ? 'Notifications' : 'বিজ্ঞপ্তি', icon: '🔔', show: true, badge: unreadNotificationsCount > 0 ? unreadNotificationsCount : null, highlight: unreadNotificationsCount > 0 },
-    { id: 'community', label: language === 'en' ? 'Community' : 'কমিউনিটি', icon: '👥', show: true },
     { id: 'sops', label: language === 'en' ? 'SOP' : 'এসওপি', icon: '📋', show: true },
     { id: 'my_ppe', label: language === 'en' ? 'My PPE' : 'আমার পিপিই', icon: '👷', show: true },
     { id: 'my_tools', label: language === 'en' ? 'My Tools' : 'আমার সরঞ্জাম', icon: '🔧', show: true },
@@ -58,6 +58,8 @@ export default function Sidebar({
     }
     if (item.redirectTo && item.tab) {
       window.location.hash = `/${item.redirectTo}?tab=${item.tab}`;
+    } else if (item.id === 'my-progress' && setCurrentView) {
+      setCurrentView('my-progress');
     } else {
       window.location.hash = `/${item.id}`;
     }
