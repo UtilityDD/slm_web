@@ -32,7 +32,7 @@ const MyTools = ({ user, language = 'bn', onClose }) => {
                     onClick={onClose}
                     className="mb-10 px-8 py-3 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-xl font-black text-sm transition-all active:scale-95"
                 >
-                    {language === 'en' ? '← Back to List' : '← তালিকায় ফিরে যান'}
+                    {language === 'en' ? '← Back to admin panel' : '← অ্যাডমিন প্যানেলে ফিরুন'}
                 </button>
             )}
 

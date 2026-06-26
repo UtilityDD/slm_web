@@ -967,7 +967,7 @@ export default function SmartLinemanUI() {
         emergency: "Emergency",
         login: "Login",
         logout: "Logout",
-        admin: "Admin",
+        admin: "Update Profile",
         safetyMitra: "Safety Mitra"
       },
       hero: {
@@ -992,7 +992,7 @@ export default function SmartLinemanUI() {
         emergency: "জরুরি",
         login: "লগ ইন",
         logout: "লগ আউট",
-        admin: "অ্যাডমিন",
+        admin: "প্রোফাইল আপডেট",
         safetyMitra: "সেফটি মিত্র"
       },
       hero: {

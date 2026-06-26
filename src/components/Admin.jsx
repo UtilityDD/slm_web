@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { cacheHelper } from '../utils/cacheHelper';
 import wbLocations from '../data/wb_locations.json';
 
-import EditUserModal from './EditUserModal';
 import SaveSuccessModal from './SaveSuccessModal';
 import AdminAnalytics from './AdminAnalytics';
 import DeleteUserConfirmationModal from './DeleteUserConfirmationModal';
@@ -18,45 +17,576 @@ const NOTIFICATION_URGENCY_STYLES = {
   alert: { selected: 'border-red-500 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400', idle: 'border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700' }
 };
 
-const UserTableSkeleton = () => (
-  <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
-    <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
-      <thead className="bg-gray-50 dark:bg-slate-700">
-        <tr>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Full Name</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Email</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Role</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">District</th>
-          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Actions</th>
-        </tr>
-      </thead>
-      <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <tr key={i}>
-            <td className="px-6 py-4"><div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div></td>
-            <td className="px-6 py-4"><div className="h-4 w-48 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div></td>
-            <td className="px-6 py-4"><div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div></td>
-            <td className="px-6 py-4"><div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded shimmer"></div></td>
-            <td className="px-6 py-4 text-right"><div className="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded shimmer ml-auto"></div></td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+const ProfileCardSkeleton = () => (
+  <div className="space-y-3">
+    {[1, 2, 3].map((i) => (
+      <div key={i} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 animate-pulse">
+        <div className="flex gap-3 mb-4">
+          <div className="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 w-36 bg-slate-200 dark:bg-slate-700 rounded" />
+            <div className="h-3 w-24 bg-slate-200 dark:bg-slate-700 rounded" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <div className="h-3 w-full bg-slate-100 dark:bg-slate-700/50 rounded" />
+          <div className="h-3 w-4/5 bg-slate-100 dark:bg-slate-700/50 rounded" />
+        </div>
+      </div>
+    ))}
   </div>
 );
+
+function resolveProfileAvatarUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  const fileName = trimmed.replace(/^avatars\//, '').replace(/^\/+/, '');
+  if (!fileName) return '';
+  const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
+  return data?.publicUrl || '';
+}
+
+function ProfileAvatar({ url, name, size = 'lg', className = '' }) {
+  const [failed, setFailed] = useState(false);
+  const avatarUrl = resolveProfileAvatarUrl(url);
+  const initials = name?.trim()?.charAt(0)?.toUpperCase() || '?';
+  const sizeClass = {
+    md: 'w-16 h-16 text-lg',
+    lg: 'w-24 h-24 text-2xl',
+    xl: 'w-28 h-28 text-3xl',
+  }[size] || 'w-24 h-24 text-2xl';
+
+  useEffect(() => {
+    setFailed(false);
+  }, [avatarUrl]);
+
+  const showPhoto = avatarUrl && !failed;
+
+  return (
+    <div
+      className={`${sizeClass} rounded-full overflow-hidden shrink-0 border-2 border-white dark:border-slate-700 bg-orange-100 dark:bg-orange-900/30 shadow-md ring-2 ring-slate-100 dark:ring-slate-700 ${className}`}
+    >
+      {showPhoto ? (
+        <img
+          key={avatarUrl}
+          src={avatarUrl}
+          alt={name ? `${name}` : 'Profile'}
+          className="w-full h-full object-cover"
+          referrerPolicy="no-referrer"
+          onError={() => setFailed(true)}
+          loading="eager"
+          decoding="async"
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center font-bold text-orange-600 dark:text-orange-400">
+          {initials}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const iconBtnBase = 'inline-flex items-center justify-center shrink-0 rounded-lg transition-colors disabled:opacity-50';
+
+function PenIcon({ className = 'w-4 h-4' }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className = 'w-4 h-4' }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
+
+function XIcon({ className = 'w-4 h-4' }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  );
+}
+
+function TrashIcon({ className = 'w-4 h-4' }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+    </svg>
+  );
+}
+
+function CameraIcon({ className = 'w-3.5 h-3.5' }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  );
+}
+
+function ProfileRow({
+  icon,
+  label,
+  value,
+  tone = 'neutral',
+  canEdit,
+  isEditing,
+  onEdit,
+  onCancel,
+  onSave,
+  saving,
+  isEn,
+  children,
+}) {
+  const toneClass = {
+    neutral: 'text-slate-700 dark:text-slate-200',
+    good: 'text-emerald-700 dark:text-emerald-400',
+    warn: 'text-amber-700 dark:text-amber-400',
+    bad: 'text-rose-700 dark:text-rose-400',
+    muted: 'text-slate-400 dark:text-slate-500',
+  }[tone] || 'text-slate-700';
+
+  return (
+    <div className="py-2 border-b border-slate-100 dark:border-slate-700/80 last:border-0">
+      {!isEditing ? (
+        <div className="flex items-center gap-2 min-h-[28px]">
+          <span className="w-6 text-center text-sm shrink-0" aria-hidden>{icon}</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400 flex-1 min-w-0">{label}</span>
+          <span className={`text-xs font-semibold text-right max-w-[45%] truncate ${toneClass}`}>{value}</span>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={onEdit}
+              aria-label={isEn ? 'Edit' : 'সম্পাদনা'}
+              title={isEn ? 'Edit' : 'সম্পাদনা'}
+              className={`${iconBtnBase} w-7 h-7 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20`}
+            >
+              <PenIcon />
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-2 pl-8">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-orange-600 dark:text-orange-400">{label}</p>
+          {children}
+          <div className="flex gap-2 justify-end">
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={saving}
+              aria-label={isEn ? 'Save' : 'সংরক্ষণ'}
+              title={isEn ? 'Save' : 'সংরক্ষণ'}
+              className={`${iconBtnBase} w-9 h-9 bg-orange-600 text-white hover:bg-orange-700`}
+            >
+              {saving ? (
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden />
+              ) : (
+                <CheckIcon />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={saving}
+              aria-label={isEn ? 'Cancel' : 'বাতিল'}
+              title={isEn ? 'Cancel' : 'বাতিল'}
+              className={`${iconBtnBase} w-9 h-9 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800`}
+            >
+              <XIcon />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function emptyLabel(isEn) {
+  return '—';
+}
+
+function buildProfileSearchFilter(term) {
+  const clean = String(term || '').trim().replace(/[%_,*.()\\]/g, '');
+  if (!clean) return null;
+  const pattern = `%${clean}%`;
+  const filters = [
+    `full_name.ilike.${pattern}`,
+    `phone_number.ilike.${pattern}`,
+    `phone.ilike.${pattern}`,
+    `email.ilike.${pattern}`,
+    `district.ilike.${pattern}`,
+    `block.ilike.${pattern}`,
+  ];
+  if (/^\d+$/.test(clean)) filters.push(`slm_id.eq.${clean}`);
+  return filters.join(',');
+}
+
+function isProfileFieldFilled(val) {
+  if (val === null || val === undefined) return false;
+  if (typeof val === 'string') return val.trim() !== '';
+  if (typeof val === 'number') return !Number.isNaN(val);
+  if (typeof val === 'boolean') return true;
+  return false;
+}
+
+function getProfileCompleteness(user) {
+  const phone = user.phone_number || user.phone;
+  const checks = [
+    isProfileFieldFilled(user.avatar_url),
+    isProfileFieldFilled(user.full_name),
+    isProfileFieldFilled(phone),
+    isProfileFieldFilled(user.district),
+    isProfileFieldFilled(user.block),
+    isProfileFieldFilled(user.job),
+    isProfileFieldFilled(user.blood_group),
+    isProfileFieldFilled(user.age) || isProfileFieldFilled(user.dob),
+    isProfileFieldFilled(user.major_diseases),
+    isProfileFieldFilled(user.regular_medicines),
+    user.accident_count !== null && user.accident_count !== undefined,
+    isProfileFieldFilled(user.accident_voltage),
+    isProfileFieldFilled(user.accidents_details),
+    isProfileFieldFilled(user.education),
+    user.children_count !== null && user.children_count !== undefined,
+    isProfileFieldFilled(user.children_ages),
+    isProfileFieldFilled(user.parents_occupation),
+    ...(user.is_donor ? [isProfileFieldFilled(user.last_donation_date)] : []),
+  ];
+  const filled = checks.filter(Boolean).length;
+  const total = checks.length;
+  return { pct: total ? Math.round((filled / total) * 100) : 0, filled, total };
+}
+
+function ProfileCompletenessBadge({ pct, isEn }) {
+  const tone = pct >= 100 ? 'emerald' : pct >= 70 ? 'amber' : 'rose';
+  const toneClass = {
+    emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    amber: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    rose: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 animate-pulse',
+  }[tone];
+
+  return (
+    <span
+      className={`text-[10px] font-black px-2 py-1 rounded-full ${toneClass}`}
+      title={isEn ? `${pct}% profile updated` : `${pct}% প্রোফাইল আপডেট`}
+    >
+      {pct}%
+    </span>
+  );
+}
+
+function UserProfileCard({
+  targetUser,
+  isEn,
+  isAdmin,
+  isSafetyMitra,
+  canManage,
+  userProfile,
+  formatRoleLabel,
+  roleBadgeClass,
+  avatarSize = 'lg',
+  wbLocations,
+  supervisors,
+  onSaveField,
+  onPPE,
+  onTools,
+  onReset,
+  onDelete,
+}) {
+  const [editingField, setEditingField] = useState(null);
+  const [draft, setDraft] = useState('');
+  const [draftBool, setDraftBool] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const avatarInputRef = useRef(null);
+
+  const isOwnProfile = userProfile?.id === targetUser.id;
+  const canEditIdentity = isAdmin || isOwnProfile;
+  const phone = targetUser.phone_number || targetUser.phone;
+  const completeness = getProfileCompleteness(targetUser);
+
+  const display = (val, fallback) => {
+    if (val === null || val === undefined || val === '') return fallback ?? emptyLabel(isEn);
+    return String(val);
+  };
+
+  const truncate = (val, len = 48) => {
+    if (!val) return emptyLabel(isEn);
+    const s = String(val);
+    return s.length > len ? `${s.slice(0, len)}…` : s;
+  };
+
+  const startEdit = (field, initial) => {
+    setEditingField(field);
+    if (typeof initial === 'boolean') {
+      setDraftBool(initial);
+      setDraft('');
+    } else {
+      setDraft(initial ?? '');
+      setDraftBool(false);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingField(null);
+    setDraft('');
+    setDraftBool(false);
+  };
+
+  const saveField = async (payload) => {
+    setSaving(true);
+    try {
+      await onSaveField(targetUser.id, payload);
+      cancelEdit();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAvatarPick = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert(isEn ? 'Photo must be under 2MB.' : 'ছবি ২MB-এর নিচে হতে হবে।');
+      return;
+    }
+    setAvatarUploading(true);
+    try {
+      await onSaveField(targetUser.id, {}, file);
+    } finally {
+      setAvatarUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const row = (key, icon, label, value, tone, editable, editor) => (
+    <ProfileRow
+      key={key}
+      icon={icon}
+      label={label}
+      value={value}
+      tone={tone}
+      canEdit={canManage && editable}
+      isEditing={editingField === key}
+      isEn={isEn}
+      saving={saving}
+      onEdit={() => startEdit(key, editor.initial)}
+      onCancel={cancelEdit}
+      onSave={() => saveField(editor.payload())}
+    >
+      {editor.render()}
+    </ProfileRow>
+  );
+
+  const inputCls = 'w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100';
+  const textEditor = (field, initial) => ({
+    initial,
+    payload: () => ({ [field]: draft.trim() }),
+    render: () => (
+      <input type="text" value={draft} onChange={(e) => setDraft(e.target.value)} className={inputCls} autoFocus />
+    ),
+  });
+  const numberEditor = (field, initial) => ({
+    initial: initial ?? '',
+    payload: () => ({ [field]: draft === '' ? null : Number(draft) }),
+    render: () => (
+      <input type="number" value={draft} onChange={(e) => setDraft(e.target.value)} className={inputCls} autoFocus />
+    ),
+  });
+  const dateEditor = (field, initial) => ({
+    initial: initial || '',
+    payload: () => ({ [field]: draft || null }),
+    render: () => (
+      <input type="date" value={draft} onChange={(e) => setDraft(e.target.value)} className={inputCls} />
+    ),
+  });
+  const textareaEditor = (field, initial) => ({
+    initial: initial || '',
+    payload: () => ({ [field]: draft.trim() || null }),
+    render: () => (
+      <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={3} className={`${inputCls} resize-none`} autoFocus />
+    ),
+  });
+  const selectEditor = (field, initial, options) => ({
+    initial: initial || '',
+    payload: () => ({ [field]: draft || null }),
+    render: () => (
+      <select value={draft} onChange={(e) => setDraft(e.target.value)} className={inputCls}>
+        <option value="">{emptyLabel(isEn)}</option>
+        {options.map((opt) => {
+          const val = typeof opt === 'string' ? opt : opt.value;
+          const lbl = typeof opt === 'string' ? opt : opt.label;
+          return <option key={val} value={val}>{lbl}</option>;
+        })}
+      </select>
+    ),
+  });
+  const boolEditor = (field, initial) => ({
+    initial,
+    payload: () => ({ [field]: draftBool }),
+    render: () => (
+      <label className="flex items-center gap-3 py-1">
+        <input type="checkbox" checked={draftBool} onChange={(e) => setDraftBool(e.target.checked)} className="w-5 h-5 rounded" />
+        <span className="text-sm text-slate-700 dark:text-slate-300">{draftBool ? '✓' : '✗'}</span>
+      </label>
+    ),
+  });
+
+  const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
+  const jobs = ['HT-Mobile Van', 'LT-Mobile Van', 'HT-LT Others'];
+  const voltages = ['LT', '11kV', '33kV', 'Other'];
+  const districts = Object.keys(wbLocations || {});
+  const blocks = targetUser.district && wbLocations?.[targetUser.district] ? wbLocations[targetUser.district] : [];
+
+  return (
+    <article className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+      <div className="p-4 bg-gradient-to-b from-orange-50/80 to-transparent dark:from-orange-950/20">
+        <div className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:text-left sm:gap-4">
+          <div className="relative shrink-0">
+            <ProfileAvatar url={targetUser.avatar_url} name={targetUser.full_name} size={avatarSize} />
+            {canManage && (
+              <>
+                <button
+                  type="button"
+                  disabled={avatarUploading}
+                  onClick={() => avatarInputRef.current?.click()}
+                  aria-label={isEn ? 'Change photo' : 'ছবি বদলান'}
+                  title={isEn ? 'Change photo' : 'ছবি বদলান'}
+                  className={`${iconBtnBase} absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-orange-600 text-white shadow-md`}
+                >
+                  {avatarUploading ? (
+                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden />
+                  ) : (
+                    <CameraIcon />
+                  )}
+                </button>
+                <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarPick} />
+              </>
+            )}
+          </div>
+          <div className="min-w-0 flex-1 mt-3 sm:mt-0">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              <ProfileCompletenessBadge pct={completeness.pct} isEn={isEn} />
+              <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${roleBadgeClass(targetUser.role)}`}>
+                {formatRoleLabel(targetUser.role)}
+              </span>
+              {targetUser.slm_id && (
+                <span className="text-[10px] font-mono text-slate-400">ID {targetUser.slm_id}</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="px-4 pb-2">
+        <p className="text-sm mb-1" aria-label={isEn ? 'Profile' : 'প্রোফাইল'} title={isEn ? 'Profile' : 'প্রোফাইল'}>👤</p>
+        <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 px-3 py-1">
+          {row('full_name', '👤', isEn ? 'Full name' : 'নাম', display(targetUser.full_name), targetUser.full_name ? 'neutral' : 'muted', canEditIdentity, textEditor('full_name', targetUser.full_name))}
+          {row('phone_number', '📱', isEn ? 'Phone' : 'ফোন', display(phone), phone ? 'neutral' : 'muted', canEditIdentity, textEditor('phone_number', phone))}
+          {row('email', '📧', isEn ? 'Email' : 'ইমেইল', display(targetUser.email), 'muted', false, textEditor('email', targetUser.email))}
+          {row('district', '📍', isEn ? 'District' : 'জেলা', display(targetUser.district), targetUser.district ? 'neutral' : 'muted', true, selectEditor('district', targetUser.district, districts))}
+          {row('block', '🗺️', isEn ? 'Block' : 'ব্লক', display(targetUser.block), targetUser.block ? 'neutral' : 'muted', true, selectEditor('block', targetUser.block, blocks))}
+          {row('job', '👷', isEn ? 'Job type' : 'কাজের ধরন', display(targetUser.job), targetUser.job ? 'neutral' : 'muted', true, selectEditor('job', targetUser.job, jobs))}
+          {isAdmin && row('role', '🎖️', isEn ? 'Role' : 'ভূমিকা', formatRoleLabel(targetUser.role), 'neutral', true, selectEditor('role', targetUser.role, ['lineman', 'safety mitra', 'admin']))}
+          {isAdmin && row('supervisor_id', '👔', isEn ? 'Supervisor' : 'সুপারভাইজার',
+            (supervisors || []).find((s) => s.id === targetUser.supervisor_id)?.full_name || emptyLabel(isEn),
+            'neutral', true,
+            selectEditor('supervisor_id', targetUser.supervisor_id || '', [{ value: '', label: isEn ? 'None' : 'কেউ নয়' }, ...(supervisors || []).map((s) => ({ value: s.id, label: s.full_name }))]))}
+        </div>
+      </div>
+
+      <div className="px-4 pb-2">
+        <p className="text-sm mb-1" aria-label={isEn ? 'Health & safety' : 'স্বাস্থ্য ও নিরাপত্তা'} title={isEn ? 'Health & safety' : 'স্বাস্থ্য ও নিরাপত্তা'}>🩺</p>
+        <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 px-3 py-1">
+          {row('blood_group', '🩸', isEn ? 'Blood group' : 'রক্তের গ্রুপ', display(targetUser.blood_group), targetUser.blood_group ? 'neutral' : 'muted', true, selectEditor('blood_group', targetUser.blood_group, bloodGroups))}
+          {row('age', '🎂', isEn ? 'Age' : 'বয়স', targetUser.age ? `${targetUser.age} ${isEn ? 'yrs' : 'বছর'}` : emptyLabel(isEn), targetUser.age ? 'neutral' : 'muted', true, numberEditor('age', targetUser.age))}
+          {row('dob', '📅', isEn ? 'Date of birth' : 'জন্ম তারিখ', display(targetUser.dob), targetUser.dob ? 'neutral' : 'muted', true, dateEditor('dob', targetUser.dob))}
+          {row('major_diseases', '🏥', isEn ? 'Health conditions' : 'স্বাস্থ্য সমস্যা', truncate(targetUser.major_diseases), targetUser.major_diseases ? 'warn' : 'good', true, textareaEditor('major_diseases', targetUser.major_diseases))}
+          {row('regular_medicines', '💊', isEn ? 'Daily medicines' : 'নিয়মিত ওষুধ', truncate(targetUser.regular_medicines), targetUser.regular_medicines ? 'warn' : 'good', true, textareaEditor('regular_medicines', targetUser.regular_medicines))}
+          {row('accident_count', '⚡', isEn ? 'Accident count' : 'দুর্ঘটনা সংখ্যা', display(targetUser.accident_count ?? 0), Number(targetUser.accident_count) > 0 ? 'warn' : 'good', true, numberEditor('accident_count', targetUser.accident_count))}
+          {row('accident_voltage', '🔌', isEn ? 'Highest voltage' : 'সর্বোচ্চ ভোল্টেজ', display(targetUser.accident_voltage), 'neutral', true, selectEditor('accident_voltage', targetUser.accident_voltage, voltages))}
+          {row('accidents_details', '📝', isEn ? 'Accident details' : 'দুর্ঘটনার বিবরণ', truncate(targetUser.accidents_details), 'neutral', true, textareaEditor('accidents_details', targetUser.accidents_details))}
+          {row('is_donor', '❤️', isEn ? 'Blood donor' : 'রক্তদাতা', targetUser.is_donor ? '✓' : '✗', targetUser.is_donor ? 'good' : 'muted', true, boolEditor('is_donor', !!targetUser.is_donor))}
+          {targetUser.is_donor && row('last_donation_date', '🩸', isEn ? 'Last donation' : 'শেষ রক্তদান', display(targetUser.last_donation_date), 'neutral', true, dateEditor('last_donation_date', targetUser.last_donation_date))}
+        </div>
+      </div>
+
+      <div className="px-4 pb-3">
+        <p className="text-sm mb-1" aria-label={isEn ? 'Family' : 'পরিবার'} title={isEn ? 'Family' : 'পরিবার'}>👨‍👩‍👧</p>
+        <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 px-3 py-1">
+          {row('education', '🎓', isEn ? 'Education' : 'শিক্ষা', display(targetUser.education), 'neutral', true, textEditor('education', targetUser.education))}
+          {row('children_count', '👶', isEn ? 'Children count' : 'সন্তান সংখ্যা', display(targetUser.children_count), 'neutral', true, numberEditor('children_count', targetUser.children_count))}
+          {row('children_ages', '🎂', isEn ? 'Children ages' : 'সন্তানের বয়স', display(targetUser.children_ages), 'neutral', true, textEditor('children_ages', targetUser.children_ages))}
+          {row('parents_stay', '🏡', isEn ? 'Lives with parents' : 'বাবা-মায়ের সাথে', targetUser.parents_stay ? '✓' : '✗', 'neutral', true, boolEditor('parents_stay', !!targetUser.parents_stay))}
+          {row('parents_occupation', '💼', isEn ? 'Parents occupation' : 'বাবা-মায়ের পেশা', display(targetUser.parents_occupation), 'neutral', true, textEditor('parents_occupation', targetUser.parents_occupation))}
+        </div>
+      </div>
+
+      {canManage && (
+        <div className="px-4 pb-4 border-t border-slate-100 dark:border-slate-700 pt-3 space-y-2">
+          <p className="text-sm mb-1" aria-label={isEn ? 'Equipment & actions' : 'সরঞ্জাম ও কাজ'} title={isEn ? 'Equipment & actions' : 'সরঞ্জাম ও কাজ'}>⚙️</p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={onPPE}
+              aria-label={isEn ? 'Update PPE' : 'PPE আপডেট'}
+              title={isEn ? 'PPE' : 'PPE'}
+              className="py-2.5 rounded-xl text-lg font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700"
+            >
+              🦺
+            </button>
+            <button
+              type="button"
+              onClick={onTools}
+              aria-label={isEn ? 'Update tools' : 'সরঞ্জাম আপডেট'}
+              title={isEn ? 'Tools' : 'সরঞ্জাম'}
+              className="py-2.5 rounded-xl text-lg font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700"
+            >
+              🛠️
+            </button>
+          </div>
+          {isAdmin && (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onReset}
+                aria-label={isEn ? 'Reset training scores' : 'প্রশিক্ষণ স্কোর রিসেট'}
+                title={isEn ? 'Reset scores' : 'স্কোর রিসেট'}
+                className={`${iconBtnBase} flex-1 h-9 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-lg`}
+              >
+                ↺
+              </button>
+              <button
+                type="button"
+                onClick={onDelete}
+                aria-label={isEn ? 'Delete account' : 'অ্যাকাউন্ট মুছুন'}
+                title={isEn ? 'Delete' : 'মুছুন'}
+                className={`${iconBtnBase} flex-1 h-9 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900/40 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20`}
+              >
+                <TrashIcon />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </article>
+  );
+}
 
 export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
-  const [avatarFile, setAvatarFile] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState({ title: '', message: '' });
-  const [activeEditTab, setActiveEditTab] = useState('basic'); // 'basic', 'family', 'health'
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
@@ -106,10 +636,60 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [resetTarget, setResetTarget] = useState(null); // { id, name } or null for 'all'
   const [isResetting, setIsResetting] = useState(false);
   const [resetConfirmInput, setResetConfirmInput] = useState('');
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [showNoticesSection, setShowNoticesSection] = useState(false);
+  const [showSystemCheckSection, setShowSystemCheckSection] = useState(false);
+  const [showManageMenu, setShowManageMenu] = useState(false);
+  const [profileSection, setProfileSection] = useState('team'); // 'team' | 'mine' for admin / safety mitra
+  const [ownProfileRow, setOwnProfileRow] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
-    fetchUsers(currentPage);
-  }, [currentPage, userProfile?.role]);
+    const timer = setTimeout(() => {
+      const next = searchQuery.trim();
+      setDebouncedSearch(next);
+      setCurrentPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    fetchUsers(currentPage, debouncedSearch);
+  }, [currentPage, userProfile?.role, debouncedSearch]);
+
+  const profileSelectFields = 'id, slm_id, full_name, email, role, district, block, job, avatar_url, created_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage, is_donor, last_donation_date, blood_group, phone, phone_number, supervisor_id, total_penalties';
+
+  useEffect(() => {
+    if (!user?.id || userProfile?.role === 'lineman') return;
+
+    const fromPage = users.find((u) => u.id === user.id);
+    if (fromPage) {
+      setOwnProfileRow(fromPage);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(profileSelectFields)
+        .eq('id', user.id)
+        .single();
+      if (!cancelled && !error && data) setOwnProfileRow(data);
+    })();
+
+    return () => { cancelled = true; };
+  }, [users, user?.id, userProfile?.role]);
+
+  const clearAdminUserCaches = () => {
+    for (let i = 1; i <= 10; i++) {
+      cacheHelper.clear(`admin_users_page_${i}`);
+      cacheHelper.clear(`admin_users_admin_all_page_${i}`);
+      cacheHelper.clear(`admin_users_safety mitra_${user.id}_page_${i}`);
+      cacheHelper.clear(`admin_users_v2_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_page_${i}`);
+    }
+  };
 
   const loadAdminBroadcasts = async () => {
     if (userProfile?.role !== 'admin' || !user?.id) return;
@@ -223,9 +803,9 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     fetchSupervisors();
   }, [userProfile?.role]);
 
-  const fetchUsers = async (page = 1) => {
-    // Check cache for this specific page and role
-    const cacheKey = `admin_users_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_page_${page}`;
+  const fetchUsers = async (page = 1, search = '') => {
+    const searchKey = search.trim().toLowerCase();
+    const cacheKey = `admin_users_v2_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_page_${page}_q_${searchKey || 'all'}`;
     const cachedData = cacheHelper.get(cacheKey);
     if (cachedData) {
       setUsers(cachedData.users);
@@ -240,21 +820,20 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       const start = (page - 1) * usersPerPage;
       const end = start + usersPerPage - 1;
 
-      // Fetch paginated users with total count
       let query = supabase
         .from('profiles')
-        .select('id, slm_id, full_name, email, role, district, block, avatar_url, created_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage, is_donor, last_donation_date, blood_group, phone, phone_number, supervisor_id, total_penalties', { count: 'exact' });
+        .select(`${profileSelectFields}`, { count: 'exact' });
 
-
-      // Apply role-based filtering
       if (userProfile?.role === 'lineman') {
-        // Linemen can only see their own profile
         query = query.eq('id', user.id);
       } else if (userProfile?.role === 'safety mitra') {
-        // Safety Mitras can see their team AND themselves
         query = query.or(`id.eq.${user.id},supervisor_id.eq.${user.id}`);
       }
-      // Admins see all users (no filter)
+
+      if (userProfile?.role === 'admin' && searchKey) {
+        const searchFilter = buildProfileSearchFilter(searchKey);
+        if (searchFilter) query = query.or(searchFilter);
+      }
 
       const { data, error, count } = await query
         .order('created_at', { ascending: false })
@@ -265,8 +844,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       setUsers(data || []);
       setTotalUsers(count || 0);
 
-      // Cache this page
-      cacheHelper.set(cacheKey, { users: data || [], total: count || 0 }, 5); // 5 min cache
+      cacheHelper.set(cacheKey, { users: data || [], total: count || 0 }, 5);
     } catch (error) {
       console.error('Error fetching users:', error);
       setUsers([]);
@@ -416,7 +994,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       setInviteName('');
 
       // Refresh user list
-      await fetchUsers(currentPage);
+      await fetchUsers(currentPage, debouncedSearch);
     } catch (error) {
       console.error('Error creating user:', error);
       if (error.message?.includes('already registered')) {
@@ -437,11 +1015,15 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   };
 
 
-  const handleEdit = (targetUser) => {
-    // Authorization check
+  const handleSaveProfileField = async (userId, updates, avatarFile = null) => {
+    const targetUser =
+      users.find((u) => u.id === userId) ||
+      (ownProfileRow?.id === userId ? ownProfileRow : null);
+    if (!targetUser) return;
+
     const canEdit =
       userProfile?.role === 'admin' ||
-      targetUser.id === user.id ||
+      userId === user.id ||
       (userProfile?.role === 'safety mitra' && targetUser.supervisor_id === user.id && targetUser.role !== 'admin');
 
     if (!canEdit) {
@@ -449,144 +1031,60 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       return;
     }
 
-    let userToEdit = { ...targetUser };
-
-    // Fix for users with Email in Full Name and Empty Email
-    if (!userToEdit.email && userToEdit.full_name && userToEdit.full_name.includes('@')) {
-      userToEdit.email = userToEdit.full_name;
-      userToEdit.full_name = ''; // Clear name so Admin can enter real name
-    }
-
-    setEditingUser(userToEdit);
-    setAvatarFile(null);
-    setAvatarPreview(targetUser.avatar_url);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingUser(null);
-    setAvatarFile(null);
-    setAvatarPreview(null);
-    setActiveEditTab('basic');
-  };
-
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-
-      // File size validation (2MB)
-      if (file.size > 2 * 1024 * 1024) {
-        alert("File size exceeds 2MB limit. Please choose a smaller image.");
-        return;
-      }
-
-      setAvatarFile(file);
-      setAvatarPreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handleSave = async () => {
-    if (!editingUser) return;
-
-    // Safeguard: Safety Mitra cannot edit Admin
-    if (userProfile?.role === 'safety mitra' && editingUser.role === 'admin') {
+    if (userProfile?.role === 'safety mitra' && targetUser.role === 'admin') {
       alert('Safety Mitras are not allowed to edit Admin profiles.');
       return;
     }
 
-    let avatar_url = editingUser.avatar_url;
+    const payload = { ...updates };
+    if (payload.supervisor_id === '') payload.supervisor_id = null;
+    if (payload.district && payload.district !== targetUser.district) {
+      payload.block = '';
+    }
 
+    let avatar_url = targetUser.avatar_url;
     if (avatarFile) {
-      // Delete old avatar if it exists
-      if (editingUser.avatar_url) {
+      if (targetUser.avatar_url) {
         try {
-          const oldUrl = editingUser.avatar_url;
-          // Extract filename from URL - assumes standard Supabase storage URL format
-          // Format: .../storage/v1/object/public/avatars/filename
-          const oldFileName = oldUrl.split('/').pop().split('?')[0];
-
-          if (oldFileName && !oldUrl.includes('googleusercontent')) { // Avoid deleting Google auth avatars
+          const oldFileName = targetUser.avatar_url.split('/').pop().split('?')[0];
+          if (oldFileName && !targetUser.avatar_url.includes('googleusercontent')) {
             await supabase.storage.from('avatars').remove([oldFileName]);
           }
         } catch (err) {
-          console.error("Error deleting old avatar:", err);
-          // Continue with upload even if delete fails
+          console.error('Error deleting old avatar:', err);
         }
       }
-
       const fileExt = avatarFile.name.split('.').pop();
-      const fileName = `${editingUser.id}-${Date.now()}.${fileExt}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, avatarFile, {
-          cacheControl: '3600',
-          upsert: true,
-        });
-
+      const fileName = `${userId}-${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, avatarFile, {
+        cacheControl: '3600',
+        upsert: true,
+      });
       if (uploadError) {
-        console.error('Error uploading avatar:', uploadError);
-        alert('Failed to upload new avatar.');
+        alert(`Failed to upload photo: ${uploadError.message}`);
         return;
       }
-
-      const { data: publicUrlData } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(fileName);
-
-      if (!publicUrlData) {
-        console.error("Could not get public URL for uploaded avatar");
-        alert("Failed to get public URL for new avatar.");
-        return;
-      }
-
-      avatar_url = publicUrlData.publicUrl;
+      const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      avatar_url = publicUrlData?.publicUrl || avatar_url;
+      payload.avatar_url = avatar_url;
     }
 
+    delete payload.points;
+    delete payload.created_at;
 
-    const { id, ...updates } = editingUser;
-    updates.avatar_url = avatar_url;
-    updates.avatar_url = avatar_url;
-    // delete updates.email; // ALLOW Email updates now (to fix missing emails)
-    delete updates.points; // Do not allow manual point updates via Admin UI
-    delete updates.points; // Do not allow manual point updates via Admin UI
-    delete updates.created_at; // Do not update created_at timestamp
-
-    console.log('Saving user updates:', updates); // Debug log
-    console.log('User ID:', id); // Debug log
-
-    if (!id) {
-      alert('Error: User ID is missing');
+    const { error } = await supabase.from('profiles').update(payload).eq('id', userId);
+    if (error) {
+      alert(`Failed to save: ${error.message}`);
       return;
     }
 
-    const { data, error } = await supabase.from('profiles').update(updates).eq('id', id);
-
-    if (error) {
-      console.error('Error updating user:', error);
-      alert(`Failed to update user: ${error.message}`);
-    } else {
-      console.log('User updated successfully', data); // Debug log
-
-      // Clear ALL admin user cache (all pages and roles)
-      // We'll clear a broad range to be safe
-      for (let i = 1; i <= 10; i++) {
-        cacheHelper.clear(`admin_users_page_${i}`);
-        cacheHelper.clear(`admin_users_admin_all_page_${i}`);
-        cacheHelper.clear(`admin_users_safety mitra_${user.id}_page_${i}`);
-      }
-
-      // Wait for users list to refresh before closing modal
-      await fetchUsers();
-
-      // Now close the modal
-      setEditingUser(null);
-      setAvatarFile(null);
-      setAvatarPreview(null);
-      setSuccessMessage({
-        title: language === 'en' ? 'Profile Updated' : 'প্রোফাইল আপডেট করা হয়েছে',
-        message: language === 'en' ? 'User profile has been updated successfully.' : 'ব্যবহারকারীর প্রোফাইল সফলভাবে আপডেট করা হয়েছে।'
-      });
-      setShowSuccessModal(true);
-    }
+    clearAdminUserCaches();
+    await fetchUsers(currentPage, debouncedSearch);
+    setSuccessMessage({
+      title: language === 'en' ? 'Saved' : 'সংরক্ষিত',
+      message: language === 'en' ? 'Profile updated.' : 'প্রোফাইল আপডেট হয়েছে।',
+    });
+    setShowSuccessModal(true);
   };
 
   const handleOpenDeleteConfirm = (targetUser) => {
@@ -612,6 +1110,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
         cacheHelper.clear(`admin_users_page_${i}`);
         cacheHelper.clear(`admin_users_admin_all_page_${i}`);
         cacheHelper.clear(`admin_users_safety mitra_${user.id}_page_${i}`);
+        cacheHelper.clear(`admin_users_v2_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_page_${i}`);
       }
       cacheHelper.clear(`user_ppe_${userToDelete.id}`);
       cacheHelper.clear(`user_tools_${userToDelete.id}`);
@@ -632,7 +1131,6 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       // 5. Cleanup
       setShowDeleteConfirm(false);
       setUserToDelete(null);
-      setEditingUser(null); // Close edit modal if it was open
 
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -664,7 +1162,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       cacheHelper.clearAll(); // Broad clear for leaderboards and user lists
 
       // 3. Refresh local list
-      await fetchUsers(currentPage);
+      await fetchUsers(currentPage, debouncedSearch);
 
       setShowResetConfirm(false);
       setResetTarget(null);
@@ -685,273 +1183,375 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const isEn = language === 'en';
+  const isAdmin = userProfile?.role === 'admin';
+  const isSafetyMitra = userProfile?.role === 'safety mitra';
+  const isLineman = userProfile?.role === 'lineman';
 
-    // If district changes, reset block
-    if (name === 'district') {
-      setEditingUser(prev => ({ ...prev, district: value, block: '' }));
-    } else {
-      setEditingUser(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-    }
+  const formatRoleLabel = (role) => {
+    if (role === 'admin') return isEn ? 'Admin' : 'অ্যাডমিন';
+    if (role === 'safety mitra') return isEn ? 'Safety Mitra' : 'সেফটি মিত্র';
+    return isEn ? 'Lineman' : 'লাইনম্যান';
   };
 
+  const roleBadgeClass = (role) => {
+    if (role === 'admin') return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
+    if (role === 'safety mitra') return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
+    return 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300';
+  };
+
+  const healthStatusLabel = (ok) => {
+    if (ok === true) return isEn ? 'Working' : 'ঠিক আছে';
+    if (ok === false) return isEn ? 'Problem' : 'সমস্যা';
+    return '—';
+  };
+
+  const realtimeLabel = (status) => {
+    if (status === 'SUBSCRIBED') return isEn ? 'Working' : 'ঠিক আছে';
+    if (status) return isEn ? 'Check needed' : 'চেক করুন';
+    return '—';
+  };
+
+  const pageTitle = isLineman
+    ? (isEn ? 'My Profile' : 'আমার প্রোফাইল')
+    : (isEn ? 'Update Profile' : 'প্রোফাইল আপডেট');
+
+  const pageSubtitle = isAdmin
+    ? (isEn ? 'Tap the pen icon on any row to update details.' : 'যেকোনো সারিতে কলম চিহ্ন চাপুন আপডেট করতে।')
+    : isSafetyMitra
+      ? (isEn ? 'Update your profile or your team.' : 'আপনার প্রোফাইল বা দল আপডেট করুন।')
+      : null;
+
+  const teamUsers = users.filter((u) => u.id !== user.id);
+  const teamTotal = Math.max(0, totalUsers - 1);
+  const profileUsers = isLineman
+    ? users
+    : profileSection === 'mine'
+      ? (ownProfileRow ? [ownProfileRow] : [])
+      : teamUsers;
+
+  const sectionTabBtn = (active) =>
+    `flex-1 py-2.5 rounded-lg text-sm font-bold transition-colors ${
+      active
+        ? 'bg-white dark:bg-slate-800 text-orange-600 dark:text-orange-400 shadow-sm'
+        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+    }`;
+
+  const moreMenuBtn = 'w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex items-center gap-2';
 
   return (
-    <div className="mx-auto px-4 sm:px-6 py-6 sm:py-10 md:mb-6 transition-all duration-500">
-      {/* LIST VIEW */}
+    <div className="mx-auto max-w-5xl px-4 sm:px-6 py-5 sm:py-8 md:mb-6">
+      {/* Page header */}
+      <div className="mb-5">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{pageTitle}</h1>
+        {pageSubtitle && (
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{pageSubtitle}</p>
+        )}
+      </div>
 
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-            {userProfile?.role === 'admin' ? 'Admin Panel' : userProfile?.role === 'safety mitra' ? 'Team Management' : 'My Profile'}
-          </h1>
+      {/* My profile / Team toggle — admin & safety mitra */}
+      {!isLineman && !showAnalytics && (
+        <div className="mb-5 flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
+          <button
+            type="button"
+            onClick={() => setProfileSection('mine')}
+            className={sectionTabBtn(profileSection === 'mine')}
+          >
+            👤 {isEn ? 'My Profile' : 'আমার প্রোফাইল'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setProfileSection('team')}
+            className={sectionTabBtn(profileSection === 'team')}
+          >
+            👥 {isSafetyMitra ? (isEn ? 'My Team' : 'আমার দল') : (isEn ? 'Team' : 'দল')}
+          </button>
         </div>
+      )}
 
-        {setCurrentView && (
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => handleEditPPE(user)}
-              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2 text-sm"
-            >
-              <span>🦺</span>
-              {language === 'en' ? 'My PPE' : 'আমার পিপিই'}
-            </button>
-            <button
-              onClick={() => handleEditTools(user)}
-              className="px-5 py-2.5 bg-slate-600 hover:bg-slate-700 text-white rounded-xl font-bold shadow-lg shadow-slate-500/20 transition-all flex items-center gap-2 text-sm"
-            >
-              <span>🛠️</span>
-              {language === 'en' ? 'My Tools' : 'আমার সরঞ্জাম'}
-            </button>
-            {userProfile?.role === 'admin' && (
+      {/* Compact manage menu — admin / safety mitra only */}
+      {setCurrentView && !showAnalytics && (isAdmin || isSafetyMitra) && (
+        <div className="mb-5">
+          <button
+            type="button"
+            onClick={() => setShowManageMenu((v) => !v)}
+            className="text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
+          >
+            {showManageMenu
+              ? (isEn ? '▲ Hide manage options' : '▲ অপশন লুকান')
+              : (isEn ? '▼ Manage (add people, notices…)' : '▼ পরিচালনা (যোগ, বিজ্ঞপ্তি…)')}
+          </button>
+          {showManageMenu && (
+            <div className="mt-3 flex flex-wrap gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
               <button
-                onClick={() => setShowNotificationModal(true)}
-                className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 text-sm"
+                type="button"
+                onClick={() => setShowInviteModal(true)}
+                className="px-3 py-2 rounded-lg text-sm font-bold bg-orange-600 text-white hover:bg-orange-700"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                Send Notification
+                ➕ {isEn ? 'Add Lineman' : 'লাইনম্যান যোগ'}
               </button>
-            )}
-            {(userProfile?.role === 'admin' || userProfile?.role === 'safety mitra') && (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowInviteModal(true)}
-                  className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 text-sm"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                  </svg>
-                  Invite New Lineman
-                </button>
-                <button
-                  onClick={() => setShowInviteHelp(true)}
-                  className="w-10 h-10 flex items-center justify-center bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-xl transition-all shadow-sm"
-                  title="Guideline"
-                >
-                  <span className="font-bold text-lg">?</span>
-                </button>
-              </div>
-            )}
-            {userProfile?.role === 'admin' && (
               <button
-                onClick={() => setShowAnalytics(!showAnalytics)}
-                className={`px-5 py-2.5 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 text-sm ${showAnalytics
-                  ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 shadow-slate-500/10'
-                  : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20'
-                  }`}
+                type="button"
+                onClick={() => setShowInviteHelp(true)}
+                className="px-3 py-2 rounded-lg text-sm font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 01-2 2h22a2 2 0 01-2-2v-6a2 2 0 00-2-2h-2a2 2 0 00-2 2v6" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-                {showAnalytics ? 'View User List' : 'View Analytics'}
+                {isEn ? 'Help' : 'সাহায্য'}
               </button>
-            )}
-            {userProfile?.role === 'admin' && (
-              <button
-                onClick={() => setCurrentView('visual-quiz-preview')}
-                className="px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold shadow-lg shadow-violet-500/20 transition-all flex items-center gap-2 text-sm"
-                title={language === 'en' ? 'Preview visual quiz CSV drafts' : 'ভিজুয়াল কুইজ প্রিভিউ'}
-              >
-                <span>🖼️</span>
-                {language === 'en' ? 'Quiz Preview' : 'কুইজ প্রিভিউ'}
+              {isAdmin && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowNotificationModal(true)}
+                    className="px-3 py-2 rounded-lg text-sm font-semibold border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200"
+                  >
+                    📢 {isEn ? 'Send Notice' : 'বিজ্ঞপ্তি'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAnalytics(true)}
+                    className="px-3 py-2 rounded-lg text-sm font-semibold border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200"
+                  >
+                    📊 {isEn ? 'Reports' : 'রিপোর্ট'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowMoreMenu((v) => !v)}
+                    className="px-3 py-2 rounded-lg text-sm font-semibold text-slate-500"
+                  >
+                    {isEn ? 'More…' : 'আরও…'}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+          {isAdmin && showMoreMenu && showManageMenu && (
+            <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button type="button" onClick={() => setCurrentView('admin-services')} className={moreMenuBtn}>
+                🚨 {isEn ? 'Emergency Contacts' : 'জরুরি নম্বর'}
               </button>
-            )}
-            {userProfile?.role === 'admin' && (
-              <button
-                onClick={() => setCurrentView('admin-services')}
-                className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg shadow-red-500/20 transition-all flex items-center gap-2 text-sm"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                Services
+              <button type="button" onClick={() => setCurrentView('visual-quiz-preview')} className={moreMenuBtn}>
+                🖼️ {isEn ? 'Quiz Preview' : 'কুইজ প্রিভিউ'}
               </button>
-            )}
-            {userProfile?.role === 'admin' && (
               <button
+                type="button"
                 onClick={() => {
                   setResetTarget('all');
                   setResetConfirmInput('');
                   setShowResetConfirm(true);
                 }}
-                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold shadow-lg shadow-rose-500/20 transition-all flex items-center gap-2 text-sm"
-                title="Reset All User Scores (Admin Only)"
+                className={`${moreMenuBtn} text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900/40`}
               >
-                <span>⚠️</span>
-                {language === 'en' ? 'Reset All Scores' : 'সব স্কোর রিসেট'}
+                ⚠️ {isEn ? 'Reset All Scores' : 'সব স্কোর রিসেট'}
               </button>
-            )}
-          </div>
-        )}
-      </div>
-
-      {userProfile?.role === 'admin' && !showAnalytics && (
-        <div className="mb-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm p-4 sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-              {language === 'en' ? 'Broadcast notices' : 'ব্রডকাস্ট বিজ্ঞপ্তি'}
-            </h2>
-            <button
-              type="button"
-              onClick={() => loadAdminBroadcasts()}
-              className="text-sm font-bold text-orange-600 hover:text-orange-700 dark:text-orange-400"
-            >
-              {language === 'en' ? 'Refresh' : 'রিফ্রেশ'}
-            </button>
-          </div>
-          {adminBroadcastsLoading ? (
-            <p className="text-sm text-slate-500">{language === 'en' ? 'Loading…' : 'লোড হচ্ছে…'}</p>
-          ) : adminBroadcastsError ? (
-            <div className="rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/30 p-4 text-sm text-amber-900 dark:text-amber-100">
-              <p className="font-bold mb-1">{language === 'en' ? 'Could not load notices' : 'বিজ্ঞপ্তি লোড হয়নি'}</p>
-              <p className="text-amber-800/90 dark:text-amber-200/90 mb-2">{adminBroadcastsError}</p>
-              <p className="text-xs text-amber-700/80 dark:text-amber-300/80">
-                {language === 'en'
-                  ? 'Apply migration supabase/migrations/notifications_admin_rpc.sql in the Supabase SQL Editor, then tap Refresh.'
-                  : 'Supabase SQL Editor-এ notifications_admin_rpc.sql চালান, তারপর রিফ্রেশ করুন।'}
-              </p>
             </div>
-          ) : adminBroadcasts.length === 0 ? (
-            <p className="text-sm text-slate-500">
-              {language === 'en' ? 'No notices yet. Use Send Notification to publish one.' : 'এখনও কোনো বিজ্ঞপ্তি নেই।'}
-            </p>
-          ) : (
-            <ul className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
-              {adminBroadcasts.map((row) => {
-                const rowIsActive = row.is_active === true;
-                return (
-                <li
-                  key={row.id}
-                  className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${rowIsActive ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'}`}>
-                        {rowIsActive ? (language === 'en' ? 'Active' : 'সক্রিয়') : (language === 'en' ? 'Inactive' : 'নিষ্ক্রিয়')}
-                      </span>
-                      <span className="text-xs text-slate-400">{row.created_at ? new Date(row.created_at).toLocaleString() : ''}</span>
-                    </div>
-                    <p className="font-bold text-slate-900 dark:text-slate-100 truncate">{row.title}</p>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">{row.message}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleBroadcastActive(row)}
-                      className="px-3 py-2 rounded-lg text-xs font-bold bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100"
-                    >
-                      {rowIsActive
-                        ? (language === 'en' ? 'Deactivate' : 'নিষ্ক্রিয়')
-                        : (language === 'en' ? 'Activate' : 'সক্রিয়')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteBroadcastRow(row.id)}
-                      className="px-3 py-2 rounded-lg text-xs font-bold bg-rose-100 hover:bg-rose-200 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200"
-                    >
-                      {language === 'en' ? 'Delete' : 'মুছুন'}
-                    </button>
-                  </div>
-                </li>
-              );
-              })}
-            </ul>
           )}
         </div>
       )}
 
-      {userProfile?.role === 'admin' && !showAnalytics && (
-        <div className="mb-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm p-4 sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-              {language === 'en' ? 'Delivery health' : 'ডেলিভারি হেলথ'}
-            </h2>
+      {showAnalytics && isAdmin && (
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => setShowAnalytics(false)}
+            className="text-sm font-semibold text-orange-600 dark:text-orange-400 mb-2"
+          >
+            {isEn ? '← Back to Update Profile' : '← প্রোফাইল আপডেটে ফিরুন'}
+          </button>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{isEn ? 'Workforce Reports' : 'কর্মী রিপোর্ট'}</h2>
+        </div>
+      )}
+
+      {/* Admin-only collapsible panels — only when manage menu open */}
+      {isAdmin && !showAnalytics && showManageMenu && (
+        <div className="mb-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowNoticesSection((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+          >
+            <span className="font-semibold text-slate-800 dark:text-slate-100 text-sm">
+              📢 {isEn ? 'Sent notices' : 'পাঠানো বিজ্ঞপ্তি'}
+              {!adminBroadcastsLoading && adminBroadcasts.length > 0 && (
+                <span className="ml-2 text-xs font-normal text-slate-400">({adminBroadcasts.length})</span>
+              )}
+            </span>
+            <span className="text-slate-400 text-xs">{showNoticesSection ? '▲' : '▼'}</span>
+          </button>
+          {showNoticesSection && (
+            <div className="px-4 pb-4 border-t border-slate-100 dark:border-slate-700">
+              <div className="flex justify-end pt-3 mb-3">
+                <button
+                  type="button"
+                  onClick={() => loadAdminBroadcasts()}
+                  className="text-xs font-semibold text-orange-600 hover:text-orange-700 dark:text-orange-400"
+                >
+                  {isEn ? 'Refresh list' : 'তালিকা রিফ্রেশ'}
+                </button>
+              </div>
+              {adminBroadcastsLoading ? (
+                <p className="text-sm text-slate-500">{isEn ? 'Loading…' : 'লোড হচ্ছে…'}</p>
+              ) : adminBroadcastsError ? (
+                <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-900 dark:text-amber-100">
+                  <p className="font-semibold">{isEn ? 'Could not load notices.' : 'বিজ্ঞপ্তি লোড হয়নি।'}</p>
+                  <p className="text-xs mt-1 text-amber-700/80 dark:text-amber-300/80">
+                    {isEn ? 'Tap Refresh to try again.' : 'আবার চেষ্টা করতে রিফ্রেশ ট্যাপ করুন।'}
+                  </p>
+                </div>
+              ) : adminBroadcasts.length === 0 ? (
+                <p className="text-sm text-slate-500">
+                  {isEn ? 'No notices sent yet. Use "Send Notice" above.' : 'এখনও কোনো বিজ্ঞপ্তি পাঠানো হয়নি।'}
+                </p>
+              ) : (
+                <ul className="space-y-2 max-h-56 overflow-y-auto custom-scrollbar">
+                  {adminBroadcasts.map((row) => {
+                    const rowIsActive = row.is_active === true;
+                    return (
+                      <li
+                        key={row.id}
+                        className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${rowIsActive ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-slate-200 text-slate-500 dark:bg-slate-700'}`}>
+                                {rowIsActive ? (isEn ? 'Live' : 'চালু') : (isEn ? 'Off' : 'বন্ধ')}
+                              </span>
+                              {row.created_at && (
+                                <span className="text-[10px] text-slate-400">{new Date(row.created_at).toLocaleDateString()}</span>
+                              )}
+                            </div>
+                            <p className="font-semibold text-sm text-slate-900 dark:text-slate-100 truncate">{row.title}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">{row.message}</p>
+                          </div>
+                          <div className="flex flex-col gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleBroadcastActive(row)}
+                              className="px-2 py-1 rounded text-[10px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200"
+                            >
+                              {rowIsActive ? (isEn ? 'Turn off' : 'বন্ধ') : (isEn ? 'Turn on' : 'চালু')}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteBroadcastRow(row.id)}
+                              className="px-2 py-1 rounded text-[10px] font-bold text-rose-600 dark:text-rose-400"
+                            >
+                              {isEn ? 'Remove' : 'মুছুন'}
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Notice system check — only inside manage menu */}
+      {isAdmin && !showAnalytics && showManageMenu && (
+        <div className="mb-5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowSystemCheckSection((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+          >
+            <span className="font-semibold text-slate-800 dark:text-slate-100 text-sm">
+              🔧 {isEn ? 'Notice system check' : 'বিজ্ঞপ্তি সিস্টেম চেক'}
+            </span>
+            <span className="text-slate-400 text-xs">{showSystemCheckSection ? '▲' : '▼'}</span>
+          </button>
+          {showSystemCheckSection && (
+            <div className="px-4 pb-4 border-t border-slate-100 dark:border-slate-700 pt-3">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                {isEn ? 'Check if notices are reaching users correctly.' : 'বিজ্ঞপ্তি ব্যবহারকারীদের কাছে পৌঁছাচ্ছে কিনা দেখুন।'}
+              </p>
+              <button
+                type="button"
+                onClick={runDeliveryHealthCheck}
+                disabled={deliveryHealth.checking}
+                className="mb-3 px-4 py-2 rounded-lg text-sm font-semibold bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50 transition-colors"
+              >
+                {deliveryHealth.checking ? (isEn ? 'Checking…' : 'চেক হচ্ছে…') : (isEn ? 'Run check' : 'চেক করুন')}
+              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-900/50 p-3 border border-slate-100 dark:border-slate-700">
+                  <p className="text-xs text-slate-500 mb-1">{isEn ? 'Live notices' : 'চালু বিজ্ঞপ্তি'}</p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-slate-100">{deliveryHealth.activeCount ?? '—'}</p>
+                </div>
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-900/50 p-3 border border-slate-100 dark:border-slate-700">
+                  <p className="text-xs text-slate-500 mb-1">{isEn ? 'Users can see notices' : 'ইউজার দেখতে পারে'}</p>
+                  <p className={`text-sm font-bold ${deliveryHealth.publicRpcOk === true ? 'text-emerald-600' : deliveryHealth.publicRpcOk === false ? 'text-rose-600' : 'text-slate-400'}`}>
+                    {healthStatusLabel(deliveryHealth.publicRpcOk)}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-900/50 p-3 border border-slate-100 dark:border-slate-700">
+                  <p className="text-xs text-slate-500 mb-1">{isEn ? 'Admin panel works' : 'অ্যাডমিন প্যানেল'}</p>
+                  <p className={`text-sm font-bold ${deliveryHealth.adminRpcOk === true ? 'text-emerald-600' : deliveryHealth.adminRpcOk === false ? 'text-rose-600' : 'text-slate-400'}`}>
+                    {healthStatusLabel(deliveryHealth.adminRpcOk)}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-900/50 p-3 border border-slate-100 dark:border-slate-700">
+                  <p className="text-xs text-slate-500 mb-1">{isEn ? 'Instant updates' : 'তাৎক্ষণিক আপডেট'}</p>
+                  <p className={`text-sm font-bold ${deliveryHealth.realtimeStatus === 'SUBSCRIBED' ? 'text-emerald-600' : deliveryHealth.realtimeStatus ? 'text-amber-600' : 'text-slate-400'}`}>
+                    {realtimeLabel(deliveryHealth.realtimeStatus)}
+                  </p>
+                </div>
+              </div>
+              {deliveryHealth.checkedAt && (
+                <p className="mt-2 text-[10px] text-slate-400">
+                  {isEn ? 'Last checked:' : 'সর্বশেষ:'} {new Date(deliveryHealth.checkedAt).toLocaleString()}
+                </p>
+              )}
+              {deliveryHealth.error && (
+                <p className="mt-2 text-xs text-rose-600 dark:text-rose-400">{deliveryHealth.error}</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Admin search — team tab only */}
+      {isAdmin && !showAnalytics && profileSection === 'team' && (
+        <div className="mb-4 relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" aria-hidden>🔍</span>
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={isEn ? 'Search name, phone, email, district, ID…' : 'নাম, ফোন, ইমেইল, জেলা, ID…'}
+            className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
+          />
+          {searchQuery && (
             <button
               type="button"
-              onClick={runDeliveryHealthCheck}
-              disabled={deliveryHealth.checking}
-              className="text-sm font-bold text-orange-600 hover:text-orange-700 dark:text-orange-400 disabled:opacity-50"
+              onClick={() => setSearchQuery('')}
+              aria-label={isEn ? 'Clear search' : 'অনুসন্ধান মুছুন'}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
             >
-              {deliveryHealth.checking
-                ? (language === 'en' ? 'Checking...' : 'চেক হচ্ছে...')
-                : (language === 'en' ? 'Run check' : 'চেক করুন')}
+              ×
             </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">
-              <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">
-                {language === 'en' ? 'Active notices' : 'সক্রিয় নোটিশ'}
-              </p>
-              <p className="text-xl font-black text-slate-900 dark:text-slate-100">
-                {deliveryHealth.activeCount ?? '-'}
-              </p>
-            </div>
-            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">
-              <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">
-                {language === 'en' ? 'Public RPC' : 'পাবলিক RPC'}
-              </p>
-              <p className={`text-sm font-black ${deliveryHealth.publicRpcOk === true ? 'text-emerald-600 dark:text-emerald-400' : deliveryHealth.publicRpcOk === false ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500'}`}>
-                {deliveryHealth.publicRpcOk === true ? 'OK' : deliveryHealth.publicRpcOk === false ? 'FAIL' : '-'}
-              </p>
-            </div>
-            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">
-              <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">
-                {language === 'en' ? 'Admin RPC' : 'এডমিন RPC'}
-              </p>
-              <p className={`text-sm font-black ${deliveryHealth.adminRpcOk === true ? 'text-emerald-600 dark:text-emerald-400' : deliveryHealth.adminRpcOk === false ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500'}`}>
-                {deliveryHealth.adminRpcOk === true ? 'OK' : deliveryHealth.adminRpcOk === false ? 'FAIL' : '-'}
-              </p>
-            </div>
-            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">
-              <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">
-                {language === 'en' ? 'Realtime' : 'রিয়েলটাইম'}
-              </p>
-              <p className={`text-sm font-black ${deliveryHealth.realtimeStatus === 'SUBSCRIBED' ? 'text-emerald-600 dark:text-emerald-400' : deliveryHealth.realtimeStatus && deliveryHealth.realtimeStatus !== 'SUBSCRIBED' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500'}`}>
-                {deliveryHealth.realtimeStatus || '-'}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-            {deliveryHealth.checkedAt
-              ? `${language === 'en' ? 'Last checked' : 'সর্বশেষ চেক'}: ${new Date(deliveryHealth.checkedAt).toLocaleString()}`
-              : (language === 'en' ? 'Not checked yet.' : 'এখনও চেক হয়নি।')}
-          </div>
-          {deliveryHealth.error && (
-            <p className="mt-2 text-xs text-rose-600 dark:text-rose-400 break-all">
-              {deliveryHealth.error}
-            </p>
           )}
+        </div>
+      )}
+
+      {/* People list section label */}
+      {!showAnalytics && !loading && profileUsers.length > 0 && !isLineman && profileSection === 'team' && (
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300">
+            {debouncedSearch
+              ? (isEn ? `${totalUsers} found` : `${totalUsers}টি পাওয়া গেছে`)
+              : isSafetyMitra
+                ? (isEn ? `${teamTotal} in my team` : `আমার দলে ${teamTotal} জন`)
+                : (isEn ? `${teamTotal} people` : `${teamTotal} জন`)}
+          </h2>
         </div>
       )}
 
       {loading ? (
-        <UserTableSkeleton />
+        <ProfileCardSkeleton />
       ) : fetchError ? (
         <div className="bg-white dark:bg-slate-800 shadow rounded-lg p-12 text-center border border-red-100 dark:border-red-900/30">
           <div className="text-4xl mb-4">📡</div>
@@ -964,7 +1564,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               : 'ইউজার ডাটা লোড করা সম্ভব হয়নি। আপনার ইন্টারনেট কানেকশন চেক করুন।'}
           </p>
           <button
-            onClick={() => fetchUsers(currentPage)}
+            onClick={() => fetchUsers(currentPage, debouncedSearch)}
             className="px-8 py-2.5 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 shadow-lg shadow-orange-500/20 transition-all"
           >
             {language === 'en' ? 'Retry' : 'আবার চেষ্টা করুন'}
@@ -973,276 +1573,89 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       ) : showAnalytics ? (
         <AdminAnalytics language={language} userRole={userProfile?.role} />
       ) : (
-        users.length === 0 ? (
+        profileUsers.length === 0 ? (
           <div className="bg-white dark:bg-slate-800 shadow rounded-lg p-12 text-center border border-slate-200 dark:border-slate-700">
-            <div className="text-4xl mb-4">👥</div>
+            <div className="text-4xl mb-4">{profileSection === 'mine' ? '👤' : '👥'}</div>
             <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">
-              {userProfile?.role === 'safety mitra'
-                ? (language === 'en' ? 'No one is yet tagged' : 'এখনও কাউকে ট্যাগ করা হয়নি')
-                : (language === 'en' ? 'No users found' : 'কোনো ব্যবহারকারী পাওয়া যায়নি')}
+              {profileSection === 'mine'
+                ? (isEn ? 'Profile not loaded' : 'প্রোফাইল লোড হয়নি')
+                : debouncedSearch
+                  ? (isEn ? 'No matches' : 'কিছু পাওয়া যায়নি')
+                  : userProfile?.role === 'safety mitra'
+                    ? (language === 'en' ? 'No one is yet tagged' : 'এখনও কাউকে ট্যাগ করা হয়নি')
+                    : (language === 'en' ? 'No users found' : 'কোনো ব্যবহারকারী পাওয়া যায়নি')}
             </h3>
             <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-              {userProfile?.role === 'safety mitra'
-                ? (language === 'en'
-                  ? 'There are no linemen currently assigned to you. Please contact an administrator.'
-                  : 'বর্তমানে আপনার সাথে কোনো লাইনম্যান সংযুক্ত নেই। অনুগ্রহ করে অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।')
-                : (language === 'en'
-                  ? 'Try adjusting your filters or add a new user.'
-                  : 'আপনার ফিল্টার পরিবর্তন করুন বা নতুন ব্যবহারকারী যোগ করুন।')
+              {profileSection === 'mine'
+                ? (isEn ? 'Please try again in a moment.' : 'অনুগ্রহ করে একটু পরে আবার চেষ্টা করুন।')
+                : debouncedSearch
+                  ? (isEn ? 'Try a different name, phone, or district.' : 'অন্য নাম, ফোন বা জেলা দিয়ে চেষ্টা করুন।')
+                  : userProfile?.role === 'safety mitra'
+                  ? (language === 'en'
+                    ? 'There are no linemen currently assigned to you. Please contact an administrator.'
+                    : 'বর্তমানে আপনার সাথে কোনো লাইনম্যান সংযুক্ত নেই। অনুগ্রহ করে অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।')
+                  : (language === 'en'
+                    ? 'Try adjusting your filters or add a new user.'
+                    : 'আপনার ফিল্টার পরিবর্তন করুন বা নতুন ব্যবহারকারী যোগ করুন।')
               }
             </p>
           </div>
         ) : (
-          <>
-            {/* Mobile Card View */}
-            <div className="md:hidden space-y-3">
-              {users.map((targetUser) => (
-                <div
+          <div className={`grid grid-cols-1 gap-4 ${profileSection === 'mine' ? 'max-w-xl mx-auto' : 'lg:grid-cols-2'}`}>
+            {profileUsers.map((targetUser) => {
+              const canManage = !(isSafetyMitra && targetUser.role === 'admin');
+              return (
+                <UserProfileCard
                   key={targetUser.id}
-                  className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 hover:shadow-md transition-all"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                          {targetUser.full_name}
-                        </h3>
-                        {targetUser.slm_id && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-500 rounded border border-slate-200 dark:border-slate-600">
-                            {targetUser.slm_id}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                        {targetUser.email}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 mb-3">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Role:</span>
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${targetUser.role === 'admin'
-                        ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                        : targetUser.role === 'safety mitra'
-                          ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                          : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-                        }`}>
-                        {targetUser.role}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">📍</span>
-                      <span className="text-xs text-slate-700 dark:text-slate-300 truncate">
-                        {targetUser.district || 'N/A'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 col-span-2">
-                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Penalty Points:</span>
-                      <span className={`text-xs font-black px-2 py-0.5 rounded ${targetUser.total_penalties > 0 ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'}`}>
-                        {targetUser.total_penalties || 0}
-                      </span>
-                    </div>
-                  </div>
-
-                  {!(userProfile?.role === 'safety mitra' && targetUser.role === 'admin') && (
-                    <div className="flex gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
-                      <button
-                        onClick={() => handleEditPPE(targetUser)}
-                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-lg transition-all border border-orange-200 dark:border-orange-800"
-                      >
-                        <span>🦺</span>
-                        PPE
-                      </button>
-                      <button
-                        onClick={() => handleEditTools(targetUser)}
-                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-all"
-                      >
-                        <span>🛠️</span>
-                        Tools
-                      </button>
-                      <button
-                        onClick={() => handleEdit(targetUser)}
-                        disabled={userProfile?.role === 'safety mitra' && targetUser.role === 'admin'}
-                        className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all border ${userProfile?.role === 'safety mitra' && targetUser.role === 'admin'
-                          ? 'opacity-50 cursor-not-allowed grayscale bg-slate-50 dark:bg-slate-900 text-slate-400 border-slate-200 dark:border-slate-700'
-                          : 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 border-orange-200 dark:border-orange-800'
-                          }`}
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Edit
-                      </button>
-                      {userProfile?.role === 'admin' && (
-                        <button
-                          onClick={() => {
-                            setResetTarget({ id: targetUser.id, name: targetUser.full_name });
-                            setResetConfirmInput('');
-                            setShowResetConfirm(true);
-                          }}
-                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/30 rounded-lg transition-all border border-rose-200 dark:border-rose-800"
-                        >
-                          <span>🎯</span>
-                          Reset
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Desktop Table View */}
-            <div className="hidden md:block bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
-                <thead className="bg-gray-50 dark:bg-slate-700">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Full Name</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Email</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Role</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">District</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Penalties</th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-300 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
-                  {users.map((targetUser) => (
-                    <tr key={targetUser.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex flex-col">
-                          <div className="font-medium text-slate-900 dark:text-slate-100">{targetUser.full_name}</div>
-                          {targetUser.slm_id && <div className="text-[10px] font-bold text-slate-400">{targetUser.slm_id}</div>}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-slate-600 dark:text-slate-400">{targetUser.email}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${targetUser.role === 'admin'
-                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                          : targetUser.role === 'safety mitra'
-                            ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                            : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-                          }`}>
-                          {targetUser.role}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-slate-600 dark:text-slate-400">{targetUser.district || 'N/A'}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${targetUser.total_penalties > 0 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'text-slate-500 dark:text-slate-400'}`}>
-                          {targetUser.total_penalties > 0 ? `-${targetUser.total_penalties}` : '0'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {!(userProfile?.role === 'safety mitra' && targetUser.role === 'admin') && (
-                          <div className="flex justify-end gap-2">
-                            <button
-                              onClick={() => handleEditPPE(targetUser)}
-                              className="text-orange-600 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-300 border border-orange-200 dark:border-orange-800 px-3 py-1.5 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all font-medium text-xs"
-                            >
-                              🦺 PPE
-                            </button>
-                            <button
-                              onClick={() => handleEditTools(targetUser)}
-                              className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all font-medium text-xs"
-                            >
-                              🛠️ Tools
-                            </button>
-                            <button
-                              onClick={() => handleEdit(targetUser)}
-                              disabled={userProfile?.role === 'safety mitra' && targetUser.role === 'admin'}
-                              className={`border px-3 py-1.5 rounded-lg transition-all font-medium text-xs ${userProfile?.role === 'safety mitra' && targetUser.role === 'admin'
-                                ? 'opacity-50 cursor-not-allowed grayscale border-slate-200 dark:border-slate-700 text-slate-400'
-                                : 'text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
-                                }`}
-                            >
-                              ✏️ Edit
-                            </button>
-                            {userProfile?.role === 'admin' && (
-                              <button
-                                onClick={() => {
-                                  setResetTarget({ id: targetUser.id, name: targetUser.full_name });
-                                  setResetConfirmInput('');
-                                  setShowResetConfirm(true);
-                                }}
-                                className="text-rose-600 hover:text-rose-900 dark:text-rose-400 dark:hover:text-rose-300 border border-rose-200 dark:border-rose-800 px-3 py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all font-medium text-xs"
-                                title="Reset Score & Progress"
-                              >
-                                🎯 Reset
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
+                  targetUser={targetUser}
+                  isEn={isEn}
+                  isAdmin={isAdmin}
+                  isSafetyMitra={isSafetyMitra}
+                  canManage={canManage}
+                  userProfile={userProfile}
+                  avatarSize={isLineman || profileSection === 'mine' ? 'xl' : 'lg'}
+                  formatRoleLabel={formatRoleLabel}
+                  roleBadgeClass={roleBadgeClass}
+                  wbLocations={wbLocations}
+                  supervisors={supervisors}
+                  onSaveField={handleSaveProfileField}
+                  onPPE={() => handleEditPPE(targetUser)}
+                  onTools={() => handleEditTools(targetUser)}
+                  onReset={() => {
+                    setResetTarget({ id: targetUser.id, name: targetUser.full_name });
+                    setResetConfirmInput('');
+                    setShowResetConfirm(true);
+                  }}
+                  onDelete={() => handleOpenDeleteConfirm(targetUser)}
+                />
+              );
+            })}
+          </div>
         )
       )}
 
       {/* Pagination Controls */}
-      {!loading && totalUsers > usersPerPage && (
-        <div className="mt-4 flex items-center justify-between bg-white dark:bg-slate-800 px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700">
-          <div className="flex-1 flex justify-between sm:hidden">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setCurrentPage(p => Math.min(Math.ceil(totalUsers / usersPerPage), p + 1))}
-              disabled={currentPage >= Math.ceil(totalUsers / usersPerPage)}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-slate-700 dark:text-slate-300">
-                Showing <span className="font-medium">{(currentPage - 1) * usersPerPage + 1}</span> to{' '}
-                <span className="font-medium">{Math.min(currentPage * usersPerPage, totalUsers)}</span> of{' '}
-                <span className="font-medium">{totalUsers}</span> users
-              </p>
-            </div>
-            <div>
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                <button
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <span className="sr-only">Previous</span>
-                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                </button>
-
-                <span className="relative inline-flex items-center px-4 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Page {currentPage} of {Math.ceil(totalUsers / usersPerPage)}
-                </span>
-
-                <button
-                  onClick={() => setCurrentPage(p => Math.min(Math.ceil(totalUsers / usersPerPage), p + 1))}
-                  disabled={currentPage >= Math.ceil(totalUsers / usersPerPage)}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <span className="sr-only">Next</span>
-                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              </nav>
-            </div>
-          </div>
+      {!loading && !isLineman && profileSection === 'team' && totalUsers > usersPerPage && (
+        <div className="mt-4 flex items-center justify-between gap-3 py-3">
+          <button
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 rounded-lg text-sm font-semibold border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800"
+          >
+            {isEn ? '← Previous' : '← আগে'}
+          </button>
+          <span className="text-sm text-slate-500 dark:text-slate-400">
+            {isEn ? `Page ${currentPage} of ${Math.ceil(totalUsers / usersPerPage)}` : `পৃষ্ঠা ${currentPage} / ${Math.ceil(totalUsers / usersPerPage)}`}
+          </span>
+          <button
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.min(Math.ceil(totalUsers / usersPerPage), p + 1))}
+            disabled={currentPage >= Math.ceil(totalUsers / usersPerPage)}
+            className="px-4 py-2 rounded-lg text-sm font-semibold border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800"
+          >
+            {isEn ? 'Next →' : 'পরে →'}
+          </button>
         </div>
       )}
 
@@ -1253,7 +1666,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
         <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
           <div className="bg-white dark:bg-slate-800 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md flex flex-col border-t sm:border border-slate-100 dark:border-slate-700 animate-slide-up sm:animate-scale-in max-h-[90vh]">
             <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Create New User</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{isEn ? 'Add New Lineman' : 'নতুন লাইনম্যান যোগ করুন'}</h2>
               <button
                 onClick={handleCloseInviteModal}
                 className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
@@ -1386,31 +1799,28 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
         document.body
       )}
 
-      {/* Edit User Modal */}
-      {/* Edit User Modal */}
-      <EditUserModal
-        editingUser={editingUser}
-        userProfile={userProfile}
-        handleCancelEdit={handleCancelEdit}
-        handleSave={handleSave}
-        activeEditTab={activeEditTab}
-        setActiveEditTab={setActiveEditTab}
-        avatarPreview={avatarPreview}
-        handleFileChange={handleFileChange}
-        handleChange={handleChange}
-        wbLocations={wbLocations}
-        supervisors={supervisors}
-        onOpenDeleteConfirm={handleOpenDeleteConfirm}
-      />
-
       {/* PPE Wizard Overlay */}
       {selectedUserForPPE && createPortal(
         <div className="fixed inset-0 z-[300] bg-white dark:bg-slate-900 overflow-y-auto animate-fade-in custom-scrollbar">
-          <div className="max-w-4xl mx-auto py-6">
+          <div className="sticky top-0 z-[310] bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 px-4 py-3 safe-area-top">
+            <button
+              type="button"
+              onClick={() => setSelectedUserForPPE(null)}
+              className="inline-flex items-center gap-2 text-sm font-bold text-orange-700 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 transition-colors"
+            >
+              <span aria-hidden>←</span>
+              {isEn ? 'Back to admin panel' : 'অ্যাডমিন প্যানেলে ফিরুন'}
+            </button>
+            {selectedUserForPPE.full_name && (
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">
+                🦺 {isEn ? 'PPE' : 'পিপিই'} — {selectedUserForPPE.full_name}
+              </p>
+            )}
+          </div>
+          <div className="max-w-4xl mx-auto py-4 px-2 sm:px-4">
             <MyPPE
               user={selectedUserForPPE}
               language={language}
-              onClose={() => setSelectedUserForPPE(null)}
             />
           </div>
         </div>,
@@ -1420,11 +1830,25 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       {/* Tools Wizard Overlay */}
       {selectedUserForTools && createPortal(
         <div className="fixed inset-0 z-[300] bg-white dark:bg-slate-900 overflow-y-auto animate-fade-in custom-scrollbar">
-          <div className="max-w-4xl mx-auto py-6">
+          <div className="sticky top-0 z-[310] bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 px-4 py-3 safe-area-top">
+            <button
+              type="button"
+              onClick={() => setSelectedUserForTools(null)}
+              className="inline-flex items-center gap-2 text-sm font-bold text-orange-700 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 transition-colors"
+            >
+              <span aria-hidden>←</span>
+              {isEn ? 'Back to admin panel' : 'অ্যাডমিন প্যানেলে ফিরুন'}
+            </button>
+            {selectedUserForTools.full_name && (
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">
+                🛠️ {isEn ? 'Tools' : 'সরঞ্জাম'} — {selectedUserForTools.full_name}
+              </p>
+            )}
+          </div>
+          <div className="max-w-4xl mx-auto py-4 px-2 sm:px-4">
             <MyTools
               user={selectedUserForTools}
               language={language}
-              onClose={() => setSelectedUserForTools(null)}
             />
           </div>
         </div>,
@@ -1451,45 +1875,45 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
                 </div>
-                Broadcast
+                {isEn ? 'Send Notice' : 'বিজ্ঞপ্তি পাঠান'}
               </h2>
-              <button onClick={() => setShowNotificationModal(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+              <button type="button" onClick={() => setShowNotificationModal(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
-            <form onSubmit={handleSendNotification} className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+            <form onSubmit={handleSendNotification} className="p-6 space-y-4 overflow-y-auto custom-scrollbar">
               <div className="space-y-1">
-                <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Title</label>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">{isEn ? 'Title' : 'শিরোনাম'}</label>
                 <input
                   type="text"
                   value={notificationForm.title}
                   onChange={(e) => setNotificationForm({ ...notificationForm, title: e.target.value })}
-                  placeholder="Notification Headline"
-                  className="w-full px-4 py-3 border-2 border-slate-100 dark:border-slate-700 rounded-2xl focus:border-orange-500 outline-none bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-all font-medium"
+                  placeholder={isEn ? 'e.g. Training update' : 'যেমন: প্রশিক্ষণ আপডেট'}
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl focus:border-orange-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Message</label>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">{isEn ? 'Message' : 'বার্তা'}</label>
                 <textarea
                   value={notificationForm.message}
                   onChange={(e) => setNotificationForm({ ...notificationForm, message: e.target.value })}
-                  placeholder="Enter your message here..."
-                  className="w-full px-4 py-3 border-2 border-slate-100 dark:border-slate-700 rounded-2xl focus:border-orange-500 outline-none bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 h-32 resize-none transition-all"
+                  placeholder={isEn ? 'Write your message here…' : 'এখানে লিখুন…'}
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl focus:border-orange-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 h-28 resize-none"
                   required
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Urgency</label>
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">{isEn ? 'How important?' : 'কতটা জরুরি?'}</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { id: 'info', label: 'Info', color: 'orange' },
-                    { id: 'update', label: 'Update', color: 'green' },
-                    { id: 'warning', label: 'Warning', color: 'orange' },
-                    { id: 'alert', label: 'Alert', color: 'red' }
+                    { id: 'info', label: isEn ? 'Info' : 'তথ্য' },
+                    { id: 'update', label: isEn ? 'Update' : 'আপডেট' },
+                    { id: 'warning', label: isEn ? 'Warning' : 'সতর্ক' },
+                    { id: 'alert', label: isEn ? 'Urgent' : 'জরুরি' }
                   ].map((type) => (
                     <button
                       key={type.id}
@@ -1511,7 +1935,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 disabled={isSendingNotification}
                 className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-2xl shadow-xl shadow-orange-500/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
               >
-                {isSendingNotification ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : 'Send Broadcast'}
+                {isSendingNotification ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : (isEn ? 'Send to Everyone' : 'সবাইকে পাঠান')}
               </button>
             </form>
           </div>
@@ -1614,7 +2038,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 </div>
                 <div className="pb-6">
                   <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-1">Enter Details</h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Click <strong>Invite New Lineman</strong> and enter their <strong>Name</strong> and <strong>Phone Number</strong>.</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Click <strong>{isEn ? 'Add Lineman' : 'লাইনম্যান যোগ করুন'}</strong> and enter their <strong>name</strong> and <strong>phone number</strong>.</p>
                 </div>
               </div>
 

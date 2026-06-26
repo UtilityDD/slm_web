@@ -156,7 +156,7 @@ export default function LinemanPPEView({ user, language = 'bn', onClose, setCurr
                                 {language === 'en' ? 'My PPE' : 'আমার পিপিই'}
                             </h1>
                         )}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 shrink-0">
                             <button
                                 type="button"
                                 onClick={() => setView('list')}

@@ -7,6 +7,7 @@ import { storageUtils } from '../utils/storageUtils';
 import LandingPrizeCarousel from './LandingPrizeCarousel';
 import LandingVisitCounter from './LandingVisitCounter';
 import { fetchVisitCount } from '../utils/landingVisitService';
+import { fetchRegisteredUserCount } from '../utils/landingStatsService';
 
 const copy = {
   en: {
@@ -637,15 +638,12 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
       try {
         const [profilesResult, monthlyLeaderboard, encouragementBoards, allTimeLeaderboard, hallOfFame] = await Promise.all([
           requestManager.fetch(
-            'landing_profiles_count_v3',
+            'landing_registered_count_v1',
             async () => {
-              const { count, error } = await supabase
-                .from('profiles')
-                .select('id', { count: 'exact', head: true });
-              if (error) throw error;
-              return { users: count ?? 0 };
+              const users = await fetchRegisteredUserCount(supabase);
+              return { users };
             },
-            { ttl: 10, swr: true }
+            { ttl: 2, swr: false }
           ),
           leaderboardService.fetchMonthly(false).catch(() => []),
           leaderboardService.fetchEncouragementBoards(false, language).catch(() => null),
@@ -717,6 +715,20 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
       cancelled = true;
     };
   }, [language]);
+
+  // Refresh registered count when user returns to the tab (avoids stale landing stats).
+  useEffect(() => {
+    const refreshCount = () => {
+      if (document.visibilityState !== 'visible') return;
+      fetchRegisteredUserCount(supabase)
+        .then((users) => {
+          setStats((prev) => (prev.users === users ? prev : { ...prev, users }));
+        })
+        .catch(() => {});
+    };
+    document.addEventListener('visibilitychange', refreshCount);
+    return () => document.removeEventListener('visibilitychange', refreshCount);
+  }, []);
 
   const prizeSub = useMemo(() => {
     if (loading) return '';

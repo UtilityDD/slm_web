@@ -326,7 +326,7 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView }) => {
                             onClick={onClose}
                             className="w-full py-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors font-bold text-sm"
                         >
-                            {language === 'en' ? '← Back to List' : '← তালিকায় ফিরে যান'}
+                            {language === 'en' ? '← Back to admin panel' : '← অ্যাডমিন প্যানেলে ফিরুন'}
                         </button>
                     )}
                 </div>
@@ -757,7 +757,7 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView }) => {
                             onClick={onClose}
                             className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
                         >
-                            {language === 'en' ? '← Done, Back to List' : '← সম্পন্ন, তালিকায় ফিরে যান'}
+                            {language === 'en' ? '← Done, back to admin panel' : '← সম্পন্ন, অ্যাডমিনে ফিরুন'}
                         </button>
                     )}
 
