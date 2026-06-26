@@ -306,8 +306,6 @@ function UserProfileCard({
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef(null);
 
-  const isOwnProfile = userProfile?.id === targetUser.id;
-  const canEditIdentity = isAdmin || isOwnProfile;
   const phone = targetUser.phone_number || targetUser.phone;
   const completeness = getProfileCompleteness(targetUser);
 
@@ -487,8 +485,8 @@ function UserProfileCard({
       <div className="px-4 pb-2">
         <p className="text-sm mb-1" aria-label={isEn ? 'Profile' : 'প্রোফাইল'} title={isEn ? 'Profile' : 'প্রোফাইল'}>👤</p>
         <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 px-3 py-1">
-          {row('full_name', '👤', isEn ? 'Full name' : 'নাম', display(targetUser.full_name), targetUser.full_name ? 'neutral' : 'muted', canEditIdentity, textEditor('full_name', targetUser.full_name))}
-          {row('phone_number', '📱', isEn ? 'Phone' : 'ফোন', display(phone), phone ? 'neutral' : 'muted', canEditIdentity, textEditor('phone_number', phone))}
+          {row('full_name', '👤', isEn ? 'Full name' : 'নাম', display(targetUser.full_name), targetUser.full_name ? 'neutral' : 'muted', isAdmin, textEditor('full_name', targetUser.full_name))}
+          {row('phone_number', '📱', isEn ? 'Phone' : 'ফোন', display(phone), phone ? 'neutral' : 'muted', isAdmin, textEditor('phone_number', phone))}
           {row('email', '📧', isEn ? 'Email' : 'ইমেইল', display(targetUser.email), 'muted', false, textEditor('email', targetUser.email))}
           {row('district', '📍', isEn ? 'District' : 'জেলা', display(targetUser.district), targetUser.district ? 'neutral' : 'muted', true, selectEditor('district', targetUser.district, districts))}
           {row('block', '🗺️', isEn ? 'Block' : 'ব্লক', display(targetUser.block), targetUser.block ? 'neutral' : 'muted', true, selectEditor('block', targetUser.block, blocks))}
@@ -1037,10 +1035,17 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     }
 
     const payload = { ...updates };
+    if (userProfile?.role !== 'admin') {
+      delete payload.full_name;
+      delete payload.phone_number;
+      delete payload.phone;
+    }
     if (payload.supervisor_id === '') payload.supervisor_id = null;
     if (payload.district && payload.district !== targetUser.district) {
       payload.block = '';
     }
+
+    if (!avatarFile && Object.keys(payload).length === 0) return;
 
     let avatar_url = targetUser.avatar_url;
     if (avatarFile) {
