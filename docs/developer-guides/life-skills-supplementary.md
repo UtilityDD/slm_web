@@ -99,3 +99,4 @@ If no URL passes validation, the Listen button stays **disabled**; read-aloud (T
 ## Related
 
 - [Training lesson reader](./training-lesson-reader.md) — slide types, guided sections, advance lock, `renderTextWithImages`, media chips.
+- [Life Skills Quiz Generation](./life-skills-quiz-generation.md) — rules on creating quiz JSON files, schema details, and anti-cheating bracket balance guidelines.

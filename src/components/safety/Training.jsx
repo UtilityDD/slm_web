@@ -1722,9 +1722,21 @@ export default function Training({
                     const response = await fetch(trainingContent.manuscript_url);
                     if (response.ok) {
                         const data = await response.json();
+                        
+                        // Check if a quiz exists for this supplementary module
+                        let hasQuiz = false;
+                        try {
+                            const quizFilename = `questions_${(data.level_id || trainingContent.level_id).replace('.', '_')}.json`;
+                            const quizRes = await fetch(`/quizzes/${quizFilename}`);
+                            hasQuiz = quizRes.ok;
+                        } catch (e) {
+                            console.error("Error checking supplementary quiz:", e);
+                        }
+
                         setTrainingContent((prev) => ({
                             ...prev,
                             ...data,
+                            hasQuiz,
                             lesson_code:
                                 (typeof prev.lesson_code === 'string' && prev.lesson_code.trim()
                                     ? prev.lesson_code
@@ -2506,8 +2518,12 @@ export default function Training({
 
     const finalizeLessonCompletion = async (lessonId) => {
         if (isSupplementaryProgressLessonId(lessonId)) {
+            handleMarkSupplementaryRead(lessonId, { silent: false });
             setShowQuizModal(false);
             setPendingLessonId(null);
+            setTrainingContent(null);
+            setIsJournalMode(false);
+            setTrainingTab('supplementary');
             return;
         }
 
@@ -2650,10 +2666,7 @@ export default function Training({
     };
 
     const initiateLessonCompletion = async (lessonId) => {
-        if (isSupplementaryProgressLessonId(lessonId)) {
-            return;
-        }
-        // Construct quiz filename based on lesson ID (e.g., "1.1" -> "questions_1_1.json")
+        // Construct quiz filename based on lesson ID (e.g., "1.1" -> "questions_1_1.json", "supp_10_1" -> "questions_supp_10_1.json")
         const filename = `questions_${lessonId.replace('.', '_')}.json`;
 
         try {
@@ -4459,23 +4472,51 @@ export default function Training({
                                                                 </p>
                                                             </div>
                                                             <div className="mx-auto h-px w-10 bg-slate-100 dark:bg-slate-800 sm:w-16"></div>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    stop();
-                                                                    setTrainingContent(null);
-                                                                    setIsJournalMode(false);
-                                                                    setTrainingTab('supplementary');
-                                                                }}
-                                                                className="nb-btn-secondary mx-auto flex min-h-[3rem] w-full max-w-[17.5rem] items-center justify-center gap-2 px-4 py-3 text-sm font-bold sm:max-w-xs sm:min-h-[2.75rem] sm:text-base"
-                                                            >
-                                                                <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M15 19l-7-7 7-7" />
-                                                                </svg>
-                                                                <span className={language === 'bn' ? 'font-bengali' : ''}>
-                                                                    {language === 'en' ? 'Back to training' : 'প্রশিক্ষণে ফিরুন'}
-                                                                </span>
-                                                            </button>
+                                                            
+                                                            {trainingContent.hasQuiz ? (
+                                                                <div className="w-full space-y-3">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => initiateLessonCompletion(trainingContent.level_id)}
+                                                                        className="nb-btn-primary flex w-full items-center justify-center gap-3 py-3 text-sm font-black sm:py-4 sm:text-base"
+                                                                    >
+                                                                        {language === 'en' ? 'Test your Knowledge' : 'আপনার জ্ঞান যাচাই করুন'}
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            stop();
+                                                                            setTrainingContent(null);
+                                                                            setIsJournalMode(false);
+                                                                            setTrainingTab('supplementary');
+                                                                        }}
+                                                                        className="group flex w-full flex-col items-center gap-2 py-2"
+                                                                    >
+                                                                        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 transition-all group-hover:border-slate-400 dark:border-slate-800 dark:group-hover:border-slate-500">
+                                                                            <svg className="h-5 w-5 text-slate-400 group-hover:text-slate-600 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                                                                            </svg>
+                                                                        </div>
+                                                                    </button>
+                                                                </div>
+                                                            ) : (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        stop();
+                                                                        setTrainingContent(null);
+                                                                        setIsJournalMode(false);
+                                                                        setTrainingTab('supplementary');
+                                                                    }}
+                                                                    className="group flex w-full flex-col items-center gap-2 py-3"
+                                                                >
+                                                                    <div className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 transition-all group-hover:border-slate-400 dark:border-slate-800 dark:group-hover:border-slate-500">
+                                                                        <svg className="h-5 w-5 text-slate-400 group-hover:text-slate-600 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                                                                        </svg>
+                                                                    </div>
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     ) : (
                                                         <>
