@@ -76,7 +76,7 @@ function permitNumber() {
  * confirmCode  -> read back by operator to prove the correct line was isolated.
  * releaseCode  -> read back by operator to prove the line was actually re-energized.
  */
-export function createPermit({ feeder, location, work, operator, crew, linemanPhone }) {
+export function createPermit({ feeder, location, work, operator, crew, comment, linemanPhone }) {
     return {
         id: Date.now(),
         permitNo: permitNumber(),
@@ -87,6 +87,7 @@ export function createPermit({ feeder, location, work, operator, crew, linemanPh
         operator: operator || { name: '', phone: '' },
         linemanPhone: linemanPhone || '',
         crew: Array.isArray(crew) ? crew : [],
+        comment: (comment || '').trim(),
         stepId: 'request',
         status: 'open',
         grounding: {},
@@ -164,12 +165,16 @@ export const CLOSEOUT_ITEMS = [
 
 /* --------------------------- message templates ---------------------------- */
 
-function fill(str, p) {
+function fill(str, p, language = 'bn') {
+    const commentLine = (p.comment || '').trim()
+        ? (language === 'bn' ? ` মন্তব্য: ${p.comment.trim()}।` : ` Note: ${p.comment.trim()}.`)
+        : '';
     return str
         .replace(/{permitNo}/g, p.permitNo || '')
         .replace(/{feeder}/g, p.job.feeder || '____')
         .replace(/{location}/g, p.job.location || '____')
         .replace(/{work}/g, p.job.work || '____')
+        .replace(/{commentLine}/g, commentLine)
         .replace(/{confirmCode}/g, p.confirmCode || '')
         .replace(/{releaseCode}/g, p.releaseCode || '')
         .replace(/{operator}/g, (p.operator && p.operator.name) || '____');
@@ -177,8 +182,8 @@ function fill(str, p) {
 
 const TEMPLATES = {
     request: {
-        en: 'PTW REQUEST. Permit {permitNo}. Please ISOLATE feeder {feeder} at {location} for: {work}. When isolated, read back confirm code {confirmCode}.',
-        bn: 'পারমিট অনুরোধ (PTW)। পারমিট {permitNo}। অনুগ্রহ করে {location}-এ {feeder} ফিডারটি আইসোলেট করুন, কাজ: {work}। আইসোলেট হলে কনফার্ম কোড {confirmCode} পড়ে শোনান।',
+        en: 'PTW REQUEST. Permit {permitNo}. Please ISOLATE feeder {feeder} at {location} for: {work}.{commentLine} When isolated, read back confirm code {confirmCode}.',
+        bn: 'পারমিট অনুরোধ (PTW)। পারমিট {permitNo}। অনুগ্রহ করে {location}-এ {feeder} ফিডারটি আইসোলেট করুন, কাজ: {work}।{commentLine} আইসোলেট হলে কনফার্ম কোড {confirmCode} পড়ে শোনান।',
     },
     crew_brief: {
         en: 'SAFETY BRIEF. Line {feeder} isolated & earthed under permit {permitNo}. Stay clear, do NOT touch line. Observer assigned. Work starting now.',
@@ -197,7 +202,7 @@ const TEMPLATES = {
 export function buildMessage(kind, permit, language = 'bn') {
     const tpl = TEMPLATES[kind];
     if (!tpl) return '';
-    return fill(tpl[language] || tpl.en, permit);
+    return fill(tpl[language] || tpl.en, permit, language);
 }
 
 /* ------------------------------ export as text ---------------------------- */
@@ -211,6 +216,7 @@ export function permitToText(permit, language = 'bn') {
     lines.push(`${L('Work', 'কাজ')}: ${permit.job.work || '-'}`);
     lines.push(`${L('Operator', 'অপারেটর')}: ${permit.operator.name || '-'} ${permit.operator.phone || ''}`.trim());
     if (permit.crew && permit.crew.length) lines.push(`${L('Crew', 'কর্মী')}: ${permit.crew.join(', ')}`);
+    if (permit.comment) lines.push(`${L('Comment', 'মন্তব্য')}: ${permit.comment}`);
     lines.push(`${L('Status', 'স্ট্যাটাস')}: ${permit.status}`);
     lines.push('');
     lines.push(`--- ${L('LOG', 'লগ')} ---`);

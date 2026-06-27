@@ -57,7 +57,7 @@ export default function ClearanceSetup({ language = 'bn', onCancel, onComplete, 
     const [book, setBook] = useState({ substations: [], commonWorks: [] });
     const [ready, setReady] = useState(false);
     const [page, setPage] = useState(1);
-    const [sel, setSel] = useState({ ssId: '', ssName: '', feeder: null, operator: null, work: '', crew: [] });
+    const [sel, setSel] = useState({ ssId: '', ssName: '', feeder: null, operator: null, work: '', crew: [], comment: '' });
 
     const [adding, setAdding] = useState(false);
     const [draft, setDraft] = useState('');
@@ -119,6 +119,7 @@ export default function ClearanceSetup({ language = 'bn', onCancel, onComplete, 
             work: sel.work,
             operator: sel.operator || { name: '', phone: '' },
             crew: sel.crew,
+            comment: sel.comment.trim(),
             linemanPhone: myPhone.trim(),
         });
     };
@@ -251,7 +252,7 @@ export default function ClearanceSetup({ language = 'bn', onCancel, onComplete, 
 
                             {page === 5 && (
                                 <>
-                                    <PageTitle icon="👷" title={t('Any crew with you?', 'সাথে কেউ আছেন?')} hint={t('Optional. Add fellow workers, or skip.', 'ঐচ্ছিক। সহকর্মীদের যোগ করুন, বা বাদ দিন।')} />
+                                    <PageTitle icon="👷" title={t('Any crew with you?', 'সাথে কেউ আছেন?')} hint={t('Optional. Add crew and a note for the operator.', 'ঐচ্ছিক। কর্মী ও অপারেটরের জন্য মন্তব্য যোগ করুন।')} />
                                     <div className="flex gap-2">
                                         <input value={crewInput} onChange={e => setCrewInput(e.target.value)} placeholder={t('Worker name', 'কর্মীর নাম')} className={inputCls} />
                                         <button onClick={addCrew} className="px-5 rounded-xl bg-slate-800 text-white font-black text-xl active:scale-95">＋</button>
@@ -263,6 +264,16 @@ export default function ClearanceSetup({ language = 'bn', onCancel, onComplete, 
                                             ))}
                                         </div>
                                     )}
+                                    <label className="block pt-2">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-1">{t('Comment (optional)', 'মন্তব্য (ঐচ্ছিক)')}</span>
+                                        <textarea
+                                            value={sel.comment}
+                                            onChange={e => setSel(s => ({ ...s, comment: e.target.value }))}
+                                            placeholder={t('e.g. pole no. 42, near market', 'যেমন খুঁটি নং ৪২, বাজারের কাছে')}
+                                            rows={3}
+                                            className={`${inputCls} mt-1 resize-none`}
+                                        />
+                                    </label>
                                     <button onClick={() => goto(6)} className="w-full py-4 rounded-3xl bg-blue-700 text-white font-black mt-2 active:scale-95 transition-transform">{sel.crew.length ? t('Continue', 'এগিয়ে যান') : t('Skip — Continue', 'বাদ দিয়ে এগিয়ে যান')}</button>
                                 </>
                             )}
@@ -277,6 +288,7 @@ export default function ClearanceSetup({ language = 'bn', onCancel, onComplete, 
                                             [t('Operator', 'অপারেটর'), sel.operator ? `${sel.operator.name || ''} ${sel.operator.phone || ''}`.trim() : '-', () => goto(3)],
                                             [t('Work', 'কাজ'), sel.work || '-', () => goto(4)],
                                             [t('Crew', 'কর্মী'), sel.crew.length ? sel.crew.join(', ') : t('None', 'কেউ না'), () => goto(5)],
+                                            ...(sel.comment.trim() ? [[t('Comment', 'মন্তব্য'), sel.comment.trim(), () => goto(5)]] : []),
                                         ].map(([k, v, edit]) => (
                                             <button key={k} onClick={edit} className="w-full flex items-center justify-between gap-3 p-4 text-left active:bg-slate-50 dark:active:bg-slate-800">
                                                 <span className="min-w-0">
