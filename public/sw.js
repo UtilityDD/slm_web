@@ -1,4 +1,4 @@
-const CACHE_NAME = 'suraksha-sathi-v25-1.3.73';
+const CACHE_NAME = 'suraksha-sathi-v27-1.4.1';
 const LOADER_IMAGES = [
   '/images/loader/helmet.webp',
   '/images/loader/goggles.webp',
@@ -41,7 +41,16 @@ const ASSETS_TO_CACHE = [
   '/audio/safety/barricade_removed.wav',
   '/audio/safety/alert_check.wav',
   '/audio/safety/alert_done.wav',
+  '/audio/safety/clearance_request.wav',
+  '/audio/safety/clearance_isolate.wav',
+  '/audio/safety/clearance_ground.wav',
+  '/audio/safety/clearance_brief.wav',
+  '/audio/safety/clearance_work.wav',
+  '/audio/safety/clearance_closeout.wav',
+  '/audio/safety/clearance_reenergize.wav',
+  '/audio/safety/clearance_done.wav',
   '/data/supplementary_modules.json',
+  '/data/databook.json',
   '/quizzes/training_manifest.json',
   '/quizzes/lesson_10_1.json',
   '/quizzes/lesson_10_2.json',

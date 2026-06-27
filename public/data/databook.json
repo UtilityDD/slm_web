@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "substations": [
+    {
+      "id": "ss_durgapur",
+      "name": { "en": "Durgapur SS", "bn": "দুর্গাপুর সাবস্টেশন" },
+      "operators": [
+        { "name": "Durgapur Control Room", "phone": "+910000000001" }
+      ],
+      "feeders": [
+        { "id": "dgp_fdr1", "name": { "en": "11kV Feeder 1 (Town)", "bn": "১১kV ফিডার ১ (টাউন)" } },
+        { "id": "dgp_fdr2", "name": { "en": "11kV Feeder 2 (Steel Plant)", "bn": "১১kV ফিডার ২ (স্টিল প্ল্যান্ট)" } },
+        { "id": "dgp_fdr3", "name": { "en": "11kV Feeder 3 (Rural)", "bn": "১১kV ফিডার ৩ (গ্রামীণ)" } }
+      ]
+    },
+    {
+      "id": "ss_asansol",
+      "name": { "en": "Asansol SS", "bn": "আসানসোল সাবস্টেশন" },
+      "operators": [
+        { "name": "Asansol Control Room", "phone": "+910000000002" }
+      ],
+      "feeders": [
+        { "id": "asn_fdr1", "name": { "en": "11kV Feeder 1 (Station)", "bn": "১১kV ফিডার ১ (স্টেশন)" } },
+        { "id": "asn_fdr2", "name": { "en": "33kV Feeder (Industrial)", "bn": "৩৩kV ফিডার (শিল্প)" } }
+      ]
+    },
+    {
+      "id": "ss_kharagpur",
+      "name": { "en": "Kharagpur SS", "bn": "খড়গপুর সাবস্টেশন" },
+      "operators": [
+        { "name": "Kharagpur Control Room", "phone": "+910000000003" }
+      ],
+      "feeders": [
+        { "id": "kgp_fdr1", "name": { "en": "11kV Feeder 1 (College)", "bn": "১১kV ফিডার ১ (কলেজ)" } },
+        { "id": "kgp_fdr2", "name": { "en": "11kV Feeder 2 (Market)", "bn": "১১kV ফিডার ২ (বাজার)" } }
+      ]
+    }
+  ],
+  "commonWorks": [
+    { "id": "insulator", "label": { "en": "Replace insulator", "bn": "ইনসুলেটর বদলানো" } },
+    { "id": "jumper", "label": { "en": "Jumper / conductor work", "bn": "জাম্পার / কন্ডাক্টর কাজ" } },
+    { "id": "crossarm", "label": { "en": "Cross-arm / pole work", "bn": "ক্রস-আর্ম / খুঁটির কাজ" } },
+    { "id": "transformer", "label": { "en": "Transformer maintenance", "bn": "ট্রান্সফরমার রক্ষণাবেক্ষণ" } },
+    { "id": "ltline", "label": { "en": "LT line repair", "bn": "এলটি লাইন মেরামত" } },
+    { "id": "treecut", "label": { "en": "Tree cutting near line", "bn": "লাইনের কাছে গাছ কাটা" } },
+    { "id": "fuse", "label": { "en": "Fuse / DO replacement", "bn": "ফিউজ / ডিও বদলানো" } }
+  ]
+}
