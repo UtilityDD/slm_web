@@ -105,16 +105,37 @@ function ChatBubble({ outgoing, name, time, children }) {
 }
 
 function WaInputBar({ value, onChange, onSend, placeholder, disabled, sending }) {
+    const textareaRef = useRef(null);
+    const MAX_INPUT_HEIGHT = 160;
+
+    const syncTextareaHeight = useCallback(() => {
+        const el = textareaRef.current;
+        if (!el) return;
+        el.style.height = 'auto';
+        el.style.height = `${Math.min(el.scrollHeight, MAX_INPUT_HEIGHT)}px`;
+    }, []);
+
+    useEffect(() => {
+        syncTextareaHeight();
+    }, [value, syncTextareaHeight]);
+
+    const handleChange = (e) => {
+        onChange(e);
+        requestAnimationFrame(syncTextareaHeight);
+    };
+
     return (
         <div className={`flex items-end gap-2 bg-[#f0f2f5] py-2 dark:bg-[#1f2c34] ${SAFE_PAD_X}`}>
             <div className="min-w-0 flex-1 rounded-3xl bg-white px-4 py-2.5 dark:bg-[#2a3942]">
                 <textarea
+                    ref={textareaRef}
                     value={value}
-                    onChange={onChange}
+                    onChange={handleChange}
                     placeholder={placeholder}
                     rows={1}
                     disabled={disabled}
-                    className="max-h-24 w-full resize-none border-0 bg-transparent p-0 text-[15px] leading-snug text-[#111b21] outline-none placeholder:text-[#667781] dark:text-[#e9edef]"
+                    className="w-full resize-none overflow-y-auto border-0 bg-transparent p-0 text-[15px] leading-snug text-[#111b21] outline-none placeholder:text-[#667781] dark:text-[#e9edef]"
+                    style={{ maxHeight: MAX_INPUT_HEIGHT }}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
@@ -167,6 +188,32 @@ function sortQuestions(rows) {
         if (a.is_solved !== b.is_solved) return a.is_solved ? 1 : -1;
         return new Date(b.created_at) - new Date(a.created_at);
     });
+}
+
+function ForumActivityToast({ toast, language, onDismiss, onOpen }) {
+    if (!toast) return null;
+
+    const label =
+        language === 'en' ? 'New reply in the forum — tap to view' : 'ফোরামে নতুন উত্তর — দেখতে ট্যাপ করুন';
+
+    return createPortal(
+        <button
+            type="button"
+            onClick={() => {
+                onOpen?.(toast.questionId);
+                onDismiss();
+            }}
+            className="fixed left-1/2 z-[115] max-w-[min(22rem,calc(100vw-2rem))] -translate-x-1/2 animate-toast-in rounded-full border border-[#25d366]/35 bg-[#111b21]/92 px-4 py-2.5 text-center text-[12px] font-medium text-[#e9edef] shadow-lg backdrop-blur-sm active:scale-[0.98]"
+            style={{ top: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}
+            aria-live="polite"
+        >
+            <span className="mr-1.5 inline-block text-[#25d366]" aria-hidden>
+                💬
+            </span>
+            {label}
+        </button>,
+        document.body
+    );
 }
 
 function WaToolbar({ language, filter, onFilter }) {
@@ -245,6 +292,8 @@ export default function ForumQA({
     embedded = false,
     channelButtons = [],
     onChannelUnavailable,
+    pendingQuestionId = null,
+    onPendingQuestionConsumed,
 }) {
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -258,8 +307,10 @@ export default function ForumQA({
     const [replyDraft, setReplyDraft] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [actionError, setActionError] = useState(null);
+    const [activityToast, setActivityToast] = useState(null);
     const activeQuestionIdRef = useRef(null);
     const chatEndRef = useRef(null);
+    const activityToastTimerRef = useRef(null);
 
     const t = {
         en: {
@@ -299,6 +350,39 @@ export default function ForumQA({
     }[language];
 
     activeQuestionIdRef.current = activeQuestionId;
+
+    const dismissActivityToast = useCallback(() => {
+        if (activityToastTimerRef.current) {
+            clearTimeout(activityToastTimerRef.current);
+            activityToastTimerRef.current = null;
+        }
+        setActivityToast(null);
+    }, []);
+
+    const showActivityToast = useCallback((questionId) => {
+        if (!questionId) return;
+        if (activityToastTimerRef.current) {
+            clearTimeout(activityToastTimerRef.current);
+        }
+        setActivityToast({ questionId });
+        activityToastTimerRef.current = window.setTimeout(() => {
+            setActivityToast(null);
+            activityToastTimerRef.current = null;
+        }, 4500);
+    }, []);
+
+    useEffect(() => () => {
+        if (activityToastTimerRef.current) {
+            clearTimeout(activityToastTimerRef.current);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!pendingQuestionId) return;
+        setActiveQuestionId(pendingQuestionId);
+        setComposeOpen(false);
+        onPendingQuestionConsumed?.();
+    }, [pendingQuestionId, onPendingQuestionConsumed]);
 
     const actor = {
         id: user?.id,
@@ -398,6 +482,9 @@ export default function ForumQA({
                         )
                     );
                 } else {
+                    if (row.author_id !== actor.id) {
+                        showActivityToast(row.parent_id);
+                    }
                     setQuestions((prev) =>
                         sortQuestions(
                             prev.map((q) =>
@@ -430,7 +517,7 @@ export default function ForumQA({
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [actor.id, actor.full_name, actor.slm_id, actor.role, loadQuestions, loadThread]);
+    }, [actor.id, actor.full_name, actor.slm_id, actor.role, loadQuestions, loadThread, showActivityToast]);
 
     const filteredQuestions = questions.filter((q) => {
         if (filter === 'open') return !q.is_solved;
@@ -507,9 +594,19 @@ export default function ForumQA({
             document.body
         );
 
+    const activityToastUi = (
+        <ForumActivityToast
+            toast={activityToast}
+            language={language}
+            onDismiss={dismissActivityToast}
+            onOpen={(questionId) => setActiveQuestionId(questionId)}
+        />
+    );
+
     if (composeOpen) {
         return (
             <div className="flex min-h-[70vh] w-full flex-col overflow-x-hidden bg-[#e5ddd5] dark:bg-[#0b141a]">
+                {activityToastUi}
                 <header className={`flex items-center gap-3 bg-[#075e54] py-2.5 text-white dark:bg-[#1f2c34] ${SAFE_PAD_X}`}>
                     <button
                         type="button"
@@ -551,6 +648,7 @@ export default function ForumQA({
         const q = thread?.question;
         return (
             <div className="flex min-h-[70vh] w-full flex-col overflow-x-hidden">
+                {activityToastUi}
                 <header className={`sticky top-0 z-20 flex items-center gap-2 bg-[#075e54] py-2 text-white shadow-md dark:bg-[#1f2c34] ${SAFE_PAD_X}`}>
                     <button
                         type="button"
@@ -638,6 +736,7 @@ export default function ForumQA({
 
     return (
         <div className="w-full overflow-x-hidden bg-white dark:bg-[#111b21]">
+            {activityToastUi}
             <WaHeader
                 title={t.title}
                 channelButtons={channelButtons}

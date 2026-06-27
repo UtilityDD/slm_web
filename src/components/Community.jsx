@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ForumQA from './ForumQA';
 
-export default function Community({ language = 'en', user, userProfile }) {
+export default function Community({ language = 'en', user, userProfile, pendingQuestionId, onPendingQuestionConsumed }) {
     const [showToast, setShowToast] = useState(false);
 
     const t = {
@@ -88,6 +88,8 @@ export default function Community({ language = 'en', user, userProfile }) {
                 userProfile={userProfile}
                 embedded
                 channelButtons={channelButtons}
+                pendingQuestionId={pendingQuestionId}
+                onPendingQuestionConsumed={onPendingQuestionConsumed}
                 onChannelUnavailable={() => {
                     setShowToast(true);
                     window.setTimeout(() => setShowToast(false), 2000);

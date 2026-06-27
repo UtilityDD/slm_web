@@ -130,6 +130,9 @@ export default function SmartLinemanUI() {
   const [isForceUpdate, setIsForceUpdate] = useState(false);
   const [selectedProgressUserId, setSelectedProgressUserId] = useState(null);
   const [awarenessOpenStoryId, setAwarenessOpenStoryId] = useState(null);
+  const [forumActivityToast, setForumActivityToast] = useState(null);
+  const [forumPendingQuestionId, setForumPendingQuestionId] = useState(null);
+  const forumActivityTimerRef = useRef(null);
 
   // Version Comparison Helper
   const isVersionOlder = (current, min) => {
@@ -747,6 +750,44 @@ export default function SmartLinemanUI() {
     };
   }, [user]);
 
+  // Subtle forum reply alert when user is elsewhere in the app
+  useEffect(() => {
+    if (!user?.id || currentView === 'community') return undefined;
+
+    const channel = supabase
+      .channel('forum_activity_app')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'forum_posts' }, (payload) => {
+        const row = payload.new;
+        if (!row?.parent_id || row.author_id === user.id) return;
+
+        if (forumActivityTimerRef.current) {
+          clearTimeout(forumActivityTimerRef.current);
+        }
+        setForumActivityToast({ questionId: row.parent_id });
+        forumActivityTimerRef.current = window.setTimeout(() => {
+          setForumActivityToast(null);
+          forumActivityTimerRef.current = null;
+        }, 4500);
+      })
+      .subscribe();
+
+    return () => {
+      if (forumActivityTimerRef.current) {
+        clearTimeout(forumActivityTimerRef.current);
+        forumActivityTimerRef.current = null;
+      }
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, currentView]);
+
+  useEffect(() => {
+    return () => {
+      if (forumActivityTimerRef.current) {
+        clearTimeout(forumActivityTimerRef.current);
+      }
+    };
+  }, []);
+
   // Scroll to top when view changes and sync with URL hash
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1065,7 +1106,15 @@ export default function SmartLinemanUI() {
         case 'my-progress':
           return <MyProgress language={language} user={user} targetUserId={selectedProgressUserId || user?.id} setCurrentView={setCurrentView} returnView="leaderboard" />;
         case 'community':
-          return <Community language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;
+          return (
+            <Community
+              language={language}
+              user={user}
+              userProfile={userProfile}
+              pendingQuestionId={forumPendingQuestionId}
+              onPendingQuestionConsumed={() => setForumPendingQuestionId(null)}
+            />
+          );
         case 'emergency':
           return <Emergency language={language} user={user} setCurrentView={setCurrentView} />;
         case 'sops':
@@ -1356,6 +1405,31 @@ export default function SmartLinemanUI() {
                 document.body
               )}
 
+            {forumActivityToast &&
+              createPortal(
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (forumActivityTimerRef.current) {
+                      clearTimeout(forumActivityTimerRef.current);
+                      forumActivityTimerRef.current = null;
+                    }
+                    setForumPendingQuestionId(forumActivityToast.questionId);
+                    setForumActivityToast(null);
+                    setCurrentView('community');
+                  }}
+                  className="fixed left-1/2 z-[115] max-w-[min(22rem,calc(100vw-2rem))] -translate-x-1/2 animate-toast-in rounded-full border border-emerald-500/35 bg-slate-900/92 px-4 py-2.5 text-center text-[12px] font-medium text-slate-100 shadow-lg backdrop-blur-sm active:scale-[0.98]"
+                  style={{ top: 'calc(4.5rem + env(safe-area-inset-top, 0px))' }}
+                  aria-live="polite"
+                >
+                  <span className="mr-1.5 inline-block text-emerald-400" aria-hidden>
+                    💬
+                  </span>
+                  {language === 'en' ? 'New forum reply — tap to open' : 'ফোরামে নতুন উত্তর — খুলতে ট্যাপ করুন'}
+                </button>,
+                document.body
+              )}
+
             {pushNotification && (
               <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[110] w-[calc(100%-2rem)] max-w-md animate-bounce-in">
                 <div className={`relative p-4 sm:p-5 rounded-2xl shadow-2xl border-2 flex gap-3 sm:gap-4 items-start ${pushNotification.type === 'alert' ? 'bg-red-50 border-red-500 dark:bg-red-900/20' : pushNotification.type === 'warning' ? 'bg-orange-50 border-orange-500 dark:bg-orange-900/20' : pushNotification.type === 'update' ? 'bg-green-50 border-green-500 dark:bg-green-900/20' : 'bg-orange-50 border-orange-500 dark:bg-orange-900/20'}`}>
@@ -1433,7 +1507,8 @@ export default function SmartLinemanUI() {
               !sidebarOpen &&
               !['login', 'verify', 'update-password'].includes(currentView) &&
               currentView !== 'sops' &&
-              currentView !== 'training' && (
+              currentView !== 'training' &&
+              currentView !== 'community' && (
               <div className="fixed left-0 z-[250] animate-slide-up bottom-[calc(8rem+env(safe-area-inset-bottom))]">
                  <button
                     type="button"
