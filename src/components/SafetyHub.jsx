@@ -1616,7 +1616,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-1">
+                                    <div className="mx-auto max-w-3xl divide-y divide-slate-900/10">
                                         {trainingChapters.map((chapter) => (
                                             <TrainingChapterCard
                                                 key={chapter.number}
@@ -1734,7 +1734,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                         </div>
                                     ) : (
                                         /* Regular Subchapter List */
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <div className="mx-auto max-w-3xl divide-y divide-slate-200">
                                             {selectedChapter.subchapters.map((subchapter, index) => {
                                                 const isUnlocked = isLessonUnlocked(subchapter.chapterNum, subchapter.subchapterNum);
                                                 const isCompleted = completedLessons.includes(subchapter.level_id);
@@ -1752,53 +1752,40 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                             }
                                                         }}
                                                         style={{ animationDelay: `${index * 0.05}s` }}
-                                                        className={`p-5 rounded-[2rem] border transition-all duration-500 flex flex-col gap-4 relative overflow-hidden animate-slide-up active:scale-[0.98] ${isUnlocked
-                                                            ? 'bg-token-bg-surface border-token-border hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-2xl cursor-pointer hover:-translate-y-1'
-                                                            : 'bg-token-bg-page/60 border-token-border opacity-60 cursor-not-allowed'
-                                                            } ${isCompleted ? 'ring-2 ring-emerald-500/20' : ''} group`}
+                                                        className={`flex items-start gap-4 px-1 py-4 transition-colors sm:gap-5 sm:py-5 animate-slide-up active:scale-[0.99] ${isUnlocked
+                                                            ? 'cursor-pointer hover:bg-orange-50/50'
+                                                            : 'cursor-not-allowed opacity-60'
+                                                            }`}
                                                     >
-                                                        {/* Status Badge */}
-                                                        <div className="flex justify-between items-start">
-                                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-black border-2 transition-transform group-hover:scale-110 ${isCompleted
-                                                                ? 'bg-emerald-500 text-white border-emerald-400 dark:border-emerald-600 shadow-lg shadow-emerald-500/20'
-                                                                : isUnlocked
-                                                                    ? 'bg-gradient-to-br from-orange-600 to-orange-500 text-white border-orange-400 dark:border-orange-800/50 shadow-lg shadow-orange-500/20'
-                                                                    : 'bg-token-bg-page text-token-text-muted border-token-border'
-                                                                }`}>
-                                                                {isCompleted ? '✓' : subchapter.level_id}
-                                                            </div>
-                                                            {isCompleted ? (
-                                                                <span className="text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border border-emerald-100 dark:border-emerald-800">
-                                                                    {language === 'en' ? 'Mastered' : 'সম্পন্ন'}
-                                                                </span>
-                                                            ) : !isUnlocked ? (
-                                                                <span className="text-token-text-muted bg-token-bg-page px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border border-token-border flex items-center gap-1">
-                                                                    <span>🔒</span> {language === 'en' ? 'Locked' : 'অপ্রাপ্য'}
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-orange-600 bg-orange-50 dark:bg-orange-900/30 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border border-orange-100 dark:border-orange-800">
-                                                                    {language === 'en' ? 'Next Up' : 'পরবর্তী'}
+                                                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-xs font-black sm:h-11 sm:w-11 sm:text-sm ${isCompleted
+                                                            ? 'bg-emerald-500 text-white'
+                                                            : isUnlocked
+                                                                ? 'bg-orange-500 text-white'
+                                                                : 'bg-slate-100 text-slate-400'
+                                                            }`}>
+                                                            {isCompleted ? '✓' : subchapter.level_id}
+                                                        </div>
+
+                                                        <div className="min-w-0 flex-1">
+                                                            {subchapter.badge_name && (
+                                                                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-token-text-muted">
+                                                                    {subchapter.badge_name}
                                                                 </span>
                                                             )}
-                                                        </div>
-
-                                                        <div className="flex-1">
-                                                            <span className="text-[10px] uppercase font-black text-token-text-muted tracking-[0.2em] mb-1 block">
-                                                                {subchapter.badge_name}
-                                                            </span>
-                                                            <h4 className={`font-black text-base leading-tight line-clamp-2 transition-colors ${isUnlocked ? 'text-token-text-primary group-hover:text-orange-600 dark:group-hover:text-orange-400' : 'text-token-text-muted'
-                                                                }`}>
+                                                            <h4 className={`text-base font-black leading-snug sm:text-lg ${isUnlocked ? 'text-token-text-primary' : 'text-token-text-muted'
+                                                                } ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                                 {subchapter.level_title}
                                                             </h4>
+                                                            <p className="mt-1.5 text-xs font-semibold">
+                                                                {isCompleted ? (
+                                                                    <span className="text-emerald-600">{language === 'en' ? 'Completed' : 'সম্পন্ন'}</span>
+                                                                ) : !isUnlocked ? (
+                                                                    <span className="text-token-text-muted">🔒 {language === 'en' ? 'Locked' : 'অপ্রাপ্য'}</span>
+                                                                ) : (
+                                                                    <span className="text-orange-600">{language === 'en' ? 'Start lesson →' : 'শুরু করুন →'}</span>
+                                                                )}
+                                                            </p>
                                                         </div>
-
-                                                        {/* Action Label */}
-                                                        {isUnlocked && (
-                                                            <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400 font-black text-[10px] uppercase tracking-wider opacity-60 group-hover:opacity-100 transition-all">
-                                                                {language === 'en' ? 'Start Lesson' : 'শুরু করুন'}
-                                                                <span className="group-hover:translate-x-1 transition-transform">→</span>
-                                                            </div>
-                                                        )}
                                                     </div>
                                                 );
                                             })}

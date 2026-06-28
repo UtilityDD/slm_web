@@ -363,20 +363,14 @@ const getTrainingHeaderLessonCode = (trainingContent, lang) => {
 };
 
 const TrainingSkeleton = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+    <div className="mx-auto max-w-3xl animate-pulse space-y-4">
         {[...Array(6)].map((_, i) => (
-            <div key={i} className="p-6 nb-card bg-white">
-                <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 bg-slate-200 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]"></div>
-                    <div className="flex-1 space-y-2">
-                        <div className="h-4 bg-slate-200 border border-slate-900 w-3/4"></div>
-                        <div className="h-3 bg-slate-100 border border-slate-300 w-1/2"></div>
-                    </div>
-                </div>
-                <div className="w-full h-2 bg-slate-100 border border-slate-900 mb-2"></div>
-                <div className="flex justify-between">
-                    <div className="h-3 bg-slate-100 border border-slate-300 w-1/4"></div>
-                    <div className="h-3 bg-slate-100 border border-slate-300 w-1/4"></div>
+            <div key={i} className="flex items-start gap-4 border-b border-slate-200 py-5">
+                <div className="h-12 w-12 shrink-0 bg-slate-200 rounded-xl"></div>
+                <div className="flex-1 space-y-2">
+                    <div className="h-5 bg-slate-200 w-3/4 rounded"></div>
+                    <div className="h-3 bg-slate-100 w-1/2 rounded"></div>
+                    <div className="h-1.5 bg-slate-100 w-full max-w-md rounded-full"></div>
                 </div>
             </div>
         ))}
@@ -391,71 +385,57 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
     return (
         <div
             onClick={() => onClick(chapter)}
-            className={`p-6 rounded-[2rem] border transition-all duration-500 cursor-pointer group relative overflow-hidden active:scale-95 animate-entrance-pop ${isFAQ
-                ? 'bg-gradient-to-br from-violet-50/50 to-fuchsia-100/30 dark:from-violet-900/10 dark:to-fuchsia-900/10 border-violet-100 dark:border-violet-800/40 hover:border-violet-400 dark:hover:border-violet-500 shadow-sm hover:shadow-xl lg:hover:-translate-y-2'
-                : 'bg-token-bg-surface border-token-border hover:border-orange-200 dark:hover:border-orange-800 hover:shadow-2xl lg:hover:-translate-y-2'
-                }`}
+            className={`flex cursor-pointer items-start gap-4 border-b-2 border-slate-900/10 px-1 py-5 transition-colors hover:bg-orange-50/40 active:bg-orange-50/60 sm:gap-5 sm:py-6 ${isFAQ ? 'hover:bg-violet-50/40' : ''}`}
         >
-            {/* Background Accent */}
-            <div className={`absolute top-0 right-0 w-32 h-32 blur-3xl rounded-full transition-opacity duration-500 opacity-0 group-hover:opacity-20 pointer-events-none ${isFAQ ? 'bg-violet-500' : 'bg-orange-500'}`}></div>
-
-            <div className="flex items-center justify-between mb-4 relative z-10">
-                <div className="flex items-center gap-4">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-black border transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 ${isFAQ
-                        ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 border-violet-200 dark:border-violet-800'
-                        : 'bg-gradient-to-br from-orange-400 to-orange-600 text-white border-orange-500 shadow-lg shadow-orange-500/20'
-                        }`}>
-                        {isFAQ ? '?' : chapter.number}
-                    </div>
-                    <div>
-                        <h3 className={`font-black tracking-tight leading-tight text-lg lg:text-xl transition-colors ${language === 'bn' ? 'font-bengali' : ''} ${isFAQ
-                            ? 'text-violet-900 dark:text-violet-100 group-hover:text-violet-700 dark:group-hover:text-violet-300'
-                            : 'text-token-text-primary group-hover:text-orange-600 dark:group-hover:text-orange-400'
-                            }`}>
-                            {chapter.title}
-                        </h3>
-                        <p className="text-[11px] font-bold text-token-text-muted uppercase tracking-widest mt-1">
-                            {isFAQ ? (
-                                language === 'en' ? 'Reference Guide' : 'রেফারেন্স গাইড'
-                            ) : (
-                                language === 'en' ? (
-                                    `${chapter.count} Lessons`
-                                ) : (
-                                    `${toBengaliNumber(chapter.count, 'bn')}টি পাঠ`
-                                )
-                            )}
-                        </p>
-                    </div>
-                </div>
+            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-xl font-black border-2 transition-colors ${isFAQ
+                ? 'bg-violet-100 text-violet-600 border-violet-200'
+                : 'bg-gradient-to-br from-orange-400 to-orange-600 text-white border-orange-500'
+                }`}>
+                {isFAQ ? '?' : chapter.number}
             </div>
 
-            {/* Progress Bar Area */}
-            {!isFAQ && (
-                <div className="space-y-3 relative z-10">
-                    <div className="w-full h-2.5 bg-token-bg-page rounded-full overflow-hidden shadow-inner border border-token-border">
-                        <div
-                            className={`h-full rounded-full transition-all duration-1000 ease-out relative ${progress === 100 ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' : 'bg-gradient-to-r from-orange-400 to-orange-600'}`}
-                            style={{ width: `${progress}%` }}
-                        >
-                            <div className="absolute inset-0 shimmer opacity-30"></div>
+            <div className="min-w-0 flex-1">
+                <h3 className={`font-black leading-snug text-lg sm:text-xl ${language === 'bn' ? 'font-bengali' : ''} ${isFAQ
+                    ? 'text-violet-900 group-hover:text-violet-700'
+                    : 'text-token-text-primary'
+                    }`}>
+                    {chapter.title}
+                </h3>
+                <p className="mt-1 text-xs font-semibold text-token-text-muted sm:text-sm">
+                    {isFAQ ? (
+                        language === 'en' ? 'Reference Guide' : 'রেফারেন্স গাইড'
+                    ) : (
+                        language === 'en' ? (
+                            `${chapter.count} lessons`
+                        ) : (
+                            `${toBengaliNumber(chapter.count, 'bn')}টি পাঠ`
+                        )
+                    )}
+                </p>
+
+                {!isFAQ && (
+                    <div className="mt-3 space-y-1.5">
+                        <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-token-bg-page">
+                            <div
+                                className={`h-full rounded-full transition-all duration-700 ${progress === 100 ? 'bg-emerald-500' : 'bg-orange-500'}`}
+                                style={{ width: `${progress}%` }}
+                            />
+                        </div>
+                        <div className="flex items-center gap-3 text-xs font-semibold text-token-text-muted">
+                            <span>{completedCount}/{chapter.count} {language === 'en' ? 'complete' : 'সম্পন্ন'}</span>
+                            <span className={progress === 100 ? 'text-emerald-600' : 'text-orange-600'}>{progress}%</span>
                         </div>
                     </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-token-text-muted">
-                            {completedCount}/{chapter.count} {language === 'en' ? 'Complete' : 'সম্পন্ন'}
-                        </span>
-                        <span className={`text-xs font-black ${progress === 100 ? 'text-emerald-500' : 'text-orange-500'}`}>
-                            {progress}%
-                        </span>
-                    </div>
-                </div>
-            )}
+                )}
 
-            {isFAQ && (
-                <div className="mt-4 flex items-center gap-1.5 text-violet-500 font-black text-[10px] uppercase tracking-wider">
-                    {language === 'en' ? 'Access Knowledge' : 'জ্ঞান অন্বেষণ করুন'} <span>→</span>
-                </div>
-            )}
+                {isFAQ && (
+                    <p className="mt-2 text-xs font-bold text-violet-600">
+                        {language === 'en' ? 'Access Knowledge →' : 'জ্ঞান অন্বেষণ করুন →'}
+                    </p>
+                )}
+            </div>
+
+            <span className="mt-1 shrink-0 text-slate-400" aria-hidden>→</span>
         </div>
     );
 });
@@ -954,8 +934,8 @@ function SectionPointFullCard({
     readingComfort = false,
 }) {
     const shell = readingComfort
-        ? 'relative overflow-hidden border-2 border-slate-900 bg-white p-4 sm:p-6 md:p-10 shadow-[3px_3px_0_#0f172a]'
-        : 'relative overflow-hidden border-2 border-slate-900 bg-white p-4 sm:p-6 md:p-8 shadow-[4px_4px_0_#0f172a] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5';
+        ? 'relative border-l-4 border-slate-900 bg-white py-4 pl-5 pr-4 sm:py-6 sm:pl-7 sm:pr-6 md:py-8 md:pl-8 md:pr-8'
+        : 'relative border-l-4 border-slate-900 bg-white py-4 pl-5 pr-4 sm:py-5 sm:pl-6 sm:pr-5 md:py-7 md:pl-7 md:pr-7';
     const stackGap = readingComfort ? 'space-y-4 sm:space-y-7 md:space-y-10' : 'space-y-4 sm:space-y-6 md:space-y-8';
     const titleCls = readingComfort
         ? `text-xl sm:text-2xl md:text-[1.95rem] font-black text-slate-900 leading-snug ${language === 'bn' ? 'font-bengali leading-[1.45]' : ''}`
@@ -963,18 +943,13 @@ function SectionPointFullCard({
     const specCls = readingComfort
         ? `text-sm sm:text-lg md:text-[1.35rem] text-slate-700 leading-[1.75] sm:leading-[2.05] font-medium ${language === 'bn' ? 'font-bengali sm:text-[1.2rem] md:text-[1.35rem] leading-[1.8] sm:leading-[2.15]' : ''}`
         : `text-sm sm:text-lg md:text-xl text-slate-700 leading-[1.7] sm:leading-[1.9] font-medium ${language === 'bn' ? 'font-bengali sm:text-xl md:text-2xl leading-[1.85] sm:leading-[2.1]' : ''}`;
-    const boxPad = readingComfort ? 'p-3.5 sm:p-6 md:p-9' : 'p-3.5 sm:p-5 md:p-8';
     const boxBody = readingComfort
-        ? `text-sm sm:text-base md:text-[1.2rem] text-slate-900 font-bold leading-[1.65] sm:leading-[1.95] ${language === 'bn' ? 'font-bengali leading-[1.7] sm:leading-[2.1]' : ''}`
-        : `text-sm sm:text-base md:text-lg text-slate-900 font-bold leading-[1.6] sm:leading-[1.8] ${language === 'bn' ? 'font-bengali leading-[1.65] sm:leading-[2.0]' : ''}`;
+        ? `text-sm sm:text-base md:text-[1.2rem] text-slate-800 font-medium leading-[1.65] sm:leading-[1.95] ${language === 'bn' ? 'font-bengali leading-[1.7] sm:leading-[2.1]' : ''}`
+        : `text-sm sm:text-base md:text-lg text-slate-800 font-medium leading-[1.6] sm:leading-[1.8] ${language === 'bn' ? 'font-bengali leading-[1.65] sm:leading-[2.0]' : ''}`;
 
     return (
-        <div className={shell}>
-            <div
-                className={`absolute left-0 top-0 bottom-0 w-1 ${pIdx % 2 === 0 ? 'bg-orange-500' : 'bg-amber-500'}`}
-                aria-hidden
-            />
-            <div className={`flex flex-col ${stackGap} pl-3 sm:pl-4`}>
+        <div className={shell} style={{ borderLeftColor: pIdx % 2 === 0 ? '#f97316' : '#f59e0b' }}>
+            <div className={`flex flex-col ${stackGap}`}>
                 <h4 className={titleCls}>
                     {point.item_name}
                 </h4>
@@ -1002,22 +977,22 @@ function SectionPointFullCard({
                             </div>
                         )}
 
-                        <div className={`grid grid-cols-1 ${readingComfort ? 'gap-3 sm:gap-6 md:gap-8' : 'gap-3 sm:gap-5 md:gap-6'}`}>
+                        <div className={`space-y-5 ${readingComfort ? 'sm:space-y-7 md:space-y-9' : 'sm:space-y-6'}`}>
                             {point.importance && (
-                                <div className={`border-2 border-slate-900 bg-blue-50 ${boxPad} shadow-[2px_2px_0_#0f172a]`}>
-                                    <div className="mb-2 flex items-center gap-2 sm:mb-3 md:mb-4">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 nb-mono sm:text-xs">{language === 'en' ? 'Strategy' : 'কৌশল'}</span>
-                                    </div>
+                                <div className="border-l-[3px] border-blue-500 pl-4 sm:pl-5">
+                                    <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-blue-700 nb-mono sm:text-xs">
+                                        {language === 'en' ? 'Strategy' : 'কৌশল'}
+                                    </p>
                                     <div className={boxBody}>
                                         {renderTextWithImages(point.importance)}
                                     </div>
                                 </div>
                             )}
                             {point.daily_check && (
-                                <div className={`border-2 border-slate-900 bg-emerald-50 ${boxPad} shadow-[2px_2px_0_#0f172a]`}>
-                                    <div className="mb-2 flex items-center gap-2 sm:mb-3 md:mb-4">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 nb-mono sm:text-xs">{language === 'en' ? 'Action Plan' : 'কর্মপরিকল্পনা'}</span>
-                                    </div>
+                                <div className="border-l-[3px] border-emerald-500 pl-4 sm:pl-5">
+                                    <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-emerald-700 nb-mono sm:text-xs">
+                                        {language === 'en' ? 'Action Plan' : 'কর্মপরিকল্পনা'}
+                                    </p>
                                     <div className={boxBody}>
                                         {renderTextWithImages(point.daily_check)}
                                     </div>
@@ -1028,7 +1003,7 @@ function SectionPointFullCard({
                 </div>
 
                 {showDoneButton && (
-                    <div className="mt-2 border-t-2 border-slate-900 pt-6">
+                    <div className="mt-2 border-t border-slate-200 pt-6">
                         <button
                             type="button"
                             onClick={onStepDone}
@@ -4117,7 +4092,7 @@ export default function Training({
                                         <div
                                             ref={lessonScrollInnerRef}
                                             key={activeSectionIndex}
-                                            className={`max-w-4xl mx-auto animate-fade-in-up relative px-4 sm:px-10 md:px-14 ${
+                                            className={`max-w-5xl mx-auto animate-fade-in-up relative px-4 sm:px-10 md:px-16 ${
                                                 isSupplementaryCompletion
                                                     ? 'flex h-full min-h-0 flex-col items-center overflow-hidden py-3 pb-4 sm:py-8 sm:pb-10'
                                                     : 'px-6 py-10 pb-8 sm:py-14 sm:pb-10'
@@ -4159,11 +4134,11 @@ export default function Training({
 
                                             {activeSlide?.type === 'section' && (
                                                 <article className="space-y-5 sm:space-y-7">
-                                                    <header className="nb-card relative mb-2 overflow-hidden bg-orange-50 px-4 py-6 sm:mb-3 sm:px-6 sm:py-8">
-                                                        <p className={`mb-1.5 text-center font-black text-orange-700 ${language === 'bn' ? 'font-bengali text-xs tracking-normal' : 'text-[10px] uppercase tracking-[0.28em] nb-mono'}`}>
+                                                    <header className="relative mb-4 border-b-2 border-slate-900 pb-5 pt-2 sm:mb-6 sm:pb-6">
+                                                        <p className={`mb-2 text-center font-black text-orange-600 ${language === 'bn' ? 'font-bengali text-xs tracking-normal' : 'text-[10px] uppercase tracking-[0.28em] nb-mono'}`}>
                                                             {language === 'en' ? 'In this part' : 'এই অংশে'}
                                                         </p>
-                                                        <h3 className={`text-center text-2xl font-black leading-snug tracking-tight text-slate-900 sm:text-3xl md:text-4xl ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
+                                                        <h3 className={`text-center text-2xl font-black leading-snug tracking-tight text-slate-900 sm:text-3xl md:text-[2.15rem] ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
                                                             {activeSlide.title}
                                                         </h3>
                                                     </header>
@@ -4218,10 +4193,10 @@ export default function Training({
                                                                         return (
                                                                             <div
                                                                                 key={pIdx}
-                                                                                className="flex items-start gap-3 border-2 border-slate-900 bg-emerald-50 px-4 py-3.5 shadow-[2px_2px_0_#0f172a]"
+                                                                                className="flex items-start gap-3 border-b border-emerald-200 bg-emerald-50/60 px-1 py-3"
                                                                             >
-                                                                                <span className="shrink-0 text-lg text-emerald-700" aria-hidden>✓</span>
-                                                                                <h4 className={`min-w-0 flex-1 text-left text-sm font-bold leading-snug text-emerald-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                                <span className="mt-0.5 shrink-0 text-base text-emerald-600" aria-hidden>✓</span>
+                                                                                <h4 className={`min-w-0 flex-1 text-left text-sm font-semibold leading-snug text-emerald-900 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                                                     {point.item_name}
                                                                                 </h4>
                                                                             </div>
@@ -4249,12 +4224,12 @@ export default function Training({
                                                                     return (
                                                                         <div
                                                                             key={pIdx}
-                                                                            className="border-2 border-dashed border-slate-400 bg-slate-100 px-4 py-4"
+                                                                            className="border-b border-dashed border-slate-300 px-1 py-3.5"
                                                                         >
                                                                             <div className="flex items-start gap-3">
-                                                                                <span className="shrink-0 text-base text-slate-400 dark:text-slate-500" aria-hidden>🔒</span>
+                                                                                <span className="mt-0.5 shrink-0 text-sm text-slate-400" aria-hidden>🔒</span>
                                                                                 <div className="min-w-0 flex-1">
-                                                                                    <h4 className={`text-sm font-bold leading-snug text-slate-500 line-clamp-3 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                                    <h4 className={`text-sm font-medium leading-snug text-slate-500 line-clamp-3 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                                                         {point.item_name}
                                                                                     </h4>
                                                                                 </div>
@@ -4311,7 +4286,7 @@ export default function Training({
                                                                                     lessonScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
                                                                                 });
                                                                             }}
-                                                                            className={`flex w-full items-start gap-3 border-2 border-slate-900 bg-emerald-50 px-4 py-3 text-left shadow-[2px_2px_0_#0f172a] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 sm:py-3.5 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                            className={`flex w-full items-start gap-3 border-b border-emerald-200 bg-emerald-50/50 px-1 py-3.5 text-left transition-colors hover:bg-emerald-50 sm:py-4 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                                         >
                                                                             <span className="shrink-0 text-lg text-emerald-600 dark:text-emerald-400" aria-hidden>
                                                                                 ✓
@@ -4820,13 +4795,17 @@ export default function Training({
                         </button>
                     </div>
 
-                    {/* Scrollable Compact List */}
-                    <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-3 scrollbar-hide pb-24">
+                    {/* Scrollable chapter list */}
+                    <div className="flex-1 overflow-y-auto scrollbar-hide pb-24">
+                        <div className="mx-auto max-w-3xl space-y-1 px-4 py-4 md:px-6 md:py-6">
                         {trainingChapters.filter(ch => ch.number !== 10).map((chapter, idx) => {
                             const isExpanded = expandedChapterIndex === idx;
                             const totalLessonsInChapter = chapter.count;
                             const completedInChapter = completedLessons.filter(id => id && id.toString().startsWith(`${chapter.number}.`)).length;
                             const isUnlocked = isLessonUnlocked(chapter.number, 1);
+                            const chapterProgress = totalLessonsInChapter > 0
+                                ? Math.round((completedInChapter / totalLessonsInChapter) * 100)
+                                : 0;
                             
                             // Ordinal Helper
                             const getOrdinal = (n) => {
@@ -4840,69 +4819,108 @@ export default function Training({
                             };
 
                             return (
-                                <div key={chapter.number} className="nb-card animate-entrance-pop overflow-hidden bg-white transition-all duration-300">
+                                <div key={chapter.number} className="animate-entrance-pop overflow-hidden rounded-lg border border-slate-900 bg-white transition-all duration-300">
                                     {/* Chapter Row */}
                                     <button 
                                         type="button"
                                         onClick={() => setExpandedChapterIndex(isExpanded ? null : idx)}
-                                        className={`flex w-full items-center justify-between p-3.5 text-left transition-colors ${
-                                            isExpanded ? 'bg-orange-50' : 'bg-white hover:bg-orange-50/50'
+                                        className={`flex w-full items-start gap-3 p-4 text-left transition-colors sm:gap-4 sm:p-5 ${
+                                            isExpanded ? 'bg-orange-50/80' : 'bg-white hover:bg-orange-50/40'
                                         }`}
                                     >
-                                        <div className="flex min-w-0 items-center gap-3">
-                                            <div className={`flex h-8 w-8 shrink-0 items-center justify-center border-2 border-slate-900 text-[10px] font-black ${
-                                                isUnlocked ? 'bg-orange-500 text-white shadow-[2px_2px_0_#0f172a]' : 'bg-slate-200 text-slate-400'
-                                            }`}>
-                                                {getOrdinal(chapter.number)}
-                                            </div>
-                                            <div className="min-w-0">
-                                                <h3 className={`truncate text-sm font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                    {chapter.title}
-                                                    <span className="ml-2 text-[10px] font-bold text-slate-400 normal-case tracking-normal">
-                                                        ({totalLessonsInChapter} {language === 'en' ? 'Lessons' : 'টি পাঠ'})
-                                                    </span>
-                                                </h3>
+                                        <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 text-[11px] font-black ${
+                                            isUnlocked ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-400'
+                                        }`}>
+                                            {getOrdinal(chapter.number)}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <h3 className={`text-base font-black leading-snug text-slate-900 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                {chapter.title}
+                                            </h3>
+                                            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                                                <span className="text-[11px] font-semibold text-slate-500">
+                                                    {totalLessonsInChapter} {language === 'en' ? 'lessons' : 'টি পাঠ'}
+                                                </span>
                                                 {completedInChapter > 0 && (
-                                                    <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-0.5">
-                                                        {completedInChapter === totalLessonsInChapter ? (language === 'en' ? 'Chapter Completed' : 'অধ্যায় সম্পন্ন') : `${completedInChapter} ${language === 'en' ? 'Done' : 'সম্পন্ন'}`}
-                                                    </p>
+                                                    <span className={`text-[11px] font-bold ${completedInChapter === totalLessonsInChapter ? 'text-emerald-600' : 'text-orange-600'}`}>
+                                                        {completedInChapter === totalLessonsInChapter
+                                                            ? (language === 'en' ? 'Complete' : 'সম্পন্ন')
+                                                            : `${completedInChapter}/${totalLessonsInChapter} ${language === 'en' ? 'done' : 'সম্পন্ন'}`}
+                                                    </span>
                                                 )}
                                             </div>
+                                            {!isExpanded && totalLessonsInChapter > 0 && (
+                                                <div className="mt-2.5 h-1 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+                                                    <div
+                                                        className={`h-full rounded-full transition-all ${chapterProgress === 100 ? 'bg-emerald-500' : 'bg-orange-500'}`}
+                                                        style={{ width: `${chapterProgress}%` }}
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
-                                        <div className={`flex h-6 w-6 items-center justify-center border-2 border-slate-900 transition-transform duration-300 ${isExpanded ? 'rotate-180 bg-orange-500 text-white' : 'bg-white text-slate-400'}`}>
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+                                        <div className={`mt-1 flex h-7 w-7 shrink-0 items-center justify-center text-slate-500 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-orange-600' : ''}`}>
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
                                             </svg>
                                         </div>
                                     </button>
 
-                                    {/* Lessons Grid (Accordion Content) */}
+                                    {/* Lessons list */}
                                     {isExpanded && (
-                                        <div className="grid grid-cols-5 gap-2 border-t-2 border-slate-900 bg-orange-50/40 p-4 pt-1 animate-fade-in min-[420px]:grid-cols-6 md:grid-cols-8 lg:grid-cols-10">
+                                        <div className="animate-fade-in border-t border-slate-200 bg-[#fffdf7] px-3 py-2 sm:px-4">
                                             {Array.from({ length: chapter.count }, (_, i) => {
                                                 const lessonNum = i + 1;
                                                 const lessonId = `${chapter.number}.${lessonNum}`;
                                                 const isDone = completedLessons.includes(lessonId);
                                                 const isLessonUnl = isLessonUnlocked(chapter.number, lessonNum);
+                                                const lessonLabel = language === 'en'
+                                                    ? `Lesson ${lessonId}`
+                                                    : `পাঠ ${toBengaliNumber(lessonId, language)}`;
 
                                                 return (
                                                     <button
                                                         key={lessonId}
+                                                        type="button"
                                                         disabled={!isLessonUnl}
                                                         onClick={() => {
                                                             setShowLessonIndex(false);
                                                             handleChapterClick(chapter, lessonNum);
                                                         }}
-                                                        className={`flex aspect-square items-center justify-center border-2 border-slate-900 text-[10px] font-black transition-all ${
-                                                            isDone 
-                                                                ? 'bg-emerald-500 text-white shadow-[2px_2px_0_#0f172a]' 
-                                                                : isLessonUnl 
-                                                                    ? 'bg-orange-100 text-orange-700 shadow-[2px_2px_0_#0f172a] hover:-translate-x-0.5 hover:-translate-y-0.5' 
-                                                                    : 'cursor-not-allowed border-slate-400 bg-slate-200 text-slate-400 opacity-50'
+                                                        className={`flex w-full items-center gap-3 border-b border-slate-100 px-2 py-3 text-left transition-colors last:border-b-0 sm:gap-4 sm:px-3 sm:py-3.5 ${
+                                                            isDone
+                                                                ? 'hover:bg-emerald-50/60'
+                                                                : isLessonUnl
+                                                                    ? 'hover:bg-orange-50/60'
+                                                                    : 'cursor-not-allowed opacity-50'
                                                         }`}
-                                                        title={`${language === 'en' ? 'Lesson' : 'পাঠ'} ${lessonId}`}
                                                     >
-                                                        {isDone ? '✓' : lessonNum}
+                                                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-xs font-black tabular-nums ${
+                                                            isDone
+                                                                ? 'bg-emerald-500 text-white'
+                                                                : isLessonUnl
+                                                                    ? 'bg-orange-100 text-orange-800'
+                                                                    : 'bg-slate-100 text-slate-400'
+                                                        }`}>
+                                                            {isDone ? '✓' : (language === 'bn' ? toBengaliNumber(lessonNum, language) : lessonNum)}
+                                                        </span>
+                                                        <span className={`min-w-0 flex-1 text-sm font-semibold leading-snug sm:text-base ${
+                                                            isDone
+                                                                ? 'text-emerald-900'
+                                                                : isLessonUnl
+                                                                    ? 'text-slate-900'
+                                                                    : 'text-slate-400'
+                                                        } ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            {lessonLabel}
+                                                        </span>
+                                                        {isDone ? (
+                                                            <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-emerald-600 nb-mono">
+                                                                {language === 'en' ? 'Done' : 'সম্পন্ন'}
+                                                            </span>
+                                                        ) : isLessonUnl ? (
+                                                            <span className="shrink-0 text-slate-400" aria-hidden>→</span>
+                                                        ) : (
+                                                            <span className="shrink-0 text-sm text-slate-400" aria-hidden>🔒</span>
+                                                        )}
                                                     </button>
                                                 );
                                             })}
@@ -4911,6 +4929,7 @@ export default function Training({
                                 </div>
                             );
                         })}
+                        </div>
                     </div>
                 </div>,
                 document.body

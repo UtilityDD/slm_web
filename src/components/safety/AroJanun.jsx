@@ -387,7 +387,7 @@ export default function AroJanun({ language, setCurrentView }) {
                         <ChapterDetailBody chapter={selectedChapter} language={language} />
                     </article>
                 ) : filteredChapters.length > 0 ? (
-                    <div className="grid grid-cols-1 gap-5 min-[420px]:grid-cols-2 lg:grid-cols-3">
+                    <div className="mx-auto max-w-4xl space-y-3">
                         {filteredChapters.map((chapter) => {
                             const title = language === 'en' ? chapter.title_en : chapter.title_bn;
                             const desc = language === 'en' ? chapter.desc_en : chapter.desc_bn;
@@ -398,38 +398,35 @@ export default function AroJanun({ language, setCurrentView }) {
                                     key={chapter.id}
                                     type="button"
                                     onClick={() => setSelectedChapter(chapter)}
-                                    className="group nb-card flex h-full flex-col bg-white p-4 text-left transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 sm:p-5"
+                                    className="group flex w-full items-start gap-4 border-b-2 border-slate-900 bg-white px-1 py-5 text-left transition-colors hover:bg-orange-50/40 sm:gap-5 sm:py-6"
                                 >
-                                    <div className="mb-3 flex items-start justify-between gap-2">
-                                        <div className={`nb-icon-badge flex h-11 w-11 shrink-0 items-center justify-center text-xl ${chapter.badgeClass}`}>
-                                            <span aria-hidden>{chapter.icon}</span>
-                                        </div>
-                                        <span className="nb-tag shrink-0 bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-800 nb-mono">
-                                            {chapter.code}
-                                        </span>
+                                    <div className={`nb-icon-badge flex h-12 w-12 shrink-0 items-center justify-center text-xl sm:h-14 sm:w-14 sm:text-2xl ${chapter.badgeClass}`}>
+                                        <span aria-hidden>{chapter.icon}</span>
                                     </div>
-                                    <h2 className={`mb-1.5 text-base font-black leading-snug text-slate-900 group-hover:text-orange-700 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {title}
-                                    </h2>
-                                    <p className={`mb-3 flex-1 text-xs font-semibold leading-relaxed text-slate-700 line-clamp-2 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {desc}
-                                    </p>
-                                    <div className="mb-3 flex flex-wrap gap-1.5">
-                                        {topics.map((topic) => (
-                                            <span
-                                                key={topic}
-                                                className="border border-slate-900 bg-[#fffdf7] px-1.5 py-0.5 text-[9px] font-bold text-slate-800 nb-mono"
-                                            >
-                                                {topic}
+                                    <div className="min-w-0 flex-1">
+                                        <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 nb-mono">
+                                                {chapter.code}
                                             </span>
-                                        ))}
+                                            <span className="text-[10px] font-bold text-teal-700 nb-mono">
+                                                {duration}
+                                            </span>
+                                        </div>
+                                        <h2 className={`mb-2 text-lg font-black leading-snug text-slate-900 group-hover:text-orange-700 sm:text-xl ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {title}
+                                        </h2>
+                                        <p className={`mb-2 text-sm font-medium leading-relaxed text-slate-600 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {desc}
+                                        </p>
+                                        {topics?.length > 0 && (
+                                            <p className={`text-xs font-semibold leading-relaxed text-slate-500 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                {topics.join(language === 'bn' ? ' · ' : ' · ')}
+                                            </p>
+                                        )}
                                     </div>
-                                    <div className="flex items-center justify-between border-t-2 border-slate-900 pt-3">
-                                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 nb-mono">{duration}</span>
-                                        <span className="text-[10px] font-black uppercase tracking-wider text-orange-700 nb-mono">
-                                            {t.read} →
-                                        </span>
-                                    </div>
+                                    <span className="mt-1 shrink-0 text-orange-600 opacity-60 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" aria-hidden>
+                                        →
+                                    </span>
                                 </button>
                             );
                         })}
