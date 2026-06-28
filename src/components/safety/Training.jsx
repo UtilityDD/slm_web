@@ -1896,6 +1896,15 @@ export default function Training({
 
     const { speak, pause, resume, stop, isPlaying, isPaused, activeId, isLoading } = useTextToSpeech(language);
 
+    const handleLessonCompletionHourlyNav = useCallback(async () => {
+        stop();
+        setTrainingContent(null);
+        setSelectedChapter(null);
+        setSelectedLesson(null);
+        setIsJournalMode(false);
+        await handleHourlyChallengeClick();
+    }, [stop, handleHourlyChallengeClick]);
+
     const supplementaryRadioSrc = useMemo(() => {
         if (!trainingContent?.isSupplementary) return '';
         return pickSupplementaryListenSrc(trainingContent, language);
@@ -2733,6 +2742,22 @@ export default function Training({
             finalizeLessonCompletion(pendingLessonId);
         }
     };
+
+    const handleQuizResultHourlyNav = useCallback(async ({ passed }) => {
+        const lessonId = pendingLessonId;
+        if (passed && lessonId) {
+            await finalizeLessonCompletion(lessonId);
+        } else {
+            setShowQuizModal(false);
+            setPendingLessonId(null);
+        }
+        stop();
+        setTrainingContent(null);
+        setSelectedChapter(null);
+        setSelectedLesson(null);
+        setIsJournalMode(false);
+        await handleHourlyChallengeClick();
+    }, [pendingLessonId, stop, handleHourlyChallengeClick]);
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 md:mb-6 animate-slide-down">
@@ -4555,6 +4580,16 @@ export default function Training({
                                                                 {language === 'en' ? 'Start Challenge' : 'চ্যালেঞ্জ শুরু করুন'}
                                                             </button>
 
+                                                            {user && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={handleLessonCompletionHourlyNav}
+                                                                    className={`mx-auto block py-1 text-sm font-medium text-slate-500 transition-colors hover:text-emerald-700 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                >
+                                                                    {language === 'en' ? 'Hourly quiz →' : 'ঘণ্টাভিত্তিক কুইজ →'}
+                                                                </button>
+                                                            )}
+
                                                             <button
                                                                 type="button"
                                                                 onClick={() => {
@@ -4676,6 +4711,7 @@ export default function Training({
                         isOpen={showQuizModal}
                         onClose={() => setShowQuizModal(false)}
                         onReadAgain={handleReadAgain}
+                        onHourlyQuiz={handleQuizResultHourlyNav}
                         questions={currentQuizQuestions}
                         onComplete={handleQuizComplete}
                         chapterTitle={trainingContent?.level_title}

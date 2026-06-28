@@ -837,6 +837,18 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         }
     };
 
+    const handleQuizResultHourlyNav = async ({ passed }) => {
+        const lessonId = pendingLessonId;
+        if (passed && lessonId) {
+            await finalizeLessonCompletion(lessonId);
+        } else {
+            setShowQuizModal(false);
+            setPendingLessonId(null);
+        }
+        setTrainingContent(null);
+        setCurrentView('competitions');
+    };
+
     const SAFETY_RULES = [
         {
             rule: language === 'en' ? "Min. Ground Clearance for LT line is 15 ft./ 4.6 meter." : "এলটি লাইনের জন্য ন্যূনতম গ্রাউন্ড ক্লিয়ারেন্স হল ১৫ ফুট/ ৪.৬ মিটার।",
@@ -2178,6 +2190,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                         onClose={() => setShowQuizModal(false)}
                         onReadAgain={handleReadAgain}
                         onComplete={handleQuizComplete}
+                        onHourlyQuiz={handleQuizResultHourlyNav}
                         questions={currentQuizQuestions}
                         language={language}
                         isPractice={pendingLessonId && completedLessons.includes(pendingLessonId)}

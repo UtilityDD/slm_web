@@ -1,8 +1,10 @@
 ﻿import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Share } from '@capacitor/share';
+import { DotLottiePlayer } from '@dotlottie/react-player';
 import { useTextToSpeech } from '../hooks/useTextToSpeech';
 import { buildChapterQuizSpeechScript } from '../utils/chapterQuizReadAloud';
+import clockLottie from '../assets/clock.lottie';
 
 /** Fisher–Yates shuffle (unbiased). Returns a new array. */
 function shuffleArray(items) {
@@ -69,7 +71,7 @@ function ReviewOptionMarker({ isSelected, isCorrect }) {
 
 const LESSON_QUIZ_PASS_RATE = 0.7;
 
-const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions = [], language = 'en', isPractice = false, lessonId = '' }) => {
+const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, onHourlyQuiz, questions = [], language = 'en', isPractice = false, lessonId = '' }) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [userAnswers, setUserAnswers] = useState({});
     const [showResult, setShowResult] = useState(false);
@@ -424,6 +426,12 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
         }
     };
 
+    const handleHourlyQuizNav = () => {
+        if (typeof onHourlyQuiz === 'function') {
+            onHourlyQuiz({ passed: isPassed, score });
+        }
+    };
+
     const handleTryAgain = () => {
         playUiSfx('retry');
         setIsRetryShuffle(true);
@@ -624,12 +632,33 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, questions 
                                         <span className="hidden sm:inline">{t.backToResult}</span>
                                     </button>
                                 ) : (
-                                    <button
-                                        onClick={onClose}
-                                        className={`border-2 border-slate-900 bg-white p-1 text-slate-600 shadow-[2px_2px_0_#0f172a] transition-colors hover:-translate-x-0.5 hover:-translate-y-0.5 ${isFullscreenScreen ? '' : ''}`}
-                                    >
-                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                                    </button>
+                                    <>
+                                        {showResult && typeof onHourlyQuiz === 'function' && (
+                                            <button
+                                                type="button"
+                                                onClick={handleHourlyQuizNav}
+                                                className="transition-transform duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                                                title={language === 'en' ? 'Hourly quiz' : 'ঘণ্টাভিত্তিক কুইজ'}
+                                                aria-label={language === 'en' ? 'Hourly quiz' : 'ঘণ্টাভিত্তিক কুইজ'}
+                                            >
+                                                <div className="h-9 w-9 drop-shadow-md sm:h-10 sm:w-10">
+                                                    <DotLottiePlayer
+                                                        src={clockLottie}
+                                                        autoplay
+                                                        loop
+                                                        className="h-full w-full filter saturate-150 contrast-125"
+                                                    />
+                                                </div>
+                                            </button>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={onClose}
+                                            className={`border-2 border-slate-900 bg-white p-1 text-slate-600 shadow-[2px_2px_0_#0f172a] transition-colors hover:-translate-x-0.5 hover:-translate-y-0.5 ${isFullscreenScreen ? '' : ''}`}
+                                        >
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        </button>
+                                    </>
                                 )}
                             </div>
                         </div>
