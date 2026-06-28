@@ -17,6 +17,7 @@ This folder holds **maintainer-focused** documentation: architecture notes, inte
 | [Monthly encouragement boards](./monthly-encouragement-boards.md) | Four monthly tabs (champion / new / improved / learner), Hall of Fame v8, prizes, `monthlyEncouragementBoards.js` |
 | [Safety Library](./safety-library.md) | `SafetyLibrary.jsx`, grid, detail modal, Drive image helper |
 | [Training lesson reader](./training-lesson-reader.md) | `Training.jsx` journal slides, guided section cards, advance lock, alert/chime, scroll + text scale |
+| [Training lesson images](./training-lesson-images.md) | Poster generation (WebP, Bengali headers), JSON `image_name`, loader/faq paths, Supabase migrations |
 | [Life Skill / supplementary modules](./life-skills-supplementary.md) | `supplementary_modules.json`, `lesson_10_*.json`, GitHub or `/audio/` listen URLs, `LS` codes, `supplementaryProgressStorage.js` |
 | [Life Skills Quiz Generation](./life-skills-quiz-generation.md) | Standardized guide on authoring/maintaining Life Skills quiz files with anti-cheat/balancing rules |
 | [Audio Script Generation](./audio-script-generation.md) | "Smart Lineman Radio" standards, Google AI Studio optimization, JSON to script workflow |

@@ -102,4 +102,5 @@ Dependencies are **`[sectionGuidedStepDone, sectionReaderMode]`** only — not *
 
 ## See also
 
+- **[Training lesson images](./training-lesson-images.md)** — poster generation, WebP pipeline, Bengali header overlay, JSON + Supabase migrations for chapter lessons.
 - **[Life Skill / supplementary modules](./life-skills-supplementary.md)** — `supplementary_modules.json`, `lesson_10_*.json`, **GitHub-only** Listen URLs, `LS01` header codes, local completion storage.
