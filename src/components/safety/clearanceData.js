@@ -157,17 +157,17 @@ export function deleteFromHistory(id) {
 /* --------------------------- grounding checklist -------------------------- */
 
 export const GROUNDING_ITEMS = [
-    { id: 'test_dead', label: { en: 'Tested line is DEAD', bn: 'লাইন মৃত (DEAD) পরীক্ষা করা হয়েছে' }, icon: '📟' },
-    { id: 'discharge', label: { en: 'Line discharged', bn: 'লাইন ডিসচার্জ করা হয়েছে' }, icon: '⚡' },
-    { id: 'earth', label: { en: 'Earth / grounding applied', bn: 'আর্থিং / গ্রাউন্ডিং লাগানো হয়েছে' }, icon: '🦯' },
-    { id: 'short', label: { en: 'Both sides shorted', bn: 'দুই দিকে শর্ট করা হয়েছে' }, icon: '🔗' },
+    { id: 'test_dead', label: { en: 'Line dead (tested)', bn: 'লাইন মৃত' }, icon: '📟' },
+    { id: 'discharge', label: { en: 'Discharged', bn: 'ডিসচার্জ' }, icon: '⚡' },
+    { id: 'earth', label: { en: 'Earthed', bn: 'আর্থিং' }, icon: '🦯' },
+    { id: 'short', label: { en: 'Both sides shorted', bn: 'দুই দিক শর্ট' }, icon: '🔗' },
 ];
 
 export const CLOSEOUT_ITEMS = [
-    { id: 'crew_clear', label: { en: 'All crew clear of line', bn: 'সব কর্মী লাইন থেকে দূরে' }, icon: '👷' },
-    { id: 'tools_counted', label: { en: 'All tools counted', bn: 'সব সরঞ্জাম গুনে নেওয়া হয়েছে' }, icon: '🧰' },
-    { id: 'earth_removed', label: { en: 'Earth / grounding REMOVED', bn: 'আর্থিং / গ্রাউন্ডিং সরানো হয়েছে' }, icon: '⚡' },
-    { id: 'barricade_removed', label: { en: 'Barricades removed', bn: 'ব্যারিকেড সরানো হয়েছে' }, icon: '🚧' },
+    { id: 'crew_clear', label: { en: 'Crew clear', bn: 'কর্মী নিরাপদ' }, icon: '👷' },
+    { id: 'tools_counted', label: { en: 'Tools counted', bn: 'সরঞ্জাম গোনা' }, icon: '🧰' },
+    { id: 'earth_removed', label: { en: 'Earthing removed', bn: 'আর্থিং সরানো' }, icon: '⚡' },
+    { id: 'barricade_removed', label: { en: 'Barricades off', bn: 'ব্যারিকেড সরানো' }, icon: '🚧' },
 ];
 
 /* --------------------------- message templates ---------------------------- */

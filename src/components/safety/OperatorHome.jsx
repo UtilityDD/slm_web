@@ -14,7 +14,7 @@ export default function OperatorHome({ language = 'bn', onClose, onOpenLink }) {
                     </button>
                     <div>
                         <h1 className="text-lg font-black">{t('Operator', 'অপারেটর')}</h1>
-                        <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">{t('Substation control', 'সাবস্টেশন কন্ট্রোল')}</p>
+                        <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">{t('Substation control', 'সাবস্টেশন নিয়ন্ত্রণ প্যানেল')}</p>
                     </div>
                 </div>
             </header>
@@ -22,13 +22,13 @@ export default function OperatorHome({ language = 'bn', onClose, onOpenLink }) {
             <main className="flex-1 overflow-y-auto p-5 max-w-md mx-auto w-full flex flex-col justify-center gap-6">
                 <div className="text-center space-y-3">
                     <div className="text-8xl">🏢</div>
-                    <p className="text-xl font-black text-slate-800 dark:text-white">{t('Open link from SMS', 'এসএমএসের লিংক খুলুন')}</p>
-                    <p className="text-sm font-bold text-slate-500 px-4">{t('Lineman sends a link. Tap it to confirm isolation or re-energize in the app — or use phone as before.', 'লাইনম্যান লিংক পাঠায়। অ্যাপে নিশ্চিত করুন — অথবা আগের মতো ফোনেও।')}</p>
+                    <p className="text-xl font-black text-slate-800 dark:text-white">{t('Open link from SMS', 'এসএমএস (SMS)-এর লিংকটি খুলুন')}</p>
+                    <p className="text-sm font-bold text-slate-500 px-4">{t('Lineman sends a link. Tap it to confirm isolation or re-energize in the app — or use phone as before.', 'লাইনম্যান আপনাকে একটি লিংক পাঠাবেন। অ্যাপের মাধ্যমে আইসোলেশন বা লাইন চালু করা নিশ্চিত করতে লিংকটিতে ট্যাপ করুন — অথবা আগের মতোই ফোনে কথা বলে নিশ্চিত করতে পারেন।')}</p>
                 </div>
 
                 {recent.length > 0 && (
                     <div className="space-y-2">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">{t('Recent confirmations', 'সাম্প্রতিক নিশ্চিত')}</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">{t('Recent confirmations', 'সাম্প্রতিক নিশ্চিতকরণসমূহ')}</p>
                         {recent.map((r, i) => (
                             <div key={i} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
                                 <p className="font-black text-sm">{r.permitNo}</p>

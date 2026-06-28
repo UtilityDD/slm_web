@@ -49,7 +49,7 @@ export function RadioScrollPaddingBridge({ currentView }) {
     const apply = () => {
       const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
       const isLeader = currentView === 'leaderboard';
-      const hideRadioChrome = currentView === 'community';
+      const hideRadioChrome = currentView === 'community' || currentView === 'sops';
       if (visible && isMobile && !isLeader && !hideRadioChrome) {
         el.style.setProperty(
           'padding-bottom',
@@ -73,6 +73,17 @@ export function RadioScrollPaddingBridge({ currentView }) {
       el.style.removeProperty('padding-bottom');
     };
   }, [visible, currentView]);
+
+  return null;
+}
+
+/** Stop radio when entering Suraksha Sathi (PTW) — no distraction during safety work. */
+export function RadioSafetyGuard({ currentView }) {
+  const { visible, dismiss } = useLifeSkillRadio();
+
+  useLayoutEffect(() => {
+    if (currentView === 'sops' && visible) dismiss();
+  }, [currentView, visible, dismiss]);
 
   return null;
 }

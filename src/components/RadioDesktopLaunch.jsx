@@ -4,7 +4,7 @@ import { useLifeSkillRadio } from '../context/LifeSkillRadioContext';
 /** Desktop / tablet: start SLM Radio from the top bar (mobile uses FAB + sidebar). */
 export default function RadioDesktopLaunch({ language, currentView }) {
   const { startRadio, loading, visible } = useLifeSkillRadio();
-  if (visible) return null;
+  if (visible || currentView === 'sops') return null;
 
   const isHome = currentView === 'home';
   return (

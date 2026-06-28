@@ -17,12 +17,11 @@ function ProgressDots({ page }) {
     );
 }
 
-function PageTitle({ icon, title, hint }) {
+function PageTitle({ icon, title }) {
     return (
-        <div className="text-center mb-5">
-            <div className="text-5xl mb-2">{icon}</div>
-            <h2 className="text-2xl font-black text-slate-800 dark:text-white leading-tight">{title}</h2>
-            {hint && <p className="text-xs font-bold text-slate-400 px-6 mt-1">{hint}</p>}
+        <div className="text-center mb-4">
+            <div className="text-5xl mb-1">{icon}</div>
+            <h2 className="text-xl font-black text-slate-800 dark:text-white leading-tight">{title}</h2>
         </div>
     );
 }
@@ -156,12 +155,12 @@ export default function ClearanceSetup({ language = 'bn', onCancel, onComplete, 
                     <div className="flex items-center gap-2 shrink-0">
                         {page === 1 && (
                             <button onClick={() => setManagingData(true)} className="px-3 py-2 bg-white/20 text-white rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md border border-white/20">
-                                {t('Data', 'ডেটা')}
+                                {t('Data', 'ডেটা বুক')}
                             </button>
                         )}
                         {onHistory && page === 1 && (
                             <button onClick={onHistory} className="px-3 py-2 bg-white/20 text-white rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md border border-white/20">
-                                {t('History', 'হিস্ট্রি')}
+                                {t('History', 'ইতিহাস')}
                             </button>
                         )}
                     </div>
@@ -177,58 +176,58 @@ export default function ClearanceSetup({ language = 'bn', onCancel, onComplete, 
                         <>
                             {page === 1 && (
                                 <>
-                                    <PageTitle icon="🏢" title={t('Which substation?', 'কোন সাবস্টেশন?')} hint={t('Tap your substation. Add a new one if missing.', 'আপনার সাবস্টেশন বেছে নিন। না থাকলে নতুন যোগ করুন।')} />
+                                    <PageTitle icon="🏢" title={t('Which substation?', 'কোন সাবস্টেশন?')} />
                                     {book.substations.map(ss => (
                                         <Tile key={ss.id} label={L(ss.name)} sub={ss.operators[0] ? ss.operators[0].phone : ''} active={sel.ssId === ss.id} onClick={() => pickSS(ss)} />
                                     ))}
                                     {adding ? (
                                         <div className="p-4 rounded-3xl bg-white dark:bg-slate-900 border-2 border-orange-300 space-y-3">
-                                            <input value={draft} onChange={e => setDraft(e.target.value)} placeholder={t('Substation name', 'সাবস্টেশনের নাম')} className={inputCls} autoFocus />
-                                            <input type="tel" value={draft2} onChange={e => setDraft2(e.target.value)} placeholder={t('Operator phone (optional)', 'অপারেটরের ফোন (ঐচ্ছিক)')} className={inputCls} />
+                                            <input value={draft} onChange={e => setDraft(e.target.value)} placeholder={t('Substation name', 'সাবস্টেশনের নাম লিখুন')} className={inputCls} autoFocus />
+                                            <input type="tel" value={draft2} onChange={e => setDraft2(e.target.value)} placeholder={t('Operator phone (optional)', 'অপারেটরের ফোন নম্বর (ঐচ্ছিক)')} className={inputCls} />
                                             <div className="flex gap-2">
-                                                <button onClick={resetAdd} className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 font-black text-sm">{t('Cancel', 'বাতিল')}</button>
-                                                <button onClick={saveNewSS} className="flex-1 py-3 rounded-xl bg-orange-600 text-white font-black text-sm">{t('Save', 'সেভ')}</button>
+                                                <button onClick={resetAdd} className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 font-black text-sm">{t('Cancel', 'বাতিল করুন')}</button>
+                                                <button onClick={saveNewSS} className="flex-1 py-3 rounded-xl bg-orange-600 text-white font-black text-sm">{t('Save', 'সেভ করুন')}</button>
                                             </div>
                                         </div>
                                     ) : (
-                                        <AddButton onClick={() => setAdding(true)} label={t('Add new substation', 'নতুন সাবস্টেশন')} />
+                                        <AddButton onClick={() => setAdding(true)} label={t('Add new substation', 'নতুন সাবস্টেশন যোগ করুন')} />
                                     )}
                                 </>
                             )}
 
                             {page === 2 && (
                                 <>
-                                    <PageTitle icon="🔌" title={t('Which feeder / line?', 'কোন ফিডার / লাইন?')} hint={sel.ssName} />
+                                    <PageTitle icon="🔌" title={t('Which feeder?', 'কোন ফিডার?')} />
                                     {currentSS && currentSS.feeders.map(f => (
                                         <Tile key={f.id} label={L(f.name)} active={sel.feeder && sel.feeder.id === f.id} onClick={() => pickFeeder(f)} />
                                     ))}
                                     {adding ? (
                                         <div className="p-4 rounded-3xl bg-white dark:bg-slate-900 border-2 border-orange-300 space-y-3">
-                                            <input value={draft} onChange={e => setDraft(e.target.value)} placeholder={t('Feeder / line name', 'ফিডার / লাইনের নাম')} className={inputCls} autoFocus />
+                                            <input value={draft} onChange={e => setDraft(e.target.value)} placeholder={t('Feeder / line name', 'ফিডার বা লাইনের নাম লিখুন')} className={inputCls} autoFocus />
                                             <div className="flex gap-2">
-                                                <button onClick={resetAdd} className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 font-black text-sm">{t('Cancel', 'বাতিল')}</button>
-                                                <button onClick={saveNewFeeder} className="flex-1 py-3 rounded-xl bg-orange-600 text-white font-black text-sm">{t('Save', 'সেভ')}</button>
+                                                <button onClick={resetAdd} className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 font-black text-sm">{t('Cancel', 'বাতিল করুন')}</button>
+                                                <button onClick={saveNewFeeder} className="flex-1 py-3 rounded-xl bg-orange-600 text-white font-black text-sm">{t('Save', 'সেভ করুন')}</button>
                                             </div>
                                         </div>
                                     ) : (
-                                        <AddButton onClick={() => setAdding(true)} label={t('Add new feeder', 'নতুন ফিডার')} />
+                                        <AddButton onClick={() => setAdding(true)} label={t('Add new feeder', 'নতুন ফিডার যোগ করুন')} />
                                     )}
                                 </>
                             )}
 
                             {page === 3 && (
                                 <>
-                                    <PageTitle icon="📞" title={t('Substation operator', 'সাবস্টেশন অপারেটর')} hint={t('Confirm who to contact for shutdown.', 'শাটডাউনের জন্য কাকে যোগাযোগ করবেন নিশ্চিত করুন।')} />
+                                    <PageTitle icon="📞" title={t('Operator', 'অপারেটর')} />
                                     {currentSS && currentSS.operators.map((o, i) => (
                                         <Tile key={o.phone + i} label={o.name || o.phone} sub={o.phone} active={sel.operator && sel.operator.phone === o.phone} onClick={() => pickOperator(o)} />
                                     ))}
                                     {adding ? (
                                         <div className="p-4 rounded-3xl bg-white dark:bg-slate-900 border-2 border-orange-300 space-y-3">
                                             <input value={draft} onChange={e => setDraft(e.target.value)} placeholder={t('Operator name (optional)', 'অপারেটরের নাম (ঐচ্ছিক)')} className={inputCls} />
-                                            <input type="tel" value={draft2} onChange={e => setDraft2(e.target.value)} placeholder={t('Operator phone', 'অপারেটরের ফোন')} className={inputCls} autoFocus />
+                                            <input type="tel" value={draft2} onChange={e => setDraft2(e.target.value)} placeholder={t('Operator phone', 'অপারেটরের ফোন নম্বর')} className={inputCls} autoFocus />
                                             <div className="flex gap-2">
-                                                <button onClick={resetAdd} className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 font-black text-sm">{t('Cancel', 'বাতিল')}</button>
-                                                <button onClick={saveNewOperator} className="flex-1 py-3 rounded-xl bg-orange-600 text-white font-black text-sm">{t('Save', 'সেভ')}</button>
+                                                <button onClick={resetAdd} className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 font-black text-sm">{t('Cancel', 'বাতিল করুন')}</button>
+                                                <button onClick={saveNewOperator} className="flex-1 py-3 rounded-xl bg-orange-600 text-white font-black text-sm">{t('Save', 'সেভ করুন')}</button>
                                             </div>
                                         </div>
                                     ) : (
@@ -239,29 +238,29 @@ export default function ClearanceSetup({ language = 'bn', onCancel, onComplete, 
 
                             {page === 4 && (
                                 <>
-                                    <PageTitle icon="🛠️" title={t('What is the work?', 'কী কাজ?')} hint={t('Pick the job or add a new one.', 'কাজ বেছে নিন বা নতুন যোগ করুন।')} />
+                                    <PageTitle icon="🛠️" title={t('What work?', 'কী কাজ?')} />
                                     {book.commonWorks.map(w => (
                                         <Tile key={w.id} label={L(w.label)} active={sel.work === L(w.label)} onClick={() => pickWork(w)} />
                                     ))}
                                     {adding ? (
                                         <div className="p-4 rounded-3xl bg-white dark:bg-slate-900 border-2 border-orange-300 space-y-3">
-                                            <input value={draft} onChange={e => setDraft(e.target.value)} placeholder={t('Work description', 'কাজের বিবরণ')} className={inputCls} autoFocus />
+                                            <input value={draft} onChange={e => setDraft(e.target.value)} placeholder={t('Work description', 'কাজের বিবরণ লিখুন')} className={inputCls} autoFocus />
                                             <div className="flex gap-2">
-                                                <button onClick={resetAdd} className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 font-black text-sm">{t('Cancel', 'বাতিল')}</button>
-                                                <button onClick={saveNewWork} className="flex-1 py-3 rounded-xl bg-orange-600 text-white font-black text-sm">{t('Save', 'সেভ')}</button>
+                                                <button onClick={resetAdd} className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 font-black text-sm">{t('Cancel', 'বাতিল করুন')}</button>
+                                                <button onClick={saveNewWork} className="flex-1 py-3 rounded-xl bg-orange-600 text-white font-black text-sm">{t('Save', 'সেভ করুন')}</button>
                                             </div>
                                         </div>
                                     ) : (
-                                        <AddButton onClick={() => setAdding(true)} label={t('Add new work', 'নতুন কাজ')} />
+                                        <AddButton onClick={() => setAdding(true)} label={t('Add new work', 'নতুন কাজ যোগ করুন')} />
                                     )}
                                 </>
                             )}
 
                             {page === 5 && (
                                 <>
-                                    <PageTitle icon="👷" title={t('Any crew with you?', 'সাথে কেউ আছেন?')} hint={t('Optional. Add crew and a note for the operator.', 'ঐচ্ছিক। কর্মী ও অপারেটরের জন্য মন্তব্য যোগ করুন।')} />
+                                    <PageTitle icon="👷" title={t('Crew?', 'সাথে কেউ আছে?')} />
                                     <div className="flex gap-2">
-                                        <input value={crewInput} onChange={e => setCrewInput(e.target.value)} placeholder={t('Worker name', 'কর্মীর নাম')} className={inputCls} />
+                                        <input value={crewInput} onChange={e => setCrewInput(e.target.value)} placeholder={t('Worker name', 'সহকর্মীর নাম লিখুন')} className={inputCls} />
                                         <button onClick={addCrew} className="px-5 rounded-xl bg-slate-800 text-white font-black text-xl active:scale-95">＋</button>
                                     </div>
                                     {sel.crew.length > 0 && (
@@ -271,30 +270,29 @@ export default function ClearanceSetup({ language = 'bn', onCancel, onComplete, 
                                             ))}
                                         </div>
                                     )}
-                                    <label className="block pt-2">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-1">{t('Comment (optional)', 'মন্তব্য (ঐচ্ছিক)')}</span>
+                                    <label className="block pt-1">
                                         <textarea
                                             value={sel.comment}
                                             onChange={e => setSel(s => ({ ...s, comment: e.target.value }))}
-                                            placeholder={t('e.g. pole no. 42, near market', 'যেমন খুঁটি নং ৪২, বাজারের কাছে')}
-                                            rows={3}
-                                            className={`${inputCls} mt-1 resize-none`}
+                                            placeholder={t('Note (optional)', 'অতিরিক্ত মন্তব্য (ঐচ্ছিক)')}
+                                            rows={2}
+                                            className={`${inputCls} resize-none`}
                                         />
                                     </label>
-                                    <button onClick={() => goto(6)} className="w-full py-4 rounded-3xl bg-blue-700 text-white font-black mt-2 active:scale-95 transition-transform">{sel.crew.length ? t('Continue', 'এগিয়ে যান') : t('Skip — Continue', 'বাদ দিয়ে এগিয়ে যান')}</button>
+                                    <button onClick={() => goto(6)} className="w-full py-4 rounded-3xl bg-blue-700 text-white font-black mt-2 active:scale-95 transition-transform">{t('Continue', 'পরের ধাপে যান')}</button>
                                 </>
                             )}
 
                             {page === 6 && (
                                 <>
-                                    <PageTitle icon="✅" title={t('Ready to start', 'শুরু করতে প্রস্তুত')} hint={t('Check the details, then start.', 'বিবরণ দেখে নিন, তারপর শুরু করুন।')} />
+                                    <PageTitle icon="✅" title={t('Ready?', 'সব ঠিক আছে?')} />
                                     <div className="rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-800">
                                         {[
                                             [t('Substation', 'সাবস্টেশন'), sel.ssName, () => goto(1)],
                                             [t('Feeder', 'ফিডার'), sel.feeder ? sel.feeder.name : '-', () => goto(2)],
                                             [t('Operator', 'অপারেটর'), sel.operator ? `${sel.operator.name || ''} ${sel.operator.phone || ''}`.trim() : '-', () => goto(3)],
-                                            [t('Work', 'কাজ'), sel.work || '-', () => goto(4)],
-                                            [t('Crew', 'কর্মী'), sel.crew.length ? sel.crew.join(', ') : t('None', 'কেউ না'), () => goto(5)],
+                                            [t('Work', 'কাজের বিবরণ'), sel.work || '-', () => goto(4)],
+                                            [t('Crew', 'সহকর্মী'), sel.crew.length ? sel.crew.join(', ') : t('None', 'কেউ নেই'), () => goto(5)],
                                             ...(sel.comment.trim() ? [[t('Comment', 'মন্তব্য'), sel.comment.trim(), () => goto(5)]] : []),
                                         ].map(([k, v, edit]) => (
                                             <button key={k} onClick={edit} className="w-full flex items-center justify-between gap-3 p-4 text-left active:bg-slate-50 dark:active:bg-slate-800">
@@ -302,23 +300,22 @@ export default function ClearanceSetup({ language = 'bn', onCancel, onComplete, 
                                                     <span className="block text-[10px] font-black uppercase tracking-widest text-slate-400">{k}</span>
                                                     <span className="block font-black text-slate-800 dark:text-white truncate">{v}</span>
                                                 </span>
-                                                <span className="text-orange-500 text-xs font-black uppercase shrink-0">{t('Edit', 'বদল')}</span>
+                                                <span className="text-orange-500 text-xs font-black uppercase shrink-0">{t('Edit', 'বদল করুন')}</span>
                                             </button>
                                         ))}
                                     </div>
                                     <label className="block px-1">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('Your phone (for operator app reply)', 'আপনার ফোন (অপারেটর অ্যাপ উত্তর)')}</span>
-                                        <input type="tel" value={myPhone} onChange={e => setMyPhone(e.target.value)} placeholder={t('Mobile number', 'মোবাইল নম্বর')} className="mt-1 w-full p-3 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 font-bold outline-none focus:border-orange-500" />
+                                        <input type="tel" value={myPhone} onChange={e => setMyPhone(e.target.value)} placeholder={t('Your mobile', 'আপনার মোবাইল নম্বর লিখুন')} className="w-full p-3 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 font-bold outline-none focus:border-orange-500" />
                                     </label>
                                     <button
                                         onClick={finishWithPin}
                                         disabled={!sel.feeder || !sel.operator || !sel.operator.phone}
                                         className="w-full py-5 rounded-3xl bg-orange-600 text-white font-black text-lg shadow-lg shadow-orange-600/30 active:scale-95 transition-all disabled:opacity-40 disabled:active:scale-100 mt-2"
                                     >
-                                        {t('Create Permit & Start', 'পারমিট তৈরি করে শুরু করুন')}
+                                        {t('Start', 'পারমিট শুরু করুন')}
                                     </button>
                                     {(!sel.feeder || !sel.operator || !sel.operator.phone) && (
-                                        <p className="text-center text-[11px] font-bold text-red-500">{t('Feeder and operator phone are required.', 'ফিডার ও অপারেটরের ফোন প্রয়োজন।')}</p>
+                                        <p className="text-center text-[11px] font-bold text-red-500">{t('Need feeder + operator phone', 'ফিডার ও অপারেটরের ফোন নম্বর দিন')}</p>
                                     )}
                                 </>
                             )}

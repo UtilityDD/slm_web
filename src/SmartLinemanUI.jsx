@@ -21,7 +21,7 @@ import { invalidateLeaderboardCaches } from "./utils/leaderboardCacheKeys";
 import BottomNavigation from "./components/BottomNavigation";
 import RadioMiniPlayer from "./components/RadioMiniPlayer";
 import RadioDesktopLaunch from "./components/RadioDesktopLaunch";
-import { LifeSkillRadioProvider, RadioScrollPaddingBridge } from "./context/LifeSkillRadioContext";
+import { LifeSkillRadioProvider, RadioScrollPaddingBridge, RadioSafetyGuard } from "./context/LifeSkillRadioContext";
 import IdleStoryReminder from "./components/IdleStoryReminder";
 import { libraryService } from "./utils/libraryService";
 import { trackAppVisit } from "./utils/landingVisitService";
@@ -1532,8 +1532,9 @@ export default function SmartLinemanUI() {
             <NetworkStatusListener language={language} />
 
             {user && <RadioScrollPaddingBridge currentView={currentView} />}
+            {user && <RadioSafetyGuard currentView={currentView} />}
 
-            {user && !['login', 'verify'].includes(currentView) && (
+            {user && !['login', 'verify', 'sops'].includes(currentView) && (
               <RadioMiniPlayer language={language} currentView={currentView} />
             )}
 

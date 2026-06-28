@@ -4,6 +4,25 @@
  * Works offline over SMS — no server required.
  */
 
+import { WEBSITE_URL } from '../../config';
+
+function isLocalDevHost(hostname) {
+    if (!hostname) return false;
+    return hostname === 'localhost'
+        || hostname === '127.0.0.1'
+        || hostname.endsWith('.local')
+        || /^192\.168\./.test(hostname)
+        || /^10\./.test(hostname);
+}
+
+/** Public base for SMS/app links — operators cannot open localhost on their phone. */
+function appLinkBase() {
+    const configured = (import.meta.env.VITE_PUBLIC_APP_URL || WEBSITE_URL || '').replace(/\/$/, '');
+    if (typeof window === 'undefined') return configured || 'https://smartlineman.in';
+    if (isLocalDevHost(window.location.hostname)) return configured || 'https://smartlineman.in';
+    return `${window.location.origin}${window.location.pathname || '/'}`.replace(/\/$/, '');
+}
+
 export function parseClearanceFromHash() {
     try {
         const hash = window.location.hash || '';
@@ -29,7 +48,7 @@ export function parseClearanceFromHash() {
 }
 
 export function buildClearanceUrl(query) {
-    const base = `${window.location.origin}${window.location.pathname || '/'}`.replace(/\/$/, '');
+    const base = appLinkBase();
     const p = new URLSearchParams();
     Object.entries(query).forEach(([k, v]) => { if (v != null && v !== '') p.set(k, String(v)); });
     return `${base}/#/sops?${p.toString()}`;
