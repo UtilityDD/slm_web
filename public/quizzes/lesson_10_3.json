@@ -8,6 +8,8 @@
       "points": [
         {
           "item_name": "মনযোগ বিচ্ছিন্ন হওয়া (Distraction) ⚠️",
+          "image_name": "/images/loader/ls03_phone_silent.webp",
+          "image_caption": "Silent · Pocket — Distraction = বিপদ",
           "specifications": "উচ্চতায় বা লাইভ লাইনের পাশে কাজ করার সময় ফোন পকেটে রাখুন এবং সাইলেন্ট করে রাখুন।",
           "importance": "ফোনের একটি নোটিফিকেশন বা কলের আওয়াজে চমকে গেলে হাত ফসকে বড় দুর্ঘটনা ঘটতে পারে। পিপিই-র মতোই ফোন ম্যানেজমেন্ট জরুরি। 🛠️",
           "daily_check": "পোলে ওঠার আগে কি ফোনটি সাইলেন্ট বা ভাইব্রেশন মোডে দিয়েছেন? 📴"
@@ -19,12 +21,16 @@
       "points": [
         {
           "item_name": "ওটিপি (OTP) ও পাসওয়ার্ড 🤐",
+          "image_name": "/images/loader/ls03_otp_never.webp",
+          "image_caption": "OTP/PIN — কখনো শেয়ার ✗",
           "specifications": "ব্যাঙ্ক বা অফিসের লোক পরিচয় দিলেও ফোনে কখনো ওটিপি বা পিন (PIN) শেয়ার করবেন না।",
           "importance": "ওটিপি শেয়ার করা মানে আপনার সিন্দুকের চাবি চোরের হাতে তুলে দেওয়া। কোনো অফিসিয়াল কাজ ফোনের ওটিপি ছাড়াই সম্ভব। 🔒",
           "daily_check": "অচেনা কাউকে কখনো ওটিপি দেবেন না, এমনকি সে বড় অফিসার পরিচয় দিলেও। 🚫"
         },
         {
           "item_name": "ডিজিটাল অ্যারেস্ট Scam ⚖️",
+          "image_name": "/images/loader/ls03_digital_arrest.webp",
+          "image_caption": "Digital Arrest — ভুয়া Video Call",
           "specifications": "পুলিশ বা সিবিআই পরিচয় দিয়ে ভিডিও কলে আপনাকে ভয় দেখালে ঘাবড়াবেন না।",
           "importance": "ভারত সরকারের কোনো দপ্তর বা পুলিশ ভিডিও কলের মাধ্যমে কাউকে 'গ্রেপ্তার' করে না বা টাকা চায় না। এটি সম্পূর্ণ ভুয়া। 🏛️",
           "daily_check": "এরকম কল এলে সাথে সাথে কেটে দিন এবং কাউকে টাকা দেবেন না। ☎️"
@@ -36,6 +42,8 @@
       "points": [
         {
           "item_name": "বিদেশি নম্বর থেকে সাবধান 📵",
+          "image_name": "/images/loader/ls03_foreign_calls.webp",
+          "image_caption": "+92 · +84 · +63 — Block Unknown",
           "specifications": "+৯২ (Pakistan), +৮৪ (Vietnam), +৬৩ (Philippines) ইত্যাদি কান্ট্রি কোড বা অজানা নম্বর থেকে আসা কল এড়িয়ে চলুন।",
           "importance": "এগুলো প্রায়ই জালিয়াতি বা লটারির প্রলোভন দেখানোর কল হয়। অচেনা নম্বর থেকে আসা হোয়াটসঅ্যাপ কল ধরবেন না। 🌏",
           "daily_check": "অজানা বা বিদেশি নম্বর থেকে লিঙ্ক এলে ক্লিক করবেন না। 🔍"
@@ -47,6 +55,8 @@
       "points": [
         {
           "item_name": "হেল্পলাইন ১৯৩০ (1930) 📞",
+          "image_name": "/images/loader/ls03_helpline_1930.webp",
+          "image_caption": "১৯৩০ · Golden Hour 1hr",
           "specifications": "টাকা জালিয়াতি হলে দেরি না করে ১ ঘণ্টা বা 'গোল্ডেন আওয়ার'-এর মধ্যে ১৯৩০ নম্বরে কল করুন।",
           "importance": "দ্রুত জানালে আপনার টাকা ব্যাঙ্ক অ্যাকাউন্টে লক করা সম্ভব হতে পারে। অনলাইনে cybercrime.gov.in পোর্টালেও অভিযোগ জানান। 🚑",
           "daily_check": "আপনার ফোনের কন্টাক্ট লিস্টে ১৯৩০ নম্বরটি সেভ করে রাখুন। ✨"
@@ -64,6 +74,8 @@
   },
   "myth_buster": {
     "title": "🚫 ভুল ধারণা ভেঙে ফেলুন",
+    "image_name": "/images/loader/ls03_myth_arrest.webp",
+    "image_caption": "Video Call Police = Scam",
     "myths": [
       {
         "myth": "পুলিশ আমাকে ভিডিও কলে বলেছে আমি অপরাধী, তাই টাকা না দিলে জেল হবে।",
