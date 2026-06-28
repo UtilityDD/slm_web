@@ -64,6 +64,11 @@ function code4() {
     return String(Math.floor(1000 + Math.random() * 9000));
 }
 
+/** 4-digit code issued by operator on confirm (not known to lineman beforehand). */
+export function generateOperatorCode() {
+    return code4();
+}
+
 function permitNumber() {
     const d = new Date();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -73,15 +78,17 @@ function permitNumber() {
 
 /**
  * Create a fresh permit object from the setup form.
- * confirmCode  -> read back by operator to prove the correct line was isolated.
- * releaseCode  -> read back by operator to prove the line was actually re-energized.
+ * confirmCode / releaseCode are null until the operator confirms in the app
+ * (lineman cannot self-verify without operator action).
  */
 export function createPermit({ feeder, location, work, operator, crew, comment, linemanPhone }) {
     return {
         id: Date.now(),
         permitNo: permitNumber(),
-        confirmCode: code4(),
-        releaseCode: code4(),
+        confirmCode: null,
+        releaseCode: null,
+        operatorIssuedIsolate: false,
+        operatorIssuedRelease: false,
         createdAt: new Date().toISOString(),
         job: { feeder: feeder || '', location: location || '', work: work || '' },
         operator: operator || { name: '', phone: '' },
@@ -182,16 +189,16 @@ function fill(str, p, language = 'bn') {
 
 const TEMPLATES = {
     request: {
-        en: 'PTW REQUEST. Permit {permitNo}. Please ISOLATE feeder {feeder} at {location} for: {work}.{commentLine} When isolated, read back confirm code {confirmCode}.',
-        bn: 'পারমিট অনুরোধ (PTW)। পারমিট {permitNo}। অনুগ্রহ করে {location}-এ {feeder} ফিডারটি আইসোলেট করুন, কাজ: {work}।{commentLine} আইসোলেট হলে কনফার্ম কোড {confirmCode} পড়ে শোনান।',
+        en: 'PTW REQUEST. Permit {permitNo}. Please ISOLATE feeder {feeder} at {location} for: {work}.{commentLine} Open app link, isolate, then send confirm code to lineman.',
+        bn: 'পারমিট অনুরোধ (PTW)। পারমিট {permitNo}। অনুগ্রহ করে {location}-এ {feeder} ফিডারটি আইসোলেট করুন, কাজ: {work}।{commentLine} অ্যাপ লিংক খুলে আইসোলেট করুন, তারপর লাইনম্যানকে কনফার্ম কোড পাঠান।',
     },
     crew_brief: {
         en: 'SAFETY BRIEF. Line {feeder} isolated & earthed under permit {permitNo}. Stay clear, do NOT touch line. Observer assigned. Work starting now.',
         bn: 'সেফটি ব্রিফ। পারমিট {permitNo}-এর অধীনে {feeder} লাইন আইসোলেট ও আর্থ করা হয়েছে। দূরে থাকুন, লাইন স্পর্শ করবেন না। অবজার্ভার নিযুক্ত। কাজ শুরু হচ্ছে।',
     },
     reenergize: {
-        en: 'PERMIT {permitNo} CANCELLED. Work complete, all earths REMOVED, all crew & tools clear of {feeder}. Safe to RE-ENERGIZE. Read back release code {releaseCode}.',
-        bn: 'পারমিট {permitNo} বাতিল। কাজ সম্পন্ন, সব আর্থ সরানো হয়েছে, {feeder} থেকে সব কর্মী ও সরঞ্জাম দূরে। লাইন চালু (RE-ENERGIZE) করা নিরাপদ। রিলিজ কোড {releaseCode} পড়ে শোনান।',
+        en: 'PERMIT {permitNo}. Work complete, all clear on {feeder}. Safe to RE-ENERGIZE. Open app link, re-energize, then send release code to lineman.',
+        bn: 'পারমিট {permitNo}। কাজ সম্পন্ন, {feeder} পরিষ্কার। লাইন চালু (RE-ENERGIZE) করা নিরাপদ। অ্যাপ লিংক খুলে চালু করুন, তারপর লাইনম্যানকে রিলিজ কোড পাঠান।',
     },
     stop_work: {
         en: 'STOP WORK / EMERGENCY on {feeder} at {location}. Permit {permitNo}. Keep line DE-ENERGIZED. Do NOT re-energize. Call me immediately.',

@@ -4,6 +4,9 @@ import {
     linemanReenergizeAckLink,
     saveOperatorConfirmation,
 } from './clearanceLinks';
+import { generateOperatorCode } from './clearanceData';
+import PinGate from './PinGate';
+import usePinGate from './usePinGate';
 
 const openSms = (phone, body) => {
     window.location.href = `sms:${phone || ''}?body=${encodeURIComponent(body)}`;
@@ -28,6 +31,8 @@ const ACT_META = {
 export default function OperatorConfirm({ payload, language = 'bn', onClose }) {
     const t = (en, bn) => (language === 'bn' ? bn : en);
     const [done, setDone] = useState(false);
+    const [issuedCode, setIssuedCode] = useState('');
+    const { requestPin, pinGateProps } = usePinGate();
 
     const act = payload?.act;
     const meta = ACT_META[act];
@@ -46,24 +51,34 @@ export default function OperatorConfirm({ payload, language = 'bn', onClose }) {
 
     const permitStub = {
         permitNo: payload.permitNo,
-        confirmCode: payload.confirmCode,
-        releaseCode: payload.releaseCode,
+        confirmCode: payload.confirmCode || '',
+        releaseCode: payload.releaseCode || '',
         job: { feeder: payload.feeder, location: payload.location, work: payload.work },
     };
 
     const handleConfirm = () => {
+        const code = generateOperatorCode();
+        setIssuedCode(code);
+
+        const stub = {
+            ...permitStub,
+            confirmCode: isReq ? code : permitStub.confirmCode,
+            releaseCode: isRen ? code : permitStub.releaseCode,
+        };
+
         saveOperatorConfirmation({
             permitNo: payload.permitNo,
             act,
             feeder: payload.feeder,
             via: 'app',
+            pinVerified: true,
+            code,
         });
 
         const ackLink = isReq
-            ? linemanIsolateAckLink(permitStub)
-            : linemanReenergizeAckLink(permitStub);
+            ? linemanIsolateAckLink(stub)
+            : linemanReenergizeAckLink(stub);
 
-        const code = isReq ? payload.confirmCode : payload.releaseCode;
         const smsBody = isReq
             ? (language === 'bn'
                 ? `আইসোলেট নিশ্চিত। পারমিট ${payload.permitNo}। কোড ${code}।`
@@ -91,7 +106,16 @@ export default function OperatorConfirm({ payload, language = 'bn', onClose }) {
                 <main className="flex-1 flex flex-col items-center justify-center p-6 text-center gap-6">
                     <div className="text-8xl">✅</div>
                     <p className="text-lg font-black text-slate-700 dark:text-slate-200">{payload.permitNo}</p>
-                    <p className="text-sm font-bold text-slate-500">{t('Reply sent to lineman (SMS). They can also read the code on phone.', 'লাইনম্যানকে উত্তর পাঠানো হয়েছে। ফোনে কোড পড়েও নিশ্চিত করতে পারেন।')}</p>
+                    {issuedCode && (
+                        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border-2 border-teal-300 dark:border-teal-800 w-full max-w-xs">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                                {isReq ? t('Confirm code for lineman', 'লাইনম্যানের কনফার্ম কোড') : t('Release code for lineman', 'লাইনম্যানের রিলিজ কোড')}
+                            </p>
+                            <p className="text-4xl font-black tracking-[0.4em] text-teal-700 dark:text-teal-300">{issuedCode}</p>
+                            <p className="text-xs font-bold text-slate-500 mt-3">{t('Read on phone if lineman has no data.', 'লাইনম্যানের ইন্টারনেট না থাকলে ফোনে পড়ে শোনান।')}</p>
+                        </div>
+                    )}
+                    <p className="text-sm font-bold text-slate-500">{t('Reply sent to lineman (SMS). Lineman must enter this code to proceed.', 'লাইনম্যানকে উত্তর পাঠানো হয়েছে। এগোতে এই কোড লাগবে।')}</p>
                     <button onClick={onClose} className="w-full max-w-xs py-5 rounded-3xl bg-slate-800 text-white font-black">{t('Done', 'শেষ')}</button>
                 </main>
             </div>
@@ -123,7 +147,6 @@ export default function OperatorConfirm({ payload, language = 'bn', onClose }) {
                         [t('Feeder', 'ফিডার'), payload.feeder],
                         [t('Location', 'স্থান'), payload.location],
                         isReq ? [t('Work', 'কাজ'), payload.work] : null,
-                        isReq ? [t('Confirm code', 'কনফার্ম কোড'), payload.confirmCode] : [t('Release code', 'রিলিজ কোড'), payload.releaseCode],
                     ].filter(Boolean).map(([k, v]) => (
                         <div key={k} className="p-4">
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{k}</p>
@@ -133,11 +156,13 @@ export default function OperatorConfirm({ payload, language = 'bn', onClose }) {
                 </div>
 
                 <p className="text-center text-xs font-bold text-slate-500 px-4">
-                    {t('Confirm in app, or read the code on phone to the lineman.', 'অ্যাপে নিশ্চিত করুন, অথবা ফোনে কোড পড়ে শোনান।')}
+                    {isReq
+                        ? t('After isolating the line, confirm here. A new code will be sent to the lineman.', 'লাইন আইসোলেট করার পর এখানে নিশ্চিত করুন। নতুন কোড লাইনম্যানকে যাবে।')
+                        : t('After re-energizing, confirm here. A release code will be sent to the lineman.', 'লাইন চালু করার পর এখানে নিশ্চিত করুন। রিলিজ কোড লাইনম্যানকে যাবে।')}
                 </p>
 
                 <button
-                    onClick={handleConfirm}
+                    onClick={() => requestPin('operator_confirm', handleConfirm)}
                     className={`w-full py-5 rounded-3xl text-white font-black text-lg shadow-lg active:scale-95 transition-transform bg-gradient-to-r ${meta.bg}`}
                 >
                     {meta.confirm[language]}
@@ -152,6 +177,7 @@ export default function OperatorConfirm({ payload, language = 'bn', onClose }) {
                     </button>
                 )}
             </main>
+            <PinGate {...pinGateProps} language={language} />
         </div>
     );
 }

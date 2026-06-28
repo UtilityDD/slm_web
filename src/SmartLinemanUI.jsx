@@ -1537,8 +1537,8 @@ export default function SmartLinemanUI() {
               <RadioMiniPlayer language={language} currentView={currentView} />
             )}
 
-            {user && !['login', 'verify'].includes(currentView) && (
-              <BottomNavigation 
+            {user && !['login', 'verify', 'sops'].includes(currentView) && (
+              <BottomNavigation
                 currentView={currentView} 
                 setCurrentView={setCurrentView} 
                 language={language} 

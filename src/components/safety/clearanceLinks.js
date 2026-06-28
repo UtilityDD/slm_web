@@ -35,13 +35,12 @@ export function buildClearanceUrl(query) {
     return `${base}/#/sops?${p.toString()}`;
 }
 
-/** Lineman → operator: please isolate */
+/** Lineman → operator: please isolate (no code in link — operator issues code on confirm). */
 export function operatorIsolateRequestLink(permit, linemanPhone) {
     return buildClearanceUrl({
         role: 'op',
         act: 'req',
         pn: permit.permitNo,
-        cc: permit.confirmCode,
         f: permit.job.feeder,
         loc: permit.job.location,
         w: permit.job.work,
@@ -59,13 +58,12 @@ export function linemanIsolateAckLink(permit) {
     });
 }
 
-/** Lineman → operator: safe to re-energize */
+/** Lineman → operator: safe to re-energize (no code in link). */
 export function operatorReenergizeRequestLink(permit, linemanPhone) {
     return buildClearanceUrl({
         role: 'op',
         act: 'ren',
         pn: permit.permitNo,
-        rc: permit.releaseCode,
         f: permit.job.feeder,
         loc: permit.job.location,
         lp: linemanPhone || permit.linemanPhone || '',

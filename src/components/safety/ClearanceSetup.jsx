@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { loadDatabook, addSubstation, addFeeder, addOperator, addWork } from './databook';
 import { loadLinemanPhone, saveLinemanPhone } from './clearanceLinks';
 import DatabookManager from './DatabookManager';
+import PinGate from './PinGate';
+import usePinGate from './usePinGate';
 
 const TOTAL = 6;
 
@@ -65,6 +67,7 @@ export default function ClearanceSetup({ language = 'bn', onCancel, onComplete, 
     const [crewInput, setCrewInput] = useState('');
     const [myPhone, setMyPhone] = useState('');
     const [managingData, setManagingData] = useState(false);
+    const { requestPin, pinGateProps } = usePinGate();
 
     const refresh = async () => { const b = await loadDatabook(); setBook(b); return b; };
     useEffect(() => {
@@ -124,6 +127,10 @@ export default function ClearanceSetup({ language = 'bn', onCancel, onComplete, 
         });
     };
 
+    const finishWithPin = () => {
+        requestPin('start_permit', finish);
+    };
+
     const inputCls = 'w-full p-3 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 font-bold outline-none focus:border-orange-500';
 
     if (managingData) {
@@ -162,7 +169,7 @@ export default function ClearanceSetup({ language = 'bn', onCancel, onComplete, 
                 <div className="mt-3"><ProgressDots page={page} /></div>
             </header>
 
-            <main className="flex-1 overflow-y-auto p-5">
+            <main className="flex-1 overflow-y-auto p-5 pb-[calc(5rem+env(safe-area-inset-bottom))]">
                 <div className="max-w-md mx-auto w-full space-y-3">
                     {!ready ? (
                         <div className="py-32 text-center text-slate-400 font-bold animate-pulse">{t('Loading data book...', 'ডেটা বুক লোড হচ্ছে...')}</div>
@@ -304,7 +311,7 @@ export default function ClearanceSetup({ language = 'bn', onCancel, onComplete, 
                                         <input type="tel" value={myPhone} onChange={e => setMyPhone(e.target.value)} placeholder={t('Mobile number', 'মোবাইল নম্বর')} className="mt-1 w-full p-3 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 font-bold outline-none focus:border-orange-500" />
                                     </label>
                                     <button
-                                        onClick={finish}
+                                        onClick={finishWithPin}
                                         disabled={!sel.feeder || !sel.operator || !sel.operator.phone}
                                         className="w-full py-5 rounded-3xl bg-orange-600 text-white font-black text-lg shadow-lg shadow-orange-600/30 active:scale-95 transition-all disabled:opacity-40 disabled:active:scale-100 mt-2"
                                     >
@@ -319,6 +326,7 @@ export default function ClearanceSetup({ language = 'bn', onCancel, onComplete, 
                     )}
                 </div>
             </main>
+            <PinGate {...pinGateProps} language={language} />
         </div>
     );
 }

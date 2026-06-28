@@ -35,6 +35,11 @@ const PAGES = [
         line: { en: 'Operator taps link in SMS to confirm — or uses phone as before.', bn: 'অপারেটর এসএমএসের লিংকে নিশ্চিত — অথবা ফোনেও।' },
     },
     {
+        icon: '🔐',
+        title: { en: 'Work PIN', bn: 'কাজের PIN' },
+        line: { en: '4-digit PIN on this phone at key steps — start, confirm, release, close.', bn: 'এই ফোনে ৪ সংখ্যার PIN — শুরু, নিশ্চিত, রিলিজ, বন্ধ ধাপে।' },
+    },
+    {
         icon: '⛔',
         title: { en: 'Emergency', bn: 'জরুরি' },
         line: { en: 'Red STOP WORK — calls operator instantly.', bn: 'লাল কাজ বন্ধ — তৎক্ষণাৎ অপারেটরকে ফোন।' },

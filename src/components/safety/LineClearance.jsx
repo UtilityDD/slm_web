@@ -9,6 +9,8 @@ import {
     buildMessage, permitToText,
 } from './clearanceData';
 import ClearanceSetup from './ClearanceSetup';
+import PinGate from './PinGate';
+import usePinGate from './usePinGate';
 import {
     operatorIsolateRequestLink,
     operatorReenergizeRequestLink,
@@ -34,6 +36,27 @@ function loadPendingAck() {
 
 function clearPendingAck() {
     try { sessionStorage.removeItem(PENDING_ACK_KEY); } catch (e) { /* noop */ }
+}
+
+/** Strip pre-fix codes from old permits so lineman cannot self-verify. */
+function sanitizePermit(p) {
+    if (!p) return p;
+    const next = { ...p };
+    if (!next.operatorIssuedIsolate && next.confirmCode) {
+        next.confirmCode = null;
+    }
+    if (!next.operatorIssuedRelease && next.releaseCode) {
+        next.releaseCode = null;
+    }
+    return next;
+}
+
+function operatorIssuedCode(permit, kind) {
+    if (!permit) return null;
+    if (kind === 'isolate') {
+        return permit.operatorIssuedIsolate ? permit.confirmCode : (loadPendingAck()?.act === 'iso' && loadPendingAck()?.permitNo === permit.permitNo ? loadPendingAck().confirmCode : null);
+    }
+    return permit.operatorIssuedRelease ? permit.releaseCode : (loadPendingAck()?.act === 'ren_ok' && loadPendingAck()?.permitNo === permit.permitNo ? loadPendingAck().releaseCode : null);
 }
 
 const STEP_ORDER = ['request', 'isolate', 'ground', 'brief', 'work', 'closeout', 'reenergize', 'done'];
@@ -174,11 +197,12 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
     const [codeInput, setCodeInput] = useState('');
     const [codeError, setCodeError] = useState(false);
     const [appAckNotice, setAppAckNotice] = useState('');
+    const { requestPin, pinGateProps } = usePinGate();
 
     // Resume any in-progress permit + load history (offline-safe)
     useEffect(() => {
         setHistory(loadHistory());
-        const active = loadActivePermit();
+        const active = sanitizePermit(loadActivePermit());
         if (active) setPermit(active);
     }, []);
 
@@ -189,14 +213,24 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
 
     const applyAck = (ack, p) => {
         if (!ack || !p || ack.permitNo !== p.permitNo) return;
-        if (ack.act === 'iso' && ack.confirmCode === p.confirmCode && p.stepId === 'isolate') {
-            setCodeInput(String(p.confirmCode));
-            setAppAckNotice(language === 'bn' ? 'অপারেটর অ্যাপে নিশ্চিত — কোড পূরণ হয়েছে' : 'Operator confirmed via app — code filled');
+        if (ack.act === 'iso' && ack.confirmCode && (p.stepId === 'isolate' || p.stepId === 'request')) {
+            setPermit(prev => (prev && prev.permitNo === ack.permitNo ? {
+                ...prev,
+                confirmCode: ack.confirmCode,
+                operatorIssuedIsolate: true,
+            } : prev));
+            setCodeInput(String(ack.confirmCode));
+            setAppAckNotice(language === 'bn' ? 'অপারেটর নিশ্চিত — কোড পেয়েছেন' : 'Operator confirmed — code received');
             clearPendingAck();
         }
-        if (ack.act === 'ren_ok' && ack.releaseCode === p.releaseCode && p.stepId === 'reenergize') {
-            setCodeInput(String(p.releaseCode));
-            setAppAckNotice(language === 'bn' ? 'অপারেটর অ্যাপে নিশ্চিত — কোড পূরণ হয়েছে' : 'Operator confirmed via app — code filled');
+        if (ack.act === 'ren_ok' && ack.releaseCode && p.stepId === 'reenergize') {
+            setPermit(prev => (prev && prev.permitNo === ack.permitNo ? {
+                ...prev,
+                releaseCode: ack.releaseCode,
+                operatorIssuedRelease: true,
+            } : prev));
+            setCodeInput(String(ack.releaseCode));
+            setAppAckNotice(language === 'bn' ? 'অপারেটর নিশ্চিত — কোড পেয়েছেন' : 'Operator confirmed — code received');
             clearPendingAck();
         }
     };
@@ -251,6 +285,7 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
 
     const createAndStart = (job) => {
         const newPermit = createPermit(job);
+        newPermit.log.push(logEntry('pin_verified', { gate: 'start_permit' }));
         rememberPreset('feeders', newPermit.job.feeder);
         if (job.operator && job.operator.phone) rememberPreset('operators', job.operator);
         (job.crew || []).forEach(c => rememberPreset('crew', c));
@@ -263,12 +298,52 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
     const setFlag = (id) => setPermit(p => ({ ...p, flags: { ...(p.flags || {}), [id]: !(p.flags || {})[id] } }));
 
     const verifyCode = (expected, nextId, action) => {
-        if (codeInput.trim() === String(expected)) goStep(nextId, action, { code: expected });
-        else { setCodeError(true); playAlertSound(); buzz([80, 50, 80]); }
+        if (codeInput.trim() === String(expected)) {
+            stopAllAudio();
+            setCodeInput('');
+            setCodeError(false);
+            setPermit(p => (p ? {
+                ...p,
+                stepId: nextId,
+                log: [...p.log, logEntry(action, { code: expected }), logEntry('pin_verified', { gate: 'confirm_isolation' })],
+            } : p));
+            buzz(40);
+        } else { setCodeError(true); playAlertSound(); buzz([80, 50, 80]); }
+    };
+
+    const verifyCodeWithPin = () => {
+        const expected = operatorIssuedCode(permit, 'isolate');
+        if (!expected) {
+            setCodeError(true);
+            playAlertSound();
+            buzz([80, 50, 80]);
+            return;
+        }
+        requestPin('confirm_isolation', () => verifyCode(expected, 'ground', 'isolation_confirmed'));
+    };
+
+    const requestReleaseWithPin = () => {
+        if (!CLOSEOUT_ITEMS.every(i => permit.closeout[i.id])) {
+            playAlertSound();
+            buzz([80, 50, 80]);
+            return;
+        }
+        requestPin('request_release', () => {
+            stopAllAudio();
+            setCodeInput('');
+            setCodeError(false);
+            setPermit(p => (p ? {
+                ...p,
+                stepId: 'reenergize',
+                log: [...p.log, logEntry('work_closed_out'), logEntry('pin_verified', { gate: 'request_release' })],
+            } : p));
+            buzz(40);
+        });
     };
 
     const handleReenergize = () => {
-        if (codeInput.trim() !== String(permit.releaseCode)) {
+        const expected = operatorIssuedCode(permit, 'release');
+        if (!expected || codeInput.trim() !== String(expected)) {
             setCodeError(true); playAlertSound(); buzz([80, 50, 80]); return;
         }
         const closed = {
@@ -276,12 +351,17 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
             status: 'closed',
             stepId: 'done',
             closedAt: new Date().toISOString(),
-            log: [...permit.log, logEntry('reenergized', { code: permit.releaseCode }), logEntry('closed')],
+            releaseCode: expected,
+            log: [...permit.log, logEntry('reenergized', { code: expected }), logEntry('closed'), logEntry('pin_verified', { gate: 'close_permit' })],
         };
         setHistory(saveToHistory(closed));
         saveActivePermit(null);
         setPermit(closed);
         stopAllAudio(); setCodeInput(''); setCodeError(false); buzz([40, 30, 40]);
+    };
+
+    const handleReenergizeWithPin = () => {
+        requestPin('close_permit', handleReenergize);
     };
 
     const stopWork = () => {
@@ -374,7 +454,7 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
                 </div>
             )}
 
-            <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+            <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
                 <div className="min-h-full flex flex-col">
                     {view === 'history' ? (
                         <div className="space-y-4 animate-slide-up">
@@ -408,9 +488,7 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
                                     <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border-2 border-orange-200 dark:border-orange-900/40">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-orange-600 mb-2">{t('Message to operator', 'অপারেটরকে বার্তা')}</p>
                                         <p className="text-sm font-bold leading-relaxed text-slate-700 dark:text-slate-200">{buildMessage('request', permit, language)}</p>
-                                        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 text-xs font-black">
-                                            {t('Confirm code', 'কনফার্ম কোড')}: <span className="text-base tracking-[0.3em]">{permit.confirmCode}</span>
-                                        </div>
+                                        <p className="mt-3 text-xs font-bold text-orange-700 dark:text-orange-300">{t('You will NOT see the confirm code — operator sends it after isolating.', 'কনফার্ম কোড আপনি দেখবেন না — অপারেটর আইসোলেট করার পর পাঠাবে।')}</p>
                                     </div>
                                     <CommsRow phone={permit.operator.phone} body={smsBody('request')} t={t} onRead={() => playAudio(buildMessage('request', permit, language))} />
                                     <p className="text-center text-[11px] font-bold text-slate-400">{t('Operator: tap app link in SMS or confirm on phone.', 'অপারেটর: এসএমএসের অ্যাপ লিংক বা ফোনে নিশ্চিত করুন।')}</p>
@@ -427,12 +505,18 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
                                         {appAckNotice && (
                                             <p className="text-xs font-black text-emerald-600 dark:text-emerald-400 mb-3">{appAckNotice}</p>
                                         )}
-                                        <p className="text-sm font-bold mb-4 text-slate-700 dark:text-slate-200">{t('Type the confirm code the operator reads back to you.', 'অপারেটর যে কনফার্ম কোড পড়ে শোনায় তা এখানে লিখুন।')}</p>
+                                        <p className="text-sm font-bold mb-4 text-slate-700 dark:text-slate-200">{t('Enter the code from operator SMS or phone. You cannot proceed without it.', 'অপারেটরের এসএমএস বা ফোনের কোড লিখুন। কোড ছাড়া এগোনো যাবে না।')}</p>
                                         <input inputMode="numeric" value={codeInput} onChange={e => { setCodeInput(e.target.value); setCodeError(false); }} placeholder="••••" className={`w-44 mx-auto block text-center text-3xl tracking-[0.5em] font-black p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 outline-none ${codeError ? 'border-red-500 text-red-500' : 'border-purple-300 dark:border-purple-800'}`} />
-                                        {codeError && <p className="text-red-500 font-black text-xs mt-2">{t('Code does not match! Do NOT proceed.', 'কোড মিলছে না! এগোবেন না।')}</p>}
+                                        {codeError && (
+                                            <p className="text-red-500 font-black text-xs mt-2">
+                                                {operatorIssuedCode(permit, 'isolate')
+                                                    ? t('Code does not match! Do NOT proceed.', 'কোড মিলছে না! এগোবেন না।')
+                                                    : t('Wait for operator to isolate and send code.', 'অপারেটর আইসোলেট করে কোড পাঠানো পর্যন্ত অপেক্ষা করুন।')}
+                                            </p>
+                                        )}
                                     </div>
                                     <button onClick={() => openCall(permit.operator.phone)} className="w-full py-3 rounded-2xl bg-blue-600 text-white font-black text-sm active:scale-95 transition-transform">📞 {t('Call operator', 'অপারেটরকে ফোন')}</button>
-                                    <NavRow onBack={() => goStep('request', 'back_to_request')} onNext={() => verifyCode(permit.confirmCode, 'ground', 'isolation_confirmed')} nextLabel={t('Verify & Continue', 'যাচাই করে এগোন')} colorClass="bg-purple-600" t={t} />
+                                    <NavRow onBack={() => goStep('request', 'back_to_request')} onNext={verifyCodeWithPin} nextLabel={t('Verify & Continue', 'যাচাই করে এগোন')} colorClass="bg-purple-600" t={t} />
                                 </div>
                             )}
 
@@ -483,7 +567,7 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
                                     {CLOSEOUT_ITEMS.map(item => (
                                         <CheckItem key={item.id} item={item} checked={!!permit.closeout[item.id]} language={language} onToggle={() => setCloseout(item.id)} accent={{ on: 'bg-emerald-600 border-emerald-600' }} />
                                     ))}
-                                    <NavRow onBack={() => goStep('work', 'back_to_work')} onNext={() => { if (!CLOSEOUT_ITEMS.every(i => permit.closeout[i.id])) { playAlertSound(); buzz([80, 50, 80]); return; } goStep('reenergize', 'work_closed_out'); }} nextLabel={t('All Clear — Release', 'সব পরিষ্কার — রিলিজ')} colorClass="bg-emerald-700" t={t} />
+                                    <NavRow onBack={() => goStep('work', 'back_to_work')} onNext={requestReleaseWithPin} nextLabel={t('All Clear — Release', 'সব পরিষ্কার — রিলিজ')} colorClass="bg-emerald-700" t={t} />
                                 </div>
                             )}
 
@@ -493,9 +577,7 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
                                     <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border-2 border-rose-200 dark:border-rose-900/40">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-rose-600 mb-2">{t('Message to operator', 'অপারেটরকে বার্তা')}</p>
                                         <p className="text-sm font-bold leading-relaxed text-slate-700 dark:text-slate-200">{buildMessage('reenergize', permit, language)}</p>
-                                        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-black">
-                                            {t('Release code', 'রিলিজ কোড')}: <span className="text-base tracking-[0.3em]">{permit.releaseCode}</span>
-                                        </div>
+                                        <p className="mt-3 text-xs font-bold text-rose-700 dark:text-rose-300">{t('Release code comes from operator after re-energizing.', 'রিলিজ কোড অপারেটর লাইন চালু করার পর পাঠাবে।')}</p>
                                     </div>
                                     <CommsRow phone={permit.operator.phone} body={smsBody('reenergize')} t={t} onRead={() => playAudio(buildMessage('reenergize', permit, language))} />
                                     <p className="text-center text-[11px] font-bold text-slate-400">{t('Operator: tap app link in SMS or confirm on phone.', 'অপারেটর: এসএমএসের অ্যাপ লিংক বা ফোনে নিশ্চিত করুন।')}</p>
@@ -503,11 +585,17 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
                                         {appAckNotice && (
                                             <p className="text-xs font-black text-emerald-600 dark:text-emerald-400 mb-3">{appAckNotice}</p>
                                         )}
-                                        <p className="text-sm font-bold mb-3 text-slate-700 dark:text-slate-200">{t('Type the release code the operator reads back after re-energizing.', 'লাইন চালু করার পর অপারেটর যে রিলিজ কোড পড়ে শোনায় তা লিখুন।')}</p>
+                                        <p className="text-sm font-bold mb-3 text-slate-700 dark:text-slate-200">{t('Enter release code from operator SMS or phone.', 'অপারেটরের এসএমএস বা ফোনের রিলিজ কোড লিখুন।')}</p>
                                         <input inputMode="numeric" value={codeInput} onChange={e => { setCodeInput(e.target.value); setCodeError(false); }} placeholder="••••" className={`w-44 mx-auto block text-center text-3xl tracking-[0.5em] font-black p-3 rounded-2xl bg-white dark:bg-slate-800 border-2 outline-none ${codeError ? 'border-red-500 text-red-500' : 'border-rose-300 dark:border-rose-800'}`} />
-                                        {codeError && <p className="text-red-500 font-black text-xs mt-2">{t('Code does not match!', 'কোড মিলছে না!')}</p>}
+                                        {codeError && (
+                                            <p className="text-red-500 font-black text-xs mt-2">
+                                                {operatorIssuedCode(permit, 'release')
+                                                    ? t('Code does not match!', 'কোড মিলছে না!')
+                                                    : t('Wait for operator to re-energize and send code.', 'অপারেটর চালু করে কোড পাঠানো পর্যন্ত অপেক্ষা করুন।')}
+                                            </p>
+                                        )}
                                     </div>
-                                    <NavRow onBack={() => goStep('closeout', 'back_to_closeout')} onNext={handleReenergize} nextLabel={t('Verify & Close', 'যাচাই করে বন্ধ')} colorClass="bg-rose-600" t={t} />
+                                    <NavRow onBack={() => goStep('closeout', 'back_to_closeout')} onNext={handleReenergizeWithPin} nextLabel={t('Verify & Close', 'যাচাই করে বন্ধ')} colorClass="bg-rose-600" t={t} />
                                 </div>
                             )}
 
@@ -536,6 +624,7 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
                     </button>
                 </div>
             )}
+            <PinGate {...pinGateProps} language={language} />
         </div>
     );
 }
