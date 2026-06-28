@@ -6,6 +6,18 @@ const COOLDOWN_MS = 25 * 60 * 1000;
 const APP_GRACE_MS = 50 * 1000;
 const MOVE_THROTTLE_MS = 1200;
 
+/** Dev-only: open `?idleTest=1` (see idle-story-test.html) for fast automated checks. */
+function resolveIdleTiming() {
+    if (
+        import.meta.env.DEV &&
+        typeof window !== 'undefined' &&
+        new URLSearchParams(window.location.search).get('idleTest') === '1'
+    ) {
+        return { idleMs: 600, appGraceMs: 0, cooldownMs: 800 };
+    }
+    return { idleMs: IDLE_MS, appGraceMs: APP_GRACE_MS, cooldownMs: COOLDOWN_MS };
+}
+
 /**
  * After inactivity, fades in one random story card over the app.
  * z-[140]: below Logout / update modals (1000+).
@@ -29,7 +41,7 @@ export default function IdleStoryReminder({
     const fadeOutTimerRef = useRef(null);
 
     useEffect(() => {
-        appEligibleAtRef.current = Date.now() + APP_GRACE_MS;
+        appEligibleAtRef.current = Date.now() + resolveIdleTiming().appGraceMs;
         const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
         const setMq = () => setReduceMotion(mq.matches);
         setMq();
@@ -57,7 +69,7 @@ export default function IdleStoryReminder({
         const now = Date.now();
         const waitApp = Math.max(0, appEligibleAtRef.current - now);
         const waitCd = Math.max(0, cooldownUntilRef.current - now);
-        const delay = waitApp + waitCd + IDLE_MS;
+        const delay = waitApp + waitCd + resolveIdleTiming().idleMs;
         timerRef.current = setTimeout(() => {
             timerRef.current = null;
             if (document.visibilityState !== 'visible' || blocked) return;
@@ -83,7 +95,7 @@ export default function IdleStoryReminder({
 
     const closeOverlay = useCallback(() => {
         setVisible(false);
-        cooldownUntilRef.current = Date.now() + COOLDOWN_MS;
+        cooldownUntilRef.current = Date.now() + resolveIdleTiming().cooldownMs;
         clearFadeTimer();
         const fadeMs = reduceMotion ? 0 : 220;
         fadeOutTimerRef.current = setTimeout(() => {
@@ -144,7 +156,7 @@ export default function IdleStoryReminder({
         if (!story) return;
         const id = story.id;
         setVisible(false);
-        cooldownUntilRef.current = Date.now() + COOLDOWN_MS;
+        cooldownUntilRef.current = Date.now() + resolveIdleTiming().cooldownMs;
         clearFadeTimer();
         const fadeMs = reduceMotion ? 0 : 180;
         fadeOutTimerRef.current = setTimeout(() => {
@@ -163,60 +175,114 @@ export default function IdleStoryReminder({
     const excerpt = story.excerpt[language];
     const category = story.category[language];
     const bn = language === 'bn';
+    const t = {
+        en: {
+            context: 'A moment to remember',
+            read: 'Read full story',
+            dismiss: 'Not now',
+            close: 'Close'
+        },
+        bn: {
+            context: 'একটু মনে রাখার সময়',
+            read: 'সম্পূর্ণ গল্প পড়ুন',
+            dismiss: 'এখন নয়',
+            close: 'বন্ধ করুন'
+        }
+    }[language];
+
+    const cardMotion = reduceMotion
+        ? ''
+        : visible
+          ? 'translate-y-0 sm:scale-100'
+          : 'translate-y-full sm:translate-y-3 sm:scale-[0.98]';
 
     return (
         <div
-            className={`fixed inset-0 z-[140] flex flex-col items-center justify-center p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] transition-opacity duration-300 ease-out ${
+            className={`fixed inset-0 z-[140] flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 ease-out ${
                 visible ? 'opacity-100' : 'opacity-0'
             }`}
             role="dialog"
             aria-modal="true"
             aria-labelledby="idle-story-reminder-title"
         >
-            <div className="absolute inset-0 bg-slate-950/82 backdrop-blur-[2px]" aria-hidden />
-
-            <button
-                type="button"
-                ref={closeBtnRef}
+            <div
+                className="absolute inset-0 bg-slate-900/55"
+                aria-hidden
                 onClick={closeOverlay}
-                aria-label={language === 'en' ? 'Close' : 'বন্ধ করুন'}
-                className="absolute right-3 top-[max(0.75rem,env(safe-area-inset-top))] z-10 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-white shadow-lg transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 sm:right-5 sm:top-[max(1rem,env(safe-area-inset-top))] sm:h-16 sm:w-16"
+            />
+
+            <div
+                className={`neo-brutal relative z-[1] w-full sm:max-w-sm transition-transform duration-300 ease-out ${cardMotion} ${
+                    reduceMotion ? 'transition-none' : ''
+                }`}
+                onClick={(e) => e.stopPropagation()}
             >
-                <svg className="h-7 w-7 sm:h-8 sm:w-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
+                <div className="nb-card overflow-hidden p-0 rounded-none sm:rounded-lg border-t-[2.5px] sm:border-[2.5px] border-slate-900 shadow-[0_-4px_0_#0f172a] sm:shadow-[4px_4px_0_#0f172a]">
+                    <div className="nb-hazard" aria-hidden="true" />
 
-            <div className="relative z-[1] w-full max-w-md">
-                <div
-                    className={`overflow-hidden rounded-2xl border border-white/10 shadow-2xl transition-transform duration-300 ease-out ${
-                        visible ? 'translate-y-0 scale-100' : 'translate-y-3 scale-[0.98]'
-                    } ${reduceMotion ? 'transition-none' : ''}`}
-                >
-                    <div className="relative aspect-[4/5] max-h-[min(72vh,620px)] w-full sm:aspect-[3/4]">
-                        <img src={story.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/88" aria-hidden />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/65 to-transparent" aria-hidden />
+                    <div className="flex items-center gap-3 border-b-2 border-slate-900 bg-[#fffdf7] px-4 py-3 sm:px-5">
+                        <p
+                            className={`min-w-0 flex-1 text-sm font-black leading-snug text-slate-900 sm:text-base ${
+                                bn ? 'font-bengali' : 'nb-mono uppercase tracking-wide'
+                            }`}
+                        >
+                            {t.context}
+                        </p>
+                        <button
+                            type="button"
+                            ref={closeBtnRef}
+                            onClick={closeOverlay}
+                            aria-label={t.close}
+                            className="flex h-11 w-11 shrink-0 items-center justify-center border-2 border-slate-900 bg-white text-slate-900 shadow-[3px_3px_0_#0f172a] transition hover:bg-orange-50 active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0_#0f172a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+                        >
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
 
-                        <div className="relative flex h-full flex-col justify-end p-6 sm:p-8">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-orange-200/90 sm:text-[11px]">{category}</p>
-                            <h2
-                                id="idle-story-reminder-title"
-                                className={`mt-2 text-2xl font-bold leading-tight text-white drop-shadow-md sm:text-3xl ${bn ? 'font-bengali' : ''}`}
-                            >
-                                {title}
-                            </h2>
-                            <p className={`mt-3 line-clamp-4 text-sm leading-relaxed text-slate-100/95 sm:text-base ${bn ? 'font-bengali' : ''}`}>
-                                {excerpt}
-                            </p>
-                            <button
-                                type="button"
-                                onClick={handleRead}
-                                className="mt-6 min-h-[48px] w-full rounded-xl bg-orange-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-black/30 transition hover:bg-orange-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 sm:text-base"
-                            >
-                                {language === 'en' ? 'Read full story' : 'সম্পূর্ণ গল্প পড়ুন'}
-                            </button>
-                        </div>
+                    <div className="relative h-44 sm:h-48 overflow-hidden border-b-2 border-slate-900">
+                        <img src={story.image} alt="" className="h-full w-full object-cover" />
+                    </div>
+
+                    <div className="bg-white px-5 py-5 sm:px-6 sm:py-6">
+                        <span className="nb-tag mb-3 inline-block bg-orange-100 px-2.5 py-1 text-orange-800">
+                            {category}
+                        </span>
+                        <h2
+                            id="idle-story-reminder-title"
+                            className={`text-xl font-black leading-tight tracking-tight text-slate-900 sm:text-2xl ${
+                                bn ? 'font-bengali' : ''
+                            }`}
+                        >
+                            {title}
+                        </h2>
+                        <p
+                            className={`mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600 sm:text-base ${
+                                bn ? 'font-bengali' : ''
+                            }`}
+                        >
+                            {excerpt}
+                        </p>
+                    </div>
+
+                    <div className="flex flex-col gap-3 border-t-2 border-slate-900 bg-white p-4 sm:flex-row sm:p-5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-5">
+                        <button
+                            type="button"
+                            onClick={handleRead}
+                            className="order-1 min-h-[48px] w-full flex-1 px-4 py-3 text-sm font-black nb-btn-primary sm:order-2 sm:text-base"
+                        >
+                            {t.read}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={closeOverlay}
+                            className={`order-2 min-h-[48px] w-full flex-1 px-4 py-3 text-sm font-black nb-btn-secondary sm:order-1 sm:text-base ${
+                                bn ? 'font-bengali' : ''
+                            }`}
+                        >
+                            {t.dismiss}
+                        </button>
                     </div>
                 </div>
             </div>
