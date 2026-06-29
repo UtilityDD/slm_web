@@ -10,9 +10,7 @@ function isLocalDevHost(hostname) {
     if (!hostname) return false;
     return hostname === 'localhost'
         || hostname === '127.0.0.1'
-        || hostname.endsWith('.local')
-        || /^192\.168\./.test(hostname)
-        || /^10\./.test(hostname);
+        || hostname.endsWith('.local');
 }
 
 /** Public base for SMS/app links — operators cannot open localhost on their phone. */

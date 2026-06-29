@@ -806,7 +806,7 @@ export default function SmartLinemanUI() {
       window.history.replaceState(null, '', window.location.pathname);
     } else {
       const hash = window.location.hash.replace('#/', '').split('?')[0];
-      if (!hash.startsWith(currentView + '/')) {
+      if (hash !== currentView && !hash.startsWith(currentView + '/')) {
         window.location.hash = `/${currentView}`;
       }
     }
