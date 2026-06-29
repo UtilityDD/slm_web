@@ -35,6 +35,7 @@ const copy = {
     prizeMonths: 'months with winners',
     followFacebook: 'Follow on Facebook',
     visitLabel: 'Visit:',
+    surakshaSathiBtn: 'Suraksha Sathi (SOPs / PTW)',
   },
   bn: {
     heroTitle: 'প্রশিক্ষণ নিন। প্রতিযোগিতা করুন। নিরাপদ থাকুন।',
@@ -61,6 +62,7 @@ const copy = {
     prizeMonths: 'টি মাসে পুরস্কার বিতরণ',
     followFacebook: 'ফেসবুক পেজ ফলো করুন',
     visitLabel: 'ভিজিট:',
+    surakshaSathiBtn: 'সুরক্ষা সাথী (SOPs / PTW)',
   },
 };
 
@@ -902,14 +904,23 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
 
           <p className={`text-sm sm:text-base text-slate-600 leading-relaxed mb-6 sm:mb-8 font-medium mx-auto max-w-2xl ${bnFont ? 'landing-bn-reading' : ''}`}>{t.heroSubtitle}</p>
 
-          <button
-            type="button"
-            onClick={scrollToLifeSkillsSection}
-            className="w-full sm:w-auto min-h-[44px] px-6 py-3 nb-btn-secondary font-bold text-center flex items-center justify-center gap-2 touch-manipulation rounded-lg text-sm sm:text-base mx-auto"
-          >
-            {t.exploreLifeSkills}
-            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-xs sm:max-w-md mx-auto">
+            <button
+              type="button"
+              onClick={() => setCurrentView('sops')}
+              className="w-full sm:w-auto min-h-[44px] px-6 py-3 nb-btn-primary font-black text-center flex items-center justify-center gap-2 touch-manipulation rounded-lg text-sm sm:text-base"
+            >
+              👷 {t.surakshaSathiBtn}
+            </button>
+            <button
+              type="button"
+              onClick={scrollToLifeSkillsSection}
+              className="w-full sm:w-auto min-h-[44px] px-6 py-3 nb-btn-secondary font-bold text-center flex items-center justify-center gap-2 touch-manipulation rounded-lg text-sm sm:text-base"
+            >
+              {t.exploreLifeSkills}
+              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
+            </button>
+          </div>
         </section>
 
         {/* Dynamic Stats Grid */}
