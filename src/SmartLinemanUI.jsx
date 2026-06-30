@@ -26,6 +26,8 @@ import IdleStoryReminder from "./components/IdleStoryReminder";
 import { libraryService } from "./utils/libraryService";
 import { trackAppVisit } from "./utils/landingVisitService";
 import PageLoader from "./components/loaders/PageLoader";
+import GuestPreviewBanner from "./components/GuestPreviewBanner";
+import { isGuestUser, sanitizeGuestProfileForDisplay } from "./utils/guestPreview";
 
 // Lazy load heavy components for code splitting
 const Competitions = lazy(() => import("./components/Competitions"));
@@ -352,28 +354,30 @@ export default function SmartLinemanUI() {
         );
         const computedLevel = Math.max(1, calculateLevelFromProgress(coreRemoteLessons));
 
-        if (serverHadSupplementaryIds && targetUser?.id) {
-          const { error: stripError } = await supabase
-            .from('profiles')
-            .update({ completed_lessons: coreRemoteLessons })
-            .eq('id', targetUser.id);
-          if (stripError) {
-            console.warn('Could not strip supplementary lesson ids from profile:', stripError);
-          } else {
-            profileData.completed_lessons = coreRemoteLessons;
+        if (!isGuestUser(profileData)) {
+          if (serverHadSupplementaryIds && targetUser?.id) {
+            const { error: stripError } = await supabase
+              .from('profiles')
+              .update({ completed_lessons: coreRemoteLessons })
+              .eq('id', targetUser.id);
+            if (stripError) {
+              console.warn('Could not strip supplementary lesson ids from profile:', stripError);
+            } else {
+              profileData.completed_lessons = coreRemoteLessons;
+            }
           }
-        }
 
-        if (profileData.training_level !== computedLevel) {
-          const { error: levelUpdateError } = await supabase
-            .from('profiles')
-            .update({ training_level: computedLevel })
-            .eq('id', targetUser.id);
+          if (profileData.training_level !== computedLevel) {
+            const { error: levelUpdateError } = await supabase
+              .from('profiles')
+              .update({ training_level: computedLevel })
+              .eq('id', targetUser.id);
 
-          if (levelUpdateError) {
-            console.error('Error reconciling training level:', levelUpdateError);
-          } else {
-            profileData.training_level = computedLevel;
+            if (levelUpdateError) {
+              console.error('Error reconciling training level:', levelUpdateError);
+            } else {
+              profileData.training_level = computedLevel;
+            }
           }
         }
 
@@ -387,11 +391,11 @@ export default function SmartLinemanUI() {
 
         // Server progress is authoritative to prevent stale localStorage from re-promoting users.
         setCompletedLessons(coreRemoteLessons);
-        if (targetUser?.id) {
+        if (targetUser?.id && !isGuestUser(profileData)) {
           localStorage.setItem(`training_progress_${targetUser.id}`, JSON.stringify(coreRemoteLessons));
         }
 
-        setUserProfile(profileData);
+        setUserProfile(sanitizeGuestProfileForDisplay(profileData));
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -1130,17 +1134,17 @@ export default function SmartLinemanUI() {
             userProfile={userProfile}
             showNotification={showNotification}
             onProgressUpdate={(newProgress, forceRefresh = false) => { 
+              if (isGuestUser(userProfile)) return;
               const coreProgress = filterCoreCompletedLessonIds(Array.isArray(newProgress) ? newProgress : []);
               setCompletedLessons(coreProgress); 
               setUserProfile(prev => prev ? { ...prev, completed_lessons: coreProgress, training_level: Math.max(1, calculateLevelFromProgress(coreProgress)) } : null); 
-              // Small delay to allow DB update to propagate
               setTimeout(() => fetchProfile(user, forceRefresh), 1000); 
             }} 
             onOpenUserProgress={() => { setSelectedProgressUserId(user?.id || null); setCurrentView('my-progress'); }} 
             setCurrentView={setCurrentView}
           />;
         case 'admin':
-          if (!['admin', 'safety mitra', 'lineman'].includes(userProfile?.role)) { setCurrentView('home'); return null; }
+          if (!['admin', 'safety mitra', 'lineman', 'guest'].includes(userProfile?.role)) { setCurrentView('home'); return null; }
           return <Admin language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;
         case 'visual-quiz-preview':
           if (userProfile?.role !== 'admin') { setCurrentView('home'); return null; }
@@ -1269,6 +1273,9 @@ export default function SmartLinemanUI() {
           )}
 
           <div className="flex-1 flex flex-col h-full overflow-hidden">
+            {isGuestUser(userProfile) && (
+              <GuestPreviewBanner language={language} />
+            )}
             {showLogoutModal && (
               <LogoutConfirmationModal onConfirm={() => confirmLogout(false)} onCancel={cancelLogout} language={language} loading={isLoggingOut} />
             )}

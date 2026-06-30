@@ -5,6 +5,7 @@ import { DotLottiePlayer } from '@dotlottie/react-player';
 import { useTextToSpeech } from '../hooks/useTextToSpeech';
 import { buildChapterQuizSpeechScript } from '../utils/chapterQuizReadAloud';
 import clockLottie from '../assets/clock.lottie';
+import { guestPreviewText } from '../utils/guestPreview';
 
 /** Fisher–Yates shuffle (unbiased). Returns a new array. */
 function shuffleArray(items) {
@@ -71,7 +72,7 @@ function ReviewOptionMarker({ isSelected, isCorrect }) {
 
 const LESSON_QUIZ_PASS_RATE = 0.7;
 
-const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, onHourlyQuiz, questions = [], language = 'en', isPractice = false, lessonId = '' }) => {
+const ChapterQuizModal = ({ isOpen, onClose, onComplete, onGuestComplete, onReadAgain, onHourlyQuiz, questions = [], language = 'en', isPractice = false, lessonId = '', guestPreview = false }) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [userAnswers, setUserAnswers] = useState({});
     const [showResult, setShowResult] = useState(false);
@@ -423,6 +424,15 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, onHourlyQu
         if (isPassed) {
             playUiSfx('continue');
             onComplete(score);
+        }
+    };
+
+    const handleGuestFinish = () => {
+        playUiSfx('continue');
+        if (typeof onGuestComplete === 'function') {
+            onGuestComplete(score);
+        } else {
+            onClose();
         }
     };
 
@@ -809,6 +819,11 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, onHourlyQu
                                                         <p className={`mx-auto mt-3 max-w-xs text-xs leading-relaxed sm:text-sm ${isPassed ? 'text-emerald-800' : 'text-slate-600'}`}>
                                                             {isPassed ? t.resultPassHint : t.resultReviewHint}
                                                         </p>
+                                                        {guestPreview && isPassed && (
+                                                            <div className="mx-auto mt-4 max-w-sm rounded-xl border-2 border-sky-300 bg-sky-50 px-4 py-3 text-left text-xs leading-relaxed text-sky-900 sm:text-sm">
+                                                                {guestPreviewText(language, 'lessonResultGuest')}
+                                                            </div>
+                                                        )}
                                                         <div className="relative mt-8 h-2 w-full overflow-visible border-2 border-slate-900 bg-slate-200">
                                                             <div
                                                                 className={`h-full transition-[width] duration-[900ms] ease-out ${isPassed ? 'bg-emerald-500' : 'bg-amber-400'}`}
@@ -881,6 +896,16 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, onHourlyQu
                                                     </button>
                                                 </div>
                                             ) : isPassed ? (
+                                                guestPreview ? (
+                                                    <button
+                                                        ref={resultPrimaryRef}
+                                                        type="button"
+                                                        onClick={handleGuestFinish}
+                                                        className="nb-btn-primary flex w-full items-center justify-center gap-2 py-3.5 text-sm font-semibold"
+                                                    >
+                                                        {guestPreviewText(language, 'lessonCloseGuest')}
+                                                    </button>
+                                                ) : (
                                                 <button
                                                     ref={resultPrimaryRef}
                                                     type="button"
@@ -892,6 +917,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onReadAgain, onHourlyQu
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                                     </svg>
                                                 </button>
+                                                )
                                             ) : (
                                                 <>
                                                     <button

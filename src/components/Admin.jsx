@@ -491,7 +491,7 @@ function UserProfileCard({
           {row('district', '📍', isEn ? 'District' : 'জেলা', display(targetUser.district), targetUser.district ? 'neutral' : 'muted', true, selectEditor('district', targetUser.district, districts))}
           {row('block', '🗺️', isEn ? 'Block' : 'ব্লক', display(targetUser.block), targetUser.block ? 'neutral' : 'muted', true, selectEditor('block', targetUser.block, blocks))}
           {row('job', '👷', isEn ? 'Job type' : 'কাজের ধরন', display(targetUser.job), targetUser.job ? 'neutral' : 'muted', true, selectEditor('job', targetUser.job, jobs))}
-          {isAdmin && row('role', '🎖️', isEn ? 'Role' : 'ভূমিকা', formatRoleLabel(targetUser.role), 'neutral', true, selectEditor('role', targetUser.role, ['lineman', 'safety mitra', 'admin']))}
+          {isAdmin && row('role', '🎖️', isEn ? 'Role' : 'ভূমিকা', formatRoleLabel(targetUser.role), 'neutral', true, selectEditor('role', targetUser.role, ['lineman', 'guest', 'safety mitra', 'admin']))}
           {isAdmin && row('supervisor_id', '👔', isEn ? 'Supervisor' : 'সুপারভাইজার',
             (supervisors || []).find((s) => s.id === targetUser.supervisor_id)?.full_name || emptyLabel(isEn),
             'neutral', true,
@@ -1191,15 +1191,17 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   const isEn = language === 'en';
   const isAdmin = userProfile?.role === 'admin';
   const isSafetyMitra = userProfile?.role === 'safety mitra';
-  const isLineman = userProfile?.role === 'lineman';
+  const isLineman = userProfile?.role === 'lineman' || userProfile?.role === 'guest';
 
   const formatRoleLabel = (role) => {
+    if (role === 'guest') return isEn ? 'Guest preview' : 'গেস্ট প্রিভিউ';
     if (role === 'admin') return isEn ? 'Admin' : 'অ্যাডমিন';
     if (role === 'safety mitra') return isEn ? 'Safety Mitra' : 'সেফটি মিত্র';
     return isEn ? 'Lineman' : 'লাইনম্যান';
   };
 
   const roleBadgeClass = (role) => {
+    if (role === 'guest') return 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400';
     if (role === 'admin') return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
     if (role === 'safety mitra') return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
     return 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300';

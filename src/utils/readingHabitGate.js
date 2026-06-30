@@ -88,9 +88,13 @@ async function fetchLatestHabitActivity(userId) {
  *   failOpen?: boolean,
  * }>}
  */
-export async function checkReadingGate({ userId, completedLessons, trainingChapters = null }) {
+export async function checkReadingGate({ userId, completedLessons, trainingChapters = null, guestPreview = false }) {
     if (!userId) {
         return { allowed: true };
+    }
+
+    if (guestPreview) {
+        return { allowed: true, guestPreview: true };
     }
 
     const local = readLocalGateState(userId);

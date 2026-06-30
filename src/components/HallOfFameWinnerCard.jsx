@@ -185,7 +185,7 @@ export default function HallOfFameWinnerCard({
                 <span aria-hidden>{getRankMedal(medalRank)}</span>
                 <span className="truncate">{winner.full_name || 'Anonymous'}</span>
                 {superseded && (
-                    <span className="shrink-0 font-bold">{encouragementCopy.prizeSuperseded}</span>
+                    <span className="shrink-0 font-extrabold text-[8px] text-red-600 dark:text-red-500 border border-red-600 dark:border-red-500 rounded px-1.5 py-0.5 bg-white shadow-[0_1px_2px_rgba(220,38,38,0.1)] transform -rotate-[2deg] origin-center">{encouragementCopy.prizeSuperseded}</span>
                 )}
                 {winner.prize_status === PRIZE_STATUS.REPLACEMENT && (
                     <span className="shrink-0 font-bold text-orange-700">{encouragementCopy.prizeReplacement}</span>
@@ -207,7 +207,7 @@ export default function HallOfFameWinnerCard({
             onClick={() => onOpenUserProgress(winner.user_id)}
             className={`group flex cursor-pointer flex-col gap-2 border-2 border-slate-900 p-2.5 shadow-[2px_2px_0_#0f172a] transition-colors active:translate-x-0.5 active:translate-y-0.5 sm:p-3 ${
                 superseded
-                    ? 'bg-slate-100 opacity-60 grayscale hover:opacity-75'
+                    ? 'bg-slate-100 hover:bg-slate-200/50'
                     : prizeRecipient
                         ? 'bg-orange-50 hover:bg-orange-100'
                         : 'bg-white hover:bg-orange-50/40'
@@ -220,7 +220,7 @@ export default function HallOfFameWinnerCard({
                             e.stopPropagation();
                             if (winner.avatar_url) onMaximizeImage(winner.avatar_url);
                         }}
-                        className="h-11 w-11 cursor-zoom-in overflow-hidden border-2 border-slate-900 bg-slate-100 transition-transform active:scale-95 sm:h-12 sm:w-12"
+                        className={`h-11 w-11 cursor-zoom-in overflow-hidden border-2 border-slate-900 bg-slate-100 transition-transform active:scale-95 sm:h-12 sm:w-12 ${superseded ? 'opacity-40 grayscale' : ''}`}
                     >
                         {winner.avatar_url ? (
                             <img src={winner.avatar_url} alt="" className="h-full w-full object-cover" />
@@ -231,7 +231,7 @@ export default function HallOfFameWinnerCard({
                         )}
                     </div>
                     <span
-                        className={`absolute -left-1.5 -top-1.5 flex h-6 w-6 items-center justify-center border border-slate-900 bg-white text-sm leading-none shadow-[1px_1px_0_#0f172a] ${superseded ? 'opacity-50' : ''}`}
+                        className={`absolute -left-1.5 -top-1.5 flex h-6 w-6 items-center justify-center border border-slate-900 bg-white text-sm leading-none shadow-[1px_1px_0_#0f172a] ${superseded ? 'opacity-40 grayscale' : ''}`}
                         aria-hidden
                     >
                         {getRankMedal(medalRank)}
@@ -244,27 +244,24 @@ export default function HallOfFameWinnerCard({
                             <p
                                 className={`truncate text-xs font-black leading-tight sm:text-sm ${
                                     superseded
-                                        ? 'text-slate-500 line-through decoration-slate-400/70'
+                                        ? 'text-slate-400 line-through decoration-slate-300'
                                         : 'text-slate-900 group-hover:text-orange-600'
                                 }`}
                             >
                                 {winner.full_name || 'Anonymous'}
                             </p>
-                            {(superseded || winner.prize_status === PRIZE_STATUS.REPLACEMENT) && (
-                                <p className="mt-0.5">
-                                    {superseded && (
-                                        <span className={`text-[9px] font-bold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                            {encouragementCopy.prizeSuperseded}
-                                        </span>
-                                    )}
-                                    {winner.prize_status === PRIZE_STATUS.REPLACEMENT && (
-                                        <span className={`text-[9px] font-bold text-orange-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                            {superseded ? ' · ' : ''}
-                                            {encouragementCopy.prizeReplacement}
-                                        </span>
-                                    )}
-                                </p>
-                            )}
+                            <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                                {superseded && (
+                                    <span className={`inline-block uppercase tracking-wider font-extrabold text-[8px] text-red-600 dark:text-red-500 border-2 border-red-600 dark:border-red-500 rounded px-1.5 py-0.5 bg-white/95 dark:bg-slate-900/95 shadow-[0_1px_3px_rgba(220,38,38,0.15)] transform -rotate-[3deg] origin-center shrink-0 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {encouragementCopy.prizeSuperseded}
+                                    </span>
+                                )}
+                                {winner.prize_status === PRIZE_STATUS.REPLACEMENT && (
+                                    <span className={`text-[9px] font-bold text-orange-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {encouragementCopy.prizeReplacement}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                         <p className={`shrink-0 text-sm font-black tabular-nums sm:text-base ${scoreTone}`}>
                             {formatMonthlyPlayerScore(winner, boardTab)}

@@ -91,28 +91,28 @@ export default function MonthlyBoardInfoModal({
                                         key={`${player.user_id}-${prize_status || 'row'}-${idx}`}
                                         className={`flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 ${
                                             superseded
-                                                ? 'bg-slate-100/90 opacity-60 dark:bg-slate-800/50'
+                                                ? 'bg-slate-100/90 dark:bg-slate-800/50'
                                                 : prize_status === PRIZE_STATUS.REPLACEMENT
                                                     ? 'bg-orange-50 dark:bg-orange-950/25'
                                                     : 'bg-slate-50 dark:bg-slate-800/80'
                                         }`}
                                     >
                                         <div className="flex min-w-0 items-center gap-2">
-                                            <span className={`text-base ${superseded ? 'opacity-50' : ''}`}>
+                                            <span className={`text-base ${superseded ? 'opacity-40 grayscale' : ''}`}>
                                                 {getRankMedal(medalRank)}
                                             </span>
-                                            <div className="min-w-0">
+                                            <div className="min-w-0 flex items-center gap-1.5 flex-wrap">
                                                 <p className={`truncate text-xs font-bold ${
                                                     superseded
-                                                        ? 'text-slate-500 line-through dark:text-slate-400'
+                                                        ? 'text-slate-400 line-through dark:text-slate-500'
                                                         : 'text-slate-800 dark:text-slate-100'
                                                 }`}>
                                                     {player.full_name}
                                                 </p>
                                                 {superseded && (
-                                                    <p className={`text-[10px] text-slate-400 ${bn ? 'font-bengali' : ''}`}>
+                                                    <span className={`inline-block uppercase tracking-wider font-extrabold text-[7px] text-red-600 dark:text-red-500 border border-red-600 dark:border-red-500 rounded px-1 py-0.5 bg-white/95 dark:bg-slate-900/95 shadow-[0_1px_2px_rgba(220,38,38,0.1)] transform -rotate-[2deg] origin-center shrink-0 ${bn ? 'font-bengali' : ''}`}>
                                                         {copy.prizeSuperseded}
-                                                    </p>
+                                                    </span>
                                                 )}
                                                 {prize_status === PRIZE_STATUS.REPLACEMENT && (
                                                     <p className={`text-[10px] font-bold text-orange-600 dark:text-orange-400 ${bn ? 'font-bengali' : ''}`}>

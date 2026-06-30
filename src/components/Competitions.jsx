@@ -28,6 +28,7 @@ import MonthlyBoardInfoModal from './MonthlyBoardInfoModal';
 import { checkReadingGate } from '../utils/readingHabitGate';
 import { filterCoreCompletedLessonIds } from '../utils/trainingLessonIds';
 import ReadingGateModal from './ReadingGateModal';
+import { blockGuestWrite, isGuestUser, guestPreviewText } from '../utils/guestPreview';
 import {
     getEncouragementCopy,
     getHallOfFameWinners,
@@ -883,6 +884,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
      * Simple: Try -> Success (Lock) OR Fail (Show Error)
      */
     const submitHourlyQuiz = async (score, penalty) => {
+        if (blockGuestWrite(userProfile, showNotification, language)) {
+            return;
+        }
         setIsSyncing(true);
         setSyncStatus('syncing');
         setSyncErrorMessage(null);
@@ -918,10 +922,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             //     The DB returns { success: false, error } without a SQL error, so handle it here.
             if (data && data.success === false) {
                 const isTimeBlock = data.error === 'hourly_time_mismatch';
+                const isGuestBlock = data.error === 'guest_preview';
                 setSyncStatus('failed');
                 setSubmitRejected({
-                    type: isTimeBlock ? 'time' : 'other',
-                    message: isTimeBlock
+                    type: isTimeBlock ? 'time' : isGuestBlock ? 'guest' : 'other',
+                    message: isGuestBlock
+                        ? guestPreviewText(language, 'blockedBody')
+                        : isTimeBlock
                         ? (language === 'en'
                             ? 'This score was not counted. Your device clock does not match the real time, so this hourly play is invalid. Please set your phone date & time to "Automatic" and play during the live hour.'
                             : 'ফোনের সময় ঠিক নেই বলে এই স্কোর গণনা হয়নি। সময় "স্বয়ংক্রিয়" করে চলতি ঘণ্টায় খেলুন।')
@@ -1216,6 +1223,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             userId: user.id,
             completedLessons,
             trainingChapters: null,
+            guestPreview: isGuestUser(userProfile),
         });
         if (!gate.allowed) {
             setReadingGateBlock({ ...gate, userId: user.id });
@@ -1304,7 +1312,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     }, [user, hourlyQuiz]);
 
     const fetchUserRank = async (forceRefresh = false) => {
-        if (!user) return;
+        if (!user || isGuestUser(userProfile)) {
+            setUserRank(null);
+            return;
+        }
 
         try {
             const cacheKey = `user_rank_all_time_${user.id}`;
@@ -1604,6 +1615,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     };
 
     const confirmAbortQuiz = () => {
+        if (isGuestUser(userProfile)) {
+            setActiveQuiz(null);
+            storageUtils.removeItem('slm_hourly_active_quiz_state');
+            setShowAbortWarningModal(false);
+            return;
+        }
         // Submit with 0 score and max penalty rules applied in backend logic
         submitHourlyQuiz(0, 0);
         setActiveQuiz(null);
@@ -1672,6 +1689,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             return;
         }
 
+        const isGuest = isGuestUser(userProfile);
+
         let calculatedScore = 0;
         let correctCount = 0;
         let wrongCount = 0;
@@ -1715,6 +1734,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             pointsEarned: correctCount * pointsPerQuestion
         });
         setQuizSubmitted(true);
+
+        if (isGuest) {
+            return;
+        }
 
         // Save for Review (Local Storage) - Store the final net score for display
         const attemptData = {
@@ -2089,7 +2112,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         tabIndex={0}
                                                         onClick={() => openUserProgress(player.user_id, player, rank)}
                                                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') openUserProgress(player.user_id, player, rank); }}
-                                                        className={`flex flex-col items-center cursor-pointer active:scale-[0.98] transition-transform ${isWinner && !superseded ? 'scale-110 mb-2' : 'mb-0'} ${superseded ? 'opacity-50 grayscale' : isWinner ? '' : 'opacity-90'}`}
+                                                        className={`flex flex-col items-center cursor-pointer active:scale-[0.98] transition-transform ${isWinner && !superseded ? 'scale-110 mb-2' : 'mb-0'} ${isWinner ? '' : 'opacity-90'}`}
                                                     >
                                                         <div className="relative mb-3 flex flex-col items-center">
                                                             <div className="relative h-14 w-14 sm:h-20 sm:w-20 shrink-0">
@@ -2108,7 +2131,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                         e.stopPropagation();
                                                                         if (player.avatar_url) setMaximizedAvatar(player.avatar_url);
                                                                     }}
-                                                                    className={`absolute inset-0 overflow-hidden border-2 border-slate-900 shadow-[3px_3px_0_#0f172a] cursor-zoom-in active:scale-95 transition-transform ${rank === 1 ? 'bg-amber-100' : rank === 2 ? 'bg-slate-100' : 'bg-orange-100'}`}
+                                                                    className={`absolute inset-0 overflow-hidden border-2 border-slate-900 shadow-[3px_3px_0_#0f172a] cursor-zoom-in active:scale-95 transition-transform ${rank === 1 ? 'bg-amber-100' : rank === 2 ? 'bg-slate-100' : 'bg-orange-100'} ${superseded ? 'opacity-40 grayscale' : ''}`}
                                                                 >
                                                                     {player.avatar_url ? <img src={player.avatar_url} className="h-full w-full object-cover" alt="" /> : <div className="flex h-full w-full items-center justify-center bg-slate-200 text-xl font-bold text-slate-400 dark:bg-slate-800">{player.full_name?.[0]}</div>}
 
@@ -2133,13 +2156,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                     })()}
                                                                 </div>
                                                             </div>
-                                                            <div className={`nb-rank-badge absolute -bottom-2 left-1/2 z-20 flex h-6 w-6 -translate-x-1/2 items-center justify-center text-[10px] sm:h-8 sm:w-8 sm:text-xs ${rank === 1 ? 'bg-amber-400 text-amber-950' : rank === 2 ? 'bg-slate-300 text-slate-900' : 'bg-orange-300 text-orange-950'}`}>
+                                                            <div className={`nb-rank-badge absolute -bottom-2 left-1/2 z-20 flex h-6 w-6 -translate-x-1/2 items-center justify-center text-[10px] sm:h-8 sm:w-8 sm:text-xs ${rank === 1 ? 'bg-amber-400 text-amber-950' : rank === 2 ? 'bg-slate-300 text-slate-900' : 'bg-orange-300 text-orange-950'} ${superseded ? 'opacity-40' : ''}`}>
                                                                 {rank}
                                                             </div>
                                                         </div>
                                                         <p className={`text-[10px] sm:text-xs font-black truncate max-w-full text-center px-1 leading-tight ${
                                                             superseded
-                                                                ? 'text-slate-500 dark:text-slate-400 line-through'
+                                                                ? 'text-slate-400 line-through'
                                                                 : 'text-slate-900 dark:text-white'
                                                         }`}>{player.full_name}</p>
                                                         {leaderboardTab === 'all-time' && formatLeaderboardDistrict(player.district) && (
@@ -2148,11 +2171,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             </p>
                                                         )}
                                                         {superseded && (
-                                                            <p className={`text-[8px] font-bold text-slate-400 mt-0.5 text-center ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                {encouragementCopy.prizeSuperseded}
-                                                            </p>
+                                                            <div className="mt-1 flex justify-center shrink-0">
+                                                                <span className={`inline-block uppercase tracking-wider font-extrabold text-[7px] sm:text-[8px] text-red-600 dark:text-red-500 border border-red-600 dark:border-red-500 rounded px-1 py-0.5 bg-white/95 dark:bg-slate-900/95 shadow-[0_1px_2px_rgba(220,38,38,0.15)] transform -rotate-[3deg] leading-none text-center ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                    {encouragementCopy.prizeSuperseded}
+                                                                </span>
+                                                            </div>
                                                         )}
-                                                        <div className="flex items-center gap-1 mb-1">
+                                                        <div className={`flex items-center gap-1 mb-1 ${superseded ? 'opacity-40' : ''}`}>
                                                             {(() => {
                                                                 const badge = getBadgeByLevel(
                                                                     player.training_level || 0, 
@@ -2166,13 +2191,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             })()}
                                                         </div>
                                                         <div className="flex flex-col items-center">
-                                                            <p className="text-[11px] font-black text-orange-600 dark:text-orange-400 tabular-nums">
+                                                            <p className={`text-[11px] font-black tabular-nums ${superseded ? 'text-slate-400' : 'text-orange-600 dark:text-orange-400'}`}>
                                                                 {leaderboardTab === 'monthly'
                                                                     ? formatMonthlyPlayerScore(player, monthlyBoardTab)
                                                                     : formatLeaderboardNumber(player.points || player.score || 0)}
                                                             </p>
                                                             {leaderboardTab === 'monthly' && (
-                                                                <div className="mt-0.5">
+                                                                <div className={`mt-0.5 ${superseded ? 'opacity-35' : ''}`}>
                                                                     <MonthlyHourlyAvgPill
                                                                         hourly={player.hourly}
                                                                         language={language}
@@ -2209,14 +2234,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             onClick={() => openUserProgress(item.user_id, item, rankLabel)}
                                             className={`flex items-center gap-2 sm:gap-4 p-2.5 sm:p-4 border-b-2 border-slate-900 last:border-b-0 transition-colors cursor-pointer group active:bg-orange-50/50 ${
                                                 superseded
-                                                    ? 'bg-slate-100 opacity-60 grayscale hover:opacity-75'
+                                                    ? 'bg-slate-100 hover:bg-slate-200/50'
                                                     : prizeRecipient
                                                         ? 'bg-orange-50 hover:bg-orange-100/70'
                                                         : 'bg-white hover:bg-orange-50/30'
                                             }`}
                                         >
                                             <div className={`w-6 sm:w-8 shrink-0 text-center text-xs sm:text-sm font-black nb-mono transition-colors ${
-                                                superseded ? 'text-slate-400' : 'text-slate-600 group-hover:text-orange-600'
+                                                superseded ? 'text-slate-400 opacity-60' : 'text-slate-600 group-hover:text-orange-600'
                                             }`}>
                                                 {rankLabel}
                                             </div>
@@ -2225,7 +2250,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     e.stopPropagation();
                                                     if (item.avatar_url) setMaximizedAvatar(item.avatar_url);
                                                 }}
-                                                className="w-9 h-9 sm:w-10 sm:h-10 bg-white overflow-hidden border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] shrink-0 relative cursor-zoom-in active:scale-95 transition-transform"
+                                                className={`w-9 h-9 sm:w-10 sm:h-10 bg-white overflow-hidden border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] shrink-0 relative cursor-zoom-in active:scale-95 transition-transform ${superseded ? 'opacity-40 grayscale' : ''}`}
                                             >
                                                 {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
                                                 
@@ -2253,11 +2278,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     <div className="flex items-center gap-2 flex-wrap">
                                                         <p className={`text-sm font-black truncate ${
                                                             superseded
-                                                                ? 'text-slate-500 line-through decoration-slate-400/70'
+                                                                ? 'text-slate-400 line-through decoration-slate-300'
                                                                 : 'text-slate-900'
                                                         }`}>{item.full_name}</p>
                                                         {superseded && (
-                                                            <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold bg-slate-200/80 text-slate-500 dark:bg-slate-700 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            <span className={`inline-block uppercase tracking-wider font-extrabold text-[8px] text-red-600 dark:text-red-500 border-2 border-red-600 dark:border-red-500 rounded px-1.5 py-0.5 bg-white/95 dark:bg-slate-900/95 shadow-[0_1px_3px_rgba(220,38,38,0.15)] transform -rotate-[3deg] ml-1 origin-center shrink-0 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                                 {encouragementCopy.prizeSuperseded}
                                                             </span>
                                                         )}
@@ -2266,7 +2291,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 {encouragementCopy.prizeReplacement} · #{item.prize_rank}
                                                             </span>
                                                         )}
-                                                        {(() => {
+                                                        <div className={superseded ? 'opacity-40 grayscale scale-[0.85] origin-left flex items-center gap-1' : 'flex items-center gap-1'}>
+                                                            {(() => {
                                                             const badge = getBadgeByLevel(
                                                                 item.training_level || 0, 
                                                                 item.all_time_reading_points !== undefined ? item.all_time_reading_points : (item.reading_points || 0)
@@ -2277,6 +2303,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 </span>
                                                             );
                                                         })()}
+                                                        </div>
                                                     </div>
                                                     {leaderboardTab === 'monthly' && item.eligibility_note && (
                                                         <p className="text-[9px] font-medium text-amber-600 dark:text-amber-400 mt-0.5">
@@ -2284,7 +2311,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         </p>
                                                     )}
                                                 </div>
-                                                <div className="flex items-center gap-3">
+                                                <div className={`flex items-center gap-3 ${superseded ? 'opacity-40' : ''}`}>
                                                     <div className="flex items-center gap-1.5 shrink-0">
                                                         {leaderboardTab === 'all-time' ? (
                                                             formatLeaderboardDistrict(item.district) && (
@@ -2326,19 +2353,21 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             </div>
                                             <div className="text-right shrink-0">
                                                 <p className={`text-sm font-black tabular-nums nb-mono ${
-                                                    superseded ? 'text-slate-400' : 'text-orange-700'
+                                                    superseded ? 'text-slate-400 opacity-60' : 'text-orange-700'
                                                 }`}>
                                                     {leaderboardTab === 'monthly'
                                                         ? formatMonthlyPlayerScore(item, monthlyBoardTab)
                                                         : formatLeaderboardNumber(item.points || item.score || 0)}
                                                 </p>
                                                 {leaderboardTab === 'monthly' && (
-                                                    <MonthlyHourlyAvgPill
-                                                        hourly={item.hourly}
-                                                        language={language}
-                                                        encouragementBoards={encouragementBoards}
-                                                        align="end"
-                                                    />
+                                                    <div className={superseded ? "opacity-35" : ""}>
+                                                        <MonthlyHourlyAvgPill
+                                                            hourly={item.hourly}
+                                                            language={language}
+                                                            encouragementBoards={encouragementBoards}
+                                                            align="end"
+                                                        />
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
@@ -3072,19 +3101,33 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             </div>
                         ) : (
                             <div className="text-center py-6 px-4 sm:px-6 overflow-y-auto">
-                                <div className="nb-icon-badge w-20 h-20 bg-green-50 text-green-600 text-4xl flex items-center justify-center mx-auto mb-4">🎉</div>
-                                <h2 className={`text-2xl font-black text-slate-900 mb-6 ${language === 'bn' ? 'font-bengali' : ''}`}>{t.completed}</h2>
+                                <div className={`nb-icon-badge w-20 h-20 text-4xl flex items-center justify-center mx-auto mb-4 ${isGuestUser(userProfile) ? 'bg-sky-50 text-sky-600' : 'bg-green-50 text-green-600'}`}>
+                                    {isGuestUser(userProfile) ? '👀' : '🎉'}
+                                </div>
+                                <h2 className={`text-2xl font-black text-slate-900 mb-6 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    {isGuestUser(userProfile)
+                                        ? (language === 'en' ? 'Preview complete' : 'প্রিভিউ সম্পন্ন')
+                                        : t.completed}
+                                </h2>
 
                                 <div className="flex flex-col items-center justify-center mb-8 animate-scale-in">
                                     <div className={`text-6xl sm:text-7xl font-black mb-2 nb-mono ${(quizResults?.score || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                         {(quizResults?.score || 0) > 0 ? '+' : ''}{quizResults?.score || 0}
                                     </div>
                                     <div className={`text-xs sm:text-sm font-bold uppercase tracking-widest nb-mono ${(quizResults?.score || 0) >= 0 ? 'text-green-600/80' : 'text-red-600/80'}`}>
-                                        {(quizResults?.score || 0) >= 0
-                                            ? (language === 'en' ? 'Points Earned' : 'পয়েন্ট অর্জিত')
-                                            : (language === 'en' ? 'Points Lost' : 'পয়েন্ট হারানো')}
+                                        {isGuestUser(userProfile)
+                                            ? (language === 'en' ? 'Practice score' : 'অনুশীলন স্কোর')
+                                            : ((quizResults?.score || 0) >= 0
+                                                ? (language === 'en' ? 'Points Earned' : 'পয়েন্ট অর্জিত')
+                                                : (language === 'en' ? 'Points Lost' : 'পয়েন্ট হারানো'))}
                                     </div>
                                 </div>
+
+                                {isGuestUser(userProfile) && (
+                                    <div className={`mx-auto mb-6 max-w-md rounded-xl border-2 border-sky-300 bg-sky-50 px-4 py-3 text-left text-xs leading-relaxed text-sky-900 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {guestPreviewText(language, 'hourlyResultGuest')}
+                                    </div>
+                                )}
 
                                 <div className={`mx-auto mb-8 grid max-w-md gap-3 ${(quizResults?.penalty || 0) > 0 ? 'grid-cols-2' : 'grid-cols-1 max-w-xs'}`}>
                                     <div className="nb-card bg-green-50 p-3">
@@ -3111,7 +3154,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 )}
 
                                 <button type="button" onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); }} className="w-full py-3 nb-btn-primary font-bold">
-                                    {t.close}
+                                    {isGuestUser(userProfile) ? guestPreviewText(language, 'hourlyCloseGuest') : t.close}
                                 </button>
                             </div>
                         )}

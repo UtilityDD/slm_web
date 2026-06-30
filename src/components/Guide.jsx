@@ -18,18 +18,18 @@ const Guide = ({ hideHeader = false, userRole = 'lineman' }) => {
         { id: 'principles', label: 'মূলমন্ত্র', icon: '🌟' }
     ];
 
-    const tabs = userRole === 'lineman'
+    const tabs = userRole === 'lineman' || userRole === 'guest'
         ? allTabs.filter(tab => tab.id === 'principles')
         : allTabs;
 
-    const [activeTab, setActiveTab] = useState(userRole === 'lineman' ? 'principles' : 'intro');
+    const [activeTab, setActiveTab] = useState(userRole === 'lineman' || userRole === 'guest' ? 'principles' : 'intro');
     const [guideContent, setGuideContent] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const contentRef = useRef(null);
 
     // Update active tab if role changes
     useEffect(() => {
-        if (userRole === 'lineman' && activeTab !== 'principles') {
+        if (userRole === 'lineman' || userRole === 'guest') {
             setActiveTab('principles');
         }
     }, [userRole]);

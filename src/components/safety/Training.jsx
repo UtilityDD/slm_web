@@ -42,6 +42,7 @@ import { pickSupplementaryListenSrc } from '../../utils/supplementaryAudioUrl';
 import { useLifeSkillRadio } from '../../context/LifeSkillRadioContext';
 import { getLifetimePoints } from '../../utils/hourlyDifficulty';
 import HourlyPenaltyInfoModal from '../HourlyPenaltyInfoModal';
+import { blockGuestWrite, isGuestUser, guestPreviewText } from '../../utils/guestPreview';
 
 const HOURLY_PENALTY_MODAL_SKIP_KEY = 'slm_hourly_penalty_info_skip';
 
@@ -1213,6 +1214,7 @@ export default function Training({
     const handleMarkSupplementaryRead = useCallback(
         (moduleId, { silent = false } = {}) => {
             if (!user) return;
+            if (blockGuestWrite(profile, showNotification, language)) return;
             const updated = appendSupplementaryCompletion(user.id, moduleId);
             setSuppCompleted(updated);
             if (!silent && typeof showNotification === 'function') {
@@ -1221,7 +1223,7 @@ export default function Training({
                 );
             }
         },
-        [user, language]
+        [user, language, profile, showNotification]
     );
 
     const dismissLifeSkillsHint = useCallback(() => {
@@ -1255,6 +1257,7 @@ export default function Training({
             userId: user.id,
             completedLessons,
             trainingChapters,
+            guestPreview: isGuestUser(profile),
         });
         if (!gate.allowed) {
             setReadingGateBlock({ ...gate, userId: user.id });
@@ -1376,7 +1379,7 @@ export default function Training({
     // Fetch user rank for leaderboard preview
     useEffect(() => {
         const fetchRank = async () => {
-            if (!user) return;
+            if (!user || isGuestUser(profile)) return;
             try {
                 const rankData = await requestManager.fetch(
                     `user_rank_all_time_${user.id}`,
@@ -1410,7 +1413,7 @@ export default function Training({
         };
 
         fetchRank();
-    }, [user, completedLessons.length]);
+    }, [user, completedLessons.length, profile]);
 
     useEffect(() => {
         const checkHourlyEligibility = async () => {
@@ -1912,6 +1915,12 @@ export default function Training({
         const loadProgress = async () => {
             if (!user) return;
 
+            if (isGuestUser(profile)) {
+                setCompletedLessons([]);
+                setReadingPoints(0);
+                return;
+            }
+
             // 1. Load Local
             let localProgress = [];
             const saved = storageUtils.getItem(`training_progress_${user.id}`);
@@ -2000,7 +2009,7 @@ export default function Training({
         };
 
         loadProgress();
-    }, [user]);
+    }, [user, profile]);
 
     // Custom parser: ((media|optional_label)) and [[image_ref|optional_layout]]
     // media / image_ref: filename under /quizzes/ OR full https URL (e.g. Google Drive from sheet sync). Drive links are normalized for <img>.
@@ -2511,6 +2520,15 @@ export default function Training({
             return;
         }
 
+        if (isGuestUser(profile)) {
+            setShowQuizModal(false);
+            setPendingLessonId(null);
+            if (typeof showNotification === 'function') {
+                showNotification(guestPreviewText(language, 'lessonResultGuest'), 'info');
+            }
+            return;
+        }
+
         const current = Array.isArray(completedLessons) ? completedLessons : [];
         const updated = filterCoreCompletedLessonIds([...new Set([...current, lessonId])].filter(Boolean));
         const alreadyCompleted = completedLessons.includes(lessonId);
@@ -2519,7 +2537,7 @@ export default function Training({
         const gateDrivenReview = alreadyCompleted && (gateUnlock?.kind === 'review' || gateReviewTarget);
 
         if (gateDrivenReview) {
-            logReadingHabitReview(user.id, lessonId);
+            logReadingHabitReview(user.id, lessonId, profile);
             if (typeof showNotification === 'function') {
                 showNotification(
                     language === 'en'
@@ -2542,7 +2560,8 @@ export default function Training({
                 try {
                     const { error: rpcError } = await supabase.rpc('award_training_points', {
                         input_quiz_id: `lesson_bonus_${lessonId}`,
-                        input_score: bonusPoints
+                        input_score: bonusPoints,
+                        p_user_id: user.id,
                     });
 
                     if (rpcError) {
@@ -2562,7 +2581,7 @@ export default function Training({
                     }
 
                     if (pointsAwarded || gateUnlock) {
-                        logReadingHabitCompletion(user.id, lessonId);
+                        logReadingHabitCompletion(user.id, lessonId, profile);
                         if (gateUnlock && !pointsAwarded && typeof showNotification === 'function') {
                             showNotification(
                                 language === 'en'
@@ -2575,7 +2594,7 @@ export default function Training({
                 } catch (err) {
                     console.error('Critical error in point awarding:', err);
                     if (!gateUnlock) return;
-                    logReadingHabitCompletion(user.id, lessonId);
+                    logReadingHabitCompletion(user.id, lessonId, profile);
                     if (typeof showNotification === 'function') {
                         showNotification(
                             language === 'en'
@@ -2634,7 +2653,7 @@ export default function Training({
                 onProgressUpdate(updated, true);
             }
         } else if (gateUnlock) {
-            logReadingHabitReview(user.id, lessonId);
+            logReadingHabitReview(user.id, lessonId, profile);
             if (typeof showNotification === 'function') {
                 showNotification(
                     language === 'en'
@@ -2718,9 +2737,14 @@ export default function Training({
         }
     };
 
+    const handleGuestQuizComplete = () => {
+        setShowQuizModal(false);
+        setPendingLessonId(null);
+    };
+
     const handleQuizResultHourlyNav = useCallback(async ({ passed }) => {
         const lessonId = pendingLessonId;
-        if (passed && lessonId) {
+        if (passed && lessonId && !isGuestUser(profile)) {
             await finalizeLessonCompletion(lessonId);
         } else {
             setShowQuizModal(false);
@@ -2732,7 +2756,7 @@ export default function Training({
         setSelectedLesson(null);
         setIsJournalMode(false);
         await handleHourlyChallengeClick();
-    }, [pendingLessonId, stop, handleHourlyChallengeClick]);
+    }, [pendingLessonId, stop, handleHourlyChallengeClick, profile]);
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 md:mb-6 animate-slide-down">
@@ -4689,6 +4713,8 @@ export default function Training({
                         onHourlyQuiz={handleQuizResultHourlyNav}
                         questions={currentQuizQuestions}
                         onComplete={handleQuizComplete}
+                        onGuestComplete={handleGuestQuizComplete}
+                        guestPreview={isGuestUser(profile)}
                         chapterTitle={trainingContent?.level_title}
                         lessonId={trainingContent?.level_id}
                         language={language}

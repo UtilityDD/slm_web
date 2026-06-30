@@ -10,6 +10,7 @@ import ChapterQuizModal from './ChapterQuizModal';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 import { filterCoreCompletedLessonIds, isSupplementaryProgressLessonId } from '../utils/trainingLessonIds';
 import { logReadingHabitCompletion } from '../utils/readingHabitLog';
+import { blockGuestWrite, isGuestUser, guestPreviewText } from '../utils/guestPreview';
 import LinemanPPEView from './safety/ppe/LinemanPPEView';
 
 const SOPCard = React.memo(({ level, index, onClick }) => (
@@ -553,6 +554,11 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         const loadProgress = async () => {
             if (!user) return;
 
+            if (isGuestUser(userProfile)) {
+                setCompletedLessons([]);
+                return;
+            }
+
             // 1. Load Local
             let localProgress = [];
             const saved = localStorage.getItem(`training_progress_${user.id}`);
@@ -608,7 +614,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         };
 
         loadProgress();
-    }, [user]);
+    }, [user, userProfile]);
     // Background update for completed lessons - silently replace old static content
     useEffect(() => {
         const backgroundUpdateCompletedLessons = async () => {
@@ -705,6 +711,12 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
             return;
         }
 
+        if (isGuestUser(userProfile)) {
+            setShowQuizModal(false);
+            setPendingLessonId(null);
+            return;
+        }
+
         const alreadyCompleted = completedLessons.includes(lessonId);
 
         if (!alreadyCompleted) {
@@ -715,7 +727,8 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                 try {
                     const { error: rpcError } = await supabase.rpc('award_training_points', {
                         input_quiz_id: `lesson_bonus_${lessonId}`,
-                        input_score: bonusPoints
+                        input_score: bonusPoints,
+                        p_user_id: user.id,
                     });
 
                     if (rpcError) {
@@ -727,7 +740,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
                     invalidateLeaderboardCaches(user.id);
                     cacheHelper.clear(`profile_${user.id}`);
-                    logReadingHabitCompletion(user.id, lessonId);
+                    logReadingHabitCompletion(user.id, lessonId, userProfile);
 
                     setRecentReward(bonusPoints);
                     // Clear reward message after 5 seconds
@@ -830,16 +843,19 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
     };
 
     const handleQuizComplete = (score) => {
-        // Here you could add logic to require a minimum score
-        // For now, we just accept completion
         if (pendingLessonId) {
             finalizeLessonCompletion(pendingLessonId);
         }
     };
 
+    const handleGuestQuizComplete = () => {
+        setShowQuizModal(false);
+        setPendingLessonId(null);
+    };
+
     const handleQuizResultHourlyNav = async ({ passed }) => {
         const lessonId = pendingLessonId;
-        if (passed && lessonId) {
+        if (passed && lessonId && !isGuestUser(userProfile)) {
             await finalizeLessonCompletion(lessonId);
         } else {
             setShowQuizModal(false);
@@ -2177,6 +2193,8 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                         onClose={() => setShowQuizModal(false)}
                         onReadAgain={handleReadAgain}
                         onComplete={handleQuizComplete}
+                        onGuestComplete={handleGuestQuizComplete}
+                        guestPreview={isGuestUser(userProfile)}
                         onHourlyQuiz={handleQuizResultHourlyNav}
                         questions={currentQuizQuestions}
                         language={language}

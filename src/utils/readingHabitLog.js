@@ -1,6 +1,7 @@
 import { supabase } from '../supabaseClient';
 import { writeLocalGateActivity } from './readingGateStorage';
 import { advanceReviewCycle } from './readingReviewCycle';
+import { isGuestUser } from './guestPreview';
 
 const CORE_LESSON_ID = /^\d+\.\d+$/;
 
@@ -8,8 +9,9 @@ const CORE_LESSON_ID = /^\d+\.\d+$/;
  * Fire-and-forget log to reading_habit_completions (habit tracking only).
  * Does not affect scoring, RPCs, or lesson unlock logic.
  */
-export function logReadingHabitCompletion(userId, lessonId) {
+export function logReadingHabitCompletion(userId, lessonId, userProfile = null) {
     if (!userId || !lessonId) return;
+    if (isGuestUser(userProfile)) return;
     const id = String(lessonId).trim();
     if (!CORE_LESSON_ID.test(id)) return;
 
@@ -39,8 +41,9 @@ export function logReadingHabitCompletion(userId, lessonId) {
  * Graduate review — refreshes 48h gate via local storage; best-effort habit row insert.
  * No points RPC; does not change lesson unlock or scoring.
  */
-export function logReadingHabitReview(userId, lessonId) {
+export function logReadingHabitReview(userId, lessonId, userProfile = null) {
     if (!userId || !lessonId) return;
+    if (isGuestUser(userProfile)) return;
     const id = String(lessonId).trim();
     if (!CORE_LESSON_ID.test(id)) return;
 

@@ -149,7 +149,7 @@ export default function EditUserModal({
                                             <SelectField label="Block" name="block" value={editingUser.block} onChange={handleChange} options={editingUser.district ? wbLocations[editingUser.district] : []} disabled={!editingUser.district} icon="🗺️" placeholder="Select Block" />
                                         </div>
                                         <SelectField label="Job Type" name="job" value={editingUser.job} onChange={handleChange} options={['HT-Mobile Van', 'LT-Mobile Van', 'HT-LT Others']} icon="👷" placeholder="Select Job Type" />
-                                        <SelectField label="Role" name="role" value={editingUser.role} onChange={handleChange} options={['lineman', 'safety mitra', ...(userProfile?.role === 'admin' ? ['admin'] : [])]} disabled={!userProfile || userProfile.role !== 'admin'} icon="🎖️" />
+                                        <SelectField label="Role" name="role" value={editingUser.role} onChange={handleChange} options={['lineman', 'guest', 'safety mitra', ...(userProfile?.role === 'admin' ? ['admin'] : [])]} disabled={!userProfile || userProfile.role !== 'admin'} icon="🎖️" />
                                         {userProfile?.role === 'admin' && (
                                             <SelectField
                                                 label="Supervisor"
