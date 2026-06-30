@@ -38,30 +38,30 @@ const copy = {
     surakshaSathiBtn: 'Suraksha Sathi (SOPs / PTW)',
   },
   bn: {
-    heroTitle: 'প্রশিক্ষণ নিন। প্রতিযোগিতা করুন। নিরাপদ থাকুন।',
-    heroSubtitle: 'পশ্চিমবঙ্গের বিদ্যুৎ কর্মীদের নিরাপত্তা প্রশিক্ষণ, সুষ্ঠু প্রতিযোগিতা ও স্বীকৃতি।',
-    visionTitle: 'আমাদের রূপকল্প',
+    heroTitle: 'প্রশিক্ষণ নিন। প্রতিযোগিতায় অংশ নিন। সুরক্ষিত থাকুন।',
+    heroSubtitle: 'পশ্চিমবঙ্গের বিদ্যুৎ কর্মীদের (লাইনম্যান) জন্য সহজ নিরাপত্তা প্রশিক্ষণ, সুস্থ প্রতিযোগিতা এবং যোগ্য সম্মান।',
+    visionTitle: 'আমাদের স্বপ্ন',
     vision:
-      'প্রতিটি বিদ্যুৎ কর্মী আত্মবিশ্বাস ও আধুনিক নিরাপত্তা জ্ঞানে কাজ করবে—মাঠের দুর্ঘটনা কমাবে, পরিবার সুরক্ষিত থাকবে।',
-    missionTitle: 'আমাদের অভিলক্ষ্য',
-    mission: '৯০ দিনের বাস্তব প্রশিক্ষণ, দৈনন্দিন নিরাপত্তা সরঞ্জাম ও ন্যায্য পুরস্কার—দক্ষতা সবার দৃষ্টিতে।',
-    statsSection: 'কমিউনিটি',
-    statsUsers: 'নিবন্ধিত কর্মী',
-    statsToppers: 'শীর্ষ পারফর্মার',
-    statsPrizes: 'বিতরণকৃত পুরস্কার',
-    newPlayersTopThree: 'শীর্ষ ৩ — নতুন',
-    allTimeTopThree: 'শীর্ষ ৩ — সর্বকাল',
-    login: 'লগইন',
-    exploreLifeSkills: 'লাইফ স্কিল',
-    lifeSkillsTitle: 'লাইফ স্কিল',
-    lifeSkillsSubtitle: 'মানসিক চাপ, আর্থিক সচেতনতা ও ডিজিটাল নিরাপত্তা—প্রশিক্ষণে সংক্ষিপ্ত মডিউল।',
-    lifeSkillsTrack: 'আরও লাইফ স্কিল',
+      'প্রতিটি বিদ্যুৎ কর্মী যেন আত্মবিশ্বাস ও সঠিক নিরাপত্তা জ্ঞান নিয়ে নিরাপদে কাজ করতে পারেন—যাতে কাজের জায়গায় দুর্ঘটনা কমে এবং প্রতিটি পরিবার সুরক্ষিত থাকে।',
+    missionTitle: 'আমাদের লক্ষ্য',
+    mission: '৯০ দিনের ব্যবহারিক প্রশিক্ষণ, প্রতিদিনের প্রয়োজনীয় নিরাপত্তা গাইড এবং ন্যায্য পুরস্কারের মাধ্যমে কর্মীদের দক্ষতাকে সবার সামনে তুলে ধরা।',
+    statsSection: 'কমিউনিটি আপডেট',
+    statsUsers: 'নিবন্ধিত লাইনম্যান',
+    statsToppers: 'সেরা পারফর্মাররা',
+    statsPrizes: 'পুরস্কার বিতরণ করা হয়েছে',
+    newPlayersTopThree: 'নতুন খেলোয়াড়দের মধ্যে সেরা ৩',
+    allTimeTopThree: 'সর্বকালের সেরা ৩ খেলোয়াড়',
+    login: 'লগইন করুন',
+    exploreLifeSkills: 'জীবন গড়ার দক্ষতা দেখুন',
+    lifeSkillsTitle: 'জীবন গড়ার সাধারণ দক্ষতা (Life Skills)',
+    lifeSkillsSubtitle: 'মানসিক চাপ কমানো, টাকা-পয়সার হিসাব ও মোবাইল নিরাপত্তা—প্রশিক্ষণের বিশেষ মডিউল।',
+    lifeSkillsTrack: 'আরও দক্ষতা দেখুন',
     language: 'ভাষা',
     loading: 'লোড হচ্ছে…',
-    pts: 'পয়েন্ট',
-    prizeMonths: 'টি মাসে পুরস্কার বিতরণ',
-    followFacebook: 'ফেসবুক পেজ ফলো করুন',
-    visitLabel: 'ভিজিট:',
+    pts: 'পয়েন্ট',
+    prizeMonths: 'টি মাসে পুরস্কার প্রদান',
+    followFacebook: 'আমাদের ফেসবুক পেজে যুক্ত হন',
+    visitLabel: 'মোট ভিজিট:',
     surakshaSathiBtn: 'সুরক্ষা সাথী (SOPs / PTW)',
   },
 };
@@ -241,9 +241,9 @@ const EN_PUBLIC_LIFE_SKILL_CONTENT = {
 const categoryThemes = {
   mental: { label_en: 'Mental Fitness', label_bn: 'মানসিক সুস্থতা', color: 'bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100/50' },
   financial: { label_en: 'Family Protection', label_bn: 'পারিবারিক সুরক্ষা', color: 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100/50' },
-  digital: { label_en: 'Cyber Security', label_bn: 'সাইবার নিরাপত্তা', color: 'bg-orange-50 text-orange-700 border-orange-100 hover:bg-orange-100/50' },
-  social: { label_en: 'Professionalism', label_bn: 'পেশাদারিত্ব', color: 'bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100/50' },
-  health: { label_en: 'Field Health', label_bn: 'মাঠপর্যায়ের স্বাস্থ্য', color: 'bg-rose-50 text-rose-700 border-rose-100 hover:bg-rose-100/50' },
+  digital: { label_en: 'Cyber Security', label_bn: 'মোবাইল ও সাইবার নিরাপত্তা', color: 'bg-orange-50 text-orange-700 border-orange-100 hover:bg-orange-100/50' },
+  social: { label_en: 'Professionalism', label_bn: 'পেশাদারিত্ব ও আচরণ', color: 'bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100/50' },
+  health: { label_en: 'Field Health', label_bn: 'মাঠে কাজের স্বাস্থ্য ও সুরক্ষা', color: 'bg-rose-50 text-rose-700 border-rose-100 hover:bg-rose-100/50' },
   family: { label_en: 'Child Security', label_bn: 'সন্তানের ভবিষ্যৎ ও সুরক্ষা', color: 'bg-purple-50 text-purple-700 border-purple-100 hover:bg-purple-100/50' },
   personal: { label_en: 'Healthy Life', label_bn: 'সুস্থ জীবনযাপন', color: 'bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-100/50' },
 };
@@ -361,6 +361,22 @@ const LANDING_ICON_PATHS = {
     </>
   ),
 };
+
+function getThisMonthTopThreeTitle(language) {
+  const now = new Date();
+  const day = now.getDate();
+  if (language === 'bn') {
+    const bnMonths = [
+      'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+      'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর',
+    ];
+    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    const formatBnNum = (num) => String(num).split('').map(d => bnDigits[Number(d)] || d).join('');
+    return `মাসের সেরা ৩ — ${formatBnNum(day)}ই ${bnMonths[now.getMonth()]} পর্যন্ত`;
+  }
+  const monthName = now.toLocaleString('en', { month: 'long' });
+  return `Top 3 — This Month (as of ${monthName} ${day})`;
+}
 
 function LandingIcon({ name, className = 'w-5 h-5', strokeWidth = 1.75 }) {
   const paths = LANDING_ICON_PATHS[name];
@@ -552,7 +568,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
   const [stats, setStats] = useState({
     users: 0,
     newPlayerTop: [],
-    allTimeTop: [],
+    thisMonthTop: [],
     prizesCount: 0,
     prizeMonths: 0,
     hallOfFameData: [],
@@ -659,7 +675,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
           encouragementBoards
         );
         const newPlayerTopThree = pickTopLeaders(newPlayerList, 3);
-        const allTimeTopThree = (allTimeLeaderboard || []).slice(0, 3).map(mapLandingPlayer);
+        const thisMonthTopThree = (monthlyLeaderboard || []).slice(0, 3).map(mapLandingPlayer);
 
         let prizesCount = 0;
         let prizeMonths = 0;
@@ -683,7 +699,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
           setStats({
             users: profilesResult?.users ?? 0,
             newPlayerTop: newPlayerTopThree,
-            allTimeTop: allTimeTopThree,
+            thisMonthTop: thisMonthTopThree,
             prizesCount,
             prizeMonths,
             hallOfFameData: Array.isArray(hallOfFame) ? hallOfFame : [],
@@ -692,7 +708,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
       } catch (err) {
         console.warn('Landing stats fetch failed:', err);
         if (!cancelled) {
-          setStats((prev) => ({ ...prev, newPlayerTop: [], allTimeTop: [] }));
+          setStats((prev) => ({ ...prev, newPlayerTop: [], thisMonthTop: [] }));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -963,10 +979,10 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
           showScore={false}
         />
         <LeaderPodiumGrid
-          title={t.allTimeTopThree}
+          title={getThisMonthTopThreeTitle(language)}
           iconName="trophy"
           iconTone="amber"
-          players={stats.allTimeTop}
+          players={stats.thisMonthTop}
           ptsLabel={t.pts}
           bnFont={bnFont}
         />
@@ -1015,9 +1031,9 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
               {(lifeSkillModules.length
                 ? lifeSkillModules
                 : [
-                    { lesson_code: 'LS01', title_en: 'Stress Management', title_bn: 'মানসিক চাপ নিয়ন্ত্রণ', category: 'mental', duration: '5 min' },
-                    { lesson_code: 'LS02', title_en: 'Financial Awareness', title_bn: 'আর্থিক সচেতনতা', category: 'financial', duration: '8 min' },
-                    { lesson_code: 'LS03', title_en: 'Digital Safety', title_bn: 'ডিজিটাল নিরাপত্তা', category: 'digital', duration: '6 min' },
+                    { lesson_code: 'LS01', title_en: 'Stress Management', title_bn: 'মানসিক চাপ কমানোর উপায়', category: 'mental', duration: '5 min' },
+                    { lesson_code: 'LS02', title_en: 'Financial Awareness', title_bn: 'টাকা-পয়সার হিসাব ও সঞ্চয়', category: 'financial', duration: '8 min' },
+                    { lesson_code: 'LS03', title_en: 'Digital Safety', title_bn: 'মোবাইল ও ইন্টারনেট নিরাপত্তা', category: 'digital', duration: '6 min' },
                   ]).map((module, idx) => {
                 const code = module.lesson_code || `LS${String(idx + 1).padStart(2, '0')}`;
                 const title = language === 'bn' ? module.title_bn : module.title_en;
@@ -1149,13 +1165,13 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                 {!!(activeLifeSkill.audio_url_en || activeLifeSkill.audio_url_bn) && (
                   <div className="nb-card p-4 sm:p-5">
                     <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-600 mb-2.5 nb-mono">
-                      {language === 'bn' ? 'অডিও লেসন (শ্রুতিপাঠ)' : 'Audio Lesson'}
+                      {language === 'bn' ? 'অডিও লেসন (কানে শুনুন)' : 'Audio Lesson'}
                     </p>
                     <div className="bg-indigo-50 p-3 sm:p-4 border-2 border-slate-900 rounded-md text-center shadow-[3px_3px_0_#0f172a]">
                       <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center nb-icon-badge bg-indigo-600">
                         <LandingIcon name="headphones" className="w-6 h-6" strokeWidth={2} />
                       </div>
-                      <p className="text-xs font-bold text-slate-500 mb-3 sm:mb-4">{language === 'bn' ? 'শোনার জন্য' : 'Listen'}</p>
+                      <p className="text-xs font-bold text-slate-500 mb-3 sm:mb-4">{language === 'bn' ? 'চালিয়ে শুনুন' : 'Listen'}</p>
                       <audio
                         controls
                         preload="none"
@@ -1169,7 +1185,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                 {/* Trusted Blurb guidance — desktop sidebar */}
                 {!!(activeLifeSkill.trusted_blurb_en || activeLifeSkill.trusted_blurb_bn) && (
                   <div className="hidden lg:block nb-card border-dashed p-5 text-xs text-slate-600 leading-relaxed font-semibold">
-                    <p className="font-extrabold text-slate-500 mb-1.5">{language === 'bn' ? 'তথ্যের নির্ভরযোগ্যতা ও উৎস' : 'Information Trust'}</p>
+                    <p className="font-extrabold text-slate-500 mb-1.5">{language === 'bn' ? 'নির্ভরযোগ্য তথ্যের উৎস' : 'Information Trust'}</p>
                     {language === 'bn' ? activeLifeSkill.trusted_blurb_bn : activeLifeSkill.trusted_blurb_en}
                   </div>
                 )}
@@ -1242,15 +1258,15 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                                   <span className="text-indigo-600 mt-0.5">▪</span>
                                   {point.item_name}
                                 </p>
-                                {!!point.specifications && (
+                                  {!!point.specifications && (
                                   <div className="text-sm text-slate-600 mt-2.5 pl-4 border-l-2 border-slate-200 font-medium">
-                                    <span className="font-bold text-slate-400 block text-[10px] uppercase tracking-wider mb-0.5">{language === 'bn' ? 'করণীয় বিষয়' : 'Specifications'}</span>
+                                    <span className="font-bold text-slate-400 block text-[10px] uppercase tracking-wider mb-0.5">{language === 'bn' ? 'সঠিক নিয়ম ও করণীয়' : 'Specifications'}</span>
                                     {point.specifications}
                                   </div>
                                 )}
                                 {!!point.importance && (
                                   <div className="text-sm text-slate-600 mt-3 pl-4 border-l-2 border-amber-300 font-medium">
-                                    <span className="font-bold text-amber-500 block text-[10px] uppercase tracking-wider mb-0.5">{language === 'bn' ? 'প্রয়োজনীয়তা ও গুরুত্ব' : 'Importance'}</span>
+                                    <span className="font-bold text-amber-500 block text-[10px] uppercase tracking-wider mb-0.5">{language === 'bn' ? 'কেন এটি প্রয়োজনীয়' : 'Importance'}</span>
                                     {point.importance}
                                   </div>
                                 )}
@@ -1258,7 +1274,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                                   <div className="text-sm text-indigo-900 mt-3 pl-4 border-l-2 border-indigo-400 bg-indigo-50/30 p-3 rounded-r-xl font-medium">
                                     <span className="font-bold text-indigo-600 flex items-center gap-1 text-[10px] uppercase tracking-wider mb-0.5">
                                       <LandingIcon name="sparkles" className="w-3 h-3" />
-                                      {language === 'bn' ? 'আজকের যাচাই' : 'Daily Check'}
+                                      {language === 'bn' ? 'নিজেকে যাচাই করুন' : 'Daily Check'}
                                     </span>
                                     {point.daily_check}
                                   </div>
@@ -1274,15 +1290,15 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                 {!activeLifeSkillLoading && !activeLifeSkillContent && (
                   <div className="nb-card border-dashed p-4 sm:p-6 text-center text-slate-500 font-bold text-sm">
                     {activeLifeSkillError
-                      ? (language === 'bn' ? 'এই মুহূর্তে পাঠটি লোড করা সম্ভব হচ্ছে না। অনুগ্রহ করে কিছু ক্ষণ পর আবার চেষ্টা করুন।' : 'Unable to load this content right now.')
+                      ? (language === 'bn' ? 'এই মডিউলটি লোড করা যাচ্ছে না। একটু পরে আবার চেষ্টা করে দেখুন।' : 'Unable to load this content right now.')
                       : (language === 'bn'
-                          ? 'এই মডিউলের সম্পূর্ণ বিষয়বস্তু প্রশিক্ষণ বিভাগে পাওয়া যাবে।'
+                          ? 'এই মডিউলটির সম্পূর্ণ লেখাটি ট্রেনিং (Training) বিভাগে পাওয়া যাবে।'
                           : 'Full reading content for this module is available inside Training.')}
                   </div>
                 )}
                 {!!(activeLifeSkill.trusted_blurb_en || activeLifeSkill.trusted_blurb_bn) && (
                   <div className="lg:hidden nb-card border-dashed p-4 text-xs text-slate-600 leading-relaxed font-semibold">
-                    <p className="font-extrabold text-slate-500 mb-1.5">{language === 'bn' ? 'তথ্যের নির্ভরযোগ্যতা ও উৎস' : 'Information Trust'}</p>
+                    <p className="font-extrabold text-slate-500 mb-1.5">{language === 'bn' ? 'নির্ভরযোগ্য তথ্যের উৎস' : 'Information Trust'}</p>
                     {language === 'bn' ? activeLifeSkill.trusted_blurb_bn : activeLifeSkill.trusted_blurb_en}
                   </div>
                 )}

@@ -14,7 +14,7 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
     const [paused, setPaused] = useState(false);
     const touchStartX = useRef(null);
 
-    const title = language === 'en' ? 'Monthly prizes' : 'মাসের পুরস্কার';
+    const title = language === 'en' ? 'Monthly prizes' : 'মাসিক পুরস্কার';
 
     const goTo = useCallback((next) => {
         if (slides.length === 0) return;
