@@ -205,15 +205,15 @@ export default function HallOfFameWinnerCard({
     return (
         <div
             onClick={() => onOpenUserProgress(winner.user_id)}
-            className={`group flex cursor-pointer flex-col gap-2 border-2 border-slate-900 p-2.5 shadow-[2px_2px_0_#0f172a] transition-colors active:translate-x-0.5 active:translate-y-0.5 sm:p-3 ${
+            className={`group flex cursor-pointer flex-col gap-2 border-l-4 py-3 pl-2.5 pr-1.5 transition-colors active:bg-orange-50 sm:pl-3.5 ${
                 superseded
-                    ? 'bg-slate-100 hover:bg-slate-200/50'
+                    ? 'border-slate-200 hover:bg-slate-50'
                     : prizeRecipient
-                        ? 'bg-orange-50 hover:bg-orange-100'
-                        : 'bg-white hover:bg-orange-50/40'
+                        ? 'border-orange-400 hover:bg-orange-50/60'
+                        : 'border-transparent hover:bg-orange-50/30'
             }`}
         >
-            <div className="flex items-start gap-2.5">
+            <div className="flex items-center gap-2.5">
                 <div className="relative shrink-0">
                     <div
                         onClick={(e) => {

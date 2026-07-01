@@ -2031,9 +2031,15 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             </div>
 
                                             {/* Winners / prize cards */}
-                                            <div className={`grid gap-3 ${hallOfFamePrizeView === 'detailed' ? 'grid-cols-1 sm:grid-cols-3 sm:gap-4' : 'grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3'}`}>
+                                            <div className={
+                                                monthWinners.length === 0
+                                                    ? ''
+                                                    : hallOfFamePrizeView === 'detailed'
+                                                        ? 'grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4'
+                                                        : 'divide-y divide-slate-200'
+                                            }>
                                                 {monthWinners.length === 0 ? (
-                                                    <p className="col-span-full nb-card border-dashed bg-amber-50 px-4 py-8 text-center text-xs text-slate-600 font-semibold">
+                                                    <p className="nb-card border-dashed bg-amber-50 px-4 py-8 text-center text-xs text-slate-600 font-semibold">
                                                         {language === 'en' ? 'No winners for this category that month.' : 'সেই মাসে এই তালিকায় কেউ উঠেননি।'}
                                                     </p>
                                                 ) : monthWinners.map((winner, winIdx) => (

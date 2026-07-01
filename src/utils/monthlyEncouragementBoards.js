@@ -50,7 +50,7 @@ export function getEncouragementCopy(language = 'bn') {
         notEligible: en ? 'Not eligible yet' : 'যোগ্যতা বাকি',
         boards: {
             [BOARD_IDS.NEW_PLAYER]: {
-                title: en ? 'New Player Champion' : 'নতুন সদস্য',
+                title: en ? 'New Player Champion' : 'সেরা নতুন',
                 logic: en
                     ? 'Joined ≤90 days · not monthly top 3 · 500 pts, 15 hourlies, or 5 lessons'
                     : 'নতুন সদস্য (যোগদান ≤ ৯০ দিন)। নুন্যতম ৫০০ পয়েন্ট, ১৫টি কুইজ অথবা ৫টি পাঠ সম্পন্ন হতে হবে।',
@@ -91,7 +91,7 @@ export function getEncouragementCopy(language = 'bn') {
         },
         monthlyTabs: {
             champion: en ? 'Champion' : 'মাসের সেরা',
-            [BOARD_IDS.NEW_PLAYER]: en ? 'New Player' : 'নতুন সদস্য',
+            [BOARD_IDS.NEW_PLAYER]: en ? 'New Player' : 'সেরা নতুন',
             [BOARD_IDS.MOST_IMPROVED]: en ? 'Improved' : 'সবচেয়ে এগিয়ে',
             [BOARD_IDS.TOP_LEARNER]: en ? 'Learner' : 'পড়াশোনা',
         },
