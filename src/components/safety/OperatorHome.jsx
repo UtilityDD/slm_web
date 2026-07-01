@@ -1,7 +1,7 @@
 import React from 'react';
 import { loadOperatorConfirmations } from './clearanceLinks';
 
-export default function OperatorHome({ language = 'bn', onClose, onOpenLink }) {
+export default function OperatorHome({ language = 'bn', onClose, onOpenInbox }) {
     const t = (en, bn) => (language === 'bn' ? bn : en);
     const recent = loadOperatorConfirmations().slice(0, 5);
 
@@ -20,10 +20,18 @@ export default function OperatorHome({ language = 'bn', onClose, onOpenLink }) {
             </header>
 
             <main className="flex-1 overflow-y-auto p-5 max-w-md mx-auto w-full flex flex-col justify-center gap-6">
+                <button
+                    type="button"
+                    onClick={onOpenInbox}
+                    className="w-full py-6 rounded-3xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-black text-lg shadow-lg active:scale-95 transition-transform"
+                >
+                    📋 {t('Pending requests (online)', 'অপেক্ষমাণ অনুরোধ (অনলাইন)')}
+                </button>
+
                 <div className="text-center space-y-3">
-                    <div className="text-8xl">🏢</div>
-                    <p className="text-xl font-black text-slate-800 dark:text-white">{t('Open link from SMS', 'এসএমএস (SMS)-এর লিংকটি খুলুন')}</p>
-                    <p className="text-sm font-bold text-slate-500 px-4">{t('Lineman sends a link. Tap it to confirm isolation or re-energize in the app — or use phone as before.', 'লাইনম্যান আপনাকে একটি লিংক পাঠাবেন। অ্যাপের মাধ্যমে আইসোলেশন বা লাইন চালু করা নিশ্চিত করতে লিংকটিতে ট্যাপ করুন — অথবা আগের মতোই ফোনে কথা বলে নিশ্চিত করতে পারেন।')}</p>
+                    <div className="text-6xl">🔗</div>
+                    <p className="text-lg font-black text-slate-800 dark:text-white">{t('Or open link from SMS', 'অথবা এসএমএসের লিংক খুলুন')}</p>
+                    <p className="text-sm font-bold text-slate-500 px-4">{t('Lineman can submit online or send SMS. Tap SMS link to confirm when offline.', 'লাইনম্যান অনলাইনে জমা দিতে পারেন বা এসএমএস পাঠাতে পারেন। অফলাইনে এসএমএস লিংকে ট্যাপ করে নিশ্চিত করুন।')}</p>
                 </div>
 
                 {recent.length > 0 && (

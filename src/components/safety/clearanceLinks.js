@@ -121,6 +121,7 @@ export function loadOperatorConfirmations() {
 }
 
 export const LINEMAN_PHONE_KEY = 'slm_lineman_phone';
+export const OPERATOR_PHONE_KEY = 'slm_operator_phone';
 
 export function loadLinemanPhone() {
     try {

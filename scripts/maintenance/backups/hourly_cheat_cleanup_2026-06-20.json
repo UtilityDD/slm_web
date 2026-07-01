@@ -1,0 +1,4396 @@
+{
+  "generated_at": "2026-06-20T09:55:38.046Z",
+  "month": "2026-06",
+  "rule": "diff(submit_ist - slot_ist) < -5 min OR > 90 min",
+  "affected_rows": [
+    {
+      "id": "610671e7-0a6d-41ca-adf9-f40b396ecdae",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-01-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T02:08:43.748265+00:00",
+      "diff_min": 99
+    },
+    {
+      "id": "0156b37b-0641-4e93-a106-7b2fdcfbb8a1",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-01-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T03:02:02.66644+00:00",
+      "diff_min": 212
+    },
+    {
+      "id": "24e786a2-2055-47a6-9e58-23eb31893361",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-01-04",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-01T03:30:58.304475+00:00",
+      "diff_min": 301
+    },
+    {
+      "id": "a81cd52d-5c84-4dfa-94be-8397084ac25d",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-01-09",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T05:03:26.965158+00:00",
+      "diff_min": 93
+    },
+    {
+      "id": "d515cfc4-05ab-4267-995d-a19ea94bd650",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-01-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T09:00:31.032983+00:00",
+      "diff_min": 751
+    },
+    {
+      "id": "6270ffc6-58de-41dd-9f00-5dff73c876b4",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-01-13",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T09:20:43.375333+00:00",
+      "diff_min": 111
+    },
+    {
+      "id": "39c60479-5cfc-45bd-ad06-d8548e05a8ff",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-01-11",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T09:22:42.905343+00:00",
+      "diff_min": 233
+    },
+    {
+      "id": "411a9575-dc97-404d-9735-2fc6fa0a2d44",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-01-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T09:42:56.507745+00:00",
+      "diff_min": 733
+    },
+    {
+      "id": "643b4297-d052-4de8-aa95-48c4e9f88646",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-01-15",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T11:59:59.580946+00:00",
+      "diff_min": 150
+    },
+    {
+      "id": "b859d946-23ec-4343-b290-8ebb1fb905d5",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-01-00",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T16:02:34.42309+00:00",
+      "diff_min": 1293
+    },
+    {
+      "id": "4874ce13-c966-4322-a375-5928c87e19c5",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-01-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T16:04:17.923563+00:00",
+      "diff_min": 1234
+    },
+    {
+      "id": "ad86e6b7-76fa-43ff-b19e-0c519261e5d6",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-01-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T16:04:49.736695+00:00",
+      "diff_min": 1235
+    },
+    {
+      "id": "01e400a6-c38e-4206-b8a3-a8b21ec81856",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-01-00",
+      "score": 30,
+      "penalty": 30,
+      "created_at": "2026-06-01T16:09:49.491481+00:00",
+      "diff_min": 1300
+    },
+    {
+      "id": "60f7658d-fab0-4b66-9300-65799de393c5",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-01-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T17:29:09.175718+00:00",
+      "diff_min": 1259
+    },
+    {
+      "id": "ee324dc9-9a10-4afa-8219-a4caa956c3a7",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-01-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T17:30:55.292539+00:00",
+      "diff_min": 1321
+    },
+    {
+      "id": "4fabdbd5-c3e4-43a1-b5df-c5e259dd4db9",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-01-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T17:32:57.015682+00:00",
+      "diff_min": 1143
+    },
+    {
+      "id": "d9f15587-6a02-4cea-9e8f-c7dd02b66e53",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-01-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T17:34:26.981605+00:00",
+      "diff_min": 1204
+    },
+    {
+      "id": "f9e95b5c-e441-43d5-9d71-69308a2d89b4",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-01-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T19:01:11.09198+00:00",
+      "diff_min": 1351
+    },
+    {
+      "id": "99fac7e5-da9e-4dc9-8a6a-b64c5d6644e9",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-01-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T19:03:23.049134+00:00",
+      "diff_min": 1293
+    },
+    {
+      "id": "b2bc5a02-a5f7-4bfc-89c2-acfa9a7febda",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-01-04",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-01T19:05:32.042401+00:00",
+      "diff_min": 1236
+    },
+    {
+      "id": "33eaf884-929e-46a1-9cd2-55709b0d9ad8",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-01-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T19:07:33.740645+00:00",
+      "diff_min": 1178
+    },
+    {
+      "id": "d67baf25-a9fd-461f-9919-c88d106acce4",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-01-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T19:09:12.817651+00:00",
+      "diff_min": 1119
+    },
+    {
+      "id": "2b7bf285-5a65-46d9-a62d-33100ab91d6a",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-01-07",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T19:11:21.62213+00:00",
+      "diff_min": 1061
+    },
+    {
+      "id": "4173fc86-a4e7-4711-a148-9f7c0e74befd",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-01-08",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-01T19:12:51.737132+00:00",
+      "diff_min": 1003
+    },
+    {
+      "id": "9337a13f-7951-4fac-8f25-afdf514ed400",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-01-00",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-01T19:22:07.204912+00:00",
+      "diff_min": 1492
+    },
+    {
+      "id": "fba29f88-e406-4349-b4e2-46884b744a32",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-02-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T01:37:24.097081+00:00",
+      "diff_min": 127
+    },
+    {
+      "id": "f38467b1-3d1f-466f-9eb8-77b52dde82a3",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-02-10",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T06:16:27.297148+00:00",
+      "diff_min": 106
+    },
+    {
+      "id": "99870fce-cc93-435c-b436-ee0e90e5ef3b",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-02-09",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-02T06:17:46.842964+00:00",
+      "diff_min": 168
+    },
+    {
+      "id": "2ca770cb-5327-473d-a553-52f1bd755c54",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-02-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T06:49:52.392522+00:00",
+      "diff_min": 680
+    },
+    {
+      "id": "bf24e5a0-d868-4acf-8800-087e620e8ed8",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-02-11",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T07:11:34.688855+00:00",
+      "diff_min": 102
+    },
+    {
+      "id": "6ae0b090-2c10-4783-8553-ac31991b2b5f",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-02-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T09:15:19.56188+00:00",
+      "diff_min": 765
+    },
+    {
+      "id": "5bfcfe55-f583-47c2-a032-2b2997f9bf88",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-02-14",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T11:02:10.997076+00:00",
+      "diff_min": 152
+    },
+    {
+      "id": "d7c1f569-b9ec-4a6d-9914-248ea33fb707",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-02-15",
+      "score": 30,
+      "penalty": 30,
+      "created_at": "2026-06-02T11:05:32.071524+00:00",
+      "diff_min": 96
+    },
+    {
+      "id": "acc63de1-4acc-4339-9e69-6116388b7651",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-02-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T13:12:33.849092+00:00",
+      "diff_min": 943
+    },
+    {
+      "id": "5dc254f5-092f-4177-9ade-c829a2ec0e9e",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-02-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T15:19:52.798415+00:00",
+      "diff_min": 1010
+    },
+    {
+      "id": "da177846-048b-40c4-93fb-7f1453113b25",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-02-16",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-02T15:51:46.47426+00:00",
+      "diff_min": 322
+    },
+    {
+      "id": "77b33acf-f350-4490-bb5e-315d7ff616da",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-02-15",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-02T15:53:41.724783+00:00",
+      "diff_min": 384
+    },
+    {
+      "id": "b379c833-3a60-4bd9-b9b1-649700b533b9",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-02-19",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T15:56:21.339111+00:00",
+      "diff_min": 146
+    },
+    {
+      "id": "f2dac415-1280-467c-a57e-6e942f279717",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-02-18",
+      "score": 30,
+      "penalty": 30,
+      "created_at": "2026-06-02T15:57:56.94878+00:00",
+      "diff_min": 208
+    },
+    {
+      "id": "6b4a21eb-c292-4b25-9cd7-b5c3cf292104",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-02-17",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T16:00:51.194368+00:00",
+      "diff_min": 271
+    },
+    {
+      "id": "2ed4fe09-39aa-422a-958a-0222edbb44d6",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-02-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T16:05:34.034897+00:00",
+      "diff_min": 936
+    },
+    {
+      "id": "12fbb206-9a51-4036-af09-0941870af0ad",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-02-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T16:08:34.852864+00:00",
+      "diff_min": 999
+    },
+    {
+      "id": "7a547fd4-4d72-429d-b28d-67aa44218841",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-02-01",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-02T17:16:24.364135+00:00",
+      "diff_min": 1306
+    },
+    {
+      "id": "deb16561-801b-4952-b8c0-ac9901e3abb9",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-02-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T17:17:23.830981+00:00",
+      "diff_min": 1247
+    },
+    {
+      "id": "2770298d-9022-48c5-91b2-9f78542a808d",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-02-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T17:19:11.205501+00:00",
+      "diff_min": 1189
+    },
+    {
+      "id": "84e006fa-6cad-4b0d-871b-c733149aa63d",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-02-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T17:20:25.526612+00:00",
+      "diff_min": 1130
+    },
+    {
+      "id": "ecc103f0-b350-45a0-9c65-2547239ca577",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-02-21",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-02T17:24:35.698613+00:00",
+      "diff_min": 115
+    },
+    {
+      "id": "08841056-24c7-40dd-b9ae-27e8e681162f",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-02-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T18:02:58.864639+00:00",
+      "diff_min": 1233
+    },
+    {
+      "id": "a82f6a8d-0a2b-4e8e-b4c1-6ff861cb55f4",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-02-04",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-02T18:04:43.369104+00:00",
+      "diff_min": 1175
+    },
+    {
+      "id": "56032803-9770-42fb-92dc-cf3f1cd3cb0e",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-02-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T18:06:15.437879+00:00",
+      "diff_min": 1116
+    },
+    {
+      "id": "02c3ad84-1431-404f-bc84-6e311f7a8f37",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-02-06",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-02T18:08:11.508865+00:00",
+      "diff_min": 1058
+    },
+    {
+      "id": "4f3804e2-2b1a-411f-8cb2-2f89fc5932d5",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-02-07",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T18:10:47.775773+00:00",
+      "diff_min": 1001
+    },
+    {
+      "id": "8232d87a-a0f7-42e6-9d0b-8b697b8b166b",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-02-08",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-02T18:12:34.195413+00:00",
+      "diff_min": 943
+    },
+    {
+      "id": "0bde9592-c4f1-4592-8d97-1749c56d0c61",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-03-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T00:10:45.039242+00:00",
+      "diff_min": 101
+    },
+    {
+      "id": "0bdc27b7-934d-4728-8c05-66467d09bd38",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-03-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T00:18:34.558676+00:00",
+      "diff_min": 169
+    },
+    {
+      "id": "7a301143-7fc1-4eb2-a72b-18e79ea31493",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-03-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T02:20:30.572846+00:00",
+      "diff_min": 111
+    },
+    {
+      "id": "4d118c08-48d9-4dd5-ac95-120a3b8b2955",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-03-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T02:31:24.406052+00:00",
+      "diff_min": 121
+    },
+    {
+      "id": "f758f284-30a8-4b33-ac0d-f6d8cd245502",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-03-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T03:07:59.276928+00:00",
+      "diff_min": 158
+    },
+    {
+      "id": "6d39693e-152f-4309-9163-d5076fa81c2f",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-03-08",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T04:30:27.882048+00:00",
+      "diff_min": 120
+    },
+    {
+      "id": "10683da0-b3d2-4af0-93aa-28ec2bcb9f7a",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-03-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T06:12:18.309001+00:00",
+      "diff_min": 582
+    },
+    {
+      "id": "557007c3-0bb5-4cbd-b685-397fa79120dc",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-03-10",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-03T06:48:04.312669+00:00",
+      "diff_min": 138
+    },
+    {
+      "id": "69e87a05-1086-482c-8fa9-d991206e64d8",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-03-00",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T07:44:57.703619+00:00",
+      "diff_min": 795
+    },
+    {
+      "id": "7ec3295a-23b9-493c-8f95-2b5f43294907",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-03-01",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-03T07:50:01.636906+00:00",
+      "diff_min": 740
+    },
+    {
+      "id": "be4f861a-57d1-416b-b5f1-7eddca644a2b",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-03-02",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-03T08:53:20.878048+00:00",
+      "diff_min": 743
+    },
+    {
+      "id": "9dae6566-1dfb-45c4-9b3b-a1f3960e7f96",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-03-03",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-03T08:56:44.28091+00:00",
+      "diff_min": 687
+    },
+    {
+      "id": "07bfb49a-aa01-4cf4-bc91-0bb5309461a4",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-03-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T08:59:34.884183+00:00",
+      "diff_min": 630
+    },
+    {
+      "id": "6af85861-be4d-414e-a5a7-5c18c156d06c",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-03-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T09:01:57.994234+00:00",
+      "diff_min": 572
+    },
+    {
+      "id": "ce26e098-964c-4ed4-8a2e-67036eaa9bb5",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-03-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T09:25:10.004384+00:00",
+      "diff_min": 835
+    },
+    {
+      "id": "b115aac5-6c0e-4334-81ef-72d12fef3308",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-03-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T10:58:54.48976+00:00",
+      "diff_min": 929
+    },
+    {
+      "id": "afdf9a9a-5a28-4ab0-b899-1b657566a289",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-03-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T11:17:32.645577+00:00",
+      "diff_min": 768
+    },
+    {
+      "id": "fe9573d1-7d28-420f-b12d-8d8b1f6cd2fc",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-03-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T12:26:09.031253+00:00",
+      "diff_min": 896
+    },
+    {
+      "id": "84ecf676-c06a-4ee0-a6df-825d79f65ab4",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-03-00",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T15:02:44.709577+00:00",
+      "diff_min": 1233
+    },
+    {
+      "id": "50c724d9-98e4-4886-98b1-a4d6546ad6b0",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-03-19",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T15:12:24.926489+00:00",
+      "diff_min": 102
+    },
+    {
+      "id": "9557f331-9714-4190-9375-0db3e75b45f7",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-03-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T15:14:40.282983+00:00",
+      "diff_min": 1125
+    },
+    {
+      "id": "ae59d335-124d-494d-896e-b6dd5d5cab0a",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-03-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T15:17:07.593181+00:00",
+      "diff_min": 947
+    },
+    {
+      "id": "c3001e05-71a7-45ae-a5a1-fccbde711ada",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-03-21",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T17:36:59.905533+00:00",
+      "diff_min": 127
+    },
+    {
+      "id": "c3d11a22-313d-439b-93fd-380c5ba3dcc4",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-03-20",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T17:39:56.486456+00:00",
+      "diff_min": 190
+    },
+    {
+      "id": "1f8e1502-629d-48b4-ba01-b50e65a9b94f",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-03-19",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-03T17:42:26.066906+00:00",
+      "diff_min": 252
+    },
+    {
+      "id": "2872f0f7-1436-45d6-9b1d-415ca77710f6",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-03-18",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T17:44:42.260481+00:00",
+      "diff_min": 315
+    },
+    {
+      "id": "062adadd-b338-4ea9-9b4a-98a4ece2ae9b",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-03-15",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T17:47:20.433104+00:00",
+      "diff_min": 497
+    },
+    {
+      "id": "1d6815ba-df47-4479-800e-5b0299f26507",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-04-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T19:15:28.424646+00:00",
+      "diff_min": -15
+    },
+    {
+      "id": "23cb98c1-553b-4a90-91ed-a53e06285507",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-04-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T19:18:12.872208+00:00",
+      "diff_min": -72
+    },
+    {
+      "id": "01a43569-52b3-4766-8974-ba11fe69bb11",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-04-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T19:53:37.997512+00:00",
+      "diff_min": -96
+    },
+    {
+      "id": "d5d91b2c-f2de-457c-9d17-53bd2f7f0fcb",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-04-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-03T21:01:13.009703+00:00",
+      "diff_min": -89
+    },
+    {
+      "id": "40ea0272-2fd0-43b0-8b81-af7931b939ed",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-04-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T03:13:03.721731+00:00",
+      "diff_min": 223
+    },
+    {
+      "id": "6131b0ed-abef-468e-83d4-cee93ac03ffa",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-04-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T03:25:16.745665+00:00",
+      "diff_min": 175
+    },
+    {
+      "id": "7b4b7507-6f52-4cb0-ab33-6a575fa8359a",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-04-07",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T03:33:21.350421+00:00",
+      "diff_min": 123
+    },
+    {
+      "id": "c80768de-559a-49f2-93be-7dd45b5957e4",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-04-09",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-04T05:27:57.912674+00:00",
+      "diff_min": 118
+    },
+    {
+      "id": "b93a33ed-75f7-4a7b-b4fb-606513d39baa",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-04-08",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T06:20:53.821987+00:00",
+      "diff_min": 231
+    },
+    {
+      "id": "0a0dc28f-0654-4c53-8949-6cc6af5d669a",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-04-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T07:37:22.709309+00:00",
+      "diff_min": 727
+    },
+    {
+      "id": "4a5dadbc-ef51-4594-901f-fda971c3c521",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-04-00",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-04T07:39:41.81663+00:00",
+      "diff_min": 790
+    },
+    {
+      "id": "e9c87c93-9ca9-480e-a1ee-90c6453acf03",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-04-13",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T09:19:02.749563+00:00",
+      "diff_min": 109
+    },
+    {
+      "id": "3f77903b-0162-4006-b33e-362a6ea132fb",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-04-03",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-04T09:44:36.417203+00:00",
+      "diff_min": 735
+    },
+    {
+      "id": "e8d5c681-4082-4c7a-ae9f-4e31e9952028",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-04-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T09:46:31.988265+00:00",
+      "diff_min": 797
+    },
+    {
+      "id": "be1fa513-ea90-4347-ac76-a82b462ca297",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-04-05",
+      "score": 30,
+      "penalty": 30,
+      "created_at": "2026-06-04T12:20:14.474454+00:00",
+      "diff_min": 770
+    },
+    {
+      "id": "b19f9e46-187f-439e-91a0-391003a18b4c",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-04-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T12:26:01.754784+00:00",
+      "diff_min": 836
+    },
+    {
+      "id": "b965a185-1a74-41df-ac66-9f6e62e16566",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-04-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T12:27:06.602821+00:00",
+      "diff_min": 1017
+    },
+    {
+      "id": "ba3e4cd7-184f-4197-83a3-48df08cf8878",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-04-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T12:49:33.443246+00:00",
+      "diff_min": 740
+    },
+    {
+      "id": "f6390319-9635-40c0-ab04-0c17cf6342ac",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-04-07",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T12:54:03.410846+00:00",
+      "diff_min": 684
+    },
+    {
+      "id": "c4cd8315-83a9-449a-8a91-94e058862953",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-04-08",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T12:58:06.116851+00:00",
+      "diff_min": 628
+    },
+    {
+      "id": "12399424-00ad-437b-b6a8-bbed5a1c4ec6",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-04-09",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T13:00:53.211602+00:00",
+      "diff_min": 571
+    },
+    {
+      "id": "78124288-1204-4f7c-a532-e15fdc4dc588",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-04-11",
+      "score": 30,
+      "penalty": 30,
+      "created_at": "2026-06-04T13:08:58.25063+00:00",
+      "diff_min": 459
+    },
+    {
+      "id": "a23ea79e-d876-4bcb-a378-8196b5e8fd18",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-04-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T14:41:29.460053+00:00",
+      "diff_min": 851
+    },
+    {
+      "id": "6f62de6b-2eee-4aca-8d39-d4de0fd369b0",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-04-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T15:20:07.228183+00:00",
+      "diff_min": 950
+    },
+    {
+      "id": "076b1a01-1004-41d4-8a48-5d38768f6508",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-04-04",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-04T15:22:27.780988+00:00",
+      "diff_min": 1012
+    },
+    {
+      "id": "9f75c075-efd2-4558-af50-bd443441a624",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-04-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T15:24:08.800904+00:00",
+      "diff_min": 1074
+    },
+    {
+      "id": "dad07bb2-6258-494c-a284-27e35e9a8268",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-04-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-04T15:25:42.931326+00:00",
+      "diff_min": 1136
+    },
+    {
+      "id": "e6cf7198-a78a-40c3-945c-9e3b6b78eb95",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-05-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-05T02:34:36.183581+00:00",
+      "diff_min": 125
+    },
+    {
+      "id": "1115a549-c8c8-4af7-989b-9aac20779189",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-05-23",
+      "score": 40,
+      "penalty": 15,
+      "created_at": "2026-06-05T06:32:19.502574+00:00",
+      "diff_min": -658
+    },
+    {
+      "id": "8ff7468c-3272-4b9c-9482-224210e6daef",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-05-11",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-05T07:16:12.909175+00:00",
+      "diff_min": 106
+    },
+    {
+      "id": "f4acffb0-3e54-42b2-af42-418559cb2270",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-05-11",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-05T07:46:55.707368+00:00",
+      "diff_min": 137
+    },
+    {
+      "id": "3b76665f-9948-431a-a028-bed990ea3825",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-05-12",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-05T11:15:36.927086+00:00",
+      "diff_min": 286
+    },
+    {
+      "id": "33925682-865b-44fd-9a0d-17446101d576",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-05-13",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-05T11:23:56.454854+00:00",
+      "diff_min": 234
+    },
+    {
+      "id": "58b8ad0a-e845-4281-aa4b-b0d8afd92cd5",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-05-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-05T13:30:53.449462+00:00",
+      "diff_min": 841
+    },
+    {
+      "id": "4a08c281-94f7-432f-9a77-fbe6f4df6b78",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-05-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-05T17:49:17.069078+00:00",
+      "diff_min": 1219
+    },
+    {
+      "id": "6c1c60eb-53e2-4c55-809e-c15f3cc69224",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-05-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-05T17:52:38.327583+00:00",
+      "diff_min": 1283
+    },
+    {
+      "id": "26a63cfd-9d4a-4ff4-a557-2c25474f1439",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-05-04",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-05T17:56:20.012088+00:00",
+      "diff_min": 1166
+    },
+    {
+      "id": "ddfd9b30-e5ba-4f19-8e23-b35af122f93f",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-05-06",
+      "score": 40,
+      "penalty": 12,
+      "created_at": "2026-06-05T18:12:47.962089+00:00",
+      "diff_min": 1063
+    },
+    {
+      "id": "5eab7add-7965-422c-a282-5f95829bd133",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-05-07",
+      "score": 40,
+      "penalty": 12,
+      "created_at": "2026-06-05T18:14:38.299315+00:00",
+      "diff_min": 1005
+    },
+    {
+      "id": "8a9430a9-7af1-4e98-9be4-ade359f2ebaa",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-05-08",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-05T18:17:21.645789+00:00",
+      "diff_min": 947
+    },
+    {
+      "id": "ca974d75-2d2b-4fe3-96e1-7c2f13133d44",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-05-03",
+      "score": 40,
+      "penalty": 12,
+      "created_at": "2026-06-05T19:00:39.125773+00:00",
+      "diff_min": 1291
+    },
+    {
+      "id": "7b8b587d-3389-4dd5-bf7c-c8bd22d3fb8c",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-05-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-05T19:03:03.976489+00:00",
+      "diff_min": 1233
+    },
+    {
+      "id": "bb78f9ec-c2b1-470b-b0a4-320da93d339e",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-05-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-05T19:05:09.543372+00:00",
+      "diff_min": 1175
+    },
+    {
+      "id": "fcbac8fd-05b2-468c-bea4-fc665e868563",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-06-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-06T02:38:27.066339+00:00",
+      "diff_min": 128
+    },
+    {
+      "id": "11a8e075-c008-470f-8146-967eb62a7338",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-06-10",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-06T07:12:49.106325+00:00",
+      "diff_min": 163
+    },
+    {
+      "id": "52a22dba-486c-41f4-b94b-1be7f7edfb19",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-06-07",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-06T07:16:30.546195+00:00",
+      "diff_min": 347
+    },
+    {
+      "id": "c3802d82-d3c3-40f1-8611-d741541e4b4e",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-06-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-06T07:19:10.570058+00:00",
+      "diff_min": 409
+    },
+    {
+      "id": "e9470c43-0cb1-4459-b785-8cc1f576d04e",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-06-10",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-06T07:21:41.262523+00:00",
+      "diff_min": 172
+    },
+    {
+      "id": "b1b95846-d719-48a2-a193-ab5f63edacec",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-06-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-06T07:22:12.525427+00:00",
+      "diff_min": 712
+    },
+    {
+      "id": "167b3aca-f913-498d-a60e-7aef3776d6fb",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-06-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-06T07:24:18.346816+00:00",
+      "diff_min": 654
+    },
+    {
+      "id": "d3bbd109-8583-4732-8b25-7b3e51ff6c03",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-06-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-06T07:27:00.387716+00:00",
+      "diff_min": 597
+    },
+    {
+      "id": "8a23e6c8-06ac-4e6e-bd8f-b6d4f224d8ef",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-06-13",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-06T09:07:26.64978+00:00",
+      "diff_min": 97
+    },
+    {
+      "id": "e3522627-5b75-49e1-9826-969a203fa721",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-06-05",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-06T10:03:43.174287+00:00",
+      "diff_min": 634
+    },
+    {
+      "id": "6037284e-510b-4b1a-9f21-8677f78b815f",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-06-14",
+      "score": 40,
+      "penalty": 0,
+      "created_at": "2026-06-06T10:19:43.301682+00:00",
+      "diff_min": 110
+    },
+    {
+      "id": "a47685e4-1fc8-4820-ab0c-55db877f6076",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-06-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-06T12:21:23.893715+00:00",
+      "diff_min": 1011
+    },
+    {
+      "id": "eda282d7-f8f6-4ab5-8ed5-975e01eb3691",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-06-21",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-06T17:04:38.380946+00:00",
+      "diff_min": 95
+    },
+    {
+      "id": "3663bb8e-cdd2-43fd-bd47-6feea07746ba",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-06-20",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-06T17:38:11.164684+00:00",
+      "diff_min": 188
+    },
+    {
+      "id": "a1e48d0e-6ed5-4069-9ff5-cd0d19dd816a",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-06-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-06T17:41:50.761794+00:00",
+      "diff_min": 1152
+    },
+    {
+      "id": "dc8ecdce-bf73-4938-996f-989803397614",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-06-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-06T17:44:25.861739+00:00",
+      "diff_min": 1094
+    },
+    {
+      "id": "fb86de9c-6b7e-42d3-830c-d066913d1afa",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-06-02",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-06T17:57:01.676754+00:00",
+      "diff_min": 1287
+    },
+    {
+      "id": "b27f3189-dea2-4a67-b2be-5805da1e908c",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-06-20",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-06T17:57:40.561721+00:00",
+      "diff_min": 208
+    },
+    {
+      "id": "c0fd9ccf-a9b0-4e7d-b682-0a81d8e43d2c",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-06-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-06T18:01:07.693677+00:00",
+      "diff_min": 1231
+    },
+    {
+      "id": "22720cc9-c90e-4234-8ed9-2f2599dd22bc",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-06-21",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-06T18:03:36.128468+00:00",
+      "diff_min": 154
+    },
+    {
+      "id": "3a6efeea-a028-4109-b8c4-b58dfcd604dc",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-07-02",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-07T02:19:04.198488+00:00",
+      "diff_min": 349
+    },
+    {
+      "id": "4b7d9d8e-eadc-470e-b0b8-6ffe8157c518",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-07-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-07T02:22:40.181788+00:00",
+      "diff_min": 293
+    },
+    {
+      "id": "b0eb8ef0-9b74-468f-91bd-4a3c53fbc0c5",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-07-06",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-07T02:49:41.174907+00:00",
+      "diff_min": 140
+    },
+    {
+      "id": "88735473-53e6-4773-a28d-bb20c66dfbd5",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-07-07",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-07T03:00:53.388452+00:00",
+      "diff_min": 91
+    },
+    {
+      "id": "02fe9576-e3c4-4928-ae33-a055e659e36c",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-07-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-07T04:21:16.936896+00:00",
+      "diff_min": 291
+    },
+    {
+      "id": "bb89f011-c204-4efd-889a-601f1789758c",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-07-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-07T04:27:27.075388+00:00",
+      "diff_min": 237
+    },
+    {
+      "id": "96ca781b-c783-4b4b-950e-a9aedd8c118e",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-07-09",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-07T05:18:05.817573+00:00",
+      "diff_min": 108
+    },
+    {
+      "id": "1fa961cb-d2c1-4888-8234-e8bcdd833ac9",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-07-10",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-07T06:32:19.824566+00:00",
+      "diff_min": 122
+    },
+    {
+      "id": "5be1762f-716c-4395-b5ca-d4d8d688131a",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-07-11",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-07T07:06:25.238678+00:00",
+      "diff_min": 96
+    },
+    {
+      "id": "9f9567b2-8240-4448-823d-6eb924824c02",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-07-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-07T08:43:19.774248+00:00",
+      "diff_min": 493
+    },
+    {
+      "id": "c1284622-1cf9-49ab-aa65-c89cf5c49547",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-07-04",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-07T10:49:02.539993+00:00",
+      "diff_min": 739
+    },
+    {
+      "id": "6b1d6cd6-21e0-450d-bb8e-2478233f4aab",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-07-16",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-07T12:24:53.268658+00:00",
+      "diff_min": 115
+    },
+    {
+      "id": "ebec57df-ce71-46d6-8ac9-81bc018a64e9",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-07-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-07T12:42:15.713236+00:00",
+      "diff_min": 912
+    },
+    {
+      "id": "e7f365e5-d5c1-48c3-ba07-ab4a396474ba",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-07-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-07T12:45:54.755908+00:00",
+      "diff_min": 736
+    },
+    {
+      "id": "54be09fa-1648-48bb-b47b-9c1ba283a09a",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-07-05",
+      "score": 30,
+      "penalty": 40,
+      "created_at": "2026-06-07T13:23:25.18754+00:00",
+      "diff_min": 833
+    },
+    {
+      "id": "715a7340-202e-4a3e-82ee-167c5d33bb1f",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-07-04",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-07T14:27:25.105533+00:00",
+      "diff_min": 957
+    },
+    {
+      "id": "11b9f70e-8cbb-427a-a649-33b22bc37518",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-07-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-07T18:33:54.610743+00:00",
+      "diff_min": 1324
+    },
+    {
+      "id": "69969df2-45d6-43e8-80f6-8c8454754bdd",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-07-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-07T18:45:13.636107+00:00",
+      "diff_min": 1395
+    },
+    {
+      "id": "e29411ec-8c73-49c5-a177-87a8a16ac3c5",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-07-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-07T18:50:43.088618+00:00",
+      "diff_min": 1401
+    },
+    {
+      "id": "978d7615-0e23-4547-8517-7474f276cbca",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-07-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-07T19:25:39.171303+00:00",
+      "diff_min": 1376
+    },
+    {
+      "id": "87ec1940-0393-4666-befb-28b597716de5",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-08-07",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-08T03:41:48.816835+00:00",
+      "diff_min": 132
+    },
+    {
+      "id": "35f79bcf-dfdb-4047-8914-c0ef585ae5d1",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-08-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-08T03:44:23.414167+00:00",
+      "diff_min": 194
+    },
+    {
+      "id": "2cdf7941-61a9-44d4-9c39-6568afcb9c02",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-08-05",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-08T03:48:24.204205+00:00",
+      "diff_min": 258
+    },
+    {
+      "id": "7cc0ed91-4497-49d7-9e38-b68106b29f2e",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-08-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-08T03:52:32.995494+00:00",
+      "diff_min": 203
+    },
+    {
+      "id": "43c3225e-23eb-4d4d-b569-c22519136448",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-08-10",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-08T06:20:03.99266+00:00",
+      "diff_min": 110
+    },
+    {
+      "id": "b9f576b1-88d5-429b-9bc7-f17323c603e2",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-08-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-08T06:23:03.088255+00:00",
+      "diff_min": 593
+    },
+    {
+      "id": "daa05bf3-fed4-4a60-84d5-fee8d638b7b7",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-08-05",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-08T07:14:48.760533+00:00",
+      "diff_min": 465
+    },
+    {
+      "id": "4ff93aa5-25b0-4d9c-83eb-2e437d492312",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-08-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-08T07:29:37.133083+00:00",
+      "diff_min": 600
+    },
+    {
+      "id": "488f767f-855a-4793-b39b-41305a76d5a4",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-08-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-08T07:32:44.815798+00:00",
+      "diff_min": 543
+    },
+    {
+      "id": "fcc681f0-6eb4-4276-aa43-40b61e8c92d1",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-08-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-08T09:12:01.235311+00:00",
+      "diff_min": 642
+    },
+    {
+      "id": "0d57d271-0041-49f5-93cb-fa653c39e0d2",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-08-16",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-08T12:10:30.648068+00:00",
+      "diff_min": 101
+    },
+    {
+      "id": "97c6d98c-acca-4f5d-aa77-25d5e9545e47",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-08-18",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-08T14:36:17.207384+00:00",
+      "diff_min": 126
+    },
+    {
+      "id": "abcac0e1-7838-4cab-a97f-3bfbaf2cace7",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-08-22",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-08T14:41:41.298709+00:00",
+      "diff_min": -108
+    },
+    {
+      "id": "80bfe95f-ba0e-4fa8-9898-bd12b2c77209",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-08-18",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-08T16:31:09.558085+00:00",
+      "diff_min": 241
+    },
+    {
+      "id": "7bf0a528-0f3e-4f7d-a7f6-843b2a6a24e8",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-08-20",
+      "score": 30,
+      "penalty": 40,
+      "created_at": "2026-06-08T17:25:22.612012+00:00",
+      "diff_min": 175
+    },
+    {
+      "id": "21a6d4f3-e1cd-4886-9cb8-fc004369aae9",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-08-19",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-08T17:33:21.70377+00:00",
+      "diff_min": 243
+    },
+    {
+      "id": "c6f57437-9f15-407a-a42a-e3612fcf07bd",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-08-16",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-08T17:55:36.486976+00:00",
+      "diff_min": 446
+    },
+    {
+      "id": "978f0187-82e6-479a-873c-077173c36284",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-08-17",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-08T17:58:39.053323+00:00",
+      "diff_min": 389
+    },
+    {
+      "id": "b3fbe47d-8ab9-44dc-be96-4ce69d3bdb36",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-08-18",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-08T18:01:31.822447+00:00",
+      "diff_min": 332
+    },
+    {
+      "id": "801d3021-c912-4442-ab44-edd835fab98f",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-08-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-08T18:18:30.212632+00:00",
+      "diff_min": 1309
+    },
+    {
+      "id": "94f5b1b2-a4c1-4715-9813-c9df154c994a",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-09-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-08T19:40:19.718528+00:00",
+      "diff_min": -50
+    },
+    {
+      "id": "74a72ad7-329d-49e6-8ad4-cf6553d76aed",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-00",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-08T20:09:03.849832+00:00",
+      "diff_min": 99
+    },
+    {
+      "id": "08476bb1-d742-435e-b0ad-e61ba12a6fe0",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-09-04",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-08T21:03:38.073488+00:00",
+      "diff_min": -86
+    },
+    {
+      "id": "89354c7e-c005-49ae-b9e1-81f58e067da1",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-09-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-08T21:11:14.003149+00:00",
+      "diff_min": -19
+    },
+    {
+      "id": "d768a5e8-39e7-49cb-beb4-133854fd00d9",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-09-06",
+      "score": 40,
+      "penalty": 0,
+      "created_at": "2026-06-09T04:18:58.07706+00:00",
+      "diff_min": 229
+    },
+    {
+      "id": "ff696cc2-0a06-44fc-a1de-01bb4cf878f9",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-13",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-09T09:14:29.362268+00:00",
+      "diff_min": 104
+    },
+    {
+      "id": "12142132-7847-421f-aae3-3337ea215f51",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-03",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-09T09:18:45.529454+00:00",
+      "diff_min": 709
+    },
+    {
+      "id": "16059496-ddec-48bc-9b7b-9cb037c749b6",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-09T09:21:35.57329+00:00",
+      "diff_min": 652
+    },
+    {
+      "id": "eb0892d2-b528-499d-aa8c-960b10c4c436",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-09T09:25:01.296998+00:00",
+      "diff_min": 595
+    },
+    {
+      "id": "3643de18-38e3-416e-9a3c-6e5340c3d225",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-09T09:28:01.742047+00:00",
+      "diff_min": 538
+    },
+    {
+      "id": "b412876e-12cc-4678-8b59-72029060466d",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-07",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-09T09:31:57.375264+00:00",
+      "diff_min": 482
+    },
+    {
+      "id": "84240b2c-0845-4ffe-86c8-7077562d9018",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-15",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-09T11:29:03.247279+00:00",
+      "diff_min": 119
+    },
+    {
+      "id": "a593b3de-8dea-458c-b58a-83b56453d9a9",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-18",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-09T14:01:12.20917+00:00",
+      "diff_min": 91
+    },
+    {
+      "id": "7d4c710f-9e7a-442e-9bc7-450e7c22319e",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-17",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-09T14:04:43.548287+00:00",
+      "diff_min": 155
+    },
+    {
+      "id": "176e3aa6-4286-4be6-bf94-60eb18e78695",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-12",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-09T14:08:30.953419+00:00",
+      "diff_min": 459
+    },
+    {
+      "id": "723c0da5-96d2-4ada-b53b-7427ea571475",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-11",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-09T14:11:23.534397+00:00",
+      "diff_min": 521
+    },
+    {
+      "id": "c41d9ed0-f92a-42fe-a486-4f69568769fc",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-09T14:13:48.929145+00:00",
+      "diff_min": 1064
+    },
+    {
+      "id": "8a19c7fe-b71b-436c-97b6-a07af58dc648",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-09-17",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-09T14:26:43.771228+00:00",
+      "diff_min": 177
+    },
+    {
+      "id": "d033faa5-1630-402b-a661-cfdef0c1f3c3",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-09-17",
+      "score": 40,
+      "penalty": 0,
+      "created_at": "2026-06-09T14:44:08.072245+00:00",
+      "diff_min": 194
+    },
+    {
+      "id": "09fa93fd-d601-4439-a54b-a0020c34ad1a",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-09-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-09T15:24:03.674259+00:00",
+      "diff_min": 894
+    },
+    {
+      "id": "8e6621ec-f624-477e-90f5-a27cd0d8df44",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-09-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-09T17:36:41.497695+00:00",
+      "diff_min": 1087
+    },
+    {
+      "id": "8bf61619-7e85-432f-a0c9-48f95d61f554",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-22",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-09T18:01:27.379821+00:00",
+      "diff_min": 91
+    },
+    {
+      "id": "044a65d8-e5ba-42c5-a575-db0daeff3783",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-21",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-09T18:03:59.881867+00:00",
+      "diff_min": 154
+    },
+    {
+      "id": "02f5a72e-9877-4383-83ae-3fccc7b2ddd2",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-20",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-09T18:06:34.566932+00:00",
+      "diff_min": 217
+    },
+    {
+      "id": "203d7afd-8f9e-4ab7-a445-37172c0d7524",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-10",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-09T18:08:48.550601+00:00",
+      "diff_min": 819
+    },
+    {
+      "id": "b7843374-167e-4a7f-bcb6-2b40b86ba705",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-09",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-09T18:11:15.537939+00:00",
+      "diff_min": 881
+    },
+    {
+      "id": "18046e1e-2f22-4f85-9d0f-32b50fe62a5d",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-09-08",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-09T18:15:02.427591+00:00",
+      "diff_min": 945
+    },
+    {
+      "id": "0773fdd8-4193-4c1d-9b04-5ef60d31f241",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-10-08",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T04:10:39.12315+00:00",
+      "diff_min": 101
+    },
+    {
+      "id": "c4ebf79e-8cd1-4e89-a523-77fa53cd4855",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-10-07",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-10T04:14:27.547712+00:00",
+      "diff_min": 164
+    },
+    {
+      "id": "860acab8-60d1-4b6e-bb5e-be7251e0330a",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-10-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T04:17:24.099304+00:00",
+      "diff_min": 227
+    },
+    {
+      "id": "255cfc51-6f9c-4ee9-a910-51a7498632c4",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-10-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T04:19:14.585604+00:00",
+      "diff_min": 289
+    },
+    {
+      "id": "0c61e163-25de-4d28-b7e3-6017069f214a",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-10-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T04:23:00.456656+00:00",
+      "diff_min": 353
+    },
+    {
+      "id": "b7b90d0c-3e83-4725-a6fa-587f5d3887cb",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-10-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T04:28:28.127008+00:00",
+      "diff_min": 418
+    },
+    {
+      "id": "70a92eff-3dc4-4932-b422-e2ba1d00e4e1",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-10-10",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-10T06:44:32.892393+00:00",
+      "diff_min": 135
+    },
+    {
+      "id": "8b7e7058-6153-4a3e-82a7-4806ef7049f8",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-10-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T06:46:49.456172+00:00",
+      "diff_min": 617
+    },
+    {
+      "id": "8e5d80af-fc17-49da-875b-218e881a260c",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-10-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T06:49:09.564013+00:00",
+      "diff_min": 679
+    },
+    {
+      "id": "9f5ac995-04ca-4998-871b-e82038012ea3",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-10-00",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T06:51:23.944262+00:00",
+      "diff_min": 741
+    },
+    {
+      "id": "1d8a96dc-ca97-4026-add7-530521bccca7",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-10-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T07:11:51.479826+00:00",
+      "diff_min": 462
+    },
+    {
+      "id": "782c0c60-5c9a-4ff3-91a3-a70a9a4167e1",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-10-15",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T11:27:44.374745+00:00",
+      "diff_min": 118
+    },
+    {
+      "id": "ae89aab0-39e5-40c1-8711-1ebe87ba700c",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-10-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T11:56:42.953842+00:00",
+      "diff_min": 747
+    },
+    {
+      "id": "5f5c4160-1484-4153-a57c-181cc53b716f",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-10-17",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T13:45:31.518736+00:00",
+      "diff_min": 136
+    },
+    {
+      "id": "06ad1d1d-46e8-44e2-b6ee-a2437b74a656",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-10-16",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T13:47:21.284845+00:00",
+      "diff_min": 197
+    },
+    {
+      "id": "8da5c330-1609-4ff1-b30d-f7edabcc4c2d",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-10-15",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T13:48:57.12569+00:00",
+      "diff_min": 259
+    },
+    {
+      "id": "71d331be-a32f-4b45-ab39-2569b88e5b5b",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-10-13",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T13:51:08.453781+00:00",
+      "diff_min": 381
+    },
+    {
+      "id": "91469833-3dbd-480a-a376-7c48ad6bc747",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-10-20",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T17:03:13.781859+00:00",
+      "diff_min": 153
+    },
+    {
+      "id": "9bd7143e-3a65-4349-a7cf-0e7d01348909",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-10-04",
+      "score": 40,
+      "penalty": 0,
+      "created_at": "2026-06-10T19:26:25.742067+00:00",
+      "diff_min": 1256
+    },
+    {
+      "id": "422bc48a-43a0-45ed-9a85-f01d5e906811",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-10-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-10T19:31:31.403135+00:00",
+      "diff_min": 1262
+    },
+    {
+      "id": "5a7275bf-84c9-41b3-afc3-8e29102842af",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-11-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T03:58:38.746791+00:00",
+      "diff_min": 269
+    },
+    {
+      "id": "d2e1b3bd-191e-4820-bd87-d0417796ad0e",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-11-00",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T05:07:38.466132+00:00",
+      "diff_min": 638
+    },
+    {
+      "id": "1f154493-2da0-4f41-bb5d-bcc212396d08",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-11-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T05:10:59.752141+00:00",
+      "diff_min": 581
+    },
+    {
+      "id": "4d9a4929-b07c-4aaa-b553-62fee6091eb2",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-11-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T05:13:08.642517+00:00",
+      "diff_min": 523
+    },
+    {
+      "id": "126db7ad-ab03-46b6-b64e-09620e4ccb6c",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-11-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T05:16:50.874875+00:00",
+      "diff_min": 467
+    },
+    {
+      "id": "8d768921-8875-4cec-8e9e-e0f156e14f11",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-11-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T05:20:15.333076+00:00",
+      "diff_min": 410
+    },
+    {
+      "id": "ffc1b32e-e36c-4dac-b199-70a934b9f7a9",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-11-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T05:24:00.16104+00:00",
+      "diff_min": 354
+    },
+    {
+      "id": "3b8aa267-39b5-4001-bcbb-bd912a1fede8",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-11-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T05:25:54.326145+00:00",
+      "diff_min": 296
+    },
+    {
+      "id": "2bdbca3c-cf70-40fd-9ab7-b5ab8b77449f",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-11-07",
+      "score": 30,
+      "penalty": 40,
+      "created_at": "2026-06-11T05:30:05.24077+00:00",
+      "diff_min": 240
+    },
+    {
+      "id": "dccc5d40-c9bc-4154-9342-cd356ef34b09",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-11-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T05:45:19.536178+00:00",
+      "diff_min": 375
+    },
+    {
+      "id": "8d249f54-757d-4536-8eb9-c85c35364dba",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-11-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T06:20:26.909765+00:00",
+      "diff_min": 530
+    },
+    {
+      "id": "88026192-6450-461b-b9eb-5050723120a2",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-11-14",
+      "score": 30,
+      "penalty": 40,
+      "created_at": "2026-06-11T10:44:47.952151+00:00",
+      "diff_min": 135
+    },
+    {
+      "id": "e1e2b572-1aa0-4e87-b79f-2a1815f5f9e5",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-11-13",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T10:47:42.506503+00:00",
+      "diff_min": 198
+    },
+    {
+      "id": "0da1d150-8a60-44ac-a049-9c4bf4faddf9",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-11-12",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-11T10:52:04.616539+00:00",
+      "diff_min": 262
+    },
+    {
+      "id": "6ecf3400-614f-4c72-88d4-a647dc361443",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-11-11",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-11T10:56:03.250811+00:00",
+      "diff_min": 326
+    },
+    {
+      "id": "b9b4195c-8575-49b3-a8bf-f01084c2b3f6",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-11-19",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T15:03:51.734395+00:00",
+      "diff_min": 94
+    },
+    {
+      "id": "43ce089e-c9c2-4d02-9569-f9d920940786",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-11-17",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T15:06:30.354672+00:00",
+      "diff_min": 217
+    },
+    {
+      "id": "7bcedeb0-ec12-4ad4-abef-68938509ca81",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-11-09",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T15:10:03.39367+00:00",
+      "diff_min": 700
+    },
+    {
+      "id": "470cbe7a-1160-4311-b1c1-5c12783eee73",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-11-08",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T15:12:02.63375+00:00",
+      "diff_min": 762
+    },
+    {
+      "id": "1c82adc6-9d90-445b-8e11-1e3f78dbbbf4",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-11-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T16:07:39.236069+00:00",
+      "diff_min": 1058
+    },
+    {
+      "id": "6ea8a4ed-aae7-4e77-8179-28564483b9b7",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-11-00",
+      "score": 30,
+      "penalty": 24,
+      "created_at": "2026-06-11T18:44:37.957215+00:00",
+      "diff_min": 1455
+    },
+    {
+      "id": "ea3d6755-d58f-4848-8285-795dcf2255db",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-11-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T18:47:48.864931+00:00",
+      "diff_min": 1398
+    },
+    {
+      "id": "c9a7afce-cd1e-4cd4-bfbf-2927ce9df1a7",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-11-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T18:54:41.359524+00:00",
+      "diff_min": 1345
+    },
+    {
+      "id": "66f4b3e7-c550-49ab-87c4-ddc0b7a23a0f",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-11-03",
+      "score": 30,
+      "penalty": 24,
+      "created_at": "2026-06-11T18:59:25.239751+00:00",
+      "diff_min": 1289
+    },
+    {
+      "id": "9d2f9052-6a02-4f1d-ac6e-1ba8d8999c58",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-11-04",
+      "score": 40,
+      "penalty": 12,
+      "created_at": "2026-06-11T19:03:01.889292+00:00",
+      "diff_min": 1233
+    },
+    {
+      "id": "949de975-6e1e-4e3b-9e8b-988854c4c6ea",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-11-05",
+      "score": 40,
+      "penalty": 12,
+      "created_at": "2026-06-11T19:05:18.305716+00:00",
+      "diff_min": 1175
+    },
+    {
+      "id": "8ef76ab7-e130-4d9a-b937-4105b1c620fe",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-11-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-11T19:07:20.616961+00:00",
+      "diff_min": 1117
+    },
+    {
+      "id": "ef771ac0-3849-472e-9156-b2a07a09f525",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-11-07",
+      "score": 10,
+      "penalty": 48,
+      "created_at": "2026-06-11T19:11:35.585344+00:00",
+      "diff_min": 1062
+    },
+    {
+      "id": "7b980b7e-94af-4111-b156-611f56523644",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-12-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T02:00:37.239449+00:00",
+      "diff_min": 151
+    },
+    {
+      "id": "68e2ff04-b409-4a62-8cf5-226d8657f556",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-12-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T02:09:09.155366+00:00",
+      "diff_min": 99
+    },
+    {
+      "id": "aeffb074-3840-41aa-be1b-0872275a4d46",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-12-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T02:11:32.877287+00:00",
+      "diff_min": 162
+    },
+    {
+      "id": "b228de61-a04f-457e-819c-5800a4965429",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-12-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T02:42:24.033737+00:00",
+      "diff_min": 252
+    },
+    {
+      "id": "f41ac909-1570-4b8d-8bc0-4a5094018afb",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-12-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T03:20:48.263078+00:00",
+      "diff_min": 291
+    },
+    {
+      "id": "b410ffed-7b6b-457e-90cb-8940724d6968",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-12-07",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-12T03:46:51.013591+00:00",
+      "diff_min": 137
+    },
+    {
+      "id": "6b388de1-7123-49f3-9292-156c08a16031",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-12-06",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-12T03:51:43.556141+00:00",
+      "diff_min": 202
+    },
+    {
+      "id": "f850fd6c-d52f-4bb5-9c2c-16c6ba21c4da",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-12-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T03:55:52.652714+00:00",
+      "diff_min": 266
+    },
+    {
+      "id": "b411f620-3c65-4d4a-ab52-336b4937f1db",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-12-12",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T08:53:53.732124+00:00",
+      "diff_min": 144
+    },
+    {
+      "id": "49217d99-c5c6-4322-be2e-07fe63e0a06c",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-12-11",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T08:57:18.304474+00:00",
+      "diff_min": 207
+    },
+    {
+      "id": "10206b4f-5094-4194-b981-1cb72e5e55a9",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-12-10",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T09:02:28.35993+00:00",
+      "diff_min": 272
+    },
+    {
+      "id": "a1747324-150e-4fed-be4f-63c540bb3280",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-12-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T09:05:15.606637+00:00",
+      "diff_min": 635
+    },
+    {
+      "id": "9158c41b-0cbe-478a-9caa-547cf4e59709",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-00",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T09:09:43.388839+00:00",
+      "diff_min": -560
+    },
+    {
+      "id": "81e066fb-7dd9-4bb6-a6d5-a2e573f63ecb",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-12-13",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T09:52:25.052097+00:00",
+      "diff_min": 142
+    },
+    {
+      "id": "64439433-24cf-4fb1-8f1c-6abf09f62458",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-12-13",
+      "score": 40,
+      "penalty": 0,
+      "created_at": "2026-06-12T10:02:24.644084+00:00",
+      "diff_min": 152
+    },
+    {
+      "id": "52bf6742-1e7b-4daa-bf2a-2c0a6b4ca6aa",
+      "user_id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "quiz_id": "hourly-challenge-2026-06-12-05",
+      "score": 30,
+      "penalty": 24,
+      "created_at": "2026-06-12T11:39:10.65783+00:00",
+      "diff_min": 729
+    },
+    {
+      "id": "388b4269-a0a9-467c-b80a-1d771293d39f",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-12-19",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T15:04:27.044047+00:00",
+      "diff_min": 94
+    },
+    {
+      "id": "214a1832-bb58-47b5-af3e-df7c56d2a2f6",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-12-18",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-12T15:08:55.475251+00:00",
+      "diff_min": 159
+    },
+    {
+      "id": "85979b1f-21b4-4c3a-b451-5869715b54d1",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-12-20",
+      "score": 30,
+      "penalty": 56,
+      "created_at": "2026-06-12T16:00:15.988839+00:00",
+      "diff_min": 90
+    },
+    {
+      "id": "ea1ebcad-39b0-40b5-a3a5-892553b4e60a",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-12-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T16:19:25.854627+00:00",
+      "diff_min": 1129
+    },
+    {
+      "id": "dfa8f398-ae22-46aa-8512-6e231a4f27ff",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-12-00",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T16:19:35.317704+00:00",
+      "diff_min": 1310
+    },
+    {
+      "id": "b179e592-dbb6-4fdd-a034-b49f6c69b883",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-12-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T16:23:39.295554+00:00",
+      "diff_min": 1254
+    },
+    {
+      "id": "a66b3cb8-6598-49c4-8ee0-2af8f7db8ca4",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-12-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T16:28:22.93272+00:00",
+      "diff_min": 1198
+    },
+    {
+      "id": "0f8e5426-2b68-4133-9e0c-b28bd21263a4",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-12-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T16:30:30.561668+00:00",
+      "diff_min": 1141
+    },
+    {
+      "id": "79f2e00b-29c5-4521-a658-1e558be2c2d6",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-12-02",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-12T16:31:50.861385+00:00",
+      "diff_min": 1202
+    },
+    {
+      "id": "3f267ad4-eaad-43e0-a5ee-963530a5d3c4",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-12-15",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T16:35:36.279566+00:00",
+      "diff_min": 426
+    },
+    {
+      "id": "8a5cac40-7246-44ac-a998-89a38b8658db",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-12-16",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-12T16:39:46.050562+00:00",
+      "diff_min": 370
+    },
+    {
+      "id": "ece5ed90-7431-4e2d-8238-9ee79625941f",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-12-17",
+      "score": 30,
+      "penalty": 40,
+      "created_at": "2026-06-12T17:31:33.625672+00:00",
+      "diff_min": 362
+    },
+    {
+      "id": "94fb74f4-9e10-4f36-8dbd-62ee9cf7071f",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-13-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T02:38:39.845909+00:00",
+      "diff_min": 189
+    },
+    {
+      "id": "4e7a4283-94a9-44cf-bb60-a16f26c815d3",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-13-05",
+      "score": 40,
+      "penalty": 0,
+      "created_at": "2026-06-13T02:49:59.219536+00:00",
+      "diff_min": 200
+    },
+    {
+      "id": "08b6627d-a6b2-4e0b-bbb2-2e51c71c475e",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T02:50:12.5972+00:00",
+      "diff_min": 440
+    },
+    {
+      "id": "97e96443-37ff-49d0-8357-f5fcc0f8aa09",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T02:53:07.148521+00:00",
+      "diff_min": 383
+    },
+    {
+      "id": "60416b44-4e11-4282-a5f7-e09f1fa6bdf4",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T02:55:41.789893+00:00",
+      "diff_min": 326
+    },
+    {
+      "id": "4aaa3dd3-b86b-4112-9dad-77c4b37e8004",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-04",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-13T02:59:19.489805+00:00",
+      "diff_min": 269
+    },
+    {
+      "id": "f125aa3c-2bd1-48b0-8a24-a2437d4157b7",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T03:01:18.999698+00:00",
+      "diff_min": 211
+    },
+    {
+      "id": "2b929c40-cd72-45df-835e-a7eda00e9929",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T03:04:17.302541+00:00",
+      "diff_min": 154
+    },
+    {
+      "id": "1d03c18c-485a-47a6-86b2-4203dcde18f2",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-07",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T03:06:52.311179+00:00",
+      "diff_min": 97
+    },
+    {
+      "id": "caf8e933-b0bf-433a-8c97-8f944278a846",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-13-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T03:50:21.280327+00:00",
+      "diff_min": 320
+    },
+    {
+      "id": "28b8d1c5-e454-4c25-92a8-fec64f8c8bca",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-13-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T05:34:04.437108+00:00",
+      "diff_min": 424
+    },
+    {
+      "id": "26d827b3-0f5e-41e3-9ca6-47f3a03e615d",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-13-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T07:08:43.085671+00:00",
+      "diff_min": 579
+    },
+    {
+      "id": "c8d99663-7509-4a1b-a67b-31b0c45bb5e9",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-13-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T12:01:26.711958+00:00",
+      "diff_min": 931
+    },
+    {
+      "id": "de0e58ed-399e-4c4a-8c29-3864ff5f60fe",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-13-03",
+      "score": 40,
+      "penalty": 0,
+      "created_at": "2026-06-13T12:07:27.613915+00:00",
+      "diff_min": 877
+    },
+    {
+      "id": "7a6aff75-d51b-4b24-8bba-ef814c84fd93",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-13-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T15:10:41.69811+00:00",
+      "diff_min": 1181
+    },
+    {
+      "id": "0c33fb87-c3ea-43ac-adec-b96c9a30d3bd",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-19",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T15:43:25.982233+00:00",
+      "diff_min": 133
+    },
+    {
+      "id": "dbad44fc-2fbe-4d95-a179-8a928bbd52ff",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-18",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T15:46:35.37289+00:00",
+      "diff_min": 197
+    },
+    {
+      "id": "e53864a4-2d50-4ec8-9a8d-113827017cc0",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-17",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T15:51:18.664129+00:00",
+      "diff_min": 261
+    },
+    {
+      "id": "ec3e7ba3-0b43-4454-9cb0-d45ca7448e79",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-16",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T15:54:03.199944+00:00",
+      "diff_min": 324
+    },
+    {
+      "id": "26252aad-a32f-4f3d-9d73-27ef70734006",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-15",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T16:00:18.491825+00:00",
+      "diff_min": 390
+    },
+    {
+      "id": "41cd925f-9870-4a08-bdf7-7b2247ab2224",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-14",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T16:03:00.319864+00:00",
+      "diff_min": 453
+    },
+    {
+      "id": "7ab339af-cf66-434d-816b-98850b15b7ce",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-13",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T16:31:20.042001+00:00",
+      "diff_min": 541
+    },
+    {
+      "id": "9498333d-40fd-4885-a983-b2b4cf5c0dad",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-12",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T16:57:00.738797+00:00",
+      "diff_min": 627
+    },
+    {
+      "id": "a997026a-fcc8-492a-b368-3456df823705",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-23",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-13T17:20:26.967963+00:00",
+      "diff_min": -10
+    },
+    {
+      "id": "37f9aff8-d1f8-42e9-92aa-450c80ff5964",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-11",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T17:22:39.710132+00:00",
+      "diff_min": 713
+    },
+    {
+      "id": "4ece3918-b4ab-41cf-9558-2e0563a59564",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-10",
+      "score": 40,
+      "penalty": 20,
+      "created_at": "2026-06-13T17:26:56.074698+00:00",
+      "diff_min": 777
+    },
+    {
+      "id": "b3d56f8f-8245-46de-9d68-1a6809df288a",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-13-09",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T17:30:00.683117+00:00",
+      "diff_min": 840
+    },
+    {
+      "id": "90716776-9ede-4c93-832a-b68efe0bb3ad",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-13-00",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-13T18:12:53.522727+00:00",
+      "diff_min": 1423
+    },
+    {
+      "id": "6420949e-6320-40a7-8bf2-d1a69b1efbeb",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-14-07",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T03:13:05.849179+00:00",
+      "diff_min": 103
+    },
+    {
+      "id": "9a69a7c2-6578-4c49-b801-ad68c1dd6cb2",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-14-00",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T03:16:22.624536+00:00",
+      "diff_min": 526
+    },
+    {
+      "id": "6cad113d-9fa8-4dc3-9562-a4c826723be4",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-14-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T03:19:01.567497+00:00",
+      "diff_min": 469
+    },
+    {
+      "id": "d7eb7dc4-8ec0-4bac-9ede-12daf696d170",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-14-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T03:21:19.595738+00:00",
+      "diff_min": 411
+    },
+    {
+      "id": "86d78d69-73b9-4334-b96e-93e22e314bdc",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-14-03",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-14T03:24:28.071229+00:00",
+      "diff_min": 354
+    },
+    {
+      "id": "d7f5be51-9fe4-4fba-858f-41b05c0acb06",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-14-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T03:26:45.469723+00:00",
+      "diff_min": 297
+    },
+    {
+      "id": "6c559c01-f351-4340-8157-c4e85401f5c6",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-14-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T03:30:28.174785+00:00",
+      "diff_min": 240
+    },
+    {
+      "id": "7ac8ea3d-6cfd-4d7e-9a9a-b2dbe2dcc84a",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-14-06",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-14T03:33:24.572683+00:00",
+      "diff_min": 183
+    },
+    {
+      "id": "8b043019-67b4-40fd-8615-6ae4692ccab3",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-14-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T04:42:49.742503+00:00",
+      "diff_min": 313
+    },
+    {
+      "id": "cb8d88b2-beb7-4fe0-bd66-cde6c2d54a80",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-14-16",
+      "score": 30,
+      "penalty": 0,
+      "created_at": "2026-06-14T12:18:40.402045+00:00",
+      "diff_min": 109
+    },
+    {
+      "id": "402b19f6-ef66-41e7-8b9c-58aff997572e",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-14-18",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T12:23:55.033743+00:00",
+      "diff_min": -6
+    },
+    {
+      "id": "457310ef-3801-49c9-b1e6-51685f02ff0b",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-14-16",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T12:53:55.824224+00:00",
+      "diff_min": 144
+    },
+    {
+      "id": "c60a5375-20d4-452f-9a4e-aac4a14a50a0",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-14-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T14:19:28.386077+00:00",
+      "diff_min": 949
+    },
+    {
+      "id": "aa362432-7279-4d86-8dcb-2b8d1bb33088",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-14-18",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T15:20:20.233314+00:00",
+      "diff_min": 170
+    },
+    {
+      "id": "9b35ca3d-8e79-4775-bf9e-766d1577099c",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-14-17",
+      "score": 30,
+      "penalty": 56,
+      "created_at": "2026-06-14T15:24:07.497878+00:00",
+      "diff_min": 234
+    },
+    {
+      "id": "3c35dfa9-4863-4bdd-a79a-f0ce3fa9ca71",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-14-16",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T15:32:47.342795+00:00",
+      "diff_min": 303
+    },
+    {
+      "id": "d16f5ccd-f034-4b4c-ada6-4ff5038e7629",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-14-15",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T15:35:49.978522+00:00",
+      "diff_min": 366
+    },
+    {
+      "id": "1c8432f1-95b5-4575-86f3-833c3bf0cb74",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-14-14",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T15:39:16.874436+00:00",
+      "diff_min": 429
+    },
+    {
+      "id": "c7f8e0c5-fcf9-4285-9fd1-c8d6c3f4b9f5",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-14-13",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T15:42:26.265862+00:00",
+      "diff_min": 492
+    },
+    {
+      "id": "14ead312-e936-437b-8223-1c906eb1e601",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-14-12",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T15:45:36.252177+00:00",
+      "diff_min": 556
+    },
+    {
+      "id": "1763d757-3838-4759-b21d-1041a505d82e",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-14-11",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T15:48:18.664594+00:00",
+      "diff_min": 618
+    },
+    {
+      "id": "fdd9c942-c5df-454e-87f8-c7bad6175d0e",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-14-05",
+      "score": 40,
+      "penalty": 0,
+      "created_at": "2026-06-14T16:59:21.106632+00:00",
+      "diff_min": 1049
+    },
+    {
+      "id": "9beb63df-0a81-477a-871d-a5444b9016ce",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-14-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-14T17:30:22.768258+00:00",
+      "diff_min": 1200
+    },
+    {
+      "id": "5b3dc5ac-2e25-47a3-ac56-6ac99325aaa6",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-14-02",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-14T18:56:14.63333+00:00",
+      "diff_min": 1346
+    },
+    {
+      "id": "27d1eef5-f0cb-46c0-b36b-cf6069a7ac8d",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-15-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T03:58:22.231772+00:00",
+      "diff_min": 208
+    },
+    {
+      "id": "e0ed767b-567b-4e55-a26d-3d086b5e19da",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-15-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T04:02:53.619696+00:00",
+      "diff_min": 213
+    },
+    {
+      "id": "0a2215bb-5536-4ef1-af2f-8a57794afe19",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-15-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T05:14:16.712845+00:00",
+      "diff_min": 344
+    },
+    {
+      "id": "40bb0fd2-d9cb-4547-941c-03e342c419e5",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-15-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T05:21:48.517528+00:00",
+      "diff_min": 352
+    },
+    {
+      "id": "b09950fc-9981-43c2-b48f-c2bcdade4a55",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-15-10",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T06:12:18.151623+00:00",
+      "diff_min": 102
+    },
+    {
+      "id": "9ac8158b-c357-4a98-8007-2c1695d2393f",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-15-09",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-15T06:16:17.305913+00:00",
+      "diff_min": 166
+    },
+    {
+      "id": "d417f72e-f24a-492d-bdbf-021b226b6534",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-15-08",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T06:19:42.026729+00:00",
+      "diff_min": 230
+    },
+    {
+      "id": "89a7116c-618c-4201-b198-c95191162f91",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-15-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T06:22:37.018409+00:00",
+      "diff_min": 353
+    },
+    {
+      "id": "41ef7526-8f0b-4c4b-b219-a87c04dd1a3b",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-15-04",
+      "score": 40,
+      "penalty": 0,
+      "created_at": "2026-06-15T06:25:13.998516+00:00",
+      "diff_min": 475
+    },
+    {
+      "id": "9c803f59-ee27-4d04-a8b7-7164079ec07a",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-15-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T06:29:37.640873+00:00",
+      "diff_min": 480
+    },
+    {
+      "id": "63d69b01-5709-45d0-b215-142a5f0f4ada",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-15-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T06:35:06.576224+00:00",
+      "diff_min": 425
+    },
+    {
+      "id": "e0a8c0d3-4509-4eeb-ab79-3a9300eae85f",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-15-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T06:51:35.733974+00:00",
+      "diff_min": 562
+    },
+    {
+      "id": "e95114a7-7f1e-4158-9e11-34b6af1f32e0",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-15-00",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T06:54:53.796563+00:00",
+      "diff_min": 745
+    },
+    {
+      "id": "3d636b74-c186-4ab9-be53-46c83224eb1b",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-15-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T08:00:52.680511+00:00",
+      "diff_min": 751
+    },
+    {
+      "id": "615bf9ea-5fe3-4fc6-9520-32987fd999fd",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-15-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T08:03:00.928137+00:00",
+      "diff_min": 693
+    },
+    {
+      "id": "11a01f1f-d10a-4819-98a9-65ed1bd1b37d",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-15-03",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-15T08:05:37.944258+00:00",
+      "diff_min": 636
+    },
+    {
+      "id": "7df48e00-60ce-4fde-acf8-360dea4f742c",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-15-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T08:07:56.476611+00:00",
+      "diff_min": 578
+    },
+    {
+      "id": "b74114dc-3c1a-49d8-97ff-8f036a5ee798",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-15-02",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-15T09:18:08.907088+00:00",
+      "diff_min": 768
+    },
+    {
+      "id": "a2666a86-8301-4ab0-b186-fdee67359693",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-15-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T09:23:22.747239+00:00",
+      "diff_min": 833
+    },
+    {
+      "id": "213c4f8e-ed71-4d0f-b24f-d81420e4c8fa",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-15-18",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T14:03:54.868648+00:00",
+      "diff_min": 94
+    },
+    {
+      "id": "10c2c14f-7eab-4207-8c2f-8394baeb3bd9",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-15-18",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T14:39:18.670707+00:00",
+      "diff_min": 129
+    },
+    {
+      "id": "256c9a92-bed2-40b8-99d5-1a3daeb1df1c",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-15-21",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T14:42:35.929998+00:00",
+      "diff_min": -47
+    },
+    {
+      "id": "c96e1886-50a4-4dab-9c2d-cee4f555a347",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-15-17",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T14:44:49.506548+00:00",
+      "diff_min": 195
+    },
+    {
+      "id": "81f6fea7-3002-4633-abcb-4229408957c2",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-15-16",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T14:48:41.856813+00:00",
+      "diff_min": 259
+    },
+    {
+      "id": "c9998674-5a57-4498-902f-d73f6e698bff",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-15-15",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T14:54:02.935726+00:00",
+      "diff_min": 324
+    },
+    {
+      "id": "891db3f7-155c-49f4-9e00-4fdf055c9d94",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-15-14",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T14:57:03.429987+00:00",
+      "diff_min": 387
+    },
+    {
+      "id": "d0261255-48cc-4d96-9454-997940df58a7",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-15-22",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T18:05:53.309178+00:00",
+      "diff_min": 96
+    },
+    {
+      "id": "54929a21-4b05-4bb1-8868-e125df485139",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-16-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T21:57:34.039618+00:00",
+      "diff_min": 148
+    },
+    {
+      "id": "20454537-da13-4e48-8762-b6b418efcd93",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-16-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T22:15:14.229448+00:00",
+      "diff_min": 105
+    },
+    {
+      "id": "292b1c68-ceae-4364-b848-416157c528ba",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-16-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-15T22:19:11.280955+00:00",
+      "diff_min": 169
+    },
+    {
+      "id": "75809382-ba89-4923-af43-e85d65c108dc",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-16-06",
+      "score": 40,
+      "penalty": 12,
+      "created_at": "2026-06-16T02:50:19.545057+00:00",
+      "diff_min": 140
+    },
+    {
+      "id": "f3aed2c3-1bb4-4e61-ae3c-aab2caecd416",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-09",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T06:01:04.229013+00:00",
+      "diff_min": 151
+    },
+    {
+      "id": "fb2553d1-d1d4-4a25-97bb-5a54067dd7a5",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-07",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-16T06:04:02.958256+00:00",
+      "diff_min": 274
+    },
+    {
+      "id": "135b5b3a-9232-4f7b-8b3e-6b02a6f52c1e",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T06:05:56.953046+00:00",
+      "diff_min": 336
+    },
+    {
+      "id": "a25a4c95-bab2-4975-95c2-f750b497dfd2",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T06:08:05.474694+00:00",
+      "diff_min": 398
+    },
+    {
+      "id": "d1cd597b-b7fd-4dd8-9442-2770d4f2eb36",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T06:10:23.500613+00:00",
+      "diff_min": 460
+    },
+    {
+      "id": "1637ea28-517a-4d6d-9232-8935cd1df88f",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T06:15:43.123617+00:00",
+      "diff_min": 526
+    },
+    {
+      "id": "65c66304-8132-4bad-9e3b-d296c9cfb125",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T06:18:56.036137+00:00",
+      "diff_min": 589
+    },
+    {
+      "id": "5433ec7c-433d-476b-ae1e-1ef2f96850e6",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-16-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T06:21:55.769665+00:00",
+      "diff_min": 472
+    },
+    {
+      "id": "4afa42a8-7a5b-4b74-b19b-c8eabb048112",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-01",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-16T06:22:59.988746+00:00",
+      "diff_min": 653
+    },
+    {
+      "id": "c2540b84-39a8-4a86-a902-9901c089e708",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-00",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T06:25:23.554935+00:00",
+      "diff_min": 715
+    },
+    {
+      "id": "81ff8146-ba75-4bda-b1da-70a77a4349d5",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-16-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T07:13:50.487127+00:00",
+      "diff_min": 464
+    },
+    {
+      "id": "0cf949c7-eb25-44fd-8aee-ecff5aa2def1",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-16-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T09:26:26.928229+00:00",
+      "diff_min": 596
+    },
+    {
+      "id": "02d264e9-dacf-4c39-bbbc-b2e3a1caddbb",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-16-15",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T11:05:55.917263+00:00",
+      "diff_min": 96
+    },
+    {
+      "id": "70465336-8ef6-483e-86cf-599d1d564455",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-16-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T14:27:54.774806+00:00",
+      "diff_min": 838
+    },
+    {
+      "id": "c34e9ec8-80fb-45c6-8b01-12ddb31e6e8a",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-19",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-16T16:39:25.647657+00:00",
+      "diff_min": 189
+    },
+    {
+      "id": "f940b18f-76f3-437f-aab0-de401739298b",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-18",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T16:42:24.374224+00:00",
+      "diff_min": 252
+    },
+    {
+      "id": "af32bdc5-e745-4b75-a704-e8fdc0dfc315",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-17",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-16T16:45:27.788321+00:00",
+      "diff_min": 315
+    },
+    {
+      "id": "a067752e-fa5d-48b7-b96c-7cc85721f431",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-12",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T16:52:44.928128+00:00",
+      "diff_min": 623
+    },
+    {
+      "id": "7b2157c5-8745-448b-9581-b354dd8e69bb",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-13",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T16:54:55.172035+00:00",
+      "diff_min": 565
+    },
+    {
+      "id": "1b91c150-c0e7-4d76-870c-0900660f515b",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-14",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T16:58:23.645951+00:00",
+      "diff_min": 508
+    },
+    {
+      "id": "ee53e286-d03e-44cc-8fc1-355802bbd8b9",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-15",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-16T17:00:15.781444+00:00",
+      "diff_min": 450
+    },
+    {
+      "id": "a575284c-2ddf-4933-8c01-f49a5db929cb",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-16-16",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-16T17:02:10.047527+00:00",
+      "diff_min": 392
+    },
+    {
+      "id": "bb588e2f-3b75-4209-abbd-ef30d2f6b881",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-17-07",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T03:01:43.157375+00:00",
+      "diff_min": 92
+    },
+    {
+      "id": "3444880b-3c2f-4949-b394-0f662d073de6",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-17-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T04:01:45.580324+00:00",
+      "diff_min": 212
+    },
+    {
+      "id": "4a0759df-e431-4693-b528-2a1c28f45ac5",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-17-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T04:06:28.913204+00:00",
+      "diff_min": 216
+    },
+    {
+      "id": "d21fd2e1-f65d-4a6a-b767-81d733070be3",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-17-10",
+      "score": 40,
+      "penalty": 12,
+      "created_at": "2026-06-17T06:49:50.075452+00:00",
+      "diff_min": 140
+    },
+    {
+      "id": "51663d10-7829-4e7d-80d4-272501f8b4cf",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-10",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T06:55:18.395533+00:00",
+      "diff_min": 145
+    },
+    {
+      "id": "15d04c61-ba95-4a19-b8cd-3fbf4a7a7652",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-09",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T06:57:52.449331+00:00",
+      "diff_min": 208
+    },
+    {
+      "id": "97d8dc1e-78e9-4c93-834f-0eeb008888dc",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-08",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T07:00:23.882634+00:00",
+      "diff_min": 270
+    },
+    {
+      "id": "bac448d9-790b-4b66-8bf9-649109df4961",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-17-11",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-17T07:00:30.411121+00:00",
+      "diff_min": 91
+    },
+    {
+      "id": "dc8d047e-4f59-4895-9cc9-b4b6588d895d",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-07",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T07:03:03.007554+00:00",
+      "diff_min": 333
+    },
+    {
+      "id": "4ee8eb44-dc49-4326-afa6-7ee99133e587",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-17-10",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T07:03:17.725238+00:00",
+      "diff_min": 153
+    },
+    {
+      "id": "08a88848-3534-4485-8cf1-c7f38501a39c",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T07:06:00.613918+00:00",
+      "diff_min": 396
+    },
+    {
+      "id": "61b5667e-9d4b-438b-a875-2ba2c95715d4",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-00",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-17T07:10:13.582797+00:00",
+      "diff_min": 760
+    },
+    {
+      "id": "0217ad17-b21e-4ad5-a862-1e8da0ce6be2",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-01",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T07:13:00.399723+00:00",
+      "diff_min": 703
+    },
+    {
+      "id": "e31dea30-cef0-4ff1-a208-5c77bc7c9355",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T07:15:51.830856+00:00",
+      "diff_min": 646
+    },
+    {
+      "id": "11aeeece-e641-42a5-a118-62212671fafa",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-17-15",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T11:12:08.148627+00:00",
+      "diff_min": 102
+    },
+    {
+      "id": "fd0ddfd6-63ea-46fc-a3b2-b6cd0a00b773",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-17-14",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T11:23:19.333273+00:00",
+      "diff_min": 173
+    },
+    {
+      "id": "bdc2350d-bd24-49c3-aa74-a0e1ecebf8ab",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-17-15",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T11:27:10.952472+00:00",
+      "diff_min": 117
+    },
+    {
+      "id": "e966be89-4ccb-4e36-b7d6-b3339195ffd6",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-17-14",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T12:09:32.472845+00:00",
+      "diff_min": 220
+    },
+    {
+      "id": "45f3af4d-29a3-4d7d-85c0-004cbef9b77a",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-17-13",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T12:10:55.856734+00:00",
+      "diff_min": 281
+    },
+    {
+      "id": "4521613b-81e3-4487-bc36-50c0b062a021",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-17-13",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-17T12:16:49.931973+00:00",
+      "diff_min": 287
+    },
+    {
+      "id": "736453be-cb49-4d42-8ec7-a9c9cf4049a2",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-17-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T13:31:08.165243+00:00",
+      "diff_min": 841
+    },
+    {
+      "id": "fa36456e-c760-43c9-ae8e-89be5197b338",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-17-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T14:14:13.001038+00:00",
+      "diff_min": 884
+    },
+    {
+      "id": "989dddfc-a043-4c05-85fd-f1208189aaf1",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-17-04",
+      "score": 40,
+      "penalty": 12,
+      "created_at": "2026-06-17T14:18:51.799509+00:00",
+      "diff_min": 949
+    },
+    {
+      "id": "87a1e144-ce51-4740-a439-adc42716fcc0",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-17-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T14:22:15.187191+00:00",
+      "diff_min": 952
+    },
+    {
+      "id": "aeed0146-5ffb-4db8-9ec3-72253e0a99cd",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-17-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T14:24:33.748595+00:00",
+      "diff_min": 1015
+    },
+    {
+      "id": "fd7e63b5-8c7b-46d3-b586-8088ab18b03b",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-17-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T14:27:16.899806+00:00",
+      "diff_min": 1077
+    },
+    {
+      "id": "6be7aa5e-2fa7-4d72-8137-412017199792",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-19",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T15:39:21.596857+00:00",
+      "diff_min": 129
+    },
+    {
+      "id": "4f7a04d2-21db-4e6e-965b-21a58790a664",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-18",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T15:41:24.850376+00:00",
+      "diff_min": 191
+    },
+    {
+      "id": "59c28883-9421-440e-871d-3687b777d065",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-17",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T15:46:00.765937+00:00",
+      "diff_min": 256
+    },
+    {
+      "id": "5921ffa1-4cfe-4f91-8abd-6ceec2706df4",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-16",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T15:51:19.460961+00:00",
+      "diff_min": 321
+    },
+    {
+      "id": "2807cbe8-0f97-4b39-baf3-73df0bb0022d",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-15",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T15:55:00.993639+00:00",
+      "diff_min": 385
+    },
+    {
+      "id": "14b16447-a23e-49b1-929d-c4349c052e24",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-14",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-17T15:57:19.005409+00:00",
+      "diff_min": 447
+    },
+    {
+      "id": "78b9531a-976a-45ec-80ef-bfe600fe33a2",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-13",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T16:02:49.389943+00:00",
+      "diff_min": 513
+    },
+    {
+      "id": "8b53e856-936c-4ee0-9faf-88354835b8ae",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T16:06:07.566984+00:00",
+      "diff_min": 1116
+    },
+    {
+      "id": "a55a0bf0-6768-4ccc-aa2d-104540f88cae",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T16:07:59.69679+00:00",
+      "diff_min": 1058
+    },
+    {
+      "id": "266bf527-a235-4c35-9740-50b76645d0ac",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-17-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T16:10:13.100134+00:00",
+      "diff_min": 1000
+    },
+    {
+      "id": "4c4b1f31-d0c0-4c07-8447-cf6e44ae3f8c",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-17-22",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T18:17:31.987563+00:00",
+      "diff_min": 108
+    },
+    {
+      "id": "5d55eaca-4b94-4022-aebb-c964f5dfb28a",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-18-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T19:43:46.69362+00:00",
+      "diff_min": -46
+    },
+    {
+      "id": "fcf1c2b1-0db3-45f9-96a9-d937ea61e7be",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-18-05",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-17T19:49:11.894992+00:00",
+      "diff_min": -221
+    },
+    {
+      "id": "a82461e7-0765-4b3c-97c9-3408dd9f837f",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-18-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-17T19:56:43.690275+00:00",
+      "diff_min": -153
+    },
+    {
+      "id": "41a10c26-86ab-4a54-a2dc-33a5e519df68",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-08",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-18T04:21:05.550658+00:00",
+      "diff_min": 111
+    },
+    {
+      "id": "8e290d5c-4865-4463-a5e2-8427a5498aca",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-07",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-18T04:25:31.167102+00:00",
+      "diff_min": 176
+    },
+    {
+      "id": "f11464e7-611c-47e7-98e7-7e57bb874d2a",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-06",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-18T04:29:11.692269+00:00",
+      "diff_min": 239
+    },
+    {
+      "id": "d18401a8-65c3-461f-a420-45009e7b9cb9",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-18T04:35:56.647349+00:00",
+      "diff_min": 306
+    },
+    {
+      "id": "a370dfd1-00fc-4972-a4ad-a3fae2a12f1c",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-18T07:11:14.859231+00:00",
+      "diff_min": 521
+    },
+    {
+      "id": "ac73bd8e-728d-4f73-b5d5-9488a86a33c7",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-18-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-18T07:18:39.827884+00:00",
+      "diff_min": 409
+    },
+    {
+      "id": "af961cbb-2972-4562-a633-568b3a8be323",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-11",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-18T07:21:54.17382+00:00",
+      "diff_min": 112
+    },
+    {
+      "id": "e7896214-f599-4c9c-a864-323c2cb9b697",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-23",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-18T07:25:42.643035+00:00",
+      "diff_min": -604
+    },
+    {
+      "id": "ade8c1ac-64f2-4b88-9616-db463ae239e8",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-22",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-18T07:27:51.748297+00:00",
+      "diff_min": -542
+    },
+    {
+      "id": "9c1d93be-e7df-4dd3-a999-8685bada409c",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-17",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-18T14:04:13.445799+00:00",
+      "diff_min": 154
+    },
+    {
+      "id": "c7d895be-23e4-45b2-a346-22903810a3d7",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-16",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-18T14:06:02.453953+00:00",
+      "diff_min": 216
+    },
+    {
+      "id": "6bdb5302-b734-4f06-95fc-4c34d456e97d",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-15",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-18T14:08:36.283322+00:00",
+      "diff_min": 279
+    },
+    {
+      "id": "a1aa6d06-2864-40ad-ae1b-9395ee4363b4",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-14",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-18T14:10:38.775112+00:00",
+      "diff_min": 341
+    },
+    {
+      "id": "4480afaa-4f10-4ec8-b14e-7cbde6ebc35c",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-13",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-18T14:13:50.528596+00:00",
+      "diff_min": 404
+    },
+    {
+      "id": "ab49c052-a4ab-40e9-95e9-69309d5572f3",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-18T15:54:05.227091+00:00",
+      "diff_min": 1104
+    },
+    {
+      "id": "b0de37e5-b352-4f71-b252-e9b6e8c05d4b",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-00",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-18T16:45:28.820258+00:00",
+      "diff_min": 1335
+    },
+    {
+      "id": "71522385-9244-4036-9c08-621dd164c606",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-01",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-18T16:49:22.69669+00:00",
+      "diff_min": 1279
+    },
+    {
+      "id": "84820300-bc82-4e53-a39d-c9ed37232d88",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-18-02",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-18T16:52:59.08836+00:00",
+      "diff_min": 1223
+    },
+    {
+      "id": "bf459414-b7bd-434f-ba10-887d57c43b92",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-19-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T02:59:05.564583+00:00",
+      "diff_min": 209
+    },
+    {
+      "id": "578dfd37-c261-422e-a88c-e297f4a78c2e",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-19-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T04:40:26.30044+00:00",
+      "diff_min": 370
+    },
+    {
+      "id": "e4603142-3dc3-4b75-8512-f83d7af62731",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-19-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T04:46:52.007689+00:00",
+      "diff_min": 317
+    },
+    {
+      "id": "bdab0779-37c3-47d9-87dd-0dd03566b0e1",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-10",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-19T06:27:35.223889+00:00",
+      "diff_min": 118
+    },
+    {
+      "id": "183135ca-9b3b-4640-992f-757863dc46f9",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-09",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T06:29:34.741867+00:00",
+      "diff_min": 180
+    },
+    {
+      "id": "4ab71342-8960-4fa2-a5e6-d67017c3f756",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-08",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T06:31:36.799845+00:00",
+      "diff_min": 242
+    },
+    {
+      "id": "f338acf6-6a97-4d34-9322-54da891f7209",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-07",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T06:34:16.51691+00:00",
+      "diff_min": 304
+    },
+    {
+      "id": "c6514b73-855b-4192-bfcb-ef374e0a7286",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T06:37:51.642683+00:00",
+      "diff_min": 368
+    },
+    {
+      "id": "a0ffb279-eaca-4233-be0a-9e48159c0a21",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-05",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-19T06:40:57.067954+00:00",
+      "diff_min": 431
+    },
+    {
+      "id": "de866d83-55e0-4953-818f-57b07a861133",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T06:43:41.631254+00:00",
+      "diff_min": 494
+    },
+    {
+      "id": "97746a67-13ad-4311-9d75-3a3ba79e8de3",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-03",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T06:47:40.575664+00:00",
+      "diff_min": 558
+    },
+    {
+      "id": "3e3e93b6-8f74-4a64-b6de-eea8ece60a98",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-02",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T06:51:02.062995+00:00",
+      "diff_min": 621
+    },
+    {
+      "id": "d2f19cf2-40d0-4edf-a482-32133fc70191",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-17",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T13:46:00.878048+00:00",
+      "diff_min": 136
+    },
+    {
+      "id": "452bdf0b-c491-4e28-a9d9-9335a87200ae",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-15",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T13:48:18.376398+00:00",
+      "diff_min": 258
+    },
+    {
+      "id": "14a7d644-4c4b-40ed-9759-a91786c51c4f",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-14",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T13:51:21.384353+00:00",
+      "diff_min": 321
+    },
+    {
+      "id": "ce9a2ddc-ad31-4e62-8f4e-0f199e429e05",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-13",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T13:54:14.112317+00:00",
+      "diff_min": 384
+    },
+    {
+      "id": "61f6c0cd-168d-4e77-9584-a1b132e9731f",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-21",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-19T17:46:44.471689+00:00",
+      "diff_min": 137
+    },
+    {
+      "id": "2d9791c4-e8c6-4d97-9de7-2e0c48960f4c",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-20",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T17:49:56.90645+00:00",
+      "diff_min": 200
+    },
+    {
+      "id": "09420dc3-34a5-4347-9fb1-1e3ee757d4af",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-01",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-19T17:52:57.701432+00:00",
+      "diff_min": 1343
+    },
+    {
+      "id": "f9c6a5d1-7242-4022-ba89-dbf59f591149",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-19-00",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T17:55:02.031983+00:00",
+      "diff_min": 1405
+    },
+    {
+      "id": "52d037a5-f691-414a-b416-75428282ed8c",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-19-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-19T18:24:16.723576+00:00",
+      "diff_min": 1194
+    },
+    {
+      "id": "0eb3a5b3-741a-48a3-885e-82b1a5ce8468",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-20-06",
+      "score": 30,
+      "penalty": 56,
+      "created_at": "2026-06-20T03:21:23.108123+00:00",
+      "diff_min": 171
+    },
+    {
+      "id": "d319fc6b-354e-42dc-8d2f-005a9084d1ac",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-20-06",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-20T03:45:13.135624+00:00",
+      "diff_min": 195
+    },
+    {
+      "id": "0919182e-4abc-49b7-9007-eaa668042fc4",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-20-11",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-20T07:21:16.889179+00:00",
+      "diff_min": 111
+    },
+    {
+      "id": "b52cf3d7-c8eb-4ce9-bce9-5121faaa1f86",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-20-10",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-20T07:23:41.111461+00:00",
+      "diff_min": 174
+    },
+    {
+      "id": "7b32cb28-0abc-4859-a00d-edbbb2d3c4be",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-20-09",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-20T07:26:11.236909+00:00",
+      "diff_min": 236
+    },
+    {
+      "id": "a1e45eb9-3328-4efb-b77c-15b11a7270a6",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-20-08",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-20T07:28:02.994956+00:00",
+      "diff_min": 298
+    },
+    {
+      "id": "a0b7f0be-99f4-476e-8de2-6ee8365ca619",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-20-07",
+      "score": 30,
+      "penalty": 56,
+      "created_at": "2026-06-20T07:31:16.285336+00:00",
+      "diff_min": 361
+    },
+    {
+      "id": "cfde0b62-f6a2-40c5-9cb8-103e013d1454",
+      "user_id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "quiz_id": "hourly-challenge-2026-06-20-06",
+      "score": 40,
+      "penalty": 28,
+      "created_at": "2026-06-20T07:38:49.045876+00:00",
+      "diff_min": 429
+    },
+    {
+      "id": "edb38c58-92db-46ba-bf4f-96e9e2bbc5eb",
+      "user_id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "quiz_id": "hourly-challenge-2026-06-20-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-20T08:05:13.45462+00:00",
+      "diff_min": 515
+    },
+    {
+      "id": "366c5764-d631-4ad6-ac01-379bc72f8923",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-20-05",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-20T08:09:13.155562+00:00",
+      "diff_min": 519
+    },
+    {
+      "id": "ceea4964-6bce-4c69-aef1-36c83f5436e9",
+      "user_id": "42fa14a4-c319-42cb-a2b1-43e87d639609",
+      "quiz_id": "hourly-challenge-2026-06-20-14",
+      "score": 40,
+      "penalty": 0,
+      "created_at": "2026-06-20T08:10:36.273647+00:00",
+      "diff_min": -19
+    },
+    {
+      "id": "7bd13612-1c0b-4ee5-99da-d9ec4a147330",
+      "user_id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "quiz_id": "hourly-challenge-2026-06-20-04",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-20T08:11:18.061114+00:00",
+      "diff_min": 581
+    },
+    {
+      "id": "72f0fe01-f438-4a58-b114-34c39292e742",
+      "user_id": "42fa14a4-c319-42cb-a2b1-43e87d639609",
+      "quiz_id": "hourly-challenge-2026-06-20-20",
+      "score": 50,
+      "penalty": 0,
+      "created_at": "2026-06-20T08:16:27.559489+00:00",
+      "diff_min": -374
+    }
+  ],
+  "profile_snapshots": [
+    {
+      "id": "3817f1ee-552f-4384-8e67-9cf4afbe8270",
+      "full_name": "Sanjay Gorai",
+      "slm_id": "SLM-0058",
+      "points": 56094,
+      "quiz_points": 54274,
+      "reading_points": 1820
+    },
+    {
+      "id": "42fa14a4-c319-42cb-a2b1-43e87d639609",
+      "full_name": "Aritra Banerjee",
+      "slm_id": "SLM-0004",
+      "points": 1870,
+      "quiz_points": 1430,
+      "reading_points": 440
+    },
+    {
+      "id": "38df8c36-68f5-45eb-a8f7-e2aebaca6ee4",
+      "full_name": "Ali Mahammad Khan",
+      "slm_id": "SLM-0106",
+      "points": 14560,
+      "quiz_points": 13960,
+      "reading_points": 600
+    },
+    {
+      "id": "4ce05a91-4974-4e3e-abef-5abc87f668e2",
+      "full_name": "Sampad Ghosh",
+      "slm_id": "SLM-0056",
+      "points": 29838,
+      "quiz_points": 28778,
+      "reading_points": 1060
+    },
+    {
+      "id": "5804649c-ebbe-44b4-ae56-70013cf41d87",
+      "full_name": "Prahlad Mondal",
+      "slm_id": "SLM-0057",
+      "points": 69645,
+      "quiz_points": 67825,
+      "reading_points": 1820
+    }
+  ]
+}

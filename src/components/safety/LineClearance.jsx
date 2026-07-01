@@ -16,6 +16,17 @@ import {
     operatorReenergizeRequestLink,
     appendAppLink,
 } from './clearanceLinks';
+import {
+    submitPtwRequest,
+    linemanStartWork,
+    cloudRowToLocalPatch,
+    statusLabel,
+    isOnline,
+    PTW_ONLINE_STATUSES,
+} from './ptwOnline';
+import usePtwWatch from './usePtwWatch';
+import { playShutdownConfirmedChime } from './ptwAlerts';
+import ElapsedTimer from './ElapsedTimer';
 
 const PENDING_ACK_KEY = 'slm_pending_lineman_ack';
 
@@ -205,6 +216,9 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
     const [codeInput, setCodeInput] = useState('');
     const [codeError, setCodeError] = useState(false);
     const [appAckNotice, setAppAckNotice] = useState('');
+    const [onlineBusy, setOnlineBusy] = useState(false);
+    const [onlineError, setOnlineError] = useState('');
+    const shutdownChimePlayedRef = React.useRef(false);
     const { requestPin, pinGateProps } = usePinGate();
 
     // Resume any in-progress permit + load history (offline-safe)
@@ -248,6 +262,75 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
         const ack = linemanAck?.role === 'lm' ? linemanAck : loadPendingAck();
         if (permit) applyAck(ack, permit);
     }, [linemanAck, permit, language, permit?.stepId]);
+
+    const applyCloudRow = React.useCallback((row) => {
+        if (!row || !permit || row.permit_no !== permit.permitNo) return;
+        const patch = cloudRowToLocalPatch(row);
+        setPermit((p) => (p && p.permitNo === row.permit_no ? {
+            ...p,
+            onlineMode: true,
+            onlineStatus: row.status,
+            onlineTimestamps: patch.onlineTimestamps,
+            confirmCode: patch.confirmCode ?? p.confirmCode,
+            operatorIssuedIsolate: patch.operatorIssuedIsolate || p.operatorIssuedIsolate,
+        } : p));
+
+        if (row.status === PTW_ONLINE_STATUSES.shutdown_confirmed && row.confirm_code) {
+            setCodeInput(String(row.confirm_code));
+            setAppAckNotice(language === 'bn' ? 'অপারেটর শাটডাউন নিশ্চিত করেছেন' : 'Operator confirmed shutdown');
+            if (!shutdownChimePlayedRef.current) {
+                shutdownChimePlayedRef.current = true;
+                playShutdownConfirmedChime();
+            }
+        }
+        if (row.status === PTW_ONLINE_STATUSES.work_started && row.work_started_at) {
+            setPermit((p) => (p && p.permitNo === row.permit_no ? {
+                ...p,
+                onlineTimestamps: {
+                    ...(p.onlineTimestamps || {}),
+                    workStarted: row.work_started_at,
+                },
+            } : p));
+        }
+    }, [permit, language]);
+
+    usePtwWatch({
+        role: 'lineman',
+        permitNo: permit?.onlineMode ? permit.permitNo : null,
+        enabled: !!(permit?.onlineMode && isOnline()),
+        onUpdate: applyCloudRow,
+    });
+
+    const submitOnlineRequest = async () => {
+        setOnlineBusy(true);
+        setOnlineError('');
+        try {
+            await submitPtwRequest(permit);
+            shutdownChimePlayedRef.current = false;
+            setPermit((p) => (p ? { ...p, onlineMode: true, onlineStatus: PTW_ONLINE_STATUSES.submitted } : p));
+            goStep('isolate', 'request_submitted_online');
+        } catch (e) {
+            setOnlineError(language === 'bn'
+                ? 'অনলাইনে পাঠানো যায়নি। এসএমএস ব্যবহার করুন।'
+                : 'Could not submit online. Use SMS instead.');
+        } finally {
+            setOnlineBusy(false);
+        }
+    };
+
+    const continueAfterOnlineShutdown = () => {
+        requestPin('confirm_isolation', () => {
+            stopAllAudio();
+            setCodeInput('');
+            setCodeError(false);
+            setPermit((p) => (p ? {
+                ...p,
+                stepId: 'ground',
+                log: [...p.log, logEntry('isolation_confirmed', { via: 'online' }), logEntry('pin_verified', { gate: 'confirm_isolation' })],
+            } : p));
+            buzz(40);
+        });
+    };
 
     const smsBody = (kind) => {
         const text = buildMessage(kind, permit, language);
@@ -495,13 +578,88 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
                             {stepId === 'request' && (
                                 <div className="space-y-4 animate-slide-up">
                                     <SmsPreview text={buildMessage('request', permit, language)} t={t} accent="orange" appLinkIncluded />
+                                    {isOnline() && (
+                                        <>
+                                            <button
+                                                type="button"
+                                                disabled={onlineBusy}
+                                                onClick={submitOnlineRequest}
+                                                className="w-full py-5 bg-teal-600 text-white rounded-3xl font-black text-lg active:scale-95 transition-transform disabled:opacity-50"
+                                            >
+                                                {onlineBusy
+                                                    ? t('Submitting…', 'পাঠানো হচ্ছে…')
+                                                    : t('Submit to operator (online)', 'অপারেটরকে পাঠান (অনলাইন)')}
+                                            </button>
+                                            {onlineError && <p className="text-center text-red-500 font-bold text-sm">{onlineError}</p>}
+                                            <p className="text-center text-xs font-bold text-slate-400">
+                                                {t('Or use SMS if offline', 'অফলাইনে থাকলে এসএমএস ব্যবহার করুন')}
+                                            </p>
+                                        </>
+                                    )}
                                     <CommsRow phone={permit.operator.phone} body={smsBody('request')} t={t} />
                                     <button onClick={() => goStep('isolate', 'request_sent')} className="w-full py-5 bg-orange-600 text-white rounded-3xl font-black text-lg active:scale-95 transition-transform">{t('Sent — Next', 'পাঠানো হয়েছে — পরের ধাপ')}</button>
                                     <button onClick={cancelActivePermit} className="w-full py-2 text-slate-400 font-bold text-sm active:scale-95">{t('Cancel', 'বাতিল করুন')}</button>
                                 </div>
                             )}
 
-                            {stepId === 'isolate' && (
+                            {stepId === 'isolate' && permit.onlineMode && permit.onlineStatus !== PTW_ONLINE_STATUSES.shutdown_confirmed && (
+                                <div className="space-y-4 animate-slide-up">
+                                    <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border-2 border-blue-200 text-center">
+                                        <div className="text-5xl mb-3 animate-pulse">⏳</div>
+                                        <p className="text-lg font-black text-slate-700 dark:text-white">
+                                            {statusLabel(permit.onlineStatus || PTW_ONLINE_STATUSES.submitted, language)}
+                                        </p>
+                                        <p className="text-sm font-bold text-slate-500 mt-2">
+                                            {permit.onlineStatus === PTW_ONLINE_STATUSES.accepted
+                                                ? t('Operator is isolating the line…', 'অপারেটর লাইন আইসোলেট করছেন…')
+                                                : t('Waiting for operator to accept…', 'অপারেটর গ্রহণের জন্য অপেক্ষা…')}
+                                        </p>
+                                        <ElapsedTimer
+                                            since={permit.onlineTimestamps?.submitted || permit.createdAt}
+                                            label={t('Waiting time', 'অপেক্ষার সময়')}
+                                            className="mt-4 text-slate-600"
+                                        />
+                                    </div>
+                                    <p className="text-center text-xs font-bold text-slate-400">
+                                        {t('Or enter code from phone/SMS', 'অথবা ফোন/এসএমএস থেকে কোড দিন')}
+                                    </p>
+                                    <div className="p-4 rounded-3xl bg-white dark:bg-slate-900 border-2 border-purple-200 dark:border-purple-900/40 text-center">
+                                        <input inputMode="numeric" value={codeInput} onChange={e => { setCodeInput(e.target.value); setCodeError(false); }} placeholder="••••" className={`w-44 mx-auto block text-center text-4xl tracking-[0.5em] font-black p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 outline-none ${codeError ? 'border-red-500 text-red-500' : 'border-purple-300 dark:border-purple-800'}`} />
+                                        {codeError && <p className="text-red-500 font-black text-xs mt-3">{t('Wrong code', 'কোডটি ভুল')}</p>}
+                                    </div>
+                                    <NavRow onBack={() => goStep('request', 'back_to_request')} onNext={verifyCodeWithPin} nextLabel={t('Verify code', 'কোড যাচাই')} colorClass="bg-purple-600" t={t} />
+                                </div>
+                            )}
+
+                            {stepId === 'isolate' && permit.onlineMode && permit.onlineStatus === PTW_ONLINE_STATUSES.shutdown_confirmed && (
+                                <div className="space-y-4 animate-slide-up">
+                                    <div className="p-6 rounded-3xl bg-emerald-50 dark:bg-emerald-950/30 border-2 border-emerald-400 text-center space-y-3">
+                                        <div className="text-6xl">✅</div>
+                                        <p className="text-xl font-black text-emerald-800 dark:text-emerald-200">
+                                            {t('Shutdown confirmed', 'শাটডাউন নিশ্চিত')}
+                                        </p>
+                                        {permit.onlineTimestamps?.shutdown && (
+                                            <p className="text-sm font-bold text-emerald-700">
+                                                {new Date(permit.onlineTimestamps.shutdown).toLocaleString()}
+                                            </p>
+                                        )}
+                                        <ElapsedTimer
+                                            since={permit.onlineTimestamps?.shutdown}
+                                            label={t('Since shutdown', 'শাটডাউন থেকে')}
+                                            className="text-emerald-900 dark:text-emerald-100"
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={continueAfterOnlineShutdown}
+                                        className="w-full py-5 rounded-3xl bg-emerald-600 text-white font-black text-lg active:scale-95"
+                                    >
+                                        {t('Continue to grounding', 'আর্থিং-এ এগিয়ে যান')}
+                                    </button>
+                                </div>
+                            )}
+
+                            {stepId === 'isolate' && !permit.onlineMode && (
                                 <div className="space-y-4 animate-slide-up">
                                     <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border-2 border-purple-200 dark:border-purple-900/40 text-center">
                                         {appAckNotice && (
@@ -516,6 +674,16 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
                                                     : t('Wait for operator', 'অপারেটরের কোডের জন্য অপেক্ষা করুন')}
                                             </p>
                                         )}
+                                    </div>
+                                    <NavRow onBack={() => goStep('request', 'back_to_request')} onNext={verifyCodeWithPin} nextLabel={t('Verify', 'যাচাই করুন')} colorClass="bg-purple-600" t={t} />
+                                </div>
+                            )}
+
+                            {stepId === 'isolate' && permit.onlineMode && permit.onlineStatus !== PTW_ONLINE_STATUSES.shutdown_confirmed && (
+                                <div className="space-y-4 animate-slide-up">
+                                    <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border-2 border-purple-200 dark:border-purple-900/40 text-center">
+                                        <p className="text-sm font-black text-slate-500 mb-3">{t('Operator code (backup)', 'অপারেটর কোড (ব্যাকআপ)')}</p>
+                                        <input inputMode="numeric" value={codeInput} onChange={e => { setCodeInput(e.target.value); setCodeError(false); }} placeholder="••••" className={`w-44 mx-auto block text-center text-4xl tracking-[0.5em] font-black p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 outline-none ${codeError ? 'border-red-500 text-red-500' : 'border-purple-300 dark:border-purple-800'}`} />
                                     </div>
                                     <NavRow onBack={() => goStep('request', 'back_to_request')} onNext={verifyCodeWithPin} nextLabel={t('Verify', 'যাচাই করুন')} colorClass="bg-purple-600" t={t} />
                                 </div>
@@ -536,7 +704,26 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
                                         <input type="checkbox" checked={!!(permit.flags && permit.flags.observer)} onChange={() => setFlag('observer')} className="w-7 h-7 accent-teal-600 shrink-0" />
                                         <span className="font-black text-base text-slate-800 dark:text-white">{t('Crew briefed & clear', 'কর্মীদের ব্রিফ করা হয়েছে এবং সবাই নিরাপদ')}</span>
                                     </label>
-                                    <NavRow onBack={() => goStep('ground', 'back_to_ground')} onNext={() => { if (!(permit.flags && permit.flags.observer)) { playAlertSound(); buzz([80, 50, 80]); return; } goStep('work', 'crew_briefed'); }} nextLabel={t('Start work', 'কাজ শুরু করুন')} colorClass="bg-teal-600" t={t} />
+                                    <NavRow onBack={() => goStep('ground', 'back_to_ground')} onNext={() => {
+                                        if (!(permit.flags && permit.flags.observer)) { playAlertSound(); buzz([80, 50, 80]); return; }
+                                        if (permit.onlineMode) {
+                                            linemanStartWork(permit.permitNo, permit.linemanPhone)
+                                                .then((row) => {
+                                                    if (row?.work_started_at) {
+                                                        setPermit((p) => (p ? {
+                                                            ...p,
+                                                            onlineStatus: PTW_ONLINE_STATUSES.work_started,
+                                                            onlineTimestamps: {
+                                                                ...(p.onlineTimestamps || {}),
+                                                                workStarted: row.work_started_at,
+                                                            },
+                                                        } : p));
+                                                    }
+                                                })
+                                                .catch(() => {});
+                                        }
+                                        goStep('work', 'crew_briefed');
+                                    }} nextLabel={t('Start work', 'কাজ শুরু করুন')} colorClass="bg-teal-600" t={t} />
                                 </div>
                             )}
 
@@ -546,6 +733,13 @@ export default function LineClearance({ language = 'bn', onClose, linemanAck = n
                                         <div className="absolute inset-0 border-[12px] border-amber-500 border-t-transparent rounded-full animate-spin" />
                                         <p className="text-3xl font-black text-slate-800 dark:text-white relative z-10">{t('WORK', 'কাজ চলছে')}</p>
                                     </div>
+                                    {permit.onlineMode && (permit.onlineTimestamps?.workStarted || permit.onlineStatus === PTW_ONLINE_STATUSES.work_started) && (
+                                        <ElapsedTimer
+                                            since={permit.onlineTimestamps?.workStarted}
+                                            label={t('Work time', 'কাজের সময়')}
+                                            className="text-amber-800 dark:text-amber-200"
+                                        />
+                                    )}
                                     <button onClick={() => goStep('closeout', 'work_finished')} className="w-full py-5 rounded-3xl bg-amber-600 text-white font-black text-lg active:scale-95 transition-transform">{t('Work done', 'কাজ শেষ হয়েছে')}</button>
                                 </div>
                             )}

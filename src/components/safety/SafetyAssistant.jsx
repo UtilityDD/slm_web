@@ -4,6 +4,7 @@ import LineClearance from './LineClearance';
 import SafetyHelp from './SafetyHelp';
 import OperatorConfirm from './OperatorConfirm';
 import OperatorHome from './OperatorHome';
+import OperatorInbox from './OperatorInbox';
 import DatabookManager from './DatabookManager';
 import { loadActivePermit } from './clearanceData';
 import { parseClearanceFromHash } from './clearanceLinks';
@@ -23,9 +24,14 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
         if (p?.role === 'lm') return 'clearance';
         return null;
     }); // null | guide | clearance | help | operator | databook
+    const [operatorView, setOperatorView] = useState('home'); // home | inbox
     const [hasActivePermit, setHasActivePermit] = useState(false);
 
     const t = (en, bn) => (language === 'bn' ? bn : en);
+
+    useEffect(() => {
+        if (mode !== 'operator') setOperatorView('home');
+    }, [mode]);
 
     // Re-route when user taps an SMS deep link while app is already open
     useEffect(() => {
@@ -67,7 +73,16 @@ export default function SafetyAssistant({ language = 'bn', onClose }) {
         if (linkPayload?.role === 'op' && (linkPayload.act === 'req' || linkPayload.act === 'ren')) {
             return <OperatorConfirm payload={linkPayload} language={language} onClose={goHome} />;
         }
-        return <OperatorHome language={language} onClose={goHome} />;
+        if (operatorView === 'inbox') {
+            return <OperatorInbox language={language} onClose={() => setOperatorView('home')} />;
+        }
+        return (
+            <OperatorHome
+                language={language}
+                onClose={goHome}
+                onOpenInbox={() => setOperatorView('inbox')}
+            />
+        );
     }
     if (mode === 'databook') {
         return <DatabookManager language={language} onClose={goHome} />;
