@@ -1419,11 +1419,12 @@ export default function Training({
         const checkHourlyEligibility = async () => {
             if (!user) return;
             try {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = String(now.getMonth() + 1).padStart(2, '0');
-                const day = String(now.getDate()).padStart(2, '0');
-                const hour = String(now.getHours()).padStart(2, '0');
+                const nowRaw = new Date();
+                const now = new Date(nowRaw.getTime() + (5.5 * 60 * 60 * 1000));
+                const year = now.getUTCFullYear();
+                const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(now.getUTCDate()).padStart(2, '0');
+                const hour = String(now.getUTCHours()).padStart(2, '0');
                 const quizId = `hourly-challenge-${year}-${month}-${day}-${hour}`;
 
                 const { data, error } = await supabase

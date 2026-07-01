@@ -262,6 +262,13 @@ function buildHourlyChaseMessage({ language, userRank, hoursLeft }) {
         : `You're ${fmt(gap)} points behind ${name}${rankLabel ? ` (${rankLabel})` : ''}.${hoursBitEn || ' Steady hour-by-hour play adds up.'}`;
 }
 
+/** Convert a date to an IST (UTC+5:30) date representation for timezone safety */
+const getIstDate = (date) => {
+    if (!date) return new Date();
+    const d = date instanceof Date ? date : new Date(date);
+    return new Date(d.getTime() + (5.5 * 60 * 60 * 1000));
+};
+
 export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile, onOpenUserProgress }) {
     const [loading, setLoading] = useState(true);
     const [activeQuiz, setActiveQuiz] = useState(null);
@@ -491,8 +498,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 const stateTime = new Date(savedState.timestamp);
                 const now = getSyncedTime();
 
-                // Only resume if it's the same hour/day
-                if (stateTime.getHours() === now.getHours() && stateTime.getDate() === now.getDate()) {
+                const istState = getIstDate(stateTime);
+                const istNow = getIstDate(now);
+
+                // Only resume if it's the same hour/day in IST
+                if (istState.getUTCHours() === istNow.getUTCHours() &&
+                    istState.getUTCDate() === istNow.getUTCDate() &&
+                    istState.getUTCFullYear() === istNow.getUTCFullYear()) {
                     setQuizQuestions(savedState.questions);
                     setCurrentQuestionIndex(savedState.currentIndex);
                     setUserAnswers(savedState.answers);
@@ -721,9 +733,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     useEffect(() => {
         // Timer Logic
         const updateTimer = () => {
-            const now = getSyncedTime();
-            const minutes = 59 - now.getMinutes();
-            const seconds = 59 - now.getSeconds();
+            const now = getIstDate(getSyncedTime());
+            const minutes = 59 - now.getUTCMinutes();
+            const seconds = 59 - now.getUTCSeconds();
             setTimeLeft(`${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
         };
         updateTimer();
@@ -733,21 +745,21 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
     // Simplified Hourly Quiz ID Generation
     const getHourlyQuizId = () => {
-        const now = getSyncedTime();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hour = String(now.getHours()).padStart(2, '0');
+        const now = getIstDate(getSyncedTime());
+        const year = now.getUTCFullYear();
+        const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(now.getUTCDate()).padStart(2, '0');
+        const hour = String(now.getUTCHours()).padStart(2, '0');
         return `hourly-challenge-${year}-${month}-${day}-${hour}`;
     };
 
     // --- GAMIFIED LADDER: Data Layer ---
     const fetchTodayAttempts = async () => {
         if (!user) return;
-        const now = getSyncedTime();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
+        const now = getIstDate(getSyncedTime());
+        const year = now.getUTCFullYear();
+        const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(now.getUTCDate()).padStart(2, '0');
         const prefix = `hourly-challenge-${year}-${month}-${day}-`;
 
         try {
@@ -780,11 +792,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
 
     const buildHourlySlots = () => {
-        const now = getSyncedTime();
-        const currentHour = now.getHours();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
+        const now = getIstDate(getSyncedTime());
+        const currentHour = now.getUTCHours();
+        const year = now.getUTCFullYear();
+        const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(now.getUTCDate()).padStart(2, '0');
 
         // Build a map of hour -> attempt
         const attemptMap = {};
@@ -799,11 +811,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
         // Check if current hour is locked (already played)
         const isCurrentHourPlayed = !!attemptMap[currentHour] || (lastAttemptTime && (() => {
-            const last = new Date(lastAttemptTime);
-            return last.getFullYear() === now.getFullYear() &&
-                last.getMonth() === now.getMonth() &&
-                last.getDate() === now.getDate() &&
-                last.getHours() === currentHour;
+            const last = getIstDate(new Date(lastAttemptTime));
+            return last.getUTCFullYear() === now.getUTCFullYear() &&
+                last.getUTCMonth() === now.getUTCMonth() &&
+                last.getUTCDate() === now.getUTCDate() &&
+                last.getUTCHours() === currentHour;
         })());
 
         const slots = [];
@@ -840,8 +852,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const getTodayScore = () => todayAttempts.reduce((sum, a) => sum + (a.score || 0), 0);
 
     const getStreak = (slots) => {
-        const now = getSyncedTime();
-        const currentHour = now.getHours();
+        const now = getIstDate(getSyncedTime());
+        const currentHour = now.getUTCHours();
         let streak = 0;
         // Count consecutive played hours ending at current/last hour
         // Slots are already reversed (23 -> 0)
@@ -1140,12 +1152,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     const fetchHourlyQuiz = async (forceRefresh = false) => {
         if (isFullLeaderboard) return null;
 
-        const now = getSyncedTime();
+        const now = getIstDate(getSyncedTime());
         // Use simpler strict format: YYYY-MM-DD-HH
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hour = String(now.getHours()).padStart(2, '0');
+        const year = now.getUTCFullYear();
+        const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(now.getUTCDate()).padStart(2, '0');
+        const hour = String(now.getUTCHours()).padStart(2, '0');
         const hourId = `${year}-${month}-${day}-${hour}`;
 
         const cacheKey = `hourly_quiz_db_bn_v4_${hourId}`;
@@ -1508,11 +1520,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         // Double-check if already played this hour (Race Condition Guard)
         const now = getSyncedTime();
         if (lastAttemptTime) {
-            const last = new Date(lastAttemptTime);
-            if (last.getFullYear() === now.getFullYear() &&
-                last.getMonth() === now.getMonth() &&
-                last.getDate() === now.getDate() &&
-                last.getHours() === now.getHours()) {
+            const last = getIstDate(new Date(lastAttemptTime));
+            const istNow = getIstDate(now);
+            if (last.getUTCFullYear() === istNow.getUTCFullYear() &&
+                last.getUTCMonth() === istNow.getUTCMonth() &&
+                last.getUTCDate() === istNow.getUTCDate() &&
+                last.getUTCHours() === istNow.getUTCHours()) {
                 return;
             }
         }
