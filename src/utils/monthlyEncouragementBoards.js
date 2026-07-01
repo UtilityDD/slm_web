@@ -29,65 +29,65 @@ export const RULES = {
 export function getEncouragementCopy(language = 'bn') {
     const en = language === 'en';
     return {
-        sectionTitle: en ? 'More ways to win this month' : 'এই মাসে আরও তিনটি সুযোগ',
-        prizeTitle: en ? 'Current top 3 (month-end prizes)' : 'এখন যারা এগিয়ে (মাস শেষে পুরস্কার)',
+        sectionTitle: en ? 'More ways to win this month' : 'মাসিক বিশেষ পুরস্কার',
+        prizeTitle: en ? 'Current top 3 (month-end prizes)' : 'মাসিক সেরা ৩ (চূড়ান্ত পুরস্কার)',
         prizeRule: en
             ? 'Three prizes per list. One prize per person — if you lead multiple lists, you keep your highest award only; the next player moves up on the other lists.'
-            : 'প্রতিটি তালিকায় তিনটি পুরস্কার। একজনে একটি মাত্র — একাধিক তালিকায় থাকলে সর্বোচ্চ পুরস্কারই পাবেন, বাকি তালিকায় পরের যোগ্য খেলোয়াড় এগিয়ে যাবে।',
+            : 'প্রতিটি তালিকায় ৩টি করে পুরস্কার। একজন কেবল একটি তালিকায় পুরস্কার পাবেন (উচ্চতম পদ অনুযায়ী)। বাকি তালিকায় পরবর্তী যোগ্য খেলোয়াড় এগিয়ে যাবেন।',
         prizeNote: en
             ? 'Final at month-end · updates live'
-            : 'মাস শেষে চূড়ান্ত হবে · খেলতে থাকলে তালিকা বদলাবে',
+            : 'মাস শেষে চূড়ান্ত · লাইভ আপডেট',
         hourlyAvgNote: en
             ? 'Hourly avg = this month’s hourly quiz records in the database ÷ days so far. Each hour slot is one record (retries in the same hour update that record).'
-            : 'ঘণ্টার কুইজ গড় = এই মাসে ডাটাবেসের ঘণ্টার কুইজ রেকর্ড ÷ আজ পর্যন্ত দিন। প্রতি ঘণ্টার স্লটে একটি রেকর্ড (একই ঘণ্টায় আবার খেললে সেই রেকর্ড আপডেট হয়)।',
+            : 'ঘণ্টার কুইজ গড় = চলতি মাসের মোট কুইজ রেকর্ড ÷ অতিক্রান্ত দিন। একই স্লটে পুনরায় খেললে আগের রেকর্ড আপডেট হবে।',
         hallOfFamePrizeNote: en
             ? 'Grayed names led this list but won on a higher list; highlighted names received the prize (including next eligible players).'
-            : 'ধূসর নামেরা এই তালিকায় এগিয়ে ছিলেন কিন্তু উচ্চতর তালিকায় পুরস্কার পেয়েছেন; হাইলাইট নামগুলো প্রকৃত পুরস্কার প্রাপক।',
-        prizeSuperseded: en ? 'Won on another list' : 'অন্য তালিকায় পুরস্কার',
-        prizeReplacement: en ? 'Prize winner' : 'পুরস্কার প্রাপক',
-        prizeTop3: en ? 'Top 3 win prizes' : 'প্রথম তিনজন পুরস্কার',
-        emptyBoard: en ? 'No qualifiers yet — keep playing!' : 'এখনো কেউ পৌঁছায়নি—খেলতে থাকুন!',
-        notEligible: en ? 'Not eligible yet' : 'এখনো যোগ্য হননি',
+            : 'ধূসর রঙের নামগুলো অন্য তালিকায় পুরস্কার পেয়েছেন; হাইলাইট করা নামগুলো প্রকৃত পুরস্কার বিজয়ী।',
+        prizeSuperseded: en ? 'Won on another list' : 'অন্য তালিকায় বিজয়ী',
+        prizeReplacement: en ? 'Prize winner' : 'পুরস্কার বিজয়ী',
+        prizeTop3: en ? 'Top 3 win prizes' : 'সেরা ৩ জন বিজয়ী',
+        emptyBoard: en ? 'No qualifiers yet — keep playing!' : 'কেউ এখনও যোগ্যতা অর্জন করেননি—খেলতে থাকুন!',
+        notEligible: en ? 'Not eligible yet' : 'যোগ্যতা বাকি',
         boards: {
             [BOARD_IDS.NEW_PLAYER]: {
                 title: en ? 'New Player Champion' : 'নতুন সদস্য',
                 logic: en
                     ? 'Joined ≤90 days · not monthly top 3 · 500 pts, 15 hourlies, or 5 lessons'
-                    : '৯০ দিনের নতুন সদস্য (মাসের সেরা ৩ জন বাদে)। ৫০০ পয়েন্ট, ১৫ কুইজ বা ৫ পাঠ শেষ করেছেন।',
-                rankBy: en ? 'Ranked by: monthly points' : 'নতুন সদস্যদের মাসিক পয়েন্টে সাজানো',
-                prize: en ? 'Top 3 win prizes' : 'প্রথম তিনজন পুরস্কার পাবেন',
+                    : 'নতুন সদস্য (যোগদান ≤ ৯০ দিন)। নুন্যতম ৫০০ পয়েন্ট, ১৫টি কুইজ অথবা ৫টি পাঠ সম্পন্ন হতে হবে।',
+                rankBy: en ? 'Ranked by: monthly points' : 'মাসিক অর্জিত পয়েন্ট অনুযায়ী সাজানো',
+                prize: en ? 'Top 3 win prizes' : 'সেরা ৩ জন পুরস্কার পাবেন',
             },
             [BOARD_IDS.MOST_IMPROVED]: {
                 title: en ? 'Most Improved' : 'সবচেয়ে এগিয়ে',
                 logic: en
                     ? 'Beat last month’s pace — 200+ last month, 500+ this month'
-                    : 'গত মাসে ২০০+ ছিল, এই মাসে ৫০০+ হয়েছে। তাদের মধ্যে সেরা তিন।',
-                rankBy: en ? 'Ranked by: growth vs last month' : 'গত মাসের চেয়ে কত পয়েন্ট বেড়েছে সেটায় সাজানো',
-                prize: en ? 'Top 3 win prizes' : 'প্রথম তিনজন পুরস্কার পাবেন',
+                    : 'উন্নতি-ভিত্তিক: গত মাসে ২০০+ এবং চলতি মাসে ৫০০+ পয়েন্ট সংগ্রহকারীদের মধ্যে সেরা ৩ জন।',
+                rankBy: en ? 'Ranked by: growth vs last month' : 'গত মাসের তুলনায় পয়েন্ট বৃদ্ধি অনুযায়ী সাজানো',
+                prize: en ? 'Top 3 win prizes' : 'সেরা ৩ জন পুরস্কার পাবেন',
             },
             [BOARD_IDS.TOP_LEARNER]: {
                 title: en ? 'Top Learner' : 'পড়াশোনা',
                 logic: en
                     ? 'Top 3 win prizes · most lesson reading points · qualify: 8+ lessons done'
-                    : 'এই মাসে পাঠ পড়ে কে সবচেয়ে বেশি রিডিং পয়েন্ট জোগাড় করেছেন। ৮টার বেশি পাঠ শেষ করতে হবে।',
-                rankBy: en ? 'Ranked by: lesson reading points' : 'পাঠের রিডিং পয়েন্টে সাজানো',
-                prize: en ? 'Top 3 win prizes' : 'প্রথম তিনজন পুরস্কার পাবেন',
+                    : 'চলতি মাসে পাঠ পড়ে সর্বোচ্চ রিডিং পয়েন্ট অর্জনকারী। নুন্যতম ৮টি পাঠ শেষ করতে হবে।',
+                rankBy: en ? 'Ranked by: lesson reading points' : 'অর্জিত রিডিং পয়েন্ট অনুযায়ী সাজানো',
+                prize: en ? 'Top 3 win prizes' : 'সেরা ৩ জন পুরস্কার পাবেন',
             },
             [BOARD_IDS.MAIN]: {
                 title: en ? 'Monthly Champion' : 'মাসের সেরা',
                 logic: en
                     ? 'Top 3 by total points — quizzes + reading'
-                    : 'এই মাসে মোট পয়েন্টে সেরা ৩—কুইজ আর পড়া দুটোই যোগ।',
-                rankBy: en ? 'Ranked by: total monthly points' : 'মাসের মোট পয়েন্টে সাজানো',
-                prize: en ? 'Top 3 win prizes' : 'প্রথম তিনজন পুরস্কার পাবেন',
+                    : 'চলতি মাসে কুইজ ও রিডিং পয়েন্ট মিলিয়ে সর্বোচ্চ স্কোর অর্জনকারী সেরা ৩ জন।',
+                rankBy: en ? 'Ranked by: total monthly points' : 'মাসিক মোট পয়েন্ট অনুযায়ী সাজানো',
+                prize: en ? 'Top 3 win prizes' : 'সেরা ৩ জন পুরস্কার পাবেন',
             },
         },
         stats: {
             points: en ? 'pts' : 'পয়েন্ট',
             hourly: en ? 'hourlies' : 'ঘণ্টার কুইজ',
             lessons: en ? 'lessons' : 'পাঠ',
-            improvement: en ? 'vs last month' : 'গত মাসের চেয়ে',
-            learnerPts: en ? 'reading pts' : 'রিডিং পয়েন্ট',
+            improvement: en ? 'vs last month' : 'গত মাসের চেয়ে',
+            learnerPts: en ? 'reading pts' : 'রিডিং পয়েন্ট',
         },
         monthlyTabs: {
             champion: en ? 'Champion' : 'মাসের সেরা',
@@ -456,13 +456,13 @@ function eligibilityNote(player, activity, language) {
     const a = activity[player.user_id] || {};
     const need = [];
     if (player.points < RULES.NEW_MIN_POINTS) {
-        need.push(en ? `${RULES.NEW_MIN_POINTS - player.points} more pts` : `${RULES.NEW_MIN_POINTS - player.points} পয়েন্ট আরো লাগবে`);
+        need.push(en ? `${RULES.NEW_MIN_POINTS - player.points} more pts` : `আরও ${RULES.NEW_MIN_POINTS - player.points} পয়েন্ট`);
     }
     if ((a.hourly || 0) < RULES.NEW_MIN_HOURLY) {
-        need.push(en ? `${RULES.NEW_MIN_HOURLY - (a.hourly || 0)} hourlies` : `${RULES.NEW_MIN_HOURLY - (a.hourly || 0)}টা ঘণ্টার কুইজ আরো`);
+        need.push(en ? `${RULES.NEW_MIN_HOURLY - (a.hourly || 0)} hourlies` : `আরও ${RULES.NEW_MIN_HOURLY - (a.hourly || 0)}টি কুইজ`);
     }
     if ((a.lessons || 0) < RULES.NEW_MIN_LESSONS) {
-        need.push(en ? `${RULES.NEW_MIN_LESSONS - (a.lessons || 0)} lessons` : `${RULES.NEW_MIN_LESSONS - (a.lessons || 0)}টা পাঠ আরো বাকি`);
+        need.push(en ? `${RULES.NEW_MIN_LESSONS - (a.lessons || 0)} lessons` : `আরও ${RULES.NEW_MIN_LESSONS - (a.lessons || 0)}টি পাঠ`);
     }
     return need.slice(0, 2).join(en ? ' · ' : ' · ');
 }
@@ -566,7 +566,7 @@ export function buildEncouragementBoards({
                     : lessonCount > 0
                       ? en
                           ? `${RULES.LEARNER_MIN_LESSONS - lessonCount} more lessons`
-                          : `${RULES.LEARNER_MIN_LESSONS - lessonCount}টা পাঠ আরো শেষ করুন`
+                          : `আরও ${RULES.LEARNER_MIN_LESSONS - lessonCount}টি পাঠ`
                       : null,
             };
         })
@@ -584,7 +584,9 @@ export function buildEncouragementBoards({
             prizePool: allCurrent,
         },
         [BOARD_IDS.NEW_PLAYER]: {
-            ranked: newRanked.slice(0, RULES.TOP_N),
+            // Display every qualified (eligible) new player by name — not just the top 3.
+            // Prizes are still resolved from prizePool (top 3) and the podium slices to top 3.
+            ranked: newRanked.filter((p) => p.eligible),
             prizePool: newRanked,
             pool_count: newPool.length,
         },
