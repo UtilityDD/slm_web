@@ -269,7 +269,7 @@ const getIstDate = (date) => {
     return new Date(d.getTime() + (5.5 * 60 * 60 * 1000));
 };
 
-export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile, onOpenUserProgress }) {
+export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile, onOpenUserProgress, showNotification }) {
     const [loading, setLoading] = useState(true);
     const [activeQuiz, setActiveQuiz] = useState(null);
     const [quizQuestions, setQuizQuestions] = useState([]);
