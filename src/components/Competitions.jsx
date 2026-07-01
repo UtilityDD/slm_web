@@ -914,13 +914,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         const params = {
             p_quiz_id: quizId,
             p_score: cleanScore,
+            p_penalty: cleanPenalty,
             p_user_id: user.id
         };
-
-        // Only attach penalty if non-zero (Matches Training.jsx success pattern)
-        if (cleanPenalty > 0) {
-            params.p_penalty = cleanPenalty;
-        }
 
         console.log('Submitting Hourly Quiz:', params);
 
@@ -980,7 +976,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             fetchLeaderboard(true);
             fetchFullLeaderboard(true);
             fetchMonthlyLeaderboard(true);
-            refreshProfile(user);
+            refreshProfile(user, true);
 
             // Update updated_at in profiles table to reflect recent activity
             await supabase
@@ -1022,17 +1018,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
      * Handles cases where the database might not have the p_penalty parameter yet
      */
     const safeSubmitQuizResult = async (quizId, score, penalty = 0) => {
-        // Use V2 function to bypass ambiguity issues
-        // Simplify arguments to match successful pattern in Training.jsx
         const params = {
             p_quiz_id: quizId,
-            p_score: score
+            p_score: score,
+            p_penalty: penalty,
+            p_user_id: user?.id
         };
-
-        // Only add penalty if explicitly present and non-zero
-        if (penalty) {
-            params.p_penalty = penalty;
-        }
 
         const result = await supabase.rpc('submit_quiz_result_v2', params);
 
@@ -3164,6 +3155,39 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             ? `This saved attempt includes ${quizResults.skipped} unanswered question(s) from an older format. New quizzes require every answer.`
                                             : `এই সংরক্ষিত প্রচেষ্টায় পুরনো ফরম্যাট থেকে ${quizResults.skipped}টি প্রশ্ন উত্তরহীন ছিল। নতুন কুইজে সব প্রশ্নের উত্তর দিতে হবে।`}
                                     </p>
+                                )}
+
+                                {/* Sync Status Footer */}
+                                {!isGuestUser(userProfile) && (
+                                    <div className="mt-2 mb-6 border-2 border-slate-900 bg-white p-3 shadow-[2px_2px_0_#0f172a] max-w-xs mx-auto text-xs font-bold nb-mono">
+                                        {syncStatus === 'syncing' && (
+                                            <div className="flex items-center justify-center gap-2 text-amber-600">
+                                                <span className="h-2 w-2 animate-ping rounded-full bg-amber-500" />
+                                                {language === 'en' ? 'Syncing with server...' : 'সার্ভারের সাথে সিঙ্ক হচ্ছে...'}
+                                            </div>
+                                        )}
+                                        {syncStatus === 'success' && (
+                                            <div className="flex items-center justify-center gap-1.5 text-emerald-600">
+                                                <span>✓</span>
+                                                {language === 'en' ? 'Successfully saved to server!' : 'সার্ভারে সফলভাবে সংরক্ষিত হয়েছে!'}
+                                            </div>
+                                        )}
+                                        {syncStatus === 'failed' && (
+                                            <div className="flex flex-col items-center gap-2">
+                                                <div className="text-red-600">
+                                                    ⚠️ {language === 'en' ? 'Failed to save to server' : 'সার্ভারে সেভ করা যায়নি'}
+                                                    {syncErrorMessage && <p className="text-[10px] text-slate-500 font-normal mt-0.5">{syncErrorMessage}</p>}
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => submitHourlyQuiz(quizResults?.pointsEarned, quizResults?.penalty)}
+                                                    className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-slate-900 border-2 border-slate-900 font-black uppercase text-[10px] shadow-[1px_1px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5"
+                                                >
+                                                    {language === 'en' ? 'Retry Save' : 'পুনরায় চেষ্টা করুন'}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
 
                                 <button type="button" onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); }} className="w-full py-3 nb-btn-primary font-bold">
