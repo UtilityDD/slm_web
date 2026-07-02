@@ -352,20 +352,21 @@ export default function RadioMiniPlayer({ language, currentView }) {
         <button
           type="button"
           onClick={() => startRadio()}
-          className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] right-[max(0.75rem,env(safe-area-inset-right))] z-[104] flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-lg text-white shadow-lg shadow-indigo-900/30 transition hover:brightness-110 active:scale-95 md:hidden"
+          className="group fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] right-[max(0.75rem,env(safe-area-inset-right))] z-[104] flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg shadow-slate-900/30 ring-1 ring-white/10 transition hover:bg-slate-800 active:scale-95 dark:bg-slate-800 dark:hover:bg-slate-700 md:hidden"
           aria-label={t.launch}
           title={t.launch}
         >
-          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M17 3v7" />
-            <rect x="4" y="10" width="16" height="11" rx="2" />
-            <line x1="7" y1="13" x2="11" y2="13" strokeWidth="1.5" />
-            <line x1="7" y1="15.5" x2="11" y2="15.5" strokeWidth="1.5" />
-            <line x1="7" y1="18" x2="11" y2="18" strokeWidth="1.5" />
-            <rect x="12.75" y="11.75" width="6.5" height="7.5" rx="1" strokeWidth="1.5" />
-            <line x1="14" y1="14.25" x2="18" y2="14.25" strokeWidth="1" />
-            <line x1="14" y1="16.5" x2="17.5" y2="16.5" strokeWidth="1" />
-            <circle cx="17.25" cy="18.25" r="1.35" fill="currentColor" stroke="none" />
+          <svg className="h-[26px] w-[26px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            {/* antenna */}
+            <path d="M15 8.5 19.5 4.5" />
+            {/* body */}
+            <rect x="3" y="8.5" width="18" height="11.5" rx="2.4" />
+            {/* speaker */}
+            <circle cx="15.5" cy="14.25" r="3" />
+            <circle cx="15.5" cy="14.25" r="0.6" fill="currentColor" stroke="none" />
+            {/* dial + tuning marks */}
+            <path d="M6 12h5" className="text-orange-400" stroke="currentColor" />
+            <path d="M6.5 15.75h1.5M6.5 17.75h3" strokeWidth="1.3" opacity="0.6" />
           </svg>
         </button>
       ) : null}
