@@ -134,30 +134,38 @@ export function orderQuestionsByDifficultyBias(questions, tier) {
         .map(({ q }) => q);
 }
 
-/** Copy for the Training page hourly penalty explainer modal. */
+/** Copy for the hourly penalty explainer modal. */
 export function getHourlyPenaltyModalCopy(lifetimePoints, language = 'en') {
     const penalty = getPenaltyPerWrongForLifetime(lifetimePoints);
     const bn = language === 'bn';
 
     const tiers = bn
-        ? ['১০,০০০+ → −১২ / ভুল', '৩০,০০০+ → −২০', '৫০,০০০+ → −২৮']
-        : ['10,000+ → −12 / wrong', '30,000+ → −20', '50,000+ → −28'];
+        ? [
+            '১০,০০০+ পয়েন্ট: ভুল উত্তরে −১২',
+            '৩০,০০০+ পয়েন্ট: ভুল উত্তরে −২০',
+            '৫০,০০০+ পয়েন্ট: ভুল উত্তরে −২৮'
+          ]
+        : ['10,000+ pts: −12 / wrong', '30,000+ pts: −20 / wrong', '50,000+ pts: −28 / wrong'];
 
     if (!penalty) {
         return {
-            title: bn ? 'প্রতি ঘণ্টার কুইজ' : 'Hourly quiz',
+            title: bn ? 'কুইজের নিয়ম' : 'Quiz rules',
+            intro: bn ? 'প্রতি ঘণ্টায় ১ বার • ৫টি প্রশ্ন' : 'Once per hour • 5 questions',
             body: bn
-                ? '১০,০০০ মোট পয়েন্টের নিচে ভুল উত্তরে পেনাল্টি নেই।'
-                : 'No penalty on wrong answers below 10,000 lifetime points.',
+                ? 'আপনার মোট পয়েন্ট ১০,০০০-এর কম, তাই ভুল উত্তরের জন্য কোনো পয়েন্ট কাটা যাবে না।'
+                : 'Your total points are under 10,000, so no points will be deducted for wrong answers.',
+            tiersLabel: bn ? 'মোট পয়েন্ট অনুযায়ী পেনাল্টি:' : 'Penalty by total points:',
             tiers,
         };
     }
 
     return {
-        title: bn ? 'প্রতি ঘণ্টার কুইজ' : 'Hourly quiz',
+        title: bn ? 'কুইজের নিয়ম' : 'Quiz rules',
+        intro: bn ? 'প্রতি ঘণ্টায় ১ বার • ৫টি প্রশ্ন' : 'Once per hour • 5 questions',
         body: bn
-            ? `আপনার প্রতিটি ভুল উত্তরে −${penalty} পয়েন্ট কাটা হবে।`
-            : `Each wrong answer costs −${penalty} points for you.`,
+            ? `প্রতিটি ভুল উত্তরের জন্য আপনার ${penalty} পয়েন্ট কাটা যাবে।`
+            : `Each wrong answer will cost you ${penalty} points.`,
+        tiersLabel: bn ? 'মোট পয়েন্ট অনুযায়ী পেনাল্টি:' : 'Penalty by total points:',
         tiers,
     };
 }
@@ -171,6 +179,6 @@ export function getHourlyStakesUi(lifetimePoints, language = 'en') {
     const bn = language === 'bn';
     return {
         penalty,
-        quizHint: bn ? `ভুলে −${penalty}` : `−${penalty} / wrong`,
+        quizHint: bn ? `ভুল হলে −${penalty}` : `−${penalty} / wrong`,
     };
 }

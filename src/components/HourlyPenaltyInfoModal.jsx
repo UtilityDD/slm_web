@@ -31,9 +31,9 @@ export default function HourlyPenaltyInfoModal({
                 <div className="nb-card overflow-hidden p-0 rounded-none sm:rounded-lg border-t-[2.5px] sm:border-[2.5px] border-slate-900 shadow-[0_-4px_0_#0f172a] sm:shadow-[4px_4px_0_#0f172a]">
                     <div className="nb-hazard" aria-hidden="true" />
 
-                    <div className="p-6 sm:p-7 text-center sm:text-left bg-[#fffdf7]">
-                        <div className="nb-icon-badge w-14 h-14 flex items-center justify-center mx-auto sm:mx-0 mb-5 bg-orange-100 text-orange-700">
-                            <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                    <div className="p-5 sm:p-6 text-center sm:text-left bg-[#fffdf7]">
+                        <div className="nb-icon-badge w-12 h-12 flex items-center justify-center mx-auto sm:mx-0 mb-4 bg-orange-100 text-orange-700">
+                            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
                                 <circle cx="12" cy="12" r="10" />
                                 <path strokeLinecap="round" d="M12 6v6l4 2" />
                             </svg>
@@ -41,19 +41,25 @@ export default function HourlyPenaltyInfoModal({
 
                         <h3
                             id="hourly-penalty-modal-title"
-                            className={`text-xl sm:text-2xl font-black text-slate-900 mb-2 nb-mono uppercase tracking-tight ${bn ? 'font-bengali normal-case tracking-normal' : ''}`}
+                            className={`text-lg sm:text-xl font-black text-slate-900 mb-1 nb-mono uppercase tracking-tight ${bn ? 'font-bengali normal-case tracking-normal' : ''}`}
                         >
                             {copy.title}
                         </h3>
-                        <p className={`text-sm sm:text-base font-semibold text-slate-600 ${bn ? 'font-bengali' : ''}`}>
+                        <p className={`text-[11px] font-bold uppercase tracking-wide text-orange-600 nb-mono ${bn ? 'font-bengali normal-case' : ''}`}>
+                            {copy.intro}
+                        </p>
+                        <p className={`mt-3 text-sm font-semibold leading-snug text-slate-700 ${bn ? 'font-bengali' : ''}`}>
                             {copy.body}
                         </p>
 
-                        <ul className={`mt-4 space-y-2 ${bn ? 'font-bengali' : ''}`}>
+                        <p className={`mt-4 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 nb-mono ${bn ? 'font-bengali normal-case' : ''}`}>
+                            {copy.tiersLabel}
+                        </p>
+                        <ul className={`space-y-1.5 ${bn ? 'font-bengali' : ''}`}>
                             {copy.tiers.map((line) => (
                                 <li
                                     key={line}
-                                    className="nb-tag flex items-center justify-center sm:justify-start bg-white px-3 py-2 text-xs font-bold text-slate-700 nb-mono"
+                                    className="rounded-md border-2 border-slate-900 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-[2px_2px_0_#0f172a] nb-mono"
                                 >
                                     {line}
                                 </li>
@@ -67,7 +73,7 @@ export default function HourlyPenaltyInfoModal({
                             onClick={onClose}
                             className="w-full min-h-[48px] py-3 nb-btn-primary font-black text-base"
                         >
-                            {bn ? 'ঠিক আছে' : 'OK'}
+                            {bn ? 'বুঝেছি' : 'Got it'}
                         </button>
                         {showDontShowAgain && (
                             <label

@@ -23,6 +23,7 @@ import {
 import { DotLottiePlayer } from '@dotlottie/react-player';
 import sandyLoading from '../assets/SandyLoading.lottie';
 import HourlyPenaltyInfoModal from './HourlyPenaltyInfoModal';
+import HourlyDayRing from './HourlyDayRing';
 import { MonthlyBoardHeader } from './MonthlyEncouragementBoards';
 import MonthlyBoardInfoModal from './MonthlyBoardInfoModal';
 import { checkReadingGate } from '../utils/readingHabitGate';
@@ -218,6 +219,40 @@ async function fetchRivalAheadForDisplay(myScoreValue) {
     };
 }
 
+function CountUpNumber({ value, format = (n) => n, className, duration = 700 }) {
+    const target = Number(value) || 0;
+    const [display, setDisplay] = useState(target);
+    const fromRef = React.useRef(target);
+    const rafRef = React.useRef(null);
+
+    useEffect(() => {
+        const from = fromRef.current;
+        const to = target;
+        if (from === to) {
+            setDisplay(to);
+            return undefined;
+        }
+        const start = performance.now();
+        const step = (now) => {
+            const p = Math.min(1, (now - start) / duration);
+            const eased = 1 - Math.pow(1 - p, 3);
+            setDisplay(Math.round(from + (to - from) * eased));
+            if (p < 1) {
+                rafRef.current = requestAnimationFrame(step);
+            } else {
+                fromRef.current = to;
+            }
+        };
+        rafRef.current = requestAnimationFrame(step);
+        return () => {
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            fromRef.current = to;
+        };
+    }, [target, duration]);
+
+    return <span className={className}>{format(display)}</span>;
+}
+
 function buildHourlyChaseMessage({ language, userRank, hoursLeft }) {
     if (!userRank) return null;
 
@@ -226,7 +261,7 @@ function buildHourlyChaseMessage({ language, userRank, hoursLeft }) {
 
     if (userRank.rank === 1) {
         return isBn
-            ? 'আপনি এখন শীর্ষে! প্রতি ঘণ্টার কুইজ খেলতে থাকুন — এক নম্বর ধরে রাখতে হবে।'
+            ? 'আপনি এখন শীর্ষে! এক নম্বর জায়গা ধরে রাখতে খেলতে থাকুন।'
             : "You're #1 right now — keep playing every hour to stay on top.";
     }
 
@@ -234,8 +269,8 @@ function buildHourlyChaseMessage({ language, userRank, hoursLeft }) {
     if (!rival?.full_name) {
         return isBn
             ? (hoursLeft > 0
-                ? `আজ আরও ${fmt(hoursLeft)}টা ঘণ্টার কুইজ বাকি। খেলতে থাকুন, পয়েন্ট জমতে থাকবে।`
-                : 'আজকের সব ঘণ্টা শেষ — কাল আবার শুরু করুন, পয়েন্ট জমতে থাকবে।')
+                ? `আজ আরও ${fmt(hoursLeft)}টি কুইজ বাকি আছে, খেলে পয়েন্ট বাড়িয়ে নিন!`
+                : 'আজকের সব কুইজ শেষ! কাল আবার নতুন উদ্যমে শুরু করুন।')
             : (hoursLeft > 0
                 ? `${fmt(hoursLeft)} hour${hoursLeft === 1 ? '' : 's'} left today — keep playing to climb the board.`
                 : "Today's hours are done — come back tomorrow and keep building your score.");
@@ -245,7 +280,7 @@ function buildHourlyChaseMessage({ language, userRank, hoursLeft }) {
     const gap = Math.max(0, rival.gap ?? 0);
     const rankLabel = rival.rank ? `#${rival.rank}` : '';
     const hoursBitBn = hoursLeft > 0
-        ? ` আজ আরও ${fmt(hoursLeft)}টা ঘণ্টা বাকি — খেললে কাছে আসা সম্ভব।`
+        ? ` আজ আরও ${fmt(hoursLeft)}টি কুইজ বাকি আছে — খেললে ব্যবধান কমানো সম্ভব!`
         : '';
     const hoursBitEn = hoursLeft > 0
         ? ` ${fmt(hoursLeft)} hour${hoursLeft === 1 ? '' : 's'} left today — play them to close the gap.`
@@ -253,12 +288,12 @@ function buildHourlyChaseMessage({ language, userRank, hoursLeft }) {
 
     if (gap <= 10) {
         return isBn
-            ? `${name}${rankLabel ? ` (${rankLabel})` : ''} এর থেকে মাত্র ${fmt(gap)} পয়েন্ট পিছিয়ে! ভালো খেললে এক ঘণ্টাই যথেষ্ট।${hoursBitBn}`
+            ? `${name}${rankLabel ? ` (${rankLabel})` : ''} থেকে মাত্র ${fmt(gap)} পয়েন্ট পিছিয়ে! ভালো খেললে এক ঘণ্টাই যথেষ্ট।${hoursBitBn}`
             : `Only ${fmt(gap)} point${gap === 1 ? '' : 's'} behind ${name}${rankLabel ? ` (${rankLabel})` : ''}! One strong hour could do it.${hoursBitEn}`;
     }
 
     return isBn
-        ? `${name}${rankLabel ? ` (${rankLabel})` : ''} এর চেয়ে ${fmt(gap)} পয়েন্ট কম।${hoursBitBn || ' ধীরে ধীরে ঘণ্টা ঘণ্টা খেললে জমে উঠবে।'}`
+        ? `${name}${rankLabel ? ` (${rankLabel})` : ''} এর চেয়ে ${fmt(gap)} পয়েন্ট কম।${hoursBitBn || ' প্রতি ঘণ্টা খেলে ব্যবধান কমিয়ে ফেলুন!'}`
         : `You're ${fmt(gap)} points behind ${name}${rankLabel ? ` (${rankLabel})` : ''}.${hoursBitEn || ' Steady hour-by-hour play adds up.'}`;
 }
 
@@ -585,58 +620,58 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         },
         bn: {
             title: "প্রতিযোগিতা",
-            weekly: "সাপ্তাহিক চ্যালেঞ্জ",
-            hourly: "ঘন্টাভিত্তিক কুইজ",
+            weekly: "সাপ্তাহিক কুইজ",
+            hourly: "ঘণ্টার কুইজ",
             play: "খেলুন",
             questions: "প্রশ্ন",
             mins: "মিনিট",
-            points: "পয়েন্ট",
+            points: "পয়েন্ট",
             leaderboard: "লিডারবোর্ড",
-            completed: "কুইজ সম্পন্ন!",
-            score: "আপনার স্কোর",
-            close: "বন্ধ করুন",
-            loginReq: "অংশগ্রহণ করতে লগইন করুন",
-            highStakes: "হাই স্টেক",
-            highStakesDesc: "মোট পয়েন্ট অনুযায়ী প্রতিটি ভুল উত্তরে পয়েন্ট কাটা হবে",
-            selectAnswerToContinue: "চালিয়ে যেতে একটি উত্তর বেছে নিন।",
-            syncing: "আপনার স্কোর সিঙ্ক হচ্ছে...",
-            waitingNetwork: "নেটওয়ার্ক সংযোগের জন্য অপেক্ষা করা হচ্ছে...",
-            autoRetry: "স্বয়ংক্রিয় পুনঃচেষ্টা সক্রিয়",
-            previousPending: "পূর্ববর্তী প্রচেষ্টা সিঙ্কের জন্য অপেক্ষমাণ",
-            retryNow: "এখনই পুনঃচেষ্টা করুন",
-            syncSuccess: "স্কোর সফলভাবে সিঙ্ক হয়েছে!",
-            syncFailed: "সিঙ্ক ব্যর্থ হয়েছে। অনুগ্রহ করে পুনঃচেষ্টা করুন।",
+            completed: "কুইজ শেষ!",
+            score: "স্কোর",
+            close: "বন্ধ",
+            loginReq: "খেলতে লগইন করুন",
+            highStakes: "হাই স্টেকস",
+            highStakesDesc: "ভুল উত্তর দিলে পয়েন্ট কাটা যাবে",
+            selectAnswerToContinue: "এগিয়ে যেতে উত্তর সিলেক্ট করুন।",
+            syncing: "স্কোর সেভ হচ্ছে...",
+            waitingNetwork: "ইন্টারনেটের জন্য অপেক্ষা করা হচ্ছে...",
+            autoRetry: "অটো-রিট্রাই চালু আছে",
+            previousPending: "আগের স্কোর সেভ হচ্ছে...",
+            retryNow: "আবার চেষ্টা করুন",
+            syncSuccess: "স্কোর সেভ হয়েছে!",
+            syncFailed: "সেভ করা যায়নি। আবার চেষ্টা করুন।",
             hint: "ইঙ্গিত",
-            hintDisabled: "ইঙ্গিত দেখতে একটি উত্তর নির্বাচন করুন",
-            noHint: "এই প্রশ্নের জন্য কোনো ইঙ্গিত নেই",
+            hintDisabled: "আগে উত্তর সিলেক্ট করুন",
+            noHint: "কোনো ইঙ্গিত নেই",
             streak: "একটানা",
-            missedTitle: "চ্যালেঞ্জ মিস করেছেন",
-            missedDesc: "অর্জিত পয়েন্ট = ০",
-            upcomingStatus: "আসন্ন চ্যালেঞ্জ",
+            missedTitle: "কুইজ মিস হয়েছে",
+            missedDesc: "০ পয়েন্ট",
+            upcomingStatus: "কুইজ আসছে",
             scoreLabel: "স্কোর",
-            challengeCompleted: "চ্যালেঞ্জ সম্পন্ন",
-            penaltyApplied: "পেনাল্টি প্রযোজ্য",
-            perfectScore: "চমৎকার স্কোর!",
+            challengeCompleted: "কুইজ শেষ",
+            penaltyApplied: "পেনাল্টি",
+            perfectScore: "সব উত্তর সঠিক!",
             liveNow: "এখন লাইভ",
-            nextChallengeLabel: "পরবর্তী চ্যালেঞ্জ",
-            upcomingPowerPlay: "পাওয়ার প্লে",
-            startsIn: "শুরু",
+            nextChallengeLabel: "পরের কুইজ",
+            upcomingPowerPlay: "পাওয়ার প্লে",
+            startsIn: "সময় বাকি",
             closingIn: "শেষ হতে বাকি",
             timeLeft: "সময় বাকি",
-            topPlayersToday: "আজকের সেরা খেলোয়াড়",
+            topPlayersToday: "আজকের সেরা",
             viewAll: "সব দেখুন",
             antiCheatExitTitle: "কুইজ থেকে বের হবেন?",
-            antiCheatExitDesc: "এখন বের হলে এই ঘণ্টার চ্যালেঞ্জ ০ পয়েন্টে সাবমিট হবে।",
-            antiCheatExitPenalty: "এটি এন্টি-চিট সুরক্ষা এবং পরে পরিবর্তন করা যাবে না।",
-            antiCheatStay: "কুইজ চালিয়ে যান",
-            antiCheatExitConfirm: "০ পয়েন্টে বের হোন",
-            searchLimitTitle: "সার্চ লিমিট",
-            searchConfirm: "আপনি কি এটি গুগলে খুঁজতে চান? প্রতি সেশনে আপনি মাত্র ২ বার সার্চ করতে পারবেন (ব্যবহৃত: %s/২)।",
-            searchExhausted: "দুঃখিত! আপনার ২টির সার্চের কোটা শেষ হয়ে গেছে।",
+            antiCheatExitDesc: "এখন বের হলে এই কুইজে ০ পয়েন্ট পাবেন।",
+            antiCheatExitPenalty: "নকল ঠেকাতে এই নিয়মটি এড়ানো যাবে না।",
+            antiCheatStay: "কুইজ খেলতে থাকুন",
+            antiCheatExitConfirm: "বের হয়ে যান (০ পয়েন্ট)",
+            searchLimitTitle: "গুগল সার্চ",
+            searchConfirm: "গুগল সার্চ করবেন? প্রতি সেশনে মাত্র ২ বার করতে পারবেন (ব্যবহৃত: %s/২)।",
+            searchExhausted: "সার্চের সুযোগ শেষ!",
             searchProceed: "সার্চ করুন",
-            noDistrict: "আপডেট নেই",
+            noDistrict: "তথ্য নেই",
             leaderboardTimeInfo:
-                "সার্ভার ও ফোনের টাইম জোন আলাদা হওয়ায় ‘এই মাস’-এর নম্বরে সামান্য পার্থক্য দেখা যেতে পারে। তবে নিশ্চিন্ত থাকুন—সব পয়েন্টই সঠিকভাবে গণনা হচ্ছে। এগিয়ে চলুন! 💪"
+                "সার্ভার ও আপনার ফোনের সময়ের পার্থক্যের কারণে ‘এই মাসের’ পয়েন্টে সামান্য অমিল লাগতে পারে। তবে আপনার সব পয়েন্টই সঠিকভাবে যোগ হচ্ছে, নিশ্চিন্তে খেলে যান! 💪"
         }
     }[language];
 
@@ -778,16 +813,21 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         }
     };
 
-    // Scroll to live node on mount/update
+    // Scroll to live node only when it would sit below the fold (avoid unnecessary scroll on compact layout)
     useEffect(() => {
         if (ladderRef.current && !loading) {
-            setTimeout(() => {
+            const timer = window.setTimeout(() => {
                 const liveNode = document.getElementById('node-live') || document.getElementById('node-upcoming-next');
-                if (liveNode) {
-                    liveNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (!liveNode) return;
+                const rect = liveNode.getBoundingClientRect();
+                const navClearance = 88;
+                if (rect.bottom > window.innerHeight - navClearance || rect.top < 0) {
+                    liveNode.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
-            }, 500);
+            }, 300);
+            return () => window.clearTimeout(timer);
         }
+        return undefined;
     }, [todayAttempts, loading, showCompactView]);
 
 
@@ -939,8 +979,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                         : isTimeBlock
                         ? (language === 'en'
                             ? 'This score was not counted. Your device clock does not match the real time, so this hourly play is invalid. Please set your phone date & time to "Automatic" and play during the live hour.'
-                            : 'ফোনের সময় ঠিক নেই বলে এই স্কোর গণনা হয়নি। সময় "স্বয়ংক্রিয়" করে চলতি ঘণ্টায় খেলুন।')
-                        : (data.message || data.error || (language === 'en' ? 'Submission was not accepted.' : 'জমা গ্রহণ করা হয়নি।')),
+                            : 'ফোনের সময় ঠিক না থাকায় স্কোর যোগ করা যায়নি। সময় "অটোমেটিক" সেট করে চলতি ঘণ্টার কুইজ খেলুন।')
+                        : (data.message || data.error || (language === 'en' ? 'Submission was not accepted.' : 'সাবমিট করা যায়নি।')),
                 });
                 return;
             }
@@ -1188,8 +1228,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     if (mergedQuestions.length > 0) {
                         return {
                             id: `hourly-challenge-${hourId}`, // Ensure this ID format is consistent
-                            title: language === 'en' ? 'Hourly Safety Challenge' : 'প্রতি ঘন্টায় সুরক্ষা চ্যালেঞ্জ',
-                            description: language === 'en' ? 'Test your safety knowledge! New questions every hour.' : 'আপনার সুরক্ষা জ্ঞান পরীক্ষা করুন! প্রতি ঘন্টায় নতুন প্রশ্ন।',
+                            title: language === 'en' ? 'Hourly Safety Challenge' : 'প্রতি ঘণ্টার সুরক্ষা চ্যালেঞ্জ',
+                            description: language === 'en' ? 'Test your safety knowledge! New questions every hour.' : 'নিরাপত্তা জ্ঞান পরীক্ষা করুন! প্রতি ঘণ্টায় নতুন প্রশ্ন।',
                             duration_minutes: 5,
                             points_reward: 50,
                             questions: mergedQuestions,
@@ -2494,72 +2534,81 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     }
 
     return (
-        <div className="neo-brutal max-w-md mx-auto min-h-screen relative pb-[calc(11rem+env(safe-area-inset-bottom))] md:pb-24 bg-[#fffdf7] text-slate-900">
+        <div className="neo-brutal max-w-md mx-auto relative bg-[#fffdf7] text-slate-900 md:min-h-screen md:pb-24">
             {/* 1. STICKY SCOREBOARD HEADER */}
-            <div className="sticky top-0 z-30 border-b-2 border-slate-900 bg-[#fffdf7]">
+            <div className="sticky top-0 z-30 shrink-0 border-b-2 border-slate-900 bg-[#fffdf7]">
                 <div className="nb-hazard shrink-0" aria-hidden="true" />
-                <div className="px-3 py-2.5 sm:px-4 sm:py-3">
-                    <div className="mb-2.5 flex items-center justify-between gap-2">
-                        <div className="flex min-w-0 items-center gap-1.5">
-                            <h1 className={`flex min-w-0 items-center gap-1.5 text-base font-black tracking-tight text-slate-900 ${language === 'bn' ? 'font-bengali normal-case' : 'nb-mono uppercase'}`}>
-                                <span className="shrink-0 text-lg" aria-hidden>🏆</span>
-                                <span className="truncate">{language === 'en' ? '5 Quiz / Hour' : '৫ কুইজ / ঘণ্টা'}</span>
-                            </h1>
-                            <button
-                                type="button"
-                                onClick={() => setShowHourlyPenaltyInfoModal(true)}
-                                className="flex h-7 w-7 shrink-0 items-center justify-center border-2 border-slate-900 bg-white text-slate-700 shadow-[2px_2px_0_#0f172a] transition-colors hover:bg-orange-50"
-                                aria-label={language === 'en' ? 'Penalty info' : 'পেনাল্টি তথ্য'}
-                            >
-                                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-                                    <circle cx="12" cy="12" r="10" />
-                                    <path strokeLinecap="round" d="M12 6v6l4 2" />
-                                </svg>
-                            </button>
+                <div className="px-3 py-2 sm:px-4 sm:py-3">
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                                <h1 className={`truncate text-base font-black leading-tight tracking-tight text-slate-900 sm:text-lg ${language === 'bn' ? 'font-bengali normal-case' : 'nb-mono uppercase'}`}>
+                                    {language === 'en' ? 'Hourly Quiz' : 'ঘণ্টার কুইজ'}
+                                </h1>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowHourlyPenaltyInfoModal(true)}
+                                    className="flex h-6 w-6 shrink-0 items-center justify-center border-2 border-slate-900 bg-white text-slate-700 shadow-[2px_2px_0_#0f172a] transition-colors hover:bg-orange-50 sm:h-7 sm:w-7"
+                                    aria-label={language === 'en' ? 'Penalty info' : 'পেনাল্টি তথ্য'}
+                                >
+                                    <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                                        <circle cx="12" cy="12" r="10" />
+                                        <path strokeLinecap="round" d="M12 6v6l4 2" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <p className={`mt-0.5 hidden text-[10px] font-semibold text-slate-600 sm:block sm:text-[11px] ${language === 'bn' ? 'font-bengali' : 'nb-mono'}`}>
+                                {language === 'en' ? '5 quizzes / hour' : 'প্রতি ঘণ্টায় ৫ কুইজ'}
+                            </p>
                         </div>
                         {userRank && (
                             <div className="flex shrink-0 items-center gap-1.5">
-                                <span className={`nb-tag px-2 py-0.5 text-[10px] font-bold ${currentUserBadge.color}`}>
+                                <span className={`nb-tag hidden px-2 py-0.5 text-[10px] font-bold sm:inline-flex ${currentUserBadge.color}`}>
                                     {language === 'en' ? currentUserBadge.en : currentUserBadge.bn}
                                 </span>
-                                <span className="nb-rank-badge bg-white px-2 py-0.5 text-sm font-black text-slate-800">#{userRank.rank}</span>
+                                <span className="nb-rank-badge bg-orange-500 px-2 py-0.5 text-xs font-black text-white sm:px-2.5 sm:py-1 sm:text-sm">#{userRank.rank}</span>
                             </div>
                         )}
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2">
-                        <div className="nb-card bg-white p-2 text-center">
-                            <p className="nb-stat-label mb-0.5 text-[9px] leading-tight">{t.points}</p>
-                            <p className="nb-stat-value text-base tabular-nums leading-none">{formatLeaderboardNumber(userRank?.score)}</p>
-                        </div>
-                        <div className="nb-card bg-orange-50 p-2 text-center">
-                            <p className="nb-stat-label mb-0.5 text-[9px] leading-tight text-orange-600">{language === 'en' ? 'Today' : 'আজ'}</p>
-                            <p className="nb-stat-value text-base tabular-nums leading-none text-orange-600">+{formatLeaderboardNumber(getTodayScore())}</p>
-                        </div>
-                        <div className="nb-card bg-amber-50 p-2 text-center">
-                            <p className="nb-stat-label mb-0.5 text-[9px] leading-tight text-amber-600">{t.streak}</p>
-                            <p className="nb-stat-value flex items-center justify-center gap-1 text-base leading-none text-amber-600">
-                                {getStreak(buildHourlySlots())} <span className="text-sm">🔥</span>
-                            </p>
+                    <div className="nb-card mt-2 overflow-hidden p-0 sm:mt-3">
+                        <div className="grid grid-cols-3 divide-x-2 divide-slate-900">
+                            <div className="bg-white px-1.5 py-2 text-center sm:px-3 sm:py-3">
+                                <p className="nb-stat-label mb-0.5 text-[8px] sm:mb-1 sm:text-[9px]">{t.points}</p>
+                                <p className="nb-stat-value text-base tabular-nums leading-none text-slate-900 sm:text-xl">{formatLeaderboardNumber(userRank?.score)}</p>
+                            </div>
+                            <div className="bg-orange-50 px-1.5 py-2 text-center sm:px-3 sm:py-3">
+                                <p className="mb-0.5 text-[8px] font-bold uppercase tracking-[0.06em] text-orange-700 nb-mono sm:mb-1 sm:text-[9px]">{language === 'en' ? 'Today' : 'আজ'}</p>
+                                <p className="nb-stat-value text-base tabular-nums leading-none text-orange-600 sm:text-xl">
+                                    +<CountUpNumber value={getTodayScore()} format={(n) => formatLeaderboardNumber(n)} />
+                                </p>
+                            </div>
+                            <div className="bg-amber-50 px-1.5 py-2 text-center sm:px-3 sm:py-3">
+                                <p className="mb-0.5 text-[8px] font-bold uppercase tracking-[0.06em] text-amber-700 nb-mono sm:mb-1 sm:text-[9px]">{t.streak}</p>
+                                <p className="nb-stat-value flex items-center justify-center gap-0.5 text-base leading-none text-amber-600 sm:gap-1 sm:text-xl">
+                                    <span className="tabular-nums">{getStreak(buildHourlySlots())}</span>
+                                    <span className="text-sm sm:text-base" aria-hidden>🔥</span>
+                                </p>
+                            </div>
                         </div>
                     </div>
 
                     {hourlyChaseMessage && (
-                        <div className="mt-2.5 border-t-2 border-dashed border-slate-900/25 pt-2.5">
-                            <div className="nb-card border-dashed bg-gradient-to-br from-orange-50 via-[#fffdf7] to-amber-50 px-2.5 py-2">
-                                <div className="flex items-start gap-2">
-                                    <span className="mt-0.5 shrink-0 text-sm leading-none" aria-hidden>💪</span>
+                        <div className="mt-2 border-t border-dashed border-slate-900/20 pt-2">
+                            <div className="nb-card border-dashed bg-gradient-to-br from-orange-50 via-[#fffdf7] to-amber-50 px-2 py-1.5">
+                                <div className="flex items-start gap-1.5">
+                                    <span className="mt-0.5 shrink-0 text-xs leading-none" aria-hidden>💪</span>
                                     <div className="min-w-0 flex-1">
-                                        <p className={`text-[11px] font-semibold leading-snug text-slate-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        <p className={`line-clamp-2 text-[10px] font-semibold leading-snug text-slate-800 sm:text-[11px] ${language === 'bn' ? 'font-bengali' : ''}`}>
                                             {hourlyChaseMessage}
                                         </p>
                                         {userRank?.rank > 1 && userRank?.rival && (
                                             <button
                                                 type="button"
                                                 onClick={goToGlobalLeaderboard}
-                                                className={`mt-1 text-[10px] font-bold text-orange-600 transition-colors hover:text-orange-700 ${language === 'bn' ? 'font-bengali' : 'nb-mono uppercase tracking-wide'}`}
+                                                className={`mt-0.5 text-[9px] font-bold text-orange-600 transition-colors hover:text-orange-700 sm:text-[10px] ${language === 'bn' ? 'font-bengali' : 'nb-mono uppercase tracking-wide'}`}
                                             >
-                                                {language === 'en' ? 'See full rankings →' : 'পুরো লিডারবোর্ড দেখুন →'}
+                                                {language === 'en' ? 'Rankings →' : 'লিডারবোর্ড →'}
                                             </button>
                                         )}
                                     </div>
@@ -2570,234 +2619,25 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 </div>
             </div>
 
-            {/* 2. HOURLY TIMELINE */}
-            <div className="relative px-4 py-5" ref={ladderRef}>
-                <div className="mb-3 flex flex-wrap items-center justify-center gap-2">
-                    <span className="nb-tag flex items-center gap-1.5 bg-emerald-50 px-2 py-0.5 text-[9px] font-black text-emerald-800">
-                        <span className="h-2 w-2 border border-slate-900 bg-emerald-500" aria-hidden />
-                        {language === 'en' ? 'Done' : 'সম্পন্ন'}
-                    </span>
-                    <span className="nb-tag flex items-center gap-1.5 bg-orange-50 px-2 py-0.5 text-[9px] font-black text-orange-800">
-                        <span className="h-2 w-2 border border-slate-900 bg-orange-500" aria-hidden />
-                        {language === 'en' ? 'Live' : 'লাইভ'}
-                    </span>
-                    <span className="nb-tag flex items-center gap-1.5 bg-white px-2 py-0.5 text-[9px] font-black text-slate-600">
-                        <span className="h-2 w-2 border border-dashed border-slate-500 bg-white" aria-hidden />
-                        {language === 'en' ? 'Upcoming' : 'আসছে'}
-                    </span>
-                </div>
-
-                {loading ? (
-                    <div className="space-y-2 pl-7">
-                        {Array(6).fill(0).map((_, i) => (
-                            <div key={i} className="nb-card h-11 animate-pulse bg-white" />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="relative pl-7">
-                        <div className="absolute bottom-2 left-[9px] top-2 w-0.5 bg-slate-300" aria-hidden />
-
-                        {buildHourlySlots().map((slot) => {
-                            const isLive = slot.status === 'live';
-                            const isPlayed = slot.status === 'played';
-                            const isMissed = slot.status === 'missed';
-                            const isNextChallenge = slot.status === 'upcoming-next';
-                            const isPast = isPlayed || isMissed;
-
-                            return (
-                                <div
-                                    key={slot.hour}
-                                    id={isLive ? 'node-live' : (isNextChallenge ? 'node-upcoming-next' : undefined)}
-                                    className={`relative ${isLive ? 'node-live py-2.5' : isNextChallenge ? 'py-2' : isPast ? 'py-1' : 'py-1'}`}
-                                >
-                                    <div
-                                        className={`absolute left-[-19px] top-1/2 z-10 -translate-y-1/2 border-2 border-slate-900 ${
-                                            isLive
-                                                ? 'h-3.5 w-3.5 bg-orange-500 shadow-[2px_2px_0_#0f172a]'
-                                                : isPlayed
-                                                    ? 'h-2.5 w-2.5 bg-emerald-400 shadow-[1px_1px_0_#0f172a]'
-                                                    : isMissed
-                                                        ? 'h-2 w-2 bg-slate-300'
-                                                        : isNextChallenge
-                                                            ? 'h-3 w-3 bg-amber-300 shadow-[2px_2px_0_#0f172a]'
-                                                            : 'h-2 w-2 border-dashed bg-white'
-                                        }`}
-                                        aria-hidden
-                                    />
-
-                                    {isLive ? (
-                                        <button
-                                            type="button"
-                                            disabled={hourlyQuizRefreshBusy}
-                                            onClick={() => { void beginHourlyQuiz(); }}
-                                            className="live-card-glow w-full border-2 border-rose-500 bg-white p-3.5 text-left shadow-[4px_4px_0_#0f172a] transition-transform active:translate-x-0.5 active:translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
-                                        >
-                                            <div className="flex items-center justify-between gap-3">
-                                                <div className="min-w-0 flex-1">
-                                                    <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                                                        <span className="nb-tag bg-white px-2 py-0.5 text-[10px] font-black tabular-nums text-slate-800">{slot.label}</span>
-                                                        <span className="inline-flex items-center gap-1 border-2 border-slate-900 bg-rose-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-rose-700 shadow-[1px_1px_0_#0f172a]">
-                                                            <span className="h-1.5 w-1.5 animate-pulse bg-rose-500" aria-hidden />
-                                                            {t.liveNow}
-                                                        </span>
-                                                    </div>
-                                                    {hourlyQuizRefreshBusy && (
-                                                        <p className="mb-1 text-[10px] font-bold text-amber-700 nb-mono">
-                                                            {language === 'en' ? 'Updating quiz for this hour…' : 'এই ঘণ্টার কুইজ আপডেট হচ্ছে…'}
-                                                        </p>
-                                                    )}
-                                                    {timeLeft && (
-                                                        <div className="flex items-baseline gap-2">
-                                                            <span className="text-3xl font-black tabular-nums tracking-tight text-slate-900">{timeLeft}</span>
-                                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 nb-mono">{t.timeLeft}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="flex h-11 w-11 shrink-0 items-center justify-center border-2 border-slate-900 bg-orange-600 text-white shadow-[3px_3px_0_#0f172a]">
-                                                    <svg className="ml-0.5 h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M8 5v14l11-7z" /></svg>
-                                                </div>
-                                            </div>
-                                        </button>
-                                    ) : isNextChallenge ? (
-                                        <div className="border-2 border-amber-500 bg-amber-50 px-3 py-2.5 shadow-[3px_3px_0_#0f172a]">
-                                            <div className="flex items-center justify-between gap-3">
-                                                <div className="min-w-0 flex-1">
-                                                    <div className="mb-1 flex flex-wrap items-center gap-2">
-                                                        <span className="nb-tag bg-white px-2 py-0.5 text-[10px] font-black tabular-nums">{slot.label}</span>
-                                                        <span className="text-[10px] font-black uppercase tracking-wide text-amber-800 nb-mono">{t.nextChallengeLabel}</span>
-                                                    </div>
-                                                    {timeLeft && (
-                                                        <div className="flex items-baseline gap-2">
-                                                            <span className="text-xl font-black tabular-nums text-slate-900">{timeLeft}</span>
-                                                            <span className="text-[10px] font-bold text-slate-600 nb-mono">{t.startsIn}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="h-10 w-10 shrink-0 overflow-hidden border-2 border-slate-900 bg-white shadow-[2px_2px_0_#0f172a]">
-                                                    <DotLottiePlayer src={sandyLoading} autoplay loop />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : isPlayed ? (
-                                        <button
-                                            type="button"
-                                            onClick={startReview}
-                                            className="nb-btn-secondary group flex w-full items-center gap-2.5 px-2.5 py-2 text-left hover:border-emerald-600 hover:bg-emerald-50"
-                                        >
-                                            <span className="w-[3.25rem] shrink-0 text-[10px] font-black tabular-nums text-slate-600 nb-mono">{slot.label}</span>
-                                            <span className="text-sm font-black tabular-nums text-emerald-600">+{slot.score}</span>
-                                            {slot.penalty > 0 && (
-                                                <span className="text-xs font-bold tabular-nums text-red-500 nb-mono">−{slot.penalty}</span>
-                                            )}
-                                            <span className="ml-auto flex items-center gap-1 text-[10px] font-bold text-slate-500 transition-colors group-hover:text-emerald-700 nb-mono">
-                                                {language === 'en' ? 'Review' : 'দেখুন'}
-                                                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
-                                            </span>
-                                        </button>
-                                    ) : isMissed ? (
-                                        <div className="flex items-center gap-2.5 border-2 border-dashed border-slate-400 bg-slate-100 px-2.5 py-1.5 opacity-75 shadow-[1px_1px_0_#0f172a]">
-                                            <span className="w-[3.25rem] shrink-0 text-[10px] font-bold tabular-nums text-slate-500 nb-mono">{slot.label}</span>
-                                            <span className="text-[10px] font-black uppercase tracking-wide text-slate-500 nb-mono">{language === 'en' ? 'Missed' : 'মিস'}</span>
-                                            <span className="ml-auto text-xs font-black tabular-nums text-slate-500">0</span>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center gap-2.5 border-2 border-dashed border-slate-300 bg-white px-2.5 py-1.5 opacity-60">
-                                            <span className="w-[3.25rem] shrink-0 text-[10px] font-bold tabular-nums text-slate-400 nb-mono">{slot.label}</span>
-                                            <span className={`text-[10px] font-bold text-slate-500 ${language === 'bn' ? 'font-bengali' : 'nb-mono uppercase'}`}>{t.upcomingStatus}</span>
-                                            <div className="ml-auto flex h-7 w-7 items-center justify-center border-2 border-slate-300 bg-slate-50 text-slate-400">
-                                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
+            {/* 2. 24-HOUR DAY RING */}
+            <div className="relative flex flex-col items-center px-3 py-3 sm:px-4 sm:py-5" ref={ladderRef}>
+                <HourlyDayRing
+                    slots={[...buildHourlySlots()].reverse()}
+                    language={language}
+                    timeLeft={timeLeft}
+                    loading={loading}
+                    hourlyQuizRefreshBusy={hourlyQuizRefreshBusy}
+                    labels={{
+                        liveNow: t.liveNow,
+                        nextChallengeLabel: t.nextChallengeLabel,
+                        startsIn: t.startsIn,
+                        timeLeft: t.timeLeft,
+                        upcomingStatus: t.upcomingStatus,
+                    }}
+                    onPlayLive={beginHourlyQuiz}
+                    onReview={startReview}
+                />
             </div>
-
-            {/* 3. MINI LEADERBOARD PREVIEW */}
-            <div className="mb-16 animate-slide-up-fade px-4" style={{ animationDelay: '200ms' }}>
-                <div className="nb-card bg-white p-4">
-                    <div className="mb-3 flex items-center justify-between">
-                        <div>
-                            <h3 className="text-sm font-black tracking-tight text-slate-800 nb-mono uppercase">{t.topPlayersToday}</h3>
-                            <div className="mt-0.5 h-0.5 w-6 bg-orange-500" />
-                        </div>
-                        <button
-                            type="button"
-                            onClick={goToGlobalLeaderboard}
-                            className="nb-btn-secondary px-3 py-1 text-[10px] font-black text-orange-700 hover:bg-orange-100"
-                        >
-                            {t.viewAll}
-                        </button>
-                    </div>
-
-                    <div className="space-y-2">
-                        {loading ? (
-                            Array(3).fill(0).map((_, i) => <SkeletonRow key={i} />)
-                        ) : leaderboard.length > 0 ? (
-                            leaderboard.slice(0, 3).map((item, idx) => {
-                                const rank = idx + 1;
-                                const rankColors = {
-                                    1: 'bg-amber-100 text-amber-700 border-slate-900',
-                                    2: 'bg-slate-100 text-slate-700 border-slate-900',
-                                    3: 'bg-orange-50 text-orange-700 border-slate-900'
-                                }[rank];
-
-                                return (
-                                    <div
-                                        key={idx}
-                                        onClick={() => openUserProgress(item.user_id)}
-                                        className="group flex cursor-pointer items-center gap-3 border-2 border-transparent p-2 transition-colors hover:border-slate-900 hover:bg-orange-50/50"
-                                    >
-                                        <div className={`flex h-6 w-6 shrink-0 items-center justify-center border-2 text-xs font-black shadow-[2px_2px_0_#0f172a] nb-mono ${rankColors}`}>
-                                            {rank}
-                                        </div>
-                                        <div className="relative h-8 w-8 shrink-0">
-                                            {rank === 1 && (
-                                                <span className="pointer-events-none absolute -right-2 -top-2 z-20 text-sm leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]" aria-hidden>👑</span>
-                                            )}
-                                            <div className="h-full w-full overflow-hidden border-2 border-slate-900 bg-slate-100 transition-all group-hover:shadow-[2px_2px_0_#0f172a]">
-                                                {item.avatar_url ? (
-                                                    <img src={item.avatar_url} className="h-full w-full object-cover" alt="" />
-                                                ) : (
-                                                    <div className="flex h-full w-full items-center justify-center text-xs font-bold uppercase text-slate-400">{item.full_name?.[0] || 'U'}</div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <div className="truncate text-xs font-black leading-tight text-slate-800 transition-colors group-hover:text-orange-600">
-                                                {item.full_name}
-                                            </div>
-                                            <div className="mt-0.5 flex items-center gap-1.5">
-                                                <span className="text-[10px] font-black tabular-nums leading-none text-slate-900">
-                                                    {formatLeaderboardNumber(item.points)}
-                                                </span>
-                                                {formatLeaderboardDistrict(item.district) && (
-                                                    <span className={`text-[9px] font-bold text-slate-500 truncate max-w-[6rem] ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                        {formatLeaderboardDistrict(item.district)}
-                                                    </span>
-                                                )}
-                                                <div className="flex items-center gap-0.5 border border-slate-900 bg-slate-50 px-1 py-0.5 text-[9px] font-bold text-slate-600">
-                                                    <span>📖</span>
-                                                    <span className="tabular-nums">{formatLeaderboardNumber(item.reading_points || 0)}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="text-slate-400 transition-transform group-hover:translate-x-0.5">
-                                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
-                                        </div>
-                                    </div>
-                                );
-                            })
-                        ) : (
-                            <div className="py-3 text-center text-xs font-medium italic text-slate-500">{language === 'en' ? 'No activity today' : 'আজ কোনো কার্যকলাপ নেই'}</div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
 
             {showAbortWarningModal && createPortal(
                 <div className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-slate-900/55 animate-fade-in">
@@ -3159,7 +2999,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     <p className={`mb-6 text-center text-[11px] text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {language === 'en'
                                             ? `This saved attempt includes ${quizResults.skipped} unanswered question(s) from an older format. New quizzes require every answer.`
-                                            : `এই সংরক্ষিত প্রচেষ্টায় পুরনো ফরম্যাট থেকে ${quizResults.skipped}টি প্রশ্ন উত্তরহীন ছিল। নতুন কুইজে সব প্রশ্নের উত্তর দিতে হবে।`}
+                                            : `আগের বারের কুইজে ${quizResults.skipped}টি প্রশ্নের উত্তর দেওয়া হয়নি। নতুন নিয়ম অনুযায়ী সব প্রশ্নের উত্তর দেওয়া বাধ্যতামূলক।`}
                                     </p>
                                 )}
 

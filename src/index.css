@@ -1302,6 +1302,25 @@ body,
     z-index: 0;
   }
 
+  .hourly-ring-live {
+    animation: hourly-ring-pulse 2s ease-in-out infinite;
+    cursor: pointer;
+  }
+
+  @keyframes hourly-ring-pulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.08); }
+  }
+
+  .hourly-wait-clock {
+    animation: hourly-wait-glow 2.4s ease-in-out infinite;
+  }
+
+  @keyframes hourly-wait-glow {
+    0%, 100% { box-shadow: 2px 2px 0 #0f172a; background-color: #fef3c7; }
+    50% { box-shadow: 3px 3px 0 #0f172a; background-color: #fde68a; }
+  }
+
   @keyframes pulse-rose {
 
     0%,
