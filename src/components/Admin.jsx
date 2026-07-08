@@ -21,21 +21,42 @@ const ProfileCardSkeleton = () => (
   <div className="space-y-3">
     {[1, 2, 3].map((i) => (
       <div key={i} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 animate-pulse">
-        <div className="flex gap-3 mb-4">
-          <div className="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0" />
+        <div className="flex gap-3 items-center">
+          <div className="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0" />
           <div className="flex-1 space-y-2">
             <div className="h-4 w-36 bg-slate-200 dark:bg-slate-700 rounded" />
             <div className="h-3 w-24 bg-slate-200 dark:bg-slate-700 rounded" />
+            <div className="h-3 w-40 bg-slate-100 dark:bg-slate-700/50 rounded" />
           </div>
-        </div>
-        <div className="space-y-2">
-          <div className="h-3 w-full bg-slate-100 dark:bg-slate-700/50 rounded" />
-          <div className="h-3 w-4/5 bg-slate-100 dark:bg-slate-700/50 rounded" />
         </div>
       </div>
     ))}
   </div>
 );
+
+function formatProfileLastActive(value, isEn) {
+  if (!value) return isEn ? 'Never' : 'কখনো নয়';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return isEn ? 'Never' : 'কখনো নয়';
+  const now = new Date();
+  const diffSec = Math.floor((now - date) / 1000);
+  if (diffSec < 300) return isEn ? 'Online now' : 'এখন অনলাইন';
+  if (diffSec < 3600) {
+    const m = Math.max(1, Math.floor(diffSec / 60));
+    return isEn ? `${m}m ago` : `${m} মি. আগে`;
+  }
+  if (diffSec < 86400) {
+    const h = Math.floor(diffSec / 3600);
+    return isEn ? `${h}h ago` : `${h} ঘ. আগে`;
+  }
+  return date.toLocaleString(isEn ? 'en-IN' : 'bn-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
 function resolveProfileAvatarUrl(url) {
   if (!url || typeof url !== 'string') return '';
@@ -298,6 +319,9 @@ function UserProfileCard({
   onTools,
   onReset,
   onDelete,
+  compact = false,
+  isExpanded = true,
+  onToggleExpand,
 }) {
   const [editingField, setEditingField] = useState(null);
   const [draft, setDraft] = useState('');
@@ -308,6 +332,12 @@ function UserProfileCard({
 
   const phone = targetUser.phone_number || targetUser.phone;
   const completeness = getProfileCompleteness(targetUser);
+  const lastActiveRaw = targetUser.last_login_at || targetUser.updated_at;
+  const lastActiveLabel = formatProfileLastActive(lastActiveRaw, isEn);
+  const isOnline = lastActiveRaw && (Date.now() - new Date(lastActiveRaw).getTime()) < 5 * 60 * 1000;
+  const supervisorName = targetUser.supervisor_id
+    ? (supervisors || []).find((s) => s.id === targetUser.supervisor_id)?.full_name
+    : null;
 
   const display = (val, fallback) => {
     if (val === null || val === undefined || val === '') return fallback ?? emptyLabel(isEn);
@@ -336,6 +366,10 @@ function UserProfileCard({
     setDraft('');
     setDraftBool(false);
   };
+
+  useEffect(() => {
+    if (!isExpanded) cancelEdit();
+  }, [isExpanded]);
 
   const saveField = async (payload) => {
     setSaving(true);
@@ -444,43 +478,131 @@ function UserProfileCard({
 
   return (
     <article className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
-      <div className="p-4 bg-gradient-to-b from-orange-50/80 to-transparent dark:from-orange-950/20">
-        <div className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:text-left sm:gap-4">
-          <div className="relative shrink-0">
-            <ProfileAvatar url={targetUser.avatar_url} name={targetUser.full_name} size={avatarSize} />
-            {canManage && (
-              <>
-                <button
-                  type="button"
-                  disabled={avatarUploading}
-                  onClick={() => avatarInputRef.current?.click()}
-                  aria-label={isEn ? 'Change photo' : 'ছবি বদলান'}
-                  title={isEn ? 'Change photo' : 'ছবি বদলান'}
-                  className={`${iconBtnBase} absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-orange-600 text-white shadow-md`}
-                >
-                  {avatarUploading ? (
-                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden />
-                  ) : (
-                    <CameraIcon />
-                  )}
-                </button>
-                <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarPick} />
-              </>
-            )}
-          </div>
-          <div className="min-w-0 flex-1 mt-3 sm:mt-0">
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-              <ProfileCompletenessBadge pct={completeness.pct} isEn={isEn} />
-              <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${roleBadgeClass(targetUser.role)}`}>
-                {formatRoleLabel(targetUser.role)}
-              </span>
-              {targetUser.slm_id && (
-                <span className="text-[10px] font-mono text-slate-400">ID {targetUser.slm_id}</span>
+      {compact ? (
+        <button
+          type="button"
+          onClick={onToggleExpand}
+          aria-expanded={isExpanded}
+          className="w-full p-3 sm:p-4 text-left hover:bg-orange-50/60 dark:hover:bg-orange-950/20 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="relative shrink-0">
+              <ProfileAvatar url={targetUser.avatar_url} name={targetUser.full_name} size="md" />
+              {isOnline && (
+                <span className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-800" aria-hidden />
               )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                  {targetUser.full_name || (isEn ? 'Unnamed' : 'নাম নেই')}
+                </p>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${roleBadgeClass(targetUser.role)}`}>
+                  {formatRoleLabel(targetUser.role)}
+                </span>
+                <ProfileCompletenessBadge pct={completeness.pct} isEn={isEn} />
+              </div>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 truncate">
+                📍 {targetUser.district || emptyLabel(isEn)}
+                {targetUser.block ? ` · ${targetUser.block}` : ''}
+              </p>
+              {supervisorName ? (
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 truncate" title={isEn ? 'Safety Mitra' : 'সেফটি মিত্র'}>
+                  👔 {supervisorName}
+                </p>
+              ) : targetUser.supervisor_id ? (
+                <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500 truncate">
+                  👔 {isEn ? 'Supervisor assigned' : 'সুপারভাইজার আছে'}
+                </p>
+              ) : null}
+              <p className={`mt-0.5 text-[11px] font-medium ${isOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                ⏱ {lastActiveLabel}
+              </p>
+            </div>
+            <span className="shrink-0 text-slate-400 text-lg font-bold" aria-hidden>
+              {isExpanded ? '−' : '+'}
+            </span>
+          </div>
+        </button>
+      ) : (
+        <div className="p-4 bg-gradient-to-b from-orange-50/80 to-transparent dark:from-orange-950/20">
+          <div className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:text-left sm:gap-4">
+            <div className="relative shrink-0">
+              <ProfileAvatar url={targetUser.avatar_url} name={targetUser.full_name} size={avatarSize} />
+              {canManage && (
+                <>
+                  <button
+                    type="button"
+                    disabled={avatarUploading}
+                    onClick={() => avatarInputRef.current?.click()}
+                    aria-label={isEn ? 'Change photo' : 'ছবি বদলান'}
+                    title={isEn ? 'Change photo' : 'ছবি বদলান'}
+                    className={`${iconBtnBase} absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-orange-600 text-white shadow-md`}
+                  >
+                    {avatarUploading ? (
+                      <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden />
+                    ) : (
+                      <CameraIcon />
+                    )}
+                  </button>
+                  <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarPick} />
+                </>
+              )}
+            </div>
+            <div className="min-w-0 flex-1 mt-3 sm:mt-0">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <ProfileCompletenessBadge pct={completeness.pct} isEn={isEn} />
+                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${roleBadgeClass(targetUser.role)}`}>
+                  {formatRoleLabel(targetUser.role)}
+                </span>
+                {targetUser.slm_id && (
+                  <span className="text-[10px] font-mono text-slate-400">ID {targetUser.slm_id}</span>
+                )}
+              </div>
+              <p className={`mt-2 text-xs ${isOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
+                ⏱ {lastActiveLabel}
+              </p>
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {isExpanded && (
+        <>
+          {compact && (
+            <div className="px-4 pt-2 pb-1 flex items-center gap-3 border-t border-slate-100 dark:border-slate-700/80 bg-gradient-to-b from-orange-50/40 to-transparent dark:from-orange-950/10">
+              <div className="relative shrink-0">
+                <ProfileAvatar url={targetUser.avatar_url} name={targetUser.full_name} size="lg" />
+                {canManage && (
+                  <>
+                    <button
+                      type="button"
+                      disabled={avatarUploading}
+                      onClick={() => avatarInputRef.current?.click()}
+                      aria-label={isEn ? 'Change photo' : 'ছবি বদলান'}
+                      title={isEn ? 'Change photo' : 'ছবি বদলান'}
+                      className={`${iconBtnBase} absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-orange-600 text-white shadow-md`}
+                    >
+                      {avatarUploading ? (
+                        <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden />
+                      ) : (
+                        <CameraIcon />
+                      )}
+                    </button>
+                    <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarPick} />
+                  </>
+                )}
+              </div>
+              <div className="min-w-0">
+                {targetUser.slm_id && (
+                  <span className="text-[10px] font-mono text-slate-400">ID {targetUser.slm_id}</span>
+                )}
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+                  {targetUser.full_name || emptyLabel(isEn)}
+                </p>
+              </div>
+            </div>
+          )}
 
       <div className="px-4 pb-2">
         <p className="text-sm mb-1" aria-label={isEn ? 'Profile' : 'প্রোফাইল'} title={isEn ? 'Profile' : 'প্রোফাইল'}>👤</p>
@@ -573,6 +695,8 @@ function UserProfileCard({
           )}
         </div>
       )}
+        </>
+      )}
     </article>
   );
 }
@@ -640,6 +764,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [showManageMenu, setShowManageMenu] = useState(false);
   const [profileSection, setProfileSection] = useState('team'); // 'team' | 'mine' for admin / safety mitra
   const [ownProfileRow, setOwnProfileRow] = useState(null);
+  const [expandedUserId, setExpandedUserId] = useState(null);
+  const [teamSortMode, setTeamSortMode] = useState('recent'); // recent | name | supervisor
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -648,15 +774,20 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       const next = searchQuery.trim();
       setDebouncedSearch(next);
       setCurrentPage(1);
+      setExpandedUserId(null);
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
   useEffect(() => {
-    fetchUsers(currentPage, debouncedSearch);
-  }, [currentPage, userProfile?.role, debouncedSearch]);
+    setExpandedUserId(null);
+  }, [currentPage]);
 
-  const profileSelectFields = 'id, slm_id, full_name, email, role, district, block, job, avatar_url, created_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage, is_donor, last_donation_date, blood_group, phone, phone_number, supervisor_id, total_penalties';
+  useEffect(() => {
+    fetchUsers(currentPage, debouncedSearch, teamSortMode);
+  }, [currentPage, userProfile?.role, debouncedSearch, teamSortMode]);
+
+  const profileSelectFields = 'id, slm_id, full_name, email, role, district, block, job, avatar_url, created_at, updated_at, last_login_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage, is_donor, last_donation_date, blood_group, phone, phone_number, supervisor_id, total_penalties';
 
   useEffect(() => {
     if (!user?.id || userProfile?.role === 'lineman') return;
@@ -686,6 +817,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       cacheHelper.clear(`admin_users_admin_all_page_${i}`);
       cacheHelper.clear(`admin_users_safety mitra_${user.id}_page_${i}`);
       cacheHelper.clear(`admin_users_v2_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_page_${i}`);
+      cacheHelper.clear(`admin_users_v3_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_page_${i}`);
+      cacheHelper.clear(`admin_users_v3_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_page_${i}_q_all`);
     }
   };
 
@@ -785,7 +918,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
   useEffect(() => {
     const fetchSupervisors = async () => {
-      if (userProfile?.role !== 'admin') return;
+      if (!['admin', 'safety mitra'].includes(userProfile?.role)) return;
       try {
         const { data, error } = await supabase
           .from('profiles')
@@ -801,9 +934,10 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     fetchSupervisors();
   }, [userProfile?.role]);
 
-  const fetchUsers = async (page = 1, search = '') => {
+  const fetchUsers = async (page = 1, search = '', sortMode = teamSortMode) => {
     const searchKey = search.trim().toLowerCase();
-    const cacheKey = `admin_users_v2_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_page_${page}_q_${searchKey || 'all'}`;
+    const groupAll = sortMode === 'supervisor';
+    const cacheKey = `admin_users_v3_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_${groupAll ? 'group_all' : `page_${page}`}_q_${searchKey || 'all'}`;
     const cachedData = cacheHelper.get(cacheKey);
     if (cachedData) {
       setUsers(cachedData.users);
@@ -815,9 +949,6 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     setLoading(true);
     setFetchError(false);
     try {
-      const start = (page - 1) * usersPerPage;
-      const end = start + usersPerPage - 1;
-
       let query = supabase
         .from('profiles')
         .select(`${profileSelectFields}`, { count: 'exact' });
@@ -833,9 +964,16 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
         if (searchFilter) query = query.or(searchFilter);
       }
 
-      const { data, error, count } = await query
-        .order('created_at', { ascending: false })
-        .range(start, end);
+      // Safety Mitra grouping needs the full list so one mitra is not split across pages
+      if (!groupAll) {
+        const start = (page - 1) * usersPerPage;
+        const end = start + usersPerPage - 1;
+        query = query.order('created_at', { ascending: false }).range(start, end);
+      } else {
+        query = query.order('full_name', { ascending: true }).limit(2000);
+      }
+
+      const { data, error, count } = await query;
 
       if (error) throw error;
 
@@ -992,7 +1130,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       setInviteName('');
 
       // Refresh user list
-      await fetchUsers(currentPage, debouncedSearch);
+      await fetchUsers(currentPage, debouncedSearch, teamSortMode);
     } catch (error) {
       console.error('Error creating user:', error);
       if (error.message?.includes('already registered')) {
@@ -1084,7 +1222,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     }
 
     clearAdminUserCaches();
-    await fetchUsers(currentPage, debouncedSearch);
+    await fetchUsers(currentPage, debouncedSearch, teamSortMode);
     setSuccessMessage({
       title: language === 'en' ? 'Saved' : 'সংরক্ষিত',
       message: language === 'en' ? 'Profile updated.' : 'প্রোফাইল আপডেট হয়েছে।',
@@ -1116,6 +1254,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
         cacheHelper.clear(`admin_users_admin_all_page_${i}`);
         cacheHelper.clear(`admin_users_safety mitra_${user.id}_page_${i}`);
         cacheHelper.clear(`admin_users_v2_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_page_${i}`);
+        cacheHelper.clear(`admin_users_v3_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_page_${i}`);
+        cacheHelper.clear(`admin_users_v3_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_page_${i}_q_all`);
       }
       cacheHelper.clear(`user_ppe_${userToDelete.id}`);
       cacheHelper.clear(`user_tools_${userToDelete.id}`);
@@ -1167,7 +1307,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       cacheHelper.clearAll(); // Broad clear for leaderboards and user lists
 
       // 3. Refresh local list
-      await fetchUsers(currentPage, debouncedSearch);
+      await fetchUsers(currentPage, debouncedSearch, teamSortMode);
 
       setShowResetConfirm(false);
       setResetTarget(null);
@@ -1230,12 +1370,68 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       : null;
 
   const teamUsers = users.filter((u) => u.id !== user.id);
+
+  const supervisorLabel = (u) => {
+    if (!u?.supervisor_id) return isEn ? 'No supervisor' : 'সুপারভাইজার নেই';
+    return (supervisors || []).find((s) => s.id === u.supervisor_id)?.full_name
+      || (isEn ? 'Unknown supervisor' : 'অজানা সুপারভাইজার');
+  };
+
+  const activityTime = (u) => {
+    const raw = u?.last_login_at || u?.updated_at || u?.created_at;
+    const t = raw ? new Date(raw).getTime() : 0;
+    return Number.isNaN(t) ? 0 : t;
+  };
+
+  const sortedTeamUsers = [...teamUsers].sort((a, b) => {
+    if (teamSortMode === 'name') {
+      return (a.full_name || '').localeCompare(b.full_name || '', undefined, { sensitivity: 'base' });
+    }
+    if (teamSortMode === 'supervisor') {
+      const sa = supervisorLabel(a);
+      const sb = supervisorLabel(b);
+      const bySup = sa.localeCompare(sb, undefined, { sensitivity: 'base' });
+      if (bySup !== 0) return bySup;
+      return (a.full_name || '').localeCompare(b.full_name || '', undefined, { sensitivity: 'base' });
+    }
+    // recent first
+    return activityTime(b) - activityTime(a);
+  });
+
+  const teamGroups = (() => {
+    if (profileSection !== 'team' || isLineman) return null;
+    if (teamSortMode === 'supervisor') {
+      const map = new Map();
+      for (const u of sortedTeamUsers) {
+        const key = u.supervisor_id || '__none__';
+        if (!map.has(key)) {
+          map.set(key, {
+            key,
+            title: supervisorLabel(u),
+            users: [],
+          });
+        }
+        map.get(key).users.push(u);
+      }
+      return Array.from(map.values()).sort((a, b) => {
+        if (a.key === '__none__') return 1;
+        if (b.key === '__none__') return -1;
+        return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+      });
+    }
+    return [{
+      key: 'all',
+      title: null,
+      users: sortedTeamUsers,
+    }];
+  })();
+
   const teamTotal = Math.max(0, totalUsers - 1);
   const profileUsers = isLineman
     ? users
     : profileSection === 'mine'
       ? (ownProfileRow ? [ownProfileRow] : [])
-      : teamUsers;
+      : sortedTeamUsers;
 
   const sectionTabBtn = (active) =>
     `flex-1 py-2.5 rounded-lg text-sm font-bold transition-colors ${
@@ -1261,14 +1457,20 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
         <div className="mb-5 flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
           <button
             type="button"
-            onClick={() => setProfileSection('mine')}
+            onClick={() => {
+              setProfileSection('mine');
+              setExpandedUserId(null);
+            }}
             className={sectionTabBtn(profileSection === 'mine')}
           >
             👤 {isEn ? 'My Profile' : 'আমার প্রোফাইল'}
           </button>
           <button
             type="button"
-            onClick={() => setProfileSection('team')}
+            onClick={() => {
+              setProfileSection('team');
+              setExpandedUserId(null);
+            }}
             className={sectionTabBtn(profileSection === 'team')}
           >
             👥 {isSafetyMitra ? (isEn ? 'My Team' : 'আমার দল') : (isEn ? 'Team' : 'দল')}
@@ -1520,27 +1722,55 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
         </div>
       )}
 
-      {/* Admin search — team tab only */}
-      {isAdmin && !showAnalytics && profileSection === 'team' && (
-        <div className="mb-4 relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" aria-hidden>🔍</span>
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={isEn ? 'Search name, phone, email, district, ID…' : 'নাম, ফোন, ইমেইল, জেলা, ID…'}
-            className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              aria-label={isEn ? 'Clear search' : 'অনুসন্ধান মুছুন'}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
-            >
-              ×
-            </button>
+      {/* Admin search + team sort — team tab only */}
+      {!isLineman && !showAnalytics && profileSection === 'team' && (
+        <div className="mb-4 space-y-3">
+          {isAdmin && (
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" aria-hidden>🔍</span>
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={isEn ? 'Search name, phone, email, district, ID…' : 'নাম, ফোন, ইমেইল, জেলা, ID…'}
+                className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  aria-label={isEn ? 'Clear search' : 'অনুসন্ধান মুছুন'}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                >
+                  ×
+                </button>
+              )}
+            </div>
           )}
+          <div className="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 overflow-x-auto">
+            {[
+              { id: 'recent', label: isEn ? '⏱ Recent' : '⏱ সাম্প্রতিক' },
+              { id: 'supervisor', label: isEn ? '👔 By Safety Mitra' : '👔 সেফটি মিত্র অনুযায়ী' },
+              { id: 'name', label: isEn ? '🔤 Name' : '🔤 নাম' },
+            ].map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => {
+                  setTeamSortMode(opt.id);
+                  setExpandedUserId(null);
+                  if (opt.id === 'supervisor') setCurrentPage(1);
+                }}
+                className={`shrink-0 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${
+                  teamSortMode === opt.id
+                    ? 'bg-white dark:bg-slate-800 text-orange-600 dark:text-orange-400 shadow-sm'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -1571,7 +1801,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               : 'ইউজার ডাটা লোড করা সম্ভব হয়নি। আপনার ইন্টারনেট কানেকশন চেক করুন।'}
           </p>
           <button
-            onClick={() => fetchUsers(currentPage, debouncedSearch)}
+            onClick={() => fetchUsers(currentPage, debouncedSearch, teamSortMode)}
             className="px-8 py-2.5 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 shadow-lg shadow-orange-500/20 transition-all"
           >
             {language === 'en' ? 'Retry' : 'আবার চেষ্টা করুন'}
@@ -1608,41 +1838,102 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
             </p>
           </div>
         ) : (
-          <div className={`grid grid-cols-1 gap-4 ${profileSection === 'mine' ? 'max-w-xl mx-auto' : 'lg:grid-cols-2'}`}>
-            {profileUsers.map((targetUser) => {
-              const canManage = !(isSafetyMitra && targetUser.role === 'admin');
-              return (
-                <UserProfileCard
-                  key={targetUser.id}
-                  targetUser={targetUser}
-                  isEn={isEn}
-                  isAdmin={isAdmin}
-                  isSafetyMitra={isSafetyMitra}
-                  canManage={canManage}
-                  userProfile={userProfile}
-                  avatarSize={isLineman || profileSection === 'mine' ? 'xl' : 'lg'}
-                  formatRoleLabel={formatRoleLabel}
-                  roleBadgeClass={roleBadgeClass}
-                  wbLocations={wbLocations}
-                  supervisors={supervisors}
-                  onSaveField={handleSaveProfileField}
-                  onPPE={() => handleEditPPE(targetUser)}
-                  onTools={() => handleEditTools(targetUser)}
-                  onReset={() => {
-                    setResetTarget({ id: targetUser.id, name: targetUser.full_name });
-                    setResetConfirmInput('');
-                    setShowResetConfirm(true);
-                  }}
-                  onDelete={() => handleOpenDeleteConfirm(targetUser)}
-                />
-              );
-            })}
-          </div>
+          profileSection === 'mine' || isLineman ? (
+            <div className="grid grid-cols-1 gap-3 max-w-xl mx-auto">
+              {profileUsers.map((targetUser) => {
+                const canManage = !(isSafetyMitra && targetUser.role === 'admin');
+                return (
+                  <UserProfileCard
+                    key={targetUser.id}
+                    targetUser={targetUser}
+                    isEn={isEn}
+                    isAdmin={isAdmin}
+                    isSafetyMitra={isSafetyMitra}
+                    canManage={canManage}
+                    userProfile={userProfile}
+                    avatarSize="xl"
+                    formatRoleLabel={formatRoleLabel}
+                    roleBadgeClass={roleBadgeClass}
+                    wbLocations={wbLocations}
+                    supervisors={supervisors}
+                    compact={false}
+                    isExpanded
+                    onSaveField={handleSaveProfileField}
+                    onPPE={() => handleEditPPE(targetUser)}
+                    onTools={() => handleEditTools(targetUser)}
+                    onReset={() => {
+                      setResetTarget({ id: targetUser.id, name: targetUser.full_name });
+                      setResetConfirmInput('');
+                      setShowResetConfirm(true);
+                    }}
+                    onDelete={() => handleOpenDeleteConfirm(targetUser)}
+                  />
+                );
+              })}
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {(teamGroups || []).map((group) => (
+                <section key={group.key}>
+                  {group.title && (
+                    <div className="mb-2 flex items-center justify-between gap-2 px-1">
+                      <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 min-w-0">
+                        <span aria-hidden>👔</span>
+                        <span className="truncate">{group.title}</span>
+                        <span className="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+                          {group.users.length}{' '}
+                          {group.users.length === 1
+                            ? (isEn ? 'lineman' : 'লাইনম্যান')
+                            : (isEn ? 'linemen' : 'লাইনম্যান')}
+                        </span>
+                      </h3>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {group.users.map((targetUser) => {
+                      const canManage = !(isSafetyMitra && targetUser.role === 'admin');
+                      const isExpanded = expandedUserId === targetUser.id;
+                      return (
+                        <UserProfileCard
+                          key={targetUser.id}
+                          targetUser={targetUser}
+                          isEn={isEn}
+                          isAdmin={isAdmin}
+                          isSafetyMitra={isSafetyMitra}
+                          canManage={canManage}
+                          userProfile={userProfile}
+                          avatarSize="lg"
+                          formatRoleLabel={formatRoleLabel}
+                          roleBadgeClass={roleBadgeClass}
+                          wbLocations={wbLocations}
+                          supervisors={supervisors}
+                          compact
+                          isExpanded={isExpanded}
+                          onToggleExpand={() =>
+                            setExpandedUserId((id) => (id === targetUser.id ? null : targetUser.id))
+                          }
+                          onSaveField={handleSaveProfileField}
+                          onPPE={() => handleEditPPE(targetUser)}
+                          onTools={() => handleEditTools(targetUser)}
+                          onReset={() => {
+                            setResetTarget({ id: targetUser.id, name: targetUser.full_name });
+                            setResetConfirmInput('');
+                            setShowResetConfirm(true);
+                          }}
+                          onDelete={() => handleOpenDeleteConfirm(targetUser)}
+                        />
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )
         )
       )}
 
-      {/* Pagination Controls */}
-      {!loading && !isLineman && profileSection === 'team' && totalUsers > usersPerPage && (
+      {/* Pagination Controls — hidden for Safety Mitra grouping (full list loaded) */}
+      {!loading && !isLineman && profileSection === 'team' && teamSortMode !== 'supervisor' && totalUsers > usersPerPage && (
         <div className="mt-4 flex items-center justify-between gap-3 py-3">
           <button
             type="button"
