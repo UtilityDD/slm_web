@@ -306,6 +306,7 @@ See pattern in local `scratch/regen_lessons_2_8_9_10_sql.mjs`: fix JSON typos fi
 | 3.1–3.5 | Conductors, insulators, hardware | `cond_*`, `insul_*`, … | `20260628120000_lesson_3_1_to_3_5_images.sql` |
 | 3.6–3.10 | DTR, LT box, service, guard, SLD | `dtr_*`, `ltbox_*`, … | `20260628130000_lesson_3_6_to_3_10_images.sql` |
 | 4.1–4.5 | Insulator replace, jumper, service, DO fuse, DTR check | `ins_*`, `jump_*`, `conn_*`, `dofop_*`, `dtrchk_*` | `20260628140000_lesson_4_1_to_4_5_images.sql` |
+| 5.1–5.3 | Line trip response, patrolling, common faults | `trip_*`, `patrol_*`, `fault_*` | `20260628150000_lesson_5_1_to_5_3_images.sql` |
 
 Chapter **1.x** safety lessons use the same JSON fields and loader paths; earlier migrations live under `20260624120000`–`20260624180000`.
 
