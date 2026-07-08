@@ -2479,6 +2479,18 @@ export default function Training({
                 // Read the whole fact object which contains title and content
                 parts.push(normalizeNarrationPart(fact));
             });
+        } else if (currentSlide.type === 'completion') {
+            if (trainingContent?.isSupplementary) {
+                parts.push(language === 'en' ? 'Deep Insight Gained' : 'নতুন অভিজ্ঞতা অর্জন করলেন');
+                parts.push(language === 'en' 
+                    ? 'Taking care of yourself is as important as any technical skill. Well done.'
+                    : 'নিজের যত্ন নেওয়া যেকোনো কারিগরি দক্ষতার মতোই সমান গুরুত্বপূর্ণ। আপনি দারুণ কাজ করেছেন!');
+            } else {
+                parts.push(language === 'en' ? 'Mission Accomplished!' : 'অভিনন্দন! আজকের মিশন সফলভাবে সম্পন্ন হয়েছে।');
+                parts.push(language === 'en'
+                    ? 'You have successfully completed this training lesson. Now, test your knowledge with a quick challenge!'
+                    : 'আপনি এই ট্রেনিং পাঠটি সফলভাবে সম্পন্ন করেছেন। এবার একটি ছোট কুইজের মাধ্যমে আপনার জ্ঞান যাচাই করে নিন!');
+            }
         }
 
         // Final fallback
@@ -4475,36 +4487,39 @@ export default function Training({
                                                     }`}
                                                 >
                                                     {trainingContent.isSupplementary ? (
-                                                        <div className="animate-fade-in-up flex w-full max-w-[19rem] flex-col items-center gap-4 sm:max-w-md sm:gap-5">
+                                                        <div className="animate-fade-in-up flex w-full max-w-[19rem] flex-col items-center gap-5 sm:max-w-md sm:gap-6">
                                                             <div className="relative mx-auto flex h-20 w-20 shrink-0 items-center justify-center sm:h-28 sm:w-28">
                                                                 <div className="absolute inset-0 rounded-full bg-indigo-500/10 blur-xl sm:blur-3xl"></div>
                                                                 <div className="relative text-4xl drop-shadow-sm sm:text-5xl" aria-hidden>
                                                                     ✨
                                                                 </div>
                                                             </div>
-                                                            <div className="w-full space-y-1.5 sm:space-y-2">
+                                                            <div className="w-full space-y-2">
                                                                 <h3
                                                                     className={`text-lg font-black leading-snug text-slate-800 dark:text-white sm:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}
                                                                 >
-                                                                    {language === 'en' ? 'Deep Insight Gained' : 'নতুন কিছু শিখলেন'}
+                                                                    {language === 'en' ? 'Deep Insight Gained' : 'নতুন অভিজ্ঞতা অর্জন করলেন'}
                                                                 </h3>
                                                                 <p
-                                                                    className={`text-[11px] font-medium leading-relaxed text-slate-500 dark:text-slate-400 sm:text-sm ${language === 'bn' ? 'font-bengali sm:text-base' : ''}`}
+                                                                    className={`text-[11px] font-semibold leading-relaxed text-slate-500 dark:text-slate-400 sm:text-sm ${language === 'bn' ? 'font-bengali sm:text-base' : ''}`}
                                                                 >
                                                                     {language === 'en'
                                                                         ? 'Taking care of yourself is as important as any technical skill. Well done.'
-                                                                        : 'নিজের যত্ন নেওয়া যে কোনো কারিগরি দক্ষতার মতোই জরুরি। দারুণ কাজ করেছেন!'}
+                                                                        : 'নিজের যত্ন নেওয়া যেকোনো কারিগরি দক্ষতার মতোই সমান গুরুত্বপূর্ণ। আপনি দারুণ কাজ করেছেন!'}
                                                                 </p>
                                                             </div>
                                                             <div className="mx-auto h-px w-10 bg-slate-100 dark:bg-slate-800 sm:w-16"></div>
                                                             
                                                             {trainingContent.hasQuiz ? (
-                                                                <div className="w-full space-y-3">
+                                                                <div className="w-full space-y-4">
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                                                        className="nb-btn-primary flex w-full items-center justify-center gap-3 py-3 text-sm font-black sm:py-4 sm:text-base"
+                                                                        className="nb-btn-primary flex w-full items-center justify-center gap-3 py-3.5 text-base font-black sm:py-4.5 sm:text-lg"
                                                                     >
+                                                                        <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                        </svg>
                                                                         {language === 'en' ? 'Test your Knowledge' : 'আপনার জ্ঞান যাচাই করুন'}
                                                                     </button>
                                                                     <button
@@ -4515,13 +4530,9 @@ export default function Training({
                                                                             setIsJournalMode(false);
                                                                             setTrainingTab('supplementary');
                                                                         }}
-                                                                        className="group flex w-full flex-col items-center gap-2 py-2"
+                                                                        className={`mx-auto block py-2 text-xs font-semibold text-slate-400 transition-colors hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                                     >
-                                                                        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 transition-all group-hover:border-slate-400 dark:border-slate-800 dark:group-hover:border-slate-500">
-                                                                            <svg className="h-5 w-5 text-slate-400 group-hover:text-slate-600 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-                                                                            </svg>
-                                                                        </div>
+                                                                        {language === 'en' ? '← Back to Supplementary List' : '← লাইফ স্কিল তালিকায় ফিরে যান'}
                                                                     </button>
                                                                 </div>
                                                             ) : (
@@ -4533,80 +4544,78 @@ export default function Training({
                                                                         setIsJournalMode(false);
                                                                         setTrainingTab('supplementary');
                                                                     }}
-                                                                    className="group flex w-full flex-col items-center gap-2 py-3"
+                                                                    className={`mx-auto block py-2 text-xs font-semibold text-slate-400 transition-colors hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                                 >
-                                                                    <div className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 transition-all group-hover:border-slate-400 dark:border-slate-800 dark:group-hover:border-slate-500">
-                                                                        <svg className="h-5 w-5 text-slate-400 group-hover:text-slate-600 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-                                                                        </svg>
-                                                                    </div>
+                                                                    {language === 'en' ? '← Back to Supplementary List' : '← লাইফ স্কিল তালিকায় ফিরে যান'}
                                                                 </button>
                                                             )}
                                                         </div>
                                                     ) : (
-                                                        <>
-                                                            <div className="relative mx-auto mb-5 h-[min(32vh,13.5rem)] w-[min(32vh,13.5rem)] max-w-[min(85vw,13.5rem)] shrink-0 sm:mb-8 sm:h-56 sm:w-56 sm:max-w-none">
-                                                                <div className="absolute inset-0 rounded-full bg-orange-500/5 blur-3xl dark:bg-orange-500/5 sm:blur-[60px]"></div>
+                                                        <div className="animate-fade-in-up flex w-full max-w-sm flex-col items-center gap-5 sm:max-w-md sm:gap-6">
+                                                            <div className="relative mx-auto h-[min(28vh,12rem)] w-[min(28vh,12rem)] max-w-[min(80vw,12rem)] shrink-0 sm:h-48 sm:w-48">
+                                                                <div className="absolute inset-0 rounded-full bg-orange-500/5 blur-3xl dark:bg-orange-500/5 sm:blur-[40px]"></div>
                                                                 {prefersReducedMotion ? (
                                                                     <div className="relative z-10 flex h-full w-full items-center justify-center text-6xl sm:text-8xl" aria-hidden>
-                                                                        ✅
+                                                                        🎉
                                                                     </div>
                                                                 ) : (
                                                                     <DotLottiePlayer
                                                                         src={readingLottie}
                                                                         autoplay
                                                                         loop
-                                                                        className="relative z-10 h-full w-full object-contain grayscale-[0.3] transition-all duration-700 hover:grayscale-0"
+                                                                        className="relative z-10 h-full w-full object-contain grayscale-[0.2] transition-all duration-700 hover:grayscale-0"
                                                                     />
                                                                 )}
                                                             </div>
 
-                                                            <div className="mb-6 w-full space-y-3 sm:mb-10 sm:space-y-4">
-                                                                <h3 className={`text-2xl font-black text-slate-800 dark:text-white sm:text-3xl md:text-4xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                    {language === 'en' ? `Mission Complete` : `মিশন সম্পন্ন`}
+                                                            <div className="w-full space-y-2">
+                                                                <h3 className={`text-xl font-black leading-snug text-slate-800 dark:text-white sm:text-3xl ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                    {language === 'en' ? 'Mission Accomplished!' : 'অভিনন্দন! মিশন সম্পন্ন'}
                                                                 </h3>
-                                                                <div className="mx-auto h-px w-16 bg-slate-200 dark:bg-slate-800"></div>
+                                                                <p className={`text-xs font-semibold leading-relaxed text-slate-500 dark:text-slate-400 sm:text-base ${language === 'bn' ? 'font-bengali sm:text-base' : ''}`}>
+                                                                    {language === 'en'
+                                                                        ? 'You have successfully completed this training lesson. Great job!'
+                                                                        : 'আপনি এই ট্রেনিং পাঠটি সফলভাবে সম্পন্ন করেছেন। দারুণ কাজ করেছেন!'}
+                                                                </p>
                                                             </div>
-                                                        </>
-                                                    )}
+                                                            <div className="mx-auto h-px w-10 bg-slate-100 dark:bg-slate-800 sm:w-16"></div>
 
-                                                    {!trainingContent.isSupplementary ? (
-                                                        <div className="w-full max-w-full space-y-4 sm:space-y-6">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                                                className="nb-btn-primary flex w-full items-center justify-center gap-3 py-4 text-lg font-black sm:py-5 sm:text-xl"
-                                                            >
-                                                                {language === 'en' ? 'Start Challenge' : 'চ্যালেঞ্জ শুরু করুন'}
-                                                            </button>
-
-                                                            {user && (
+                                                            <div className="w-full max-w-full space-y-4">
                                                                 <button
                                                                     type="button"
-                                                                    onClick={handleLessonCompletionHourlyNav}
-                                                                    className={`mx-auto block py-1 text-sm font-medium text-slate-500 transition-colors hover:text-emerald-700 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                    onClick={() => initiateLessonCompletion(trainingContent.level_id)}
+                                                                    className="nb-btn-primary flex w-full items-center justify-center gap-3 py-3.5 text-base font-black sm:py-4.5 sm:text-lg"
                                                                 >
-                                                                    {language === 'en' ? 'Hourly quiz →' : 'ঘণ্টাভিত্তিক কুইজ →'}
-                                                                </button>
-                                                            )}
-
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    setTrainingContent(null);
-                                                                    setSelectedChapter(null);
-                                                                    setIsJournalMode(false);
-                                                                }}
-                                                                className="group flex w-full flex-col items-center gap-2 py-3 sm:py-4"
-                                                            >
-                                                                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 transition-all group-hover:border-slate-400 dark:border-slate-800 dark:group-hover:border-slate-500">
-                                                                    <svg className="h-5 w-5 text-slate-400 group-hover:text-slate-600 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                                                                    <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                                     </svg>
-                                                                </div>
-                                                            </button>
+                                                                    {language === 'en' ? 'Start Challenge' : 'চ্যালেঞ্জ শুরু করুন'}
+                                                                </button>
+
+                                                                {user && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={handleLessonCompletionHourlyNav}
+                                                                        className={`mx-auto block py-1 text-sm font-medium text-slate-500 transition-colors hover:text-emerald-700 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                    >
+                                                                        {language === 'en' ? 'Hourly quiz →' : 'ঘণ্টাভিত্তিক কুইজ →'}
+                                                                    </button>
+                                                                )}
+
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setTrainingContent(null);
+                                                                        setSelectedChapter(null);
+                                                                        setIsJournalMode(false);
+                                                                    }}
+                                                                    className={`mx-auto block py-2 text-xs font-semibold text-slate-400 transition-colors hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                >
+                                                                    {language === 'en' ? '← Back to Lesson List' : '← পাঠের তালিকায় ফিরে যান'}
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                    ) : null}
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
