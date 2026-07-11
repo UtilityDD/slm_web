@@ -19,19 +19,23 @@ CREATE OR REPLACE FUNCTION public.admin_reset_password(
 RETURNS TABLE(user_id uuid, full_name text, phone_number text, temp_password text)
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $function$
 DECLARE
     v_temp_password TEXT;
     v_is_admin BOOLEAN;
 BEGIN
+    IF trim(coalesce(p_admin_session, '')) = '' THEN
+        RAISE EXCEPTION 'Unauthorized: missing admin session token';
+    END IF;
+
     -- Authorize: caller must be an admin with a matching active session.
     SELECT EXISTS (
         SELECT 1
         FROM profiles
         WHERE id = p_admin_id
           AND role = 'admin'
-          AND current_session_id IS NOT NULL
+          AND trim(coalesce(current_session_id, '')) <> ''
           AND current_session_id = p_admin_session
     ) INTO v_is_admin;
 
@@ -43,7 +47,7 @@ BEGIN
     v_temp_password := floor(random() * 900000 + 100000)::TEXT;
 
     UPDATE profiles
-    SET password_hash        = crypt(v_temp_password, gen_salt('bf')),
+    SET password_hash        = extensions.crypt(v_temp_password, extensions.gen_salt('bf')),
         must_change_password = true,
         updated_at           = now()
     WHERE id = p_user_id;

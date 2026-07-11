@@ -1347,10 +1347,34 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     if (!passwordResetTarget) return;
     setIsResettingPassword(true);
     try {
+      // Custom auth may store slm_session_id (device session) and/or session_token (login RPC).
+      // Older or restored sessions often only have session_token — sync whichever exists
+      // so admin_reset_password's server-side session check passes.
+      const adminSession =
+        storageUtils.getItem('slm_session_id') ||
+        storageUtils.getItem('session_token');
+
+      if (!adminSession) {
+        throw new Error(
+          language === 'en'
+            ? 'No active session found. Please log out and log in again.'
+            : 'সক্রিয় সেশন পাওয়া যায়নি। লগআউট করে আবার লগইন করুন।'
+        );
+      }
+
+      await supabase.rpc('set_current_session_id', {
+        p_user_id: user.id,
+        p_session_id: adminSession,
+      });
+
+      if (!storageUtils.getItem('slm_session_id')) {
+        storageUtils.setItem('slm_session_id', adminSession);
+      }
+
       const { data, error } = await supabase.rpc('admin_reset_password', {
         p_user_id: passwordResetTarget.id,
         p_admin_id: user.id,
-        p_admin_session: storageUtils.getItem('slm_session_id'),
+        p_admin_session: adminSession,
       });
 
       if (error) throw error;
