@@ -129,6 +129,10 @@ export function getHallOfFameWinners(entry, boardTab) {
     } else if (boardTab === MONTHLY_SUB_TAB.CHAMPION && entry.winners?.length) {
         winners = entry.winners;
     }
+    // v8+ archives may include every eligible new player; Hall of Fame shows prize rows only.
+    if (entry.boardsVersion >= 8) {
+        return winners.filter((w) => isPrizeSuperseded(w) || isPrizeRecipient(w));
+    }
     return winners;
 }
 
@@ -675,7 +679,8 @@ export function getUserBoardPrizeRank(userId, boardId, prizeWinners) {
 export function getBoardPrizeDisplayList(boardId, encouragementData) {
     const boards = encouragementData?.boards || {};
     const prizeWinners = encouragementData?.prizeWinners || encouragementData?.tokenWinners;
-    return buildBoardDisplayList(boardId, boards, prizeWinners);
+    const list = buildBoardDisplayList(boardId, boards, prizeWinners);
+    return list.filter((w) => isPrizeSuperseded(w) || isPrizeRecipient(w));
 }
 
 export function isPrizeSuperseded(item) {
