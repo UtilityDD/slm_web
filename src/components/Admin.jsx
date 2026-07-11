@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { cacheHelper } from '../utils/cacheHelper';
+import { storageUtils } from '../utils/storageUtils';
 import wbLocations from '../data/wb_locations.json';
 
 import SaveSuccessModal from './SaveSuccessModal';
@@ -318,6 +319,7 @@ function UserProfileCard({
   onPPE,
   onTools,
   onReset,
+  onResetPassword,
   onDelete,
   compact = false,
   isExpanded = true,
@@ -675,6 +677,15 @@ function UserProfileCard({
             <div className="flex gap-2">
               <button
                 type="button"
+                onClick={onResetPassword}
+                aria-label={isEn ? 'Reset password' : 'পাসওয়ার্ড রিসেট'}
+                title={isEn ? 'Reset password' : 'পাসওয়ার্ড রিসেট'}
+                className={`${iconBtnBase} flex-1 h-9 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-lg`}
+              >
+                🔑
+              </button>
+              <button
+                type="button"
                 onClick={onReset}
                 aria-label={isEn ? 'Reset training scores' : 'প্রশিক্ষণ স্কোর রিসেট'}
                 title={isEn ? 'Reset scores' : 'স্কোর রিসেট'}
@@ -758,6 +769,10 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [resetTarget, setResetTarget] = useState(null); // { id, name } or null for 'all'
   const [isResetting, setIsResetting] = useState(false);
   const [resetConfirmInput, setResetConfirmInput] = useState('');
+  const [showPasswordResetConfirm, setShowPasswordResetConfirm] = useState(false);
+  const [passwordResetTarget, setPasswordResetTarget] = useState(null); // { id, name }
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [passwordResetResult, setPasswordResetResult] = useState(null); // { name, phone, password }
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showNoticesSection, setShowNoticesSection] = useState(false);
   const [showSystemCheckSection, setShowSystemCheckSection] = useState(false);
@@ -1328,6 +1343,39 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!passwordResetTarget) return;
+    setIsResettingPassword(true);
+    try {
+      const { data, error } = await supabase.rpc('admin_reset_password', {
+        p_user_id: passwordResetTarget.id,
+        p_admin_id: user.id,
+        p_admin_session: storageUtils.getItem('slm_session_id'),
+      });
+
+      if (error) throw error;
+
+      const result = data?.[0];
+      if (!result) throw new Error('No result returned');
+
+      setPasswordResetResult({
+        name: result.full_name,
+        phone: result.phone_number,
+        password: result.temp_password,
+      });
+      setShowPasswordResetConfirm(false);
+      setPasswordResetTarget(null);
+    } catch (err) {
+      console.error('Error resetting password:', err);
+      alert(
+        (language === 'en' ? 'Failed to reset password: ' : 'পাসওয়ার্ড রিসেট ব্যর্থ: ') +
+          (err.message || err)
+      );
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
+
   const isEn = language === 'en';
   const isAdmin = userProfile?.role === 'admin';
   const isSafetyMitra = userProfile?.role === 'safety mitra';
@@ -1866,6 +1914,10 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                       setResetConfirmInput('');
                       setShowResetConfirm(true);
                     }}
+                    onResetPassword={() => {
+                      setPasswordResetTarget({ id: targetUser.id, name: targetUser.full_name });
+                      setShowPasswordResetConfirm(true);
+                    }}
                     onDelete={() => handleOpenDeleteConfirm(targetUser)}
                   />
                 );
@@ -1919,6 +1971,10 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                             setResetTarget({ id: targetUser.id, name: targetUser.full_name });
                             setResetConfirmInput('');
                             setShowResetConfirm(true);
+                          }}
+                          onResetPassword={() => {
+                            setPasswordResetTarget({ id: targetUser.id, name: targetUser.full_name });
+                            setShowPasswordResetConfirm(true);
                           }}
                           onDelete={() => handleOpenDeleteConfirm(targetUser)}
                         />
@@ -2309,6 +2365,109 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Reset Password Confirm Modal */}
+      {showPasswordResetConfirm && createPortal(
+        <div className="fixed inset-0 z-[10000] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-amber-100 dark:border-amber-900/20 animate-scale-in">
+            <div className="p-8 text-center">
+              <div className="w-20 h-20 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-inner">
+                🔑
+              </div>
+              <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">
+                {language === 'en' ? 'Reset password?' : 'পাসওয়ার্ড রিসেট করবেন?'}
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400 font-bold mb-8 leading-relaxed">
+                {language === 'en'
+                  ? `A new temporary PIN will be generated for ${passwordResetTarget?.name}. Their current password stops working, and they must set a new one on next login.`
+                  : `${passwordResetTarget?.name}-এর জন্য একটি নতুন অস্থায়ী পিন তৈরি হবে। তার বর্তমান পাসওয়ার্ড আর কাজ করবে না এবং পরের বার লগইনে নতুন পাসওয়ার্ড দিতে হবে।`}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setShowPasswordResetConfirm(false); setPasswordResetTarget(null); }}
+                  className="flex-1 py-4 px-6 rounded-2xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-all"
+                >
+                  {language === 'en' ? 'Cancel' : 'বাতিল'}
+                </button>
+                <button
+                  disabled={isResettingPassword}
+                  onClick={handleResetPassword}
+                  className="flex-[2] py-4 px-6 rounded-2xl font-black bg-amber-500 text-white hover:bg-amber-600 shadow-xl shadow-amber-500/30 transition-all active:scale-95 disabled:opacity-30 disabled:scale-100 flex items-center justify-center gap-2"
+                >
+                  {isResettingPassword ? (
+                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  ) : (
+                    <>
+                      <span>🔑</span>
+                      {language === 'en' ? 'Generate PIN' : 'পিন তৈরি করুন'}
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Reset Password Result Modal */}
+      {passwordResetResult && createPortal(
+        <div className="fixed inset-0 z-[10001] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-green-100 dark:border-green-900/20 animate-scale-in">
+            <div className="p-6 space-y-6">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-20 h-20 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-3xl flex items-center justify-center text-4xl mb-4 shadow-inner">
+                  ✅
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">
+                  {language === 'en' ? 'Password Reset' : 'পাসওয়ার্ড রিসেট হয়েছে'}
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {language === 'en' ? 'Share these credentials with the user' : 'এই তথ্য ব্যবহারকারীকে দিন'}
+                </p>
+              </div>
+
+              <div className="space-y-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">
+                    {language === 'en' ? 'Name' : 'নাম'}
+                  </label>
+                  <p className="text-lg font-bold text-slate-900 dark:text-slate-100">{passwordResetResult.name}</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">
+                    {language === 'en' ? 'Phone Number' : 'ফোন নম্বর'}
+                  </label>
+                  <p className="text-lg font-mono font-bold text-slate-900 dark:text-slate-100">{passwordResetResult.phone}</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">
+                    {language === 'en' ? 'Temporary Password' : 'অস্থায়ী পাসওয়ার্ড'}
+                  </label>
+                  <p className="text-2xl font-mono font-bold text-green-600 dark:text-green-400 tracking-widest">{passwordResetResult.password}</p>
+                </div>
+              </div>
+
+              <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4">
+                <p className="text-sm text-orange-900 dark:text-orange-300">
+                  ⚠️ <strong>{language === 'en' ? 'Important:' : 'গুরুত্বপূর্ণ:'}</strong>{' '}
+                  {language === 'en'
+                    ? 'User must change this password on first login.'
+                    : 'পরের বার লগইনে ব্যবহারকারীকে এই পাসওয়ার্ড পরিবর্তন করতে হবে।'}
+                </p>
+              </div>
+
+              <button
+                onClick={() => setPasswordResetResult(null)}
+                className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all"
+              >
+                {language === 'en' ? 'Done' : 'সম্পন্ন'}
+              </button>
             </div>
           </div>
         </div>,
