@@ -3553,8 +3553,8 @@ export default function Training({
                     )}
 
                     {selectedChapter.isFAQ ? (
-                        <div className="animate-fade-in mx-auto max-w-3xl space-y-4 pb-[calc(5.5rem+3.25rem+env(safe-area-inset-bottom,0px))] md:pb-10">
-                            <header className="space-y-3">
+                        <div className="animate-fade-in mx-auto max-w-3xl pb-[calc(5.5rem+3.25rem+env(safe-area-inset-bottom,0px))] md:pb-10">
+                            <header className="sticky top-0 z-40 -mx-4 space-y-2.5 border-b-2 border-slate-900 bg-[#fffdf7]/95 px-4 pb-3 pt-1 backdrop-blur-sm sm:-mx-6 sm:px-6">
                                 <div className="flex items-center gap-3">
                                     <button
                                         type="button"
@@ -3570,7 +3570,7 @@ export default function Training({
                                         <h2 className={`truncate text-lg font-black tracking-tight text-slate-900 sm:text-xl ${language === 'bn' ? 'font-bengali' : ''}`}>
                                             {language === 'en' ? FAQ_PAGE_TITLE.en : FAQ_PAGE_TITLE.bn}
                                         </h2>
-                                        <p className={`text-xs font-semibold text-slate-500 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        <p className={`truncate text-xs font-semibold text-slate-500 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                                             {faqResultSummary.primary}
                                             {faqResultSummary.secondary && (
                                                 <span className="text-slate-400"> · {faqResultSummary.secondary}</span>
@@ -3604,42 +3604,8 @@ export default function Training({
                                     )}
                                 </div>
 
-                                <div className="flex gap-2 overflow-x-auto pb-0.5 no-scrollbar">
-                                    {FAQ_GROUPS.filter((group) => group.id === 'all' || (faqGroupCounts[group.id] || 0) > 0).map((group) => {
-                                        const isActive = faqActiveGroup === group.id;
-                                        return (
-                                            <button
-                                                key={group.id}
-                                                type="button"
-                                                onClick={() => setFaqActiveGroup(group.id)}
-                                                className={`whitespace-nowrap border-2 border-slate-900 px-3 py-1.5 text-[10px] font-black shadow-[2px_2px_0_#0f172a] transition-transform active:translate-x-0.5 active:translate-y-0.5 sm:text-xs ${
-                                                    isActive
-                                                        ? 'bg-orange-500 text-white'
-                                                        : 'bg-white text-slate-700 hover:bg-orange-50'
-                                                }`}
-                                            >
-                                                {language === 'en' ? group.labelEn : group.labelBn}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-
-                                {(faqActiveGroup !== 'all' || faqActiveTag || faqSearchQuery.trim()) && (
+                                {(faqActiveGroup !== 'all' || faqActiveTag) && (
                                     <div className="flex flex-wrap items-center gap-1.5">
-                                        {faqSearchQuery.trim() && (
-                                            <button
-                                                type="button"
-                                                onClick={() => setFaqSearchQuery('')}
-                                                className={`inline-flex max-w-full items-center gap-1 border-2 border-slate-900 bg-white px-2 py-1 text-[10px] font-bold text-slate-700 shadow-[2px_2px_0_#0f172a] ${language === 'bn' ? 'font-bengali' : 'nb-mono'}`}
-                                            >
-                                                <span className="truncate">
-                                                    {language === 'en' ? `"${faqSearchQuery.trim()}"` : `“${faqSearchQuery.trim()}”`}
-                                                </span>
-                                                <svg className="h-3 w-3 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                                                </svg>
-                                            </button>
-                                        )}
                                         {faqActiveGroup !== 'all' && (() => {
                                             const group = FAQ_GROUPS.find((g) => g.id === faqActiveGroup);
                                             const label = group ? (language === 'en' ? group.labelEn : group.labelBn) : faqActiveGroup;
@@ -3668,7 +3634,7 @@ export default function Training({
                                                 </svg>
                                             </button>
                                         )}
-                                        {[faqSearchQuery.trim(), faqActiveGroup !== 'all', faqActiveTag].filter(Boolean).length > 1 && (
+                                        {faqHasActiveFilters && (
                                             <button
                                                 type="button"
                                                 onClick={resetFaqFilters}
@@ -3679,6 +3645,28 @@ export default function Training({
                                         )}
                                     </div>
                                 )}
+                            </header>
+
+                            <div className="space-y-3 pt-3">
+                                <div className="flex gap-2 overflow-x-auto pb-0.5 no-scrollbar">
+                                    {FAQ_GROUPS.filter((group) => group.id === 'all' || (faqGroupCounts[group.id] || 0) > 0).map((group) => {
+                                        const isActive = faqActiveGroup === group.id;
+                                        return (
+                                            <button
+                                                key={group.id}
+                                                type="button"
+                                                onClick={() => setFaqActiveGroup(group.id)}
+                                                className={`whitespace-nowrap border-2 border-slate-900 px-3 py-1.5 text-[10px] font-black shadow-[2px_2px_0_#0f172a] transition-transform active:translate-x-0.5 active:translate-y-0.5 sm:text-xs ${
+                                                    isActive
+                                                        ? 'bg-orange-500 text-white'
+                                                        : 'bg-white text-slate-700 hover:bg-orange-50'
+                                                }`}
+                                            >
+                                                {language === 'en' ? group.labelEn : group.labelBn}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
 
                                 <button
                                     type="button"
@@ -3711,8 +3699,9 @@ export default function Training({
                                         })}
                                     </div>
                                 )}
-                            </header>
+                            </div>
 
+                            <div className="mt-4">
                             {faqFilteredQuestions.length === 0 ? (
                                 <div className="nb-card bg-white px-6 py-10 text-center">
                                     <p className={`font-bold text-slate-600 ${language === 'bn' ? 'font-bengali text-base' : 'text-sm'}`}>
@@ -3802,6 +3791,7 @@ export default function Training({
                                     })}
                                 </div>
                             )}
+                            </div>
                         </div>
                     ) : null}
                     {/* PPE Survey Modal */}
