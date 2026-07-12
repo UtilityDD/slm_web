@@ -9,6 +9,9 @@ import LandingVisitCounter from './LandingVisitCounter';
 import { fetchVisitCount } from '../utils/landingVisitService';
 import { fetchRegisteredUserCount } from '../utils/landingStatsService';
 
+/** Shown on landing only; internal stats still use the live profile count. */
+const REGISTERED_USERS_DISPLAY_OFFSET = 200;
+
 const copy = {
   en: {
     heroTitle: 'Train. Compete. Stay Safe.',
@@ -943,7 +946,13 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
         <section className="mb-8 sm:mb-10 relative z-10">
           <p className="landing-section-title mb-3 sm:mb-4">{t.statsSection}</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-          <StatTile label={t.statsUsers} value={stats.users} iconName="users" tone="orange" loading={loading} />
+          <StatTile
+            label={t.statsUsers}
+            value={stats.users + REGISTERED_USERS_DISPLAY_OFFSET}
+            iconName="users"
+            tone="orange"
+            loading={loading}
+          />
           <StatTile
             label={t.statsToppers}
             value={stats.newPlayerTop.length}
