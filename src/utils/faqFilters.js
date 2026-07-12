@@ -1,3 +1,19 @@
+export const FAQ_PAGE_TITLE = {
+    en: 'Quick Help & FAQ',
+    bn: 'কি? কেন? কিভাবে?',
+};
+
+/** Strip legacy comma formatting from cached FAQ JSON titles. */
+export function normalizeFaqTitle(title, language) {
+    const canonical = FAQ_PAGE_TITLE[language] || FAQ_PAGE_TITLE.en;
+    if (!title || typeof title !== 'string') return canonical;
+    const legacy = title.replace(/\s+/g, ' ').trim();
+    if (legacy === 'কি, কেন?, কিভাবে?' || legacy === 'কি, কেন, কিভাবে?') {
+        return FAQ_PAGE_TITLE.bn;
+    }
+    return legacy;
+}
+
 export const FAQ_GROUPS = [
     { id: 'all', labelEn: 'All', labelBn: 'সব' },
     { id: 'safety', labelEn: 'Safety & PPE', labelBn: 'নিরাপত্তা' },

@@ -2,6 +2,7 @@ import React from 'react';
 import { UserIcon } from './icons';
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../config';
 import { useLifeSkillRadio } from '../context/LifeSkillRadioContext';
+import { FAQ_PAGE_TITLE } from '../utils/faqFilters';
 
 const FACEBOOK_PAGE_URL = 'https://www.facebook.com/smartlineman';
 const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t';
@@ -29,7 +30,7 @@ export default function Sidebar({
     { id: 'my-progress', label: language === 'en' ? 'My Progress' : 'আমার অগ্রগতি', icon: '📈', show: true },
     { id: 'video-guide', label: language === 'en' ? 'Video Guide' : 'ভিডিও গাইড', icon: '📺', show: true },
     { id: 'aro-janun', label: language === 'en' ? 'Know More' : 'আরো জানুন', icon: '🧰', show: true },
-    { id: 'training-faq', label: language === 'en' ? 'Quick Help & FAQ' : 'কি, কেন?, কিভাবে?', icon: '💡', show: true, redirectTo: 'training', tab: 'faq' },
+    { id: 'training-faq', label: language === 'en' ? FAQ_PAGE_TITLE.en : FAQ_PAGE_TITLE.bn, icon: '💡', show: true, redirectTo: 'training', tab: 'faq' },
     { id: 'safety-library', label: language === 'en' ? 'Safety Library' : 'সুরক্ষা লাইব্রেরি', icon: '🛡️', show: true },
     { id: 'notifications', label: language === 'en' ? 'Notifications' : 'বিজ্ঞপ্তি', icon: '🔔', show: true, badge: unreadNotificationsCount > 0 ? unreadNotificationsCount : null, highlight: unreadNotificationsCount > 0 },
     { id: 'sops', label: language === 'en' ? 'SOP' : 'এসওপি', icon: '📋', show: true },

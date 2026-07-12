@@ -45,10 +45,11 @@ import HourlyPenaltyInfoModal from '../HourlyPenaltyInfoModal';
 import { blockGuestWrite, isGuestUser, guestPreviewText } from '../../utils/guestPreview';
 import {
     FAQ_GROUPS,
+    FAQ_PAGE_TITLE,
     filterFaqQuestions,
     getFaqGroupCounts,
     getFaqResultSummary,
-    getTopFaqTags,
+    normalizeFaqTitle,
 } from '../../utils/faqFilters';
 
 const HOURLY_PENALTY_MODAL_SKIP_KEY = 'slm_hourly_penalty_info_skip';
@@ -1900,7 +1901,6 @@ export default function Training({
 
     const faqQuestions = selectedChapter?.isFAQ ? selectedChapter.content?.questions || [] : [];
     const faqGroupCounts = useMemo(() => getFaqGroupCounts(faqQuestions), [faqQuestions]);
-    const faqTopTags = useMemo(() => getTopFaqTags(faqQuestions, 14), [faqQuestions]);
     const faqFilteredQuestions = useMemo(
         () => filterFaqQuestions(faqQuestions, {
             query: faqSearchQuery,
@@ -2267,7 +2267,7 @@ export default function Training({
         if (chapter.number === 10) {
             try {
                 const data = await requestManager.fetch(
-                    'chapter_10_qa',
+                    'chapter_10_qa_v2',
                     async () => {
                         const response = await fetch('/quizzes/chapter_10_qa.json');
                         if (response.ok) {
@@ -2278,7 +2278,15 @@ export default function Training({
                     { ttl: 60, swr: true }
                 );
                 if (data) {
-                    setSelectedChapter({ ...chapter, isFAQ: true, content: data });
+                    setSelectedChapter({
+                        ...chapter,
+                        title: normalizeFaqTitle(chapter.title, language),
+                        isFAQ: true,
+                        content: {
+                            ...data,
+                            title: normalizeFaqTitle(data.title, language),
+                        },
+                    });
                 }
             } catch (err) {
                 console.error("Error loading FAQ chapter:", err);
@@ -3296,7 +3304,7 @@ export default function Training({
                                 </div>
                                 <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                                     <h2 className={`text-lg font-black leading-tight tracking-tight sm:text-xl lg:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {language === 'en' ? 'Quick Help & FAQ' : 'কি, কেন?, কিভাবে?'}
+                                        {language === 'en' ? FAQ_PAGE_TITLE.en : FAQ_PAGE_TITLE.bn}
                                     </h2>
                                     <span className="nb-btn-secondary inline-flex w-fit shrink-0 items-center gap-2 self-start px-4 py-2 text-[10px] font-black uppercase tracking-wider nb-mono sm:self-center">
                                         <span>{language === 'en' ? 'Search Answers' : 'উত্তর খুঁজুন'}</span>
@@ -3545,202 +3553,218 @@ export default function Training({
                     )}
 
                     {selectedChapter.isFAQ ? (
-                        <div className="animate-fade-in space-y-5">
-                            <div className="nb-card overflow-hidden bg-white p-0">
-                                <div className="border-b-2 border-slate-900 bg-gradient-to-br from-indigo-50 via-violet-50 to-white px-4 py-4 sm:px-6 sm:py-5">
-                                    <div className="flex items-start gap-3 sm:gap-4">
-                                        <button
-                                            type="button"
-                                            onClick={() => setSelectedChapter(null)}
-                                            className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center border-2 border-slate-900 bg-white text-slate-700 shadow-[2px_2px_0_#0f172a] transition-transform hover:bg-indigo-100 active:translate-x-0.5 active:translate-y-0.5"
-                                            aria-label={language === 'en' ? 'Back to Training' : 'প্রশিক্ষণে ফিরে যান'}
-                                        >
-                                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                                            </svg>
-                                        </button>
-                                        <div className="flex h-11 w-11 shrink-0 items-center justify-center border-2 border-slate-900 bg-white text-2xl shadow-[2px_2px_0_#0f172a] sm:h-12 sm:w-12">
-                                            💡
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <h2 className={`text-xl font-black leading-tight tracking-tight text-slate-900 sm:text-2xl lg:text-3xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                {selectedChapter.content.title}
-                                            </h2>
-                                            <p className={`mt-1 text-sm font-semibold text-slate-600 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                {language === 'en'
-                                                    ? 'Answers you need on the job'
-                                                    : 'মাঠে কাজের সময় যে প্রশ্নগুলো আসে, তার উত্তর'}
-                                            </p>
-                                            <p className={`mt-2 text-sm font-bold text-indigo-800 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                {faqResultSummary.primary}
-                                                {faqResultSummary.secondary && (
-                                                    <span className="font-semibold text-slate-500">
-                                                        {' · '}{faqResultSummary.secondary}
-                                                    </span>
-                                                )}
-                                            </p>
-                                        </div>
+                        <div className="animate-fade-in mx-auto max-w-3xl space-y-4 pb-[calc(5.5rem+3.25rem+env(safe-area-inset-bottom,0px))] md:pb-10">
+                            <header className="space-y-3">
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedChapter(null)}
+                                        className="flex h-9 w-9 shrink-0 items-center justify-center border-2 border-slate-900 bg-white text-slate-900 shadow-[2px_2px_0_#0f172a] transition-transform hover:bg-orange-50 active:translate-x-0.5 active:translate-y-0.5"
+                                        aria-label={language === 'en' ? 'Back to Training' : 'প্রশিক্ষণে ফিরে যান'}
+                                    >
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+                                    <div className="min-w-0 flex-1">
+                                        <h2 className={`truncate text-lg font-black tracking-tight text-slate-900 sm:text-xl ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {language === 'en' ? FAQ_PAGE_TITLE.en : FAQ_PAGE_TITLE.bn}
+                                        </h2>
+                                        <p className={`text-xs font-semibold text-slate-500 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {faqResultSummary.primary}
+                                            {faqResultSummary.secondary && (
+                                                <span className="text-slate-400"> · {faqResultSummary.secondary}</span>
+                                            )}
+                                        </p>
                                     </div>
                                 </div>
 
-                                <div className="space-y-4 p-4 sm:p-5">
-                                    <div className="relative">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                        </svg>
-                                        <input
-                                            type="search"
-                                            placeholder={language === 'en' ? 'Type a question or keyword...' : 'প্রশ্ন বা শব্দ লিখে খুঁজুন...'}
-                                            value={faqSearchQuery}
-                                            onChange={(e) => setFaqSearchQuery(e.target.value)}
-                                            className={`nb-input w-full border-2 border-slate-900 bg-white py-2.5 pl-10 pr-10 text-sm font-semibold shadow-[2px_2px_0_#0f172a] outline-none focus:shadow-[3px_3px_0_#0f172a] ${language === 'bn' ? 'font-bengali' : ''}`}
-                                        />
-                                        {faqSearchQuery && (
-                                            <button
-                                                type="button"
-                                                onClick={() => setFaqSearchQuery('')}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600"
-                                                aria-label={language === 'en' ? 'Clear search' : 'খোঁজ মুছুন'}
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                                </svg>
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <p className={`mb-2 text-xs font-bold text-slate-600 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                            {language === 'en' ? 'Pick a topic' : 'কোন বিষয়ে জানতে চান?'}
-                                        </p>
-                                        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
-                                            {FAQ_GROUPS.filter((group) => group.id === 'all' || (faqGroupCounts[group.id] || 0) > 0).map((group) => {
-                                                const isActive = faqActiveGroup === group.id;
-                                                const count = faqGroupCounts[group.id] || 0;
-                                                return (
-                                                    <button
-                                                        key={group.id}
-                                                        type="button"
-                                                        onClick={() => setFaqActiveGroup(group.id)}
-                                                        className={`whitespace-nowrap border-2 border-slate-900 px-2.5 py-1 text-[10px] font-black shadow-[1px_1px_0_#0f172a] transition-transform active:translate-x-0.5 active:translate-y-0.5 sm:px-3 sm:py-1.5 sm:text-[11px] ${
-                                                            isActive
-                                                                ? 'bg-indigo-600 text-white'
-                                                                : 'bg-white text-slate-700 hover:bg-indigo-50'
-                                                        }`}
-                                                    >
-                                                        {language === 'en' ? group.labelEn : group.labelBn}
-                                                        <span className={`ml-1 opacity-70 ${isActive ? 'text-white/80' : ''}`}>
-                                                            ({toBengaliNumber(count, language)})
-                                                        </span>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <div className="mb-2 flex items-center justify-between gap-3">
-                                            <p className={`text-xs font-bold text-slate-600 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                {language === 'en' ? 'Often searched' : 'বেশি খোঁজা শব্দ'}
-                                            </p>
-                                            <button
-                                                type="button"
-                                                onClick={() => setIsFaqTagsExpanded(!isFaqTagsExpanded)}
-                                                className={`text-[11px] font-bold text-indigo-700 hover:underline ${language === 'bn' ? 'font-bengali' : ''}`}
-                                            >
-                                                {isFaqTagsExpanded
-                                                    ? (language === 'en' ? 'Show less' : 'কম দেখুন')
-                                                    : (language === 'en' ? 'See all' : 'আরও দেখুন')}
-                                            </button>
-                                        </div>
-                                        <div className={`flex flex-wrap gap-1.5 ${!isFaqTagsExpanded ? 'max-h-[4.5rem] overflow-hidden' : ''}`}>
-                                            {(isFaqTagsExpanded
-                                                ? Array.from(new Set(faqQuestions.flatMap((q) => q.tags || []))).sort()
-                                                : faqTopTags
-                                            ).map((tag) => {
-                                                const isActive = faqActiveTag.toLowerCase() === tag.toLowerCase();
-                                                return (
-                                                    <button
-                                                        key={tag}
-                                                        type="button"
-                                                        onClick={() => setFaqActiveTag(isActive ? '' : tag)}
-                                                        className={`rounded-sm border px-2 py-0.5 text-[9px] font-bold transition-colors nb-mono sm:text-[10px] ${
-                                                            isActive
-                                                                ? 'border-indigo-700 bg-indigo-600 text-white'
-                                                                : 'border-slate-300 bg-white text-slate-600 hover:border-indigo-400 hover:text-indigo-700'
-                                                        }`}
-                                                    >
-                                                        {tag}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-
-                                    {faqHasActiveFilters && (
+                                <div className="relative">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    <input
+                                        type="search"
+                                        placeholder={language === 'en' ? 'Search questions...' : 'প্রশ্ন খুঁজুন...'}
+                                        value={faqSearchQuery}
+                                        onChange={(e) => setFaqSearchQuery(e.target.value)}
+                                        className={`w-full border-2 border-slate-900 bg-white py-2 pl-9 pr-9 text-sm font-semibold text-slate-900 shadow-[2px_2px_0_#0f172a] outline-none placeholder:text-slate-400 focus:shadow-[3px_3px_0_#0f172a] ${language === 'bn' ? 'font-bengali' : ''}`}
+                                    />
+                                    {faqSearchQuery && (
                                         <button
                                             type="button"
-                                            onClick={resetFaqFilters}
-                                            className={`text-xs font-bold text-indigo-700 underline-offset-2 hover:underline ${language === 'bn' ? 'font-bengali' : ''}`}
+                                            onClick={() => setFaqSearchQuery('')}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-orange-600"
+                                            aria-label={language === 'en' ? 'Clear search' : 'খোঁজ মুছুন'}
                                         >
-                                            {language === 'en' ? 'Clear filters' : 'ফিল্টার সরিয়ে দিন'}
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                            </svg>
                                         </button>
                                     )}
                                 </div>
-                            </div>
 
-                            <div className="grid gap-3 sm:gap-4">
-                                {faqFilteredQuestions.length === 0 ? (
-                                    <div className="nb-card bg-white p-8 text-center">
-                                        <p className={`text-lg font-black text-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                            {language === 'en' ? 'No questions match your filters.' : 'এই খোঁজে কোনো প্রশ্ন মিলেনি।'}
-                                        </p>
-                                        <button
-                                            type="button"
-                                            onClick={resetFaqFilters}
-                                            className="nb-btn-secondary mt-4 px-4 py-2 text-sm font-bold"
-                                        >
-                                            {language === 'en' ? 'Reset filters' : 'আবার সব প্রশ্ন দেখুন'}
-                                        </button>
+                                <div className="flex gap-2 overflow-x-auto pb-0.5 no-scrollbar">
+                                    {FAQ_GROUPS.filter((group) => group.id === 'all' || (faqGroupCounts[group.id] || 0) > 0).map((group) => {
+                                        const isActive = faqActiveGroup === group.id;
+                                        return (
+                                            <button
+                                                key={group.id}
+                                                type="button"
+                                                onClick={() => setFaqActiveGroup(group.id)}
+                                                className={`whitespace-nowrap border-2 border-slate-900 px-3 py-1.5 text-[10px] font-black shadow-[2px_2px_0_#0f172a] transition-transform active:translate-x-0.5 active:translate-y-0.5 sm:text-xs ${
+                                                    isActive
+                                                        ? 'bg-orange-500 text-white'
+                                                        : 'bg-white text-slate-700 hover:bg-orange-50'
+                                                }`}
+                                            >
+                                                {language === 'en' ? group.labelEn : group.labelBn}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {(faqActiveGroup !== 'all' || faqActiveTag || faqSearchQuery.trim()) && (
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                        {faqSearchQuery.trim() && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setFaqSearchQuery('')}
+                                                className={`inline-flex max-w-full items-center gap-1 border-2 border-slate-900 bg-white px-2 py-1 text-[10px] font-bold text-slate-700 shadow-[2px_2px_0_#0f172a] ${language === 'bn' ? 'font-bengali' : 'nb-mono'}`}
+                                            >
+                                                <span className="truncate">
+                                                    {language === 'en' ? `"${faqSearchQuery.trim()}"` : `“${faqSearchQuery.trim()}”`}
+                                                </span>
+                                                <svg className="h-3 w-3 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                        {faqActiveGroup !== 'all' && (() => {
+                                            const group = FAQ_GROUPS.find((g) => g.id === faqActiveGroup);
+                                            const label = group ? (language === 'en' ? group.labelEn : group.labelBn) : faqActiveGroup;
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFaqActiveGroup('all')}
+                                                    className={`inline-flex items-center gap-1 border-2 border-slate-900 bg-orange-500 px-2 py-1 text-[10px] font-black text-white shadow-[2px_2px_0_#0f172a] ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                >
+                                                    <span>{label}</span>
+                                                    <svg className="h-3 w-3 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                                    </svg>
+                                                </button>
+                                            );
+                                        })()}
+                                        {faqActiveTag && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setFaqActiveTag('')}
+                                                className="inline-flex items-center gap-1 border-2 border-slate-900 bg-white px-2 py-1 text-[10px] font-semibold text-slate-700 shadow-[2px_2px_0_#0f172a] nb-mono"
+                                            >
+                                                <span>{faqActiveTag}</span>
+                                                <svg className="h-3 w-3 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                        {[faqSearchQuery.trim(), faqActiveGroup !== 'all', faqActiveTag].filter(Boolean).length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={resetFaqFilters}
+                                                className={`inline-flex items-center gap-1 border-2 border-dashed border-slate-400 bg-slate-50 px-2 py-1 text-[10px] font-bold text-slate-600 hover:border-slate-900 hover:bg-white ${language === 'bn' ? 'font-bengali' : ''}`}
+                                            >
+                                                {language === 'en' ? 'Clear all' : 'সব দেখুন'}
+                                            </button>
+                                        )}
                                     </div>
-                                ) : faqFilteredQuestions.map((q, idx) => {
-                                    const shouldAutoOpen = faqHasActiveFilters && (
-                                        faqFilteredQuestions.length <= 3 ||
-                                        (faqSearchQuery && q.question.toLowerCase().includes(faqSearchQuery.toLowerCase()))
-                                    );
-                                    return (
-                                        <div
-                                            key={q.id}
-                                            className="nb-card overflow-hidden bg-white transition-all hover:-translate-x-0.5 hover:-translate-y-0.5"
-                                        >
-                                            <details className="group/details" open={shouldAutoOpen}>
-                                                <summary className="flex cursor-pointer list-none select-none items-center justify-between gap-3 p-4 sm:p-5">
-                                                    <div className="flex min-w-0 items-start gap-3 sm:gap-4">
-                                                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center border-2 border-slate-900 bg-indigo-500 text-[10px] font-black text-white shadow-[2px_2px_0_#0f172a] sm:h-10 sm:w-10 sm:text-xs">
-                                                            Q{toBengaliNumber(idx + 1, language)}
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            {q.category && (
-                                                                <span className="mb-1.5 inline-block rounded-sm border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-slate-500 nb-mono">
-                                                                    {q.category}
-                                                                </span>
-                                                            )}
-                                                            <span className={`block font-black leading-snug text-slate-900 transition-colors group-hover/details:text-indigo-700 ${language === 'bn' ? 'font-bengali text-base sm:text-lg' : 'text-sm sm:text-base'}`}>
-                                                                {q.question}
+                                )}
+
+                                <button
+                                    type="button"
+                                    onClick={() => setIsFaqTagsExpanded(!isFaqTagsExpanded)}
+                                    className={`text-xs font-bold text-slate-600 hover:text-orange-700 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                >
+                                    {isFaqTagsExpanded
+                                        ? (language === 'en' ? 'Hide keywords' : 'শব্দ লুকান')
+                                        : (language === 'en' ? 'Search by keyword' : 'শব্দ দিয়ে খুঁজুন')}
+                                </button>
+
+                                {isFaqTagsExpanded && (
+                                    <div className="flex flex-wrap gap-1.5 border-t border-slate-200 pt-3">
+                                        {Array.from(new Set(faqQuestions.flatMap((q) => q.tags || []))).sort().map((tag) => {
+                                            const isActive = faqActiveTag.toLowerCase() === tag.toLowerCase();
+                                            return (
+                                                <button
+                                                    key={tag}
+                                                    type="button"
+                                                    onClick={() => setFaqActiveTag(isActive ? '' : tag)}
+                                                    className={`border px-2 py-0.5 text-[10px] font-semibold nb-mono ${
+                                                        isActive
+                                                            ? 'border-slate-900 bg-orange-500 text-white'
+                                                            : 'border-slate-300 bg-white text-slate-600 hover:border-slate-900 hover:bg-orange-50'
+                                                    }`}
+                                                >
+                                                    {tag}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </header>
+
+                            {faqFilteredQuestions.length === 0 ? (
+                                <div className="nb-card bg-white px-6 py-10 text-center">
+                                    <p className={`font-bold text-slate-600 ${language === 'bn' ? 'font-bengali text-base' : 'text-sm'}`}>
+                                        {language === 'en' ? 'No questions match.' : 'কোনো প্রশ্ন মিলেনি।'}
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={resetFaqFilters}
+                                        className="nb-btn-secondary mt-4 px-4 py-2 text-sm font-bold"
+                                    >
+                                        {language === 'en' ? 'Show all' : 'সব দেখুন'}
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="nb-card divide-y-2 divide-slate-900/10 overflow-hidden bg-white">
+                                    {faqFilteredQuestions.map((q) => {
+                                        const shouldAutoOpen = faqHasActiveFilters && (
+                                            faqFilteredQuestions.length <= 3 ||
+                                            (faqSearchQuery && q.question.toLowerCase().includes(faqSearchQuery.toLowerCase()))
+                                        );
+                                        return (
+                                            <details key={q.id} className="group" open={shouldAutoOpen}>
+                                                <summary className="flex cursor-pointer list-none items-start justify-between gap-3 px-4 py-4 sm:px-5 sm:py-5">
+                                                    <div className="min-w-0 pr-2">
+                                                        {q.category && (
+                                                            <span className="nb-tag mb-1.5 inline-block bg-orange-50 px-1.5 py-0.5 text-[9px] font-black text-orange-800">
+                                                                {q.category}
                                                             </span>
-                                                        </div>
+                                                        )}
+                                                        <p className={`font-bold leading-snug text-slate-900 ${language === 'bn' ? 'font-bengali text-base' : 'text-sm sm:text-base'}`}>
+                                                            {q.question}
+                                                        </p>
                                                     </div>
-                                                    <div className="flex h-7 w-7 shrink-0 items-center justify-center border-2 border-slate-900 bg-white text-slate-600 transition-all group-open/details:rotate-180 group-open/details:bg-indigo-600 group-open/details:text-white sm:h-8 sm:w-8">
-                                                        <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" viewBox="0 0 24 24" width="18"><path d="M6 9l6 6 6-6" /></svg>
-                                                    </div>
+                                                    <svg
+                                                        className="mt-1 h-4 w-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2.5"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path d="M6 9l6 6 6-6" />
+                                                    </svg>
                                                 </summary>
-                                                <div className="border-t-2 border-slate-100 px-4 pb-5 pt-3 sm:px-6 sm:pb-6">
-                                                    <div className={`leading-relaxed text-slate-700 ${language === 'bn' ? 'font-bengali text-base sm:text-lg' : 'text-sm font-medium sm:text-base'}`}>
+                                                <div className="border-t border-slate-100 px-4 pb-5 pt-3 sm:px-5">
+                                                    <div className={`leading-relaxed text-slate-600 ${language === 'bn' ? 'font-bengali text-base' : 'text-sm'}`}>
                                                         {renderTextWithImages(q.answer)}
                                                     </div>
 
                                                     {q.image && (
-                                                        <div className="mt-4 max-w-full overflow-hidden border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] sm:max-w-lg">
+                                                        <div className="mt-4 max-w-md overflow-hidden border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
                                                             <img
                                                                 src={`/quizzes/faq_images/${q.image}`}
                                                                 alt={q.question}
@@ -3751,8 +3775,8 @@ export default function Training({
                                                     )}
 
                                                     {q.tags && q.tags.length > 0 && (
-                                                        <div className="mt-4 flex flex-wrap gap-1">
-                                                            {q.tags.map((tag) => (
+                                                        <div className="mt-3 flex flex-wrap gap-1">
+                                                            {q.tags.slice(0, 6).map((tag) => (
                                                                 <button
                                                                     key={tag}
                                                                     type="button"
@@ -3761,10 +3785,10 @@ export default function Training({
                                                                         setFaqActiveTag(faqActiveTag === tag ? '' : tag);
                                                                         setFaqSearchQuery('');
                                                                     }}
-                                                                    className={`rounded-sm border px-1.5 py-0.5 text-[9px] font-semibold transition-colors nb-mono ${
+                                                                    className={`px-1.5 py-0.5 text-[9px] font-medium nb-mono ${
                                                                         faqActiveTag === tag
-                                                                            ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
-                                                                            : 'border-slate-200 bg-slate-50 text-slate-500 hover:border-indigo-300 hover:text-indigo-600'
+                                                                            ? 'text-orange-700 underline'
+                                                                            : 'text-slate-400 hover:text-orange-600'
                                                                     }`}
                                                                 >
                                                                     {tag}
@@ -3774,10 +3798,10 @@ export default function Training({
                                                     )}
                                                 </div>
                                             </details>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     ) : null}
                     {/* PPE Survey Modal */}
