@@ -100,6 +100,14 @@ export function getBoardTabLabel(boardId, monthlyTabs = {}) {
     return monthlyTabs[boardId] || boardId;
 }
 
+/** Compact place label for prize lists (1st / 2nd / 3rd). */
+export function getPrizeRankLabel(prizeRank, language = 'bn') {
+    if (prizeRank === 1) return language === 'en' ? '1st' : '১ম';
+    if (prizeRank === 2) return language === 'en' ? '2nd' : '২য়';
+    if (prizeRank === 3) return language === 'en' ? '3rd' : '৩য়';
+    return language === 'en' ? `#${prizeRank}` : `${prizeRank}`;
+}
+
 /** All prize wins across months and boards (only rows with catalog + prize recipient). */
 export function collectAllUserPrizeWins(hallOfFameData, language = 'bn') {
     const wins = [];
@@ -125,6 +133,7 @@ export function collectAllUserPrizeWins(hallOfFameData, language = 'bn') {
                     monthLabel: formatPrizeMonthLabel(entry.year, entry.month, language),
                     boardId,
                     prizeRank: winner.prize_rank,
+                    rankLabel: getPrizeRankLabel(winner.prize_rank, language),
                     prize,
                 });
             }
@@ -239,7 +248,7 @@ export function buildLandingPrizeSlides(language = 'bn', hallOfFameData = []) {
                 year: entry.year,
                 month: entry.month,
                 prizeRank: entry.prizeRank,
-                rankLabel: rankLabels[entry.prizeRank] || rankLabels[3],
+                rankLabel: rankLabels[entry.prizeRank] || getPrizeRankLabel(entry.prizeRank, language),
                 monthLabel: formatPrizeMonthLabel(entry.year, entry.month, language),
                 boardLabel: getBoardTabLabel(entry.boardId, monthlyTabs),
                 winnerName: winnerByKey.get(key) || null,

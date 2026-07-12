@@ -123,6 +123,10 @@ export default function HallOfFameUserPrizesView({
                                                     {win.monthLabel}
                                                 </span>
                                                 <span className="text-slate-300" aria-hidden>·</span>
+                                                <span className={`font-black text-slate-800 ${language === 'bn' ? 'font-bengali' : 'nb-mono'}`}>
+                                                    {win.rankLabel}
+                                                </span>
+                                                <span className="text-slate-300" aria-hidden>·</span>
                                                 <span className={`text-orange-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                     {getBoardTabLabel(win.boardId, monthlyTabs)}
                                                 </span>

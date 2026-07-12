@@ -564,6 +564,10 @@ export default function LeaderboardUserSheet({
                                             <p className="text-[9px] font-bold text-slate-500">
                                                 {win.monthLabel}
                                                 {' · '}
+                                                <span className={`font-black text-slate-700 ${bn ? 'font-bengali' : 'nb-mono'}`}>
+                                                    {win.rankLabel}
+                                                </span>
+                                                {' · '}
                                                 {getBoardTabLabel(win.boardId, monthlyTabs)}
                                             </p>
                                             <p className={`text-[10px] font-black text-slate-800 leading-snug ${bn ? 'font-bengali' : ''}`}>
