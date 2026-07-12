@@ -12,6 +12,8 @@ import { requestManager } from './utils/requestManager';
 import LogoutConfirmationModal from "./components/LogoutConfirmationModal";
 import Sidebar from "./components/Sidebar";
 import NetworkStatusListener from "./components/NetworkStatusListener";
+import WeatherAlertBanner from "./components/WeatherAlertBanner";
+import { useWeatherAlert } from "./hooks/useWeatherAlert";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
 import { UserIcon } from "./components/icons";
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from "./config";
@@ -51,6 +53,7 @@ const AwarenessStories = lazy(() => import("./components/safety/AwarenessStories
 const VideoGuide = lazy(() => import("./components/safety/VideoGuide"));
 const AroJanun = lazy(() => import("./components/safety/AroJanun"));
 const SafetyLibrary = lazy(() => import("./components/safety/SafetyLibrary"));
+const WeatherAlertDemo = lazy(() => import("./components/WeatherAlertDemo"));
 // const SafetyHero = lazy(() => import("./components/safety/SafetyHero"));
 
 // Smooth transition pre-loader
@@ -135,6 +138,14 @@ export default function SmartLinemanUI() {
   const [forumActivityToast, setForumActivityToast] = useState(null);
   const [forumPendingQuestionId, setForumPendingQuestionId] = useState(null);
   const forumActivityTimerRef = useRef(null);
+
+  const weatherDistrict = userProfile?.district || null;
+  const { alert: weatherAlert, visible: weatherVisible, isReminder: weatherIsReminder, dismiss: dismissWeather, refresh: refreshWeather, loading: weatherLoading } =
+    useWeatherAlert(user ? weatherDistrict : null);
+  const showWeatherBanner =
+    user &&
+    weatherDistrict &&
+    !['login', 'verify', 'landing', 'update-password'].includes(currentView);
 
   // Version Comparison Helper
   const isVersionOlder = (current, min) => {
@@ -334,7 +345,7 @@ export default function SmartLinemanUI() {
         async () => {
           const { data, error } = await supabase
             .from('profiles')
-            .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id, updated_at')
+            .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id, updated_at, district, block')
             .eq('id', targetUser.id)
             .single();
 
@@ -1057,7 +1068,7 @@ export default function SmartLinemanUI() {
   const t = translations[language];
 
   const renderContent = () => {
-    const publicViews = ['landing', 'login', 'update-password', 'verify', 'accident-stories', 'video-guide', 'aro-janun', 'sops'];
+    const publicViews = ['landing', 'login', 'update-password', 'verify', 'accident-stories', 'video-guide', 'aro-janun', 'sops', 'weather-alert-demo'];
     const isPublic = publicViews.includes(currentView);
 
     if (!user && !isPublic && !appLoading) {
@@ -1179,6 +1190,8 @@ export default function SmartLinemanUI() {
           return <AroJanun language={language} setCurrentView={setCurrentView} />;
         case 'safety-library':
           return <SafetyLibrary language={language} setCurrentView={setCurrentView} />;
+        case 'weather-alert-demo':
+          return <WeatherAlertDemo language={language} setCurrentView={setCurrentView} />;
         /* case 'safety-hero':
           return <SafetyHero language={language} user={user} onBack={() => setCurrentView('home')} />; */
         case 'home':
@@ -1537,6 +1550,17 @@ export default function SmartLinemanUI() {
             )}
 
             <NetworkStatusListener language={language} />
+            {showWeatherBanner && (
+              <WeatherAlertBanner
+                alert={weatherAlert}
+                visible={weatherVisible}
+                language={language}
+                isReminder={weatherIsReminder}
+                onDismiss={dismissWeather}
+                onRefresh={refreshWeather}
+                loading={weatherLoading}
+              />
+            )}
 
             {user && <RadioScrollPaddingBridge currentView={currentView} />}
             {user && <RadioSafetyGuard currentView={currentView} />}
