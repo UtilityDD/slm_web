@@ -437,6 +437,25 @@ body,
     border-bottom: var(--nb-border);
   }
 
+  .neo-brutal .nb-segment,
+  .landing-neo-brutal .nb-segment {
+    border: 2px solid var(--nb-ink);
+    background: #fff;
+    box-shadow: 3px 3px 0 var(--nb-ink);
+  }
+
+  .neo-brutal .nb-segment__tab,
+  .landing-neo-brutal .nb-segment__tab {
+    color: #475569;
+  }
+
+  .neo-brutal .nb-segment__tab--active,
+  .landing-neo-brutal .nb-segment__tab--active {
+    background: #ea580c;
+    color: #fff;
+    box-shadow: 2px 2px 0 var(--nb-ink);
+  }
+
   .neo-brutal .nb-card,
   .landing-neo-brutal .nb-card {
     background: #fff;
@@ -1838,6 +1857,21 @@ body,
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+/* Safety section tab crossfade (My PPE ↔ Library) */
+.safety-tab-panel {
+  animation: safety-tab-in 0.2s ease-out;
+}
+
+@keyframes safety-tab-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* Page Transitions */

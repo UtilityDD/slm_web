@@ -630,7 +630,7 @@ const GridImage = ({ images, alt, aspect = 'aspect-square' }) => {
     );
 };
 
-export default function SafetyLibrary({ language, setCurrentView }) {
+export default function SafetyLibrary({ language, setCurrentView, embedded = false }) {
     const [items, setItems] = useState([]);
     const [filteredItems, setFilteredItems] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -655,6 +655,8 @@ export default function SafetyLibrary({ language, setCurrentView }) {
     }, [selectedItem]);
 
     useEffect(() => {
+        if (embedded) return undefined;
+
         const html = document.documentElement;
         html.classList.remove('dark');
 
@@ -678,7 +680,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                 metaThemeColor.setAttribute('content', previousThemeColor);
             }
         };
-    }, []);
+    }, [embedded]);
 
     // Scroll Hint Effect
     useEffect(() => {
@@ -811,24 +813,19 @@ export default function SafetyLibrary({ language, setCurrentView }) {
         return selectedItem.related_items.filter((r) => r.category === 'Charts');
     }, [selectedItem]);
 
-    return (
-        <div className="neo-brutal min-h-screen pb-20 text-slate-900">
-            <div className="nb-hazard sticky top-0 z-[101]" aria-hidden="true" />
-
-            {/* Sticky Header */}
-            <div className="sticky top-[6px] z-[100] bg-[#fffdf7] py-4 px-4 sm:px-8">
-                <div className="max-w-7xl mx-auto space-y-4">
+    const searchAndCategories = (
+        <div className={`shrink-0 bg-[#fffdf7] ${embedded ? 'border-b-2 border-slate-900' : ''}`}>
+            <div className={`max-w-7xl mx-auto space-y-3 ${embedded ? 'px-4 sm:px-8 py-3' : 'py-4 px-4 sm:px-8'}`}>
+                {!embedded && (
                     <div className="flex items-center justify-between gap-4">
                         {!isSearchExpanded ? (
                             <>
-                                <div className="flex items-center gap-3 flex-1 min-w-0 animate-in fade-in slide-in-from-left-4 duration-300">
-                                    <SafetyTopTabs
-                                        current="safety-library"
-                                        onNavigate={setCurrentView}
-                                        language={language}
-                                        className="flex-1 min-w-0 max-w-sm"
-                                    />
-                                </div>
+                                <SafetyTopTabs
+                                    current="safety-library"
+                                    onNavigate={setCurrentView}
+                                    language={language}
+                                    className="flex-1 min-w-0 max-w-md"
+                                />
                                 <div className="flex items-center gap-2">
                                     <button
                                         type="button"
@@ -858,7 +855,7 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                                 </div>
                             </>
                         ) : (
-                            <div className="flex-1 flex items-center gap-2 animate-in slide-in-from-right-4 duration-300">
+                            <div className="flex-1 flex items-center gap-2">
                                 <div className="relative flex-1">
                                     <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 z-10" />
                                     <input
@@ -880,40 +877,93 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                             </div>
                         )}
                     </div>
+                )}
 
-                    <div ref={tabsRef} className="flex gap-2 overflow-x-auto no-scrollbar pb-1 scroll-smooth">
-                        {loading ? (
+                {embedded && (
+                    <div className="flex items-center gap-2">
+                        {isSearchExpanded ? (
                             <>
-                                {[56, 72, 64, 80, 68, 52, 60].map((w, i) => (
-                                    <div
-                                        key={i}
-                                        className="relative h-9 shrink-0 overflow-hidden border-2 border-slate-900 bg-slate-100 shadow-[2px_2px_0_#0f172a]"
-                                        style={{ width: `${w}px` }}
-                                    >
-                                        <SkeletonShimmer />
-                                    </div>
-                                ))}
+                                <div className="relative flex-1">
+                                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 z-10" />
+                                    <input
+                                        autoFocus
+                                        type="text"
+                                        placeholder={t.searchPlaceholder}
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="nb-input py-2 pl-9 pr-3 text-sm"
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => { setIsSearchExpanded(false); setSearchQuery(''); }}
+                                    className="px-2 py-2 text-xs font-black text-orange-600 nb-mono uppercase"
+                                >
+                                    {language === 'en' ? 'Done' : 'ঠিক'}
+                                </button>
                             </>
                         ) : (
-                            categories.map((cat) => (
+                            <>
+                                {!loading && (
+                                    <div className="hidden sm:block relative flex-1 max-w-md">
+                                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 z-10" />
+                                        <input
+                                            type="text"
+                                            placeholder={t.searchPlaceholder}
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            className="nb-input !min-h-[36px] py-1.5 pl-9 pr-3 text-sm"
+                                        />
+                                    </div>
+                                )}
                                 <button
-                                    key={cat.id}
                                     type="button"
-                                    onClick={() => setActiveCategory(cat.id)}
-                                    className={`px-4 py-2 text-[10px] sm:text-xs font-black transition-all whitespace-nowrap border-2 border-slate-900 text-center shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0_#0f172a]
-                                        ${activeCategory === cat.id
-                                            ? 'bg-orange-500 text-white'
-                                            : 'bg-white text-slate-700 hover:bg-orange-50'}`}
+                                    disabled={loading}
+                                    onClick={() => !loading && setIsSearchExpanded(true)}
+                                    className="sm:hidden w-9 h-9 flex items-center justify-center border-2 border-slate-900 bg-white text-slate-900 shadow-[3px_3px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 disabled:pointer-events-none disabled:opacity-40"
                                 >
-                                    {cat.label}
+                                    <SearchIcon className="w-5 h-5" />
                                 </button>
-                            ))
+                            </>
                         )}
                     </div>
+                )}
+
+                <div ref={tabsRef} className="flex gap-2 overflow-x-auto no-scrollbar pb-0.5 scroll-smooth">
+                    {loading ? (
+                        <>
+                            {[56, 72, 64, 80, 68, 52, 60].map((w, i) => (
+                                <div
+                                    key={i}
+                                    className="relative h-9 shrink-0 overflow-hidden border-2 border-slate-900 bg-slate-100 shadow-[2px_2px_0_#0f172a]"
+                                    style={{ width: `${w}px` }}
+                                >
+                                    <SkeletonShimmer />
+                                </div>
+                            ))}
+                        </>
+                    ) : (
+                        categories.map((cat) => (
+                            <button
+                                key={cat.id}
+                                type="button"
+                                onClick={() => setActiveCategory(cat.id)}
+                                className={`px-3 py-1.5 text-[10px] sm:text-xs font-black transition-colors whitespace-nowrap border-2 border-slate-900 text-center shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0_#0f172a]
+                                    ${activeCategory === cat.id
+                                        ? 'bg-orange-500 text-white'
+                                        : 'bg-white text-slate-700 hover:bg-orange-50'}`}
+                            >
+                                {cat.label}
+                            </button>
+                        ))
+                    )}
                 </div>
             </div>
+        </div>
+    );
 
-            <div className="max-w-7xl mx-auto p-3 sm:p-8">
+    const libraryContent = (
+        <div className={`max-w-7xl mx-auto p-3 sm:p-8 ${embedded ? 'pb-24' : ''}`}>
 
                 {loading ? (
                     <SafetyLibraryLoadingView language={language} />
@@ -1148,7 +1198,27 @@ export default function SafetyLibrary({ language, setCurrentView }) {
                         </div>
                     </div>
                 )}
+        </div>
+    );
+
+    if (embedded) {
+        return (
+            <div className="flex flex-col h-full min-h-0 overflow-hidden">
+                {searchAndCategories}
+                <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+                    {libraryContent}
+                </div>
             </div>
+        );
+    }
+
+    return (
+        <div className="neo-brutal min-h-screen pb-20 text-slate-900">
+            <div className="nb-hazard sticky top-0 z-[101]" aria-hidden="true" />
+            <div className="sticky top-[6px] z-[100]">
+                {searchAndCategories}
+            </div>
+            {libraryContent}
         </div>
     );
 }

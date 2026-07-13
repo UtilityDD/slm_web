@@ -37,6 +37,7 @@ export default function Sidebar({
     { id: 'my_ppe', label: language === 'en' ? 'My PPE' : 'আমার পিপিই', icon: '👷', show: true },
     { id: 'my_tools', label: language === 'en' ? 'My Tools' : 'আমার সরঞ্জাম', icon: '🔧', show: true },
     { id: 'emergency', label: language === 'en' ? 'Emergency' : 'জরুরি', icon: '🚨', show: true, color: 'text-red-600' },
+    { id: 'language', label: language === 'en' ? 'Language' : 'ভাষা', icon: '🌐', show: true },
     { id: 'admin', label: (userProfile?.role === 'lineman' || userProfile?.role === 'guest') ? (language === 'en' ? 'My Profile' : 'আমার প্রোফাইল') : (language === 'en' ? 'Update Profile' : 'প্রোফাইল আপডেট'), icon: '⚙️', show: ['admin', 'safety mitra', 'lineman', 'guest'].includes(userProfile?.role) },
     { id: 'guide', label: language === 'en' ? 'Handbook' : 'হ্যান্ডবুক', icon: '📖', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
     { id: 'admin-services', label: language === 'en' ? 'Services' : 'সার্ভিস', icon: '🔄', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
@@ -47,6 +48,11 @@ export default function Sidebar({
   const displayName = (userProfile?.full_name && !userProfile.full_name.includes('@')) ? userProfile.full_name : 'Guest';
 
   const handleNavClick = (item) => {
+    if (item.id === 'language') {
+      if (onToggleLanguageModal) onToggleLanguageModal();
+      onClose();
+      return;
+    }
     if (item.id === 'notifications') {
       if (onToggleNotifications) onToggleNotifications();
       onClose();
