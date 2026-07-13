@@ -4,13 +4,13 @@ import { requestManager } from '../utils/requestManager';
 
 const StatCard = ({ title, value, subValue, icon, color, delay }) => (
     <div
-        className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-all animate-fade-in"
+        className="nb-card bg-white rounded-lg p-6 transition-all animate-fade-in"
         style={{ animationDelay: `${delay}ms` }}
     >
         <div className="flex items-start justify-between">
             <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{title}</p>
-                <h3 className="text-3xl font-black text-slate-900 dark:text-white leading-tight">{value}</h3>
+                <h3 className="text-3xl font-black text-slate-900 leading-tight">{value}</h3>
                 {subValue && <p className="text-xs font-medium text-slate-500 mt-1">{subValue}</p>}
             </div>
             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-inner ${color}`}>
@@ -25,11 +25,11 @@ const ProgressBar = ({ label, percentage, color, icon }) => (
         <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider">
             <div className="flex items-center gap-2">
                 <span className="text-lg leading-none">{icon}</span>
-                <span className="text-slate-600 dark:text-slate-300">{label}</span>
+                <span className="text-slate-600">{label}</span>
             </div>
             <span className="text-slate-400">{percentage}%</span>
         </div>
-        <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-700/50 rounded-full overflow-hidden border border-slate-50 dark:border-slate-700">
+        <div className="h-2.5 w-full bg-orange-50 rounded-full overflow-hidden border-2 border-slate-900/15">
             <div
                 className={`h-full rounded-full transition-all duration-1000 ease-out ${color}`}
                 style={{ width: `${percentage}%` }}
@@ -147,9 +147,9 @@ export default function AdminAnalytics({ language, userRole }) {
         return (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
                 {[1, 2, 3].map(i => (
-                    <div key={i} className="h-32 bg-slate-100 dark:bg-slate-800 rounded-3xl" />
+                    <div key={i} className="h-32 bg-orange-50 border-2 border-slate-900/10 rounded-lg" />
                 ))}
-                <div className="md:col-span-3 h-64 bg-slate-100 dark:bg-slate-800 rounded-3xl" />
+                <div className="md:col-span-3 h-64 bg-orange-50 border-2 border-slate-900/10 rounded-lg" />
             </div>
         );
     }
@@ -163,7 +163,7 @@ export default function AdminAnalytics({ language, userRole }) {
                     value={stats.linemen}
                     subValue={language === 'en' ? "Active Workforce" : "সক্রিয় কর্মী বাহিনী"}
                     icon="👥"
-                    color="bg-blue-50 dark:bg-blue-900/30 text-blue-500"
+                    color="bg-blue-50 text-blue-500"
                     delay={0}
                 />
                 <StatCard
@@ -171,7 +171,7 @@ export default function AdminAnalytics({ language, userRole }) {
                     value={stats.safetyMitras}
                     subValue={language === 'en' ? "Supervisors" : "তত্ত্বাবধায়ক"}
                     icon="🛡️"
-                    color="bg-orange-50 dark:bg-orange-900/30 text-orange-500"
+                    color="bg-orange-50 text-orange-500"
                     delay={100}
                 />
                 <StatCard
@@ -179,7 +179,7 @@ export default function AdminAnalytics({ language, userRole }) {
                     value={stats.admins}
                     subValue={language === 'en' ? "System Control" : "সিস্টেম কন্ট্রোল"}
                     icon="⚡"
-                    color="bg-purple-50 dark:bg-purple-900/30 text-purple-500"
+                    color="bg-purple-50 text-purple-500"
                     delay={200}
                 />
                 <StatCard
@@ -187,17 +187,17 @@ export default function AdminAnalytics({ language, userRole }) {
                     value={stats.avgAge}
                     subValue={language === 'en' ? "Years old" : "বছর বয়স"}
                     icon="📅"
-                    color="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500"
+                    color="bg-emerald-50 text-emerald-500"
                     delay={300}
                 />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* PPE Availability Section */}
-                <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700">
+                <div className="nb-card bg-white rounded-lg p-8">
                     <div className="flex items-center gap-3 mb-8">
-                        <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center text-xl">🦺</div>
-                        <h4 className="text-lg font-bold text-slate-800 dark:text-white">
+                        <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl">🦺</div>
+                        <h4 className="text-lg font-bold text-slate-800">
                             {language === 'en' ? "PPE Availability" : "পিপিই প্রাপ্যতা"}
                         </h4>
                     </div>
@@ -215,10 +215,10 @@ export default function AdminAnalytics({ language, userRole }) {
                 </div>
 
                 {/* Tools Availability Section */}
-                <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700">
+                <div className="nb-card bg-white rounded-lg p-8">
                     <div className="flex items-center gap-3 mb-8">
-                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-xl">🛠️</div>
-                        <h4 className="text-lg font-bold text-slate-800 dark:text-white">
+                        <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl">🛠️</div>
+                        <h4 className="text-lg font-bold text-slate-800">
                             {language === 'en' ? "Tools Availability" : "সরঞ্জাম প্রাপ্যতা"}
                         </h4>
                     </div>

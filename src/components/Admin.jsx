@@ -11,23 +11,36 @@ import DeleteUserConfirmationModal from './DeleteUserConfirmationModal';
 import MyPPE from './safety/MyPPE';
 import MyTools from './safety/MyTools';
 
+const ADMIN_THEME = {
+  shell: 'neo-brutal min-h-full text-slate-900',
+  page: 'mx-auto max-w-5xl px-4 sm:px-6 py-5 sm:py-8 md:mb-6',
+  card: 'nb-card overflow-hidden bg-white',
+  tabBar: 'flex gap-1 p-1 rounded-lg border-2 border-slate-900 bg-orange-50 shadow-[3px_3px_0_#0f172a]',
+  tabActive: 'flex-1 py-2.5 rounded-md text-sm font-bold bg-white text-[#ea580c] border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]',
+  tabIdle: 'flex-1 py-2.5 rounded-md text-sm font-bold text-slate-600 hover:text-slate-900 hover:bg-white/70',
+  inset: 'rounded-lg border-2 border-slate-900/10 bg-orange-50/50',
+  input: 'nb-input w-full text-sm',
+  menuBtn: 'nb-btn-secondary text-sm font-semibold px-3 py-2 inline-flex items-center gap-2',
+  primaryBtn: 'nb-btn-primary text-sm font-bold px-3 py-2',
+};
+
 const NOTIFICATION_URGENCY_STYLES = {
-  info: { selected: 'border-orange-500 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400', idle: 'border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700' },
-  update: { selected: 'border-green-500 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400', idle: 'border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700' },
-  warning: { selected: 'border-orange-500 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400', idle: 'border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700' },
-  alert: { selected: 'border-red-500 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400', idle: 'border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700' }
+  info: { selected: 'border-2 border-slate-900 bg-orange-50 text-orange-700 shadow-[2px_2px_0_#0f172a]', idle: 'border-2 border-slate-900/15 text-slate-600 hover:bg-orange-50' },
+  update: { selected: 'border-2 border-slate-900 bg-green-50 text-green-700 shadow-[2px_2px_0_#0f172a]', idle: 'border-2 border-slate-900/15 text-slate-600 hover:bg-green-50' },
+  warning: { selected: 'border-2 border-slate-900 bg-orange-50 text-orange-700 shadow-[2px_2px_0_#0f172a]', idle: 'border-2 border-slate-900/15 text-slate-600 hover:bg-orange-50' },
+  alert: { selected: 'border-2 border-slate-900 bg-red-50 text-red-700 shadow-[2px_2px_0_#0f172a]', idle: 'border-2 border-slate-900/15 text-slate-600 hover:bg-red-50' }
 };
 
 const ProfileCardSkeleton = () => (
   <div className="space-y-3">
     {[1, 2, 3].map((i) => (
-      <div key={i} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 animate-pulse">
+      <div key={i} className={`${ADMIN_THEME.card} p-4 animate-pulse`}>
         <div className="flex gap-3 items-center">
-          <div className="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0" />
+          <div className="w-14 h-14 rounded-full bg-slate-200 shrink-0" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 w-36 bg-slate-200 dark:bg-slate-700 rounded" />
-            <div className="h-3 w-24 bg-slate-200 dark:bg-slate-700 rounded" />
-            <div className="h-3 w-40 bg-slate-100 dark:bg-slate-700/50 rounded" />
+            <div className="h-4 w-36 bg-slate-200 rounded" />
+            <div className="h-3 w-24 bg-slate-200 rounded" />
+            <div className="h-3 w-40 bg-slate-100 rounded" />
           </div>
         </div>
       </div>
@@ -88,7 +101,7 @@ function ProfileAvatar({ url, name, size = 'lg', className = '' }) {
 
   return (
     <div
-      className={`${sizeClass} rounded-full overflow-hidden shrink-0 border-2 border-white dark:border-slate-700 bg-orange-100 dark:bg-orange-900/30 shadow-md ring-2 ring-slate-100 dark:ring-slate-700 ${className}`}
+      className={`${sizeClass} rounded-full overflow-hidden shrink-0 border-2 border-slate-900 bg-orange-50 shadow-[2px_2px_0_#0f172a] ${className}`}
     >
       {showPhoto ? (
         <img
@@ -102,7 +115,7 @@ function ProfileAvatar({ url, name, size = 'lg', className = '' }) {
           decoding="async"
         />
       ) : (
-        <div className="w-full h-full flex items-center justify-center font-bold text-orange-600 dark:text-orange-400">
+        <div className="w-full h-full flex items-center justify-center font-bold text-[#ea580c]">
           {initials}
         </div>
       )}
@@ -168,19 +181,19 @@ function ProfileRow({
   children,
 }) {
   const toneClass = {
-    neutral: 'text-slate-700 dark:text-slate-200',
-    good: 'text-emerald-700 dark:text-emerald-400',
-    warn: 'text-amber-700 dark:text-amber-400',
-    bad: 'text-rose-700 dark:text-rose-400',
-    muted: 'text-slate-400 dark:text-slate-500',
+    neutral: 'text-slate-700',
+    good: 'text-emerald-700',
+    warn: 'text-amber-700',
+    bad: 'text-rose-700',
+    muted: 'text-slate-400',
   }[tone] || 'text-slate-700';
 
   return (
-    <div className="py-2 border-b border-slate-100 dark:border-slate-700/80 last:border-0">
+    <div className="py-2 border-b border-slate-100 last:border-0">
       {!isEditing ? (
         <div className="flex items-center gap-2 min-h-[28px]">
           <span className="w-6 text-center text-sm shrink-0" aria-hidden>{icon}</span>
-          <span className="text-xs text-slate-500 dark:text-slate-400 flex-1 min-w-0">{label}</span>
+          <span className="text-xs text-slate-500 flex-1 min-w-0">{label}</span>
           <span className={`text-xs font-semibold text-right max-w-[45%] truncate ${toneClass}`}>{value}</span>
           {canEdit && (
             <button
@@ -188,7 +201,7 @@ function ProfileRow({
               onClick={onEdit}
               aria-label={isEn ? 'Edit' : 'সম্পাদনা'}
               title={isEn ? 'Edit' : 'সম্পাদনা'}
-              className={`${iconBtnBase} w-7 h-7 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20`}
+              className={`${iconBtnBase} w-7 h-7 text-orange-600 hover:bg-orange-50`}
             >
               <PenIcon />
             </button>
@@ -196,7 +209,7 @@ function ProfileRow({
         </div>
       ) : (
         <div className="space-y-2 pl-8">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-orange-600 dark:text-orange-400">{label}</p>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-orange-600">{label}</p>
           {children}
           <div className="flex gap-2 justify-end">
             <button
@@ -219,7 +232,7 @@ function ProfileRow({
               disabled={saving}
               aria-label={isEn ? 'Cancel' : 'বাতিল'}
               title={isEn ? 'Cancel' : 'বাতিল'}
-              className={`${iconBtnBase} w-9 h-9 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800`}
+              className={`${iconBtnBase} w-9 h-9 text-slate-500 hover:bg-slate-100`}
             >
               <XIcon />
             </button>
@@ -288,9 +301,9 @@ function getProfileCompleteness(user) {
 function ProfileCompletenessBadge({ pct, isEn }) {
   const tone = pct >= 100 ? 'emerald' : pct >= 70 ? 'amber' : 'rose';
   const toneClass = {
-    emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    amber: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    rose: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 animate-pulse',
+    emerald: 'bg-emerald-100 text-emerald-700',
+    amber: 'bg-amber-100 text-amber-700',
+    rose: 'bg-rose-100 text-rose-700 animate-pulse',
   }[tone];
 
   return (
@@ -418,7 +431,7 @@ function UserProfileCard({
     </ProfileRow>
   );
 
-  const inputCls = 'w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100';
+  const inputCls = ADMIN_THEME.input;
   const textEditor = (field, initial) => ({
     initial,
     payload: () => ({ [field]: draft.trim() }),
@@ -467,7 +480,7 @@ function UserProfileCard({
     render: () => (
       <label className="flex items-center gap-3 py-1">
         <input type="checkbox" checked={draftBool} onChange={(e) => setDraftBool(e.target.checked)} className="w-5 h-5 rounded" />
-        <span className="text-sm text-slate-700 dark:text-slate-300">{draftBool ? '✓' : '✗'}</span>
+        <span className="text-sm text-slate-700">{draftBool ? '✓' : '✗'}</span>
       </label>
     ),
   });
@@ -479,24 +492,24 @@ function UserProfileCard({
   const blocks = targetUser.district && wbLocations?.[targetUser.district] ? wbLocations[targetUser.district] : [];
 
   return (
-    <article className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+    <article className={ADMIN_THEME.card}>
       {compact ? (
         <button
           type="button"
           onClick={onToggleExpand}
           aria-expanded={isExpanded}
-          className="w-full p-3 sm:p-4 text-left hover:bg-orange-50/60 dark:hover:bg-orange-950/20 transition-colors"
+          className="w-full p-3 sm:p-4 text-left hover:bg-orange-50/60 transition-colors"
         >
           <div className="flex items-center gap-3">
             <div className="relative shrink-0">
               <ProfileAvatar url={targetUser.avatar_url} name={targetUser.full_name} size="md" />
               {isOnline && (
-                <span className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-800" aria-hidden />
+                <span className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white" aria-hidden />
               )}
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                <p className="text-sm font-bold text-slate-900 truncate">
                   {targetUser.full_name || (isEn ? 'Unnamed' : 'নাম নেই')}
                 </p>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${roleBadgeClass(targetUser.role)}`}>
@@ -504,20 +517,20 @@ function UserProfileCard({
                 </span>
                 <ProfileCompletenessBadge pct={completeness.pct} isEn={isEn} />
               </div>
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 truncate">
+              <p className="mt-0.5 text-xs text-slate-500 truncate">
                 📍 {targetUser.district || emptyLabel(isEn)}
                 {targetUser.block ? ` · ${targetUser.block}` : ''}
               </p>
               {supervisorName ? (
-                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 truncate" title={isEn ? 'Safety Mitra' : 'সেফটি মিত্র'}>
+                <p className="mt-0.5 text-xs text-slate-500 truncate" title={isEn ? 'Safety Mitra' : 'সেফটি মিত্র'}>
                   👔 {supervisorName}
                 </p>
               ) : targetUser.supervisor_id ? (
-                <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500 truncate">
+                <p className="mt-0.5 text-xs text-slate-400 truncate">
                   👔 {isEn ? 'Supervisor assigned' : 'সুপারভাইজার আছে'}
                 </p>
               ) : null}
-              <p className={`mt-0.5 text-[11px] font-medium ${isOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`}>
+              <p className={`mt-0.5 text-[11px] font-medium ${isOnline ? 'text-emerald-600' : 'text-slate-400'}`}>
                 ⏱ {lastActiveLabel}
               </p>
             </div>
@@ -527,7 +540,7 @@ function UserProfileCard({
           </div>
         </button>
       ) : (
-        <div className="p-4 bg-gradient-to-b from-orange-50/80 to-transparent dark:from-orange-950/20">
+        <div className="p-4 bg-gradient-to-b from-orange-50/80 to-transparent">
           <div className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:text-left sm:gap-4">
             <div className="relative shrink-0">
               <ProfileAvatar url={targetUser.avatar_url} name={targetUser.full_name} size={avatarSize} />
@@ -561,7 +574,7 @@ function UserProfileCard({
                   <span className="text-[10px] font-mono text-slate-400">ID {targetUser.slm_id}</span>
                 )}
               </div>
-              <p className={`mt-2 text-xs ${isOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
+              <p className={`mt-2 text-xs ${isOnline ? 'text-emerald-600' : 'text-slate-400'}`}>
                 ⏱ {lastActiveLabel}
               </p>
             </div>
@@ -572,7 +585,7 @@ function UserProfileCard({
       {isExpanded && (
         <>
           {compact && (
-            <div className="px-4 pt-2 pb-1 flex items-center gap-3 border-t border-slate-100 dark:border-slate-700/80 bg-gradient-to-b from-orange-50/40 to-transparent dark:from-orange-950/10">
+            <div className="px-4 pt-2 pb-1 flex items-center gap-3 border-t border-slate-100 bg-gradient-to-b from-orange-50/40 to-transparent">
               <div className="relative shrink-0">
                 <ProfileAvatar url={targetUser.avatar_url} name={targetUser.full_name} size="lg" />
                 {canManage && (
@@ -599,7 +612,7 @@ function UserProfileCard({
                 {targetUser.slm_id && (
                   <span className="text-[10px] font-mono text-slate-400">ID {targetUser.slm_id}</span>
                 )}
-                <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+                <p className="text-sm font-bold text-slate-800 truncate">
                   {targetUser.full_name || emptyLabel(isEn)}
                 </p>
               </div>
@@ -608,7 +621,7 @@ function UserProfileCard({
 
       <div className="px-4 pb-2">
         <p className="text-sm mb-1" aria-label={isEn ? 'Profile' : 'প্রোফাইল'} title={isEn ? 'Profile' : 'প্রোফাইল'}>👤</p>
-        <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 px-3 py-1">
+        <div className={`${ADMIN_THEME.inset} px-3 py-1`}>
           {row('full_name', '👤', isEn ? 'Full name' : 'নাম', display(targetUser.full_name), targetUser.full_name ? 'neutral' : 'muted', isAdmin, textEditor('full_name', targetUser.full_name))}
           {row('phone_number', '📱', isEn ? 'Phone' : 'ফোন', display(phone), phone ? 'neutral' : 'muted', isAdmin, textEditor('phone_number', phone))}
           {row('email', '📧', isEn ? 'Email' : 'ইমেইল', display(targetUser.email), 'muted', false, textEditor('email', targetUser.email))}
@@ -625,7 +638,7 @@ function UserProfileCard({
 
       <div className="px-4 pb-2">
         <p className="text-sm mb-1" aria-label={isEn ? 'Health & safety' : 'স্বাস্থ্য ও নিরাপত্তা'} title={isEn ? 'Health & safety' : 'স্বাস্থ্য ও নিরাপত্তা'}>🩺</p>
-        <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 px-3 py-1">
+        <div className={`${ADMIN_THEME.inset} px-3 py-1`}>
           {row('blood_group', '🩸', isEn ? 'Blood group' : 'রক্তের গ্রুপ', display(targetUser.blood_group), targetUser.blood_group ? 'neutral' : 'muted', true, selectEditor('blood_group', targetUser.blood_group, bloodGroups))}
           {row('age', '🎂', isEn ? 'Age' : 'বয়স', targetUser.age ? `${targetUser.age} ${isEn ? 'yrs' : 'বছর'}` : emptyLabel(isEn), targetUser.age ? 'neutral' : 'muted', true, numberEditor('age', targetUser.age))}
           {row('dob', '📅', isEn ? 'Date of birth' : 'জন্ম তারিখ', display(targetUser.dob), targetUser.dob ? 'neutral' : 'muted', true, dateEditor('dob', targetUser.dob))}
@@ -641,7 +654,7 @@ function UserProfileCard({
 
       <div className="px-4 pb-3">
         <p className="text-sm mb-1" aria-label={isEn ? 'Family' : 'পরিবার'} title={isEn ? 'Family' : 'পরিবার'}>👨‍👩‍👧</p>
-        <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 px-3 py-1">
+        <div className={`${ADMIN_THEME.inset} px-3 py-1`}>
           {row('education', '🎓', isEn ? 'Education' : 'শিক্ষা', display(targetUser.education), 'neutral', true, textEditor('education', targetUser.education))}
           {row('children_count', '👶', isEn ? 'Children count' : 'সন্তান সংখ্যা', display(targetUser.children_count), 'neutral', true, numberEditor('children_count', targetUser.children_count))}
           {row('children_ages', '🎂', isEn ? 'Children ages' : 'সন্তানের বয়স', display(targetUser.children_ages), 'neutral', true, textEditor('children_ages', targetUser.children_ages))}
@@ -651,7 +664,7 @@ function UserProfileCard({
       </div>
 
       {canManage && (
-        <div className="px-4 pb-4 border-t border-slate-100 dark:border-slate-700 pt-3 space-y-2">
+        <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-2">
           <p className="text-sm mb-1" aria-label={isEn ? 'Equipment & actions' : 'সরঞ্জাম ও কাজ'} title={isEn ? 'Equipment & actions' : 'সরঞ্জাম ও কাজ'}>⚙️</p>
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -659,7 +672,7 @@ function UserProfileCard({
               onClick={onPPE}
               aria-label={isEn ? 'Update PPE' : 'PPE আপডেট'}
               title={isEn ? 'PPE' : 'PPE'}
-              className="py-2.5 rounded-xl text-lg font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700"
+              className="nb-btn-secondary py-2.5 text-lg font-semibold text-slate-800"
             >
               🦺
             </button>
@@ -668,7 +681,7 @@ function UserProfileCard({
               onClick={onTools}
               aria-label={isEn ? 'Update tools' : 'সরঞ্জাম আপডেট'}
               title={isEn ? 'Tools' : 'সরঞ্জাম'}
-              className="py-2.5 rounded-xl text-lg font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700"
+              className="nb-btn-secondary py-2.5 text-lg font-semibold text-slate-800"
             >
               🛠️
             </button>
@@ -680,7 +693,7 @@ function UserProfileCard({
                 onClick={onResetPassword}
                 aria-label={isEn ? 'Reset password' : 'পাসওয়ার্ড রিসেট'}
                 title={isEn ? 'Reset password' : 'পাসওয়ার্ড রিসেট'}
-                className={`${iconBtnBase} flex-1 h-9 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-lg`}
+                className={`${iconBtnBase} flex-1 h-9 text-amber-600 hover:bg-amber-50 text-lg`}
               >
                 🔑
               </button>
@@ -689,7 +702,7 @@ function UserProfileCard({
                 onClick={onReset}
                 aria-label={isEn ? 'Reset training scores' : 'প্রশিক্ষণ স্কোর রিসেট'}
                 title={isEn ? 'Reset scores' : 'স্কোর রিসেট'}
-                className={`${iconBtnBase} flex-1 h-9 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-lg`}
+                className={`${iconBtnBase} flex-1 h-9 text-rose-600 hover:bg-rose-50 text-lg`}
               >
                 ↺
               </button>
@@ -698,7 +711,7 @@ function UserProfileCard({
                 onClick={onDelete}
                 aria-label={isEn ? 'Delete account' : 'অ্যাকাউন্ট মুছুন'}
                 title={isEn ? 'Delete' : 'মুছুন'}
-                className={`${iconBtnBase} flex-1 h-9 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900/40 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20`}
+                className={`${iconBtnBase} flex-1 h-9 text-rose-700 border border-rose-200 rounded-xl hover:bg-rose-50`}
               >
                 <TrashIcon />
               </button>
@@ -1413,10 +1426,10 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   };
 
   const roleBadgeClass = (role) => {
-    if (role === 'guest') return 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400';
-    if (role === 'admin') return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
-    if (role === 'safety mitra') return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
-    return 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300';
+    if (role === 'guest') return 'bg-sky-100 text-sky-800 border border-slate-900/20';
+    if (role === 'admin') return 'bg-purple-100 text-purple-800 border border-slate-900/20';
+    if (role === 'safety mitra') return 'bg-orange-100 text-orange-800 border border-slate-900/20';
+    return 'bg-slate-100 text-slate-800 border border-slate-900/20';
   };
 
   const healthStatusLabel = (ok) => {
@@ -1506,27 +1519,24 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       : sortedTeamUsers;
 
   const sectionTabBtn = (active) =>
-    `flex-1 py-2.5 rounded-lg text-sm font-bold transition-colors ${
-      active
-        ? 'bg-white dark:bg-slate-800 text-orange-600 dark:text-orange-400 shadow-sm'
-        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-    }`;
+    active ? ADMIN_THEME.tabActive : ADMIN_THEME.tabIdle;
 
-  const moreMenuBtn = 'w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex items-center gap-2';
+  const moreMenuBtn = `${ADMIN_THEME.card} w-full text-left px-4 py-3 text-sm font-semibold text-slate-800 hover:bg-orange-50/60 transition-colors flex items-center gap-2`;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 sm:px-6 py-5 sm:py-8 md:mb-6">
+    <div className={ADMIN_THEME.shell}>
+    <div className={ADMIN_THEME.page}>
       {/* Page header */}
       <div className="mb-5">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{pageTitle}</h1>
+        <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
         {pageSubtitle && (
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{pageSubtitle}</p>
+          <p className="mt-1 text-sm text-slate-500">{pageSubtitle}</p>
         )}
       </div>
 
       {/* My profile / Team toggle — admin & safety mitra */}
       {!isLineman && !showAnalytics && (
-        <div className="mb-5 flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
+        <div className={`mb-5 ${ADMIN_THEME.tabBar}`}>
           <button
             type="button"
             onClick={() => {
@@ -1556,25 +1566,25 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
           <button
             type="button"
             onClick={() => setShowManageMenu((v) => !v)}
-            className="text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
+            className="text-sm font-semibold text-slate-500 hover:text-orange-600 transition-colors"
           >
             {showManageMenu
               ? (isEn ? '▲ Hide manage options' : '▲ অপশন লুকান')
               : (isEn ? '▼ Manage (add people, notices…)' : '▼ পরিচালনা (যোগ, বিজ্ঞপ্তি…)')}
           </button>
           {showManageMenu && (
-            <div className="mt-3 flex flex-wrap gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
+            <div className={`mt-3 flex flex-wrap gap-2 p-3 ${ADMIN_THEME.inset}`}>
               <button
                 type="button"
                 onClick={() => setShowInviteModal(true)}
-                className="px-3 py-2 rounded-lg text-sm font-bold bg-orange-600 text-white hover:bg-orange-700"
+                className={ADMIN_THEME.primaryBtn}
               >
                 ➕ {isEn ? 'Add Lineman' : 'লাইনম্যান যোগ'}
               </button>
               <button
                 type="button"
                 onClick={() => setShowInviteHelp(true)}
-                className="px-3 py-2 rounded-lg text-sm font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
+                className={ADMIN_THEME.menuBtn}
               >
                 {isEn ? 'Help' : 'সাহায্য'}
               </button>
@@ -1583,14 +1593,14 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                   <button
                     type="button"
                     onClick={() => setShowNotificationModal(true)}
-                    className="px-3 py-2 rounded-lg text-sm font-semibold border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200"
+                    className={ADMIN_THEME.menuBtn}
                   >
                     📢 {isEn ? 'Send Notice' : 'বিজ্ঞপ্তি'}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowAnalytics(true)}
-                    className="px-3 py-2 rounded-lg text-sm font-semibold border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200"
+                    className={ADMIN_THEME.menuBtn}
                   >
                     📊 {isEn ? 'Reports' : 'রিপোর্ট'}
                   </button>
@@ -1620,7 +1630,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                   setResetConfirmInput('');
                   setShowResetConfirm(true);
                 }}
-                className={`${moreMenuBtn} text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900/40`}
+                className={`${moreMenuBtn} text-rose-700 border-rose-200`}
               >
                 ⚠️ {isEn ? 'Reset All Scores' : 'সব স্কোর রিসেট'}
               </button>
@@ -1634,23 +1644,23 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
           <button
             type="button"
             onClick={() => setShowAnalytics(false)}
-            className="text-sm font-semibold text-orange-600 dark:text-orange-400 mb-2"
+            className="text-sm font-semibold text-orange-600 mb-2"
           >
             {isEn ? '← Back to Update Profile' : '← প্রোফাইল আপডেটে ফিরুন'}
           </button>
-          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{isEn ? 'Workforce Reports' : 'কর্মী রিপোর্ট'}</h2>
+          <h2 className="text-lg font-bold text-slate-800">{isEn ? 'Workforce Reports' : 'কর্মী রিপোর্ট'}</h2>
         </div>
       )}
 
       {/* Admin-only collapsible panels — only when manage menu open */}
       {isAdmin && !showAnalytics && showManageMenu && (
-        <div className="mb-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+        <div className={`mb-4 ${ADMIN_THEME.card}`}>
           <button
             type="button"
             onClick={() => setShowNoticesSection((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
           >
-            <span className="font-semibold text-slate-800 dark:text-slate-100 text-sm">
+            <span className="font-semibold text-slate-800 text-sm">
               📢 {isEn ? 'Sent notices' : 'পাঠানো বিজ্ঞপ্তি'}
               {!adminBroadcastsLoading && adminBroadcasts.length > 0 && (
                 <span className="ml-2 text-xs font-normal text-slate-400">({adminBroadcasts.length})</span>
@@ -1659,12 +1669,12 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
             <span className="text-slate-400 text-xs">{showNoticesSection ? '▲' : '▼'}</span>
           </button>
           {showNoticesSection && (
-            <div className="px-4 pb-4 border-t border-slate-100 dark:border-slate-700">
+            <div className="px-4 pb-4 border-t border-slate-100">
               <div className="flex justify-end pt-3 mb-3">
                 <button
                   type="button"
                   onClick={() => loadAdminBroadcasts()}
-                  className="text-xs font-semibold text-orange-600 hover:text-orange-700 dark:text-orange-400"
+                  className="text-xs font-semibold text-orange-600 hover:text-orange-700"
                 >
                   {isEn ? 'Refresh list' : 'তালিকা রিফ্রেশ'}
                 </button>
@@ -1672,9 +1682,9 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               {adminBroadcastsLoading ? (
                 <p className="text-sm text-slate-500">{isEn ? 'Loading…' : 'লোড হচ্ছে…'}</p>
               ) : adminBroadcastsError ? (
-                <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-900 dark:text-amber-100">
+                <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
                   <p className="font-semibold">{isEn ? 'Could not load notices.' : 'বিজ্ঞপ্তি লোড হয়নি।'}</p>
-                  <p className="text-xs mt-1 text-amber-700/80 dark:text-amber-300/80">
+                  <p className="text-xs mt-1 text-amber-700/80">
                     {isEn ? 'Tap Refresh to try again.' : 'আবার চেষ্টা করতে রিফ্রেশ ট্যাপ করুন।'}
                   </p>
                 </div>
@@ -1689,33 +1699,33 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                     return (
                       <li
                         key={row.id}
-                        className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700"
+                        className={`p-3 rounded-lg ${ADMIN_THEME.inset}`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${rowIsActive ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-slate-200 text-slate-500 dark:bg-slate-700'}`}>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${rowIsActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>
                                 {rowIsActive ? (isEn ? 'Live' : 'চালু') : (isEn ? 'Off' : 'বন্ধ')}
                               </span>
                               {row.created_at && (
                                 <span className="text-[10px] text-slate-400">{new Date(row.created_at).toLocaleDateString()}</span>
                               )}
                             </div>
-                            <p className="font-semibold text-sm text-slate-900 dark:text-slate-100 truncate">{row.title}</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">{row.message}</p>
+                            <p className="font-semibold text-sm text-slate-900 truncate">{row.title}</p>
+                            <p className="text-xs text-slate-500 line-clamp-2 mt-0.5">{row.message}</p>
                           </div>
                           <div className="flex flex-col gap-1 shrink-0">
                             <button
                               type="button"
                               onClick={() => handleToggleBroadcastActive(row)}
-                              className="px-2 py-1 rounded text-[10px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200"
+                              className="px-2 py-1 rounded text-[10px] font-bold bg-white border border-slate-200 text-slate-700"
                             >
                               {rowIsActive ? (isEn ? 'Turn off' : 'বন্ধ') : (isEn ? 'Turn on' : 'চালু')}
                             </button>
                             <button
                               type="button"
                               onClick={() => handleDeleteBroadcastRow(row.id)}
-                              className="px-2 py-1 rounded text-[10px] font-bold text-rose-600 dark:text-rose-400"
+                              className="px-2 py-1 rounded text-[10px] font-bold text-rose-600"
                             >
                               {isEn ? 'Remove' : 'মুছুন'}
                             </button>
@@ -1733,20 +1743,20 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
       {/* Notice system check — only inside manage menu */}
       {isAdmin && !showAnalytics && showManageMenu && (
-        <div className="mb-5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+        <div className={`mb-5 ${ADMIN_THEME.card}`}>
           <button
             type="button"
             onClick={() => setShowSystemCheckSection((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
           >
-            <span className="font-semibold text-slate-800 dark:text-slate-100 text-sm">
+            <span className="font-semibold text-slate-800 text-sm">
               🔧 {isEn ? 'Notice system check' : 'বিজ্ঞপ্তি সিস্টেম চেক'}
             </span>
             <span className="text-slate-400 text-xs">{showSystemCheckSection ? '▲' : '▼'}</span>
           </button>
           {showSystemCheckSection && (
-            <div className="px-4 pb-4 border-t border-slate-100 dark:border-slate-700 pt-3">
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+            <div className="px-4 pb-4 border-t border-slate-100 pt-3">
+              <p className="text-xs text-slate-500 mb-3">
                 {isEn ? 'Check if notices are reaching users correctly.' : 'বিজ্ঞপ্তি ব্যবহারকারীদের কাছে পৌঁছাচ্ছে কিনা দেখুন।'}
               </p>
               <button
@@ -1758,23 +1768,23 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 {deliveryHealth.checking ? (isEn ? 'Checking…' : 'চেক হচ্ছে…') : (isEn ? 'Run check' : 'চেক করুন')}
               </button>
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-lg bg-slate-50 dark:bg-slate-900/50 p-3 border border-slate-100 dark:border-slate-700">
+                <div className={`rounded-lg p-3 ${ADMIN_THEME.inset}`}>
                   <p className="text-xs text-slate-500 mb-1">{isEn ? 'Live notices' : 'চালু বিজ্ঞপ্তি'}</p>
-                  <p className="text-lg font-bold text-slate-900 dark:text-slate-100">{deliveryHealth.activeCount ?? '—'}</p>
+                  <p className="text-lg font-bold text-slate-900">{deliveryHealth.activeCount ?? '—'}</p>
                 </div>
-                <div className="rounded-lg bg-slate-50 dark:bg-slate-900/50 p-3 border border-slate-100 dark:border-slate-700">
+                <div className={`rounded-lg p-3 ${ADMIN_THEME.inset}`}>
                   <p className="text-xs text-slate-500 mb-1">{isEn ? 'Users can see notices' : 'ইউজার দেখতে পারে'}</p>
                   <p className={`text-sm font-bold ${deliveryHealth.publicRpcOk === true ? 'text-emerald-600' : deliveryHealth.publicRpcOk === false ? 'text-rose-600' : 'text-slate-400'}`}>
                     {healthStatusLabel(deliveryHealth.publicRpcOk)}
                   </p>
                 </div>
-                <div className="rounded-lg bg-slate-50 dark:bg-slate-900/50 p-3 border border-slate-100 dark:border-slate-700">
+                <div className={`rounded-lg p-3 ${ADMIN_THEME.inset}`}>
                   <p className="text-xs text-slate-500 mb-1">{isEn ? 'Admin panel works' : 'অ্যাডমিন প্যানেল'}</p>
                   <p className={`text-sm font-bold ${deliveryHealth.adminRpcOk === true ? 'text-emerald-600' : deliveryHealth.adminRpcOk === false ? 'text-rose-600' : 'text-slate-400'}`}>
                     {healthStatusLabel(deliveryHealth.adminRpcOk)}
                   </p>
                 </div>
-                <div className="rounded-lg bg-slate-50 dark:bg-slate-900/50 p-3 border border-slate-100 dark:border-slate-700">
+                <div className={`rounded-lg p-3 ${ADMIN_THEME.inset}`}>
                   <p className="text-xs text-slate-500 mb-1">{isEn ? 'Instant updates' : 'তাৎক্ষণিক আপডেট'}</p>
                   <p className={`text-sm font-bold ${deliveryHealth.realtimeStatus === 'SUBSCRIBED' ? 'text-emerald-600' : deliveryHealth.realtimeStatus ? 'text-amber-600' : 'text-slate-400'}`}>
                     {realtimeLabel(deliveryHealth.realtimeStatus)}
@@ -1787,7 +1797,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 </p>
               )}
               {deliveryHealth.error && (
-                <p className="mt-2 text-xs text-rose-600 dark:text-rose-400">{deliveryHealth.error}</p>
+                <p className="mt-2 text-xs text-rose-600">{deliveryHealth.error}</p>
               )}
             </div>
           )}
@@ -1805,21 +1815,21 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={isEn ? 'Search name, phone, email, district, ID…' : 'নাম, ফোন, ইমেইল, জেলা, ID…'}
-                className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
+                className={`${ADMIN_THEME.input} pl-9 pr-9 py-2.5 placeholder:text-slate-400`}
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
                   aria-label={isEn ? 'Clear search' : 'অনুসন্ধান মুছুন'}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
                 >
                   ×
                 </button>
               )}
             </div>
           )}
-          <div className="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 overflow-x-auto">
+          <div className={`${ADMIN_THEME.tabBar} overflow-x-auto`}>
             {[
               { id: 'recent', label: isEn ? '⏱ Recent' : '⏱ সাম্প্রতিক' },
               { id: 'supervisor', label: isEn ? '👔 By Safety Mitra' : '👔 সেফটি মিত্র অনুযায়ী' },
@@ -1833,10 +1843,10 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                   setExpandedUserId(null);
                   if (opt.id === 'supervisor') setCurrentPage(1);
                 }}
-                className={`shrink-0 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${
+                className={`shrink-0 px-3 py-2 rounded-md text-xs font-bold transition-colors ${
                   teamSortMode === opt.id
-                    ? 'bg-white dark:bg-slate-800 text-orange-600 dark:text-orange-400 shadow-sm'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                    ? 'bg-white text-[#ea580c] border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
                 }`}
               >
                 {opt.label}
@@ -1849,7 +1859,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       {/* People list section label */}
       {!showAnalytics && !loading && profileUsers.length > 0 && !isLineman && profileSection === 'team' && (
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300">
+          <h2 className="text-sm font-bold text-slate-700">
             {debouncedSearch
               ? (isEn ? `${totalUsers} found` : `${totalUsers}টি পাওয়া গেছে`)
               : isSafetyMitra
@@ -1862,12 +1872,12 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       {loading ? (
         <ProfileCardSkeleton />
       ) : fetchError ? (
-        <div className="bg-white dark:bg-slate-800 shadow rounded-lg p-12 text-center border border-red-100 dark:border-red-900/30">
+        <div className={`${ADMIN_THEME.card} p-12 text-center border-red-300`}>
           <div className="text-4xl mb-4">📡</div>
-          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">
+          <h3 className="text-lg font-bold text-slate-800 mb-2">
             {language === 'en' ? 'Connection Error' : 'কানেকশন এরর'}
           </h3>
-          <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-xs mx-auto">
+          <p className="text-slate-500 mb-6 max-w-xs mx-auto">
             {language === 'en'
               ? 'Unable to load user data. Please check your internet connection.'
               : 'ইউজার ডাটা লোড করা সম্ভব হয়নি। আপনার ইন্টারনেট কানেকশন চেক করুন।'}
@@ -1883,9 +1893,9 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
         <AdminAnalytics language={language} userRole={userProfile?.role} />
       ) : (
         profileUsers.length === 0 ? (
-          <div className="bg-white dark:bg-slate-800 shadow rounded-lg p-12 text-center border border-slate-200 dark:border-slate-700">
+          <div className={`${ADMIN_THEME.card} p-12 text-center`}>
             <div className="text-4xl mb-4">{profileSection === 'mine' ? '👤' : '👥'}</div>
-            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">
+            <h3 className="text-lg font-bold text-slate-800 mb-2">
               {profileSection === 'mine'
                 ? (isEn ? 'Profile not loaded' : 'প্রোফাইল লোড হয়নি')
                 : debouncedSearch
@@ -1894,7 +1904,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                     ? (language === 'en' ? 'No one is yet tagged' : 'এখনও কাউকে ট্যাগ করা হয়নি')
                     : (language === 'en' ? 'No users found' : 'কোনো ব্যবহারকারী পাওয়া যায়নি')}
             </h3>
-            <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+            <p className="text-slate-500 max-w-sm mx-auto">
               {profileSection === 'mine'
                 ? (isEn ? 'Please try again in a moment.' : 'অনুগ্রহ করে একটু পরে আবার চেষ্টা করুন।')
                 : debouncedSearch
@@ -1953,10 +1963,10 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                 <section key={group.key}>
                   {group.title && (
                     <div className="mb-2 flex items-center justify-between gap-2 px-1">
-                      <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 min-w-0">
+                      <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2 min-w-0">
                         <span aria-hidden>👔</span>
                         <span className="truncate">{group.title}</span>
-                        <span className="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+                        <span className="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-slate-900/20">
                           {group.users.length}{' '}
                           {group.users.length === 1
                             ? (isEn ? 'lineman' : 'লাইনম্যান')
@@ -2019,18 +2029,18 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
             type="button"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 rounded-lg text-sm font-semibold border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800"
+            className="nb-btn-secondary px-4 py-2 text-sm font-semibold text-slate-800 disabled:opacity-40"
           >
             {isEn ? '← Previous' : '← আগে'}
           </button>
-          <span className="text-sm text-slate-500 dark:text-slate-400">
+          <span className="text-sm text-slate-500">
             {isEn ? `Page ${currentPage} of ${Math.ceil(totalUsers / usersPerPage)}` : `পৃষ্ঠা ${currentPage} / ${Math.ceil(totalUsers / usersPerPage)}`}
           </span>
           <button
             type="button"
             onClick={() => setCurrentPage((p) => Math.min(Math.ceil(totalUsers / usersPerPage), p + 1))}
             disabled={currentPage >= Math.ceil(totalUsers / usersPerPage)}
-            className="px-4 py-2 rounded-lg text-sm font-semibold border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800"
+            className="nb-btn-secondary px-4 py-2 text-sm font-semibold text-slate-800 disabled:opacity-40"
           >
             {isEn ? 'Next →' : 'পরে →'}
           </button>
@@ -2042,12 +2052,12 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       {/* Invite User Modal - Portal-ized for Android/Mobile feel */}
       {showInviteModal && createPortal(
         <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-800 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md flex flex-col border-t sm:border border-slate-100 dark:border-slate-700 animate-slide-up sm:animate-scale-in max-h-[90vh]">
-            <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{isEn ? 'Add New Lineman' : 'নতুন লাইনম্যান যোগ করুন'}</h2>
+          <div className="neo-brutal bg-[#fffdf7] rounded-t-3xl sm:rounded-2xl shadow-[0_-4px_0_#0f172a] sm:shadow-[4px_4px_0_#0f172a] w-full max-w-md flex flex-col border-t-2 sm:border-2 border-slate-900 animate-slide-up sm:animate-scale-in max-h-[90vh]">
+            <div className="p-6 border-b-2 border-slate-900 flex justify-between items-center shrink-0 bg-orange-50">
+              <h2 className="text-xl font-bold text-slate-900">{isEn ? 'Add New Lineman' : 'নতুন লাইনম্যান যোগ করুন'}</h2>
               <button
                 onClick={handleCloseInviteModal}
-                className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                className="p-2 -mr-2 text-slate-400 hover:text-slate-600 transition-colors"
                 aria-label="Close"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -2058,30 +2068,30 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               // SHOW TEMP PASSWORD RESULT
               <div className="p-6 space-y-6">
                 <div className="flex flex-col items-center text-center">
-                  <div className="w-20 h-20 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-3xl flex items-center justify-center text-4xl mb-4 shadow-inner">
+                  <div className="w-20 h-20 bg-green-50 text-green-600 rounded-3xl flex items-center justify-center text-4xl mb-4 shadow-inner">
                     ✅
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">User Created!</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Share these credentials with the new user</p>
+                  <h3 className="text-lg font-bold text-slate-900 mb-2">User Created!</h3>
+                  <p className="text-sm text-slate-500">Share these credentials with the new user</p>
                 </div>
 
-                <div className="space-y-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6">
+                <div className="space-y-4 bg-blue-50 rounded-xl p-6">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Name</label>
-                    <p className="text-lg font-bold text-slate-900 dark:text-slate-100">{tempPasswordResult.name}</p>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Name</label>
+                    <p className="text-lg font-bold text-slate-900">{tempPasswordResult.name}</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Phone Number</label>
-                    <p className="text-lg font-mono font-bold text-slate-900 dark:text-slate-100">{tempPasswordResult.phone}</p>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Phone Number</label>
+                    <p className="text-lg font-mono font-bold text-slate-900">{tempPasswordResult.phone}</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Temporary Password</label>
-                    <p className="text-2xl font-mono font-bold text-green-600 dark:text-green-400 tracking-widest">{tempPasswordResult.password}</p>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Temporary Password</label>
+                    <p className="text-2xl font-mono font-bold text-green-600 tracking-widest">{tempPasswordResult.password}</p>
                   </div>
                 </div>
 
-                <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4">
-                  <p className="text-sm text-orange-900 dark:text-orange-300">
+                <div className="bg-orange-50 rounded-xl p-4">
+                  <p className="text-sm text-orange-900">
                     ⚠️ <strong>Important:</strong> User must change this password on first login
                   </p>
                 </div>
@@ -2097,16 +2107,16 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               // CREATE USER FORM
               <form onSubmit={handleInviteUser} className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
                 <div className="flex flex-col items-center text-center">
-                  <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-3xl flex items-center justify-center text-4xl mb-4 shadow-inner">
+                  <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center text-4xl mb-4 shadow-inner">
                     👤
                   </div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 max-w-[280px]">
+                  <p className="text-sm text-slate-500 max-w-[280px]">
                     Create a new lineman account. They will receive a temporary password to login.
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">
                     Full Name
                   </label>
                   <div className="relative group">
@@ -2119,14 +2129,14 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                       autoFocus
                       value={inviteName}
                       onChange={(e) => setInviteName(e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all text-base lg:text-sm"
+                      className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all text-base lg:text-sm"
                       placeholder="Enter full name"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">
                     Phone Number (10 digits)
                   </label>
                   <div className="relative group">
@@ -2138,11 +2148,11 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                       required
                       value={invitePhone}
                       onChange={(e) => handlePhoneChange(e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all text-base lg:text-sm font-mono tracking-wider"
+                      className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all text-base lg:text-sm font-mono tracking-wider"
                       placeholder="9876543210"
                     />
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 ml-1">
+                  <p className="text-xs text-slate-500 ml-1">
                     {invitePhone.length}/10 digits
                   </p>
                 </div>
@@ -2151,7 +2161,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                   <button
                     type="button"
                     onClick={handleCloseInviteModal}
-                    className="order-2 sm:order-1 flex-1 py-4 rounded-2xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                    className="order-2 sm:order-1 flex-1 py-4 rounded-2xl font-bold text-slate-500 hover:bg-slate-50 transition-colors"
                   >
                     Cancel
                   </button>
@@ -2179,18 +2189,18 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
       {/* PPE Wizard Overlay */}
       {selectedUserForPPE && createPortal(
-        <div className="fixed inset-0 z-[300] bg-white dark:bg-slate-900 overflow-y-auto animate-fade-in custom-scrollbar">
-          <div className="sticky top-0 z-[310] bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 px-4 py-3 safe-area-top">
+        <div className="fixed inset-0 z-[300] bg-white overflow-y-auto animate-fade-in custom-scrollbar">
+          <div className="sticky top-0 z-[310] bg-white/95 backdrop-blur-sm border-b border-slate-200 px-4 py-3 safe-area-top">
             <button
               type="button"
               onClick={() => setSelectedUserForPPE(null)}
-              className="inline-flex items-center gap-2 text-sm font-bold text-orange-700 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 transition-colors"
+              className="inline-flex items-center gap-2 text-sm font-bold text-orange-700 hover:text-orange-800 transition-colors"
             >
               <span aria-hidden>←</span>
               {isEn ? 'Back to admin panel' : 'অ্যাডমিন প্যানেলে ফিরুন'}
             </button>
             {selectedUserForPPE.full_name && (
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">
+              <p className="mt-1 text-xs text-slate-500 truncate">
                 🦺 {isEn ? 'PPE' : 'পিপিই'} — {selectedUserForPPE.full_name}
               </p>
             )}
@@ -2207,18 +2217,18 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
       {/* Tools Wizard Overlay */}
       {selectedUserForTools && createPortal(
-        <div className="fixed inset-0 z-[300] bg-white dark:bg-slate-900 overflow-y-auto animate-fade-in custom-scrollbar">
-          <div className="sticky top-0 z-[310] bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 px-4 py-3 safe-area-top">
+        <div className="fixed inset-0 z-[300] bg-white overflow-y-auto animate-fade-in custom-scrollbar">
+          <div className="sticky top-0 z-[310] bg-white/95 backdrop-blur-sm border-b border-slate-200 px-4 py-3 safe-area-top">
             <button
               type="button"
               onClick={() => setSelectedUserForTools(null)}
-              className="inline-flex items-center gap-2 text-sm font-bold text-orange-700 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 transition-colors"
+              className="inline-flex items-center gap-2 text-sm font-bold text-orange-700 hover:text-orange-800 transition-colors"
             >
               <span aria-hidden>←</span>
               {isEn ? 'Back to admin panel' : 'অ্যাডমিন প্যানেলে ফিরুন'}
             </button>
             {selectedUserForTools.full_name && (
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">
+              <p className="mt-1 text-xs text-slate-500 truncate">
                 🛠️ {isEn ? 'Tools' : 'সরঞ্জাম'} — {selectedUserForTools.full_name}
               </p>
             )}
@@ -2244,48 +2254,48 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
       {/* Send Notification Modal - Portal-ized */}
       {showNotificationModal && createPortal(
-        <div className="fixed top-0 left-0 right-0 bottom-0 bg-slate-900/60 backdrop-blur-sm z-[200] p-4 flex items-center justify-center">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100 dark:border-slate-700 animate-scale-in flex flex-col max-h-[90vh] overflow-hidden">
-            <div className="flex justify-between items-center p-6 border-b dark:border-slate-700 shrink-0">
-              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
-                <div className="w-10 h-10 bg-orange-50 dark:bg-orange-900/30 rounded-xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="fixed top-0 left-0 right-0 bottom-0 bg-slate-900/55 backdrop-blur-sm z-[200] p-4 flex items-center justify-center">
+          <div className="neo-brutal nb-card rounded-2xl w-full max-w-md animate-scale-in flex flex-col max-h-[90vh] overflow-hidden bg-[#fffdf7]">
+            <div className="flex justify-between items-center p-6 border-b-2 border-slate-900 shrink-0 bg-orange-50">
+              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-3">
+                <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
                 </div>
                 {isEn ? 'Send Notice' : 'বিজ্ঞপ্তি পাঠান'}
               </h2>
-              <button type="button" onClick={() => setShowNotificationModal(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+              <button type="button" onClick={() => setShowNotificationModal(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 transition-colors">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
             <form onSubmit={handleSendNotification} className="p-6 space-y-4 overflow-y-auto custom-scrollbar">
               <div className="space-y-1">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">{isEn ? 'Title' : 'শিরোনাম'}</label>
+                <label className="block text-sm font-semibold text-slate-700">{isEn ? 'Title' : 'শিরোনাম'}</label>
                 <input
                   type="text"
                   value={notificationForm.title}
                   onChange={(e) => setNotificationForm({ ...notificationForm, title: e.target.value })}
                   placeholder={isEn ? 'e.g. Training update' : 'যেমন: প্রশিক্ষণ আপডেট'}
-                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl focus:border-orange-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                  className={`${ADMIN_THEME.input} px-4 py-3`}
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">{isEn ? 'Message' : 'বার্তা'}</label>
+                <label className="block text-sm font-semibold text-slate-700">{isEn ? 'Message' : 'বার্তা'}</label>
                 <textarea
                   value={notificationForm.message}
                   onChange={(e) => setNotificationForm({ ...notificationForm, message: e.target.value })}
                   placeholder={isEn ? 'Write your message here…' : 'এখানে লিখুন…'}
-                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl focus:border-orange-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 h-28 resize-none"
+                  className={`${ADMIN_THEME.input} px-4 py-3 h-28 resize-none`}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">{isEn ? 'How important?' : 'কতটা জরুরি?'}</label>
+                <label className="block text-sm font-semibold text-slate-700">{isEn ? 'How important?' : 'কতটা জরুরি?'}</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { id: 'info', label: isEn ? 'Info' : 'তথ্য' },
@@ -2311,7 +2321,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               <button
                 type="submit"
                 disabled={isSendingNotification}
-                className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-2xl shadow-xl shadow-orange-500/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
+                className="w-full py-4 nb-btn-primary font-bold disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
               >
                 {isSendingNotification ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : (isEn ? 'Send to Everyone' : 'সবাইকে পাঠান')}
               </button>
@@ -2336,16 +2346,16 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
       {/* RESET SCORE CONFIRMATION MODAL */}
       {showResetConfirm && createPortal(
-        <div className="fixed inset-0 z-[10000] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-rose-100 dark:border-rose-900/20 animate-scale-in">
+        <div className="fixed inset-0 z-[10000] bg-slate-900/55 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="neo-brutal nb-card rounded-2xl w-full max-w-md overflow-hidden animate-scale-in bg-[#fffdf7]">
             <div className="p-8 text-center">
-              <div className="w-20 h-20 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-inner animate-pulse">
+              <div className="w-20 h-20 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-inner animate-pulse">
                 ⚠️
               </div>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">
+              <h3 className="text-2xl font-black text-slate-900 mb-2">
                 {language === 'en' ? 'Are you absolutely sure?' : 'আপনি কি নিশ্চিত?'}
               </h3>
-              <p className="text-slate-500 dark:text-slate-400 font-bold mb-8 leading-relaxed">
+              <p className="text-slate-500 font-bold mb-8 leading-relaxed">
                 {resetTarget === 'all'
                   ? (language === 'en' ? 'This will permanently erase scores and training progress for EVERYONE in the organization.' : 'এটি সংস্থার প্রত্যেকের স্কোর এবং প্রশিক্ষণের অগ্রগতি স্থায়ীভাবে মুছে ফেলবে।')
                   : (language === 'en' ? `This will permanently reset all points and progress for ${resetTarget?.name}.` : `এটি ${resetTarget?.name}-এর সমস্ত পয়েন্ট এবং অগ্রগতি স্থায়ীভাবে রিসেট করবে।`)
@@ -2362,14 +2372,14 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
                     value={resetConfirmInput}
                     onChange={(e) => setResetConfirmInput(e.target.value.toUpperCase())}
                     placeholder="..."
-                    className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-2 border-rose-100 dark:border-rose-900/30 rounded-2xl focus:border-rose-500 outline-none text-center font-black transition-all"
+                    className="w-full px-6 py-4 bg-slate-50 border-2 border-rose-100 rounded-2xl focus:border-rose-500 outline-none text-center font-black transition-all"
                   />
                 </div>
 
                 <div className="flex gap-3">
                   <button
                     onClick={() => { setShowResetConfirm(false); setResetTarget(null); setResetConfirmInput(''); }}
-                    className="flex-1 py-4 px-6 rounded-2xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-all"
+                    className="flex-1 py-4 px-6 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-all"
                   >
                     {language === 'en' ? 'Cancel' : 'বাতিল'}
                   </button>
@@ -2397,16 +2407,16 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
       {/* Reset Password Confirm Modal */}
       {showPasswordResetConfirm && createPortal(
-        <div className="fixed inset-0 z-[10000] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-amber-100 dark:border-amber-900/20 animate-scale-in">
+        <div className="fixed inset-0 z-[10000] bg-slate-900/55 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="neo-brutal nb-card rounded-2xl w-full max-w-md overflow-hidden animate-scale-in bg-[#fffdf7]">
             <div className="p-8 text-center">
-              <div className="w-20 h-20 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-inner">
+              <div className="w-20 h-20 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-inner">
                 🔑
               </div>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">
+              <h3 className="text-2xl font-black text-slate-900 mb-2">
                 {language === 'en' ? 'Reset password?' : 'পাসওয়ার্ড রিসেট করবেন?'}
               </h3>
-              <p className="text-slate-500 dark:text-slate-400 font-bold mb-8 leading-relaxed">
+              <p className="text-slate-500 font-bold mb-8 leading-relaxed">
                 {language === 'en'
                   ? `A new temporary PIN will be generated for ${passwordResetTarget?.name}. Their current password stops working, and they must set a new one on next login.`
                   : `${passwordResetTarget?.name}-এর জন্য একটি নতুন অস্থায়ী পিন তৈরি হবে। তার বর্তমান পাসওয়ার্ড আর কাজ করবে না এবং পরের বার লগইনে নতুন পাসওয়ার্ড দিতে হবে।`}
@@ -2414,7 +2424,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               <div className="flex gap-3">
                 <button
                   onClick={() => { setShowPasswordResetConfirm(false); setPasswordResetTarget(null); }}
-                  className="flex-1 py-4 px-6 rounded-2xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-all"
+                  className="flex-1 py-4 px-6 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-all"
                 >
                   {language === 'en' ? 'Cancel' : 'বাতিল'}
                 </button>
@@ -2441,44 +2451,44 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
       {/* Reset Password Result Modal */}
       {passwordResetResult && createPortal(
-        <div className="fixed inset-0 z-[10001] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-green-100 dark:border-green-900/20 animate-scale-in">
+        <div className="fixed inset-0 z-[10001] bg-slate-900/55 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="neo-brutal nb-card rounded-2xl w-full max-w-md overflow-hidden animate-scale-in bg-[#fffdf7]">
             <div className="p-6 space-y-6">
               <div className="flex flex-col items-center text-center">
-                <div className="w-20 h-20 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-3xl flex items-center justify-center text-4xl mb-4 shadow-inner">
+                <div className="w-20 h-20 bg-green-50 text-green-600 rounded-3xl flex items-center justify-center text-4xl mb-4 shadow-inner">
                   ✅
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">
+                <h3 className="text-lg font-bold text-slate-900 mb-2">
                   {language === 'en' ? 'Password Reset' : 'পাসওয়ার্ড রিসেট হয়েছে'}
                 </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
+                <p className="text-sm text-slate-500">
                   {language === 'en' ? 'Share these credentials with the user' : 'এই তথ্য ব্যবহারকারীকে দিন'}
                 </p>
               </div>
 
-              <div className="space-y-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6">
+              <div className="space-y-4 bg-blue-50 rounded-xl p-6">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-bold text-slate-500 mb-1">
                     {language === 'en' ? 'Name' : 'নাম'}
                   </label>
-                  <p className="text-lg font-bold text-slate-900 dark:text-slate-100">{passwordResetResult.name}</p>
+                  <p className="text-lg font-bold text-slate-900">{passwordResetResult.name}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-bold text-slate-500 mb-1">
                     {language === 'en' ? 'Phone Number' : 'ফোন নম্বর'}
                   </label>
-                  <p className="text-lg font-mono font-bold text-slate-900 dark:text-slate-100">{passwordResetResult.phone}</p>
+                  <p className="text-lg font-mono font-bold text-slate-900">{passwordResetResult.phone}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-bold text-slate-500 mb-1">
                     {language === 'en' ? 'Temporary Password' : 'অস্থায়ী পাসওয়ার্ড'}
                   </label>
-                  <p className="text-2xl font-mono font-bold text-green-600 dark:text-green-400 tracking-widest">{passwordResetResult.password}</p>
+                  <p className="text-2xl font-mono font-bold text-green-600 tracking-widest">{passwordResetResult.password}</p>
                 </div>
               </div>
 
-              <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4">
-                <p className="text-sm text-orange-900 dark:text-orange-300">
+              <div className="bg-orange-50 rounded-xl p-4">
+                <p className="text-sm text-orange-900">
                   ⚠️ <strong>{language === 'en' ? 'Important:' : 'গুরুত্বপূর্ণ:'}</strong>{' '}
                   {language === 'en'
                     ? 'User must change this password on first login.'
@@ -2501,59 +2511,59 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
       {/* Invite Guideline Modal */}
       {showInviteHelp && createPortal(
         <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
-              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-sm">?</span>
                 How to Add a Lineman
               </h3>
-              <button onClick={() => setShowInviteHelp(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+              <button onClick={() => setShowInviteHelp(false)} className="text-slate-400 hover:text-slate-600">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
             <div className="p-6 space-y-6">
               <div className="flex gap-4">
                 <div className="flex-none flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm">1</div>
-                  <div className="w-0.5 grow bg-indigo-50 dark:bg-indigo-900/10 my-1"></div>
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">1</div>
+                  <div className="w-0.5 grow bg-indigo-50 my-1"></div>
                 </div>
                 <div className="pb-6">
-                  <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-1">Enter Details</h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Click <strong>{isEn ? 'Add Lineman' : 'লাইনম্যান যোগ করুন'}</strong> and enter their <strong>name</strong> and <strong>phone number</strong>.</p>
+                  <h4 className="font-bold text-slate-900 mb-1">Enter Details</h4>
+                  <p className="text-sm text-slate-500">Click <strong>{isEn ? 'Add Lineman' : 'লাইনম্যান যোগ করুন'}</strong> and enter their <strong>name</strong> and <strong>phone number</strong>.</p>
                 </div>
               </div>
 
               <div className="flex gap-4">
                 <div className="flex-none flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm">2</div>
-                  <div className="w-0.5 grow bg-indigo-50 dark:bg-indigo-900/10 my-1"></div>
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">2</div>
+                  <div className="w-0.5 grow bg-indigo-50 my-1"></div>
                 </div>
                 <div className="pb-6">
-                  <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-1">Get Temporary Password</h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">The system will generate a temporary password (e.g., <code>123456</code>). Write this down.</p>
+                  <h4 className="font-bold text-slate-900 mb-1">Get Temporary Password</h4>
+                  <p className="text-sm text-slate-500">The system will generate a temporary password (e.g., <code>123456</code>). Write this down.</p>
                 </div>
               </div>
 
               <div className="flex gap-4">
                 <div className="flex-none flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm">3</div>
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">3</div>
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-1">Share & Login</h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Share the phone number and password with the lineman. They must login and change their password.</p>
+                  <h4 className="font-bold text-slate-900 mb-1">Share & Login</h4>
+                  <p className="text-sm text-slate-500">Share the phone number and password with the lineman. They must login and change their password.</p>
                 </div>
               </div>
 
-              <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-900/30">
-                <p className="text-xs text-orange-800 dark:text-orange-300">
+              <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                <p className="text-xs text-orange-800">
                   <strong>Note:</strong> The new lineman will be automatically tagged to you (Safety Mitra).
                 </p>
               </div>
             </div>
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700">
+            <div className="p-4 bg-slate-50 border-t border-slate-100">
               <button
                 onClick={() => setShowInviteHelp(false)}
-                className="w-full py-3 bg-slate-900 dark:bg-slate-700 text-white rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-slate-600 transition-colors"
+                className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors"
               >
                 Got it
               </button>
@@ -2565,6 +2575,7 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
 
       {/* Uniform bottom spacing for all roles to prevent content cut-off by sticky navs or safe areas */}
       <div className="h-24 sm:h-12 w-full"></div>
+    </div>
     </div>
   );
 }
