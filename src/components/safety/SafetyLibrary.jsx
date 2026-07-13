@@ -101,7 +101,9 @@ const ImageSlider = forwardRef(function ImageSlider(
         /** Fires whenever zoom level changes (pinch, buttons, slide change). */
         onZoomChange,
         /** Tall charts: let image use natural height so the modal scroll body can scroll vertically at 1× zoom. */
-        naturalImageHeight = false
+        naturalImageHeight = false,
+        /** Auto-rotate slides every 3s when multiple images (off in detail modal). */
+        autoAdvance = true
     },
     ref
 ) {
@@ -273,13 +275,13 @@ const ImageSlider = forwardRef(function ImageSlider(
     }, [enableZoom, clampPan, detachGlobalPointerListeners]);
 
     useEffect(() => {
-        if (!validImages || validImages.length <= 1 || !showControls) return;
+        if (!autoAdvance || !validImages || validImages.length <= 1 || !showControls) return;
         const interval = setInterval(() => {
             if (enableZoom && (zoomRef.current > 1.001 || pinchRef.current.active)) return;
             advanceSlide(1);
         }, 3000);
         return () => clearInterval(interval);
-    }, [validImages, showControls, enableZoom, advanceSlide]);
+    }, [autoAdvance, validImages, showControls, enableZoom, advanceSlide]);
 
     /** iOS/Android: stop the modal scroll parent from eating touch moves while zoomed (touch-none is not always enough). */
     useEffect(() => {
@@ -1154,6 +1156,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                         zoomChrome="none"
                                         onZoomChange={setDetailZoomLevel}
                                         naturalImageHeight
+                                        autoAdvance={false}
                                     />
                                 </div>
 
