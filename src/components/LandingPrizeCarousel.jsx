@@ -43,9 +43,12 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
     if (loading) {
         return (
             <section className="relative z-10 mb-6 sm:mb-8">
-                <div className="nb-card animate-pulse bg-white p-3 sm:p-4 rounded-xl">
-                    <div className="mb-3 h-4 w-28 rounded bg-slate-200" />
-                    <div className="aspect-[4/3] rounded-lg bg-slate-100" />
+                <div className="nb-card animate-pulse overflow-hidden bg-white rounded-2xl">
+                    <div className="aspect-[4/3] sm:aspect-[16/10] bg-slate-100" />
+                    <div className="p-4 space-y-2">
+                        <div className="h-4 w-40 rounded bg-slate-200" />
+                        <div className="h-3 w-24 rounded bg-slate-100" />
+                    </div>
                 </div>
             </section>
         );
@@ -55,10 +58,19 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
         return null;
     }
 
+    const isBn = language === 'bn';
+
     return (
-        <section className="relative z-10 mb-6 sm:mb-8" aria-label={title}>
+        <section className="relative z-10 mb-8 sm:mb-10" aria-label={title}>
+            <div className="mb-3 flex items-center gap-2">
+                <span className="text-base sm:text-lg" aria-hidden>🎁</span>
+                <h2 className={`text-base sm:text-lg font-black tracking-tight text-slate-900 ${isBn ? 'font-bengali' : ''}`}>
+                    {title}
+                </h2>
+            </div>
+
             <div
-                className="nb-card overflow-hidden bg-white rounded-xl"
+                className="landing-prize-showcase nb-card group relative overflow-hidden bg-white rounded-2xl"
                 onMouseEnter={() => setPaused(true)}
                 onMouseLeave={() => setPaused(false)}
                 onFocusCapture={() => setPaused(true)}
@@ -77,77 +89,98 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
                     else goPrev();
                 }}
             >
-                <div className="flex items-center justify-between gap-2 border-b-2 border-slate-900/10 bg-amber-50/60 px-3 py-2.5 sm:px-4">
-                    <h2 className={`truncate text-sm font-black text-slate-900 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        🎁 {title}
-                    </h2>
-                    <div className="flex shrink-0 items-center gap-1">
-                        <button
-                            type="button"
-                            onClick={goPrev}
-                            className="flex h-8 w-8 items-center justify-center border-2 border-slate-900 bg-white text-lg leading-none text-slate-800 shadow-[2px_2px_0_#0f172a] rounded-md active:translate-x-0.5 active:translate-y-0.5"
-                            aria-label={language === 'en' ? 'Previous' : 'আগের'}
-                        >
-                            ‹
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => goTo()}
-                            className="flex h-8 w-8 items-center justify-center border-2 border-slate-900 bg-white text-lg leading-none text-slate-800 shadow-[2px_2px_0_#0f172a] rounded-md active:translate-x-0.5 active:translate-y-0.5"
-                            aria-label={language === 'en' ? 'Next' : 'পরের'}
-                        >
-                            ›
-                        </button>
-                    </div>
-                </div>
-
                 <div className="relative overflow-hidden">
                     <div
                         className="flex transition-transform duration-500 ease-out"
                         style={{ transform: `translateX(-${index * 100}%)` }}
                     >
                         {slides.map((item) => (
-                            <article key={item.id} className="w-full shrink-0 px-3 py-3 sm:px-5 sm:py-4">
-                                <div className="grid grid-cols-[6.5rem_1fr] items-center gap-3 sm:grid-cols-[9.5rem_1fr] sm:gap-5">
-                                    <div className="relative flex items-center justify-center w-[6.5rem] h-[6.5rem] sm:w-[9.5rem] sm:h-[9.5rem] shrink-0">
-                                        <HallOfFamePrizeImage
-                                            candidates={item.imageCandidates || []}
-                                            alt={item.imageAlt || item.title || ''}
-                                            className="max-h-full max-w-full w-auto h-auto object-contain"
-                                        />
-                                        <span className="absolute -left-1 -top-1 text-lg sm:text-xl leading-none drop-shadow-sm" aria-hidden>
-                                            {getRankMedal(item.prizeRank)}
-                                        </span>
-                                    </div>
+                            <article key={item.id} className="w-full shrink-0">
+                                <div className="relative aspect-[4/3] sm:aspect-[16/10] w-full bg-gradient-to-br from-amber-50 via-white to-orange-50/50 flex items-center justify-center p-5 sm:p-8">
+                                    <HallOfFamePrizeImage
+                                        candidates={item.imageCandidates || []}
+                                        alt={item.imageAlt || item.title || ''}
+                                        className="max-h-full max-w-full w-auto h-auto object-contain drop-shadow-[4px_6px_10px_rgba(15,23,42,0.18)]"
+                                    />
 
-                                    <div className="min-w-0 text-left">
-                                        <p className={`truncate text-[10px] font-bold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                            {item.monthLabel}
-                                            <span className="mx-1 text-slate-300" aria-hidden>·</span>
-                                            {item.boardLabel}
-                                        </p>
-                                        <h3 className={`mt-0.5 line-clamp-2 text-sm font-black leading-snug text-slate-900 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                            {item.title}
-                                        </h3>
-                                        {item.sponsor && (
-                                            <p className={`mt-1 truncate text-[10px] font-semibold text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                <span className={`font-bold text-slate-500 ${language === 'en' ? 'nb-mono uppercase tracking-wide' : ''}`}>
-                                                    {language === 'en' ? 'Sponsor' : 'সৌজন্যে'}
+                                    <span className="absolute left-3 top-3 sm:left-4 sm:top-4 inline-flex items-center gap-1.5 rounded-full border-2 border-slate-900 bg-white/95 px-2.5 py-1 text-xs font-black text-slate-900 shadow-[2px_2px_0_#0f172a] backdrop-blur">
+                                        <span aria-hidden>{getRankMedal(item.prizeRank)}</span>
+                                        <span>{item.rankLabel}</span>
+                                    </span>
+
+                                    <span className={`absolute right-3 top-3 sm:right-4 sm:top-4 max-w-[55%] truncate rounded-full bg-slate-900/85 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur ${isBn ? 'font-bengali' : ''}`}>
+                                        {item.monthLabel}
+                                    </span>
+                                </div>
+
+                                <div className="border-t-2 border-slate-900/10 px-4 py-3.5 sm:px-5 sm:py-4">
+                                    <p className={`text-[11px] font-bold uppercase tracking-wide text-orange-600 ${isBn ? 'font-bengali tracking-normal' : 'nb-mono'}`}>
+                                        {item.boardLabel}
+                                    </p>
+                                    <h3 className={`mt-1 line-clamp-2 text-base sm:text-lg font-black leading-snug text-slate-900 ${isBn ? 'font-bengali' : ''}`}>
+                                        {item.title}
+                                    </h3>
+
+                                    {item.winnerName && (
+                                        <div className="mt-2.5 flex items-center gap-2.5">
+                                            {item.winnerAvatarUrl ? (
+                                                <img
+                                                    src={item.winnerAvatarUrl}
+                                                    alt={item.winnerName}
+                                                    loading="lazy"
+                                                    className="h-9 w-9 shrink-0 rounded-full border-2 border-slate-900 object-cover shadow-[1.5px_1.5px_0_#0f172a]"
+                                                />
+                                            ) : (
+                                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-amber-400 text-sm font-black text-slate-900 shadow-[1.5px_1.5px_0_#0f172a] nb-mono">
+                                                    {item.winnerName.charAt(0).toUpperCase()}
                                                 </span>
-                                                <span className="mx-1 text-slate-300" aria-hidden>·</span>
-                                                {item.sponsor}
-                                            </p>
-                                        )}
-                                        {item.winnerName && (
-                                            <p className={`mt-1 truncate text-[10px] font-bold text-orange-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                {language === 'en' ? 'Winner' : 'বিজয়ী'} · {item.winnerName}
-                                            </p>
-                                        )}
-                                    </div>
+                                            )}
+                                            <div className="min-w-0">
+                                                <p className={`text-[10px] font-bold uppercase tracking-wide text-slate-400 ${isBn ? 'font-bengali tracking-normal' : 'nb-mono'}`}>
+                                                    {isBn ? 'বিজয়ী' : 'Winner'}
+                                                </p>
+                                                <p className={`truncate text-sm font-black leading-tight text-slate-900 ${isBn ? 'font-bengali' : ''}`}>
+                                                    {item.winnerName}
+                                                    {item.winnerDistrict && (
+                                                        <span className="font-semibold text-slate-500"> · {item.winnerDistrict}</span>
+                                                    )}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {item.sponsor && (
+                                        <p className={`mt-2 truncate text-xs font-semibold text-slate-500 ${isBn ? 'font-bengali' : ''}`}>
+                                            {isBn ? 'সৌজন্যে' : 'Sponsor'}
+                                            <span className="mx-1 text-slate-300" aria-hidden>·</span>
+                                            {item.sponsor}
+                                        </p>
+                                    )}
                                 </div>
                             </article>
                         ))}
                     </div>
+
+                    {slides.length > 1 && (
+                        <>
+                            <button
+                                type="button"
+                                onClick={goPrev}
+                                className="absolute left-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-900 bg-white/90 text-xl leading-none text-slate-800 shadow-[2px_2px_0_#0f172a] backdrop-blur transition active:translate-x-0.5 active:translate-y-0.5 sm:opacity-0 sm:group-hover:opacity-100"
+                                aria-label={isBn ? 'আগের' : 'Previous'}
+                            >
+                                ‹
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => goTo()}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-900 bg-white/90 text-xl leading-none text-slate-800 shadow-[2px_2px_0_#0f172a] backdrop-blur transition active:translate-x-0.5 active:translate-y-0.5 sm:opacity-0 sm:group-hover:opacity-100"
+                                aria-label={isBn ? 'পরের' : 'Next'}
+                            >
+                                ›
+                            </button>
+                        </>
+                    )}
                 </div>
 
                 {slides.length > 1 && (

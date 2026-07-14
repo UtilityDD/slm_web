@@ -19,6 +19,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet" />
   <title>SmartLineman</title>
+  <script>
+    // Capture the install prompt as early as possible: Chrome often fires
+    // beforeinstallprompt before the React bundle mounts its listener.
+    window.__pwaInstall = { deferred: null, installed: false };
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      window.__pwaInstall.deferred = e;
+    });
+    window.addEventListener('appinstalled', function () {
+      window.__pwaInstall.installed = true;
+      window.__pwaInstall.deferred = null;
+    });
+  </script>
   <style>
     #static-shell {
       position: fixed;

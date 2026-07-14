@@ -46,8 +46,14 @@ function isSnoozedOrInstalled() {
  * On Chromium it triggers the native install prompt; on iOS Safari it shows
  * the "Add to Home Screen" steps (Safari has no programmatic install).
  */
+function getDeferredPrompt() {
+  if (typeof window === 'undefined') return null;
+  return (window.__pwaInstall && window.__pwaInstall.deferred) || null;
+}
+
 export default function PwaInstallPrompt({ language = 'en', offsetForBottomNav = false }) {
   const deferredRef = useRef(null);
+  const delayElapsedRef = useRef(false);
   const [visible, setVisible] = useState(false);
   const [showIosHelp, setShowIosHelp] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -67,9 +73,23 @@ export default function PwaInstallPrompt({ language = 'en', offsetForBottomNav =
     if (window.Capacitor) return undefined;
     if (isStandaloneDisplay()) return undefined;
 
+    // Seed from the event captured early in index.html (before this mounted).
+    deferredRef.current = getDeferredPrompt();
+
+    const maybeShow = () => {
+      if (!delayElapsedRef.current) return;
+      if (isSnoozedOrInstalled()) return;
+      if (deferredRef.current || getDeferredPrompt() || isIos()) {
+        if (!deferredRef.current) deferredRef.current = getDeferredPrompt();
+        setVisible(true);
+      }
+    };
+
     const onBeforeInstallPrompt = (e) => {
       e.preventDefault();
       deferredRef.current = e;
+      if (window.__pwaInstall) window.__pwaInstall.deferred = e;
+      maybeShow();
     };
 
     const onAppInstalled = () => {
@@ -88,8 +108,8 @@ export default function PwaInstallPrompt({ language = 'en', offsetForBottomNav =
     let timer;
     if (!isSnoozedOrInstalled()) {
       timer = window.setTimeout(() => {
-        // Only auto-show if the browser can install (native prompt captured) or it's iOS.
-        if (deferredRef.current || isIos()) setVisible(true);
+        delayElapsedRef.current = true;
+        maybeShow();
       }, SHOW_AFTER_MS);
     }
 
@@ -111,7 +131,7 @@ export default function PwaInstallPrompt({ language = 'en', offsetForBottomNav =
   }, []);
 
   const runInstall = useCallback(async () => {
-    const ev = deferredRef.current;
+    const ev = deferredRef.current || getDeferredPrompt();
     if (!ev?.prompt) {
       // iOS / browsers without programmatic install: show the manual steps.
       setShowIosHelp(true);
@@ -126,6 +146,7 @@ export default function PwaInstallPrompt({ language = 'en', offsetForBottomNav =
     } finally {
       setBusy(false);
       deferredRef.current = null;
+      if (window.__pwaInstall) window.__pwaInstall.deferred = null;
       setVisible(false);
     }
   }, []);

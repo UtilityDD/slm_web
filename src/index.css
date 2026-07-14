@@ -255,15 +255,105 @@ body,
     }
   }
 
-  .landing-podium-card {
-    border-radius: 0.75rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  .landing-neo-brutal .landing-podium-card,
+  .neo-brutal .landing-podium-card {
+    border-radius: 1rem;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
+  }
+
+  .landing-neo-brutal .landing-podium-card--gold,
+  .neo-brutal .landing-podium-card--gold {
+    background: linear-gradient(165deg, #fffbeb 0%, #fef3c7 100%);
+  }
+
+  .landing-neo-brutal .landing-podium-card--silver,
+  .neo-brutal .landing-podium-card--silver {
+    background: linear-gradient(165deg, #f8fafc 0%, #f1f5f9 100%);
+  }
+
+  .landing-neo-brutal .landing-podium-card--bronze,
+  .neo-brutal .landing-podium-card--bronze {
+    background: linear-gradient(165deg, #fff7ed 0%, #ffedd5 100%);
+  }
+
+  .landing-neo-brutal .landing-podium-card--empty,
+  .neo-brutal .landing-podium-card--empty {
+    background: rgba(255, 255, 255, 0.55);
+    border: 2px dashed rgba(15, 23, 42, 0.18);
+    border-radius: 1rem;
+    box-shadow: none;
+  }
+
+  .landing-podium-card--empty:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .landing-podium-avatar {
+    border-radius: 9999px;
+    border: 2px solid #0f172a;
+    box-shadow: 2px 2px 0 #0f172a;
+  }
+
+  .landing-podium-avatar--champ {
+    box-shadow: 0 0 0 3px #fbbf24, 2px 2px 0 #0f172a;
+  }
+
+  .landing-podium-avatar--empty {
+    border: 2px dashed rgba(15, 23, 42, 0.22);
+    background: rgba(248, 250, 252, 0.9);
+    box-shadow: none;
+  }
+
+  .landing-podium-rank {
+    border-radius: 9999px;
+    border: 2px solid #0f172a;
+    background: #fbbf24;
+    color: #0f172a;
+    box-shadow: 1px 1px 0 #0f172a;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    line-height: 1;
+  }
+
+  .landing-podium-rank[data-rank='1'] {
+    background: #cbd5e1;
+  }
+
+  .landing-podium-rank[data-rank='2'] {
+    background: #f97316;
+    color: #fff;
+  }
+
+  .landing-podium-rank--empty {
+    background: #e2e8f0;
+    color: #64748b;
+    border-color: rgba(15, 23, 42, 0.25);
+    box-shadow: none;
+  }
+
+  @media (min-width: 640px) {
+    .landing-podium-card--lift-1 {
+      padding-top: 1.75rem;
+      padding-bottom: 1.75rem;
+      min-height: 11.5rem;
+    }
+
+    .landing-podium-card--lift-2,
+    .landing-podium-card--lift-3 {
+      min-height: 9.75rem;
+    }
   }
 
   @media (hover: hover) {
     .landing-podium-card:hover {
-      transform: translateY(-2px);
+      transform: translateY(-3px);
       box-shadow: var(--nb-shadow-hover, 6px 6px 0 #0f172a);
+    }
+
+    .landing-podium-card--empty:hover {
+      transform: none;
+      box-shadow: none;
+      background: rgba(255, 255, 255, 0.75);
     }
   }
 

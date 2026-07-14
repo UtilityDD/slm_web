@@ -228,7 +228,11 @@ export function buildLandingPrizeSlides(language = 'bn', hallOfFameData = []) {
                 if (!isPrizeRecipient(winner)) continue;
                 winnerByKey.set(
                     `${entry.year}-${entry.month}-${boardId}-${winner.prize_rank}`,
-                    winner.full_name || null
+                    {
+                        name: winner.full_name || null,
+                        avatarUrl: winner.avatar_url || null,
+                        district: winner.district || null,
+                    }
                 );
             }
         }
@@ -243,6 +247,7 @@ export function buildLandingPrizeSlides(language = 'bn', hallOfFameData = []) {
             const prize = resolvePrizeDisplay(entry, language);
             if (!prize) return null;
             const key = `${entry.year}-${entry.month}-${entry.boardId}-${entry.prizeRank}`;
+            const winner = winnerByKey.get(key) || null;
             return {
                 id: key,
                 year: entry.year,
@@ -251,7 +256,9 @@ export function buildLandingPrizeSlides(language = 'bn', hallOfFameData = []) {
                 rankLabel: rankLabels[entry.prizeRank] || getPrizeRankLabel(entry.prizeRank, language),
                 monthLabel: formatPrizeMonthLabel(entry.year, entry.month, language),
                 boardLabel: getBoardTabLabel(entry.boardId, monthlyTabs),
-                winnerName: winnerByKey.get(key) || null,
+                winnerName: winner?.name || null,
+                winnerAvatarUrl: winner?.avatarUrl || null,
+                winnerDistrict: winner?.district || null,
                 ...prize,
             };
         })

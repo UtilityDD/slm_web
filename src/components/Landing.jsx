@@ -27,6 +27,8 @@ const copy = {
     statsPrizes: 'Prizes Awarded',
     newPlayersTopThree: 'Top 3 — New Players',
     allTimeTopThree: 'Top 3 — All-Time',
+    podiumOpenSlot: 'Your spot awaits',
+    podiumOpenHint: 'Keep learning',
     login: 'Login',
     exploreLifeSkills: 'Life Skills',
     lifeSkillsTitle: 'Life Skills',
@@ -54,6 +56,8 @@ const copy = {
     statsPrizes: 'পুরস্কার বিতরণ করা হয়েছে',
     newPlayersTopThree: 'নতুন খেলোয়াড়দের মধ্যে সেরা ৩',
     allTimeTopThree: 'সর্বকালের সেরা ৩ খেলোয়াড়',
+    podiumOpenSlot: 'আপনার জায়গা অপেক্ষায়',
+    podiumOpenHint: 'শিখতে থাকুন',
     login: 'লগইন করুন',
     exploreLifeSkills: 'জীবন গড়ার দক্ষতা দেখুন',
     lifeSkillsTitle: 'জীবন গড়ার সাধারণ দক্ষতা (Life Skills)',
@@ -419,22 +423,6 @@ function SectionIconBadge({ name, tone = 'orange', className = '' }) {
   );
 }
 
-function RankBadge({ rank, bnFont }) {
-  const configs = [
-    { bg: 'bg-amber-400', label: bnFont ? '১' : '1' },
-    { bg: 'bg-slate-300', label: bnFont ? '২' : '2' },
-    { bg: 'bg-orange-500 text-white', label: bnFont ? '৩' : '3' },
-  ];
-  const config = configs[rank] || configs[2];
-  return (
-    <span
-      className={`nb-rank-badge inline-flex w-8 h-8 sm:w-9 sm:h-9 items-center justify-center text-xs sm:text-sm text-slate-900 ${config.bg}`}
-    >
-      {config.label}
-    </span>
-  );
-}
-
 function AnimatedNumber({ value, loading }) {
   const [display, setDisplay] = useState(0);
   const target = typeof value === 'number' && !Number.isNaN(value) ? value : 0;
@@ -482,60 +470,103 @@ function pickTopLeaders(list, limit = 3) {
     .map(mapLandingPlayer);
 }
 
-function LeaderPodiumGrid({ title, iconName, iconTone, players, ptsLabel, bnFont, showScore = true }) {
-  if (!players?.length) return null;
+function LeaderPodiumGrid({
+  title,
+  iconName,
+  iconTone,
+  players,
+  ptsLabel,
+  bnFont,
+  showScore = true,
+  fillTo = 0,
+  emptyTitle = '',
+  emptyHint = '',
+}) {
+  const realPlayers = players || [];
+  // Keep the section only when there is at least one real player; empty slots fill the rest.
+  if (!realPlayers.length) return null;
 
-  const rankCardClass = [
-    'nb-card bg-amber-50/90',
-    'nb-card bg-slate-50/90',
-    'nb-card bg-orange-50/90',
+  const slots = Array.from({ length: Math.max(realPlayers.length, fillTo) }, (_, idx) => realPlayers[idx] || null);
+
+  const filledTone = [
+    'landing-podium-card--gold',
+    'landing-podium-card--silver',
+    'landing-podium-card--bronze',
   ];
-  const rankBadgeText = bnFont ? ['১ম', '২য়', '৩য়'] : ['1st', '2nd', '3rd'];
+  const rankLift = ['landing-podium-card--lift-1', 'landing-podium-card--lift-2', 'landing-podium-card--lift-3'];
+  // Desktop podium visual order: 2nd · 1st · 3rd (mobile stays 1 → 2 → 3)
+  const deskOrder = slots.length === 3 ? ['sm:order-2', 'sm:order-1', 'sm:order-3'] : ['', '', ''];
 
   return (
-    <section className="mb-8 sm:mb-10 relative z-10">
-      <div className="flex items-center gap-3 mb-4 sm:mb-5">
-        <SectionIconBadge name={iconName} tone={iconTone} className="rounded-lg" />
-        <h2 className={`text-base sm:text-lg font-black text-slate-900 leading-snug ${bnFont ? 'font-bengali' : ''}`}>{title}</h2>
+    <section className="mb-10 sm:mb-12 relative z-10">
+      <div className="flex items-center gap-2.5 mb-5 sm:mb-6">
+        <SectionIconBadge name={iconName} tone={iconTone} className="rounded-xl w-9 h-9 sm:w-10 sm:h-10" />
+        <h2 className={`text-base sm:text-lg font-black text-slate-900 leading-snug tracking-tight ${bnFont ? 'font-bengali' : ''}`}>{title}</h2>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        {players.map((player, idx) => {
-          const isFirst = idx === 0;
+      <div className="landing-podium-grid grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 sm:items-end">
+        {slots.map((player, rankIdx) => {
+          const isEmpty = !player;
+          const isFirst = rankIdx === 0 && !isEmpty;
           return (
             <div
-              key={`${player.id}-${idx}`}
-              className={`landing-podium-card relative overflow-hidden flex flex-row sm:flex-col items-center sm:text-center gap-3 sm:gap-3 p-4 sm:p-5 sm:pt-6 rounded-xl ${rankCardClass[idx] || rankCardClass[2]}`}
+              key={isEmpty ? `empty-${rankIdx}` : `${player.id}-${rankIdx}`}
+              className={`landing-podium-card relative flex flex-row sm:flex-col items-center sm:text-center gap-3.5 sm:gap-3.5 px-4 py-3.5 sm:px-5 sm:py-5 ${
+                isEmpty
+                  ? 'landing-podium-card--empty'
+                  : `nb-card ${filledTone[rankIdx] || filledTone[2]}`
+              } ${rankLift[rankIdx] || ''} ${deskOrder[rankIdx] || ''}`}
+              aria-label={isEmpty ? emptyTitle : undefined}
             >
-              <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 flex items-center gap-1.5">
-                <RankBadge rank={idx} bnFont={bnFont} />
-                <span className="hidden sm:inline text-[10px] font-black uppercase tracking-wider text-slate-400">{rankBadgeText[idx]}</span>
-              </div>
-
-              {player.avatarUrl ? (
-                <div className={`relative shrink-0 ${isFirst ? 'p-0.5 border-2 border-slate-900 rounded-lg bg-amber-400' : ''}`}>
+              <div className="relative shrink-0">
+                {isEmpty ? (
+                  <div className="landing-podium-avatar landing-podium-avatar--empty w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-slate-300 font-black text-2xl sm:text-3xl nb-mono">
+                    ?
+                  </div>
+                ) : player.avatarUrl ? (
                   <img
                     src={player.avatarUrl}
                     alt={player.name}
-                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-md object-cover border-2 border-slate-900"
+                    className={`landing-podium-avatar w-14 h-14 sm:w-16 sm:h-16 object-cover ${isFirst ? 'landing-podium-avatar--champ' : ''}`}
                   />
-                </div>
-              ) : (
-                <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-md ${isFirst ? 'bg-amber-400 text-slate-900' : 'bg-white text-slate-700'} border-2 border-slate-900 flex items-center justify-center font-black text-3xl sm:text-4xl shrink-0 nb-mono`}>
-                  {(player.name || '?').charAt(0).toUpperCase()}
-                </div>
-              )}
-
-              <div className="min-w-0 flex-1 text-left sm:text-center pr-10 sm:pr-0 sm:w-full">
-                <p className={`font-black text-lg sm:text-xl text-slate-900 truncate leading-snug ${bnFont ? 'font-bengali' : ''}`}>{player.name}</p>
-                {showScore && (
-                  <p className="nb-score-pill mt-1.5 sm:mt-2 inline-block text-sm sm:text-base px-2.5 sm:px-3 py-1 tabular-nums">
-                    {player.points} {ptsLabel}
-                  </p>
+                ) : (
+                  <div className={`landing-podium-avatar w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center font-black text-xl sm:text-2xl nb-mono ${isFirst ? 'bg-amber-400 text-slate-900 landing-podium-avatar--champ' : 'bg-white text-slate-700'}`}>
+                    {(player.name || '?').charAt(0).toUpperCase()}
+                  </div>
                 )}
-                {player.district && (
-                  <p className={`mt-1 text-xs font-medium text-slate-500 truncate ${bnFont ? 'font-bengali' : ''}`}>
-                    {player.district}
-                  </p>
+                <span
+                  className={`landing-podium-rank absolute -bottom-1 -right-1 inline-flex w-6 h-6 sm:w-7 sm:h-7 items-center justify-center text-[10px] sm:text-xs font-black ${
+                    isEmpty ? 'landing-podium-rank--empty' : ''
+                  }`}
+                  data-rank={rankIdx}
+                >
+                  {bnFont ? ['১', '২', '৩'][rankIdx] : rankIdx + 1}
+                </span>
+              </div>
+
+              <div className="min-w-0 flex-1 sm:w-full text-left sm:text-center space-y-1">
+                {isEmpty ? (
+                  <>
+                    <p className={`font-bold text-sm sm:text-base text-slate-400 leading-snug ${bnFont ? 'font-bengali' : ''}`}>
+                      {emptyTitle || '?'}
+                    </p>
+                    <p className={`text-[11px] sm:text-xs font-medium text-slate-400/90 leading-snug ${bnFont ? 'font-bengali' : ''}`}>
+                      {emptyHint || ''}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className={`font-black text-base sm:text-lg text-slate-900 truncate leading-snug ${bnFont ? 'font-bengali' : ''}`}>{player.name}</p>
+                    {showScore && (
+                      <p className="text-sm font-bold text-orange-700 tabular-nums">
+                        {player.points} <span className="font-semibold text-orange-600/80">{ptsLabel}</span>
+                      </p>
+                    )}
+                    {player.district && (
+                      <p className={`text-[11px] sm:text-xs font-medium text-slate-500 truncate ${bnFont ? 'font-bengali' : ''}`}>
+                        {player.district}
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -986,6 +1017,9 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
           ptsLabel={t.pts}
           bnFont={bnFont}
           showScore={false}
+          fillTo={3}
+          emptyTitle={t.podiumOpenSlot}
+          emptyHint={t.podiumOpenHint}
         />
         <LeaderPodiumGrid
           title={getThisMonthTopThreeTitle(language)}
@@ -994,6 +1028,9 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
           players={stats.thisMonthTop}
           ptsLabel={t.pts}
           bnFont={bnFont}
+          fillTo={3}
+          emptyTitle={t.podiumOpenSlot}
+          emptyHint={t.podiumOpenHint}
         />
 
         {/* Vision & Mission section */}
