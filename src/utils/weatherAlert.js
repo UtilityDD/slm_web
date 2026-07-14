@@ -166,26 +166,38 @@ export function getAlertMessages(alert, language = 'en', { isReminder = false } 
 
   const reasonParts = [];
   if (alert.reasons.includes('thunderstorm')) {
-    reasonParts.push(isBn ? 'বজ্রবৃষ্টি' : 'thunderstorms');
+    reasonParts.push(isBn ? 'বজ্রবিদ্যুৎ-সহ ঝড়' : 'thunderstorms');
   }
   if (alert.reasons.includes('rain')) {
     reasonParts.push(isBn ? 'ভারী বৃষ্টি' : 'heavy rain');
   }
   if (alert.reasons.includes('wind')) {
-    reasonParts.push(isBn ? 'প্রবল বাতাস' : 'strong winds');
+    reasonParts.push(isBn ? 'ঝড়ো হাওয়া' : 'strong winds');
   }
 
-  const reasonText = reasonParts.join(isBn ? ', ' : ', ');
+  let reasonText = '';
+  if (isBn) {
+    if (reasonParts.length === 1) {
+      reasonText = reasonParts[0];
+    } else if (reasonParts.length === 2) {
+      reasonText = `${reasonParts[0]} ও ${reasonParts[1]}`;
+    } else if (reasonParts.length > 2) {
+      reasonText = `${reasonParts.slice(0, -1).join(', ')} ও ${reasonParts[reasonParts.length - 1]}`;
+    }
+  } else {
+    reasonText = reasonParts.join(', ');
+  }
+
   const title = isReminder
     ? isBn
-      ? `🔔 স্মরণ — আবহাওয়া সতর্কতা — ${district}`
+      ? `🔔 আবহাওয়া সতর্কবার্তা — ${district}`
       : `🔔 Reminder — Weather alert — ${district}`
     : isBn
-      ? `⚠️ আবহাওয়া সতর্কতা — ${district}`
+      ? `⚠️ আবহাওয়া সতর্কবার্তা — ${district}`
       : `⚠️ Weather alert — ${district}`;
 
   const body = isBn
-    ? `আগামী ${hours} ঘণ্টায় ${reasonText} এর সম্ভাবনা। খুঁটি/পোলে কাজ করবেন না — নিরাপদ স্থানে অপেক্ষা করুন।`
+    ? `আগামী ${hours} ঘণ্টায় ${reasonText} আসতে পারে। এখন পোলে চড়া বন্ধ রাখুন — জীবন আগে, কাজ পরে!`
     : `${reasonText} expected in the next ${hours} hours. Avoid pole/line work — wait in a safe place.`;
 
   return { title, body };

@@ -68,11 +68,14 @@ function AlertStrip({ alert, language, loading = false, isReminder = false }) {
       <div className="flex items-center gap-1 shrink-0">
         <button
           type="button"
-          className="px-2 py-1 text-[10px] font-bold uppercase rounded-full bg-white/20 border border-white/40"
+          className="p-1 rounded-full hover:bg-white/20 transition-colors"
+          title={isBn ? 'আবহাওয়া রিফ্রেশ' : 'Refresh weather'}
         >
-          {loading ? '…' : isBn ? 'রিফ্রেশ' : 'Refresh'}
+          <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M21 3v5h-5" />
+          </svg>
         </button>
-        <button type="button" className="p-1 rounded-full bg-white/10">
+        <button type="button" className="p-1 rounded-full hover:bg-white/20 transition-colors">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>

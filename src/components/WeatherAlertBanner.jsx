@@ -53,10 +53,13 @@ export default function WeatherAlertBanner({
               type="button"
               onClick={onRefresh}
               disabled={loading}
-              className="px-2 py-1 text-[10px] font-bold uppercase rounded-full bg-white/20 hover:bg-white/30 border border-white/40 transition-colors disabled:opacity-50"
+              className="p-1 rounded-full hover:bg-white/20 transition-colors disabled:opacity-50"
               title={isBn ? 'আবহাওয়া রিফ্রেশ' : 'Refresh weather'}
+              aria-label={isBn ? 'রিফ্রেশ' : 'Refresh'}
             >
-              {loading ? '…' : isBn ? 'রিফ্রেশ' : 'Refresh'}
+              <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M21 3v5h-5" />
+              </svg>
             </button>
           )}
           {onDismiss && (
