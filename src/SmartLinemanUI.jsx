@@ -53,6 +53,7 @@ const VideoGuide = lazy(() => import("./components/safety/VideoGuide"));
 const AroJanun = lazy(() => import("./components/safety/AroJanun"));
 const SafetyTabsPage = lazy(() => import("./components/safety/SafetyTabsPage"));
 const WeatherAlertDemo = lazy(() => import("./components/WeatherAlertDemo"));
+const MorePage = lazy(() => import("./components/MorePage"));
 // const SafetyHero = lazy(() => import("./components/safety/SafetyHero"));
 
 // Smooth transition pre-loader
@@ -1180,6 +1181,21 @@ export default function SmartLinemanUI() {
           const certId = rawId.split(/[#\?\/]/)[0];
           return <VerificationView language={language} certificateId={certId} />;
         }
+        case 'menu':
+          return (
+            <MorePage
+              currentView={currentView}
+              setCurrentView={(view) => {
+                if (view === 'my-progress') setSelectedProgressUserId(user?.id || null);
+                setCurrentView(view);
+              }}
+              userProfile={userProfile}
+              language={language}
+              onToggleLanguageModal={() => setShowLanguageModal(true)}
+              onToggleNotifications={() => setCurrentView('notifications')}
+              onLogout={() => setShowLogoutModal(true)}
+            />
+          );
         case 'notifications':
           return <Notifications language={language} notifications={notificationsHistory} setCurrentView={setCurrentView} />;
         case 'accident-stories':
@@ -1511,12 +1527,12 @@ export default function SmartLinemanUI() {
                   : user
                     ? 'pb-20 md:pb-0'
                     : 'pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:pb-0'
-              } ${['accident-stories', 'leaderboard', 'training', 'competitions', 'video-guide', 'aro-janun', 'admin', 'my_ppe', 'safety-library'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
+              } ${['accident-stories', 'leaderboard', 'training', 'competitions', 'video-guide', 'aro-janun', 'admin', 'my_ppe', 'safety-library', 'menu'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
             >
               <div
                 className={`h-full relative z-10 w-full view-transition ${
                   ['my_ppe', 'safety-library'].includes(currentView) ? 'overflow-hidden flex flex-col min-h-0' : 'min-h-full'
-                } ${['accident-stories', 'leaderboard', 'training', 'competitions', 'video-guide', 'aro-janun', 'admin', 'my_ppe', 'safety-library'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
+                } ${['accident-stories', 'leaderboard', 'training', 'competitions', 'video-guide', 'aro-janun', 'admin', 'my_ppe', 'safety-library', 'menu'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
                 key={['my_ppe', 'safety-library'].includes(currentView) ? 'safety-tabs' : currentView}
               >
                 {renderContent()}

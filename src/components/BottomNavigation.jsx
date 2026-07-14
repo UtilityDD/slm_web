@@ -65,11 +65,14 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
 
   const isViewingOthersProgress = currentView === 'my-progress' && selectedProgressUserId && selectedProgressUserId !== userId;
 
+  const moreViews = ['menu', 'sops', 'emergency', 'video-guide', 'aro-janun', 'training-faq', 'notifications', 'admin', 'guide', 'admin-services'];
+
   const isItemActive = (item) =>
     (currentView === item.id && !isViewingOthersProgress) ||
     (item.id === 'my_ppe' && ['safety-library', 'my_ppe', 'my_tools'].includes(currentView)) ||
     (item.id === 'training' && (currentView === 'home' || currentView === 'competitions')) ||
-    (item.id === 'leaderboard' && (currentView === 'leaderboard' || isViewingOthersProgress));
+    (item.id === 'leaderboard' && (currentView === 'leaderboard' || isViewingOthersProgress)) ||
+    (item.id === 'menu' && moreViews.includes(currentView));
 
   return (
     <nav
@@ -89,14 +92,8 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
               aria-current={isActive ? 'page' : undefined}
               onClick={() => {
                 if (navigator.vibrate) navigator.vibrate(5);
-                if (item.id === 'menu') {
-                  if (onMenuClick) onMenuClick();
-                } else if (onMenuClick) {
-                  setCurrentView(item.id);
-                  onMenuClick(false);
-                } else {
-                  setCurrentView(item.id);
-                }
+                if (onMenuClick) onMenuClick(false);
+                setCurrentView(item.id);
               }}
               className={`app-bottom-nav__item touch-manipulation ${isActive ? 'app-bottom-nav__item--active' : ''}`}
             >
