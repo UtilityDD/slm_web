@@ -898,8 +898,8 @@ function TrainingLessonFigure({ src, alt, caption, onClick, language, className 
     const isInline = inlineFloat;
 
     const buttonClass = isInline
-        ? `my-3 sm:my-4 block w-full overflow-hidden bg-transparent p-0 text-left ${className}`
-        : `my-3 sm:my-4 block w-full max-w-lg overflow-hidden bg-transparent p-0 text-left clear-both ${className}`;
+        ? `my-3 sm:my-4 block w-full overflow-visible bg-transparent p-0 text-left ${className}`
+        : `my-3 sm:my-4 block w-full max-w-lg overflow-visible bg-transparent p-0 text-left clear-both ${className}`;
 
     const captionClass = `mb-1.5 sm:mb-2 text-center text-[10px] sm:text-xs font-black text-slate-600 nb-mono ${language === 'bn' ? 'font-bengali' : ''}`;
     const hintClass = `mt-1.5 text-center text-[10px] font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`;
@@ -921,7 +921,7 @@ function TrainingLessonFigure({ src, alt, caption, onClick, language, className 
                     {caption}
                 </p>
             )}
-            <img src={src} alt={alt} className="h-auto w-full rounded-sm object-contain" loading="lazy" />
+            <img src={src} alt={alt} className="h-auto w-full rounded-sm object-contain object-top" loading="lazy" />
             {isInline && (
                 <p className={hintClass}>
                     {inlineHint}

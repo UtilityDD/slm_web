@@ -6,43 +6,54 @@
   "sections": [
     {
       "title": "১. নেট মিটারিং কী ও কীভাবে কাজ করে?",
-      "image_name": "bi_directional_meter_diagram.jpg",
+      "image_name": "/images/loader/net88_bidir.webp",
       "points": [
         {
           "item_name": "বাই-ডিরেকশনাল মিটার (Bi-directional Meter)",
           "specifications": "এটি দুই দিকেই মাপে: 'Import' (গ্রিড থেকে নেওয়া) এবং 'Export' (গ্রিডে দেওয়া)।",
           "importance": "সাধারণ মিটারে সোলার লাগালে, আপনি বিদ্যুৎ দিলেও সেটা খরচ হিসেবে দেখাবে এবং বিল বেড়ে যাবে! তাই বিশেষ নেট-মিটার লাগানো বাধ্যতামূলক।",
-          "daily_check": "মিটারে দেখুন তীরের চিহ্ন (Arrow) কোন দিকে, বা ডিসপ্লেতে Import/Export আলাদা দেখাচ্ছে কি না।"
+          "daily_check": "মিটারে দেখুন তীরের চিহ্ন (Arrow) কোন দিকে, বা ডিসপ্লেতে Import/Export আলাদা দেখাচ্ছে কি না।",
+          "image_name": "/images/loader/net88_bidir.webp",
+          "image_caption": "বাই-ডিরেকশনাল মিটার"
         },
         {
           "item_name": "প্রসিউমার (Prosumer)",
           "specifications": "Producer + Consumer = Prosumer।",
-          "importance": "এরা সাধারণ গ্রাহক নয়, এরা ছোটখাটো পাওয়ার প্ল্যান্ট।"
+          "importance": "এরা সাধারণ গ্রাহক নয়, এরা ছোটখাটো পাওয়ার প্ল্যান্ট।",
+          "image_name": "/images/loader/net88_bidir.webp",
+          "image_caption": "প্রসিউমার = উৎপাদক + গ্রাহক"
         }
-      ]
+      ],
+      "image_caption": "Import · Export · প্রসিউমার"
     },
     {
       "title": "২. অ্যান্টি-আইলন্ডিং (Anti-islanding): জীবন রক্ষাকারী ফিচার",
-      "image_name": "solar_inverter_safety.jpg",
+      "image_name": "/images/loader/net88_anti.webp",
       "points": [
         {
           "item_name": "ইনভার্টারের সেফটি মেকানিজম",
           "specifications": "গ্রিডের কারেন্ট চলে গেলে (Power Cut), সোলার ইনভার্টারটি অটোমেটিক বন্ধ হয়ে যেতে হবে।",
           "importance": "যদি গ্রিড বন্ধ থাকার পরেও সোলার চলতে থাকে (Islanding), তবে লাইনে কাজ করতে ওঠা লাইনম্যান 'ব্যাক-ফিড' (Back-feed) কারেন্টে মারা যাবে।",
-          "daily_check": "সোলার কানেকশন আছে এমন বাড়িতে লাইন অফ করে দেখুন ইনভার্টারও অফ হয়েছে কি না।"
+          "daily_check": "সোলার কানেকশন আছে এমন বাড়িতে লাইন অফ করে দেখুন ইনভার্টারও অফ হয়েছে কি না।",
+          "image_name": "/images/loader/net88_anti.webp",
+          "image_caption": "গ্রিড অফ = ইনভার্টার অফ"
         }
-      ]
+      ],
+      "image_caption": "অ্যান্টি-আইলন্ডিং · ব্যাক-ফিড"
     },
     {
       "title": "৩. ইনস্টলেশন লিমিট: কতটা বসানো যায়?",
-      "image_name": "solar_roof_capacity.jpg",
+      "image_name": "/images/loader/net88_limit.webp",
       "points": [
         {
           "item_name": "স্যাংশনড লোড (Sanctioned Load)",
           "specifications": "WBERC-এর নিয়ম অনুযায়ী, গ্রাহকের অনুমোদিত লোডের ১০০% (বা নির্দিষ্ট শতাংশ)-এর বেশি সোলার বসানো যায় না।",
-          "importance": "ট্রান্সফরমারের ওপর চাপ নিয়ন্ত্রণ করতে এবং টেকনিক্যাল লস কমাতে এই নিয়ম।"
+          "importance": "ট্রান্সফরমারের ওপর চাপ নিয়ন্ত্রণ করতে এবং টেকনিক্যাল লস কমাতে এই নিয়ম।",
+          "image_name": "/images/loader/net88_limit.webp",
+          "image_caption": "ইনস্টলেশন লিমিট · WBERC"
         }
-      ]
+      ],
+      "image_caption": "স্যাংশনড লোড · ≤ ১০০%"
     }
   ],
   "pro_tip": {
@@ -64,7 +75,9 @@
         "myth": "সোলার লাগালে বিল শূন্য হয়ে যাবে।",
         "reality": "পুরোপুরি ঠিক নয়। আপনি যতটা বিদ্যুৎ ব্যবহার করছেন আর যতটা তৈরি করছেন—তার পার্থক্যের বিল হবে। তাছাড়া 'ফিক্সড চার্জ' তো দিতেই হবে।"
       }
-    ]
+    ],
+    "image_name": "/images/loader/net88_myth.webp",
+    "image_caption": "মিথ বনাম বাস্তবতা · নেট মিটারিং"
   },
   "advanced_section": {
     "title": "ব্যাংকিং অফ এনার্জি (Banking of Energy)",

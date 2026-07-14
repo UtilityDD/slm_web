@@ -124,10 +124,10 @@ Used for lessons **2.5–2.10**, **3.1–3.10**, **4.1–4.5**, and all new chap
    - **Short Bangla labels** inside the art for parts/steps (verify script in preview; regenerate if garbled).
    - Save PNG locally (e.g. `scratch/art_<lesson>/slug.png`).
 3. **Post-process with Sharp** (`scratch/build_chapter_*_posters.mjs` pattern):
-   - `trim({ threshold: 15–18 })`
-   - Crop ~8–11% from top (removes accidental AI title band)
+   - Prefer **content-aware crop** that keeps ~60–80 px cream **above** first non-cream pixels (do **not** `%` chop the top of 1.10-style cards — that removes the intended margin and makes art look cut under the header)
+   - For realistic equipment posters only: optional light top crop (~8–11%) if AI baked a title into the art
    - `resize(768, null, { fit: 'inside' })`
-   - Composite **SVG header** with **Bangla title + Bangla subtitle** (`Nirmala UI`, `Segoe UI`)
+   - Composite **SVG header** with **Bangla title + Bangla subtitle** (`Nirmala UI`, `Segoe UI`) plus **≥24 px cream gap** between header line and art
    - Export WebP to `public/images/loader/` and copy to `faq_images/`
 
 **Header vs in-art Bangla**
@@ -257,23 +257,25 @@ Do **not** commit `scratch/` (gitignored) or `.cursor` assets.
 import sharp from 'sharp';
 
 const W = 768;
-const HEADER_H = 92;
+const HEADER_H = 118;
+const ART_GAP = 40; // cream between header line and art (required for 1.10 cards)
 const BG = '#f5f0e8';
 
 function headerSvg(totalH, titleBn, titleSub) {
   return `<svg width="${W}" height="${totalH}" xmlns="http://www.w3.org/2000/svg">
     <rect width="100%" height="100%" fill="${BG}"/>
-    <text x="${W/2}" y="42" text-anchor="middle"
+    <text x="${W/2}" y="56" text-anchor="middle"
       font-family="Nirmala UI, Segoe UI, Arial, sans-serif"
       font-size="26" font-weight="700" fill="#1e3a5f">${titleBn}</text>
-    <text x="${W/2}" y="72" text-anchor="middle"
+    <text x="${W/2}" y="84" text-anchor="middle"
       font-family="Nirmala UI, Segoe UI, Arial, sans-serif"
       font-size="16" font-weight="600" fill="#475569">${titleSub}</text>
-    <line x1="64" y1="86" x2="${W-64}" y2="86" stroke="#cbd5e1" stroke-width="2"/>
+    <line x1="64" y1="102" x2="${W-64}" y2="102" stroke="#cbd5e1" stroke-width="2"/>
   </svg>`;
 }
 
-// trim → crop top band → resize width 768 → composite header → webp
+// content-aware crop (keep cream above art) → resize 768 → composite header + ART_GAP → webp
+// Do NOT % crop tops of 1.10-style cards — art will look cut under the header line.
 ```
 
 ### Trim-only converter
@@ -310,6 +312,11 @@ See pattern in local `scratch/regen_lessons_2_8_9_10_sql.mjs`: fix JSON typos fi
 | 6.1 | Distribution transformer (DTR) | `dtr61_*` | `20260628160000_lesson_6_1_dtr_images.sql` |
 | 6.2–6.3 | Circuit breaker, fuse types | `cb62_*`, `fuse63_*` | `20260628170000_lesson_6_2_to_6_3_images.sql` |
 | 6.4–6.6 | AB switch, UG cable, AB cable | `abs64_*`, `ug65_*`, `abc66_*` | `20260628180000_lesson_6_4_to_6_6_images.sql` |
+| 8.1 | WBERC intro (1.10-style cards) | `wberc81_*` | `20260628190000_lesson_8_1_wberc_images.sql` |
+| 8.2–8.4 | Supply Code, SoP, Grid Code (1.10-style cards) | `sc82_*`, `sop83_*`, `grid84_*` | `20260628200000_lesson_8_2_to_8_4_images.sql` |
+| 8.5–8.7 | Safety Code, Grievance, Tariff (1.10-style cards) | `safe85_*`, `griev86_*`, `tariff87_*` | `20260628210000_lesson_8_5_to_8_7_images.sql` |
+| 8.8–8.10 | Net Metering, Environment, Field application (1.10-style cards) | `net88_*`, `env89_*`, `field810_*` | `20260628220000_lesson_8_8_to_8_10_images.sql` |
+| 9.1–9.10 | Testing manual (transformer→report, 1.10-style cards) | `xfrm91_*` … `rpt910_*` | `20260628230000_lesson_9_1_to_9_10_images.sql` |
 
 Chapter **1.x** safety lessons use the same JSON fields and loader paths; earlier migrations live under `20260624120000`–`20260624180000`.
 

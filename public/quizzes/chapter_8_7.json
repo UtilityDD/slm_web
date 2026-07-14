@@ -6,37 +6,47 @@
   "sections": [
     {
       "title": "১. বিলের গঠন: ফিক্সড বনাম এনার্জি চার্জ",
-      "image_name": "bill_breakdown_graphic.jpg",
+      "image_name": "/images/loader/tariff87_charges.webp",
       "points": [
         {
           "item_name": "ফিক্সড চার্জ / ডিমান্ড চার্জ",
           "specifications": "কানেকশন বা লোডের ভাড়ার মতো (টাকা/কেভিএ/মাস)।",
           "importance": "গ্রাহক বিদ্যুৎ ব্যবহার করুক বা না করুক (এমনকি বাড়ি বন্ধ থাকলেও), লোড বরাদ্দ রাখার জন্য এই টাকা দিতে হয়। এটা কোম্পানির পরিকাঠামো (Infrastructure) মেইনটেন্যান্সের খরচ।",
-          "daily_check": "গ্রাহক 'বাড়ি বন্ধ ছিল তাও বিল এসেছে' বললে এই চার্জের কথা বোঝান।"
+          "daily_check": "গ্রাহক 'বাড়ি বন্ধ ছিল তাও বিল এসেছে' বললে এই চার্জের কথা বোঝান।",
+          "image_name": "/images/loader/tariff87_charges.webp",
+          "image_caption": "ফিক্সড চার্জ · লোড ভাড়া"
         },
         {
           "item_name": "এনার্জি চার্জ",
           "specifications": "প্রতি ইউনিট (kWh) ব্যবহারের দাম।",
-          "importance": "এটি স্ল্যাব অনুযায়ী বাড়ে। অর্থাৎ প্রথম ১০২ ইউনিট সস্তা, পরের গুলো দামী।"
+          "importance": "এটি স্ল্যাব অনুযায়ী বাড়ে। অর্থাৎ প্রথম ১০২ ইউনিট সস্তা, পরের গুলো দামী।",
+          "image_name": "/images/loader/tariff87_charges.webp",
+          "image_caption": "এনার্জি চার্জ · স্ল্যাব"
         }
-      ]
+      ],
+      "image_caption": "ফিক্সড · এনার্জি চার্জ"
     },
     {
       "title": "২. গ্রাহকের শ্রেণীবিভাগ (Consumer Categories)",
-      "image_name": "category_icons_dom_com_ind.png",
+      "image_name": "/images/loader/tariff87_category.webp",
       "points": [
         {
           "item_name": "ডোমেস্টিক (গৃহস্থালি) বনাম কমার্শিয়াল (বাণিজ্যিক)",
           "specifications": "বাড়ির রেট দোকানের রেটের চেয়ে কম।",
           "importance": "একই মিটার থেকে বাড়িতে ফ্যান চালানো আর দোকানে ফ্রিজ চালানো—আইনত আলাদা। ভুল ক্যাটাগরিতে বিদ্যুৎ ব্যবহার করলে সেকশন ১২৬ অনুযায়ী জরিমানা হয়।",
-          "daily_check": "মিটার দেখার সময় লক্ষ্য করুন 'Type of Consumer' কোড ঠিক আছে কি না।"
+          "daily_check": "মিটার দেখার সময় লক্ষ্য করুন 'Type of Consumer' কোড ঠিক আছে কি না।",
+          "image_name": "/images/loader/tariff87_category.webp",
+          "image_caption": "ক্যাটাগরি ভুল = Sec 126"
         },
         {
           "item_name": "চাষের সংযোগ (Agriculture/Irrigation)",
           "specifications": "সবচেয়ে কম রেট (ভর্তুকি যুক্ত)।",
-          "importance": "এই জল পাম্প দিয়ে যদি কেউ গাড়ি ধোয়ার গ্যারেজ চালায়, তবে তা বড় অপরাধ।"
+          "importance": "এই জল পাম্প দিয়ে যদি কেউ গাড়ি ধোয়ার গ্যারেজ চালায়, তবে তা বড় অপরাধ।",
+          "image_name": "/images/loader/tariff87_category.webp",
+          "image_caption": "কৃষি · ভর্তুকি রেট"
         }
-      ]
+      ],
+      "image_caption": "ডোমেস্টিক · কমার্শিয়াল · কৃষি"
     }
   ],
   "pro_tip": {
@@ -58,7 +68,9 @@
         "myth": "মিটার ভাড়ার টাকা তো অনেক আগেই মিটারে দামের চেয়ে বেশি দিয়ে ফেলেছি, তাও কেন ভাড়া নেয়?",
         "reality": "ওটা শুধু মিটারের দাম নয়। মিটার খারাপ হলে পাল্টানো এবং তার রক্ষণাবেক্ষণের খরচ ওই ভাড়ার মধ্যেই ধরা থাকে।"
       }
-    ]
+    ],
+    "image_name": "/images/loader/tariff87_myth.webp",
+    "image_caption": "মিথ বনাম বাস্তবতা · ট্যারিফ"
   },
   "advanced_section": {
     "title": "ক্রস-সাবসিডি (Cross Subsidy)",

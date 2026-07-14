@@ -6,43 +6,54 @@
   "sections": [
     {
       "title": "১. কল সেন্টার ও ডকেট নম্বর: প্রথম ধাপ",
-      "image_name": "call_center_docket.jpg",
+      "image_name": "/images/loader/griev86_docket.webp",
       "points": [
         {
           "item_name": "লিখিত অভিযোগের গুরুত্ব",
           "specifications": "১৯১২ (টোল ফ্রি) বা কাস্টমার কেয়ার সেন্টারে (CCC) অভিযোগ জানানো।",
           "importance": "মুখে বলা অভিযোগের কোনো দাম নেই। যতক্ষণ না 'ডকেট নম্বর' বা 'কমপ্লেইন আইডি' তৈরি হচ্ছে, ততক্ষণ আইনের চোখে কোনো সমস্যাই নেই।",
-          "daily_check": "গ্রাহক চেঁচামেচি করলে বিনয়ের সাথে জিজ্ঞাসা করুন—'দাদা, আপনি কি ডকেট করেছেন? নম্বরটা দিন, আমি দেখে নিচ্ছি।'"
+          "daily_check": "গ্রাহক চেঁচামেচি করলে বিনয়ের সাথে জিজ্ঞাসা করুন—'দাদা, আপনি কি ডকেট করেছেন? নম্বরটা দিন, আমি দেখে নিচ্ছি।'",
+          "image_name": "/images/loader/griev86_docket.webp",
+          "image_caption": "ডকেট নম্বর = আইনি রেকর্ড"
         },
         {
           "item_name": "আপনার সুরক্ষা",
           "specifications": "ডকেট ক্লোজ করার নিয়ম।",
-          "importance": "কাজ শেষ করে অফিসে রিপোর্ট না করা পর্যন্ত ডকেট ক্লোজ হয় না। আর ডকেট ওপেন থাকলে SoP-এর জরিমানা বাড়তে থাকে।"
+          "importance": "কাজ শেষ করে অফিসে রিপোর্ট না করা পর্যন্ত ডকেট ক্লোজ হয় না। আর ডকেট ওপেন থাকলে SoP-এর জরিমানা বাড়তে থাকে।",
+          "image_name": "/images/loader/griev86_docket.webp",
+          "image_caption": "কাজ শেষে ডকেট ক্লোজ"
         }
-      ]
+      ],
+      "image_caption": "১৯১২ · ডকেট নম্বর"
     },
     {
       "title": "২. CGRF (Consumer Grievance Redressal Forum)",
-      "image_name": "cgrf_hearing_room.jpg",
+      "image_name": "/images/loader/griev86_cgrf.webp",
       "points": [
         {
           "item_name": "CGRF কী?",
           "specifications": "প্রতিটি রিজিয়ন বা জোনে কোম্পানির তৈরি একটি বিশেষ আদালত।",
           "importance": "কল সেন্টারে সমস্যার সমাধান না হলে গ্রাহক এখানে আবেদন করে। এখানে কোম্পানির অফিসারদের সাথে একজন নিরপেক্ষ সদস্যও থাকেন। এরা আইন মেনে রায় দেন।",
-          "daily_check": "CGRF-এর অর্ডারের কপি এলে সেটাকে সর্বোচ্চ গুরুত্ব দিয়ে কাজ করতে হয়।"
+          "daily_check": "CGRF-এর অর্ডারের কপি এলে সেটাকে সর্বোচ্চ গুরুত্ব দিয়ে কাজ করতে হয়।",
+          "image_name": "/images/loader/griev86_cgrf.webp",
+          "image_caption": "CGRF · ৪৫ দিনের রায়"
         }
-      ]
+      ],
+      "image_caption": "CGRF · রিজিয়নাল ফোরাম"
     },
     {
       "title": "৩. বিদ্যুৎ অম্বুডসম্যান (Ombudsman)",
-      "image_name": "ombudsman_office.jpg",
+      "image_name": "/images/loader/griev86_ombuds.webp",
       "points": [
         {
           "item_name": "সর্বোচ্চ বিচারক",
           "specifications": "CGRF-এ খুশি না হলে গ্রাহক সরাসরি WBERC-এর অ্যাপয়েন্ট করা অম্বুডসম্যানের কাছে যায়।",
-          "importance": "এর রায় কোম্পানির এমডি (MD)-কেও মানতে হয়। এখানে কোম্পানির ভুল প্রমাণিত হলে বড় অঙ্কের ক্ষতিপূরণ দিতে হয়।"
+          "importance": "এর রায় কোম্পানির এমডি (MD)-কেও মানতে হয়। এখানে কোম্পানির ভুল প্রমাণিত হলে বড় অঙ্কের ক্ষতিপূরণ দিতে হয়।",
+          "image_name": "/images/loader/griev86_ombuds.webp",
+          "image_caption": "অম্বুডসম্যান · MD-কেও মানতে হয়"
         }
-      ]
+      ],
+      "image_caption": "অম্বুডসম্যান · সর্বোচ্চ আপিল"
     }
   ],
   "pro_tip": {
@@ -64,7 +75,9 @@
         "myth": "লাইনম্যানের নামে কমপ্লেইন করলেই তার চাকরি যাবে।",
         "reality": "না। যদি আপনি নিয়ম মেনে (SoP) কাজ করেন, তবে ভয়ের কিছু নেই। তদন্ত ছাড়া কারোর চাকরি যায় না।"
       }
-    ]
+    ],
+    "image_name": "/images/loader/griev86_myth.webp",
+    "image_caption": "মিথ বনাম বাস্তবতা · গ্রিভেন্স"
   },
   "advanced_section": {
     "title": "আইনি সময়সীমা (Legal Timeline)",
