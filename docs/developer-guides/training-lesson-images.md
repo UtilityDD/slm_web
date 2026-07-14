@@ -309,6 +309,7 @@ See pattern in local `scratch/regen_lessons_2_8_9_10_sql.mjs`: fix JSON typos fi
 | 5.1–5.3 | Line trip response, patrolling, common faults | `trip_*`, `patrol_*`, `fault_*` | `20260628150000_lesson_5_1_to_5_3_images.sql` |
 | 6.1 | Distribution transformer (DTR) | `dtr61_*` | `20260628160000_lesson_6_1_dtr_images.sql` |
 | 6.2–6.3 | Circuit breaker, fuse types | `cb62_*`, `fuse63_*` | `20260628170000_lesson_6_2_to_6_3_images.sql` |
+| 6.4–6.6 | AB switch, UG cable, AB cable | `abs64_*`, `ug65_*`, `abc66_*` | `20260628180000_lesson_6_4_to_6_6_images.sql` |
 
 Chapter **1.x** safety lessons use the same JSON fields and loader paths; earlier migrations live under `20260624120000`–`20260624180000`.
 
