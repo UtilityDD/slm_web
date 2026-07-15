@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
 import { PPE_ITEMS, CORE_PPE_ITEMS, OTHER_PPE_ITEMS } from '../../../data/ppeItems';
+import PpeViewSegment from './PpeViewSegment';
 
 function CompactRow({ item, answer, language, onSelect }) {
     const label = language === 'bn' ? item.bn : item.name;
@@ -11,31 +12,31 @@ function CompactRow({ item, answer, language, onSelect }) {
         <Tag
             type={onSelect ? 'button' : undefined}
             onClick={onSelect ? () => onSelect(item.name) : undefined}
-            className={`w-full flex items-center gap-2.5 py-2.5 px-3 border-b-2 border-slate-900 last:border-b-0 text-left bg-white ${
-                onSelect ? 'hover:bg-orange-50 active:bg-orange-100 transition-colors' : ''
+            className={`flex w-full items-center gap-2.5 border-b border-slate-100 bg-white px-3 py-2.5 text-left last:border-b-0 ${
+                onSelect ? 'transition-colors hover:bg-orange-50 active:bg-orange-100' : ''
             }`}
         >
-            <span className="text-lg w-7 text-center shrink-0">{item.icon}</span>
-            <div className="flex-1 min-w-0">
-                <p className={`text-xs font-bold truncate ${has ? 'text-slate-900' : 'text-slate-400'}`}>
+            <span className="w-7 shrink-0 text-center text-lg">{item.icon}</span>
+            <div className="min-w-0 flex-1">
+                <p className={`truncate text-xs font-bold ${has ? 'text-slate-900' : 'text-slate-400'}`}>
                     {label}
                 </p>
                 {has && (
-                    <p className="text-[10px] text-slate-500 mt-0.5 truncate">
+                    <p className="mt-0.5 truncate text-[10px] text-slate-500">
                         {answer.condition} · ×{answer.count} · {answer.usage === 'Shared' ? (language === 'en' ? 'Shared' : 'যৌথ') : (language === 'en' ? 'Personal' : 'ব্যক্তিগত')}
                     </p>
                 )}
             </div>
             <div className="shrink-0 text-right">
                 {has ? (
-                    <span className="nb-tag inline-flex items-center gap-0.5 px-1.5 py-0.5 !bg-emerald-100 !text-emerald-800 text-[9px]">
+                    <span className="inline-flex items-center gap-0.5 rounded-full border border-emerald-200/80 bg-emerald-50 px-1.5 py-0.5 text-[9px] font-bold text-emerald-800">
                         ✓ {language === 'en' ? 'Yes' : 'আছে'}
                     </span>
                 ) : (
-                    <span className={`nb-tag inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] ${
+                    <span className={`inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[9px] font-bold ${
                         item.essential
-                            ? '!bg-red-100 !text-red-800'
-                            : '!bg-slate-100 !text-slate-500'
+                            ? 'border-red-200/80 bg-red-50 text-red-800'
+                            : 'border-slate-200/80 bg-slate-100 text-slate-500'
                     }`}>
                         {language === 'en' ? 'No' : 'নেই'}
                     </span>
@@ -50,16 +51,16 @@ function Section({ title, items, answers, language, onSelectItem }) {
     const have = items.filter((i) => answerMap[i.name]?.available).length;
 
     return (
-        <div className="mb-3">
-            <div className="flex items-center justify-between px-3 py-2 border-2 border-b-0 border-slate-900 bg-orange-50">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-700 nb-mono">
+        <div className="mb-3 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-100 bg-orange-50/90 px-3 py-2">
+                <span className={`text-[10px] font-black text-slate-700 ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-wider'}`}>
                     {title}
                 </span>
-                <span className="text-[10px] font-black text-orange-600 tabular-nums">
+                <span className="text-[10px] font-black tabular-nums text-orange-600">
                     {have}/{items.length}
                 </span>
             </div>
-            <div className="nb-card overflow-hidden p-0 !rounded-t-none border-t-0">
+            <div>
                 {items.map((item) => (
                     <CompactRow key={item.name} item={item} answer={answerMap[item.name]} language={language} onSelect={onSelectItem} />
                 ))}
@@ -68,29 +69,39 @@ function Section({ title, items, answers, language, onSelectItem }) {
     );
 }
 
-export default function PPECompactList({ answers, language = 'bn', onBack, onSelectItem, embedded = false }) {
+export default function PPECompactList({
+    answers,
+    language = 'bn',
+    onBack,
+    onSelectItem,
+    embedded = false,
+    hideViewSegment = false,
+    view = 'list',
+    onViewChange,
+}) {
     const haveTotal = answers.filter((a) => a.available).length;
     const pct = Math.round((haveTotal / PPE_ITEMS.length) * 100);
+    const showSegment = !hideViewSegment && typeof onViewChange === 'function';
 
     return (
-        <div className={`neo-brutal h-full min-h-0 flex flex-col max-w-lg mx-auto w-full ${embedded ? 'px-3 sm:px-6' : ''} animate-fadeIn`}>
+        <div className={`mx-auto flex h-full min-h-0 w-full max-w-lg flex-col ${embedded ? 'px-3 sm:px-6' : ''}`}>
             <div className={`shrink-0 ${embedded ? 'py-2' : 'px-3 py-3'}`}>
-                <div className="nb-card px-3 py-2.5 bg-white">
+                <div className="rounded-2xl border border-slate-200/80 bg-white px-3 py-2.5 shadow-sm">
                     <div className="flex items-center gap-2">
-                        {!embedded && onBack && (
+                        {!embedded && onBack && !showSegment && (
                             <button
                                 type="button"
                                 onClick={onBack}
-                                className="flex items-center justify-center w-9 h-9 border-2 border-slate-900 bg-white text-slate-900 shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 shrink-0"
+                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-900 shadow-sm transition-all hover:bg-slate-50 active:scale-95"
                                 aria-label={language === 'en' ? 'Back' : 'ফিরে যান'}
                             >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
                                 </svg>
                             </button>
                         )}
-                        <div className="flex-1 min-w-0">
-                            <h1 className={`text-sm font-black text-slate-900 leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        <div className="min-w-0 flex-1">
+                            <h1 className={`text-sm font-black leading-tight text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                 {language === 'en' ? 'Gear list' : 'সরঞ্জাম তালিকা'}
                             </h1>
                             <p className="text-[11px] font-semibold text-slate-500">
@@ -98,11 +109,14 @@ export default function PPECompactList({ answers, language = 'bn', onBack, onSel
                                 {onSelectItem && (language === 'en' ? ' · tap to update' : ' · ট্যাপ করে আপডেট')}
                             </p>
                         </div>
+                        {showSegment && (
+                            <PpeViewSegment view={view} onChange={onViewChange} language={language} />
+                        )}
                     </div>
                 </div>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-y-auto py-1 pb-4">
+            <div className="min-h-0 flex-1 overflow-y-auto py-1 pb-4">
                 <Section
                     title={language === 'en' ? 'Core gear' : 'মূল সরঞ্জাম'}
                     items={CORE_PPE_ITEMS}
@@ -121,14 +135,14 @@ export default function PPECompactList({ answers, language = 'bn', onBack, onSel
                 )}
             </div>
 
-            {!embedded && onBack && (
-                <div className="shrink-0 px-3 py-3 border-t-2 border-slate-900 bg-[#fffdf7]">
+            {!embedded && onBack && !showSegment && (
+                <div className="shrink-0 border-t border-slate-200/80 bg-[#fffdf7] px-3 py-3">
                     <button
                         type="button"
                         onClick={onBack}
-                        className="w-full nb-btn-secondary py-3 text-sm font-black flex items-center justify-center gap-2"
+                        className={`flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200/80 bg-white py-3 text-sm font-black text-slate-800 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
                         </svg>
                         {language === 'en' ? 'Back to figure' : 'ছবিতে ফিরে যান'}

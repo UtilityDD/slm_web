@@ -406,8 +406,8 @@ const ImageSlider = forwardRef(function ImageSlider(
 
     if (!validImages || validImages.length === 0) {
         return (
-            <div className={`${aspect} bg-slate-100 flex flex-col items-center justify-center p-4 text-slate-400 text-center border-b-2 border-slate-900`}>
-                <svg className="w-8 h-8 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className={`${aspect} flex flex-col items-center justify-center border-b border-slate-200/80 bg-slate-100 p-4 text-center text-slate-400`}>
+                <svg className="mb-2 h-8 w-8 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">No Image</span>
@@ -816,7 +816,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     }, [selectedItem]);
 
     const searchAndCategories = (
-        <div className={`shrink-0 bg-[#fffdf7] ${embedded ? 'border-b-2 border-slate-900' : ''}`}>
+        <div className={`shrink-0 bg-[#fffdf7] ${embedded ? 'border-b border-slate-200/80' : ''}`}>
             <div className={`max-w-7xl mx-auto space-y-3 ${embedded ? 'px-4 sm:px-8 py-3' : 'py-4 px-4 sm:px-8'}`}>
                 {!embedded && (
                     <div className="flex items-center justify-between gap-4">
@@ -833,13 +833,13 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                         type="button"
                                         disabled={loading}
                                         onClick={() => !loading && setIsSearchExpanded(true)}
-                                        className="sm:hidden w-9 h-9 flex items-center justify-center border-2 border-slate-900 bg-white text-slate-900 shadow-[3px_3px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 disabled:pointer-events-none disabled:opacity-40"
+                                        className="sm:hidden flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-900 shadow-sm transition-all hover:shadow-md active:scale-95 disabled:pointer-events-none disabled:opacity-40"
                                     >
                                         <SearchIcon className="w-5 h-5" />
                                     </button>
 
                                     {loading ? (
-                                        <div className="hidden sm:block h-10 max-w-md w-full min-w-[200px] overflow-hidden nb-card bg-white relative">
+                                        <div className="relative hidden h-10 w-full min-w-[200px] max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm sm:block">
                                             <SkeletonShimmer />
                                         </div>
                                     ) : (
@@ -850,7 +850,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                                 placeholder={t.searchPlaceholder}
                                                 value={searchQuery}
                                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                                className="nb-input !min-h-[40px] py-2 pl-9 pr-3 text-sm"
+                                                className="nb-input !min-h-[40px] py-2 pl-9 pr-3 text-sm !rounded-full !border-slate-200 !shadow-sm"
                                             />
                                         </div>
                                     )}
@@ -866,13 +866,13 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                         placeholder={t.searchPlaceholder}
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="nb-input py-2.5 pl-9 pr-3 text-sm"
+                                        className="nb-input py-2.5 pl-9 pr-3 text-sm !rounded-full !border-slate-200 !shadow-sm"
                                     />
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => { setIsSearchExpanded(false); setSearchQuery(''); }}
-                                    className="px-3 py-2 text-sm font-black text-orange-600 nb-mono uppercase active:scale-95"
+                                    className="rounded-full px-3 py-2 text-sm font-bold text-orange-600 transition-colors hover:bg-orange-50 active:scale-95"
                                 >
                                     Cancel
                                 </button>
@@ -893,13 +893,13 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                         placeholder={t.searchPlaceholder}
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="nb-input py-2 pl-9 pr-3 text-sm"
+                                        className="nb-input py-2 pl-9 pr-3 text-sm !rounded-full !border-slate-200 !shadow-sm"
                                     />
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => { setIsSearchExpanded(false); setSearchQuery(''); }}
-                                    className="px-2 py-2 text-xs font-black text-orange-600 nb-mono uppercase"
+                                    className={`rounded-full px-2.5 py-2 text-xs font-bold text-orange-600 transition-colors hover:bg-orange-50 active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
                                 >
                                     {language === 'en' ? 'Done' : 'ঠিক'}
                                 </button>
@@ -914,7 +914,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                             placeholder={t.searchPlaceholder}
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="nb-input !min-h-[36px] py-1.5 pl-9 pr-3 text-sm"
+                                            className="nb-input !min-h-[36px] py-1.5 pl-9 pr-3 text-sm !rounded-full !border-slate-200 !shadow-sm"
                                         />
                                     </div>
                                 )}
@@ -922,7 +922,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                     type="button"
                                     disabled={loading}
                                     onClick={() => !loading && setIsSearchExpanded(true)}
-                                    className="sm:hidden w-9 h-9 flex items-center justify-center border-2 border-slate-900 bg-white text-slate-900 shadow-[3px_3px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 disabled:pointer-events-none disabled:opacity-40"
+                                    className="sm:hidden flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-900 shadow-sm transition-all hover:shadow-md active:scale-95 disabled:pointer-events-none disabled:opacity-40"
                                 >
                                     <SearchIcon className="w-5 h-5" />
                                 </button>
@@ -937,7 +937,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                             {[56, 72, 64, 80, 68, 52, 60].map((w, i) => (
                                 <div
                                     key={i}
-                                    className="relative h-9 shrink-0 overflow-hidden border-2 border-slate-900 bg-slate-100 shadow-[2px_2px_0_#0f172a]"
+                                    className="relative h-9 shrink-0 overflow-hidden rounded-full border border-slate-200/80 bg-slate-100 shadow-sm"
                                     style={{ width: `${w}px` }}
                                 >
                                     <SkeletonShimmer />
@@ -950,10 +950,11 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                 key={cat.id}
                                 type="button"
                                 onClick={() => setActiveCategory(cat.id)}
-                                className={`px-3 py-1.5 text-[10px] sm:text-xs font-black transition-colors whitespace-nowrap border-2 border-slate-900 text-center shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0_#0f172a]
-                                    ${activeCategory === cat.id
-                                        ? 'bg-orange-500 text-white'
-                                        : 'bg-white text-slate-700 hover:bg-orange-50'}`}
+                                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-center text-[10px] font-bold shadow-sm transition-all active:scale-95 sm:text-xs ${
+                                    activeCategory === cat.id
+                                        ? 'bg-orange-500 text-white shadow-orange-500/25'
+                                        : 'border border-slate-200/80 bg-white text-slate-700 hover:bg-orange-50'
+                                }`}
                             >
                                 {cat.label}
                             </button>
@@ -980,19 +981,19 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                 setCurrentView('video-guide');
                             }
                         }}
-                        className="mb-4 sm:mb-6 nb-btn-primary p-4 flex items-center justify-between cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+                        className="mb-4 flex cursor-pointer items-center justify-between rounded-2xl border border-orange-200/80 bg-gradient-to-r from-orange-500 to-amber-500 p-4 text-white shadow-md shadow-orange-500/20 transition-all hover:shadow-lg active:scale-[0.99] sm:mb-6"
                     >
                         <div className="flex items-center gap-3.5">
-                            <div className="w-10 h-10 border-2 border-slate-900 bg-white text-orange-600 flex items-center justify-center shrink-0 shadow-[2px_2px_0_#0f172a]">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white text-orange-600 shadow-sm">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             </div>
                             <div>
-                                <h3 className="font-black text-sm sm:text-base leading-tight">
+                                <h3 className={`text-sm font-black leading-tight sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {language === 'en' ? 'Watch Video Guides' : 'ভিডিও গাইড দেখুন'}
                                 </h3>
                             </div>
                         </div>
-                        <div className="w-8 h-8 border-2 border-slate-900 bg-white/20 flex items-center justify-center">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
                             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"/></svg>
                         </div>
                     </div>
@@ -1004,18 +1005,18 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                             <div
                                 key={item.id}
                                 onClick={() => openItemDetail(item)}
-                                className="group nb-card overflow-hidden p-0 flex flex-col cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+                                className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-0 shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
                             >
                                 <div className="relative aspect-square">
                                     <GridImage images={item.images} alt={item.name_bn} aspect="h-full" />
                                     <div className="absolute top-2 left-2">
-                                        <span className="nb-tag px-1.5 py-0.5 bg-orange-100 text-orange-800 text-[8px]">
+                                        <span className="rounded-full border border-orange-200/80 bg-orange-50 px-2 py-0.5 text-[8px] font-bold text-orange-800 shadow-sm">
                                             {item.category}
                                         </span>
                                     </div>
                                 </div>
-                                <div className="p-2.5 sm:p-4 flex-grow flex flex-col justify-center bg-white">
-                                    <h3 className="text-[11px] sm:text-sm font-black text-slate-900 leading-tight line-clamp-2 text-center group-hover:text-orange-600 transition-colors">
+                                <div className="flex flex-grow flex-col justify-center bg-white p-2.5 sm:p-4">
+                                    <h3 className="line-clamp-2 text-center text-[11px] font-black leading-tight text-slate-900 transition-colors group-hover:text-orange-600 sm:text-sm">
                                         {item.name_bn}
                                     </h3>
                                 </div>
@@ -1023,36 +1024,39 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                         ))}
                     </div>
                 ) : !loading ? (
-                    <div className="flex flex-col items-center justify-center min-h-[300px]">
-                        <div className="nb-card p-8 text-center bg-white">
-                            <LineChartIcon className="w-12 h-12 mb-3 mx-auto text-slate-300" />
+                    <div className="flex min-h-[300px] flex-col items-center justify-center">
+                        <div className="rounded-2xl border border-slate-200/80 bg-white p-8 text-center shadow-sm">
+                            <LineChartIcon className="mx-auto mb-3 h-12 w-12 text-slate-300" />
                             <p className="text-sm font-black text-slate-600">{t.noResults}</p>
                         </div>
                     </div>
                 ) : null}
 
-                {/* Premium Detail Modal - Optimized for High-End UX */}
+                {/* Detail modal — Material/Android chrome */}
                 {selectedItem && (
-                    <div className="fixed inset-0 z-[11000] flex items-end sm:items-start justify-center p-0 sm:px-4 sm:pt-20 sm:pb-4 lg:px-6 lg:pt-24 lg:pb-6 animate-fade-in">
+                    <div className="fixed inset-0 z-[11000] flex items-end justify-center p-0 animate-fade-in sm:items-start sm:px-4 sm:pb-4 sm:pt-20 lg:px-6 lg:pb-6 lg:pt-24">
                         <div className="absolute inset-0 bg-slate-900/55" onClick={closeDetailModal} aria-hidden="true" />
 
-                        <div className="neo-brutal relative flex h-[100dvh] w-full flex-col overflow-hidden border-[2.5px] border-slate-900 bg-[#fffdf7] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[4px_4px_0_#0f172a] sm:h-[min(calc(100dvh-6rem),940px)] sm:max-h-[calc(100dvh-6rem)] sm:w-[min(96vw,1220px)] sm:max-w-none sm:rounded-lg sm:pb-0 sm:pt-0 lg:h-[min(calc(100dvh-7rem),940px)] lg:max-h-[calc(100dvh-7rem)] animate-slide-up sm:animate-scale-in">
-                            <div className="nb-hazard shrink-0" aria-hidden="true" />
-                            <div className="mx-auto mt-2 mb-1 h-1.5 w-12 shrink-0 cursor-pointer bg-slate-900 sm:hidden" onClick={closeDetailModal} aria-hidden="true" />
+                        <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] shadow-2xl animate-slide-up sm:h-[min(calc(100dvh-6rem),940px)] sm:max-h-[calc(100dvh-6rem)] sm:w-[min(96vw,1220px)] sm:max-w-none sm:rounded-3xl sm:pb-0 sm:pt-0 sm:animate-scale-in lg:h-[min(calc(100dvh-7rem),940px)] lg:max-h-[calc(100dvh-7rem)]">
+                            <div
+                                className="h-1 w-full shrink-0 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
+                                aria-hidden="true"
+                            />
+                            <div className="mx-auto mb-1 mt-2 h-1.5 w-12 shrink-0 cursor-pointer rounded-full bg-slate-300 sm:hidden" onClick={closeDetailModal} aria-hidden="true" />
 
-                            <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 border-b-2 border-slate-900 bg-white px-3 py-2 sm:px-6 sm:py-3">
+                            <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 border-b border-slate-200/80 bg-white/95 px-3 py-2 backdrop-blur-md sm:px-6 sm:py-3">
                                 <div className="flex min-w-0 items-center gap-2">
                                     {modalBrowseStack.length > 0 && (
                                         <button
                                             type="button"
                                             onClick={popModalBrowseBack}
-                                            className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-slate-900 bg-white text-slate-900 shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5"
+                                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-900 shadow-sm transition-all hover:bg-slate-50 active:scale-95"
                                             aria-label={t.backPreviousAria}
                                         >
                                             <ChevronLeftIcon className="h-4 w-4" />
                                         </button>
                                     )}
-                                    <span className="nb-tag shrink-0 px-2 py-1 bg-orange-100 text-orange-800 text-[8px]">
+                                    <span className="shrink-0 rounded-full border border-orange-200/80 bg-orange-50 px-2 py-1 text-[8px] font-bold text-orange-800 shadow-sm">
                                         {selectedItem.category}
                                     </span>
                                     <h2
@@ -1066,13 +1070,13 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                     role="toolbar"
                                     aria-label={t.zoomToolbarAria}
                                     data-zoom-ui
-                                    className="flex items-center gap-0.5 justify-self-center border-2 border-slate-900 bg-white p-0.5 shadow-[2px_2px_0_#0f172a]"
+                                    className="flex items-center gap-0.5 justify-self-center rounded-full border border-slate-200/80 bg-slate-100/90 p-0.5 shadow-sm"
                                 >
                                     <button
                                         type="button"
                                         onClick={() => detailSliderRef.current?.zoomOut()}
                                         disabled={detailZoomLevel <= ZOOM_MIN + 0.01}
-                                        className="flex h-7 w-7 items-center justify-center text-slate-700 hover:bg-orange-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
+                                        className="flex h-7 w-7 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
                                         aria-label={t.zoomOutAria}
                                     >
                                         <MagnifierMinusIcon className="h-[15px] w-[15px]" />
@@ -1081,7 +1085,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                         type="button"
                                         onClick={() => detailSliderRef.current?.zoomIn()}
                                         disabled={detailZoomLevel >= ZOOM_MAX - 0.01}
-                                        className="flex h-7 w-7 items-center justify-center text-slate-700 hover:bg-orange-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
+                                        className="flex h-7 w-7 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
                                         aria-label={t.zoomInAria}
                                     >
                                         <MagnifierPlusIcon className="h-[15px] w-[15px]" />
@@ -1090,7 +1094,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                 <button
                                     type="button"
                                     onClick={closeDetailModal}
-                                    className="flex h-9 w-9 shrink-0 items-center justify-center justify-self-end border-2 border-slate-900 bg-white text-slate-900 shadow-[3px_3px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5"
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center justify-self-end rounded-full border border-slate-200/80 bg-white text-slate-900 shadow-sm transition-all hover:bg-slate-50 active:scale-95"
                                     aria-label={language === 'en' ? 'Close' : 'বন্ধ করুন'}
                                 >
                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -1100,13 +1104,13 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                             </div>
 
                             {chartRelatedForModal.length > 0 && (
-                                <div className="flex shrink-0 flex-nowrap items-center gap-1.5 overflow-x-auto overflow-y-hidden border-b-2 border-slate-900 bg-amber-50 px-3 py-1.5 no-scrollbar [-webkit-overflow-scrolling:touch] sm:px-6 sm:py-2">
+                                <div className="flex shrink-0 flex-nowrap items-center gap-1.5 overflow-x-auto overflow-y-hidden border-b border-amber-100 bg-amber-50/90 px-3 py-1.5 no-scrollbar [-webkit-overflow-scrolling:touch] sm:px-6 sm:py-2">
                                     {chartRelatedForModal.map((chart) => (
                                         <button
                                             key={chart.id}
                                             type="button"
                                             onClick={() => goToRelatedLibraryItem(chart)}
-                                            className="inline-flex h-8 max-w-[min(100%,12rem)] shrink-0 items-center gap-1.5 border-2 border-slate-900 bg-white py-0 pl-1.5 pr-2 text-left text-[10px] font-bold leading-tight text-slate-800 shadow-[2px_2px_0_#0f172a] hover:bg-orange-50 active:translate-x-0.5 active:translate-y-0.5 sm:max-w-[14rem]"
+                                            className="inline-flex h-8 max-w-[min(100%,12rem)] shrink-0 items-center gap-1.5 rounded-full border border-slate-200/80 bg-white py-0 pl-1.5 pr-2.5 text-left text-[10px] font-bold leading-tight text-slate-800 shadow-sm transition-all hover:bg-orange-50 active:scale-95 sm:max-w-[14rem]"
                                             aria-label={`${t.relatedOpenAriaPrefix} ${chart.name_bn}`}
                                         >
                                             <LineChartIcon className="h-3.5 w-3.5 shrink-0 text-slate-600" aria-hidden />
@@ -1117,7 +1121,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                             )}
 
                             {selectedItem.related_items?.some((rel) => rel.category !== 'Charts') && (
-                                <div className="flex shrink-0 flex-nowrap gap-2 overflow-x-auto overflow-y-hidden border-b-2 border-slate-900 bg-white px-3 py-2 no-scrollbar [-webkit-overflow-scrolling:touch] sm:flex-wrap sm:overflow-x-visible sm:px-6 sm:py-3">
+                                <div className="flex shrink-0 flex-nowrap gap-2 overflow-x-auto overflow-y-hidden border-b border-slate-200/80 bg-white px-3 py-2 no-scrollbar [-webkit-overflow-scrolling:touch] sm:flex-wrap sm:overflow-x-visible sm:px-6 sm:py-3">
                                     {selectedItem.related_items
                                         .filter((rel) => rel.category !== 'Charts')
                                         .map((rel) => (
@@ -1125,11 +1129,11 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                             key={rel.id}
                                             type="button"
                                             onClick={() => goToRelatedLibraryItem(rel)}
-                                            className="inline-flex max-w-[min(100%,18rem)] shrink-0 items-center gap-1.5 border-2 border-slate-900 bg-white py-1 pl-3 pr-2 text-left text-[11px] font-bold text-slate-800 shadow-[2px_2px_0_#0f172a] hover:bg-orange-50 active:translate-x-0.5 active:translate-y-0.5 sm:max-w-full"
+                                            className="inline-flex max-w-[min(100%,18rem)] shrink-0 items-center gap-1.5 rounded-full border border-slate-200/80 bg-white py-1.5 pl-3 pr-2 text-left text-[11px] font-bold text-slate-800 shadow-sm transition-all hover:bg-orange-50 active:scale-95 sm:max-w-full"
                                             aria-label={`${t.relatedOpenAriaPrefix} ${rel.name_bn}`}
                                         >
                                             <span className="min-w-0 flex-1 truncate">{rel.name_bn}</span>
-                                            <span className="nb-tag shrink-0 px-1.5 py-0.5 bg-orange-100 text-orange-800 text-[9px]">
+                                            <span className="shrink-0 rounded-full border border-orange-200/80 bg-orange-50 px-1.5 py-0.5 text-[9px] font-bold text-orange-800">
                                                 {rel.category}
                                             </span>
                                             <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-orange-600" aria-hidden />
@@ -1141,7 +1145,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                             <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar sm:overflow-hidden">
                                 <div className="sm:grid sm:h-full sm:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] sm:items-stretch">
                                 <div
-                                    className={`group/modal-img relative w-full shrink-0 bg-white sm:h-full sm:border-r-2 border-slate-900 ${
+                                    className={`group/modal-img relative w-full shrink-0 bg-white sm:h-full sm:border-r sm:border-slate-200/80 ${
                                         selectedItem.category === 'Charts' ? 'sm:overflow-y-auto sm:no-scrollbar' : 'sm:overflow-hidden'
                                     }`}
                                 >
@@ -1160,35 +1164,35 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                     />
                                 </div>
 
-                                <div className="p-6 sm:h-full sm:overflow-y-auto sm:bg-[#fffdf7] sm:p-8 sm:pb-14 sm:pr-8 sm:pl-7 sm:no-scrollbar pb-32 space-y-6">
-                                    <div className="space-y-3 pb-6 border-b-2 border-slate-900">
+                                <div className="space-y-6 p-6 pb-32 sm:h-full sm:overflow-y-auto sm:bg-[#fffdf7] sm:p-8 sm:pb-14 sm:pl-7 sm:pr-8 sm:no-scrollbar">
+                                    <div className="space-y-3 border-b border-slate-200/80 pb-6">
                                         {selectedItem.approx_price_inr !== '---' && (
-                                            <div className="nb-score-pill inline-flex items-center gap-1.5 px-2.5 py-1 !bg-emerald-100 !text-emerald-800">
+                                            <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/80 bg-emerald-50 px-2.5 py-1 text-emerald-800 shadow-sm">
                                                 <span className="text-[10px]">₹</span>
-                                                <span className="text-xs tabular-nums">{selectedItem.approx_price_inr}</span>
+                                                <span className="text-xs font-black tabular-nums">{selectedItem.approx_price_inr}</span>
                                             </div>
                                         )}
                                     </div>
 
                                     {selectedItem.category !== 'Charts' && selectedItem.function_bn && (
-                                        <div className="nb-card p-4 sm:p-5 space-y-2 bg-white">
+                                        <div className="space-y-2 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
                                             <div className="flex items-center gap-1.5 text-slate-500">
-                                                <InfoIcon className="w-3.5 h-3.5" />
-                                                <span className="nb-label">{t.aboutLabel}</span>
+                                                <InfoIcon className="h-3.5 w-3.5" />
+                                                <span className={`text-[10px] font-bold uppercase tracking-wider ${language === 'bn' ? 'font-bengali normal-case tracking-normal' : ''}`}>{t.aboutLabel}</span>
                                             </div>
-                                            <p className="text-[14px] sm:text-base text-slate-700 leading-relaxed font-semibold">
+                                            <p className="text-[14px] font-semibold leading-relaxed text-slate-700 sm:text-base">
                                                 {selectedItem.function_bn}
                                             </p>
                                         </div>
                                     )}
 
                                     {selectedItem.category !== 'Charts' && selectedItem.guide_bn && (
-                                        <div className="nb-card p-4 sm:p-5 bg-amber-50 space-y-2">
-                                            <div className="flex items-center gap-2 text-orange-700 font-black text-[10px] uppercase tracking-wider nb-mono">
-                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                        <div className="space-y-2 rounded-2xl border border-amber-100 bg-amber-50/90 p-4 shadow-sm sm:p-5">
+                                            <div className={`flex items-center gap-2 text-[10px] font-black text-orange-700 ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-wider'}`}>
+                                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                                                 {t.guideLabel}
                                             </div>
-                                            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-bold italic">
+                                            <p className="text-xs font-bold italic leading-relaxed text-slate-700 sm:text-sm">
                                                 "{selectedItem.guide_bn}"
                                             </p>
                                         </div>
@@ -1216,9 +1220,12 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     }
 
     return (
-        <div className="neo-brutal min-h-screen pb-20 text-slate-900">
-            <div className="nb-hazard sticky top-0 z-[101]" aria-hidden="true" />
-            <div className="sticky top-[6px] z-[100]">
+        <div className="min-h-screen bg-[#fffdf7] pb-20 text-slate-900">
+            <div
+                className="sticky top-0 z-[101] h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
+                aria-hidden="true"
+            />
+            <div className="sticky top-[4px] z-[100] border-b border-slate-200/80 bg-[#fffdf7]/90 backdrop-blur-md">
                 {searchAndCategories}
             </div>
             {libraryContent}
