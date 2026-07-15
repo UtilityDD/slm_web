@@ -1815,22 +1815,26 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
     if (isFullLeaderboard) {
         return (
-            <main className="neo-brutal min-h-screen text-slate-900">
-                <div className="nb-hazard sticky top-0 z-[41]" aria-hidden="true" />
+            <main className="min-h-screen bg-[#fffdf7] text-slate-900">
+                {/* Soft brand accent — Material-style hairline instead of hazard tape */}
+                <div
+                    className="sticky top-0 z-[41] h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
+                    aria-hidden="true"
+                />
 
                 {/* Sticky controls — tabs first, no page title */}
-                <div className="sticky top-[6px] z-40 bg-[#fffdf7] border-b border-slate-200/80">
+                <div className="sticky top-[4px] z-40 border-b border-slate-200/80 bg-[#fffdf7]/90 backdrop-blur-md">
                     <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
                         {!showHallOfFame && leaderboardTab === 'monthly' && (
                             <div className="space-y-2">
                                 <div className="flex items-center gap-2">
-                                    <div className="flex flex-1 min-w-0 gap-1 p-0.5 bg-slate-100 rounded-xl">
+                                    <div className="flex flex-1 min-w-0 gap-1 rounded-full bg-slate-100/90 p-1 shadow-sm">
                                         {MONTHLY_SUB_TAB_ORDER.map((tabId) => (
                                             <button
                                                 key={tabId}
                                                 type="button"
                                                 onClick={() => setMonthlyBoardTab(tabId)}
-                                                className={`flex-1 min-w-0 px-2 py-2.5 text-[10px] sm:text-xs font-bold rounded-lg transition-all truncate ${
+                                                className={`flex-1 min-w-0 truncate rounded-full px-2 py-2.5 text-[10px] font-bold transition-all active:scale-[0.98] sm:text-xs ${
                                                     monthlyBoardTab === tabId
                                                         ? 'bg-white text-orange-600 shadow-sm'
                                                         : 'text-slate-600 hover:text-slate-900'
@@ -1848,7 +1852,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             fetchHallOfFameGallery();
                                             setShowHallOfFame(true);
                                         }}
-                                        className="shrink-0 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-100 via-orange-50 to-rose-100 border border-amber-200/80 text-amber-600 shadow-[0_2px_8px_rgba(245,158,11,0.18)] hover:from-amber-200 hover:via-orange-100 hover:to-rose-100 hover:shadow-[0_3px_12px_rgba(245,158,11,0.28)] active:scale-95 transition-all"
+                                        className="shrink-0 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 via-orange-50 to-rose-100 border border-amber-200/80 text-amber-600 shadow-sm hover:shadow-md active:scale-95 transition-all"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5" fill="none" aria-hidden>
                                             <path d="M4 11h16v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9z" fill="currentColor" fillOpacity="0.2" />
@@ -1883,7 +1887,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         fetchHallOfFameGallery();
                                         setShowHallOfFame(true);
                                     }}
-                                    className="shrink-0 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-100 via-orange-50 to-rose-100 border border-amber-200/80 text-amber-600 shadow-[0_2px_8px_rgba(245,158,11,0.18)] hover:from-amber-200 hover:via-orange-100 hover:to-rose-100 hover:shadow-[0_3px_12px_rgba(245,158,11,0.28)] active:scale-95 transition-all"
+                                    className="shrink-0 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 via-orange-50 to-rose-100 border border-amber-200/80 text-amber-600 shadow-sm hover:shadow-md active:scale-95 transition-all"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5" fill="none" aria-hidden>
                                         <path d="M4 11h16v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9z" fill="currentColor" fillOpacity="0.2" />
@@ -1902,7 +1906,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 <button
                                     type="button"
                                     onClick={() => setShowHallOfFame(false)}
-                                    className={`text-xs font-bold text-slate-600 hover:text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                    className={`rounded-full px-3 py-1.5 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
                                 >
                                     {language === 'en' ? '← Leaderboard' : '← লিডারবোর্ড'}
                                 </button>
@@ -1917,16 +1921,16 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                         {loadingGallery ? (
                             <div className="flex flex-col items-center justify-center py-20 pointer-events-none">
-                                <div className="nb-card bg-white p-6 flex flex-col items-center gap-4">
-                                    <div className="w-[120px] h-[120px] border-[3px] border-slate-900 bg-orange-50 shadow-[3px_3px_0_#0f172a] flex items-center justify-center overflow-hidden">
+                                <div className="flex flex-col items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-md">
+                                    <div className="flex h-[120px] w-[120px] items-center justify-center overflow-hidden rounded-2xl border border-orange-100 bg-orange-50 shadow-sm">
                                         <DotLottiePlayer src={sandyLoading} autoplay loop style={{ width: '100px', height: '100px' }} />
                                     </div>
-                                    <p className="text-slate-800 font-black nb-mono uppercase tracking-[0.2em] text-[10px] animate-pulse">{language === 'en' ? 'Opening the Gallery…' : 'গ্যালারি খোলা হচ্ছে…'}</p>
+                                    <p className={`animate-pulse text-sm font-bold text-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}>{language === 'en' ? 'Opening the Gallery…' : 'গ্যালারি খোলা হচ্ছে…'}</p>
                                 </div>
                             </div>
                         ) : (
                             <div className="space-y-5 sm:space-y-8 max-w-7xl mx-auto px-0 md:px-8">
-                                <div className="nb-card bg-amber-50 p-3 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in">
+                                <div className="flex flex-col gap-4 rounded-2xl border border-amber-100 bg-amber-50/90 p-3 shadow-sm animate-fade-in sm:flex-row sm:items-center sm:justify-between sm:p-5">
                                     <div className="flex items-start gap-3">
                                         <span className="text-xl sm:text-2xl mt-0.5">🎉</span>
                                         <p className="font-bengali text-sm sm:text-base font-bold text-slate-700">
@@ -1934,10 +1938,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
-                                        <a href="https://www.facebook.com/smartlineman" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-10 h-10 border-2 border-slate-900 bg-white text-[#1877F2] shadow-[2px_2px_0_#0f172a] hover:bg-blue-50 transition-colors">
+                                        <a href="https://www.facebook.com/smartlineman" target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-[#1877F2] shadow-sm transition-all hover:bg-blue-50 hover:shadow-md active:scale-95">
                                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" /></svg>
                                         </a>
-                                        <a href="https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-10 h-10 border-2 border-slate-900 bg-white text-[#25D366] shadow-[2px_2px_0_#0f172a] hover:bg-green-50 transition-colors">
+                                        <a href="https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t" target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-[#25D366] shadow-sm transition-all hover:bg-green-50 hover:shadow-md active:scale-95">
                                             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
                                         </a>
                                     </div>
@@ -1952,7 +1956,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         key={tabId}
                                                         type="button"
                                                         onClick={() => setHallOfFameBoardTab(tabId)}
-                                                        className={`whitespace-nowrap px-2.5 py-1.5 text-[10px] sm:text-xs font-black border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 ${hallOfFameBoardTab === tabId ? 'bg-orange-500 text-white' : 'bg-white text-slate-700 hover:bg-orange-50'}`}
+                                                        className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[10px] font-bold shadow-sm transition-all active:scale-95 sm:text-xs ${hallOfFameBoardTab === tabId ? 'bg-orange-500 text-white shadow-orange-500/25' : 'border border-slate-200/80 bg-white text-slate-700 hover:bg-orange-50'}`}
                                                     >
                                                         {encouragementCopy.monthlyTabs[tabId]}
                                                     </button>
@@ -1962,7 +1966,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     )}
 
                                     <div
-                                        className={`relative grid h-10 shrink-0 grid-cols-3 border-2 border-slate-900 bg-white p-0.5 shadow-[2px_2px_0_#0f172a] ${
+                                        className={`relative grid h-10 shrink-0 grid-cols-3 rounded-full border border-slate-200/80 bg-slate-100/90 p-0.5 shadow-sm ${
                                             hallOfFamePrizeView === 'by_user'
                                                 ? 'mx-auto w-[7.75rem]'
                                                 : 'ml-auto w-[7.75rem] sm:ml-0'
@@ -1971,7 +1975,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         aria-label={language === 'en' ? 'Hall of Fame view' : 'হল অফ ফেম দেখার ধরন'}
                                     >
                                         <span
-                                            className={`pointer-events-none absolute bottom-0.5 top-0.5 w-[calc(33.333%-2px)] border-2 border-slate-900 bg-slate-900 transition-transform duration-200 ease-out ${
+                                            className={`pointer-events-none absolute bottom-0.5 top-0.5 w-[calc(33.333%-2px)] rounded-full bg-slate-900 shadow-sm transition-transform duration-200 ease-out ${
                                                 hallOfFamePrizeView === 'detailed'
                                                     ? 'translate-x-[calc(100%+4px)]'
                                                     : hallOfFamePrizeView === 'by_user'
@@ -2059,10 +2063,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         className="animate-slide-up"
                                         style={{ animationDelay: `${idx * 100}ms` }}
                                     >
-                                        <div className="nb-card p-3 sm:p-6 md:p-8 bg-white transition-all duration-300">
+                                        <div className="rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm transition-all duration-300 sm:p-6 md:p-8">
                                             
                                             {/* Header Section */}
-                                            <div className="mb-3 sm:mb-5 border-b-2 border-slate-900 pb-2 sm:pb-4">
+                                            <div className="mb-3 border-b border-slate-200/80 pb-2 sm:mb-5 sm:pb-4">
                                                 <h3 className={`text-base sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                     {language === 'bn'
                                                         ? `${LEADERBOARD_BN_MONTHS[entry.month - 1]} ${entry.year}`
@@ -2079,7 +2083,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         : 'divide-y divide-slate-200'
                                             }>
                                                 {monthWinners.length === 0 ? (
-                                                    <p className="nb-card border-dashed bg-amber-50 px-4 py-8 text-center text-xs text-slate-600 font-semibold">
+                                                    <p className="rounded-2xl border border-dashed border-amber-200 bg-amber-50 px-4 py-8 text-center text-xs font-semibold text-slate-600">
                                                         {language === 'en' ? 'No winners for this category that month.' : 'সেই মাসে এই তালিকায় কেউ উঠেননি।'}
                                                     </p>
                                                 ) : monthWinners.map((winner, winIdx) => (
@@ -2129,14 +2133,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     <div className="space-y-4">
                         {(leaderboardTab === 'all-time' ? loadingFull : loadingMonthly) ? (
                             <div className="flex flex-col items-center justify-center py-16">
-                                <div className="nb-icon-badge w-14 h-14 flex items-center justify-center bg-orange-100 mb-3">
-                                    <div className="w-8 h-8 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin"></div>
+                                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-orange-100 shadow-sm">
+                                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-200 border-t-orange-600"></div>
                                 </div>
-                                <p className="text-xs font-black text-slate-600 mt-2 uppercase tracking-widest nb-mono">{t.loadingText || 'Loading Rankings...'}</p>
+                                <p className={`mt-2 text-xs font-bold text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>{t.loadingText || 'Loading Rankings...'}</p>
                             </div>
                         ) : (leaderboardTab === 'all-time' ? fullLeaderboard : activeMonthlyList).length > 0 ? (
                             <>
-                                {/* Top 3 Podium (Reused logic) */}
+                                {/* Top 3 celebration stage — avatars + names only; details live in the list */}
                                 {(() => {
                                     const list = leaderboardTab === 'all-time' ? fullLeaderboard : monthlyPodiumList;
                                     let topPlayers = [];
@@ -2147,14 +2151,32 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     } else {
                                         topPlayers = [list[1], list[0], list[2]];
                                     }
-                                    
+
+                                    const rankRing = {
+                                        1: 'ring-[3px] ring-amber-400 shadow-[0_0_32px_rgba(251,191,36,0.45)]',
+                                        2: 'ring-[3px] ring-slate-300 shadow-[0_0_20px_rgba(148,163,184,0.4)]',
+                                        3: 'ring-[3px] ring-orange-400 shadow-[0_0_20px_rgba(251,146,60,0.4)]',
+                                    };
+                                    const pedestalClass = {
+                                        1: 'h-14 bg-gradient-to-b from-amber-300 via-yellow-400 to-amber-500 sm:h-16',
+                                        2: 'h-10 bg-gradient-to-b from-slate-200 via-slate-300 to-slate-400 sm:h-12',
+                                        3: 'h-8 bg-gradient-to-b from-orange-300 via-orange-400 to-amber-600 sm:h-10',
+                                    };
+
                                     return (
-                                        <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6 items-end">
+                                        <div className="leaderboard-podium-stage relative mb-5 overflow-hidden rounded-3xl border border-orange-200/70 bg-gradient-to-b from-amber-50 via-orange-50/50 to-white px-2 pb-2 pt-6 shadow-lg shadow-orange-500/10 sm:mb-6 sm:px-5 sm:pb-3 sm:pt-7">
+                                            <div className="pointer-events-none absolute -left-8 top-0 h-36 w-36 rounded-full bg-amber-300/35 blur-3xl" aria-hidden />
+                                            <div className="pointer-events-none absolute -right-10 top-6 h-32 w-32 rounded-full bg-orange-400/25 blur-3xl" aria-hidden />
+
+                                            <div className="relative z-10 grid grid-cols-3 items-end gap-2 sm:gap-4">
                                             {topPlayers.map((player, idx) => {
                                                 const isWinner = topPlayers.length === 1 ? true : (topPlayers.length === 2 ? idx === 1 : idx === 1);
                                                 const rank = topPlayers.length === 1 ? 1 : (topPlayers.length === 2 ? (idx === 0 ? 2 : 1) : (idx === 0 ? 2 : idx === 1 ? 1 : 3));
                                                 const superseded = leaderboardTab === 'monthly' && isPrizeSuperseded(player);
-                                                
+                                                const displayName = (player.full_name || '').trim().includes('@')
+                                                    ? (player.full_name || '').split('@')[0]
+                                                    : (player.full_name || '');
+
                                                 return (
                                                     <div
                                                         key={player.user_id}
@@ -2162,145 +2184,98 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         tabIndex={0}
                                                         onClick={() => openUserProgress(player.user_id, player, rank)}
                                                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') openUserProgress(player.user_id, player, rank); }}
-                                                        className={`flex flex-col items-center cursor-pointer active:scale-[0.98] transition-transform ${isWinner && !superseded ? 'scale-110 mb-2' : 'mb-0'} ${isWinner ? '' : 'opacity-90'}`}
+                                                        className={`flex flex-col items-center cursor-pointer transition-transform active:scale-[0.97] ${isWinner && !superseded ? '-translate-y-1.5' : ''} ${superseded ? 'opacity-70' : ''}`}
                                                     >
-                                                        <div className="relative mb-3 flex flex-col items-center">
-                                                            <div className="relative h-14 w-14 sm:h-20 sm:w-20 shrink-0">
-                                                                {rank === 1 && (
-                                                                    <div
-                                                                        className="pointer-events-none absolute -right-3 -top-3 z-30 flex items-start justify-end sm:-right-4 sm:-top-4"
-                                                                        aria-hidden
-                                                                    >
-                                                                        <span className="text-[1.2rem] leading-none drop-shadow-[0_2px_3px_rgba(0,0,0,0.35)] sm:text-[1.45rem] dark:drop-shadow-[0_2px_3px_rgba(0,0,0,0.55)]">
-                                                                            👑
-                                                                        </span>
-                                                                    </div>
-                                                                )}
+                                                        <div className="relative mb-2.5 flex flex-col items-center">
+                                                            {rank === 1 && !superseded && (
+                                                                <span className="animate-crown absolute -top-6 z-20 text-2xl leading-none sm:-top-7 sm:text-3xl" aria-hidden>👑</span>
+                                                            )}
+                                                            <div className={`relative ${isWinner ? 'h-[5.25rem] w-[5.25rem] sm:h-28 sm:w-28' : 'h-[4.35rem] w-[4.35rem] sm:h-24 sm:w-24'} shrink-0`}>
                                                                 <div
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
                                                                         if (player.avatar_url) setMaximizedAvatar(player.avatar_url);
                                                                     }}
-                                                                    className={`absolute inset-0 overflow-hidden border-2 border-slate-900 shadow-[3px_3px_0_#0f172a] cursor-zoom-in active:scale-95 transition-transform ${rank === 1 ? 'bg-amber-100' : rank === 2 ? 'bg-slate-100' : 'bg-orange-100'} ${superseded ? 'opacity-40 grayscale' : ''}`}
+                                                                    className={`absolute inset-0 cursor-zoom-in overflow-hidden rounded-full border-[3px] border-white bg-white transition-transform active:scale-95 sm:border-4 ${rankRing[rank] || ''} ${superseded ? 'grayscale opacity-50' : ''}`}
                                                                 >
-                                                                    {player.avatar_url ? <img src={player.avatar_url} className="h-full w-full object-cover" alt="" /> : <div className="flex h-full w-full items-center justify-center bg-slate-200 text-xl font-bold text-slate-400 dark:bg-slate-800">{player.full_name?.[0]}</div>}
-
-                                                                    {/* Status Indicator in Corner */}
-                                                                    {leaderboardTab === 'monthly' && (() => {
-                                                                        const lastActiveDate = player.last_active || player.last_login_at;
-                                                                        if (!lastActiveDate) return null;
-                                                                        const date = new Date(lastActiveDate);
-                                                                        const now = new Date();
-                                                                        const diffInSeconds = Math.floor((now - date) / 1000);
-                                                                        const isOnline = diffInSeconds < 300;
-                                                                        const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-
-                                                                        if (!isToday) return null;
-
-                                                                        return (
-                                                                            <span className="absolute bottom-1 right-1 z-20 flex h-3 w-3">
-                                                                                {isOnline && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>}
-                                                                                <span className={`relative inline-flex h-3 w-3 rounded-full border-2 border-white dark:border-slate-900 ${isOnline ? 'bg-green-500' : 'bg-green-500/60'}`}></span>
-                                                                            </span>
-                                                                        );
-                                                                    })()}
+                                                                    {player.avatar_url ? (
+                                                                        <img src={player.avatar_url} className="h-full w-full object-cover" alt="" />
+                                                                    ) : (
+                                                                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-2xl font-black text-slate-500 sm:text-3xl">
+                                                                            {displayName?.[0] || '?'}
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             </div>
-                                                            <div className={`nb-rank-badge absolute -bottom-2 left-1/2 z-20 flex h-6 w-6 -translate-x-1/2 items-center justify-center text-[10px] sm:h-8 sm:w-8 sm:text-xs ${rank === 1 ? 'bg-amber-400 text-amber-950' : rank === 2 ? 'bg-slate-300 text-slate-900' : 'bg-orange-300 text-orange-950'} ${superseded ? 'opacity-40' : ''}`}>
+                                                        </div>
+
+                                                        <p className={`mb-2 max-w-full px-0.5 text-center text-xs font-black leading-snug sm:text-sm ${
+                                                            superseded ? 'text-slate-400 line-through' : 'text-slate-900'
+                                                        } ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            <span className="line-clamp-2">{displayName}</span>
+                                                        </p>
+
+                                                        <div
+                                                            className={`flex w-full items-start justify-center rounded-t-2xl pt-1.5 shadow-inner ${pedestalClass[rank]} ${superseded ? 'grayscale opacity-50' : ''}`}
+                                                            aria-hidden
+                                                        >
+                                                            <span className="text-sm font-black text-white drop-shadow-sm sm:text-base">
                                                                 {rank}
-                                                            </div>
-                                                        </div>
-                                                        <p className={`text-[10px] sm:text-xs font-black truncate max-w-full text-center px-1 leading-tight ${
-                                                            superseded
-                                                                ? 'text-slate-400 line-through'
-                                                                : 'text-slate-900 dark:text-white'
-                                                        }`}>{player.full_name}</p>
-                                                        {leaderboardTab === 'all-time' && formatLeaderboardDistrict(player.district) && (
-                                                            <p className={`text-[8px] sm:text-[9px] font-bold text-slate-500 truncate max-w-full text-center px-1 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                {formatLeaderboardDistrict(player.district)}
-                                                            </p>
-                                                        )}
-                                                        {superseded && (
-                                                            <div className="mt-1 flex justify-center shrink-0">
-                                                                <span className={`inline-block uppercase tracking-wider font-extrabold text-[7px] sm:text-[8px] text-red-600 dark:text-red-500 border border-red-600 dark:border-red-500 rounded px-1 py-0.5 bg-white/95 dark:bg-slate-900/95 shadow-[0_1px_2px_rgba(220,38,38,0.15)] transform -rotate-[3deg] leading-none text-center ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                    {encouragementCopy.prizeSuperseded}
-                                                                </span>
-                                                            </div>
-                                                        )}
-                                                        <div className={`flex items-center gap-1 mb-1 ${superseded ? 'opacity-40' : ''}`}>
-                                                            {(() => {
-                                                                const badge = getBadgeByLevel(
-                                                                    player.training_level || 0, 
-                                                                    player.all_time_reading_points !== undefined ? player.all_time_reading_points : (player.reading_points || 0)
-                                                                );
-                                                                return badge && (
-                                                                    <span className={`text-[8px] px-1.5 py-0.5 rounded border font-black uppercase tracking-tighter ${badge.color}`}>
-                                                                        {language === 'en' ? badge.en : badge.bn}
-                                                                    </span>
-                                                                );
-                                                            })()}
-                                                        </div>
-                                                        <div className="flex flex-col items-center">
-                                                            <p className={`text-[11px] font-black tabular-nums ${superseded ? 'text-slate-400' : 'text-orange-600 dark:text-orange-400'}`}>
-                                                                {leaderboardTab === 'monthly'
-                                                                    ? formatMonthlyPlayerScore(player, monthlyBoardTab)
-                                                                    : formatLeaderboardNumber(player.points || player.score || 0)}
-                                                            </p>
-                                                            {leaderboardTab === 'monthly' && (
-                                                                <div className={`mt-0.5 ${superseded ? 'opacity-35' : ''}`}>
-                                                                    <MonthlyHourlyAvgPill
-                                                                        hourly={player.hourly}
-                                                                        language={language}
-                                                                        encouragementBoards={encouragementBoards}
-                                                                    />
-                                                                </div>
-                                                            )}
-                                                            {leaderboardTab === 'all-time' && (
-                                                                <div className="flex items-center gap-1 mt-0.5 opacity-80 scale-90">
-                                                                    <span className="text-[9px]">📖</span>
-                                                                    <span className="text-[9px] font-black text-slate-500 dark:text-slate-400">{formatLeaderboardNumber(player.reading_points || 0)}</span>
-                                                                </div>
-                                                            )}
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 );
                                             })}
+                                            </div>
                                         </div>
                                     );
                                 })()}
 
                                 {/* List View for others */}
-                                <div className="nb-card overflow-hidden p-0 bg-white">
+                                <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-md shadow-slate-900/5">
                                     {(leaderboardTab === 'all-time' ? fullLeaderboard : activeMonthlyList).map((item, idx) => {
                                         const superseded = leaderboardTab === 'monthly' && isPrizeSuperseded(item);
                                         const prizeRecipient = leaderboardTab === 'monthly' && isPrizeRecipient(item);
                                         const rankLabel = leaderboardTab === 'monthly' && item.standing_rank != null
                                             ? item.standing_rank
                                             : idx + 1;
+                                        const isTopThree = Number(rankLabel) >= 1 && Number(rankLabel) <= 3;
 
                                         return (
                                         <div 
                                             key={`${item.user_id}-${item.prize_status || 'row'}-${idx}`}
                                             onClick={() => openUserProgress(item.user_id, item, rankLabel)}
-                                            className={`flex items-center gap-2 sm:gap-4 p-2.5 sm:p-4 border-b-2 border-slate-900 last:border-b-0 transition-colors cursor-pointer group active:bg-orange-50/50 ${
+                                            className={`flex items-center gap-2 border-b border-slate-100 p-2.5 transition-colors last:border-b-0 group cursor-pointer active:bg-orange-50/60 sm:gap-4 sm:p-4 ${
                                                 superseded
                                                     ? 'bg-slate-100 hover:bg-slate-200/50'
-                                                    : prizeRecipient
-                                                        ? 'bg-orange-50 hover:bg-orange-100/70'
-                                                        : 'bg-white hover:bg-orange-50/30'
+                                                    : isTopThree
+                                                        ? 'bg-gradient-to-r from-amber-50/90 via-orange-50/40 to-transparent hover:from-amber-50'
+                                                        : prizeRecipient
+                                                            ? 'bg-orange-50 hover:bg-orange-100/70'
+                                                            : 'bg-white hover:bg-orange-50/40'
                                             }`}
                                         >
-                                            <div className={`w-6 sm:w-8 shrink-0 text-center text-xs sm:text-sm font-black nb-mono transition-colors ${
-                                                superseded ? 'text-slate-400 opacity-60' : 'text-slate-600 group-hover:text-orange-600'
+                                            <div className={`flex w-7 shrink-0 items-center justify-center sm:w-9 ${
+                                                superseded ? 'text-slate-400 opacity-60' : isTopThree ? 'text-amber-600' : 'text-slate-600 group-hover:text-orange-600'
                                             }`}>
-                                                {rankLabel}
+                                                {isTopThree && !superseded ? (
+                                                    <span className="text-base leading-none sm:text-lg" aria-hidden>
+                                                        {rankLabel === 1 ? '🥇' : rankLabel === 2 ? '🥈' : '🥉'}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-center text-xs font-black tabular-nums sm:text-sm">{rankLabel}</span>
+                                                )}
                                             </div>
                                             <div 
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     if (item.avatar_url) setMaximizedAvatar(item.avatar_url);
                                                 }}
-                                                className={`w-9 h-9 sm:w-10 sm:h-10 bg-white overflow-hidden border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] shrink-0 relative cursor-zoom-in active:scale-95 transition-transform ${superseded ? 'opacity-40 grayscale' : ''}`}
+                                                className={`relative h-9 w-9 shrink-0 cursor-zoom-in overflow-hidden rounded-full border-2 border-white bg-white shadow-sm transition-transform active:scale-95 sm:h-10 sm:w-10 ${
+                                                    isTopThree && !superseded
+                                                        ? 'ring-2 ring-amber-400/70 shadow-md shadow-amber-500/20'
+                                                        : 'ring-1 ring-slate-200/80'
+                                                } ${superseded ? 'opacity-40 grayscale' : ''}`}
                                             >
                                                 {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
                                                 
@@ -2348,7 +2323,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                 item.all_time_reading_points !== undefined ? item.all_time_reading_points : (item.reading_points || 0)
                                                             );
                                                             return badge && (
-                                                                <span className={`text-[7px] px-1 py-0 rounded-sm border font-black uppercase tracking-tighter ${badge.color}`}>
+                                                                <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black tracking-tight sm:text-[11px] ${badge.color} ${language === 'bn' ? 'font-bengali' : 'uppercase'}`}>
                                                                     {language === 'en' ? badge.en : badge.bn}
                                                                 </span>
                                                             );
@@ -2392,7 +2367,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         )}
                                                     </div>
                                                     {leaderboardTab === 'all-time' && (
-                                                        <div className="nb-score-pill flex items-center gap-1 px-1.5 py-0.5 shrink-0 !text-[9px]">
+                                                        <div className="flex shrink-0 items-center gap-1 rounded-full border border-orange-100 bg-orange-50 px-1.5 py-0.5 text-[9px] font-black text-orange-800 shadow-sm">
                                                             <span className="text-[9px]">📖</span>
                                                             <span className="text-[9px] font-black tabular-nums">
                                                                 {formatLeaderboardNumber(item.reading_points || 0)}
@@ -2427,7 +2402,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             </>
                         ) : (
                             <div className="text-center py-16">
-                                <div className="nb-card inline-block px-6 py-8 bg-white">
+                                <div className="inline-block rounded-2xl border border-slate-200/80 bg-white px-6 py-8 shadow-sm">
                                     <p className="text-slate-600 font-semibold italic">
                                 {leaderboardTab === 'monthly' && monthlyBoardMeta?.emptyHint
                                     ? monthlyBoardMeta.emptyHint
@@ -2445,25 +2420,26 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     return (
                         <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] md:bottom-8 left-0 right-0 z-50 px-4 md:px-8 pointer-events-none">
                             <div className="max-w-3xl mx-auto">
-                                <div className="nb-card bg-white p-2.5 sm:p-4 pointer-events-auto border-orange-500">
+                                <div className="pointer-events-auto overflow-hidden rounded-2xl border border-orange-300/60 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 p-[1px] shadow-xl shadow-orange-500/30">
+                                    <div className="rounded-[0.9rem] bg-gradient-to-br from-white via-orange-50 to-amber-50 p-2.5 sm:p-4">
                                     <div className="flex items-center justify-between gap-3">
                                         <div className="flex-1 min-w-0">
-                                            <p className="nb-label text-orange-700 mb-1">
+                                            <p className={`mb-1 text-[10px] font-black tracking-wider text-orange-700 ${language === 'bn' ? 'font-bengali normal-case tracking-normal' : 'uppercase'}`}>
                                                 {language === 'en' ? 'Your Standing' : 'আপনার অবস্থান'}
                                             </p>
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <p className="text-xl sm:text-2xl font-black text-slate-900 nb-mono">#{userRank.rank}</p>
+                                                <p className="text-xl font-black tabular-nums text-slate-900 sm:text-2xl">#{userRank.rank}</p>
                                                 {userBadge && (
-                                                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold border ${userBadge.color}`}>
+                                                    <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold sm:text-[11px] ${userBadge.color} ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                         {language === 'en' ? userBadge.en : userBadge.bn}
                                                     </span>
                                                 )}
                                                 <div className="flex items-center gap-2 flex-wrap">
-                                                    <p className="text-sm font-black text-slate-800 ml-1 tabular-nums nb-mono">{formatLeaderboardNumber(userRank.score || 0)}</p>
-                                                    <div className="nb-score-pill flex items-center gap-1 px-1.5 py-0.5 !text-[9px]">
+                                                    <p className="ml-1 text-sm font-black tabular-nums text-slate-800">{formatLeaderboardNumber(userRank.score || 0)}</p>
+                                                    <div className="flex items-center gap-1 rounded-full bg-orange-500 px-2 py-0.5 text-[9px] font-black text-white shadow-sm">
                                                         <span className="text-[10px]">📖</span>
                                                         <span className="text-[9px] font-black tabular-nums">
-                                                            {formatLeaderboardNumber(userRank.reading_points || 0)} <span className="text-[8px] opacity-70 ml-0.5">{language === 'en' ? 'RDG' : 'রিডিং'}</span>
+                                                            {formatLeaderboardNumber(userRank.reading_points || 0)} <span className="ml-0.5 text-[8px] opacity-85">{language === 'en' ? 'RDG' : 'রিডিং'}</span>
                                                         </span>
                                                     </div>
                                                 </div>
@@ -2474,10 +2450,11 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 e.stopPropagation();
                                                 if (userProfile?.avatar_url) setMaximizedAvatar(userProfile.avatar_url);
                                             }}
-                                            className="w-10 h-10 sm:w-12 sm:h-12 bg-white flex items-center justify-center font-black text-orange-600 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] overflow-hidden shrink-0 cursor-zoom-in active:scale-95 transition-transform"
+                                            className="flex h-11 w-11 shrink-0 cursor-zoom-in items-center justify-center overflow-hidden rounded-full border-[3px] border-white bg-white font-black text-orange-600 shadow-lg shadow-orange-500/30 ring-2 ring-orange-400 transition-transform active:scale-95 sm:h-12 sm:w-12"
                                         >
                                             {userProfile?.avatar_url ? <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
                                         </div>
+                                    </div>
                                     </div>
                                 </div>
                             </div>
@@ -2491,15 +2468,28 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             {maximizedAvatar && (
                 <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-10 animate-fade-in">
                     <div className="absolute inset-0 bg-slate-900/55" onClick={() => setMaximizedAvatar(null)} aria-hidden="true" />
-                    <div className="neo-brutal relative max-w-2xl w-full aspect-square bg-white overflow-hidden shadow-[4px_4px_0_#0f172a] animate-scale-in border-[2.5px] border-slate-900">
+                    <div className="relative aspect-square w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-2xl animate-scale-in">
                         <button
                             type="button"
                             onClick={() => setMaximizedAvatar(null)}
-                            className="absolute top-4 right-4 z-50 w-10 h-10 border-2 border-slate-900 bg-white text-slate-900 shadow-[2px_2px_0_#0f172a] flex items-center justify-center"
+                            className="absolute top-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-900 shadow-md transition-transform active:scale-95"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
-                        <img src={maximizedAvatar} className="w-full h-full object-cover" alt="Maximized Avatar" />
+                        <img src={maximizedAvatar} className="h-full w-full object-cover" alt="Maximized Avatar" />
+                        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/75 via-slate-950/35 to-transparent px-4 pb-5 pt-16 sm:px-6 sm:pb-6">
+                            <div className="avatar-slm-badge mx-auto flex w-fit items-center gap-2 rounded-full border border-white/30 bg-white/95 px-3 py-1.5 shadow-lg backdrop-blur-md sm:gap-2.5 sm:px-4 sm:py-2">
+                                <img
+                                    src="/icons/logo.png"
+                                    alt=""
+                                    className="avatar-slm-badge__logo h-6 w-6 object-contain sm:h-7 sm:w-7"
+                                />
+                                <div className="flex items-baseline gap-0.5 select-none">
+                                    <span className="logo-text logo-text-default text-base italic sm:text-lg">SmartLineMan</span>
+                                    <span className="rounded-md border border-orange-500/25 bg-orange-500/10 px-1 py-0.5 text-[9px] font-black text-orange-500 sm:text-[10px]">.in</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

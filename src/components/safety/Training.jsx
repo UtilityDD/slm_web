@@ -535,8 +535,8 @@ function RankMilestone({ badge, language, isUnlocked, isCurrent, prefersReducedM
         : 'bg-slate-200 text-slate-500 grayscale';
     const nameClass = isUnlocked ? 'text-slate-900' : 'text-slate-500';
     const nameSize = language === 'bn'
-        ? 'font-bengali text-[0.95rem] sm:text-base leading-snug'
-        : 'text-sm sm:text-[0.95rem] leading-tight tracking-tight';
+        ? 'font-bengali text-base sm:text-lg leading-snug'
+        : 'text-[0.95rem] sm:text-base leading-snug tracking-tight';
 
     return (
         <div
@@ -546,13 +546,13 @@ function RankMilestone({ badge, language, isUnlocked, isCurrent, prefersReducedM
         >
             <div
                 className={[
-                    'flex min-w-[9.5rem] max-w-[12rem] items-center gap-2.5 rounded-2xl border px-2 py-2 sm:min-w-[10.5rem] sm:gap-3 sm:px-2.5 sm:py-2.5',
+                    'flex min-w-[11rem] max-w-[14rem] items-center gap-2.5 rounded-2xl border px-2.5 py-2.5 sm:min-w-[12rem] sm:max-w-[15rem] sm:gap-3 sm:px-3 sm:py-3',
                     shellClass,
                 ].join(' ')}
             >
                 <div
                     className={[
-                        'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl sm:h-12 sm:w-12 sm:rounded-2xl sm:text-2xl',
+                        'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg sm:h-12 sm:w-12 sm:rounded-2xl sm:text-2xl',
                         iconShell,
                         isUnlocked && tier >= 9 && !prefersReducedMotion ? 'animate-rank-medal-glow' : '',
                     ].filter(Boolean).join(' ')}
@@ -562,7 +562,7 @@ function RankMilestone({ badge, language, isUnlocked, isCurrent, prefersReducedM
                         {isUnlocked ? badge.icon : '🔒'}
                     </span>
                 </div>
-                <p className={`mb-0 min-w-0 flex-1 truncate font-black ${nameSize} ${nameClass}`}>
+                <p className={`mb-0 min-w-0 flex-1 text-left font-black [overflow-wrap:anywhere] ${nameSize} ${nameClass}`}>
                     {name}
                 </p>
             </div>
