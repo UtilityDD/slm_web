@@ -11,9 +11,9 @@ import {
 const MAX_BODY = 500;
 
 const CHAT_BG_STYLE = {
-    backgroundColor: '#e5ddd5',
+    backgroundColor: '#fffdf7',
     backgroundImage:
-        'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35) 0, transparent 45%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.25) 0, transparent 40%)',
+        'radial-gradient(ellipse at 0% 0%, rgba(251,146,60,0.08) 0, transparent 42%), radial-gradient(ellipse at 100% 20%, rgba(251,191,36,0.07) 0, transparent 38%)',
 };
 
 function IconBack({ className = 'h-6 w-6' }) {
@@ -47,7 +47,7 @@ function avatarInitials(name) {
 }
 
 function avatarColor(name) {
-    const palette = ['#00a884', '#53bdeb', '#e542a3', '#7f66ff', '#ff6b6b', '#f78c6b', '#25d366'];
+    const palette = ['#f97316', '#f59e0b', '#fb7185', '#64748b', '#ea580c', '#d97706', '#78716c'];
     let hash = 0;
     const s = String(name || '');
     for (let i = 0; i < s.length; i += 1) hash = s.charCodeAt(i) + ((hash << 5) - hash);
@@ -86,19 +86,19 @@ function ChatBubble({ outgoing, name, time, children }) {
     return (
         <div className={`flex py-0.5 ${SAFE_PAD_X} ${outgoing ? 'justify-end' : 'justify-start'}`}>
             <div
-                className={`max-w-[85%] rounded-lg px-3 py-1.5 shadow-sm ${
+                className={`max-w-[85%] rounded-2xl px-3.5 py-2 shadow-sm ${
                     outgoing
-                        ? 'rounded-tr-none bg-[#d9fdd3] dark:bg-[#005c4b]'
-                        : 'rounded-tl-none bg-white dark:bg-[#1f2c34]'
+                        ? 'rounded-br-md border border-orange-200/80 bg-orange-100'
+                        : 'rounded-bl-md border border-slate-200/80 bg-white'
                 }`}
             >
                 {!outgoing && name ? (
-                    <p className="mb-0.5 text-[12px] font-semibold text-[#1fa855] dark:text-[#25d366]">{name}</p>
+                    <p className="mb-0.5 text-[12px] font-semibold text-orange-600">{name}</p>
                 ) : null}
-                <p className="whitespace-pre-wrap text-[14.5px] leading-[1.35] text-[#111b21] dark:text-[#e9edef]">
+                <p className="whitespace-pre-wrap text-[14.5px] leading-[1.35] text-slate-900">
                     {children}
                 </p>
-                <p className="mt-0.5 text-right text-[10px] tabular-nums text-[#667781]">{time}</p>
+                <p className="mt-0.5 text-right text-[10px] tabular-nums text-slate-500">{time}</p>
             </div>
         </div>
     );
@@ -125,8 +125,8 @@ function WaInputBar({ value, onChange, onSend, placeholder, disabled, sending })
     };
 
     return (
-        <div className={`flex items-end gap-2 bg-[#f0f2f5] py-2 dark:bg-[#1f2c34] ${SAFE_PAD_X}`}>
-            <div className="min-w-0 flex-1 rounded-3xl bg-white px-4 py-2.5 dark:bg-[#2a3942]">
+        <div className={`flex items-end gap-2 border-t border-slate-200/80 bg-slate-100/95 py-2 backdrop-blur-md ${SAFE_PAD_X}`}>
+            <div className="min-w-0 flex-1 rounded-3xl border border-slate-200/80 bg-white px-4 py-2.5 shadow-sm">
                 <textarea
                     ref={textareaRef}
                     value={value}
@@ -134,7 +134,7 @@ function WaInputBar({ value, onChange, onSend, placeholder, disabled, sending })
                     placeholder={placeholder}
                     rows={1}
                     disabled={disabled}
-                    className="w-full resize-none overflow-y-auto border-0 bg-transparent p-0 text-[15px] leading-snug text-[#111b21] outline-none placeholder:text-[#667781] dark:text-[#e9edef]"
+                    className="w-full resize-none overflow-y-auto border-0 bg-transparent p-0 text-[15px] leading-snug text-slate-900 outline-none placeholder:text-slate-400"
                     style={{ maxHeight: MAX_INPUT_HEIGHT }}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
@@ -148,7 +148,7 @@ function WaInputBar({ value, onChange, onSend, placeholder, disabled, sending })
                 type="button"
                 disabled={disabled || !value.trim()}
                 onClick={onSend}
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#00a884] text-white transition active:scale-95 disabled:opacity-40"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-500 text-white shadow-md shadow-orange-500/30 transition active:scale-95 disabled:opacity-40"
                 aria-label="Send"
             >
                 {sending ? (
@@ -203,11 +203,11 @@ function ForumActivityToast({ toast, language, onDismiss, onOpen }) {
                 onOpen?.(toast.questionId);
                 onDismiss();
             }}
-            className="fixed left-1/2 z-[115] max-w-[min(22rem,calc(100vw-2rem))] -translate-x-1/2 animate-toast-in rounded-full border border-[#25d366]/35 bg-[#111b21]/92 px-4 py-2.5 text-center text-[12px] font-medium text-[#e9edef] shadow-lg backdrop-blur-sm active:scale-[0.98]"
+            className="fixed left-1/2 z-[115] max-w-[min(22rem,calc(100vw-2rem))] -translate-x-1/2 animate-toast-in rounded-full border border-orange-200/80 bg-white/95 px-4 py-2.5 text-center text-[12px] font-medium text-slate-800 shadow-lg shadow-orange-500/15 backdrop-blur-md active:scale-[0.98]"
             style={{ top: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}
             aria-live="polite"
         >
-            <span className="mr-1.5 inline-block text-[#25d366]" aria-hidden>
+            <span className="mr-1.5 inline-block text-orange-500" aria-hidden>
                 💬
             </span>
             {label}
@@ -228,7 +228,7 @@ function WaToolbar({ language, filter, onFilter }) {
     }[language];
 
     return (
-        <div className={`flex items-center gap-2 border-b border-[#e9edef] bg-[#f0f2f5] py-2 dark:border-[#2a3942] dark:bg-[#111b21] ${SAFE_PAD_X}`}>
+        <div className={`flex items-center gap-2 border-b border-slate-200/80 bg-[#fffdf7]/90 py-2 backdrop-blur-md ${SAFE_PAD_X}`}>
             {['all', 'open', 'closed'].map((key) => (
                 <button
                     key={key}
@@ -236,10 +236,10 @@ function WaToolbar({ language, filter, onFilter }) {
                     title={hints[key]}
                     aria-label={hints[key]}
                     onClick={() => onFilter(key)}
-                    className={`rounded-full px-3 py-1 text-[12px] font-medium transition ${
+                    className={`rounded-full px-3 py-1.5 text-[12px] font-bold shadow-sm transition active:scale-95 ${
                         filter === key
-                            ? 'bg-[#00a884] text-white'
-                            : 'bg-white text-[#54656f] dark:bg-[#2a3942] dark:text-[#aebac1]'
+                            ? 'bg-orange-500 text-white shadow-orange-500/25'
+                            : 'border border-slate-200/80 bg-white text-slate-600 hover:bg-orange-50'
                     }`}
                 >
                     {labels[key]}
@@ -251,17 +251,21 @@ function WaToolbar({ language, filter, onFilter }) {
 
 function WaHeader({ title, channelButtons, onChannelUnavailable }) {
     return (
-        <header className="bg-[#075e54] text-white dark:bg-[#1f2c34]">
+        <header className="border-b border-slate-200/80 bg-[#fffdf7]/95 text-slate-900 backdrop-blur-md">
+            <div
+                className="h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
+                aria-hidden="true"
+            />
             <div className={`flex items-center gap-2.5 py-2.5 ${SAFE_PAD_X}`}>
                 <SlmBrandAvatar size="sm" />
                 <div className="min-w-0 flex-1">
-                    <h1 className="truncate text-[17px] font-medium leading-tight">{title}</h1>
+                    <h1 className="truncate text-[17px] font-black leading-tight tracking-tight text-slate-900">{title}</h1>
                 </div>
-                <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[#25d366]" title="Live" aria-label="Live" />
+                <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-orange-500 shadow-sm shadow-orange-500/40" title="Live" aria-label="Live" />
             </div>
             {channelButtons?.length > 0 && (
                 <div
-                    className={`flex items-center gap-1 overflow-x-auto border-t border-white/15 py-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${SAFE_PAD_X}`}
+                    className={`flex items-center gap-1.5 overflow-x-auto border-t border-slate-200/60 py-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${SAFE_PAD_X}`}
                 >
                     {channelButtons.map((btn) => (
                         <button
@@ -273,10 +277,10 @@ function WaHeader({ title, channelButtons, onChannelUnavailable }) {
                                 if (btn.url) window.open(btn.url, '_blank', 'noopener,noreferrer');
                                 else onChannelUnavailable?.();
                             }}
-                            className="flex h-9 shrink-0 items-center justify-center rounded-full bg-white/10 px-3 text-white/95 transition active:bg-white/20"
+                            className="flex h-9 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white px-3 text-slate-700 shadow-sm transition hover:bg-orange-50 active:scale-95"
                         >
-                            <span className="mr-1.5 flex h-5 w-5 items-center justify-center">{btn.icon}</span>
-                            <span className="max-w-[5.5rem] truncate text-[11px] font-medium">{btn.shortLabel}</span>
+                            <span className="mr-1.5 flex h-5 w-5 items-center justify-center text-orange-600">{btn.icon}</span>
+                            <span className="max-w-[5.5rem] truncate text-[11px] font-bold">{btn.shortLabel}</span>
                         </button>
                     ))}
                 </div>
@@ -605,9 +609,9 @@ export default function ForumQA({
 
     if (composeOpen) {
         return (
-            <div className="flex min-h-[70vh] w-full flex-col overflow-x-hidden bg-[#e5ddd5] dark:bg-[#0b141a]">
+            <div className="flex min-h-full w-full flex-col overflow-x-hidden bg-[#fffdf7]">
                 {activityToastUi}
-                <header className={`flex items-center gap-3 bg-[#075e54] py-2.5 text-white dark:bg-[#1f2c34] ${SAFE_PAD_X}`}>
+                <header className={`flex items-center gap-3 border-b border-slate-200/80 bg-[#fffdf7]/95 py-2.5 text-slate-900 backdrop-blur-md ${SAFE_PAD_X}`}>
                     <button
                         type="button"
                         onClick={() => {
@@ -615,20 +619,20 @@ export default function ForumQA({
                             setDraft('');
                             setActionError(null);
                         }}
-                        className="flex h-10 w-10 items-center justify-center rounded-full active:bg-white/10"
+                        className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-800 shadow-sm transition active:scale-95"
                         aria-label={t.back}
                     >
-                        <IconBack />
+                        <IconBack className="h-5 w-5" />
                     </button>
                     <div className="min-w-0 flex-1">
-                        <p className="truncate text-[16px] font-medium">{t.newChat}</p>
+                        <p className="truncate text-[16px] font-black text-slate-900">{t.newChat}</p>
                     </div>
                 </header>
                 <div className="flex-1" style={CHAT_BG_STYLE} />
                 {inputBarPortal(
                     <>
                         {actionError && (
-                            <p className="bg-red-50 px-3 py-1 text-center text-xs text-red-600">{actionError}</p>
+                            <p className="rounded-t-xl bg-red-50 px-3 py-1.5 text-center text-xs font-medium text-red-600">{actionError}</p>
                         )}
                         <WaInputBar
                             value={draft}
@@ -647,9 +651,9 @@ export default function ForumQA({
     if (activeQuestionId) {
         const q = thread?.question;
         return (
-            <div className="flex min-h-[70vh] w-full flex-col overflow-x-hidden">
+            <div className="flex min-h-full w-full flex-col overflow-x-hidden bg-[#fffdf7]">
                 {activityToastUi}
-                <header className={`sticky top-0 z-20 flex items-center gap-2 bg-[#075e54] py-2 text-white shadow-md dark:bg-[#1f2c34] ${SAFE_PAD_X}`}>
+                <header className={`sticky top-0 z-20 flex items-center gap-2 border-b border-slate-200/80 bg-[#fffdf7]/95 py-2 text-slate-900 shadow-sm backdrop-blur-md ${SAFE_PAD_X}`}>
                     <button
                         type="button"
                         onClick={() => {
@@ -657,15 +661,15 @@ export default function ForumQA({
                             setReplyDraft('');
                             setActionError(null);
                         }}
-                        className="flex h-10 w-10 items-center justify-center rounded-full active:bg-white/10"
+                        className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-800 shadow-sm transition active:scale-95"
                         aria-label={t.back}
                     >
-                        <IconBack />
+                        <IconBack className="h-5 w-5" />
                     </button>
-                    {q ? <WaAvatar name={q.full_name} size="sm" /> : <div className="h-10 w-10 rounded-full bg-white/20" />}
+                    {q ? <WaAvatar name={q.full_name} size="sm" /> : <div className="h-10 w-10 rounded-full bg-slate-200" />}
                     <div className="min-w-0 flex-1">
-                        <p className="truncate text-[16px] font-medium leading-tight">{q?.full_name || '…'}</p>
-                        <p className="truncate text-[12px] text-white/75">
+                        <p className="truncate text-[16px] font-black leading-tight text-slate-900">{q?.full_name || '…'}</p>
+                        <p className={`truncate text-[12px] ${q?.is_solved ? 'font-bold text-emerald-600' : 'text-slate-500'}`}>
                             {q?.is_solved ? t.solved : q?.slm_id || t.tapToOpen}
                         </p>
                     </div>
@@ -674,7 +678,7 @@ export default function ForumQA({
                             type="button"
                             disabled={submitting}
                             onClick={handleMarkSolved}
-                            className="flex h-10 w-10 items-center justify-center rounded-full active:bg-white/10 disabled:opacity-50"
+                            className="flex h-10 w-10 items-center justify-center rounded-full border border-emerald-200/80 bg-emerald-50 text-emerald-700 shadow-sm transition active:scale-95 disabled:opacity-50"
                             aria-label={t.markSolved}
                             title={t.markSolved}
                         >
@@ -683,11 +687,11 @@ export default function ForumQA({
                     )}
                 </header>
 
-                <div className="flex-1 overflow-y-auto pb-28 pt-2 dark:bg-[#0b141a]" style={CHAT_BG_STYLE}>
+                <div className="flex-1 overflow-y-auto pb-28 pt-2" style={CHAT_BG_STYLE}>
                     {threadLoading && !q ? (
                         <div className="space-y-3 p-4 animate-pulse">
-                            <div className="ml-auto h-16 w-3/4 rounded-lg bg-white/60" />
-                            <div className="mr-auto h-12 w-2/3 rounded-lg bg-white/40" />
+                            <div className="ml-auto h-16 w-3/4 rounded-2xl bg-orange-100/80" />
+                            <div className="mr-auto h-12 w-2/3 rounded-2xl bg-white/80" />
                         </div>
                     ) : q ? (
                         <>
@@ -717,7 +721,7 @@ export default function ForumQA({
                 </div>
 
                 {actionError && q && (
-                    <p className="bg-red-50 px-3 py-1 text-center text-xs text-red-600">{actionError}</p>
+                    <p className="bg-red-50 px-3 py-1.5 text-center text-xs font-medium text-red-600">{actionError}</p>
                 )}
 
                 {inputBarPortal(
@@ -735,7 +739,7 @@ export default function ForumQA({
     }
 
     return (
-        <div className="w-full overflow-x-hidden bg-white dark:bg-[#111b21]">
+        <div className="min-h-full w-full overflow-x-hidden bg-[#fffdf7] text-slate-900">
             {activityToastUi}
             <WaHeader
                 title={t.title}
@@ -746,13 +750,13 @@ export default function ForumQA({
             <WaToolbar language={language} filter={filter} onFilter={setFilter} />
 
             {loading ? (
-                <div className="divide-y divide-[#e9edef] dark:divide-[#2a3942]">
+                <div className="divide-y divide-slate-100">
                     {[1, 2, 3, 4].map((i) => (
                         <div key={i} className={`flex animate-pulse items-center gap-3 py-3 ${SAFE_PAD_X}`}>
-                            <div className="h-12 w-12 rounded-full bg-[#dfe5e7]" />
+                            <div className="h-12 w-12 rounded-full bg-orange-100" />
                             <div className="flex-1 space-y-2">
-                                <div className="h-3 w-1/3 rounded bg-[#dfe5e7]" />
-                                <div className="h-3 w-4/5 rounded bg-[#f0f2f5]" />
+                                <div className="h-3 w-1/3 rounded-full bg-slate-200" />
+                                <div className="h-3 w-4/5 rounded-full bg-slate-100" />
                             </div>
                         </div>
                     ))}
@@ -766,18 +770,18 @@ export default function ForumQA({
                             setLoading(true);
                             loadQuestions(true);
                         }}
-                        className="rounded-full bg-[#00a884] px-5 py-2 text-sm font-medium text-white"
+                        className="rounded-full bg-orange-500 px-5 py-2 text-sm font-bold text-white shadow-md shadow-orange-500/25 transition active:scale-95"
                     >
                         {t.retry}
                     </button>
                 </div>
             ) : filteredQuestions.length === 0 ? (
-                <div className="py-16 text-center text-[#667781]">
+                <div className="py-16 text-center text-slate-500">
                     <p className="text-4xl" aria-hidden>💬</p>
-                    <p className="mt-2 text-sm">{t.empty}</p>
+                    <p className="mt-2 text-sm font-semibold">{t.empty}</p>
                 </div>
             ) : (
-                <div className="divide-y divide-[#e9edef] dark:divide-[#2a3942]">
+                <div className="divide-y divide-slate-100">
                     {filteredQuestions.map((q) => {
                         const count = Number(q.answer_count || 0);
                         return (
@@ -785,25 +789,25 @@ export default function ForumQA({
                                 key={q.id}
                                 type="button"
                                 onClick={() => setActiveQuestionId(q.id)}
-                                className={`flex w-full items-center gap-3 py-3 text-left transition active:bg-[#f0f2f5] dark:active:bg-[#1f2c34] ${SAFE_PAD_X}`}
+                                className={`flex w-full items-center gap-3 py-3 text-left transition hover:bg-orange-50/50 active:bg-orange-50 ${SAFE_PAD_X}`}
                             >
                                 <WaAvatar name={q.full_name} />
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-baseline justify-between gap-2">
-                                        <span className="truncate text-[16px] font-medium text-[#111b21] dark:text-[#e9edef]">
+                                        <span className="truncate text-[16px] font-bold text-slate-900">
                                             {q.full_name}
                                         </span>
-                                        <span className="shrink-0 text-[11px] tabular-nums text-[#667781]">
+                                        <span className="shrink-0 text-[11px] tabular-nums text-slate-500">
                                             {formatRelativeTime(q.created_at, language, true)}
                                         </span>
                                     </div>
                                     <div className="mt-0.5 flex items-center justify-between gap-2">
-                                        <p className="truncate text-[13px] text-[#667781]">
+                                        <p className={`truncate text-[13px] ${q.is_solved ? 'text-emerald-600' : 'text-slate-500'}`}>
                                             {q.is_solved ? '✓ ' : ''}
                                             {q.body}
                                         </p>
                                         {count > 0 && (
-                                            <span className="flex h-5 min-w-[20px] shrink-0 items-center justify-center rounded-full bg-[#25d366] px-1.5 text-[11px] font-bold text-white">
+                                            <span className="flex h-5 min-w-[20px] shrink-0 items-center justify-center rounded-full bg-orange-500 px-1.5 text-[11px] font-bold text-white shadow-sm shadow-orange-500/25">
                                                 {count}
                                             </span>
                                         )}
@@ -822,7 +826,7 @@ export default function ForumQA({
                         setComposeOpen(true);
                         setActionError(null);
                     }}
-                    className="fixed z-[110] flex h-14 w-14 items-center justify-center rounded-full bg-[#00a884] text-white shadow-lg shadow-[#00a884]/30 transition active:scale-95 md:bottom-8"
+                    className="fixed z-[110] flex h-14 w-14 items-center justify-center rounded-full bg-orange-500 text-white shadow-lg shadow-orange-500/35 transition active:scale-95 md:bottom-8"
                     style={{
                         bottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px))',
                         right: 'max(1rem, env(safe-area-inset-right, 0px))',

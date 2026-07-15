@@ -81,7 +81,7 @@ export default function Community({ language = 'en', user, userProfile, pendingQ
     ];
 
     return (
-        <div className="mx-auto w-full max-w-7xl">
+        <div className="mx-auto min-h-full w-full max-w-7xl bg-[#fffdf7]">
             <ForumQA
                 language={language}
                 user={user}
@@ -97,7 +97,7 @@ export default function Community({ language = 'en', user, userProfile, pendingQ
             />
 
             {showToast && (
-                <div className="fixed bottom-24 left-1/2 z-[220] -translate-x-1/2 rounded-lg bg-[#111b21]/90 px-4 py-2 text-xs font-medium text-[#e9edef] shadow-lg animate-toast-in">
+                <div className="fixed bottom-24 left-1/2 z-[220] -translate-x-1/2 animate-toast-in rounded-full border border-orange-200/80 bg-white/95 px-4 py-2 text-xs font-bold text-slate-800 shadow-lg shadow-orange-500/15 backdrop-blur-md">
                     {t.comingSoon}
                 </div>
             )}
