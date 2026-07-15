@@ -518,28 +518,25 @@ const TrainingSubChapterCard = React.memo(({ subchapter, isUnlocked, isCompleted
     );
 });
 
-/** Rank milestone on the learning path — unified medal-on-box badge. */
+/** Rank milestone — wide career plaque (clearly distinct from circular lesson nodes). */
 function RankMilestone({ badge, language, isUnlocked, isCurrent, prefersReducedMotion }) {
     const name = language === 'en' ? badge.en : badge.bn;
     const tier = badge.level;
-    const medalSize =
-        tier >= 8 ? 'h-12 w-12 text-2xl' :
-        tier >= 5 ? 'h-11 w-11 text-xl' :
-        'h-10 w-10 text-lg';
-    const shadowClass = tier >= 7 ? 'shadow-[4px_4px_0_#0f172a]' : 'shadow-[3px_3px_0_#0f172a]';
     const animateIn = isUnlocked && !prefersReducedMotion;
     const isActiveRank = isCurrent && isUnlocked;
-    const borderClass = isActiveRank ? 'border-orange-600' : isUnlocked ? 'border-slate-900' : 'border-slate-400';
-    const activeShadow = isActiveRank ? 'shadow-[4px_4px_0_#ea580c] sm:shadow-[5px_5px_0_#ea580c]' : shadowClass;
-    const shellClass = isUnlocked
-        ? `${badge.color} ${badge.medalText}`
-        : 'bg-slate-200 text-slate-500 grayscale opacity-85';
-    const namePad = language === 'bn'
-        ? 'px-4 pb-2.5 pt-7 sm:px-5 sm:pb-3 sm:pt-8'
-        : 'px-3.5 pb-2 pt-6 sm:px-4 sm:pb-2.5 sm:pt-6';
+
+    const shellClass = isActiveRank
+        ? 'border-orange-400 bg-white shadow-lg shadow-orange-500/20 ring-2 ring-orange-400/35'
+        : isUnlocked
+            ? 'border-slate-200/80 bg-white shadow-md'
+            : 'border-slate-200 bg-slate-50 shadow-sm opacity-90';
+    const iconShell = isUnlocked
+        ? `${badge.color} ${badge.medalText} shadow-sm`
+        : 'bg-slate-200 text-slate-500 grayscale';
+    const nameClass = isUnlocked ? 'text-slate-900' : 'text-slate-500';
     const nameSize = language === 'bn'
-        ? 'font-bengali text-[0.95rem] sm:text-base leading-[1.4]'
-        : 'text-xs sm:text-sm leading-tight';
+        ? 'font-bengali text-[0.95rem] sm:text-base leading-snug'
+        : 'text-sm sm:text-[0.95rem] leading-tight tracking-tight';
 
     return (
         <div
@@ -547,15 +544,25 @@ function RankMilestone({ badge, language, isUnlocked, isCurrent, prefersReducedM
             role="img"
             aria-label={name}
         >
-            <div className={`relative min-w-[6.75rem] border-2 text-center sm:min-w-[7.25rem] ${borderClass} ${activeShadow} ${shellClass}`}>
+            <div
+                className={[
+                    'flex min-w-[9.5rem] max-w-[12rem] items-center gap-2.5 rounded-2xl border px-2 py-2 sm:min-w-[10.5rem] sm:gap-3 sm:px-2.5 sm:py-2.5',
+                    shellClass,
+                ].join(' ')}
+            >
                 <div
-                    className={`absolute left-1/2 top-0 z-10 flex ${medalSize} -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 ${borderClass} ${isUnlocked ? `${badge.color} ${badge.medalText}` : 'bg-slate-200 text-slate-500'} ${isUnlocked && tier >= 9 && !prefersReducedMotion ? 'animate-rank-medal-glow' : ''}`}
+                    className={[
+                        'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl sm:h-12 sm:w-12 sm:rounded-2xl sm:text-2xl',
+                        iconShell,
+                        isUnlocked && tier >= 9 && !prefersReducedMotion ? 'animate-rank-medal-glow' : '',
+                    ].filter(Boolean).join(' ')}
+                    aria-hidden
                 >
-                    <span aria-hidden className="leading-none select-none">
+                    <span className="leading-none select-none">
                         {isUnlocked ? badge.icon : '🔒'}
                     </span>
                 </div>
-                <p className={`mb-0 font-black ${namePad} ${nameSize} whitespace-nowrap`}>
+                <p className={`mb-0 min-w-0 flex-1 truncate font-black ${nameSize} ${nameClass}`}>
                     {name}
                 </p>
             </div>
@@ -2896,11 +2903,15 @@ export default function Training({
                 </div>
             ) : !selectedChapter && !trainingContent ? (
                 <div className="neo-brutal animate-fade-in-up text-slate-900">
-                    <div className="nb-hazard mb-4" aria-hidden="true" />
+                    {/* Soft brand accent — Material-style hairline instead of hazard tape */}
+                    <div
+                        className="mb-5 h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
+                        aria-hidden="true"
+                    />
 
                     {gateFocusPending?.lessonId && (
-                        <div className={`mx-auto mb-4 max-w-2xl rounded border-2 border-orange-500 bg-orange-50 px-4 py-3 text-center ${language === 'bn' ? 'font-bengali' : ''}`}>
-                            <p className="text-sm font-black text-slate-900">
+                        <div className={`mx-auto mb-4 max-w-2xl rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-center shadow-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                            <p className="text-sm font-bold text-slate-900">
                                 {language === 'en'
                                     ? `Hourly quiz locked — opening lesson ${gateFocusPending.lessonId}…`
                                     : `ঘণ্টাভিত্তিক কুইজ লক — পাঠ ${gateFocusPending.lessonId} খোলা হচ্ছে…`}
@@ -2914,12 +2925,12 @@ export default function Training({
                             className={`flex w-full justify-center ${
                                 showLifeSkillsHint && trainingTab === 'core'
                                     ? prefersReducedMotion
-                                        ? 'p-[2px] ring-2 ring-indigo-600'
-                                        : 'animate-lifeskills-hint-glow p-[2px] ring-2 ring-indigo-600'
+                                        ? 'p-[2px] ring-2 ring-indigo-500/60 rounded-full'
+                                        : 'animate-lifeskills-hint-glow p-[2px] ring-2 ring-indigo-500/60 rounded-full'
                                     : ''
                             }`}
                         >
-                            <div className="relative flex w-full border-2 border-slate-900 bg-white p-1 shadow-[3px_3px_0_#0f172a]">
+                            <div className="relative flex w-full rounded-full border border-slate-200/80 bg-slate-100/90 p-1 shadow-sm backdrop-blur-sm">
                                 {showLifeSkillsHint && trainingTab === 'core' && (
                                     <span
                                         className="pointer-events-none absolute right-2 top-0 z-20 -translate-y-1/2 rounded-full bg-indigo-600 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-md dark:bg-indigo-500"
@@ -2939,12 +2950,12 @@ export default function Training({
                                     </span>
                                 )}
                                 <div
-                                    className={`absolute inset-y-1 w-[calc(50%-4px)] bg-orange-500 border-2 border-slate-900 transition-all duration-300 ease-out ${trainingTab === 'core' ? 'left-1' : 'left-[calc(50%+2px)]'}`}
+                                    className={`absolute inset-y-1 w-[calc(50%-4px)] rounded-full bg-orange-500 shadow-md shadow-orange-500/25 transition-all duration-300 ease-out ${trainingTab === 'core' ? 'left-1' : 'left-[calc(50%+2px)]'}`}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setTrainingTab('core')}
-                                    className={`relative z-10 w-1/2 py-2.5 text-xs font-black uppercase tracking-wider nb-mono transition-colors duration-300 ${trainingTab === 'core' ? 'text-white' : 'text-slate-700 hover:text-slate-900'}`}
+                                    className={`relative z-10 w-1/2 rounded-full py-2.5 text-xs font-black uppercase tracking-wider nb-mono transition-colors duration-300 active:scale-[0.98] ${trainingTab === 'core' ? 'text-white' : 'text-slate-600 hover:text-slate-900'}`}
                                 >
                                     {language === 'en' ? 'Training' : 'প্রশিক্ষণ'}
                                 </button>
@@ -2952,7 +2963,7 @@ export default function Training({
                                     type="button"
                                     onClick={() => setTrainingTab('supplementary')}
                                     aria-describedby={showLifeSkillsHint && trainingTab === 'core' ? 'lifeskills-hint-copy' : undefined}
-                                    className={`relative z-10 w-1/2 py-2.5 text-xs font-black uppercase tracking-wider nb-mono transition-colors duration-300 ${trainingTab === 'supplementary' ? 'text-white' : 'text-slate-700 hover:text-slate-900'}`}
+                                    className={`relative z-10 w-1/2 rounded-full py-2.5 text-xs font-black uppercase tracking-wider nb-mono transition-colors duration-300 active:scale-[0.98] ${trainingTab === 'supplementary' ? 'text-white' : 'text-slate-600 hover:text-slate-900'}`}
                                 >
                                     {language === 'en' ? 'Life Skill ✨' : 'লাইফ স্কিল ✨'}
                                 </button>
@@ -2988,7 +2999,7 @@ export default function Training({
                         )}
                     </div>
                     {showLifeSkillsHint && trainingTab === 'core' && (
-                        <div className="mx-auto mb-6 w-full max-w-sm nb-card border-dashed bg-indigo-50 px-3 py-2.5">
+                        <div className="mx-auto mb-6 w-full max-w-sm rounded-2xl border border-indigo-100 bg-indigo-50/90 px-3 py-2.5 shadow-sm">
                             <p
                                 id="lifeskills-hint-copy"
                                 className={`text-center text-[11px] font-semibold leading-snug text-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}
@@ -3009,7 +3020,7 @@ export default function Training({
                                 <button
                                     type="button"
                                     onClick={dismissLifeSkillsHint}
-                                    className={`text-[11px] font-bold text-indigo-700 underline decoration-indigo-500 underline-offset-2 transition-colors hover:text-indigo-900 nb-mono ${language === 'bn' ? 'font-bengali' : ''}`}
+                                    className={`rounded-full px-3 py-1 text-[11px] font-bold text-indigo-700 transition-colors hover:bg-indigo-100 active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
                                 >
                                     {language === 'en' ? 'Got it' : 'বুঝেছি'}
                                 </button>
@@ -3059,25 +3070,22 @@ export default function Training({
 
                                         return (
                                             <div
-                                                className="mx-auto mt-6 flex max-w-lg flex-wrap items-center justify-center gap-3 animate-fade-in-up sm:gap-4"
+                                                className="mx-auto mt-6 flex max-w-lg flex-wrap items-center justify-center gap-2.5 animate-fade-in-up sm:gap-3"
                                                 style={{ animationDelay: '120ms' }}
                                             >
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowLessonIndex(true)}
-                                                    className="inline-flex items-center gap-2 nb-btn-secondary px-4 py-2.5 text-[11px] font-black uppercase tracking-widest nb-mono"
+                                                    className={`inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white px-4 py-2.5 text-xs font-bold text-slate-800 shadow-sm transition-all hover:bg-slate-50 hover:shadow-md active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                 >
                                                     <span aria-hidden>📑</span>
                                                     {language === 'en' ? 'Index' : 'সূচীপত্র'}
                                                 </button>
                                                 {totalLessons > 0 ? (
                                                     <span
-                                                        className={`nb-score-pill inline-flex items-center px-4 py-2.5 text-sm font-black tabular-nums ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                        className={`inline-flex items-center rounded-full border border-orange-100 bg-orange-50 px-4 py-2.5 text-sm font-black tabular-nums text-orange-800 shadow-sm ${language === 'bn' ? 'font-bengali' : ''}`}
                                                     >
-                                                        {doneStr} / {totalStr}{' '}
-                                                        <span className="ml-1 text-[10px] font-black uppercase tracking-wider nb-mono">
-                                                            {language === 'en' ? 'steps' : 'ধাপ'}
-                                                        </span>
+                                                        {doneStr} / {totalStr}
                                                     </span>
                                                 ) : null}
                                             </div>
@@ -3117,10 +3125,10 @@ export default function Training({
                                                     : `C ${x1} ${cpY1}, ${x2} ${cpY2}, ${x2} ${endY}`;
                                             }).join(" ")}
                                             stroke="currentColor"
-                                            strokeWidth="10"
+                                            strokeWidth="8"
                                             strokeLinecap="round"
                                             fill="none"
-                                            className="text-slate-200"
+                                            className="text-slate-200/80"
                                         />
 
                                         {/* Dynamic Progress Path */}
@@ -3142,12 +3150,12 @@ export default function Training({
                                                 }
                                                 return pathParts.join(" ");
                                             })()}
-                                            stroke="#f97316"
-                                            strokeWidth="10"
+                                            stroke="#fb923c"
+                                            strokeWidth="8"
                                             strokeLinecap="round"
                                             fill="none"
                                             filter="url(#glow)"
-                                            className="opacity-40"
+                                            className="opacity-50"
                                         />
                                     </svg>
 
@@ -3198,11 +3206,11 @@ export default function Training({
                                                             });
                                                         }
                                                     }}
-                                                    className={`group absolute z-20 flex h-16 w-16 cursor-pointer flex-col items-center justify-center border-2 transition-all duration-500 sm:h-20 sm:w-20 ${item.isCompleted ? 'border-slate-900 bg-emerald-400 text-slate-900 shadow-[3px_3px_0_#0f172a] hover:-translate-x-0.5 hover:-translate-y-0.5' : item.isUnlocked ? `border-slate-900 ${item.badge.color} text-slate-900 shadow-[3px_3px_0_#0f172a] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5` : 'cursor-not-allowed border-slate-400 bg-slate-200 text-slate-500 opacity-80 shadow-inner grayscale'} ${isNext ? 'animate-float-y border-orange-600 shadow-[4px_4px_0_#ea580c]' : ''}`}
+                                                    className={`group absolute z-20 flex h-16 w-16 cursor-pointer flex-col items-center justify-center rounded-full border-2 transition-all duration-300 active:scale-95 sm:h-20 sm:w-20 ${item.isCompleted ? 'border-emerald-700/25 bg-emerald-400 text-slate-900 shadow-md hover:shadow-lg' : item.isUnlocked ? `border-slate-900/10 ${item.badge.color} text-slate-900 shadow-md hover:shadow-lg` : 'cursor-not-allowed border-slate-300 bg-slate-200 text-slate-500 opacity-80 shadow-sm grayscale'} ${isNext ? 'animate-float-y border-orange-500 shadow-lg shadow-orange-500/30 ring-4 ring-orange-400/40' : ''}`}
                                                     style={{ left: `${xPos}%`, top: yPos, transform: 'translate(-50%, -50%)' }}
                                                 >
                                                     <span className={`text-base sm:text-lg font-black ${language === 'bn' ? 'font-bengali' : ''}`}>{toBengaliNumber(item.id, language)}</span>
-                                                    <div className={`pointer-events-none absolute top-full z-50 mt-3 w-32 border-2 border-slate-900 bg-slate-900 px-3 py-2 text-center text-[10px] font-bold text-white opacity-0 shadow-[2px_2px_0_#0f172a] transition-opacity group-hover:opacity-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    <div className={`pointer-events-none absolute top-full z-50 mt-3 w-max max-w-[9rem] rounded-full bg-slate-900/90 px-3 py-1.5 text-center text-[10px] font-bold text-white opacity-0 shadow-lg backdrop-blur-sm transition-opacity group-hover:opacity-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                         {item.isCompleted ? (
                                                             language === 'en' ? 'Read Again' : 'আবার পড়ুন'
                                                         ) : item.isUnlocked ? (
@@ -3212,8 +3220,8 @@ export default function Training({
                                                         )}
                                                     </div>
                                                     {item.isCompleted && (
-                                                        <div className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center border-2 border-slate-900 bg-emerald-500 text-white shadow-[2px_2px_0_#0f172a]">
-                                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg>
+                                                        <div className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-slate-900/20 bg-white text-emerald-600 shadow-sm sm:h-6 sm:w-6">
+                                                            <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
                                                         </div>
                                                     )}
                                                     

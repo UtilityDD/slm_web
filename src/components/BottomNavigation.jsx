@@ -76,10 +76,9 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
 
   return (
     <nav
-      className="neo-brutal app-bottom-nav fixed bottom-0 left-0 right-0 z-[100] md:hidden"
+      className="app-bottom-nav fixed bottom-0 left-0 right-0 z-[100] md:hidden"
       aria-label={language === 'en' ? 'Main navigation' : 'প্রধান নেভিগেশন'}
     >
-      <div className="nb-hazard" aria-hidden="true" />
       <div className="app-bottom-nav__inner mx-auto flex max-w-lg items-stretch justify-around px-1">
         {navItems.map((item) => {
           const isActive = isItemActive(item);
@@ -100,7 +99,7 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
               <span className="app-bottom-nav__icon" aria-hidden="true">
                 {item.icon}
               </span>
-              <span className={`app-bottom-nav__label ${bnFont ? 'font-bengali' : 'nb-mono'}`}>
+              <span className={`app-bottom-nav__label ${bnFont ? 'font-bengali' : ''}`}>
                 {item.label}
               </span>
             </button>
