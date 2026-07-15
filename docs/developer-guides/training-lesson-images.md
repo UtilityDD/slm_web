@@ -308,13 +308,18 @@ See pattern in local `scratch/regen_lessons_2_8_9_10_sql.mjs`: fix JSON typos fi
 | 3.1–3.5 | Conductors, insulators, hardware | `cond_*`, `insul_*`, … | `20260628120000_lesson_3_1_to_3_5_images.sql` |
 | 3.6–3.10 | DTR, LT box, service, guard, SLD | `dtr_*`, `ltbox_*`, … | `20260628130000_lesson_3_6_to_3_10_images.sql` |
 | 4.1–4.5 | Insulator replace, jumper, service, DO fuse, DTR check | `ins_*`, `jump_*`, `conn_*`, `dofop_*`, `dtrchk_*` | `20260628140000_lesson_4_1_to_4_5_images.sql` |
+| 4.6–4.10 | Earthing, DP dressing, tree trim, street light, LT balance (1.10-style) | `earth46_*` … `bal410_*` | `20260628260000_lesson_gap_4_5_6_images.sql` |
 | 5.1–5.3 | Line trip response, patrolling, common faults | `trip_*`, `patrol_*`, `fault_*` | `20260628150000_lesson_5_1_to_5_3_images.sql` |
+| 5.4–5.10 | Fuse faults, LV, short/open, night, DTR, UG, PM (1.10-style) | `fuse54_*` … `pm510_*` | `20260628260000_lesson_gap_4_5_6_images.sql` |
 | 6.1 | Distribution transformer (DTR) | `dtr61_*` | `20260628160000_lesson_6_1_dtr_images.sql` |
 | 6.2–6.3 | Circuit breaker, fuse types | `cb62_*`, `fuse63_*` | `20260628170000_lesson_6_2_to_6_3_images.sql` |
 | 6.4–6.6 | AB switch, UG cable, AB cable | `abs64_*`, `ug65_*`, `abc66_*` | `20260628180000_lesson_6_4_to_6_6_images.sql` |
+| 6.7–6.10 | Capacitor bank, recloser, LT pillar, energy meter (1.10-style cards) | `cap67_*`, `reclr68_*`, `pillar69_*`, `meter610_*` | `20260628250000_lesson_6_7_to_6_10_images.sql` |
+| 6.11 | Earthing system (1.10-style cards) | `earth611_*` | `20260628260000_lesson_gap_4_5_6_images.sql` |
 | 8.1 | WBERC intro (1.10-style cards) | `wberc81_*` | `20260628190000_lesson_8_1_wberc_images.sql` |
 | 8.2–8.4 | Supply Code, SoP, Grid Code (1.10-style cards) | `sc82_*`, `sop83_*`, `grid84_*` | `20260628200000_lesson_8_2_to_8_4_images.sql` |
 | 8.5–8.7 | Safety Code, Grievance, Tariff (1.10-style cards) | `safe85_*`, `griev86_*`, `tariff87_*` | `20260628210000_lesson_8_5_to_8_7_images.sql` |
+| 7.1–7.10 | Legal / compliance (India–WB, 1.10-style cards) | `act71_*` … `cert710_*` | `20260628240000_lesson_7_1_to_7_10_images.sql` |
 | 8.8–8.10 | Net Metering, Environment, Field application (1.10-style cards) | `net88_*`, `env89_*`, `field810_*` | `20260628220000_lesson_8_8_to_8_10_images.sql` |
 | 9.1–9.10 | Testing manual (transformer→report, 1.10-style cards) | `xfrm91_*` … `rpt910_*` | `20260628230000_lesson_9_1_to_9_10_images.sql` |
 
