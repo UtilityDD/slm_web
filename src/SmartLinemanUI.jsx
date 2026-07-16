@@ -25,6 +25,7 @@ import RadioMiniPlayer from "./components/RadioMiniPlayer";
 import RadioDesktopLaunch from "./components/RadioDesktopLaunch";
 import { LifeSkillRadioProvider, RadioScrollPaddingBridge, RadioSafetyGuard } from "./context/LifeSkillRadioContext";
 import IdleStoryReminder from "./components/IdleStoryReminder";
+import ProfileFieldNudge from "./components/ProfileFieldNudge";
 import { libraryService } from "./utils/libraryService";
 import { trackAppVisit } from "./utils/landingVisitService";
 import PageLoader from "./components/loaders/PageLoader";
@@ -137,6 +138,8 @@ export default function SmartLinemanUI() {
   const [awarenessOpenStoryId, setAwarenessOpenStoryId] = useState(null);
   const [forumActivityToast, setForumActivityToast] = useState(null);
   const [forumPendingQuestionId, setForumPendingQuestionId] = useState(null);
+  const [profileNudgeOpen, setProfileNudgeOpen] = useState(false);
+  const [profileNudgePreview, setProfileNudgePreview] = useState(null);
   const forumActivityTimerRef = useRef(null);
 
   const weatherDistrict = userProfile?.district || null;
@@ -345,11 +348,26 @@ export default function SmartLinemanUI() {
         async () => {
           const { data, error } = await supabase
             .from('profiles')
-            .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id, updated_at, district, block')
+            .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id, updated_at, district, block, job, dob, age, education, blood_group, is_donor, accident_voltage, profile_nudge_state')
             .eq('id', targetUser.id)
             .single();
 
-          if (error) throw error;
+          if (error) {
+            // Migration not applied yet: retry without nudge column so login still works.
+            const missingNudgeCol =
+              /profile_nudge_state/i.test(error.message || '') ||
+              error.code === '42703';
+            if (missingNudgeCol) {
+              const retry = await supabase
+                .from('profiles')
+                .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id, updated_at, district, block, job, dob, age, education, blood_group, is_donor, accident_voltage')
+                .eq('id', targetUser.id)
+                .single();
+              if (retry.error) throw retry.error;
+              return { ...retry.data, profile_nudge_state: {} };
+            }
+            throw error;
+          }
           return data;
         },
         { ttl: 10, swr: true, forceRefresh: forceRefresh }
@@ -1164,7 +1182,7 @@ export default function SmartLinemanUI() {
           />;
         case 'admin':
           if (!['admin', 'safety mitra', 'lineman', 'guest'].includes(userProfile?.role)) { setCurrentView('home'); return null; }
-          return <Admin language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} />;
+          return <Admin language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} onPreviewProfileNudge={setProfileNudgePreview} />;
         case 'visual-quiz-preview':
           if (userProfile?.role !== 'admin') { setCurrentView('home'); return null; }
           return <VisualQuizPreview language={language} setCurrentView={setCurrentView} />;
@@ -1259,7 +1277,7 @@ export default function SmartLinemanUI() {
     );
   }
 
-  const idleReminderBlocked =
+  const overlayBlocked =
     appLoading ||
     globalLoading ||
     showLogoutModal ||
@@ -1268,10 +1286,18 @@ export default function SmartLinemanUI() {
     showActiveBroadcastModal ||
     showUpdateModal ||
     isRetiring ||
+    showSessionEndedModal ||
     currentView === 'accident-stories' ||
     currentView === 'landing' ||
     currentView === 'verify' ||
     (currentView === 'update-password' && !user);
+
+  const idleReminderBlocked = overlayBlocked || profileNudgeOpen;
+
+  const profileNudgeBlocked =
+    overlayBlocked ||
+    sidebarOpen ||
+    ['login', 'verify', 'landing', 'update-password', 'accident-stories'].includes(currentView);
 
   return (
     <Suspense fallback={<PageLoader />}>
@@ -1547,6 +1573,18 @@ export default function SmartLinemanUI() {
               blocked={idleReminderBlocked}
             />
 
+            {user && !isGuestUser(userProfile) && (
+              <ProfileFieldNudge
+                user={user}
+                userProfile={userProfile}
+                language={language}
+                blocked={profileNudgeBlocked && !profileNudgePreview}
+                preview={profileNudgePreview}
+                onPreviewClose={() => setProfileNudgePreview(null)}
+                onOpenChange={setProfileNudgeOpen}
+                onSaved={() => fetchProfile(user, true)}
+              />
+            )}
             {user &&
               !sidebarOpen &&
               !['login', 'verify', 'update-password'].includes(currentView) &&

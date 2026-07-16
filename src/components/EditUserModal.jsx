@@ -1,5 +1,10 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
+import {
+  BLOOD_GROUPS,
+  EDUCATION_LEVELS,
+  JOB_TYPES,
+} from '../data/profileFieldOptions';
 
 export default function EditUserModal({
     editingUser,
@@ -132,7 +137,7 @@ export default function EditUserModal({
                                                 readOnly={!canEditSelfProfile}
                                                 icon="📱"
                                             />
-                                            <SelectField label="Blood Group" name="blood_group" value={editingUser.blood_group} onChange={handleChange} options={['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']} icon="🩸" />
+                                            <SelectField label="Blood Group" name="blood_group" value={editingUser.blood_group} onChange={handleChange} options={BLOOD_GROUPS} icon="🩸" />
                                         </div>
                                     </div>
                                 </div>
@@ -148,7 +153,7 @@ export default function EditUserModal({
                                             <SelectField label="District" name="district" value={editingUser.district} onChange={handleChange} options={Object.keys(wbLocations)} icon="📍" placeholder="Select District" />
                                             <SelectField label="Block" name="block" value={editingUser.block} onChange={handleChange} options={editingUser.district ? wbLocations[editingUser.district] : []} disabled={!editingUser.district} icon="🗺️" placeholder="Select Block" />
                                         </div>
-                                        <SelectField label="Job Type" name="job" value={editingUser.job} onChange={handleChange} options={['HT-Mobile Van', 'LT-Mobile Van', 'HT-LT Others']} icon="👷" placeholder="Select Job Type" />
+                                        <SelectField label="Job Type" name="job" value={editingUser.job} onChange={handleChange} options={JOB_TYPES} icon="👷" placeholder="Select Job Type" />
                                         <SelectField label="Role" name="role" value={editingUser.role} onChange={handleChange} options={['lineman', 'guest', 'safety mitra', ...(userProfile?.role === 'admin' ? ['admin'] : [])]} disabled={!userProfile || userProfile.role !== 'admin'} icon="🎖️" />
                                         {userProfile?.role === 'admin' && (
                                             <SelectField
@@ -197,7 +202,19 @@ export default function EditUserModal({
                                         <InputField label="Date of Birth" name="dob" type="date" value={editingUser.dob} onChange={handleChange} icon="🎂" />
                                         <InputField label="Age" name="age" type="number" value={editingUser.age} onChange={handleChange} icon="🔢" />
                                     </div>
-                                    <InputField label="Education" name="education" value={editingUser.education} onChange={handleChange} icon="🎓" />
+                                    <SelectField
+                                        label="Education"
+                                        name="education"
+                                        value={editingUser.education}
+                                        onChange={handleChange}
+                                        options={
+                                            editingUser.education && !EDUCATION_LEVELS.includes(editingUser.education)
+                                                ? [...EDUCATION_LEVELS, editingUser.education]
+                                                : EDUCATION_LEVELS
+                                        }
+                                        icon="🎓"
+                                        placeholder="Select Education"
+                                    />
                                 </div>
 
                                 <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">

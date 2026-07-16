@@ -4,6 +4,13 @@ import { supabase } from '../supabaseClient';
 import { cacheHelper } from '../utils/cacheHelper';
 import { storageUtils } from '../utils/storageUtils';
 import wbLocations from '../data/wb_locations.json';
+import {
+  ACCIDENT_VOLTAGES,
+  BLOOD_GROUPS,
+  EDUCATION_LEVELS,
+  JOB_TYPES,
+  PROFILE_NUDGE_FIELD_ORDER,
+} from '../data/profileFieldOptions';
 
 import SaveSuccessModal from './SaveSuccessModal';
 import AdminAnalytics from './AdminAnalytics';
@@ -485,9 +492,9 @@ function UserProfileCard({
     ),
   });
 
-  const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
-  const jobs = ['HT-Mobile Van', 'LT-Mobile Van', 'HT-LT Others'];
-  const voltages = ['LT', '11kV', '33kV', 'Other'];
+  const bloodGroups = BLOOD_GROUPS;
+  const jobs = JOB_TYPES;
+  const voltages = ACCIDENT_VOLTAGES;
   const districts = Object.keys(wbLocations || {});
   const blocks = targetUser.district && wbLocations?.[targetUser.district] ? wbLocations[targetUser.district] : [];
 
@@ -655,7 +662,21 @@ function UserProfileCard({
       <div className="px-4 pb-3">
         <p className="text-sm mb-1" aria-label={isEn ? 'Family' : 'পরিবার'} title={isEn ? 'Family' : 'পরিবার'}>👨‍👩‍👧</p>
         <div className={`${ADMIN_THEME.inset} px-3 py-1`}>
-          {row('education', '🎓', isEn ? 'Education' : 'শিক্ষা', display(targetUser.education), 'neutral', true, textEditor('education', targetUser.education))}
+          {row(
+            'education',
+            '🎓',
+            isEn ? 'Education' : 'শিক্ষা',
+            display(targetUser.education),
+            'neutral',
+            true,
+            selectEditor(
+              'education',
+              targetUser.education,
+              targetUser.education && !EDUCATION_LEVELS.includes(targetUser.education)
+                ? [...EDUCATION_LEVELS, targetUser.education]
+                : EDUCATION_LEVELS
+            )
+          )}
           {row('children_count', '👶', isEn ? 'Children count' : 'সন্তান সংখ্যা', display(targetUser.children_count), 'neutral', true, numberEditor('children_count', targetUser.children_count))}
           {row('children_ages', '🎂', isEn ? 'Children ages' : 'সন্তানের বয়স', display(targetUser.children_ages), 'neutral', true, textEditor('children_ages', targetUser.children_ages))}
           {row('parents_stay', '🏡', isEn ? 'Lives with parents' : 'বাবা-মায়ের সাথে', targetUser.parents_stay ? '✓' : '✗', 'neutral', true, boolEditor('parents_stay', !!targetUser.parents_stay))}
@@ -725,7 +746,7 @@ function UserProfileCard({
   );
 }
 
-export default function Admin({ user, userProfile, language, setCurrentView }) {
+export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
@@ -789,6 +810,8 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showNoticesSection, setShowNoticesSection] = useState(false);
   const [showSystemCheckSection, setShowSystemCheckSection] = useState(false);
+  const [showProfileNudgePreviewSection, setShowProfileNudgePreviewSection] = useState(false);
+  const [nudgePreviewRequireMode, setNudgePreviewRequireMode] = useState(false);
   const [showManageMenu, setShowManageMenu] = useState(false);
   const [profileSection, setProfileSection] = useState('team'); // 'team' | 'mine' for admin / safety mitra
   const [ownProfileRow, setOwnProfileRow] = useState(null);
@@ -1799,6 +1822,68 @@ export default function Admin({ user, userProfile, language, setCurrentView }) {
               {deliveryHealth.error && (
                 <p className="mt-2 text-xs text-rose-600">{deliveryHealth.error}</p>
               )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Admin: review progressive profile prompt modals (preview only — no DB write) */}
+      {isAdmin && !showAnalytics && showManageMenu && typeof onPreviewProfileNudge === 'function' && (
+        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+          <button
+            type="button"
+            onClick={() => setShowProfileNudgePreviewSection((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+          >
+            <span className="font-semibold text-slate-800 text-sm">
+              🧩 {isEn ? 'Review profile prompts' : 'প্রোফাইল প্রম্পট রিভিউ'}
+            </span>
+            <span className="text-slate-400 text-xs">{showProfileNudgePreviewSection ? '▲' : '▼'}</span>
+          </button>
+          {showProfileNudgePreviewSection && (
+            <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-3">
+              <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={nudgePreviewRequireMode}
+                  onChange={(e) => setNudgePreviewRequireMode(e.target.checked)}
+                  className="w-4 h-4 rounded"
+                />
+                {isEn ? 'Simulate 2nd visit (no Skip)' : '২য় ভিজিট সিমুলেট (Skip নেই)'}
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {PROFILE_NUDGE_FIELD_ORDER.map((fieldKey) => {
+                  const labels = {
+                    district: isEn ? 'District' : 'জেলা',
+                    block: isEn ? 'Block' : 'ব্লক',
+                    job: isEn ? 'Job' : 'কাজ',
+                    dob: isEn ? 'DOB' : 'জন্ম',
+                    education: isEn ? 'Education' : 'শিক্ষা',
+                    blood_group: isEn ? 'Blood' : 'রক্ত',
+                    is_donor: isEn ? 'Donor' : 'দাতা',
+                  };
+                  return (
+                    <button
+                      key={fieldKey}
+                      type="button"
+                      onClick={() =>
+                        onPreviewProfileNudge({
+                          field: fieldKey,
+                          allowSkip: !nudgePreviewRequireMode,
+                        })
+                      }
+                      className="px-3 py-2 rounded-lg text-xs font-bold bg-white border-2 border-slate-900/15 text-slate-800 hover:bg-orange-50 hover:border-orange-300"
+                    >
+                      {labels[fieldKey] || fieldKey}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-slate-400">
+                {isEn
+                  ? 'Preview only — Save / Not now will not change your profile.'
+                  : 'শুধু প্রিভিউ — Save / Not now আপনার প্রোফাইল বদলাবে না।'}
+              </p>
             </div>
           )}
         </div>
