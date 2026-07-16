@@ -307,6 +307,7 @@ See pattern in local `scratch/regen_lessons_2_8_9_10_sql.mjs`: fix JSON typos fi
 | 2.8 | Phase sequence | `phase_*` | `20260624230000_lesson_2_8_phase_images.sql` |
 | 2.9 | Hydraulic tools | `hyd_*` | `20260624240000_lesson_2_9_hydraulic_images.sql` |
 | 2.10 | Tool care | `toolcare_*` | `20260624250000_lesson_2_10_toolcare_images.sql` |
+| 3.1 | Conductors ACSR vs AAAC (1.10-style refresh) | `cond_*` | `20260628280000_lesson_3_1_conductor_images.sql` |
 | 3.1–3.5 | Conductors, insulators, hardware | `cond_*`, `insul_*`, … | `20260628120000_lesson_3_1_to_3_5_images.sql` |
 | 3.6–3.10 | DTR, LT box, service, guard, SLD | `dtr_*`, `ltbox_*`, … | `20260628130000_lesson_3_6_to_3_10_images.sql` |
 | 4.1–4.5 | Insulator replace, jumper, service, DO fuse, DTR check | `ins_*`, `jump_*`, `conn_*`, `dofop_*`, `dtrchk_*` | `20260628140000_lesson_4_1_to_4_5_images.sql` |

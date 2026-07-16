@@ -19,7 +19,7 @@
           "daily_check": "কাজে হাত দেওয়ার আগে বা তার কাঁধে নেওয়ার আগে দেখে নেবে—তারটা কি বেশি ভারী লাগছে? নাকি ঠিকঠাক? কন্ডাক্টিভিটি কম হলেও ওজনে হালকা হওয়ায় অ্যালুমিনিয়ামই সেরা।",
           "specifications": "ওভারহেড লাইনের জন্য আমরা তামা (Copper)-র বদলে অ্যালুমিনিয়াম ব্যবহার করি। অ্যালুমিনিয়াম হালকা এবং সস্তা, যদিও এর পরিবাহিতা তামার প্রায় ৬০%।",
           "image_name": "/images/loader/cond_aluminium.webp",
-          "image_caption": "Al vs Cu · 60% Conductivity"
+          "image_caption": "অ্যালুমিনিয়াম কেন · Cu বনাম Al"
         },
         {
           "item_name": "২. ACSR: লাইনের মেরুদণ্ড (সবচেয়ে কমন)",
@@ -27,7 +27,7 @@
           "daily_check": "কাটার আগে সাবধান! এর ভেতরে শক্ত স্টিল আছে। সাধারণ কাটার দিয়ে কাটতে যাবে না। আর জয়েন্ট করার সময় দেখবে ভেতরের স্টিলে যেন জং বা রাস্ট না থাকে।",
           "specifications": "পুরো নাম: Aluminium Conductor Steel Reinforced। এর কেন্দ্রে গ্যালভানাইজড স্টিলের কোর থাকে। চুম্বক ধরলে এটি আটকে যাবে।",
           "image_name": "/images/loader/cond_acsr.webp",
-          "image_caption": "Steel Core · Magnetic Test"
+          "image_caption": "ACSR · স্টিল কোর · চুম্বক টেস্ট"
         },
         {
           "item_name": "৩. AAAC: আধুনিক হিরো (জং ধরে না)",
@@ -35,7 +35,7 @@
           "daily_check": "এটা হ্যান্ডেল করা একটু সোজা, কিন্তু খুব স্লিপারি। বাঁধার সময় বা ক্ল্যাম্প লাগানোর সময় খেয়াল রাখবে যেন স্লিপ না কাটে।",
           "specifications": "পুরো নাম: All Aluminium Alloy Conductor। এটি ACSR-এর চেয়ে হালকা এবং ফিনিশিং খুব মসৃণ। চুম্বক ধরলে আটকাবে না।",
           "image_name": "/images/loader/cond_aaac.webp",
-          "image_caption": "All Alloy · Non-Magnetic"
+          "image_caption": "AAAC · অ্যালয় · জং ধরে না"
         },
         {
           "item_name": "৪. পার্থক্য বুঝবে কী করে? (Crucial Decision)",
@@ -43,7 +43,7 @@
           "daily_check": "স্টোর থেকে মাল তোলার সময় আর সাইটে কাজ শুরুর আগে—দুইবার চেক করবে। চুম্বক সাথে রাখবে। কনফিউশন হলে সিনিয়রের কাছে জিজ্ঞেস করে নেবে, কিন্তু আন্দাজে ঢিল মারবে না। ((সঠিক সিদ্ধান্ত নেওয়া না গেলে, শুধু লাইন নয়, তোমার চাকরিও ঝুঁকিতে পড়তে পারে।))",
           "specifications": "সহজ হিসাব: জোর বেশি ACSR-এর (পেটে স্টিল আছে), কিন্তু জং ধরে না AAAC-তে। চুম্বক ধরলে ACSR আটকাবে, AAAC আটকাবে না।",
           "image_name": "/images/loader/cond_compare.webp",
-          "image_caption": "Magnet Test · Right Hardware"
+          "image_caption": "চুম্বক টেস্ট · সঠিক হার্ডওয়্যার"
         }
       ]
     }
@@ -63,7 +63,7 @@
     ],
     "title": "ভুল ধারণা বনাম বাস্তব (Myth Buster)",
     "image_name": "/images/loader/cond_myth.webp",
-    "image_caption": "Myth ✗ · Fact ✓ · Match Hardware"
+    "image_caption": "মিথ বনাম বাস্তবতা · সঠিক হার্ডওয়্যার"
   },
   "advanced_section": {
     "facts": [
