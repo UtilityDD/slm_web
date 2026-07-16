@@ -25,7 +25,8 @@ Image-capable hourly questions from a published Google Sheet CSV, merged with th
 Preview sources are defined in `VisualQuizPreview.jsx`:
 
 - **Live Google Sheet** — same URL as production (`VISUAL_QUIZ_LIVE_CSV_URL`)
-- **Draft: Batch 02** — `public/quiz_management/visual_quiz_batch_02.csv`
+- **Draft: Spot-the-mistake preview** — `visual_quiz_batch_mistake_preview.csv`
+- **Draft: Batch 02** … **Batch 08** — `public/quiz_management/visual_quiz_batch_0N.csv`
 - **Upload CSV** — local file picker
 
 Preview behaviour:
@@ -40,8 +41,10 @@ Preview behaviour:
 | File | Purpose |
 |------|---------|
 | `visual_quiz_template.csv` | Column-format example only — **not synced** with live sheet |
-| `visual_quiz_batch_02.csv` | Draft batch `vq-120+` (also copied to `public/quiz_management/` for preview) |
-| `live_visual_quiz_migrated_preview.csv` | **Master catalog** to paste into live Google Sheet (93 rows, all `enabled=TRUE` after finalize) |
+| `visual_quiz_batch_02.csv` … `visual_quiz_batch_08.csv` | Draft batches (`vq-120+` … `vq-395+`); also under `public/quiz_management/` for Admin preview |
+| `visual_quiz_batch_mistake_preview.csv` | Draft **spot-the-mistake** samples (illustrative mistakes) — review before live paste |
+| `visual_quiz_mistake_preview.html` | Static HTML review for the mistake draft |
+| `live_visual_quiz_migrated_preview.csv` | **Master catalog** to paste into live Google Sheet (re-finalize after each batch merge) |
 | `live_sheet_image_map.csv` | Drive ID → `img_{id}.jpg` map from migration script |
 | `live_sheet_cutover_guide.txt` | Find/replace pairs for manual sheet migration |
 | `live_visual_quiz_cutover_diff.txt` | Before/after diff from `apply_visual_quiz_local_urls.mjs` |
@@ -195,15 +198,17 @@ node scripts/maintenance/validate_visual_quiz_sheet.mjs
 
 ## Adding new questions (workflow)
 
-1. Draft rows in `quiz_management/visual_quiz_batch_02.csv` (or a new batch file).
-2. Add images under `public/images/quizzes/`; prefer `img_{driveId}.jpg` naming for Drive-sourced photos.
-3. Open **Admin → Quiz Preview → Draft: Batch 02** (or upload CSV) and verify images + correct-option marking.
+For **illustration style, option anti-cheat, and spot-the-mistake rules**, follow **[Hourly Visual Quiz — Image Generation](./hourly-visual-quiz-generation.md)** first.
+
+1. Draft rows in a batch CSV under `quiz_management/` (e.g. `visual_quiz_batch_08.csv` or `visual_quiz_batch_mistake_preview.csv`).
+2. Add images under `public/images/quizzes/` (prefer small `.webp`; `img_{driveId}.jpg` for Drive-sourced photos).
+3. Review: Admin → **Quiz Preview** (matching draft source) and/or the static HTML review page when present.
 4. Run `audit_visual_quiz_answer_leaks.mjs` — aim for **0** warnings on new IDs.
-5. Run `finalize_visual_quiz_catalog.mjs` to merge into `live_visual_quiz_migrated_preview.csv`.
-6. Paste the master CSV into the live Google Sheet (gid `160776708`).
+5. Run `finalize_visual_quiz_catalog.mjs` (or equivalent merge) into `live_visual_quiz_migrated_preview.csv`.
+6. Paste into the live Google Sheet **quiz** tab (gid `160776708`) — not the Safety Library FileList tab.
 7. Run `validate_visual_quiz_sheet.mjs` after paste.
 
-**ID conventions:** `vq-001`…`vq-119` live pool; `vq-120+` batch 02 extensions. Do not duplicate `id` values between Supabase and the sheet (merge favors later insert in map order).
+**ID conventions:** live pool uses `vq-001`…; drafts may use temporary ids (e.g. `vq-mistake-01`) then renumber before paste. Do not duplicate `id` values between Supabase and the sheet (merge favors later insert in map order).
 
 ## Extension points
 
@@ -224,4 +229,6 @@ node scripts/maintenance/validate_visual_quiz_sheet.mjs
 
 ## Related guides
 
+- [Hourly Visual Quiz — Image Generation](./hourly-visual-quiz-generation.md) — authoring illustrations + anti-cheat options
 - [Reading habit and gate](./reading-habit-and-gate.md) — quiz entry after gate passes
+- [Safety Library](./safety-library.md) — FileList tab of the same workbook (not quiz rows)

@@ -7,6 +7,9 @@ import {
     VISUAL_QUIZ_BATCH_06_URL,
     VISUAL_QUIZ_BATCH_07_URL,
     VISUAL_QUIZ_BATCH_08_URL,
+    VISUAL_QUIZ_MISTAKE_PREVIEW_URL,
+    VISUAL_QUIZ_MATERIAL_PREVIEW_URL,
+    VISUAL_QUIZ_PROCEDURE_PREVIEW_URL,
     VISUAL_QUIZ_LIVE_CSV_URL,
     parseVisualQuizCSV,
     rowsToVisualQuestions,
@@ -23,6 +26,24 @@ import {
 
 const SOURCES = {
     live: { id: 'live', labelBn: 'লাইভ Google Sheet', labelEn: 'Live Google Sheet', url: VISUAL_QUIZ_LIVE_CSV_URL },
+    mistakePreview: {
+        id: 'mistakePreview',
+        labelBn: 'Draft: Spot-the-mistake preview',
+        labelEn: 'Draft: Spot-the-mistake preview',
+        url: VISUAL_QUIZ_MISTAKE_PREVIEW_URL,
+    },
+    materialPreview: {
+        id: 'materialPreview',
+        labelBn: 'Draft: Material identification',
+        labelEn: 'Draft: Material identification',
+        url: VISUAL_QUIZ_MATERIAL_PREVIEW_URL,
+    },
+    procedurePreview: {
+        id: 'procedurePreview',
+        labelBn: 'Draft: Procedure / workflow',
+        labelEn: 'Draft: Procedure / workflow',
+        url: VISUAL_QUIZ_PROCEDURE_PREVIEW_URL,
+    },
     batch02: { id: 'batch02', labelBn: 'Draft: Batch 02 (vq-120+)', labelEn: 'Draft: Batch 02 (vq-120+)', url: VISUAL_QUIZ_BATCH_02_URL },
     batch03: { id: 'batch03', labelBn: 'Draft: Batch 03 — TCEE Unit 3 Symbols (vq-138+)', labelEn: 'Draft: Batch 03 — TCEE Unit 3 Symbols (vq-138+)', url: VISUAL_QUIZ_BATCH_03_URL },
     batch04: { id: 'batch04', labelBn: 'Draft: Batch 04 — Lineman Hand Tools (vq-162+)', labelEn: 'Draft: Batch 04 — Lineman Hand Tools (vq-162+)', url: VISUAL_QUIZ_BATCH_04_URL },

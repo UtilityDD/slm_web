@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spot-the-mistake quiz review — 22 questions</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; background: #f8fafc; color: #0f172a; }
+    header { padding: 1rem 1.25rem; background: #fff; border-bottom: 2px solid #0f172a; position: sticky; top: 0; z-index: 5; }
+    header p { margin: 0.35rem 0 0; color: #475569; font-size: 0.9rem; }
+    nav { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.75rem; }
+    nav a { font-size: 0.7rem; padding: 0.2rem 0.4rem; border: 1px solid #cbd5e1; background: #f8fafc; color: #0f172a; text-decoration: none; }
+    main { max-width: 960px; margin: 0 auto; padding: 1rem; }
+    .card { background: #fff; border: 2px solid #0f172a; box-shadow: 4px 4px 0 #0f172a; padding: 1rem; margin-bottom: 1rem; }
+    .meta { display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.75rem; margin-bottom: 0.75rem; }
+    .tag { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 0.15rem 0.4rem; }
+    .warn { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
+    img { max-width: 100%; max-height: 320px; object-fit: contain; background: #f1f5f9; border: 1px solid #e2e8f0; }
+    .opt { border: 1px solid #cbd5e1; padding: 0.5rem; margin: 0.35rem 0; }
+    .ok { border-color: #15803d; background: #f0fdf4; }
+    .hint { font-size: 0.9rem; color: #92400e; background: #fffbeb; padding: 0.5rem; margin-top: 0.5rem; }
+    .broken { color: #b91c1c; font-size: 0.75rem; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Spot-the-mistake — manual review</h1>
+    <p>Source: <code>visual_quiz_batch_mistake_preview.csv</code> · <strong>22</strong> questions · Draft only.</p>
+    <p>Open: <code>http://localhost:5173/quiz_management/visual_quiz_mistake_preview.html</code> · Or Admin → Quiz Preview → Spot-the-mistake</p>
+    <nav>
+      <a href="#vq-mistake-01">01</a><a href="#vq-mistake-02">02</a><a href="#vq-mistake-03">03</a><a href="#vq-mistake-04">04</a><a href="#vq-mistake-05">05</a><a href="#vq-mistake-06">06</a><a href="#vq-mistake-07">07</a><a href="#vq-mistake-08">08</a><a href="#vq-mistake-09">09</a><a href="#vq-mistake-10">10</a><a href="#vq-mistake-11">11</a><a href="#vq-mistake-12">12</a><a href="#vq-mistake-13">13</a><a href="#vq-mistake-14">14</a><a href="#vq-mistake-15">15</a><a href="#vq-mistake-16">16</a><a href="#vq-mistake-17">17</a><a href="#vq-mistake-18">18</a><a href="#vq-mistake-19">19</a><a href="#vq-mistake-20">20</a><a href="#vq-mistake-21">21</a><a href="#vq-mistake-22">22</a>
+    </nav>
+  </header>
+  <main>
+
+    <article class="card" id="vq-mistake-01">
+      <div class="meta">
+        <span class="tag">vq-mistake-01</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">PPE Mistakes</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_no_harness.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_no_harness.webp</p>');this.remove();" />
+      <h2>ওপরে কাজ—কী কমতি?</h2>
+      <div class="opt"><strong>A.</strong> কোমরের বেল্ট নেই</div><div class="opt ok"><strong>B.</strong> হারনেস নেই <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> দুটো ল্যানিয়ার্ড নেই</div><div class="opt"><strong>D.</strong> শক অ্যাবজরবার নেই</div>
+      <p class="hint">💡 ওপরে কাজ—আগে পুরো হারনেস লাগবে।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-02">
+      <div class="meta">
+        <span class="tag">vq-mistake-02</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">Tool Mistakes</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_metal_ladder.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_metal_ladder.webp</p>');this.remove();" />
+      <h2>মই দিয়ে কাজ—কী ভুল?</h2>
+      <div class="opt"><strong>A.</strong> মই বেশি লম্বা</div><div class="opt ok"><strong>B.</strong> ধাতব মই নেওয়া <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> মই ঠিক কোণে নেই</div><div class="opt"><strong>D.</strong> মইয়ের ধাপ ভাঙা</div>
+      <p class="hint">💡 লাইনের কাছে ধাতব মই লাগবে না—FRP মই নিন।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-03">
+      <div class="meta">
+        <span class="tag">vq-mistake-03</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">PPE Mistakes</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_no_helmet.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_no_helmet.webp</p>');this.remove();" />
+      <h2>মাথায় কী বাদ?</h2>
+      <div class="opt"><strong>A.</strong> হেলমেটের স্ট্র্যাপ খোলা</div><div class="opt ok"><strong>B.</strong> হেলমেট পরেনি <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> হেলমেট ভেজা</div><div class="opt"><strong>D.</strong> হেলমেট রঙ ভুল</div>
+      <p class="hint">💡 ওপরে বা লাইন কাজে হেলমেট লাগবেই।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-04">
+      <div class="meta">
+        <span class="tag">vq-mistake-04</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">PPE Mistakes</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_damaged_gloves.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_damaged_gloves.webp</p>');this.remove();" />
+      <h2>গ্লাভসের কী সমস্যা?</h2>
+      <div class="opt"><strong>A.</strong> মাপ ছোট</div><div class="opt ok"><strong>B.</strong> ফুটো বা ছেঁড়া <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> রঙ পুরনো</div><div class="opt"><strong>D.</strong> অনেক মোটা</div>
+      <p class="hint">💡 ছেঁড়া বা ফুটো গ্লাভস লাগবে না—বদলে নিন।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-05">
+      <div class="meta">
+        <span class="tag">vq-mistake-05</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">PPE Mistakes</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_cracked_helmet.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_cracked_helmet.webp</p>');this.remove();" />
+      <h2>হেলমেটে কী সমস্যা?</h2>
+      <div class="opt"><strong>A.</strong> স্ক্র্যাচ আছে</div><div class="opt ok"><strong>B.</strong> ফাটল আছে <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> ধুলোয় ভেজা</div><div class="opt"><strong>D.</strong> স্টিকার লাগানো</div>
+      <p class="hint">💡 ফাটল হেলমেট লাগবে না—নতুন নিন।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-06">
+      <div class="meta">
+        <span class="tag">vq-mistake-06</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">Unsafe Practice</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_no_earthing.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_no_earthing.webp</p>');this.remove();" />
+      <h2>লাইন কাজ শুরুর আগে কী বাদ?</h2>
+      <div class="opt"><strong>A.</strong> পারমিট নেই</div><div class="opt ok"><strong>B.</strong> আর্থ-শর্ট নেই <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> টুল চেক হয়নি</div><div class="opt"><strong>D.</strong> কোন নেই</div>
+      <p class="hint">💡 কাজের আগে আর্থ-শর্ট করতে হবেই।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-07">
+      <div class="meta">
+        <span class="tag">vq-mistake-07</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">Unsafe Practice</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_under_load.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_under_load.webp</p>');this.remove();" />
+      <h2>দাঁড়ানোর জায়গা কেমন?</h2>
+      <div class="opt"><strong>A.</strong> লোডের পাশে</div><div class="opt ok"><strong>B.</strong> ঝুলন্ত লোডের নিচে <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> ক্রেন থেকে দূরে</div><div class="opt"><strong>D.</strong> হেলমেট খোলা</div>
+      <p class="hint">💡 ভার ঝুলছে—নিচে দাঁড়াবেন না।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-08">
+      <div class="meta">
+        <span class="tag">vq-mistake-08</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">PPE Mistakes</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_no_goggles.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_no_goggles.webp</p>');this.remove();" />
+      <h2>চোখ সুরক্ষায় কী বাদ?</h2>
+      <div class="opt"><strong>A.</strong> ফেস শিল্ড নেই</div><div class="opt ok"><strong>B.</strong> গগলস নেই <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> ইয়ার প্লাগ নেই</div><div class="opt"><strong>D.</strong> নেক গার্ড নেই</div>
+      <p class="hint">💡 স্পার্ক/কাটিং কাজে গগলস লাগবে।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-09">
+      <div class="meta">
+        <span class="tag">vq-mistake-09</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">PPE Mistakes</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_waist_belt_only.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_waist_belt_only.webp</p>');this.remove();" />
+      <h2>ফল সুরক্ষায় কী কমতি?</h2>
+      <div class="opt ok"><strong>A.</strong> শুধু কোমরের বেল্ট <em>✓ সঠিক</em></div><div class="opt"><strong>B.</strong> পুরো হারনেস</div><div class="opt"><strong>C.</strong> দুটো ল্যানিয়ার্ড</div><div class="opt"><strong>D.</strong> পজিশন রোপ</div>
+      <p class="hint">💡 শুধু কোমরের বেল্ট দিয়ে ওঠা যাবে না।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-10">
+      <div class="meta">
+        <span class="tag">vq-mistake-10</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">Unsafe Practice</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_phone_on_pole.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_phone_on_pole.webp</p>');this.remove();" />
+      <h2>ওপরে কাজের সময় কী ভুল?</h2>
+      <div class="opt"><strong>A.</strong> টুল হাতে নেই</div><div class="opt ok"><strong>B.</strong> ফোনে মনোযোগ <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> হেলমেট খোলা</div><div class="opt"><strong>D.</strong> হারনেস ঢিলা</div>
+      <p class="hint">💡 ওপরে কাজ চলাকালে ফোনে মন নেই।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-11">
+      <div class="meta">
+        <span class="tag">vq-mistake-11</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">Unsafe Practice</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_no_barrier.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_no_barrier.webp</p>');this.remove();" />
+      <h2>রোডের পাশে কাজ—কী বাদ?</h2>
+      <div class="opt"><strong>A.</strong> হেলমেট নেই</div><div class="opt ok"><strong>B.</strong> কোন বা ব্যারিয়ার নেই <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> সাইনবোর্ড নেই</div><div class="opt"><strong>D.</strong> ফ্ল্যাগম্যান নেই</div>
+      <p class="hint">💡 রাস্তার কাছে কোন দিয়ে জায়গা ঘিরে নিন।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-12">
+      <div class="meta">
+        <span class="tag">vq-mistake-12</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">Unsafe Practice</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_no_voltage_test.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_no_voltage_test.webp</p>');this.remove();" />
+      <h2>লাইনে হাত দেবার আগে কী বাদ?</h2>
+      <div class="opt"><strong>A.</strong> লকআউট কার্ড</div><div class="opt ok"><strong>B.</strong> লাইন ডেড আছে কিনা চেক <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> টুল চেক</div><div class="opt"><strong>D.</strong> পারমিট সই</div>
+      <p class="hint">💡 হাত দেবার আগে লাইন ডেড আছে কিনা চেক করুন।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-13">
+      <div class="meta">
+        <span class="tag">vq-mistake-13</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">Damaged Gear</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_frayed_rope.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_frayed_rope.webp</p>');this.remove();" />
+      <h2>দড়ির কী সমস্যা?</h2>
+      <div class="opt"><strong>A.</strong> দড়ি ভেজা</div><div class="opt ok"><strong>B.</strong> দড়ি ছিঁড়ে/জীর্ণ <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> দড়ি রঙ পুরনো</div><div class="opt"><strong>D.</strong> গিঁট আলগা</div>
+      <p class="hint">💡 ছিঁড়ে বা জীর্ণ দড়ি দিয়ে ভার তুলবেন না।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-14">
+      <div class="meta">
+        <span class="tag">vq-mistake-14</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">PPE Mistakes</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_slippers.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_slippers.webp</p>');this.remove();" />
+      <h2>পায়ে কী ভুল?</h2>
+      <div class="opt"><strong>A.</strong> সেফটি সু পুরনো</div><div class="opt ok"><strong>B.</strong> চপ্পল/স্যান্ডেল <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> সু সোল পিচ্ছিল</div><div class="opt"><strong>D.</strong> সু লেইস খোলা</div>
+      <p class="hint">💡 সাইটে সেফটি সু লাগবে—চপ্পল নয়।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-15">
+      <div class="meta">
+        <span class="tag">vq-mistake-15</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">Tool Mistakes</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_two_on_ladder.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_two_on_ladder.webp</p>');this.remove();" />
+      <h2>মই ব্যবহারে কী ভুল?</h2>
+      <div class="opt"><strong>A.</strong> মই কোণ ভুল</div><div class="opt ok"><strong>B.</strong> দুজন এক মইয়ে <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> মই ফুট আলগা</div><div class="opt"><strong>D.</strong> মই টাই নেই</div>
+      <p class="hint">💡 এক মইয়ে একজন—দুজন হলে পড়ার ঝুঁকি।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-16">
+      <div class="meta">
+        <span class="tag">vq-mistake-16</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">PPE Mistakes</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_no_arc_shield.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_no_arc_shield.webp</p>');this.remove();" />
+      <h2>আর্ক কাজে মুখ সুরক্ষায় কী বাদ?</h2>
+      <div class="opt"><strong>A.</strong> গগলসই যথেষ্ট</div><div class="opt ok"><strong>B.</strong> আর্ক ফেস শিল্ড নেই <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> হেলমেটই যথেষ্ট</div><div class="opt"><strong>D.</strong> গ্লাভসই যথেষ্ট</div>
+      <p class="hint">💡 আর্ক কাজে শুধু গগলস নয়—ফেস শিল্ড লাগবে।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-17">
+      <div class="meta">
+        <span class="tag">vq-mistake-17</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">PPE Mistakes</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_not_tied_off.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_not_tied_off.webp</p>');this.remove();" />
+      <h2>হারনেস থাকলেও কী ভুল?</h2>
+      <div class="opt"><strong>A.</strong> হারনেস ঢিলা</div><div class="opt ok"><strong>B.</strong> অ্যাঙ্করে বাঁধা নেই <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> ল্যানিয়ার্ড ছোট</div><div class="opt"><strong>D.</strong> ডি-রিং পেছনে</div>
+      <p class="hint">💡 হারনেস পরলেও অ্যাঙ্করে না বাঁধলে কাজ নয়।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-18">
+      <div class="meta">
+        <span class="tag">vq-mistake-18</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">Tool Mistakes</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_non_insulated_pliers.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_non_insulated_pliers.webp</p>');this.remove();" />
+      <h2>টুল বাছতে কী ভুল?</h2>
+      <div class="opt"><strong>A.</strong> প্লায়ার ছোট</div><div class="opt ok"><strong>B.</strong> ইনসুলেটেড নয় <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> প্লায়ার মরিচা</div><div class="opt"><strong>D.</strong> জোড়া নয়</div>
+      <p class="hint">💡 লাইভ কাজে ইনসুলেটেড প্লায়ার/টুল লাগবে।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-19">
+      <div class="meta">
+        <span class="tag">vq-mistake-19</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">Tool Mistakes</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_bamboo_ladder.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_bamboo_ladder.webp</p>');this.remove();" />
+      <h2>মই বাছতে কী ভুল?</h2>
+      <div class="opt"><strong>A.</strong> বাঁশ ভেজা</div><div class="opt ok"><strong>B.</strong> বাঁশের মই <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> বাঁশ ফাটা</div><div class="opt"><strong>D.</strong> বাঁশ বেঁধে নেই</div>
+      <p class="hint">💡 বিদ্যুৎ কাজে বাঁশের মই নয়—FRP মই নিন।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-20">
+      <div class="meta">
+        <span class="tag">vq-mistake-20</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">Unsafe Practice</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_working_alone.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_working_alone.webp</p>');this.remove();" />
+      <h2>কাজের ব্যবস্থায় কী কমতি?</h2>
+      <div class="opt"><strong>A.</strong> টুলব্যাগ নেই</div><div class="opt ok"><strong>B.</strong> একা ওপরে কাজ <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> রেডিও নেই</div><div class="opt"><strong>D.</strong> পারমিট নেই</div>
+      <p class="hint">💡 ওপরে/ঝুঁকির কাজে একা নয়—নিচে কেউ থাকুক।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-21">
+      <div class="meta">
+        <span class="tag">vq-mistake-21</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">PPE Mistakes</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_wet_gloves.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_wet_gloves.webp</p>');this.remove();" />
+      <h2>গ্লাভস পরার কী ভুল?</h2>
+      <div class="opt"><strong>A.</strong> গ্লাভস ময়লা</div><div class="opt ok"><strong>B.</strong> ভিজে গ্লাভস পরা <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> গ্লাভস উল্টো</div><div class="opt"><strong>D.</strong> জোড়া নয়</div>
+      <p class="hint">💡 ভিজে ইলেকট্রিক্যাল গ্লাভস লাগবে না—শুকনো পরীক্ষিত গ্লাভস নিন।</p>
+    </article>
+
+    <article class="card" id="vq-mistake-22">
+      <div class="meta">
+        <span class="tag">vq-mistake-22</span>
+        <span class="tag">image_to_text</span>
+        <span class="tag">Tool Mistakes</span>
+        <span class="tag warn">DRAFT — not in live sheet</span>
+      </div>
+      <img src="/images/quizzes/mistake_top_rungs.webp" alt="" onerror="this.insertAdjacentHTML('afterend','<p class=broken>Missing: mistake_top_rungs.webp</p>');this.remove();" />
+      <h2>মই দাঁড়ানোর কী ভুল?</h2>
+      <div class="opt"><strong>A.</strong> মই কোণ ভুল</div><div class="opt ok"><strong>B.</strong> উপরের ধাপে দাঁড়ানো <em>✓ সঠিক</em></div><div class="opt"><strong>C.</strong> মই টাই নেই</div><div class="opt"><strong>D.</strong> মই ফুট ভেজা</div>
+      <p class="hint">💡 মইয়ের উপরের ধাপে দাঁড়াবেন না—পড়ার ঝুঁকি বেশি।</p>
+    </article>
+  </main>
+</body>
+</html>

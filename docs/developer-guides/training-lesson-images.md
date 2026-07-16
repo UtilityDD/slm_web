@@ -15,6 +15,7 @@ It does **not** cover:
 | Topic | Guide |
 |--------|--------|
 | Hourly visual quiz photos | [Hourly Visual Quiz](./hourly-visual-quiz.md) |
+| Hourly visual quiz **generation** (mistakes, options) | [Hourly Visual Quiz — Image Generation](./hourly-visual-quiz-generation.md) |
 | Life Skill module card art | [Life Skill / supplementary](./life-skills-supplementary.md) |
 | Inline `[[…]]` chips in body text | [Training lesson reader](./training-lesson-reader.md) |
 
