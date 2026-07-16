@@ -34,9 +34,9 @@ async function claimDeviceSession(userId) {
 
 function LoginLogo() {
     return (
-        <div className="flex justify-center items-baseline gap-1.5 select-none">
-            <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">SmartLineMan</span>
-            <span className="text-[10px] font-black text-slate-900 bg-orange-400 px-1.5 py-0.5 rounded border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] shrink-0 nb-mono">.in</span>
+        <div className="flex select-none items-baseline justify-center gap-1.5">
+            <span className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">SmartLineMan</span>
+            <span className="shrink-0 rounded-full bg-orange-500 px-1.5 py-0.5 text-[10px] font-black text-white shadow-sm">.in</span>
         </div>
     );
 }
@@ -59,7 +59,7 @@ function HeroImageCrossfade({ images, activeIndex }) {
     }, [images]);
 
     return (
-        <div className="relative w-full h-40 sm:h-44 bg-slate-900 overflow-hidden">
+        <div className="relative h-40 w-full overflow-hidden bg-slate-800 sm:h-44">
             {images.map((src, i) => (
                 <img
                     key={src}
@@ -68,7 +68,7 @@ function HeroImageCrossfade({ images, activeIndex }) {
                     aria-hidden={i !== activeIndex}
                     decoding="async"
                     className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${
-                        i === activeIndex ? 'opacity-100 z-[1]' : 'opacity-0 z-0'
+                        i === activeIndex ? 'z-[1] opacity-100' : 'z-0 opacity-0'
                     }`}
                     style={{ objectPosition: HERO_IMAGE_FOCUS[src] || 'center 20%' }}
                 />
@@ -87,17 +87,20 @@ function LoginPageShell({
     onGoHome,
 }) {
     return (
-        <div className="neo-brutal min-h-[100dvh] flex flex-col items-center justify-center px-4 py-6 relative overflow-hidden safe-area-inset-top safe-area-inset-bottom touch-manipulation text-slate-900">
-            <div className="nb-hazard absolute top-0 left-0 right-0 z-20" aria-hidden="true" />
-            <div className={`w-full max-w-sm relative z-10 ${animate} shrink-0 space-y-4 pt-2`}>
+        <div className="landing-modern relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-[#fffdf7] px-4 py-6 text-slate-900 touch-manipulation safe-area-inset-top safe-area-inset-bottom">
+            <div
+                className="absolute inset-x-0 top-0 z-20 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
+                aria-hidden="true"
+            />
+            <div className={`relative z-10 w-full max-w-sm shrink-0 space-y-4 pt-2 ${animate}`}>
                 {onGoHome && (
                     <button
                         type="button"
                         onClick={onGoHome}
-                        className="inline-flex items-center gap-1.5 min-h-[44px] px-1 text-sm font-black text-slate-800 hover:text-orange-600 nb-mono touch-manipulation"
+                        className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-2 text-sm font-bold text-slate-700 touch-manipulation transition-colors hover:bg-orange-50 hover:text-orange-600 active:scale-95"
                         aria-label="Back to home"
                     >
-                        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                         Home
@@ -108,11 +111,11 @@ function LoginPageShell({
                     <button
                         type="button"
                         onClick={onOpenAwarenessStories}
-                        className="nb-card overflow-hidden p-0 w-full text-left relative block touch-manipulation active:scale-[0.99] transition-transform"
+                        className="relative block w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-0 text-left shadow-sm touch-manipulation transition-all active:scale-[0.99]"
                         aria-label="Open awareness stories — Korun Kahini"
                     >
                         <HeroImageCrossfade images={emotionalImages} activeIndex={emotionalImageIndex} />
-                        <span className="pointer-events-none absolute bottom-2 right-2 z-20 rounded border-2 border-slate-900 bg-slate-900/80 px-2 py-1 text-[10px] font-bold text-white shadow-[2px_2px_0_#0f172a] sm:text-xs">
+                        <span className="pointer-events-none absolute bottom-2 right-2 z-20 rounded-full border border-white/20 bg-slate-900/80 px-2.5 py-1 text-[10px] font-bold text-white shadow-sm backdrop-blur-sm sm:text-xs">
                             করুণ কাহিনী →
                         </span>
                     </button>
@@ -170,7 +173,7 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
         return () => clearInterval(imageInterval);
     }, []);
 
-    // Login matches landing: always light neo-brutal, restore saved theme on exit.
+    // Login matches landing: always light Material cream, restore saved theme on exit.
     useEffect(() => {
         const html = document.documentElement;
         html.classList.remove('dark');
@@ -346,16 +349,16 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                 animate="animate-slideUp"
                 {...loginShellNav(setCurrentView)}
             >
-                <div className="nb-card p-6 sm:p-8">
-                    <div className="text-center mb-8">
-                        <span className="nb-tag inline-block px-3 py-1 bg-orange-100 text-orange-700 mb-4">Safety First</span>
-                        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2 tracking-tight">Set Your PIN</h1>
-                        <p className="text-slate-600 text-sm font-semibold">Protect your progress & identity</p>
+                <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
+                    <div className="mb-8 text-center">
+                        <span className="mb-4 inline-block rounded-full border border-orange-200/80 bg-orange-50 px-3 py-1 text-[10px] font-bold text-orange-700">Safety First</span>
+                        <h1 className="mb-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">Set Your PIN</h1>
+                        <p className="text-sm font-semibold text-slate-600">Protect your progress & identity</p>
                     </div>
 
                     <form onSubmit={handleChangePassword} className="space-y-4">
                         <div className="space-y-1.5">
-                            <label className="nb-label block text-center">New 6-Digit PIN</label>
+                            <label className="block text-center text-[11px] font-bold uppercase tracking-wide text-slate-500">New 6-Digit PIN</label>
                             <input
                                 type="password"
                                 required
@@ -363,13 +366,13 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                                 inputMode="numeric"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value.replace(/\D/g, ''))}
-                                className="nb-input text-center tracking-[1em] text-2xl font-bold"
+                                className="w-full rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-3 text-center text-2xl font-bold tracking-[1em] text-slate-900 outline-none transition focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-200"
                                 placeholder="••••••"
                             />
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="nb-label block text-center">Confirm PIN</label>
+                            <label className="block text-center text-[11px] font-bold uppercase tracking-wide text-slate-500">Confirm PIN</label>
                             <input
                                 type="password"
                                 required
@@ -377,7 +380,7 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                                 inputMode="numeric"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value.replace(/\D/g, ''))}
-                                className="nb-input text-center tracking-[1em] text-2xl font-bold"
+                                className="w-full rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-3 text-center text-2xl font-bold tracking-[1em] text-slate-900 outline-none transition focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-200"
                                 placeholder="••••••"
                             />
                         </div>
@@ -385,11 +388,11 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                         <button
                             type="submit"
                             disabled={loading || newPassword.length !== 6 || newPassword !== confirmPassword}
-                            className="w-full min-h-[48px] py-3 px-6 nb-btn-primary font-black text-base mt-2"
+                            className="mt-2 min-h-[52px] w-full rounded-full bg-orange-500 px-6 py-3 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] disabled:opacity-50"
                         >
                             {loading ? (
                                 <span className="flex items-center justify-center gap-2">
-                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
+                                    <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                                     Saving...
                                 </span>
                             ) : 'Secure Account & Log In'}
@@ -408,18 +411,18 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                 animate="animate-slideUp"
                 {...loginShellNav(setCurrentView)}
             >
-                <div className="nb-card p-8 sm:p-10 text-center">
-                    <div className="mb-6 inline-flex p-4 nb-icon-badge bg-orange-50">
+                <div className="rounded-2xl border border-slate-200/80 bg-white p-8 text-center shadow-sm sm:p-10">
+                    <div className="mb-6 inline-flex rounded-2xl border border-orange-100 bg-orange-50 p-4 shadow-sm">
                         <DotLottiePlayer
                             src={noInternetLottie}
                             autoplay
                             loop
-                            className="w-36 h-36 sm:w-40 sm:h-40"
+                            className="h-36 w-36 sm:h-40 sm:w-40"
                         />
                     </div>
 
-                    <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mb-3 tracking-tight">Connection Error</h2>
-                    <p className="text-slate-600 mb-8 font-semibold px-2 text-sm sm:text-base">
+                    <h2 className="mb-3 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">Connection Error</h2>
+                    <p className="mb-8 px-2 text-sm font-semibold text-slate-600 sm:text-base">
                         Oops! It seems you are offline or having trouble connecting to our servers.
                     </p>
 
@@ -429,9 +432,9 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                             setConnectionError(false);
                             setLoading(false);
                         }}
-                        className="w-full min-h-[48px] py-3 px-6 nb-btn-primary font-black text-base flex items-center justify-center gap-3"
+                        className="flex min-h-[52px] w-full items-center justify-center gap-3 rounded-full bg-orange-500 px-6 py-3 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98]"
                     >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
                         Retry Login
@@ -450,20 +453,20 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
             footer={(
                 <a
                     href={`mailto:${SUPPORT_EMAIL}`}
-                    className="text-center text-xs text-slate-600 hover:text-slate-900 py-2 min-h-[44px] flex items-center justify-center font-semibold nb-mono"
+                    className="flex min-h-[44px] items-center justify-center py-2 text-center text-xs font-semibold text-slate-500 transition-colors hover:text-orange-600"
                 >
                     {SUPPORT_EMAIL}
                 </a>
             )}
         >
-            <div className="nb-card p-6 sm:p-7">
-                <div className="text-center mb-6">
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-7">
+                <div className="mb-6 text-center">
                     <LoginLogo />
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-1.5">
-                        <label htmlFor="login-phone" className="nb-label block text-center">
+                        <label htmlFor="login-phone" className="block text-center text-[11px] font-bold uppercase tracking-wide text-slate-500">
                             Phone
                         </label>
                         <input
@@ -474,14 +477,14 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                             required
                             value={phone}
                             onChange={handlePhoneChange}
-                            className="nb-input text-base text-center"
+                            className="w-full rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-3 text-center text-base text-slate-900 outline-none transition focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-200"
                             placeholder="01XXXXXXXXX"
                             autoFocus
                         />
                     </div>
 
                     <div className="space-y-1.5">
-                        <label htmlFor="login-pin" className="nb-label block text-center">
+                        <label htmlFor="login-pin" className="block text-center text-[11px] font-bold uppercase tracking-wide text-slate-500">
                             6-digit PIN
                         </label>
                         <div className="relative">
@@ -495,19 +498,19 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                                 inputMode="numeric"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value.replace(/\D/g, ''))}
-                                className="nb-input pr-12 text-lg text-center tracking-[0.5em] font-bold"
+                                className="w-full rounded-2xl border border-slate-200/80 bg-slate-50 py-3 pl-4 pr-12 text-center text-lg font-bold tracking-[0.5em] text-slate-900 outline-none transition focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-200"
                                 placeholder="••••••"
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-1 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-600 hover:text-slate-900 rounded-md"
+                                className="absolute right-1 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-orange-50 hover:text-slate-900"
                                 aria-label={showPassword ? 'Hide PIN' : 'Show PIN'}
                             >
                                 {showPassword ? (
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
+                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
                                 ) : (
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                 )}
                             </button>
                         </div>
@@ -516,11 +519,11 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                     <button
                         type="submit"
                         disabled={loading || phone.length !== 10 || password.length !== 6}
-                        className="w-full min-h-[48px] py-3 px-4 nb-btn-primary text-[15px] font-black"
+                        className="min-h-[52px] w-full rounded-full bg-orange-500 px-4 py-3 text-[15px] font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] disabled:opacity-50"
                     >
                         {loading ? (
                             <span className="flex items-center justify-center gap-2">
-                                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
+                                <span className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                                 Signing in…
                             </span>
                         ) : (

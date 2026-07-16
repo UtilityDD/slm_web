@@ -187,20 +187,20 @@ body,
     display: none;
   }
 
-  /* Landing — modern layout on neo-brutal theme */
+  /* Landing — Material Android cream surfaces */
   .landing-modern {
     background:
       radial-gradient(ellipse 120% 80% at 50% -20%, rgba(251, 146, 60, 0.14), transparent 55%),
       radial-gradient(ellipse 70% 50% at 100% 0%, rgba(251, 191, 36, 0.08), transparent 45%),
-      var(--nb-paper, #fffdf7);
+      #fffdf7;
   }
 
   .landing-header-bar {
-    background: rgba(255, 253, 247, 0.92);
+    background: rgba(255, 253, 247, 0.94);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border-bottom: var(--nb-border, 2.5px solid #0f172a);
-    box-shadow: 0 4px 0 #0f172a;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
   }
 
   .landing-hero-glow {
@@ -218,16 +218,15 @@ body,
     gap: 0.375rem;
     padding: 0.35rem 0.75rem;
     margin-bottom: 1rem;
-    font-family: 'IBM Plex Mono', ui-monospace, monospace;
     font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--nb-ink, #0f172a);
+    color: #0f172a;
     background: #fff;
-    border: 2px solid var(--nb-ink, #0f172a);
+    border: 1px solid rgba(15, 23, 42, 0.1);
     border-radius: 9999px;
-    box-shadow: var(--nb-shadow-sm, 3px 3px 0 #0f172a);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
   }
 
   .landing-hero-badge-dot {
@@ -250,36 +249,31 @@ body,
 
   @media (hover: hover) {
     .landing-stat-card:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--nb-shadow-hover, 6px 6px 0 #0f172a);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
     }
   }
 
-  .landing-neo-brutal .landing-podium-card,
-  .neo-brutal .landing-podium-card {
+  .landing-podium-card {
     border-radius: 1rem;
     transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
   }
 
-  .landing-neo-brutal .landing-podium-card--gold,
-  .neo-brutal .landing-podium-card--gold {
+  .landing-podium-card--gold {
     background: linear-gradient(165deg, #fffbeb 0%, #fef3c7 100%);
   }
 
-  .landing-neo-brutal .landing-podium-card--silver,
-  .neo-brutal .landing-podium-card--silver {
+  .landing-podium-card--silver {
     background: linear-gradient(165deg, #f8fafc 0%, #f1f5f9 100%);
   }
 
-  .landing-neo-brutal .landing-podium-card--bronze,
-  .neo-brutal .landing-podium-card--bronze {
+  .landing-podium-card--bronze {
     background: linear-gradient(165deg, #fff7ed 0%, #ffedd5 100%);
   }
 
-  .landing-neo-brutal .landing-podium-card--empty,
-  .neo-brutal .landing-podium-card--empty {
-    background: rgba(255, 255, 255, 0.55);
-    border: 2px dashed rgba(15, 23, 42, 0.18);
+  .landing-podium-card--empty {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px dashed rgba(15, 23, 42, 0.14);
     border-radius: 1rem;
     box-shadow: none;
   }
@@ -291,27 +285,26 @@ body,
 
   .landing-podium-avatar {
     border-radius: 9999px;
-    border: 2px solid #0f172a;
-    box-shadow: 2px 2px 0 #0f172a;
+    border: 2px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
   }
 
   .landing-podium-avatar--champ {
-    box-shadow: 0 0 0 3px #fbbf24, 2px 2px 0 #0f172a;
+    box-shadow: 0 0 0 3px #fbbf24, 0 4px 12px rgba(251, 146, 60, 0.25);
   }
 
   .landing-podium-avatar--empty {
-    border: 2px dashed rgba(15, 23, 42, 0.22);
-    background: rgba(248, 250, 252, 0.9);
+    border: 2px dashed rgba(15, 23, 42, 0.16);
+    background: rgba(248, 250, 252, 0.95);
     box-shadow: none;
   }
 
   .landing-podium-rank {
     border-radius: 9999px;
-    border: 2px solid #0f172a;
+    border: 2px solid #fff;
     background: #fbbf24;
     color: #0f172a;
-    box-shadow: 1px 1px 0 #0f172a;
-    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.15);
     line-height: 1;
   }
 
@@ -327,7 +320,7 @@ body,
   .landing-podium-rank--empty {
     background: #e2e8f0;
     color: #64748b;
-    border-color: rgba(15, 23, 42, 0.25);
+    border-color: #fff;
     box-shadow: none;
   }
 
@@ -346,14 +339,14 @@ body,
 
   @media (hover: hover) {
     .landing-podium-card:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--nb-shadow-hover, 6px 6px 0 #0f172a);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
     }
 
     .landing-podium-card--empty:hover {
       transform: none;
       box-shadow: none;
-      background: rgba(255, 255, 255, 0.75);
+      background: rgba(255, 255, 255, 0.85);
     }
   }
 
@@ -363,15 +356,15 @@ body,
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: #64748b;
-    font-family: 'IBM Plex Mono', ui-monospace, monospace;
   }
 
   .landing-sticky-cta {
-    background: rgba(255, 253, 247, 0.94);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-top: var(--nb-border, 2.5px solid #0f172a);
-    box-shadow: 0 -4px 0 #0f172a;
+    background: rgba(255, 253, 247, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 1.25rem 1.25rem 0 0;
+    box-shadow: 0 -12px 32px rgba(15, 23, 42, 0.1);
   }
 
   .landing-footer-modern {
@@ -380,8 +373,8 @@ body,
     margin-right: 0;
     padding: 1.5rem 1.25rem;
     background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
-    border: var(--nb-border, 2.5px solid #0f172a);
-    box-shadow: var(--nb-shadow, 4px 4px 0 #0f172a);
+    border: 1px solid rgba(15, 23, 42, 0.2);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
     color: #f8fafc;
   }
 
@@ -394,20 +387,19 @@ body,
   .landing-facebook-link {
     color: #fff;
     background: #1877f2;
-    border: 2.5px solid #0f172a;
-    border-radius: 0.75rem;
-    box-shadow: 3px 3px 0 #0f172a;
+    border: 1px solid rgba(24, 119, 242, 0.35);
+    border-radius: 9999px;
+    box-shadow: 0 4px 14px rgba(24, 119, 242, 0.28);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
 
   .landing-facebook-link:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 5px 5px 0 #0f172a;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(24, 119, 242, 0.35);
   }
 
   .landing-facebook-link:active {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0 #0f172a;
+    transform: scale(0.97);
   }
 
   .landing-text-link {

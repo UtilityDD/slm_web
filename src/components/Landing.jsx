@@ -416,9 +416,9 @@ const ICON_TONES = {
 function SectionIconBadge({ name, tone = 'orange', className = '' }) {
   return (
     <div
-      className={`nb-icon-badge w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center shrink-0 text-white ${ICON_TONES[tone] || ICON_TONES.orange} ${className}`}
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white shadow-sm sm:h-11 sm:w-11 ${ICON_TONES[tone] || ICON_TONES.orange} ${className}`}
     >
-      <LandingIcon name={name} className="w-5 h-5 sm:w-[1.35rem] sm:h-[1.35rem]" strokeWidth={2} />
+      <LandingIcon name={name} className="h-5 w-5 sm:h-[1.35rem] sm:w-[1.35rem]" strokeWidth={2} />
     </div>
   );
 }
@@ -498,43 +498,43 @@ function LeaderPodiumGrid({
   const deskOrder = slots.length === 3 ? ['sm:order-2', 'sm:order-1', 'sm:order-3'] : ['', '', ''];
 
   return (
-    <section className="mb-10 sm:mb-12 relative z-10">
-      <div className="flex items-center gap-2.5 mb-5 sm:mb-6">
-        <SectionIconBadge name={iconName} tone={iconTone} className="rounded-xl w-9 h-9 sm:w-10 sm:h-10" />
-        <h2 className={`text-base sm:text-lg font-black text-slate-900 leading-snug tracking-tight ${bnFont ? 'font-bengali' : ''}`}>{title}</h2>
+    <section className="relative z-10 mb-10 sm:mb-12">
+      <div className="mb-5 flex items-center gap-2.5 sm:mb-6">
+        <SectionIconBadge name={iconName} tone={iconTone} className="h-9 w-9 sm:h-10 sm:w-10" />
+        <h2 className={`text-base font-black leading-snug tracking-tight text-slate-900 sm:text-lg ${bnFont ? 'font-bengali' : ''}`}>{title}</h2>
       </div>
-      <div className="landing-podium-grid grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 sm:items-end">
+      <div className="landing-podium-grid grid grid-cols-1 gap-3 sm:grid-cols-3 sm:items-end sm:gap-5">
         {slots.map((player, rankIdx) => {
           const isEmpty = !player;
           const isFirst = rankIdx === 0 && !isEmpty;
           return (
             <div
               key={isEmpty ? `empty-${rankIdx}` : `${player.id}-${rankIdx}`}
-              className={`landing-podium-card relative flex flex-row sm:flex-col items-center sm:text-center gap-3.5 sm:gap-3.5 px-4 py-3.5 sm:px-5 sm:py-5 ${
+              className={`landing-podium-card relative flex flex-row items-center gap-3.5 rounded-2xl border border-slate-200/80 px-4 py-3.5 shadow-sm sm:flex-col sm:gap-3.5 sm:px-5 sm:py-5 sm:text-center ${
                 isEmpty
                   ? 'landing-podium-card--empty'
-                  : `nb-card ${filledTone[rankIdx] || filledTone[2]}`
+                  : `bg-white ${filledTone[rankIdx] || filledTone[2]}`
               } ${rankLift[rankIdx] || ''} ${deskOrder[rankIdx] || ''}`}
               aria-label={isEmpty ? emptyTitle : undefined}
             >
               <div className="relative shrink-0">
                 {isEmpty ? (
-                  <div className="landing-podium-avatar landing-podium-avatar--empty w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-slate-300 font-black text-2xl sm:text-3xl nb-mono">
+                  <div className="landing-podium-avatar landing-podium-avatar--empty flex h-14 w-14 items-center justify-center text-2xl font-black text-slate-300 sm:h-16 sm:w-16 sm:text-3xl">
                     ?
                   </div>
                 ) : player.avatarUrl ? (
                   <img
                     src={player.avatarUrl}
                     alt={player.name}
-                    className={`landing-podium-avatar w-14 h-14 sm:w-16 sm:h-16 object-cover ${isFirst ? 'landing-podium-avatar--champ' : ''}`}
+                    className={`landing-podium-avatar h-14 w-14 object-cover sm:h-16 sm:w-16 ${isFirst ? 'landing-podium-avatar--champ' : ''}`}
                   />
                 ) : (
-                  <div className={`landing-podium-avatar w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center font-black text-xl sm:text-2xl nb-mono ${isFirst ? 'bg-amber-400 text-slate-900 landing-podium-avatar--champ' : 'bg-white text-slate-700'}`}>
+                  <div className={`landing-podium-avatar flex h-14 w-14 items-center justify-center text-xl font-black sm:h-16 sm:w-16 sm:text-2xl ${isFirst ? 'bg-amber-400 text-slate-900 landing-podium-avatar--champ' : 'bg-slate-100 text-slate-700'}`}>
                     {(player.name || '?').charAt(0).toUpperCase()}
                   </div>
                 )}
                 <span
-                  className={`landing-podium-rank absolute -bottom-1 -right-1 inline-flex w-6 h-6 sm:w-7 sm:h-7 items-center justify-center text-[10px] sm:text-xs font-black ${
+                  className={`landing-podium-rank absolute -bottom-1 -right-1 inline-flex h-6 w-6 items-center justify-center text-[10px] font-black sm:h-7 sm:w-7 sm:text-xs ${
                     isEmpty ? 'landing-podium-rank--empty' : ''
                   }`}
                   data-rank={rankIdx}
@@ -579,17 +579,17 @@ function LeaderPodiumGrid({
 
 const StatTile = ({ label, value, iconName, tone = 'orange', loading, sub }) => {
   return (
-    <div className="nb-card landing-stat-card p-4 sm:p-5 rounded-xl">
-      <div className="flex flex-row items-center gap-3.5 sm:gap-4 text-left">
-        <div className={`nb-icon-badge w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center shrink-0 text-white rounded-lg ${ICON_TONES[tone] || ICON_TONES.orange}`}>
-          <LandingIcon name={iconName} className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2} />
+    <div className="landing-stat-card rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
+      <div className="flex flex-row items-center gap-3.5 text-left sm:gap-4">
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow-sm sm:h-12 sm:w-12 ${ICON_TONES[tone] || ICON_TONES.orange}`}>
+          <LandingIcon name={iconName} className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="nb-stat-value text-2xl sm:text-3xl text-slate-900 leading-none tabular-nums">
+          <p className="text-2xl font-black leading-none tabular-nums text-slate-900 sm:text-3xl">
             <AnimatedNumber value={value} loading={loading} />
           </p>
-          <p className="nb-stat-label mt-1.5 text-[10px] sm:text-[11px] line-clamp-2">{label}</p>
-          {sub && <p className="text-[10px] font-semibold text-slate-500 mt-1 truncate">{sub}</p>}
+          <p className="mt-1.5 line-clamp-2 text-[10px] font-bold uppercase tracking-wide text-slate-500 sm:text-[11px]">{label}</p>
+          {sub && <p className="mt-1 truncate text-[10px] font-semibold text-slate-500">{sub}</p>}
         </div>
       </div>
     </div>
@@ -882,36 +882,39 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
 
   return (
     <div
-      className={`landing-page-light landing-neo-brutal landing-modern min-h-full text-slate-900 pb-[calc(9.5rem+env(safe-area-inset-bottom,0px))] sm:pb-16 ${bnFont ? 'lang-bn' : 'font-sans'}`}
+      className={`landing-page-light landing-modern min-h-full bg-[#fffdf7] text-slate-900 pb-[calc(9.5rem+env(safe-area-inset-bottom,0px))] sm:pb-16 ${bnFont ? 'lang-bn' : 'font-sans'}`}
     >
-      <div className="nb-hazard" aria-hidden="true" />
+      <div
+        className="h-1 w-full shrink-0 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
+        aria-hidden="true"
+      />
 
       {/* Top bar */}
-      <div className="sticky top-0 z-20 landing-header-bar safe-area-inset-top">
-        <div className="max-w-5xl mx-auto px-3 sm:px-6">
-          <div className="h-12 sm:h-14 flex items-center justify-between gap-2 sm:gap-3">
-            <div className="flex items-baseline gap-1 select-none min-w-0">
-              <span className="text-sm sm:text-xl font-black text-slate-900 tracking-tight truncate">SmartLineMan</span>
-              <span className="text-[8px] sm:text-[10px] font-black text-slate-900 bg-orange-400 px-1 py-0.5 rounded border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] shrink-0 nb-mono">.in</span>
+      <div className="landing-header-bar sticky top-0 z-20 safe-area-inset-top">
+        <div className="mx-auto max-w-5xl px-3 sm:px-6">
+          <div className="flex h-12 items-center justify-between gap-2 sm:h-14 sm:gap-3">
+            <div className="flex min-w-0 select-none items-baseline gap-1.5">
+              <span className="truncate text-sm font-black tracking-tight text-slate-900 sm:text-xl">SmartLineMan</span>
+              <span className="shrink-0 rounded-full bg-orange-500 px-1.5 py-0.5 text-[8px] font-black text-white shadow-sm sm:text-[10px]">.in</span>
             </div>
 
-            <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
               <div
-                className="inline-flex items-center rounded-full border border-slate-200/90 bg-slate-50/90 p-0.5 text-[9px] sm:text-[10px] font-semibold nb-mono shadow-[0_1px_2px_rgba(15,23,42,0.05)]"
+                className="inline-flex items-center rounded-full border border-slate-200/80 bg-slate-100/90 p-0.5 text-[9px] font-semibold shadow-sm sm:text-[10px]"
                 role="group"
                 aria-label={t.language}
               >
                 <button
                   type="button"
                   onClick={() => onLanguageChange('en')}
-                  className={`min-h-[26px] min-w-[26px] sm:min-h-0 sm:min-w-0 px-2 sm:px-2.5 py-0.5 rounded-full touch-manipulation transition-colors ${language === 'en' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/80' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`min-h-[28px] min-w-[28px] rounded-full px-2 py-0.5 touch-manipulation transition-all active:scale-95 sm:min-h-0 sm:min-w-0 sm:px-2.5 ${language === 'en' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   EN
                 </button>
                 <button
                   type="button"
                   onClick={() => onLanguageChange('bn')}
-                  className={`min-h-[26px] min-w-[26px] sm:min-h-0 sm:min-w-0 px-2 sm:px-2.5 py-0.5 rounded-full touch-manipulation transition-colors ${language === 'bn' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/80' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`min-h-[28px] min-w-[28px] rounded-full px-2 py-0.5 touch-manipulation transition-all active:scale-95 sm:min-h-0 sm:min-w-0 sm:px-2.5 ${language === 'bn' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   বাং
                 </button>
@@ -919,14 +922,14 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
               <button
                 type="button"
                 onClick={() => setCurrentView('login')}
-                className="inline-flex sm:hidden items-center min-h-[32px] px-2.5 py-1 nb-btn-primary text-[11px] font-bold touch-manipulation"
+                className="inline-flex min-h-[32px] items-center rounded-full bg-orange-500 px-3 py-1 text-[11px] font-bold text-white shadow-md shadow-orange-500/25 touch-manipulation transition-all active:scale-95 sm:hidden"
               >
                 {t.login}
               </button>
               <button
                 type="button"
                 onClick={() => setCurrentView('login')}
-                className="hidden sm:inline-flex items-center px-5 py-2 nb-btn-primary text-sm font-bold"
+                className="hidden items-center rounded-full bg-orange-500 px-5 py-2 text-sm font-bold text-white shadow-md shadow-orange-500/25 transition-all hover:bg-orange-600 active:scale-95 sm:inline-flex"
               >
                 {t.login}
               </button>
@@ -935,12 +938,15 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-3 sm:px-6 pb-8 sm:pb-16 relative">
+      <div className="relative mx-auto max-w-5xl px-3 pb-8 sm:px-6 sm:pb-16">
 
         {/* Hero Section */}
-        <section className="relative text-center max-w-3xl mx-auto pt-6 sm:pt-12 pb-8 sm:pb-10 z-10">
+        <section className="relative z-10 mx-auto max-w-3xl pt-6 pb-8 text-center sm:pt-12 sm:pb-10">
           <div className="landing-hero-glow" aria-hidden="true" />
-          <h1 className={`font-black text-slate-900 leading-[1.25] sm:leading-tight mb-3 sm:mb-4 tracking-tight text-balance ${bnFont ? 'text-xl sm:text-3xl md:text-4xl' : 'text-2xl sm:text-4xl md:text-[2.75rem]'}`}>
+          <p className="mb-3 text-[11px] font-black tracking-tight text-orange-600 sm:mb-4 sm:text-sm">
+            SmartLineMan<span className="text-slate-400">.in</span>
+          </p>
+          <h1 className={`mb-3 font-black leading-[1.25] tracking-tight text-balance text-slate-900 sm:mb-4 sm:leading-tight ${bnFont ? 'text-xl sm:text-3xl md:text-4xl' : 'text-2xl sm:text-4xl md:text-[2.75rem]'}`}>
             {language === 'bn' ? (
               <>
                 প্রশিক্ষণ নিন। প্রতিযোগিতা করুন। <span className="text-orange-600">নিরাপদ থাকুন।</span>
@@ -952,23 +958,23 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
             )}
           </h1>
 
-          <p className={`text-sm sm:text-base text-slate-600 leading-relaxed mb-6 sm:mb-8 font-medium mx-auto max-w-2xl ${bnFont ? 'landing-bn-reading' : ''}`}>{t.heroSubtitle}</p>
+          <p className={`mx-auto mb-6 max-w-2xl text-sm font-medium leading-relaxed text-slate-600 sm:mb-8 sm:text-base ${bnFont ? 'landing-bn-reading' : ''}`}>{t.heroSubtitle}</p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-xs sm:max-w-md mx-auto">
+          <div className="mx-auto flex max-w-xs flex-col items-center justify-center gap-3 sm:max-w-md sm:flex-row">
             <button
               type="button"
               onClick={() => setCurrentView('sops')}
-              className="w-full sm:w-auto min-h-[44px] px-6 py-3 nb-btn-primary font-black text-center flex items-center justify-center gap-2 touch-manipulation rounded-lg text-sm sm:text-base"
+              className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-orange-500 px-6 py-3 text-center text-sm font-black text-white shadow-md shadow-orange-500/30 touch-manipulation transition-all active:scale-95 sm:w-auto sm:text-base"
             >
               👷 {t.surakshaSathiBtn}
             </button>
             <button
               type="button"
               onClick={scrollToLifeSkillsSection}
-              className="w-full sm:w-auto min-h-[44px] px-6 py-3 nb-btn-secondary font-bold text-center flex items-center justify-center gap-2 touch-manipulation rounded-lg text-sm sm:text-base"
+              className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full border border-slate-200/80 bg-white px-6 py-3 text-center text-sm font-bold text-slate-800 shadow-sm touch-manipulation transition-all hover:bg-orange-50 active:scale-95 sm:w-auto sm:text-base"
             >
               {t.exploreLifeSkills}
-              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
+              <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
             </button>
           </div>
         </section>
@@ -1034,29 +1040,29 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
         />
 
         {/* Vision & Mission section */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5 mb-8 sm:mb-12 relative z-10">
-          <article className="nb-card landing-podium-card p-5 sm:p-6 bg-amber-50/80 rounded-xl">
-            <SectionIconBadge name="eye" tone="amber" className="mb-4 rounded-lg" />
-            <h2 className="text-lg sm:text-xl font-black text-slate-900 mb-2">{t.visionTitle}</h2>
-            <p className={`text-slate-700 leading-relaxed text-sm sm:text-base font-medium ${bnFont ? 'landing-bn-reading' : ''}`}>{t.vision}</p>
+        <section className="relative z-10 mb-8 grid grid-cols-1 gap-3 sm:mb-12 sm:gap-5 md:grid-cols-2">
+          <article className="rounded-2xl border border-amber-100 bg-amber-50/90 p-5 shadow-sm sm:p-6">
+            <SectionIconBadge name="eye" tone="amber" className="mb-4" />
+            <h2 className="mb-2 text-lg font-black text-slate-900 sm:text-xl">{t.visionTitle}</h2>
+            <p className={`text-sm font-medium leading-relaxed text-slate-700 sm:text-base ${bnFont ? 'landing-bn-reading' : ''}`}>{t.vision}</p>
           </article>
 
-          <article className="nb-card landing-podium-card p-5 sm:p-6 bg-cyan-50/80 rounded-xl">
-            <SectionIconBadge name="target" tone="cyan" className="mb-4 rounded-lg" />
-            <h2 className="text-lg sm:text-xl font-black text-slate-900 mb-2">{t.missionTitle}</h2>
-            <p className={`text-slate-700 leading-relaxed text-sm sm:text-base font-medium ${bnFont ? 'landing-bn-reading' : ''}`}>{t.mission}</p>
+          <article className="rounded-2xl border border-cyan-100 bg-cyan-50/90 p-5 shadow-sm sm:p-6">
+            <SectionIconBadge name="target" tone="cyan" className="mb-4" />
+            <h2 className="mb-2 text-lg font-black text-slate-900 sm:text-xl">{t.missionTitle}</h2>
+            <p className={`text-sm font-medium leading-relaxed text-slate-700 sm:text-base ${bnFont ? 'landing-bn-reading' : ''}`}>{t.mission}</p>
           </article>
         </section>
 
         {/* Life Skills Course grid */}
-        <section id="life-skills" className="mb-8 sm:mb-12 relative z-10 scroll-mt-20">
-          <div className="nb-card p-4 sm:p-6 bg-white rounded-xl">
-            <div className="flex items-start justify-between gap-3 sm:gap-4 mb-5 sm:mb-6">
-              <div className="flex items-start gap-3 sm:gap-4 min-w-0">
-                <SectionIconBadge name="book" tone="indigo" className="w-10 h-10 rounded-lg shrink-0" />
+        <section id="life-skills" className="relative z-10 mb-8 scroll-mt-20 sm:mb-12">
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-6">
+            <div className="mb-5 flex items-start justify-between gap-3 sm:mb-6 sm:gap-4">
+              <div className="flex min-w-0 items-start gap-3 sm:gap-4">
+                <SectionIconBadge name="book" tone="indigo" className="h-10 w-10 shrink-0" />
                 <div className="min-w-0">
-                  <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-1">{t.lifeSkillsTitle}</h3>
-                  <p className="text-sm text-slate-500 max-w-2xl font-medium leading-relaxed">
+                  <h3 className="mb-1 text-lg font-black text-slate-900 sm:text-xl">{t.lifeSkillsTitle}</h3>
+                  <p className="max-w-2xl text-sm font-medium leading-relaxed text-slate-500">
                     {t.lifeSkillsSubtitle}
                   </p>
                 </div>
@@ -1064,16 +1070,16 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
               <button
                 type="button"
                 onClick={openLifeSkills}
-                className={`landing-text-link shrink-0 mt-0.5 sm:mt-1 flex items-center gap-1 text-sm font-bold text-indigo-600 hover:text-indigo-800 touch-manipulation ${bnFont ? 'font-bengali' : 'nb-mono'}`}
+                className={`landing-text-link mt-0.5 flex shrink-0 items-center gap-1 text-sm font-bold text-indigo-600 touch-manipulation hover:text-indigo-800 sm:mt-1 ${bnFont ? 'font-bengali' : ''}`}
               >
                 {t.lifeSkillsTrack}
-                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
                 </svg>
               </button>
             </div>
             
-            <div className="landing-life-skills-scroll flex sm:grid sm:grid-cols-3 gap-4 mb-5 sm:mb-6 -mx-3 px-3 sm:mx-0 sm:px-0 overflow-x-auto sm:overflow-visible pb-3 sm:pb-0 snap-x snap-mandatory">
+            <div className="landing-life-skills-scroll -mx-3 mb-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-3 pb-3 sm:mx-0 sm:mb-6 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0">
               {(lifeSkillModules.length
                 ? lifeSkillModules
                 : [
@@ -1094,26 +1100,26 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                     type="button"
                     onClick={() => openLifeSkillPreview(module)}
                     key={module?.id || code}
-                    className="group relative text-left p-4 sm:p-5 nb-card bg-indigo-50/90 hover:bg-indigo-100/90 active:translate-x-0.5 active:translate-y-0.5 flex flex-col justify-between min-h-[160px] sm:min-h-[172px] w-[min(78vw,280px)] sm:w-auto shrink-0 sm:shrink snap-center touch-manipulation rounded-xl landing-podium-card"
+                    className="group relative flex min-h-[160px] w-[min(78vw,280px)] shrink-0 snap-center flex-col justify-between rounded-2xl border border-indigo-100 bg-indigo-50/90 p-4 text-left shadow-sm touch-manipulation transition-all hover:bg-indigo-100/90 active:scale-[0.98] sm:min-h-[172px] sm:w-auto sm:shrink sm:p-5"
                   >
                     <div>
-                      <div className="flex items-center justify-between gap-2 mb-3">
-                        <span className={`nb-tag px-2.5 py-1 ${theme.color}`}>
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${theme.color}`}>
                           {catLabel}
                         </span>
-                        <span className="nb-tag text-xs text-slate-700 bg-white px-2 py-0.5 flex items-center gap-1">
-                          <LandingIcon name="clock" className="w-3.5 h-3.5" />
+                        <span className="flex items-center gap-1 rounded-full border border-slate-200/80 bg-white px-2 py-0.5 text-xs font-bold text-slate-700">
+                          <LandingIcon name="clock" className="h-3.5 w-3.5" />
                           {durationText}
                         </span>
                       </div>
-                      <p className="text-xs font-extrabold uppercase tracking-widest text-indigo-700 mb-1 nb-mono">{code}</p>
-                      <p className="font-black text-slate-800 text-lg group-hover:text-indigo-600 transition-colors leading-snug mb-2 line-clamp-2">
+                      <p className="mb-1 text-xs font-extrabold uppercase tracking-widest text-indigo-700">{code}</p>
+                      <p className="mb-2 line-clamp-2 text-lg font-black leading-snug text-slate-800 transition-colors group-hover:text-indigo-600">
                         {title}
                       </p>
                     </div>
                     {highlights && (
-                      <p className="text-xs font-semibold text-slate-400 border-t border-slate-100 pt-2.5 mt-2 flex items-center gap-1.5 truncate">
-                        <LandingIcon name="sparkles" className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                      <p className="mt-2 flex items-center gap-1.5 truncate border-t border-indigo-100/80 pt-2.5 text-xs font-semibold text-slate-400">
+                        <LandingIcon name="sparkles" className="h-3.5 w-3.5 shrink-0 text-indigo-500" />
                         {highlights}
                       </p>
                     )}
@@ -1145,7 +1151,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
             <svg className="h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
               <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" />
             </svg>
-            <span className={`text-sm font-bold ${bnFont ? 'font-bengali' : 'nb-mono uppercase tracking-wide'}`}>
+            <span className={`text-sm font-bold ${bnFont ? 'font-bengali' : 'uppercase tracking-wide'}`}>
               {t.followFacebook}
             </span>
           </a>
@@ -1154,9 +1160,9 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
 
       {/* Mobile sticky visit counter + Login CTA */}
       {!activeLifeSkill && (
-        <div className="sm:hidden fixed bottom-0 inset-x-0 z-30 px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] landing-sticky-cta">
+        <div className="landing-sticky-cta fixed inset-x-0 bottom-0 z-30 px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:hidden">
           {(visitLoading || visitCount != null) && (
-            <div className="flex justify-center mb-2">
+            <div className="mb-2 flex justify-center">
               <LandingVisitCounter
                 value={visitCount ?? 0}
                 loading={visitLoading}
@@ -1168,103 +1174,100 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
           <button
             type="button"
             onClick={() => setCurrentView('login')}
-            className="w-full min-h-[48px] py-3.5 nb-btn-primary font-black text-base touch-manipulation"
+            className="min-h-[52px] w-full rounded-full bg-orange-500 py-3.5 text-base font-black text-white shadow-lg shadow-orange-500/30 touch-manipulation transition-all active:scale-[0.98]"
           >
             {t.login}
           </button>
         </div>
       )}
 
-      {/* Modern Full Screen Interactive Reading Dashboard Modal */}
+      {/* Full-screen life skill reader — Material chrome */}
       {activeLifeSkill && (
-        <div className={`fixed inset-0 z-50 nb-modal flex flex-col animate-toast-in overflow-hidden ${bnFont ? 'lang-bn' : 'font-sans'}`}>
-          <header className="sticky top-0 z-10 nb-modal-header safe-area-inset-top shrink-0">
-            <div className="max-w-4xl mx-auto px-3 sm:px-6 py-3 sm:py-4 flex items-start sm:items-center justify-between gap-2 sm:gap-3">
+        <div className={`fixed inset-0 z-50 flex flex-col overflow-hidden bg-[#fffdf7] animate-toast-in ${bnFont ? 'lang-bn' : 'font-sans'}`}>
+          <header className="sticky top-0 z-10 shrink-0 border-b border-slate-200/80 bg-[#fffdf7]/95 backdrop-blur-md safe-area-inset-top">
+            <div className="mx-auto flex max-w-4xl items-start justify-between gap-2 px-3 py-3 sm:items-center sm:gap-3 sm:px-6 sm:py-4">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                  <span className="nb-tag text-[10px] sm:text-xs text-indigo-700 bg-indigo-100 px-2 sm:px-2.5 py-0.5">{activeLifeSkill.lesson_code || 'LS'}</span>
+                  <span className="rounded-full border border-indigo-200/80 bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 sm:px-2.5 sm:text-xs">{activeLifeSkill.lesson_code || 'LS'}</span>
                   {activeLifeSkill.duration && (
-                    <span className="text-[10px] sm:text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md inline-flex items-center gap-1">
-                      <LandingIcon name="clock" className="w-3 h-3" />
+                    <span className="inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-white px-2 py-0.5 text-[10px] font-bold text-slate-500 sm:text-xs">
+                      <LandingIcon name="clock" className="h-3 w-3" />
                       {activeLifeSkill.duration}
                     </span>
                   )}
                 </div>
-                <h4 className={`text-base sm:text-xl font-black text-slate-900 leading-snug mt-1 sm:mt-1.5 ${bnFont ? 'line-clamp-2 sm:truncate' : 'truncate'}`}>
+                <h4 className={`mt-1 text-base font-black leading-snug text-slate-900 sm:mt-1.5 sm:text-xl ${bnFont ? 'line-clamp-2 sm:truncate' : 'truncate'}`}>
                   {language === 'bn' ? activeLifeSkill.title_bn : activeLifeSkill.title_en}
                 </h4>
               </div>
               <button
                 type="button"
                 onClick={() => setActiveLifeSkill(null)}
-                className="min-h-[40px] px-3 sm:px-4 py-2 nb-btn-secondary text-xs sm:text-sm font-bold shrink-0 touch-manipulation"
+                className="min-h-[40px] shrink-0 rounded-full border border-slate-200/80 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm touch-manipulation transition-all active:scale-95 sm:px-4 sm:text-sm"
               >
                 {language === 'bn' ? 'বন্ধ করুন' : 'Close'}
                 </button>
               </div>
             </header>
 
-          <main ref={lifeSkillModalScrollRef} className="flex-1 overflow-y-auto custom-scrollbar overscroll-contain">
-            <div className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-6 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:pb-24">
-              <aside className="lg:col-span-4 space-y-4 sm:space-y-5 order-first lg:order-none lg:sticky lg:top-24 h-max">
-                {/* Audio Lesson Player — surfaced early on mobile */}
+          <main ref={lifeSkillModalScrollRef} className="custom-scrollbar flex-1 overflow-y-auto overscroll-contain">
+            <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 px-3 py-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:gap-6 sm:px-6 sm:py-6 sm:pb-24 lg:grid-cols-12">
+              <aside className="order-first h-max space-y-4 sm:space-y-5 lg:order-none lg:sticky lg:top-24 lg:col-span-4">
                 {!!(activeLifeSkill.audio_url_en || activeLifeSkill.audio_url_bn) && (
-                  <div className="nb-card p-4 sm:p-5">
-                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-600 mb-2.5 nb-mono">
+                  <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
+                    <p className="mb-2.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-600">
                       {language === 'bn' ? 'অডিও লেসন (কানে শুনুন)' : 'Audio Lesson'}
                     </p>
-                    <div className="bg-indigo-50 p-3 sm:p-4 border-2 border-slate-900 rounded-md text-center shadow-[3px_3px_0_#0f172a]">
-                      <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center nb-icon-badge bg-indigo-600">
-                        <LandingIcon name="headphones" className="w-6 h-6" strokeWidth={2} />
+                    <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-3 text-center sm:p-4">
+                      <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600 text-white shadow-sm">
+                        <LandingIcon name="headphones" className="h-6 w-6" strokeWidth={2} />
                       </div>
-                      <p className="text-xs font-bold text-slate-500 mb-3 sm:mb-4">{language === 'bn' ? 'চালিয়ে শুনুন' : 'Listen'}</p>
+                      <p className="mb-3 text-xs font-bold text-slate-500 sm:mb-4">{language === 'bn' ? 'চালিয়ে শুনুন' : 'Listen'}</p>
                       <audio
                         controls
                         preload="none"
-                        className="w-full custom-audio-player focus:outline-none"
+                        className="custom-audio-player w-full focus:outline-none"
                         src={(language === 'bn' ? activeLifeSkill.audio_url_bn : activeLifeSkill.audio_url_en) || activeLifeSkill.audio_url_en || activeLifeSkill.audio_url_bn}
                       />
                     </div>
                   </div>
                 )}
 
-                {/* Trusted Blurb guidance — desktop sidebar */}
                 {!!(activeLifeSkill.trusted_blurb_en || activeLifeSkill.trusted_blurb_bn) && (
-                  <div className="hidden lg:block nb-card border-dashed p-5 text-xs text-slate-600 leading-relaxed font-semibold">
-                    <p className="font-extrabold text-slate-500 mb-1.5">{language === 'bn' ? 'নির্ভরযোগ্য তথ্যের উৎস' : 'Information Trust'}</p>
+                  <div className="hidden rounded-2xl border border-dashed border-slate-200 bg-white p-5 text-xs font-semibold leading-relaxed text-slate-600 shadow-sm lg:block">
+                    <p className="mb-1.5 font-extrabold text-slate-500">{language === 'bn' ? 'নির্ভরযোগ্য তথ্যের উৎস' : 'Information Trust'}</p>
                     {language === 'bn' ? activeLifeSkill.trusted_blurb_bn : activeLifeSkill.trusted_blurb_en}
                   </div>
                 )}
 
-                {/* Open in Training — desktop sidebar */}
-                <div className="hidden lg:block nb-card p-5">
+                <div className="hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm lg:block">
                   <button
                     type="button"
                     onClick={openLifeSkills}
-                    className="w-full py-3.5 nb-btn-indigo font-black text-sm"
+                    className="w-full rounded-full bg-indigo-600 py-3.5 text-sm font-black text-white shadow-md shadow-indigo-500/25 transition-all active:scale-95"
                   >
                     {t.lifeSkillsTrack}
                   </button>
                 </div>
                 </aside>
 
-              <section className="lg:col-span-8 space-y-4 sm:space-y-5">
+              <section className="space-y-4 sm:space-y-5 lg:col-span-8">
                 {activeLifeSkill.image_url && (
                   <img
                     src={activeLifeSkill.image_url}
                     alt={language === 'bn' ? activeLifeSkill.title_bn : activeLifeSkill.title_en}
-                    className="w-full h-52 sm:h-80 md:h-96 object-cover rounded-md border-2 border-slate-900 shadow-[4px_4px_0_#0f172a]"
+                    className="h-52 w-full rounded-2xl border border-slate-200/80 object-cover shadow-sm sm:h-80 md:h-96"
                   />
                 )}
 
-                <div className={`nb-card p-4 sm:p-6 ${bnFont ? 'landing-bn-reading' : ''}`}>
-                  <p className="text-base leading-relaxed text-slate-700 font-medium">
+                <div className={`rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-6 ${bnFont ? 'landing-bn-reading' : ''}`}>
+                  <p className="text-base font-medium leading-relaxed text-slate-700">
                     {language === 'bn' ? activeLifeSkill.description_bn : activeLifeSkill.description_en}
                   </p>
                   {!!(activeLifeSkill.highlights_en || activeLifeSkill.highlights_bn) && (
-                    <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100">
+                    <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
                       {(language === 'bn' ? activeLifeSkill.highlights_bn : activeLifeSkill.highlights_en).split('•').map((item, idx) => (
-                        <span key={idx} className="text-xs font-bold px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full">
+                        <span key={idx} className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-700">
                           {item.trim()}
                         </span>
                       ))}
@@ -1273,8 +1276,8 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                 </div>
 
                 {activeLifeSkillLoading && (
-                  <div className="nb-card p-4 sm:p-6 flex items-center justify-center gap-3 text-slate-600 font-bold text-sm sm:text-base">
-                    <span className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin shrink-0"></span>
+                  <div className="flex items-center justify-center gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 text-sm font-bold text-slate-600 shadow-sm sm:p-6 sm:text-base">
+                    <span className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent"></span>
                     {language === 'bn' ? 'লোড হচ্ছে...' : 'Loading full content...'}
                   </div>
                 )}
@@ -1282,44 +1285,44 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                 {!activeLifeSkillLoading && translatedLifeSkillContent && (
                   <div className="space-y-5">
                     {!!translatedLifeSkillContent.mission_briefing && (
-                      <article className={`nb-card p-4 sm:p-6 ${bnFont ? 'landing-bn-reading' : ''}`}>
-                        <h5 className={`text-[10px] font-extrabold uppercase tracking-widest text-slate-600 mb-3 nb-mono ${bnFont ? 'landing-bn-ui' : ''}`}>
+                      <article className={`rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-6 ${bnFont ? 'landing-bn-reading' : ''}`}>
+                        <h5 className={`mb-3 text-[10px] font-extrabold uppercase tracking-widest text-slate-600 ${bnFont ? 'landing-bn-ui' : ''}`}>
                           {language === 'bn' ? 'মূল ধারণা (Briefing)' : 'Mission Briefing'}
                         </h5>
-                        <p className="text-sm sm:text-base leading-relaxed text-slate-700 font-medium">{translatedLifeSkillContent.mission_briefing}</p>
+                        <p className="text-sm font-medium leading-relaxed text-slate-700 sm:text-base">{translatedLifeSkillContent.mission_briefing}</p>
                       </article>
                     )}
 
                     {Array.isArray(translatedLifeSkillContent.sections) &&
                       translatedLifeSkillContent.sections.map((section, sectionIdx) => (
-                        <article key={`${section.title}-${sectionIdx}`} className={`nb-card p-4 sm:p-6 ${bnFont ? 'landing-bn-reading' : ''}`}>
-                          <h6 className={`text-base sm:text-lg font-black text-slate-900 mb-3 sm:mb-4 flex items-center gap-2 ${bnFont ? 'landing-bn-ui' : ''}`}>
-                            <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 shrink-0 animate-pulse" />
+                        <article key={`${section.title}-${sectionIdx}`} className={`rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-6 ${bnFont ? 'landing-bn-reading' : ''}`}>
+                          <h6 className={`mb-3 flex items-center gap-2 text-base font-black text-slate-900 sm:mb-4 sm:text-lg ${bnFont ? 'landing-bn-ui' : ''}`}>
+                            <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-indigo-600" />
                             {section.title}
                           </h6>
                           <div className="space-y-3 sm:space-y-4">
                             {(section.points || []).map((point, pointIdx) => (
-                              <div key={`${point.item_name}-${pointIdx}`} className="border-2 border-slate-900 rounded-md p-4 sm:p-5 bg-white shadow-[2px_2px_0_#0f172a]">
-                                <p className="font-black text-base text-slate-800 flex items-start gap-2">
-                                  <span className="text-indigo-600 mt-0.5">▪</span>
+                              <div key={`${point.item_name}-${pointIdx}`} className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 sm:p-5">
+                                <p className="flex items-start gap-2 text-base font-black text-slate-800">
+                                  <span className="mt-0.5 text-indigo-600">▪</span>
                                   {point.item_name}
                                 </p>
                                   {!!point.specifications && (
-                                  <div className="text-sm text-slate-600 mt-2.5 pl-4 border-l-2 border-slate-200 font-medium">
-                                    <span className="font-bold text-slate-400 block text-[10px] uppercase tracking-wider mb-0.5">{language === 'bn' ? 'সঠিক নিয়ম ও করণীয়' : 'Specifications'}</span>
+                                  <div className="mt-2.5 border-l-2 border-slate-200 pl-4 text-sm font-medium text-slate-600">
+                                    <span className="mb-0.5 block text-[10px] font-bold uppercase tracking-wider text-slate-400">{language === 'bn' ? 'সঠিক নিয়ম ও করণীয়' : 'Specifications'}</span>
                                     {point.specifications}
                                   </div>
                                 )}
                                 {!!point.importance && (
-                                  <div className="text-sm text-slate-600 mt-3 pl-4 border-l-2 border-amber-300 font-medium">
-                                    <span className="font-bold text-amber-500 block text-[10px] uppercase tracking-wider mb-0.5">{language === 'bn' ? 'কেন এটি প্রয়োজনীয়' : 'Importance'}</span>
+                                  <div className="mt-3 border-l-2 border-amber-300 pl-4 text-sm font-medium text-slate-600">
+                                    <span className="mb-0.5 block text-[10px] font-bold uppercase tracking-wider text-amber-500">{language === 'bn' ? 'কেন এটি প্রয়োজনীয়' : 'Importance'}</span>
                                     {point.importance}
                                   </div>
                                 )}
                                 {!!point.daily_check && (
-                                  <div className="text-sm text-indigo-900 mt-3 pl-4 border-l-2 border-indigo-400 bg-indigo-50/30 p-3 rounded-r-xl font-medium">
-                                    <span className="font-bold text-indigo-600 flex items-center gap-1 text-[10px] uppercase tracking-wider mb-0.5">
-                                      <LandingIcon name="sparkles" className="w-3 h-3" />
+                                  <div className="mt-3 rounded-r-xl border-l-2 border-indigo-400 bg-indigo-50/50 p-3 pl-4 text-sm font-medium text-indigo-900">
+                                    <span className="mb-0.5 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-indigo-600">
+                                      <LandingIcon name="sparkles" className="h-3 w-3" />
                                       {language === 'bn' ? 'নিজেকে যাচাই করুন' : 'Daily Check'}
                                     </span>
                                     {point.daily_check}
@@ -1334,7 +1337,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                 )}
 
                 {!activeLifeSkillLoading && !activeLifeSkillContent && (
-                  <div className="nb-card border-dashed p-4 sm:p-6 text-center text-slate-500 font-bold text-sm">
+                  <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-4 text-center text-sm font-bold text-slate-500 shadow-sm sm:p-6">
                     {activeLifeSkillError
                       ? (language === 'bn' ? 'এই মডিউলটি লোড করা যাচ্ছে না। একটু পরে আবার চেষ্টা করে দেখুন।' : 'Unable to load this content right now.')
                       : (language === 'bn'
@@ -1343,8 +1346,8 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
                   </div>
                 )}
                 {!!(activeLifeSkill.trusted_blurb_en || activeLifeSkill.trusted_blurb_bn) && (
-                  <div className="lg:hidden nb-card border-dashed p-4 text-xs text-slate-600 leading-relaxed font-semibold">
-                    <p className="font-extrabold text-slate-500 mb-1.5">{language === 'bn' ? 'নির্ভরযোগ্য তথ্যের উৎস' : 'Information Trust'}</p>
+                  <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-4 text-xs font-semibold leading-relaxed text-slate-600 shadow-sm lg:hidden">
+                    <p className="mb-1.5 font-extrabold text-slate-500">{language === 'bn' ? 'নির্ভরযোগ্য তথ্যের উৎস' : 'Information Trust'}</p>
                     {language === 'bn' ? activeLifeSkill.trusted_blurb_bn : activeLifeSkill.trusted_blurb_en}
                   </div>
                 )}
@@ -1353,11 +1356,11 @@ export default function Landing({ language, onLanguageChange, setCurrentView, us
           </main>
 
           {/* Mobile lesson actions */}
-          <div className="lg:hidden shrink-0 border-t-[2.5px] border-slate-900 bg-white px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="shrink-0 border-t border-slate-200/80 bg-white/95 px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md lg:hidden">
             <button
               type="button"
               onClick={openLifeSkills}
-              className="w-full min-h-[44px] py-3 nb-btn-indigo font-black text-sm touch-manipulation"
+              className="min-h-[48px] w-full rounded-full bg-indigo-600 py-3 text-sm font-black text-white shadow-md shadow-indigo-500/25 touch-manipulation transition-all active:scale-[0.98]"
             >
               {t.lifeSkillsTrack}
             </button>

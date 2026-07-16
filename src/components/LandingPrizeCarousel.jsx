@@ -43,11 +43,11 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
     if (loading) {
         return (
             <section className="relative z-10 mb-6 sm:mb-8">
-                <div className="nb-card animate-pulse overflow-hidden bg-white rounded-2xl">
-                    <div className="aspect-[4/3] sm:aspect-[16/10] bg-slate-100" />
-                    <div className="p-4 space-y-2">
-                        <div className="h-4 w-40 rounded bg-slate-200" />
-                        <div className="h-3 w-24 rounded bg-slate-100" />
+                <div className="animate-pulse overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+                    <div className="aspect-[4/3] bg-slate-100 sm:aspect-[16/10]" />
+                    <div className="space-y-2 p-4">
+                        <div className="h-4 w-40 rounded-full bg-slate-200" />
+                        <div className="h-3 w-24 rounded-full bg-slate-100" />
                     </div>
                 </div>
             </section>
@@ -64,13 +64,13 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
         <section className="relative z-10 mb-8 sm:mb-10" aria-label={title}>
             <div className="mb-3 flex items-center gap-2">
                 <span className="text-base sm:text-lg" aria-hidden>🎁</span>
-                <h2 className={`text-base sm:text-lg font-black tracking-tight text-slate-900 ${isBn ? 'font-bengali' : ''}`}>
+                <h2 className={`text-base font-black tracking-tight text-slate-900 sm:text-lg ${isBn ? 'font-bengali' : ''}`}>
                     {title}
                 </h2>
             </div>
 
             <div
-                className="landing-prize-showcase nb-card group relative overflow-hidden bg-white rounded-2xl"
+                className="landing-prize-showcase group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
                 onMouseEnter={() => setPaused(true)}
                 onMouseLeave={() => setPaused(false)}
                 onFocusCapture={() => setPaused(true)}
@@ -96,28 +96,28 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
                     >
                         {slides.map((item) => (
                             <article key={item.id} className="w-full shrink-0">
-                                <div className="relative aspect-[4/3] sm:aspect-[16/10] w-full bg-gradient-to-br from-amber-50 via-white to-orange-50/50 flex items-center justify-center p-5 sm:p-8">
+                                <div className="relative flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-amber-50 via-white to-orange-50/50 p-5 sm:aspect-[16/10] sm:p-8">
                                     <HallOfFamePrizeImage
                                         candidates={item.imageCandidates || []}
                                         alt={item.imageAlt || item.title || ''}
-                                        className="max-h-full max-w-full w-auto h-auto object-contain drop-shadow-[4px_6px_10px_rgba(15,23,42,0.18)]"
+                                        className="h-auto max-h-full w-auto max-w-full object-contain drop-shadow-md"
                                     />
 
-                                    <span className="absolute left-3 top-3 sm:left-4 sm:top-4 inline-flex items-center gap-1.5 rounded-full border-2 border-slate-900 bg-white/95 px-2.5 py-1 text-xs font-black text-slate-900 shadow-[2px_2px_0_#0f172a] backdrop-blur">
+                                    <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/95 px-2.5 py-1 text-xs font-black text-slate-900 shadow-sm backdrop-blur sm:left-4 sm:top-4">
                                         <span aria-hidden>{getRankMedal(item.prizeRank)}</span>
                                         <span>{item.rankLabel}</span>
                                     </span>
 
-                                    <span className={`absolute right-3 top-3 sm:right-4 sm:top-4 max-w-[55%] truncate rounded-full bg-slate-900/85 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur ${isBn ? 'font-bengali' : ''}`}>
+                                    <span className={`absolute right-3 top-3 max-w-[55%] truncate rounded-full bg-slate-900/80 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur sm:right-4 sm:top-4 ${isBn ? 'font-bengali' : ''}`}>
                                         {item.monthLabel}
                                     </span>
                                 </div>
 
-                                <div className="border-t-2 border-slate-900/10 px-4 py-3.5 sm:px-5 sm:py-4">
-                                    <p className={`text-[11px] font-bold uppercase tracking-wide text-orange-600 ${isBn ? 'font-bengali tracking-normal' : 'nb-mono'}`}>
+                                <div className="border-t border-slate-100 px-4 py-3.5 sm:px-5 sm:py-4">
+                                    <p className={`text-[11px] font-bold uppercase tracking-wide text-orange-600 ${isBn ? 'font-bengali tracking-normal' : ''}`}>
                                         {item.boardLabel}
                                     </p>
-                                    <h3 className={`mt-1 line-clamp-2 text-base sm:text-lg font-black leading-snug text-slate-900 ${isBn ? 'font-bengali' : ''}`}>
+                                    <h3 className={`mt-1 line-clamp-2 text-base font-black leading-snug text-slate-900 sm:text-lg ${isBn ? 'font-bengali' : ''}`}>
                                         {item.title}
                                     </h3>
 
@@ -128,15 +128,15 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
                                                     src={item.winnerAvatarUrl}
                                                     alt={item.winnerName}
                                                     loading="lazy"
-                                                    className="h-9 w-9 shrink-0 rounded-full border-2 border-slate-900 object-cover shadow-[1.5px_1.5px_0_#0f172a]"
+                                                    className="h-9 w-9 shrink-0 rounded-full border-2 border-white object-cover shadow-sm"
                                                 />
                                             ) : (
-                                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-amber-400 text-sm font-black text-slate-900 shadow-[1.5px_1.5px_0_#0f172a] nb-mono">
+                                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-400 text-sm font-black text-slate-900 shadow-sm">
                                                     {item.winnerName.charAt(0).toUpperCase()}
                                                 </span>
                                             )}
                                             <div className="min-w-0">
-                                                <p className={`text-[10px] font-bold uppercase tracking-wide text-slate-400 ${isBn ? 'font-bengali tracking-normal' : 'nb-mono'}`}>
+                                                <p className={`text-[10px] font-bold uppercase tracking-wide text-slate-400 ${isBn ? 'font-bengali tracking-normal' : ''}`}>
                                                     {isBn ? 'বিজয়ী' : 'Winner'}
                                                 </p>
                                                 <p className={`truncate text-sm font-black leading-tight text-slate-900 ${isBn ? 'font-bengali' : ''}`}>
@@ -166,7 +166,7 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
                             <button
                                 type="button"
                                 onClick={goPrev}
-                                className="absolute left-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-900 bg-white/90 text-xl leading-none text-slate-800 shadow-[2px_2px_0_#0f172a] backdrop-blur transition active:translate-x-0.5 active:translate-y-0.5 sm:opacity-0 sm:group-hover:opacity-100"
+                                className="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200/80 bg-white/95 text-xl leading-none text-slate-800 shadow-sm backdrop-blur transition active:scale-95 sm:opacity-0 sm:group-hover:opacity-100"
                                 aria-label={isBn ? 'আগের' : 'Previous'}
                             >
                                 ‹
@@ -174,7 +174,7 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
                             <button
                                 type="button"
                                 onClick={() => goTo()}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-900 bg-white/90 text-xl leading-none text-slate-800 shadow-[2px_2px_0_#0f172a] backdrop-blur transition active:translate-x-0.5 active:translate-y-0.5 sm:opacity-0 sm:group-hover:opacity-100"
+                                className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200/80 bg-white/95 text-xl leading-none text-slate-800 shadow-sm backdrop-blur transition active:scale-95 sm:opacity-0 sm:group-hover:opacity-100"
                                 aria-label={isBn ? 'পরের' : 'Next'}
                             >
                                 ›
@@ -184,14 +184,14 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
                 </div>
 
                 {slides.length > 1 && (
-                    <div className="flex items-center justify-center gap-1.5 border-t border-slate-200/80 px-3 py-2.5">
+                    <div className="flex items-center justify-center gap-1.5 border-t border-slate-100 px-3 py-2.5">
                         {slides.map((item, dotIdx) => (
                             <button
                                 key={item.id}
                                 type="button"
                                 onClick={() => goTo(dotIdx)}
-                                className={`h-1.5 rounded-full border border-slate-900 transition-all ${
-                                    dotIdx === index ? 'w-5 bg-orange-500' : 'w-1.5 bg-white hover:bg-orange-100'
+                                className={`h-1.5 rounded-full transition-all ${
+                                    dotIdx === index ? 'w-5 bg-orange-500' : 'w-1.5 bg-slate-300 hover:bg-orange-200'
                                 }`}
                                 aria-label={`${dotIdx + 1}`}
                                 aria-current={dotIdx === index ? 'true' : undefined}
