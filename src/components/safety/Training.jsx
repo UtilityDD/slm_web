@@ -1156,8 +1156,9 @@ export default function Training({
     const [activeSectionIndex, setActiveSectionIndex] = useState(0); // For Journal Mode
     const [isJournalMode, setIsJournalMode] = useState(false);
     const [completionStripOpeningId, setCompletionStripOpeningId] = useState(null);
-    const [coverFlipPhase, setCoverFlipPhase] = useState('enter'); // enter | idle | open
+    const [coverFlipPhase, setCoverFlipPhase] = useState('idle'); // idle | open
     const coverFlipTimerRef = useRef(null);
+    const COVER_OPEN_MS = 2200;
     const [activeImageModal, setActiveImageModal] = useState(null);
     const [showAllChapters, setShowAllChapters] = useState(false);
     const [showPPESurvey, setShowPPESurvey] = useState(false);
@@ -1277,29 +1278,21 @@ export default function Training({
 
     useEffect(() => {
         if (!selectedLesson) {
-            setCoverFlipPhase('enter');
+            setCoverFlipPhase('idle');
             return undefined;
         }
         if (coverFlipTimerRef.current) {
             clearTimeout(coverFlipTimerRef.current);
             coverFlipTimerRef.current = null;
         }
-        if (prefersReducedMotion) {
-            setCoverFlipPhase('idle');
-            return undefined;
-        }
-        setCoverFlipPhase('enter');
-        coverFlipTimerRef.current = setTimeout(() => {
-            setCoverFlipPhase('idle');
-            coverFlipTimerRef.current = null;
-        }, 1150);
+        setCoverFlipPhase('idle');
         return () => {
             if (coverFlipTimerRef.current) {
                 clearTimeout(coverFlipTimerRef.current);
                 coverFlipTimerRef.current = null;
             }
         };
-    }, [selectedLesson?.level_id, prefersReducedMotion]);
+    }, [selectedLesson?.level_id]);
 
     useEffect(() => {
         if (!trainingLoading) return undefined;
@@ -1612,7 +1605,7 @@ export default function Training({
             setActiveSectionIndex(0);
             setIsJournalMode(true);
             setSelectedLesson(null);
-            setCoverFlipPhase('enter');
+            setCoverFlipPhase('idle');
         };
         if (prefersReducedMotion) {
             openLesson();
@@ -1623,7 +1616,7 @@ export default function Training({
         coverFlipTimerRef.current = setTimeout(() => {
             openLesson();
             coverFlipTimerRef.current = null;
-        }, 720);
+        }, COVER_OPEN_MS);
     }, [selectedLesson, coverFlipPhase, prefersReducedMotion]);
 
     // Helper function to check if a lesson is unlocked (GLOBALLY SEQUENTIAL — FULL CHAIN)
@@ -3687,7 +3680,7 @@ export default function Training({
 
                         <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-3 pb-5 pt-14 sm:px-6 sm:pb-8 sm:pt-16">
                             <div className="flex w-full max-w-[min(92vw,26rem)] flex-col items-center">
-                                {/* 3D hardcover book */}
+                                {/* Front-facing hardcover book */}
                                 <div className="lesson-book-scene relative w-full">
                                     <div className="lesson-book relative mx-auto w-[92%] sm:w-[94%]">
                                         {/* Soft floor shadow */}
@@ -3703,68 +3696,80 @@ export default function Training({
                                             <div className="lesson-book-spine-ridge" />
                                         </div>
 
-                                        {/* Front cover */}
-                                        <div className="lesson-book-cover relative">
-                                            <div className="lesson-book-cover-art relative aspect-[3/4.15] w-full overflow-hidden">
-                                                <img
-                                                    src="/assets/covers/lesson-cover-smartlineman.webp"
-                                                    alt=""
-                                                    decoding="async"
-                                                    className="absolute inset-0 h-full w-full object-cover"
-                                                    style={{ objectPosition: 'center 26%' }}
-                                                />
-                                                <div
-                                                    className="absolute inset-0 bg-gradient-to-b from-slate-950/75 via-slate-950/20 to-slate-950/85"
-                                                    aria-hidden
-                                                />
-                                                <div className="lesson-book-cover-sheen" aria-hidden />
-
-                                                {/* Rank name — clean top */}
-                                                <div className="absolute inset-x-0 top-0 z-10 px-6 pt-6 sm:px-7 sm:pt-7">
-                                                    <div className="border-b border-white/30 pb-3.5 text-center">
-                                                        <p className={`text-[10px] font-semibold tracking-[0.24em] text-orange-200/95 sm:text-[11px] ${language === 'bn' ? 'font-bengali tracking-normal' : 'uppercase'}`}>
-                                                            {language === 'en' ? 'Rank' : 'পদমর্যাদা'}
+                                        {/* Front cover — turns open to reveal lesson */}
+                                        <div className="lesson-book-cover relative aspect-[3/4.15] w-full">
+                                            {/* Lesson page behind the cover */}
+                                            <div className="lesson-book-interior">
+                                                <div className="flex h-full flex-col overflow-hidden p-5 sm:p-6">
+                                                    <div className="shrink-0 space-y-2 text-center">
+                                                        <p className={`text-[10px] font-bold text-orange-600 sm:text-[11px] ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-wider'}`}>
+                                                            {language === 'en' ? 'Lesson' : 'পাঠ'}{' '}
+                                                            {toBengaliNumber(
+                                                                selectedLesson.level_id || `${selectedLesson.chapterNum}.${selectedLesson.subchapterNum}`,
+                                                                language
+                                                            )}
                                                         </p>
-                                                        <p className={`mt-1.5 text-xl font-black leading-none text-white sm:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                            {language === 'en'
-                                                                ? (selectedLesson.badge?.en || 'Trainee')
-                                                                : (selectedLesson.badge?.bn || 'ট্রেইনি')}
-                                                        </p>
+                                                        <div className="mx-auto h-1 w-12 rounded-full bg-orange-400/80" />
+                                                        <h2 className={`text-base font-black leading-snug text-slate-900 sm:text-lg ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
+                                                            {selectedLesson.level_title}
+                                                        </h2>
                                                     </div>
-                                                </div>
-
-                                                {/* Lesson title — bottom */}
-                                                <div className="absolute inset-x-0 bottom-0 z-10 space-y-2 px-6 pb-6 pt-12 sm:px-7 sm:pb-7">
-                                                    <p className={`text-xs font-bold text-orange-300 sm:text-[13px] ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-wider'}`}>
-                                                        {language === 'en' ? 'Lesson' : 'পাঠ'}{' '}
-                                                        {toBengaliNumber(
-                                                            selectedLesson.level_id || `${selectedLesson.chapterNum}.${selectedLesson.subchapterNum}`,
-                                                            language
-                                                        )}
-                                                    </p>
-                                                    <h1 className={`text-[1.35rem] font-black leading-snug tracking-tight text-white sm:text-[1.6rem] ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
-                                                        {selectedLesson.level_title}
-                                                    </h1>
+                                                    <div className={`mt-4 flex-1 overflow-hidden text-center text-[13px] font-medium leading-[1.75] text-slate-700 sm:text-sm sm:leading-[1.8] ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                        {renderTextWithImages(selectedLesson.mission_briefing)}
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            {/* Turning paper page */}
                                             <div
-                                                className={`lesson-book-flip ${
-                                                    coverFlipPhase === 'enter'
-                                                        ? 'is-enter'
-                                                        : coverFlipPhase === 'open'
-                                                            ? 'is-open'
-                                                            : 'is-idle'
+                                                className={`lesson-book-cover-turn ${
+                                                    coverFlipPhase === 'open' ? 'is-open' : ''
                                                 }`}
-                                                aria-hidden
                                             >
-                                                <div className="lesson-book-flip-face lesson-book-flip-front">
-                                                    <div className="lesson-book-flip-lines" />
+                                                <div className="lesson-book-cover-turn-front">
+                                                    <div className="lesson-book-cover-art relative h-full w-full overflow-hidden">
+                                                        <img
+                                                            src="/assets/covers/lesson-cover-smartlineman.webp"
+                                                            alt=""
+                                                            decoding="async"
+                                                            className="absolute inset-0 h-full w-full object-cover"
+                                                            style={{ objectPosition: 'center 26%' }}
+                                                        />
+                                                        <div
+                                                            className="absolute inset-0 bg-gradient-to-b from-slate-950/75 via-slate-950/20 to-slate-950/85"
+                                                            aria-hidden
+                                                        />
+                                                        <div className="lesson-book-cover-sheen" aria-hidden />
+
+                                                        {/* Rank name — clean top */}
+                                                        <div className="absolute inset-x-0 top-0 z-10 px-6 pt-6 sm:px-7 sm:pt-7">
+                                                            <div className="border-b border-white/30 pb-3.5 text-center">
+                                                                <p className={`text-[10px] font-semibold tracking-[0.24em] text-orange-200/95 sm:text-[11px] ${language === 'bn' ? 'font-bengali tracking-normal' : 'uppercase'}`}>
+                                                                    {language === 'en' ? 'Rank' : 'পদমর্যাদা'}
+                                                                </p>
+                                                                <p className={`mt-1.5 text-xl font-black leading-none text-white sm:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                    {language === 'en'
+                                                                        ? (selectedLesson.badge?.en || 'Trainee')
+                                                                        : (selectedLesson.badge?.bn || 'ট্রেইনি')}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Lesson title — bottom */}
+                                                        <div className="absolute inset-x-0 bottom-0 z-10 space-y-2 px-6 pb-6 pt-12 sm:px-7 sm:pb-7">
+                                                            <p className={`text-xs font-bold text-orange-300 sm:text-[13px] ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-wider'}`}>
+                                                                {language === 'en' ? 'Lesson' : 'পাঠ'}{' '}
+                                                                {toBengaliNumber(
+                                                                    selectedLesson.level_id || `${selectedLesson.chapterNum}.${selectedLesson.subchapterNum}`,
+                                                                    language
+                                                                )}
+                                                            </p>
+                                                            <h1 className={`text-[1.35rem] font-black leading-snug tracking-tight text-white sm:text-[1.6rem] ${language === 'bn' ? 'font-bengali leading-[1.4]' : ''}`}>
+                                                                {selectedLesson.level_title}
+                                                            </h1>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="lesson-book-flip-face lesson-book-flip-back">
-                                                    <div className="lesson-book-flip-lines lesson-book-flip-lines--back" />
-                                                </div>
+                                                <div className="lesson-book-cover-turn-back" aria-hidden />
                                             </div>
                                         </div>
                                     </div>
@@ -3774,7 +3779,7 @@ export default function Training({
                                     type="button"
                                     onClick={beginLessonFromCover}
                                     disabled={coverFlipPhase === 'open'}
-                                    className={`mt-8 flex min-h-[52px] w-full max-w-sm items-center justify-center gap-2 rounded-full bg-orange-500 px-6 py-3.5 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] disabled:opacity-70 sm:mt-9 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}
+                                    className={`mt-8 flex min-h-[52px] w-full max-w-sm items-center justify-center gap-2 rounded-full bg-orange-500 px-6 py-3.5 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all duration-500 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-0 sm:mt-9 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}
                                 >
                                     {language === 'en' ? 'Start Reading' : 'পড়া শুরু করুন'}
                                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
