@@ -37,7 +37,7 @@ export default function HallOfFameUserPrizesView({
     return (
         <div className="mx-auto max-w-3xl space-y-4 px-1">
             <div className="text-center">
-                <h3 className={`text-sm font-black text-slate-900 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
+                <h3 className={`text-base font-black text-slate-900 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}>
                     {copy.userPrizesTitle}
                 </h3>
             </div>
@@ -48,13 +48,13 @@ export default function HallOfFameUserPrizesView({
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder={copy.userPrizesSearch}
-                    className={`w-full border-2 border-slate-900 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-[2px_2px_0_#0f172a] outline-none focus:bg-orange-50 ${language === 'bn' ? 'font-bengali' : ''}`}
+                    className={`w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm outline-none transition focus:border-orange-300 focus:bg-orange-50/40 focus:ring-2 focus:ring-orange-200/60 ${language === 'bn' ? 'font-bengali' : ''}`}
                 />
                 {filterUserId && onClearFilter && (
                     <button
                         type="button"
                         onClick={onClearFilter}
-                        className={`shrink-0 border-2 border-slate-900 bg-white px-3 py-2 text-[10px] font-black text-slate-700 shadow-[2px_2px_0_#0f172a] hover:bg-orange-50 ${language === 'bn' ? 'font-bengali' : 'nb-mono uppercase'}`}
+                        className={`shrink-0 rounded-full border border-slate-200/80 bg-white px-4 py-2.5 text-xs font-black text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-95 ${language === 'bn' ? 'font-bengali' : 'uppercase'}`}
                     >
                         {language === 'en' ? 'Show all' : 'সব দেখুন'}
                     </button>
@@ -62,7 +62,7 @@ export default function HallOfFameUserPrizesView({
             </div>
 
             {filteredUsers.length === 0 ? (
-                <p className={`nb-card border-dashed bg-amber-50 px-4 py-10 text-center text-xs font-semibold text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                <p className={`rounded-2xl border border-dashed border-amber-200 bg-amber-50 px-4 py-10 text-center text-sm font-semibold text-slate-600 shadow-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                     {copy.userPrizesEmpty}
                 </p>
             ) : (
@@ -70,45 +70,45 @@ export default function HallOfFameUserPrizesView({
                     {filteredUsers.map((user) => (
                         <article
                             key={user.userId}
-                            className="overflow-hidden border-2 border-slate-900 bg-white shadow-[3px_3px_0_#0f172a]"
+                            className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
                         >
                             <button
                                 type="button"
                                 onClick={() => onOpenUserProgress(user.userId)}
-                                className="flex w-full items-center gap-3 border-b-2 border-slate-900 bg-orange-50 px-3 py-2.5 text-left transition-colors hover:bg-orange-100"
+                                className="flex w-full items-center gap-3 border-b border-slate-200/80 bg-orange-50/80 px-3.5 py-3 text-left transition-colors hover:bg-orange-100/80"
                             >
-                                <div className="h-10 w-10 shrink-0 overflow-hidden border-2 border-slate-900 bg-slate-100">
+                                <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-orange-200/80 bg-orange-50 shadow-sm sm:h-12 sm:w-12">
                                     {user.avatarUrl ? (
                                         <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
                                     ) : (
-                                        <div className="flex h-full w-full items-center justify-center text-sm font-black text-slate-400">
+                                        <div className="flex h-full w-full items-center justify-center text-sm font-black text-orange-600">
                                             {(user.fullName || '?')[0]}
                                         </div>
                                     )}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className={`truncate text-sm font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <p className={`truncate text-sm font-black text-slate-900 sm:text-[15px] ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {user.fullName || 'Anonymous'}
                                     </p>
                                     {user.slmId && (
-                                        <p className="text-[10px] font-semibold text-slate-500 nb-mono">{user.slmId}</p>
+                                        <p className="text-xs font-semibold text-slate-500">{user.slmId}</p>
                                     )}
                                 </div>
-                                <span className={`shrink-0 rounded-full border-2 border-slate-900 bg-white px-2 py-0.5 text-[10px] font-black text-orange-700 ${language === 'bn' ? 'font-bengali' : 'nb-mono'}`}>
+                                <span className={`shrink-0 rounded-full border border-orange-200 bg-white px-2.5 py-1 text-xs font-black text-orange-700 shadow-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {user.prizes.length} {copy.userPrizesCount}
                                 </span>
                             </button>
 
-                            <ul className="divide-y divide-dashed divide-slate-200">
+                            <ul className="divide-y divide-slate-100">
                                 {user.prizes.map((win) => (
                                     <li
                                         key={`${win.year}-${win.month}-${win.boardId}-${win.prizeRank}`}
-                                        className="flex items-start gap-2.5 px-3 py-2.5"
+                                        className="flex items-start gap-3 px-3.5 py-3"
                                     >
                                         <button
                                             type="button"
                                             onClick={() => onMaximizeImage(win.prize.imageCandidates?.[0] || win.prize.imageUrl)}
-                                            className="h-14 w-14 shrink-0 overflow-hidden border border-slate-900 bg-white p-1 shadow-[1px_1px_0_#0f172a]"
+                                            className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-slate-200/80 bg-white p-1.5 shadow-sm transition-transform active:scale-95"
                                         >
                                             <HallOfFamePrizeImage
                                                 candidates={win.prize.imageCandidates || []}
@@ -117,13 +117,13 @@ export default function HallOfFameUserPrizesView({
                                             />
                                         </button>
                                         <div className="min-w-0 flex-1">
-                                            <p className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-slate-500">
+                                            <p className="flex flex-wrap items-center gap-1.5 text-xs font-bold text-slate-500 sm:text-[13px]">
                                                 <span aria-hidden>{getRankMedal(win.prizeRank)}</span>
                                                 <span className={`text-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                     {win.monthLabel}
                                                 </span>
                                                 <span className="text-slate-300" aria-hidden>·</span>
-                                                <span className={`font-black text-slate-800 ${language === 'bn' ? 'font-bengali' : 'nb-mono'}`}>
+                                                <span className={`font-black text-slate-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                     {win.rankLabel}
                                                 </span>
                                                 <span className="text-slate-300" aria-hidden>·</span>
@@ -131,11 +131,11 @@ export default function HallOfFameUserPrizesView({
                                                     {getBoardTabLabel(win.boardId, monthlyTabs)}
                                                 </span>
                                             </p>
-                                            <p className={`mt-0.5 text-xs font-black leading-snug text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            <p className={`mt-1 text-sm font-black leading-snug text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                 {win.prize.title}
                                             </p>
                                             {win.prize.sponsor && (
-                                                <p className={`mt-0.5 truncate text-[10px] font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                <p className={`mt-0.5 truncate text-xs font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                     {language === 'en' ? 'Courtesy of ' : 'সৌজন্যে '}
                                                     {win.prize.sponsor}
                                                 </p>

@@ -1956,7 +1956,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         key={tabId}
                                                         type="button"
                                                         onClick={() => setHallOfFameBoardTab(tabId)}
-                                                        className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[10px] font-bold shadow-sm transition-all active:scale-95 sm:text-xs ${hallOfFameBoardTab === tabId ? 'bg-orange-500 text-white shadow-orange-500/25' : 'border border-slate-200/80 bg-white text-slate-700 hover:bg-orange-50'}`}
+                                                        className={`whitespace-nowrap rounded-full px-3.5 py-2 text-xs font-bold shadow-sm transition-all active:scale-95 sm:text-[13px] ${hallOfFameBoardTab === tabId ? 'bg-orange-500 text-white shadow-orange-500/25' : 'border border-slate-200/80 bg-white text-slate-700 hover:bg-orange-50'}`}
                                                     >
                                                         {encouragementCopy.monthlyTabs[tabId]}
                                                     </button>
@@ -1975,7 +1975,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         aria-label={language === 'en' ? 'Hall of Fame view' : 'হল অফ ফেম দেখার ধরন'}
                                     >
                                         <span
-                                            className={`pointer-events-none absolute bottom-0.5 top-0.5 w-[calc(33.333%-2px)] rounded-full bg-slate-900 shadow-sm transition-transform duration-200 ease-out ${
+                                            className={`pointer-events-none absolute bottom-0.5 top-0.5 w-[calc(33.333%-2px)] rounded-full bg-orange-500 shadow-sm transition-transform duration-200 ease-out ${
                                                 hallOfFamePrizeView === 'detailed'
                                                     ? 'translate-x-[calc(100%+4px)]'
                                                     : hallOfFamePrizeView === 'by_user'
@@ -2038,7 +2038,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 </div>
 
                                 {hallOfFamePrizeView === 'detailed' && (
-                                    <p className={`text-center text-[10px] text-slate-500 font-medium px-3 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <p className={`text-center text-xs font-medium text-slate-500 px-3 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {encouragementCopy.hallOfFamePrizeNote}
                                     </p>
                                 )}
