@@ -7,6 +7,7 @@ import {
     VISUAL_QUIZ_BATCH_06_URL,
     VISUAL_QUIZ_BATCH_07_URL,
     VISUAL_QUIZ_BATCH_08_URL,
+    VISUAL_QUIZ_BATCH_09_URL,
     VISUAL_QUIZ_MISTAKE_PREVIEW_URL,
     VISUAL_QUIZ_MATERIAL_PREVIEW_URL,
     VISUAL_QUIZ_PROCEDURE_PREVIEW_URL,
@@ -51,13 +52,14 @@ const SOURCES = {
     batch06: { id: 'batch06', labelBn: 'Draft: Batch 06 — DTR Parts (vq-225+)', labelEn: 'Draft: Batch 06 — DTR Parts (vq-225+)', url: VISUAL_QUIZ_BATCH_06_URL },
     batch07: { id: 'batch07', labelBn: 'Draft: Batch 07 — Substation & Safety (vq-345+)', labelEn: 'Draft: Batch 07 — Substation & Safety (vq-345+)', url: VISUAL_QUIZ_BATCH_07_URL },
     batch08: { id: 'batch08', labelBn: 'Draft: Batch 08 — Wire Gauge Measurement (vq-395+)', labelEn: 'Draft: Batch 08 — Wire Gauge Measurement (vq-395+)', url: VISUAL_QUIZ_BATCH_08_URL },
+    batch09: { id: 'batch09', labelBn: 'Draft: Batch 09 — Unsafe Action Spotting (vq-405+)', labelEn: 'Draft: Batch 09 — Unsafe Action Spotting (vq-405+)', url: VISUAL_QUIZ_BATCH_09_URL },
 };
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D'];
 
 export default function VisualQuizPreview({ language = 'bn', setCurrentView }) {
     const isBn = language === 'bn';
-    const [sourceId, setSourceId] = useState('batch08');
+    const [sourceId, setSourceId] = useState('batch09');
     const [includeDisabled, setIncludeDisabled] = useState(true);
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
