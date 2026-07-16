@@ -754,11 +754,38 @@ function TrainingInlineMediaChip({ isImage, resolvedMedia, labelText, authorLabe
     );
 }
 
+/** Soft cream placeholder while lesson posters / modal images decode. */
+function TrainingImageLoadPlaceholder({ language, className = '' }) {
+    const label = language === 'en' ? 'Loading image…' : 'ছবি লোড হচ্ছে…';
+    return (
+        <div
+            className={`relative flex w-full items-center justify-center overflow-hidden rounded-sm border border-slate-200/70 bg-[#f5f0e8] ${className}`}
+            role="status"
+            aria-live="polite"
+            aria-label={label}
+        >
+            <div className="pointer-events-none absolute inset-0 shimmer opacity-70" aria-hidden />
+            <div className="relative flex flex-col items-center gap-2.5 px-4 py-6">
+                <div className="flex items-center gap-1.5" aria-hidden>
+                    <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse [animation-delay:150ms]" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-orange-300 animate-pulse [animation-delay:300ms]" />
+                </div>
+                <span className={`text-[10px] font-semibold tracking-wide text-slate-500 sm:text-xs ${language === 'bn' ? 'font-bengali' : 'nb-mono'}`}>
+                    {label}
+                </span>
+            </div>
+        </div>
+    );
+}
+
 /** Pinch, scroll, and drag zoom for lesson image preview modal. */
 function TrainingImageZoomViewer({ src, alt, language }) {
     const containerRef = useRef(null);
+    const imgRef = useRef(null);
     const [scale, setScale] = useState(1);
     const [pos, setPos] = useState({ x: 0, y: 0 });
+    const [imgReady, setImgReady] = useState(false);
     const pinchRef = useRef({ startDist: 0, startScale: 1 });
     const dragRef = useRef({ active: false, startX: 0, startY: 0, originX: 0, originY: 0 });
     const lastTapRef = useRef(0);
@@ -766,6 +793,12 @@ function TrainingImageZoomViewer({ src, alt, language }) {
     useEffect(() => {
         setScale(1);
         setPos({ x: 0, y: 0 });
+        setImgReady(false);
+    }, [src]);
+
+    useEffect(() => {
+        const img = imgRef.current;
+        if (img?.complete && img.naturalWidth > 0) setImgReady(true);
     }, [src]);
 
     useEffect(() => {
@@ -883,11 +916,22 @@ function TrainingImageZoomViewer({ src, alt, language }) {
                 onMouseUp={stopDrag}
                 onMouseLeave={stopDrag}
             >
+                {!imgReady && (
+                    <TrainingImageLoadPlaceholder
+                        language={language}
+                        className="absolute inset-0 min-h-[min(50vh,420px)]"
+                    />
+                )}
                 <img
+                    ref={imgRef}
                     src={src}
                     alt={alt}
                     draggable={false}
-                    className="mx-auto max-h-[min(70vh,760px)] max-w-full select-none rounded-sm object-contain"
+                    onLoad={() => setImgReady(true)}
+                    onError={() => setImgReady(true)}
+                    className={`mx-auto max-h-[min(70vh,760px)] max-w-full select-none rounded-sm object-contain transition-opacity duration-300 ${
+                        imgReady ? 'opacity-100' : 'opacity-0'
+                    }`}
                     style={{
                         transform: `translate(${pos.x}px, ${pos.y}px) scale(${scale})`,
                         transformOrigin: 'center center',
@@ -903,6 +947,17 @@ function TrainingLessonFigure({ src, alt, caption, onClick, language, className 
     const enlargeLabel = language === 'en' ? 'Tap to enlarge' : 'বড় করে দেখতে ট্যাপ করুন';
     const inlineHint = language === 'en' ? 'Tap to view large' : 'বড় ছবি দেখতে ট্যাপ করুন';
     const isInline = inlineFloat;
+    const imgRef = useRef(null);
+    const [imgReady, setImgReady] = useState(false);
+
+    useEffect(() => {
+        setImgReady(false);
+    }, [src]);
+
+    useEffect(() => {
+        const img = imgRef.current;
+        if (img?.complete && img.naturalWidth > 0) setImgReady(true);
+    }, [src]);
 
     const buttonClass = isInline
         ? `my-3 sm:my-4 block w-full overflow-visible bg-transparent p-0 text-left ${className}`
@@ -928,7 +983,25 @@ function TrainingLessonFigure({ src, alt, caption, onClick, language, className 
                     {caption}
                 </p>
             )}
-            <img src={src} alt={alt} className="h-auto w-full rounded-sm object-contain object-top" loading="lazy" />
+            <div className="relative w-full">
+                {!imgReady && (
+                    <TrainingImageLoadPlaceholder
+                        language={language}
+                        className={isInline ? 'aspect-[4/5] max-h-[22rem]' : 'aspect-[3/4]'}
+                    />
+                )}
+                <img
+                    ref={imgRef}
+                    src={src}
+                    alt={alt}
+                    loading="lazy"
+                    onLoad={() => setImgReady(true)}
+                    onError={() => setImgReady(true)}
+                    className={`h-auto w-full rounded-sm object-contain object-top transition-opacity duration-300 ${
+                        imgReady ? 'relative opacity-100' : 'absolute inset-0 h-full w-full opacity-0'
+                    }`}
+                />
+            </div>
             {isInline && (
                 <p className={hintClass}>
                     {inlineHint}

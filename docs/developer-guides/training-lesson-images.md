@@ -298,6 +298,7 @@ See pattern in local `scratch/regen_lessons_2_8_9_10_sql.mjs`: fix JSON typos fi
 
 | Lesson | Topic | Image prefix | Migration |
 |--------|--------|--------------|-----------|
+| 1.1 | PPE uniform (1.10-style cards) | `ppe11_*` (kit, dress, helmet, shoes, gloves, airtest, cut, glovetype, harness, lanyard, myth) | `20260628270000_lesson_1_1_ppe_images.sql` |
 | 2.4 | Come-along clamp | `clamp_*` | `20260624190000_lesson_2_4_clamp_images.sql` |
 | 2.5 | Hot stick | `stick_*` | `20260624200000_lesson_2_5_hot_stick_images.sql` |
 | 2.6 | Cable skinning | `skin_*` | `20260624210000_lesson_2_6_skinning_images.sql` |
