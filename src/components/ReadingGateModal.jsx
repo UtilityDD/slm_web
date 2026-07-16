@@ -28,11 +28,14 @@ export default function ReadingGateModal({
     };
 
     return createPortal(
-        <div className="neo-brutal fixed inset-0 z-[220] flex items-center justify-center bg-slate-900/55 p-4">
-            <div className="nb-card relative w-full max-w-md overflow-hidden bg-[#fffdf7] p-6 text-left shadow-[6px_6px_0_#0f172a]">
-                <div className="nb-hazard absolute inset-x-0 top-0" aria-hidden="true" />
+        <div className="fixed inset-0 z-[220] flex items-center justify-center bg-slate-900/45 p-4">
+            <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-[#fffdf7] p-6 text-left shadow-xl">
+                <div
+                    className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
+                    aria-hidden="true"
+                />
                 <div className="relative pt-2">
-                    <p className="mb-1 text-xs font-black uppercase tracking-wider text-orange-600 nb-mono">
+                    <p className={`mb-1 text-xs font-bold text-orange-600 ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-wider'}`}>
                         {language === 'en' ? 'Hourly quiz locked' : 'ঘণ্টাভিত্তিক কুইজ লক'}
                     </p>
                     <h2 className={`mb-2 text-xl font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
@@ -40,7 +43,7 @@ export default function ReadingGateModal({
                             ? (language === 'en' ? 'Refresh your knowledge' : 'জ্ঞান রিফ্রেশ করুন')
                             : (language === 'en' ? 'Reading first' : 'প্রথমে পড়ুন')}
                     </h2>
-                    <p className={`mb-4 text-sm font-semibold leading-snug text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                    <p className={`mb-4 text-sm font-semibold leading-relaxed text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
                         {isReview
                             ? (language === 'en'
                                 ? 'Complete one lesson review every 2 days to unlock the hourly quiz. No extra points for reviews.'
@@ -50,7 +53,7 @@ export default function ReadingGateModal({
                                 : 'ঘণ্টাভিত্তিক কুইজ খুলতে প্রতি ২ দিনে অন্তত একটি প্রশিক্ষণ পাঠ শেষ করুন।')}
                     </p>
 
-                    <div className="mb-5 rounded border-2 border-slate-900 bg-orange-50 px-3 py-2.5">
+                    <div className="mb-5 rounded-2xl border border-orange-100 bg-orange-50 px-3.5 py-3">
                         <p className={`text-sm font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
                             {isReview
                                 ? (language === 'en'
@@ -73,7 +76,7 @@ export default function ReadingGateModal({
                         <button
                             type="button"
                             onClick={handleContinue}
-                            className="nb-btn-primary w-full py-3 text-sm font-black"
+                            className={`min-h-[48px] w-full rounded-full bg-orange-500 py-3 text-sm font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}
                         >
                             {isReview
                                 ? (language === 'en' ? 'Open assigned lesson →' : 'নির্ধারিত পাঠ খুলুন →')
@@ -82,7 +85,7 @@ export default function ReadingGateModal({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="nb-btn-secondary w-full py-2.5 text-sm font-bold"
+                            className={`min-h-[44px] w-full rounded-full border border-slate-200/80 bg-white py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}
                         >
                             {language === 'en' ? 'Not now' : 'এখন নয়'}
                         </button>
