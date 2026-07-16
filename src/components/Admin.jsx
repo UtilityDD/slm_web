@@ -19,23 +19,23 @@ import MyPPE from './safety/MyPPE';
 import MyTools from './safety/MyTools';
 
 const ADMIN_THEME = {
-  shell: 'neo-brutal min-h-full text-slate-900',
+  shell: 'min-h-full bg-[#fffdf7] text-slate-900',
   page: 'mx-auto max-w-5xl px-4 sm:px-6 py-5 sm:py-8 md:mb-6',
-  card: 'nb-card overflow-hidden bg-white',
-  tabBar: 'flex gap-1 p-1 rounded-lg border-2 border-slate-900 bg-orange-50 shadow-[3px_3px_0_#0f172a]',
-  tabActive: 'flex-1 py-2.5 rounded-md text-sm font-bold bg-white text-[#ea580c] border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]',
-  tabIdle: 'flex-1 py-2.5 rounded-md text-sm font-bold text-slate-600 hover:text-slate-900 hover:bg-white/70',
-  inset: 'rounded-lg border-2 border-slate-900/10 bg-orange-50/50',
-  input: 'nb-input w-full text-sm',
-  menuBtn: 'nb-btn-secondary text-sm font-semibold px-3 py-2 inline-flex items-center gap-2',
-  primaryBtn: 'nb-btn-primary text-sm font-bold px-3 py-2',
+  card: 'overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm',
+  tabBar: 'flex gap-1.5 rounded-full border border-slate-200/80 bg-white p-1.5 shadow-sm',
+  tabActive: 'flex-1 rounded-full py-2.5 text-sm font-bold bg-orange-500 text-white shadow-sm',
+  tabIdle: 'flex-1 rounded-full py-2.5 text-sm font-bold text-slate-600 hover:bg-orange-50/70 hover:text-orange-700',
+  inset: 'rounded-xl border border-slate-200/70 bg-orange-50/50',
+  input: 'w-full min-h-[48px] rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-200/60',
+  menuBtn: 'inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-95',
+  primaryBtn: 'rounded-full bg-orange-500 px-3 py-2 text-sm font-bold text-white shadow-sm shadow-orange-500/30 transition-all active:scale-95',
 };
 
 const NOTIFICATION_URGENCY_STYLES = {
-  info: { selected: 'border-2 border-slate-900 bg-orange-50 text-orange-700 shadow-[2px_2px_0_#0f172a]', idle: 'border-2 border-slate-900/15 text-slate-600 hover:bg-orange-50' },
-  update: { selected: 'border-2 border-slate-900 bg-green-50 text-green-700 shadow-[2px_2px_0_#0f172a]', idle: 'border-2 border-slate-900/15 text-slate-600 hover:bg-green-50' },
-  warning: { selected: 'border-2 border-slate-900 bg-orange-50 text-orange-700 shadow-[2px_2px_0_#0f172a]', idle: 'border-2 border-slate-900/15 text-slate-600 hover:bg-orange-50' },
-  alert: { selected: 'border-2 border-slate-900 bg-red-50 text-red-700 shadow-[2px_2px_0_#0f172a]', idle: 'border-2 border-slate-900/15 text-slate-600 hover:bg-red-50' }
+  info: { selected: 'border-orange-300 bg-orange-50 text-orange-700 shadow-sm', idle: 'border-slate-200/80 text-slate-600 hover:bg-orange-50' },
+  update: { selected: 'border-emerald-300 bg-emerald-50 text-emerald-700 shadow-sm', idle: 'border-slate-200/80 text-slate-600 hover:bg-emerald-50' },
+  warning: { selected: 'border-amber-300 bg-amber-50 text-amber-700 shadow-sm', idle: 'border-slate-200/80 text-slate-600 hover:bg-amber-50' },
+  alert: { selected: 'border-rose-300 bg-rose-50 text-rose-700 shadow-sm', idle: 'border-slate-200/80 text-slate-600 hover:bg-rose-50' }
 };
 
 const ProfileCardSkeleton = () => (
@@ -108,7 +108,7 @@ function ProfileAvatar({ url, name, size = 'lg', className = '' }) {
 
   return (
     <div
-      className={`${sizeClass} rounded-full overflow-hidden shrink-0 border-2 border-slate-900 bg-orange-50 shadow-[2px_2px_0_#0f172a] ${className}`}
+      className={`${sizeClass} rounded-full overflow-hidden shrink-0 border border-orange-200/80 bg-orange-50 shadow-sm ${className}`}
     >
       {showPhoto ? (
         <img
@@ -130,7 +130,7 @@ function ProfileAvatar({ url, name, size = 'lg', className = '' }) {
   );
 }
 
-const iconBtnBase = 'inline-flex items-center justify-center shrink-0 rounded-lg transition-colors disabled:opacity-50';
+const iconBtnBase = 'inline-flex items-center justify-center shrink-0 rounded-xl transition-colors disabled:opacity-50';
 
 function PenIcon({ className = 'w-4 h-4' }) {
   return (
@@ -693,7 +693,7 @@ function UserProfileCard({
               onClick={onPPE}
               aria-label={isEn ? 'Update PPE' : 'PPE আপডেট'}
               title={isEn ? 'PPE' : 'PPE'}
-              className="nb-btn-secondary py-2.5 text-lg font-semibold text-slate-800"
+              className="rounded-2xl border border-slate-200/80 bg-white py-2.5 text-lg font-semibold text-slate-800 shadow-sm transition-all hover:bg-orange-50 active:scale-95"
             >
               🦺
             </button>
@@ -702,7 +702,7 @@ function UserProfileCard({
               onClick={onTools}
               aria-label={isEn ? 'Update tools' : 'সরঞ্জাম আপডেট'}
               title={isEn ? 'Tools' : 'সরঞ্জাম'}
-              className="nb-btn-secondary py-2.5 text-lg font-semibold text-slate-800"
+              className="rounded-2xl border border-slate-200/80 bg-white py-2.5 text-lg font-semibold text-slate-800 shadow-sm transition-all hover:bg-orange-50 active:scale-95"
             >
               🛠️
             </button>
@@ -1449,10 +1449,10 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
   };
 
   const roleBadgeClass = (role) => {
-    if (role === 'guest') return 'bg-sky-100 text-sky-800 border border-slate-900/20';
-    if (role === 'admin') return 'bg-purple-100 text-purple-800 border border-slate-900/20';
-    if (role === 'safety mitra') return 'bg-orange-100 text-orange-800 border border-slate-900/20';
-    return 'bg-slate-100 text-slate-800 border border-slate-900/20';
+    if (role === 'guest') return 'bg-sky-100 text-sky-800 border border-slate-200/70';
+    if (role === 'admin') return 'bg-purple-100 text-purple-800 border border-slate-200/70';
+    if (role === 'safety mitra') return 'bg-orange-100 text-orange-800 border border-slate-200/70';
+    return 'bg-slate-100 text-slate-800 border border-slate-200/70';
   };
 
   const healthStatusLabel = (ok) => {
@@ -1872,7 +1872,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                           allowSkip: !nudgePreviewRequireMode,
                         })
                       }
-                      className="px-3 py-2 rounded-lg text-xs font-bold bg-white border-2 border-slate-900/15 text-slate-800 hover:bg-orange-50 hover:border-orange-300"
+                      className="rounded-full border border-slate-200/80 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-50"
                     >
                       {labels[fieldKey] || fieldKey}
                     </button>
@@ -1907,7 +1907,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                   type="button"
                   onClick={() => setSearchQuery('')}
                   aria-label={isEn ? 'Clear search' : 'অনুসন্ধান মুছুন'}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100"
                 >
                   ×
                 </button>
@@ -1928,10 +1928,10 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                   setExpandedUserId(null);
                   if (opt.id === 'supervisor') setCurrentPage(1);
                 }}
-                className={`shrink-0 px-3 py-2 rounded-md text-xs font-bold transition-colors ${
+                className={`shrink-0 rounded-full px-3 py-2 text-xs font-bold transition-all ${
                   teamSortMode === opt.id
-                    ? 'bg-white text-[#ea580c] border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                    ? 'bg-orange-500 text-white shadow-sm'
+                    : 'text-slate-600 hover:bg-orange-50/70 hover:text-orange-700'
                 }`}
               >
                 {opt.label}
@@ -1969,7 +1969,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
           </p>
           <button
             onClick={() => fetchUsers(currentPage, debouncedSearch, teamSortMode)}
-            className="px-8 py-2.5 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 shadow-lg shadow-orange-500/20 transition-all"
+            className="rounded-full bg-orange-500 px-8 py-2.5 font-bold text-white shadow-sm shadow-orange-500/30 transition-all active:scale-95"
           >
             {language === 'en' ? 'Retry' : 'আবার চেষ্টা করুন'}
           </button>
@@ -2051,7 +2051,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                       <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2 min-w-0">
                         <span aria-hidden>👔</span>
                         <span className="truncate">{group.title}</span>
-                        <span className="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-slate-900/20">
+                        <span className="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-slate-200/70">
                           {group.users.length}{' '}
                           {group.users.length === 1
                             ? (isEn ? 'lineman' : 'লাইনম্যান')
@@ -2114,7 +2114,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
             type="button"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="nb-btn-secondary px-4 py-2 text-sm font-semibold text-slate-800 disabled:opacity-40"
+            className="rounded-full border border-slate-200/80 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition-all hover:bg-orange-50 active:scale-95 disabled:opacity-40"
           >
             {isEn ? '← Previous' : '← আগে'}
           </button>
@@ -2125,7 +2125,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
             type="button"
             onClick={() => setCurrentPage((p) => Math.min(Math.ceil(totalUsers / usersPerPage), p + 1))}
             disabled={currentPage >= Math.ceil(totalUsers / usersPerPage)}
-            className="nb-btn-secondary px-4 py-2 text-sm font-semibold text-slate-800 disabled:opacity-40"
+            className="rounded-full border border-slate-200/80 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition-all hover:bg-orange-50 active:scale-95 disabled:opacity-40"
           >
             {isEn ? 'Next →' : 'পরে →'}
           </button>
@@ -2137,8 +2137,8 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
       {/* Invite User Modal - Portal-ized for Android/Mobile feel */}
       {showInviteModal && createPortal(
         <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="neo-brutal bg-[#fffdf7] rounded-t-3xl sm:rounded-2xl shadow-[0_-4px_0_#0f172a] sm:shadow-[4px_4px_0_#0f172a] w-full max-w-md flex flex-col border-t-2 sm:border-2 border-slate-900 animate-slide-up sm:animate-scale-in max-h-[90vh]">
-            <div className="p-6 border-b-2 border-slate-900 flex justify-between items-center shrink-0 bg-orange-50">
+          <div className="bg-[#fffdf7] rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md flex flex-col border border-slate-200/80 animate-slide-up sm:animate-scale-in max-h-[90vh]">
+            <div className="p-6 border-b border-slate-200/80 flex justify-between items-center shrink-0 bg-orange-50">
               <h2 className="text-xl font-bold text-slate-900">{isEn ? 'Add New Lineman' : 'নতুন লাইনম্যান যোগ করুন'}</h2>
               <button
                 onClick={handleCloseInviteModal}
@@ -2340,8 +2340,8 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
       {/* Send Notification Modal - Portal-ized */}
       {showNotificationModal && createPortal(
         <div className="fixed top-0 left-0 right-0 bottom-0 bg-slate-900/55 backdrop-blur-sm z-[200] p-4 flex items-center justify-center">
-          <div className="neo-brutal nb-card rounded-2xl w-full max-w-md animate-scale-in flex flex-col max-h-[90vh] overflow-hidden bg-[#fffdf7]">
-            <div className="flex justify-between items-center p-6 border-b-2 border-slate-900 shrink-0 bg-orange-50">
+          <div className="rounded-2xl border border-slate-200/80 shadow-2xl w-full max-w-md animate-scale-in flex flex-col max-h-[90vh] overflow-hidden bg-[#fffdf7]">
+            <div className="flex justify-between items-center p-6 border-b border-slate-200/80 shrink-0 bg-orange-50">
               <h2 className="text-xl font-bold text-slate-800 flex items-center gap-3">
                 <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center">
                   <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2406,7 +2406,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
               <button
                 type="submit"
                 disabled={isSendingNotification}
-                className="w-full py-4 nb-btn-primary font-bold disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
+                className="w-full py-4 rounded-full bg-orange-500 text-white shadow-sm shadow-orange-500/30 font-bold disabled:opacity-50 flex items-center justify-center gap-2 mt-4 transition-all active:scale-[0.98]"
               >
                 {isSendingNotification ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : (isEn ? 'Send to Everyone' : 'সবাইকে পাঠান')}
               </button>
@@ -2432,7 +2432,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
       {/* RESET SCORE CONFIRMATION MODAL */}
       {showResetConfirm && createPortal(
         <div className="fixed inset-0 z-[10000] bg-slate-900/55 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="neo-brutal nb-card rounded-2xl w-full max-w-md overflow-hidden animate-scale-in bg-[#fffdf7]">
+          <div className="rounded-2xl border border-slate-200/80 shadow-2xl w-full max-w-md overflow-hidden animate-scale-in bg-[#fffdf7]">
             <div className="p-8 text-center">
               <div className="w-20 h-20 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-inner animate-pulse">
                 ⚠️
@@ -2493,7 +2493,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
       {/* Reset Password Confirm Modal */}
       {showPasswordResetConfirm && createPortal(
         <div className="fixed inset-0 z-[10000] bg-slate-900/55 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="neo-brutal nb-card rounded-2xl w-full max-w-md overflow-hidden animate-scale-in bg-[#fffdf7]">
+          <div className="rounded-2xl border border-slate-200/80 shadow-2xl w-full max-w-md overflow-hidden animate-scale-in bg-[#fffdf7]">
             <div className="p-8 text-center">
               <div className="w-20 h-20 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-inner">
                 🔑
@@ -2537,7 +2537,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
       {/* Reset Password Result Modal */}
       {passwordResetResult && createPortal(
         <div className="fixed inset-0 z-[10001] bg-slate-900/55 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="neo-brutal nb-card rounded-2xl w-full max-w-md overflow-hidden animate-scale-in bg-[#fffdf7]">
+          <div className="rounded-2xl border border-slate-200/80 shadow-2xl w-full max-w-md overflow-hidden animate-scale-in bg-[#fffdf7]">
             <div className="p-6 space-y-6">
               <div className="flex flex-col items-center text-center">
                 <div className="w-20 h-20 bg-green-50 text-green-600 rounded-3xl flex items-center justify-center text-4xl mb-4 shadow-inner">

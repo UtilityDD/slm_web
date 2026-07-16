@@ -2266,20 +2266,24 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     <span className="text-center text-xs font-black tabular-nums sm:text-sm">{rankLabel}</span>
                                                 )}
                                             </div>
-                                            <div 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (item.avatar_url) setMaximizedAvatar(item.avatar_url);
-                                                }}
-                                                className={`relative h-9 w-9 shrink-0 cursor-zoom-in overflow-hidden rounded-full border-2 border-white bg-white shadow-sm transition-transform active:scale-95 sm:h-10 sm:w-10 ${
-                                                    isTopThree && !superseded
-                                                        ? 'ring-2 ring-amber-400/70 shadow-md shadow-amber-500/20'
-                                                        : 'ring-1 ring-slate-200/80'
-                                                } ${superseded ? 'opacity-40 grayscale' : ''}`}
+                                            <div
+                                                className={`relative h-9 w-9 shrink-0 sm:h-10 sm:w-10 ${superseded ? 'opacity-40 grayscale' : ''}`}
                                             >
-                                                {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
-                                                
-                                                {/* Status Indicator in Corner */}
+                                                <div
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (item.avatar_url) setMaximizedAvatar(item.avatar_url);
+                                                    }}
+                                                    className={`h-full w-full cursor-zoom-in overflow-hidden rounded-full border-2 border-white bg-white shadow-sm transition-transform active:scale-95 ${
+                                                        isTopThree && !superseded
+                                                            ? 'ring-2 ring-amber-400/70 shadow-md shadow-amber-500/20'
+                                                            : 'ring-1 ring-slate-200/80'
+                                                    }`}
+                                                >
+                                                    {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
+                                                </div>
+
+                                                {/* Status Indicator in Corner — sibling of the clipped avatar so it isn't cropped by rounded-full overflow */}
                                                 {leaderboardTab === 'monthly' && (item.last_active || item.last_login_at) && (() => {
                                                     const lastActiveDate = item.last_active || item.last_login_at;
                                                     const date = new Date(lastActiveDate);
