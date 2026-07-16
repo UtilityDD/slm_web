@@ -7,6 +7,7 @@ export default function ReadingGateModal({
     language,
     onClose,
     setCurrentView,
+    onContinue,
 }) {
     if (!block) return null;
 
@@ -22,6 +23,13 @@ export default function ReadingGateModal({
             }
         }
         onClose();
+        // When already on the Training page, switching the view to 'training'
+        // is a no-op and won't re-trigger the pending-lesson effect, so the
+        // host can pass onContinue to open the lesson directly.
+        if (typeof onContinue === 'function') {
+            onContinue(block);
+            return;
+        }
         if (typeof setCurrentView === 'function') {
             setCurrentView('training');
         }

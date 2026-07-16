@@ -2666,6 +2666,20 @@ export default function Training({
         handleChapterClick(chapter, nav.lessonNum, { autoStartReading: true });
     }, [user?.id, trainingChapters, trainingContent?.level_id, selectedLesson, selectedChapter]);
 
+    // Opens the gated lesson directly when the reading-gate modal is confirmed
+    // from the Training page (where a view switch to 'training' is a no-op).
+    const handleGateContinue = () => {
+        if (!user?.id || !trainingChapters?.length) return;
+        const pending = peekGateUnlockPending(user.id);
+        if (!pending?.lessonId) return;
+        const parsed = parseGateLessonId(pending.lessonId);
+        if (!parsed) return;
+        const chapter = trainingChapters.find((c) => c.number === parsed.chapterNum);
+        if (!chapter) return;
+        gateOpenAttemptRef.current = pending.lessonId;
+        handleChapterClick(chapter, parsed.lessonNum, { autoStartReading: true });
+    };
+
     useEffect(() => {
         const openFaqIfRequested = () => {
             const tabMatch = window.location.hash.match(/[?&]tab=([^&]*)/);
@@ -4093,6 +4107,7 @@ export default function Training({
                 language={language}
                 onClose={() => setReadingGateBlock(null)}
                 setCurrentView={setCurrentView}
+                onContinue={handleGateContinue}
             />
 
             {showDailyBrief && trainingTab === 'core' && !trainingLoading && !showOnboarding && !selectedChapter && !trainingContent && createPortal(
