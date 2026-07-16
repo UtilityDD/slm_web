@@ -132,9 +132,9 @@ function computeLearningStats(profile, attempts) {
 
 function KV({ label, value, valueClass = '' }) {
     return (
-        <div className="flex items-start justify-between gap-2 py-0.5">
-            <span className="text-[10px] font-semibold text-slate-500 shrink-0">{label}</span>
-            <span className={`text-[11px] font-black text-slate-900 text-right truncate ${valueClass}`}>{value}</span>
+        <div className="flex items-start justify-between gap-3 py-1.5">
+            <span className="text-xs font-semibold text-slate-500 shrink-0 sm:text-[13px]">{label}</span>
+            <span className={`text-sm font-bold text-slate-900 text-right leading-snug break-words max-w-[58%] ${valueClass}`}>{value}</span>
         </div>
     );
 }
@@ -142,21 +142,21 @@ function KV({ label, value, valueClass = '' }) {
 function ProfileSection({ icon, title, summary, children, defaultOpen = false }) {
     const [open, setOpen] = useState(defaultOpen);
     return (
-        <div className="border-2 border-slate-900 bg-white shadow-[2px_2px_0_#0f172a] overflow-hidden">
+        <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
             <button
                 type="button"
                 onClick={() => setOpen((v) => !v)}
-                className="w-full flex items-center gap-2 px-2.5 py-2 text-left hover:bg-orange-50/40 transition-colors"
+                className="w-full flex items-center gap-2.5 px-3.5 py-3 text-left transition-colors hover:bg-orange-50/60 active:bg-orange-50"
             >
-                <span className="text-sm shrink-0" aria-hidden>{icon}</span>
-                <span className="flex-1 min-w-0 text-[11px] font-black text-slate-900 truncate">{title}</span>
+                <span className="text-base shrink-0" aria-hidden>{icon}</span>
+                <span className="flex-1 min-w-0 text-sm font-black text-slate-900 truncate sm:text-[15px]">{title}</span>
                 {summary && (
-                    <span className="text-[9px] font-bold text-orange-700 tabular-nums shrink-0 max-w-[42%] truncate">{summary}</span>
+                    <span className="text-xs font-bold text-orange-700 tabular-nums shrink-0 max-w-[44%] truncate sm:text-[13px]">{summary}</span>
                 )}
-                <span className="text-slate-400 text-xs font-black shrink-0 w-3 text-center">{open ? '−' : '+'}</span>
+                <span className="text-slate-400 text-sm font-black shrink-0 w-4 text-center">{open ? '−' : '+'}</span>
             </button>
             {open && (
-                <div className="px-2.5 py-2 border-t-2 border-slate-900 bg-[#fffdf7] space-y-1">
+                <div className="space-y-0.5 border-t border-slate-200/80 bg-[#fffdf7]/80 px-3.5 py-2.5">
                     {children}
                 </div>
             )}
@@ -167,7 +167,7 @@ function ProfileSection({ icon, title, summary, children, defaultOpen = false })
 function GearChips({ items, answers, language }) {
     const answerMap = Object.fromEntries(answers.map((a) => [a.name, a]));
     return (
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1.5">
             {items.map((item) => {
                 const has = answerMap[item.name]?.available;
                 const label = language === 'bn' ? item.bn : item.name;
@@ -175,14 +175,14 @@ function GearChips({ items, answers, language }) {
                     <span
                         key={item.name}
                         title={label}
-                        className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-bold border rounded ${
+                        className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold shadow-sm ${
                             has
-                                ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                                 : 'bg-red-50 text-red-500 border-red-200 line-through decoration-red-300'
                         }`}
                     >
                         <span>{item.icon}</span>
-                        <span className={`truncate max-w-[4.5rem] ${language === 'bn' ? 'font-bengali' : ''}`}>{label}</span>
+                        <span className={`truncate max-w-[6.5rem] ${language === 'bn' ? 'font-bengali' : ''}`}>{label}</span>
                     </span>
                 );
             })}
@@ -348,54 +348,54 @@ export default function LeaderboardUserSheet({
 
     return createPortal(
         <div
-            className="fixed inset-0 z-[220] flex items-end justify-center bg-slate-950/55 backdrop-blur-[2px] animate-fade-in"
+            className="fixed inset-0 z-[220] flex items-end justify-center bg-slate-950/50 backdrop-blur-[2px] animate-fade-in sm:items-center sm:p-4"
             onClick={onClose}
         >
             <div
                 role="dialog"
                 aria-modal="true"
-                className="neo-brutal relative w-full max-w-lg max-h-[88vh] flex flex-col rounded-t-2xl border-2 border-b-0 border-slate-900 bg-[#fffdf7] shadow-[0_-4px_0_#0f172a] animate-slide-up-fade"
+                className="relative flex w-full max-w-lg max-h-[90vh] flex-col overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-2xl animate-slide-up-fade sm:rounded-2xl"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="shrink-0 border-b-2 border-slate-900 px-3 pt-2.5 pb-2 bg-white">
-                    <div className="w-9 h-1 bg-slate-300 rounded-full mx-auto mb-2" aria-hidden />
-                    <div className="flex items-start gap-2.5">
+                <div className="shrink-0 border-b border-slate-200/80 bg-white/95 px-4 pb-3 pt-3 backdrop-blur-sm">
+                    <div className="mx-auto mb-2.5 h-1 w-10 rounded-full bg-slate-300 sm:hidden" aria-hidden />
+                    <div className="flex items-start gap-3">
                         <div className="relative shrink-0">
-                            <div className="w-12 h-12 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] overflow-hidden bg-white">
+                            <div className="h-14 w-14 overflow-hidden rounded-full border border-orange-200/80 bg-orange-50 shadow-sm sm:h-16 sm:w-16">
                                 {merged.avatar_url ? (
-                                    <img src={merged.avatar_url} alt="" className="w-full h-full object-cover" />
+                                    <img src={merged.avatar_url} alt="" className="h-full w-full object-cover" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-base font-black text-slate-400">
+                                    <div className="flex h-full w-full items-center justify-center text-lg font-black text-orange-600">
                                         {merged.full_name?.[0] || '?'}
                                     </div>
                                 )}
                             </div>
                             {rank != null && (
-                                <span className="absolute -bottom-1 -right-1 nb-rank-badge flex h-5 w-5 items-center justify-center bg-amber-300 text-[9px]">
+                                <span className="absolute -bottom-0.5 -right-0.5 flex h-6 min-w-[1.5rem] items-center justify-center rounded-full border border-white bg-amber-400 px-1 text-[11px] font-black text-slate-900 shadow-sm">
                                     {rank}
                                 </span>
                             )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1">
-                                {rank != null && rank <= 3 && <span className="text-sm">{getRankMedal(rank)}</span>}
-                                <h2 className={`text-sm font-black text-slate-900 truncate ${bn ? 'font-bengali' : ''}`}>
+                        <div className="min-w-0 flex-1 pt-0.5">
+                            <div className="flex items-center gap-1.5">
+                                {rank != null && rank <= 3 && <span className="text-base">{getRankMedal(rank)}</span>}
+                                <h2 className={`truncate text-base font-black leading-tight text-slate-900 sm:text-lg ${bn ? 'font-bengali' : ''}`}>
                                     {merged.full_name || (bn ? 'অজানা' : 'Unknown')}
                                 </h2>
                             </div>
                             {(merged.district || merged.block) && (
-                                <p className={`text-[10px] font-bold text-slate-500 truncate ${bn ? 'font-bengali' : ''}`}>
+                                <p className={`mt-0.5 truncate text-xs font-semibold text-slate-500 sm:text-sm ${bn ? 'font-bengali' : ''}`}>
                                     {[merged.district, merged.block].filter(Boolean).join(' · ')}
                                 </p>
                             )}
-                            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                                 {badge && (
-                                    <span className={`text-[8px] px-1 py-0 border border-slate-900 font-black ${badge.color}`}>
+                                    <span className={`rounded-full border border-slate-200/80 px-2 py-0.5 text-[11px] font-black shadow-sm sm:text-xs ${badge.color}`}>
                                         {bn ? badge.bn : badge.en}
                                     </span>
                                 )}
-                                <span className="text-[10px] font-black text-orange-600 tabular-nums">
+                                <span className="text-sm font-black tabular-nums text-orange-600 sm:text-[15px]">
                                     {loading ? '…' : displayScore} {tab === 'monthly' ? '' : (bn ? 'পয়েন্ট' : 'pts')}
                                 </span>
                             </div>
@@ -403,7 +403,7 @@ export default function LeaderboardUserSheet({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="shrink-0 w-7 h-7 border-2 border-slate-900 bg-white font-black text-sm shadow-[2px_2px_0_#0f172a]"
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-lg font-black text-slate-600 shadow-sm transition-all hover:bg-slate-50 active:scale-95"
                             aria-label={bn ? 'বন্ধ' : 'Close'}
                         >
                             ×
@@ -412,9 +412,9 @@ export default function LeaderboardUserSheet({
                 </div>
 
                 {/* Grouped profile sections */}
-                <div className="flex-1 min-h-0 overflow-y-auto px-3 py-2 space-y-2 pb-4">
+                <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-3.5 py-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:px-4 sm:py-4">
                     {loading && (
-                        <p className={`text-center text-xs font-bold text-slate-400 py-4 ${bn ? 'font-bengali' : ''}`}>{labels.loading}</p>
+                        <p className={`py-6 text-center text-sm font-bold text-slate-400 ${bn ? 'font-bengali' : ''}`}>{labels.loading}</p>
                     )}
 
                     <ProfileSection
@@ -480,15 +480,15 @@ export default function LeaderboardUserSheet({
                             value={stats.lessonsPerActiveDay ? formatLeaderboardNumber(stats.lessonsPerActiveDay, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '—'}
                         />
                         {stats.chapterBreakdown.length > 0 && (
-                            <div className="pt-1">
-                                <p className="text-[9px] font-black uppercase text-slate-400 mb-1 nb-mono">
+                            <div className="pt-1.5">
+                                <p className="mb-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
                                     {bn ? 'অধ্যায়ভিত্তিক' : 'By chapter'}
                                 </p>
-                                <div className="flex flex-wrap gap-1">
+                                <div className="flex flex-wrap gap-1.5">
                                     {stats.chapterBreakdown.map(({ chapter, count }) => (
                                         <span
                                             key={chapter}
-                                            className="text-[9px] font-bold px-1.5 py-0.5 bg-orange-50 border border-orange-200 text-orange-800 rounded"
+                                            className="rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-bold text-orange-800"
                                         >
                                             {bn ? `অধ্যায় ${chapter}` : `Ch ${chapter}`}: {count}
                                         </span>
@@ -519,9 +519,9 @@ export default function LeaderboardUserSheet({
                         title={labels.ppe}
                         summary={`${ppeEquipped}/${PPE_ITEMS.length} · ${coreEquipped}/${CORE_PPE_ITEMS.length} ${labels.core}`}
                     >
-                        <p className="text-[9px] font-black text-slate-500 mb-1">{labels.core}</p>
+                        <p className="mb-1.5 text-xs font-bold text-slate-500">{labels.core}</p>
                         <GearChips items={CORE_PPE_ITEMS} answers={ppeAnswers} language={language} />
-                        <p className="text-[9px] font-black text-slate-500 mt-2 mb-1">{labels.other}</p>
+                        <p className="mb-1.5 mt-3 text-xs font-bold text-slate-500">{labels.other}</p>
                         <GearChips items={OTHER_PPE_ITEMS} answers={ppeAnswers} language={language} />
                     </ProfileSection>
 
@@ -531,16 +531,16 @@ export default function LeaderboardUserSheet({
                         summary={toolsEquipped > 0 ? `${toolsEquipped} ${bn ? 'টি' : 'items'}` : labels.noTools}
                     >
                         {tools.length === 0 ? (
-                            <p className={`text-[10px] text-slate-400 ${bn ? 'font-bengali' : ''}`}>{labels.noTools}</p>
+                            <p className={`text-sm text-slate-400 ${bn ? 'font-bengali' : ''}`}>{labels.noTools}</p>
                         ) : (
-                            <div className="flex flex-wrap gap-1">
+                            <div className="flex flex-wrap gap-1.5">
                                 {tools.map((tool) => (
                                     <span
                                         key={tool.id}
-                                        className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 rounded"
+                                        className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-800 shadow-sm"
                                     >
                                         <span>{TOOL_ICONS[tool.name] || '🔧'}</span>
-                                        <span className="truncate max-w-[5rem]">{tool.name}</span>
+                                        <span className="truncate max-w-[6rem]">{tool.name}</span>
                                         {tool.condition && <span className="opacity-60">· {tool.condition}</span>}
                                     </span>
                                 ))}
@@ -554,23 +554,23 @@ export default function LeaderboardUserSheet({
                         summary={prizes.length > 0 ? `${prizes.length} ${bn ? 'টি' : 'wins'}` : labels.noPrizes}
                     >
                         {prizes.length === 0 ? (
-                            <p className={`text-[10px] text-slate-400 ${bn ? 'font-bengali' : ''}`}>{labels.noPrizes}</p>
+                            <p className={`text-sm text-slate-400 ${bn ? 'font-bengali' : ''}`}>{labels.noPrizes}</p>
                         ) : (
-                            <ul className="space-y-1.5">
+                            <ul className="space-y-2.5">
                                 {prizes.map((win) => (
-                                    <li key={`${win.year}-${win.month}-${win.boardId}-${win.prizeRank}`} className="flex items-start gap-1.5">
-                                        <span className="text-xs shrink-0">{getRankMedal(win.prizeRank)}</span>
+                                    <li key={`${win.year}-${win.month}-${win.boardId}-${win.prizeRank}`} className="flex items-start gap-2">
+                                        <span className="shrink-0 text-sm">{getRankMedal(win.prizeRank)}</span>
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-[9px] font-bold text-slate-500">
+                                            <p className="text-xs font-bold text-slate-500 sm:text-[13px]">
                                                 {win.monthLabel}
                                                 {' · '}
-                                                <span className={`font-black text-slate-700 ${bn ? 'font-bengali' : 'nb-mono'}`}>
+                                                <span className={`font-black text-slate-700 ${bn ? 'font-bengali' : ''}`}>
                                                     {win.rankLabel}
                                                 </span>
                                                 {' · '}
                                                 {getBoardTabLabel(win.boardId, monthlyTabs)}
                                             </p>
-                                            <p className={`text-[10px] font-black text-slate-800 leading-snug ${bn ? 'font-bengali' : ''}`}>
+                                            <p className={`mt-0.5 text-sm font-black leading-snug text-slate-800 ${bn ? 'font-bengali' : ''}`}>
                                                 {win.prize.title}
                                             </p>
                                         </div>
