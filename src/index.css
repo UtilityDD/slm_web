@@ -1244,6 +1244,27 @@ body,
     }
   }
 
+  /* Hall of Fame congrats: slide in from top while grid row expands (pushes content) */
+  .animate-hof-banner-in {
+    animation: hofBannerIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes hofBannerIn {
+    from {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .hof-congrats-banner {
+    will-change: grid-template-rows, opacity;
+  }
+
   .animate-toast-in {
     animation: toastIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }

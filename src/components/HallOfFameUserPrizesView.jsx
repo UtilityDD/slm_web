@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import HallOfFamePrizeImage from './HallOfFamePrizeImage';
-import { getBoardTabLabel, getHallOfFamePrizeViewCopy, groupPrizeWinsByUser, collectAllUserPrizeWins } from '../utils/hallOfFamePrizes';
+import { getHallOfFamePrizeViewCopy, groupPrizeWinsByUser, collectAllUserPrizeWins } from '../utils/hallOfFamePrizes';
 import { getRankMedal } from '../utils/monthlyEncouragementBoards';
 
 export default function HallOfFameUserPrizesView({
@@ -36,12 +36,6 @@ export default function HallOfFameUserPrizesView({
 
     return (
         <div className="mx-auto max-w-3xl space-y-4 px-1">
-            <div className="text-center">
-                <h3 className={`text-base font-black text-slate-900 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}>
-                    {copy.userPrizesTitle}
-                </h3>
-            </div>
-
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <input
                     type="search"
@@ -117,27 +111,19 @@ export default function HallOfFameUserPrizesView({
                                             />
                                         </button>
                                         <div className="min-w-0 flex-1">
-                                            <p className="flex flex-wrap items-center gap-1.5 text-xs font-bold text-slate-500 sm:text-[13px]">
+                                            <p className={`flex flex-wrap items-center gap-1.5 text-sm font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                 <span aria-hidden>{getRankMedal(win.prizeRank)}</span>
-                                                <span className={`text-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                    {win.monthLabel}
-                                                </span>
-                                                <span className="text-slate-300" aria-hidden>·</span>
-                                                <span className={`font-black text-slate-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                    {win.rankLabel}
-                                                </span>
-                                                <span className="text-slate-300" aria-hidden>·</span>
-                                                <span className={`text-orange-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                    {getBoardTabLabel(win.boardId, monthlyTabs)}
-                                                </span>
+                                                <span>{win.monthLabel}</span>
+                                                <span className="text-slate-300 font-bold" aria-hidden>·</span>
+                                                <span>{win.rankLabel}</span>
                                             </p>
                                             <p className={`mt-1 text-sm font-black leading-snug text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                 {win.prize.title}
                                             </p>
                                             {win.prize.sponsor && (
-                                                <p className={`mt-0.5 truncate text-xs font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                    {language === 'en' ? 'Courtesy of ' : 'সৌজন্যে '}
-                                                    {win.prize.sponsor}
+                                                <p className={`mt-0.5 truncate text-xs font-semibold text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    {language === 'en' ? 'Sponsor: ' : 'স্পনসর: '}
+                                                    <span className="font-black text-slate-800">{win.prize.sponsor}</span>
                                                 </p>
                                             )}
                                         </div>

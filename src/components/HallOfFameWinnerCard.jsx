@@ -77,14 +77,9 @@ function PrizeFocusCard({
                         className={`flex w-full items-center gap-2.5 border-b border-slate-200/80 bg-slate-900 px-3.5 py-2.5 text-left transition-colors hover:bg-orange-600 ${language === 'bn' ? 'font-bengali' : ''}`}
                     >
                         <span className="shrink-0 text-base leading-none" aria-hidden>{getRankMedal(medalRank)}</span>
-                        <div className="min-w-0 flex-1">
-                            <p className={`text-[11px] font-bold uppercase tracking-wider text-amber-300 ${language === 'bn' ? 'font-bengali normal-case tracking-normal' : ''}`}>
-                                {language === 'en' ? 'Winner' : 'বিজয়ী'}
-                            </p>
-                            <p className="truncate text-sm font-black text-white sm:text-base">
-                                {winner.full_name || 'Anonymous'}
-                            </p>
-                        </div>
+                        <p className="min-w-0 flex-1 truncate text-sm font-black text-white sm:text-base">
+                            {winner.full_name || 'Anonymous'}
+                        </p>
                     </button>
 
                     {hasPrizeImage ? (
@@ -99,9 +94,6 @@ function PrizeFocusCard({
                                 className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover/img:scale-105"
                                 onResolved={setResolvedImageUrl}
                             />
-                            <span className="pointer-events-none absolute bottom-2 right-2 rounded-full border border-slate-200/80 bg-white/95 px-2 py-0.5 text-[11px] font-bold text-slate-600 opacity-0 shadow-sm transition-opacity group-hover/img:opacity-100">
-                                {language === 'en' ? 'Tap to enlarge' : 'বড় করে দেখুন'}
-                            </span>
                         </button>
                     ) : (
                         <div className="flex aspect-[4/3] w-full items-center justify-center bg-amber-50 text-4xl" aria-hidden>
@@ -116,17 +108,11 @@ function PrizeFocusCard({
                     </h4>
                 )}
 
-                {prize.imageAlt && (
-                    <p className={`mt-1.5 text-xs font-medium leading-relaxed text-slate-600 sm:text-[13px] ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        {prize.imageAlt}
-                    </p>
-                )}
-
                 {prize.sponsor && (
                     <div className="mt-auto pt-1">
                         <div className="border-t border-dashed border-amber-200 pt-3">
                             <p className={`text-[11px] font-bold uppercase tracking-wider text-amber-700 ${language === 'bn' ? 'font-bengali normal-case tracking-normal' : ''}`}>
-                                {language === 'en' ? 'Courtesy of' : 'সৌজন্যে'}
+                                {language === 'en' ? 'Sponsor' : 'স্পনসর'}
                             </p>
                             <p className={`mt-0.5 text-sm font-black text-slate-800 sm:text-[15px] ${language === 'bn' ? 'font-bengali' : ''}`}>
                                 {prize.sponsor}

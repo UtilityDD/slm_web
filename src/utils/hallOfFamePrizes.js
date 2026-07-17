@@ -14,7 +14,8 @@ import {
 } from './monthlyEncouragementBoards';
 
 export const HOF_PRIZE_VIEW_STORAGE_KEY = 'slm_hof_prize_view';
-export const HOF_VIEW_MODES = ['compact', 'detailed', 'by_user'];
+/** User-facing modes: by month (detailed cards) or by winner. Legacy `compact` maps to detailed. */
+export const HOF_VIEW_MODES = ['detailed', 'by_user'];
 
 const PRIZE_IMAGE_EXTENSIONS = ['webp', 'jpg', 'jpeg', 'png'];
 
@@ -182,8 +183,7 @@ export function groupPrizeWinsByUser(wins) {
 export function getHallOfFamePrizeViewCopy(language = 'bn') {
     if (language === 'en') {
         return {
-            compact: 'Compact',
-            detailed: 'With prizes',
+            byMonth: 'By month',
             byUser: 'By winner',
             userPrizesTitle: 'Prizes by winner',
             userPrizesSearch: 'Search winner name or SLM ID',
@@ -195,8 +195,7 @@ export function getHallOfFamePrizeViewCopy(language = 'bn') {
         };
     }
     return {
-        compact: 'সংক্ষেপে',
-        detailed: 'পুরস্কারসহ',
+        byMonth: 'মাস অনুযায়ী',
         byUser: 'বিজয়ী অনুযায়ী',
         userPrizesTitle: 'বিজয়ীদের পুরস্কার তালিকা',
         userPrizesSearch: 'নাম বা এসএলএম আইডি খুঁজুন',
@@ -214,7 +213,8 @@ export function getUserPrizeWins(hallOfFameData, userId, language = 'bn') {
 }
 
 export function normalizeHallOfFameViewMode(mode) {
-    return HOF_VIEW_MODES.includes(mode) ? mode : 'compact';
+    if (mode === 'compact') return 'detailed';
+    return HOF_VIEW_MODES.includes(mode) ? mode : 'detailed';
 }
 
 /** Public landing carousel — catalog prizes enriched with winner names when available. */

@@ -109,7 +109,7 @@ export default function SmartLinemanUI() {
 
   const [currentView, setCurrentView] = useState(getInitialView);
 
-  const [language, setLanguage] = useState(() => storageUtils.getItem('appLanguage') || 'en');
+  const [language, setLanguage] = useState(() => storageUtils.getItem('appLanguage') || 'bn');
   const [theme, setTheme] = useState(() => {
     // Default to dark unless user has an explicit preference
     return storageUtils.getItem('appTheme') || 'dark';
