@@ -174,7 +174,7 @@ function MonthlyHourlyAvgPill({ hourly, language, encouragementBoards, align = '
             }`}
         >
             <span className="text-[10px] font-black tabular-nums text-slate-600">{valueText}</span>
-            <span className={`text-[8px] font-bold text-slate-400 ${language === 'bn' ? 'font-bengali' : 'nb-mono uppercase tracking-tight'}`}>
+            <span className={`text-[8px] font-bold text-slate-400 ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-tight'}`}>
                 {unitText}
             </span>
         </span>
@@ -605,6 +605,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             startsIn: "Starts",
             closingIn: "Ends in",
             timeLeft: "Time Left",
+            reviewAnswers: "Review answers",
+            reviewHour: "Review %s quiz",
+            reviewUnavailable: "Review isn’t available on this device for that hour.",
+            reviewLast: "Review last attempt",
             topPlayersToday: "Top Players Today",
             viewAll: "View All",
             antiCheatExitTitle: "Exit Quiz?",
@@ -656,6 +660,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             perfectScore: "সব উত্তর সঠিক!",
             liveNow: "এখন লাইভ",
             nextChallengeLabel: "পরের কুইজ",
+            reviewAnswers: "উত্তর দেখুন",
+            reviewHour: "%s-এর উত্তর দেখুন",
+            reviewUnavailable: "এই ঘণ্টার উত্তর এই ডিভাইসে সংরক্ষিত নেই।",
+            reviewLast: "শেষ প্রচেষ্টা দেখুন",
             upcomingPowerPlay: "পাওয়ার প্লে",
             startsIn: "সময় বাকি",
             closingIn: "শেষ হতে বাকি",
@@ -879,12 +887,20 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             const hour12 = h % 12 || 12;
             const ampm = h < 12 ? 'AM' : 'PM';
 
+            const quizId = `hourly-challenge-${year}-${month}-${day}-${String(h).padStart(2, '0')}`;
+            const hasReview = Boolean(
+                storageUtils.getItem(`review_${quizId}`) ||
+                storageUtils.getItem(`review_hourly-challenge-${year}${month}${day}${String(h).padStart(2, '0')}`)
+            );
+
             slots.push({
                 hour: h,
                 status,
                 score: attempt?.score ?? null,
                 penalty: attempt?.penalty ?? null,
                 label: `${hour12} ${ampm}`,
+                quizId,
+                hasReview,
             });
         }
         // Render 23 at top, 0 at bottom
@@ -1678,35 +1694,49 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         setShowAbortWarningModal(false);
     };
 
-    const startReview = () => {
-        if (!hourlyQuiz) return;
-
-        // Check for correct ID format first
-        let saved = storageUtils.getItem(`review_${hourlyQuiz.id}`);
-
-        // Fallback: Check for legacy ID (no dashes) if strict ID not found
+    const loadReviewPayload = (quizId) => {
+        if (!quizId) return null;
+        let saved = storageUtils.getItem(`review_${quizId}`);
         if (!saved) {
-            const legacyId = hourlyQuiz.id.replace(/-/g, '').replace('hourlychallenge', 'hourly-challenge'); // simplistic fallback attempt or just reconstruct
-            // Actually, easier to just check the other likely key
-            // Our strict ID is hourly-challenge-YYYY-MM-DD-HH
-            // Previous bad ID was hourly-challenge-YYYYMMDDHH
-            const parts = hourlyQuiz.id.split('hourly-challenge-');
+            const parts = String(quizId).split('hourly-challenge-');
             if (parts.length > 1) {
-                const ts = parts[1]; // YYYY-MM-DD-HH
-                const legacyTs = ts.replace(/-/g, '');
+                const legacyTs = parts[1].replace(/-/g, '');
                 saved = storageUtils.getItem(`review_hourly-challenge-${legacyTs}`);
             }
         }
+        if (!saved) return null;
+        try {
+            const data = JSON.parse(saved);
+            if (!data?.questions?.length) return null;
+            return data;
+        } catch {
+            return null;
+        }
+    };
 
-        if (!saved) return;
-        const data = JSON.parse(saved);
+    const startReview = (quizId) => {
+        const id = quizId || hourlyQuiz?.id;
+        if (!id) return;
 
-        setActiveQuiz(hourlyQuiz);
+        const data = loadReviewPayload(id);
+        if (!data) {
+            window.alert(t.reviewUnavailable);
+            return;
+        }
+
+        setActiveQuiz({
+            id,
+            title: language === 'en' ? 'Hourly Safety Challenge' : 'প্রতি ঘণ্টার সুরক্ষা চ্যালেঞ্জ',
+            description: language === 'en' ? 'Review mode' : 'রিভিউ মোড',
+            duration_minutes: 5,
+            points_reward: 50,
+        });
         setQuizQuestions(data.questions);
-        setUserAnswers(data.answers);
-        setScore(data.score);
+        setUserAnswers(data.answers || {});
+        setScore(data.score || 0);
         setReviewMode(true);
         setQuizSubmitted(false);
+        setShowHint(false);
         setCurrentQuestionIndex(0);
     };
 
@@ -2357,7 +2387,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 </div>
                                             </div>
                                             <div className="text-right shrink-0">
-                                                <p className={`text-sm font-black tabular-nums nb-mono ${
+                                                <p className={`text-sm font-black tabular-nums ${
                                                     superseded ? 'text-slate-400 opacity-60' : 'text-orange-700'
                                                 }`}>
                                                     {leaderboardTab === 'monthly'
@@ -2504,21 +2534,20 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
     }
 
     return (
-        <div className="neo-brutal max-w-md mx-auto relative bg-[#fffdf7] text-slate-900 md:min-h-screen md:pb-24">
+        <div className="max-w-md mx-auto relative bg-[#fffdf7] text-slate-900 md:min-h-screen md:pb-24">
             {/* 1. STICKY SCOREBOARD HEADER */}
-            <div className="sticky top-0 z-30 shrink-0 border-b-2 border-slate-900 bg-[#fffdf7]">
-                <div className="nb-hazard shrink-0" aria-hidden="true" />
+            <div className="sticky top-0 z-30 shrink-0 border-b border-slate-200/80 bg-[#fffdf7]/95 backdrop-blur">
                 <div className="px-3 py-2 sm:px-4 sm:py-3">
                     <div className="flex items-center justify-between gap-2">
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5">
-                                <h1 className={`truncate text-base font-black leading-tight tracking-tight text-slate-900 sm:text-lg ${language === 'bn' ? 'font-bengali normal-case' : 'nb-mono uppercase'}`}>
+                                <h1 className={`truncate text-base font-black leading-tight tracking-tight text-slate-900 sm:text-lg ${language === 'bn' ? 'font-bengali normal-case' : ''}`}>
                                     {language === 'en' ? 'Hourly Quiz' : 'ঘণ্টার কুইজ'}
                                 </h1>
                                 <button
                                     type="button"
                                     onClick={() => setShowHourlyPenaltyInfoModal(true)}
-                                    className="flex h-6 w-6 shrink-0 items-center justify-center border-2 border-slate-900 bg-white text-slate-700 shadow-[2px_2px_0_#0f172a] transition-colors hover:bg-orange-50 sm:h-7 sm:w-7"
+                                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-700 shadow-sm transition-colors hover:bg-orange-50 sm:h-7 sm:w-7"
                                     aria-label={language === 'en' ? 'Penalty info' : 'পেনাল্টি তথ্য'}
                                 >
                                     <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
@@ -2527,35 +2556,35 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </svg>
                                 </button>
                             </div>
-                            <p className={`mt-0.5 hidden text-[10px] font-semibold text-slate-600 sm:block sm:text-[11px] ${language === 'bn' ? 'font-bengali' : 'nb-mono'}`}>
+                            <p className={`mt-0.5 hidden text-[10px] font-semibold text-slate-600 sm:block sm:text-[11px] ${language === 'bn' ? 'font-bengali' : ''}`}>
                                 {language === 'en' ? '5 quizzes / hour' : 'প্রতি ঘণ্টায় ৫ কুইজ'}
                             </p>
                         </div>
                         {userRank && (
                             <div className="flex shrink-0 items-center gap-1.5">
-                                <span className={`nb-tag hidden px-2 py-0.5 text-[10px] font-bold sm:inline-flex ${currentUserBadge.color}`}>
+                                <span className={`hidden rounded-full border border-slate-200/80 bg-white px-2 py-0.5 text-[10px] font-bold shadow-sm sm:inline-flex ${currentUserBadge.color}`}>
                                     {language === 'en' ? currentUserBadge.en : currentUserBadge.bn}
                                 </span>
-                                <span className="nb-rank-badge bg-orange-500 px-2 py-0.5 text-xs font-black text-white sm:px-2.5 sm:py-1 sm:text-sm">#{userRank.rank}</span>
+                                <span className="rounded-full bg-orange-500 px-2 py-0.5 text-xs font-black text-white shadow-sm shadow-orange-500/30 sm:px-2.5 sm:py-1 sm:text-sm">#{userRank.rank}</span>
                             </div>
                         )}
                     </div>
 
-                    <div className="nb-card mt-2 overflow-hidden p-0 sm:mt-3">
-                        <div className="grid grid-cols-3 divide-x-2 divide-slate-900">
+                    <div className="mt-2 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm sm:mt-3">
+                        <div className="grid grid-cols-3 divide-x divide-slate-200/80">
                             <div className="bg-white px-1.5 py-2 text-center sm:px-3 sm:py-3">
-                                <p className="nb-stat-label mb-0.5 text-[8px] sm:mb-1 sm:text-[9px]">{t.points}</p>
-                                <p className="nb-stat-value text-base tabular-nums leading-none text-slate-900 sm:text-xl">{formatLeaderboardNumber(userRank?.score)}</p>
+                                <p className="mb-0.5 text-[8px] font-bold uppercase tracking-[0.06em] text-slate-500 sm:mb-1 sm:text-[9px]">{t.points}</p>
+                                <p className="text-base font-black tabular-nums leading-none text-slate-900 sm:text-xl">{formatLeaderboardNumber(userRank?.score)}</p>
                             </div>
                             <div className="bg-orange-50 px-1.5 py-2 text-center sm:px-3 sm:py-3">
-                                <p className="mb-0.5 text-[8px] font-bold uppercase tracking-[0.06em] text-orange-700 nb-mono sm:mb-1 sm:text-[9px]">{language === 'en' ? 'Today' : 'আজ'}</p>
-                                <p className="nb-stat-value text-base tabular-nums leading-none text-orange-600 sm:text-xl">
+                                <p className="mb-0.5 text-[8px] font-bold uppercase tracking-[0.06em] text-orange-700 sm:mb-1 sm:text-[9px]">{language === 'en' ? 'Today' : 'আজ'}</p>
+                                <p className="text-base font-black tabular-nums leading-none text-orange-600 sm:text-xl">
                                     +<CountUpNumber value={getTodayScore()} format={(n) => formatLeaderboardNumber(n)} />
                                 </p>
                             </div>
                             <div className="bg-amber-50 px-1.5 py-2 text-center sm:px-3 sm:py-3">
-                                <p className="mb-0.5 text-[8px] font-bold uppercase tracking-[0.06em] text-amber-700 nb-mono sm:mb-1 sm:text-[9px]">{t.streak}</p>
-                                <p className="nb-stat-value flex items-center justify-center gap-0.5 text-base leading-none text-amber-600 sm:gap-1 sm:text-xl">
+                                <p className="mb-0.5 text-[8px] font-bold uppercase tracking-[0.06em] text-amber-700 sm:mb-1 sm:text-[9px]">{t.streak}</p>
+                                <p className="font-black flex items-center justify-center gap-0.5 text-base leading-none text-amber-600 sm:gap-1 sm:text-xl">
                                     <span className="tabular-nums">{getStreak(buildHourlySlots())}</span>
                                     <span className="text-sm sm:text-base" aria-hidden>🔥</span>
                                 </p>
@@ -2564,8 +2593,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     </div>
 
                     {hourlyChaseMessage && (
-                        <div className="mt-2 border-t border-dashed border-slate-900/20 pt-2">
-                            <div className="nb-card border-dashed bg-gradient-to-br from-orange-50 via-[#fffdf7] to-amber-50 px-2 py-1.5">
+                        <div className="mt-2 border-t border-dashed border-slate-200/80 pt-2">
+                            <div className="rounded-2xl border border-dashed border-orange-200/80 bg-gradient-to-br from-orange-50 via-[#fffdf7] to-amber-50 px-2 py-1.5 shadow-sm">
                                 <div className="flex items-start gap-1.5">
                                     <span className="mt-0.5 shrink-0 text-xs leading-none" aria-hidden>💪</span>
                                     <div className="min-w-0 flex-1">
@@ -2576,7 +2605,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             <button
                                                 type="button"
                                                 onClick={goToGlobalLeaderboard}
-                                                className={`mt-0.5 text-[9px] font-bold text-orange-600 transition-colors hover:text-orange-700 sm:text-[10px] ${language === 'bn' ? 'font-bengali' : 'nb-mono uppercase tracking-wide'}`}
+                                                className={`mt-0.5 text-[9px] font-bold text-orange-600 transition-colors hover:text-orange-700 sm:text-[10px] ${language === 'bn' ? 'font-bengali' : ' tracking-wide'}`}
                                             >
                                                 {language === 'en' ? 'Rankings →' : 'লিডারবোর্ড →'}
                                             </button>
@@ -2603,6 +2632,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                         startsIn: t.startsIn,
                         timeLeft: t.timeLeft,
                         upcomingStatus: t.upcomingStatus,
+                        reviewAnswers: t.reviewAnswers,
+                        reviewHour: t.reviewHour,
+                        reviewLast: t.reviewLast,
                     }}
                     onPlayLive={beginHourlyQuiz}
                     onReview={startReview}
@@ -2611,15 +2643,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
             {showAbortWarningModal && createPortal(
                 <div className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-slate-900/55 animate-fade-in">
-                    <div className="neo-brutal w-full max-w-md animate-scale-in" role="dialog" aria-modal="true">
-                        <div className="nb-card overflow-hidden p-0 bg-[#fffdf7]">
-                            <div className="nb-hazard" aria-hidden="true" />
-                            <div className="bg-red-600 text-white px-6 py-4 border-b-[2.5px] border-slate-900">
+                    <div className="w-full max-w-md animate-scale-in" role="dialog" aria-modal="true">
+                        <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-[#fffdf7] shadow-xl">
+                                                        <div className="bg-red-500 text-white px-6 py-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="nb-icon-badge w-10 h-10 flex items-center justify-center bg-red-100 text-xl border-slate-900">⚠️</div>
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-xl">⚠️</div>
                                     <div>
                                         <h3 className={`text-lg font-black leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>{t.antiCheatExitTitle}</h3>
-                                        <p className="text-xs font-semibold text-red-100 mt-0.5 uppercase tracking-wider nb-mono">Anti-Cheat Protection</p>
+                                        <p className="text-xs font-semibold text-red-100 mt-0.5 uppercase tracking-wider">Anti-Cheat Protection</p>
                                     </div>
                                 </div>
                             </div>
@@ -2633,18 +2664,18 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 </p>
                             </div>
 
-                            <div className="px-6 pb-6 grid grid-cols-1 sm:grid-cols-2 gap-3 border-t-2 border-slate-900 bg-white">
+                            <div className="px-6 pb-6 grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-slate-200/80 bg-white">
                                 <button
                                     type="button"
                                     onClick={cancelAbortQuiz}
-                                    className="w-full py-3 nb-btn-secondary font-bold"
+                                    className="w-full py-3 rounded-full border border-slate-200/80 bg-white px-4 py-3 font-bold text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-[0.99]"
                                 >
                                     {t.antiCheatStay}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={confirmAbortQuiz}
-                                    className="w-full py-3 nb-btn-danger font-black"
+                                    className="w-full py-3 rounded-full bg-red-500 px-4 py-3 font-black text-white shadow-sm transition-all hover:bg-red-600 active:scale-[0.99]"
                                 >
                                     {t.antiCheatExitConfirm}
                                 </button>
@@ -2658,15 +2689,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             {/* Quiz Modal (Keep Portal) */}
             {activeQuiz && createPortal(
                 <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/55 animate-fade-in">
-                    <div className="neo-brutal w-full max-w-2xl max-h-[90vh] flex flex-col animate-scale-in">
-                        <div className="nb-card overflow-hidden p-0 bg-[#fffdf7] max-h-[90vh] flex flex-col">
-                            <div className="nb-hazard shrink-0" aria-hidden="true" />
-                        {!quizSubmitted ? (
+                    <div className="w-full max-w-2xl max-h-[90vh] flex flex-col animate-scale-in">
+                        <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-[#fffdf7] shadow-xl max-h-[90vh] flex flex-col">
+                                                    {!quizSubmitted ? (
                             <>
-                                <div className="flex justify-between items-center p-4 sm:p-6 border-b-2 border-slate-900 bg-white shrink-0">
+                                <div className="flex justify-between items-center p-4 sm:p-6 border-b border-slate-200/80 bg-white shrink-0">
                                     <div>
                                         <h3 className="text-lg font-black text-slate-900">{activeQuiz.title}</h3>
-                                        <div className="flex items-center gap-2 text-xs text-slate-600 nb-mono">
+                                        <div className="flex items-center gap-2 text-xs text-slate-600">
                                             <span>{t.questions} {currentQuestionIndex + 1} / {quizQuestions.length}</span>
                                             {hourlyStakesUi.quizHint && (
                                                 <span className="text-slate-500 tabular-nums before:content-['·'] before:mx-1">
@@ -2675,17 +2705,17 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             )}
                                         </div>
                                     </div>
-                                    <button type="button" onClick={handleAbortQuiz} className="w-8 h-8 flex items-center justify-center border-2 border-slate-900 bg-white text-slate-600 shadow-[2px_2px_0_#0f172a] hover:bg-orange-50 transition-colors">✕</button>
+                                    <button type="button" onClick={handleAbortQuiz} className="w-8 h-8 flex items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-sm hover:bg-orange-50 transition-colors">✕</button>
                                 </div>
 
                                 <div className="mb-0 overflow-y-auto flex-1 p-4 sm:p-6 text-slate-900">
-                                    <div className="w-full bg-slate-200 border-2 border-slate-900 h-2 mb-6">
+                                    <div className="w-full bg-slate-200 rounded-full h-2 mb-6 overflow-hidden">
                                         <div className="bg-orange-600 h-full transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}></div>
                                     </div>
                                     <div className="flex justify-between items-start gap-4 mb-6">
                                         <div className="flex-1 min-w-0">
                                             {quizQuestions[currentQuestionIndex]?.question_image_url && (
-                                                <div className="mb-4 overflow-hidden border-2 border-slate-900 bg-white shadow-[2px_2px_0_#0f172a]">
+                                                <div className="mb-4 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
                                                     {(() => {
                                                         const questionImageKey = `q_${quizQuestions[currentQuestionIndex]?.id || currentQuestionIndex}`;
                                                         return (
@@ -2708,7 +2738,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => retryImageLoad(questionImageKey)}
-                                                                        className="mt-2 text-xs px-3 py-1.5 nb-btn-secondary bg-orange-50 text-orange-700 hover:bg-orange-100"
+                                                                        className="mt-2 text-xs px-3 py-1.5 rounded-full border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100"
                                                                     >
                                                                         {language === 'en' ? 'Retry image' : 'ছবি আবার লোড করুন'}
                                                                     </button>
@@ -2726,7 +2756,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 <button
                                                     type="button"
                                                     onClick={() => handleHourlyGoogleSearch(quizQuestions[currentQuestionIndex]?.question_text)}
-                                                    className="shrink-0 p-2 border-2 border-slate-900 bg-white shadow-[2px_2px_0_#0f172a] hover:bg-amber-50 text-slate-600 hover:text-amber-600 transition-all active:scale-90"
+                                                    className="shrink-0 p-2 rounded-full border border-slate-200/80 bg-white shadow-sm hover:bg-amber-50 text-slate-600 hover:text-amber-600 transition-all active:scale-90"
                                                     title={language === 'en' ? 'Search Google' : 'গুগল সার্চ'}
                                                 >
                                                     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -2752,7 +2782,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 }
                                             }}
                                             disabled={userAnswers[quizQuestions[currentQuestionIndex]?.id] === undefined && !reviewMode}
-                                            className={`shrink-0 w-9 h-9 flex items-center justify-center border-2 border-slate-900 transition-all shadow-[2px_2px_0_#0f172a] active:scale-95 ${(userAnswers[quizQuestions[currentQuestionIndex]?.id] !== undefined || reviewMode)
+                                            className={`shrink-0 w-9 h-9 flex items-center justify-center rounded-full border border-slate-200/80 transition-all shadow-sm active:scale-95 ${(userAnswers[quizQuestions[currentQuestionIndex]?.id] !== undefined || reviewMode)
                                                 ? 'bg-amber-50 text-amber-600 hover:bg-amber-100'
                                                 : 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-40'
                                                 }`}
@@ -2763,7 +2793,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
 
                                     {showHint && (userAnswers[quizQuestions[currentQuestionIndex]?.id] !== undefined || reviewMode) && (
-                                        <div className="mb-6 p-4 bg-amber-50 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] animate-fade-in">
+                                        <div className="mb-6 p-4 bg-amber-50 rounded-2xl border border-amber-200/80 shadow-sm animate-fade-in">
                                             <div className="flex items-start gap-2">
                                                 <span className="text-amber-500 mt-0.5">ℹ️</span>
                                                 <p className={`text-sm text-amber-900 italic font-medium leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
@@ -2777,14 +2807,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             const isSelected = userAnswers[quizQuestions[currentQuestionIndex].id] === idx;
                                             const isCorrect = idx === quizQuestions[currentQuestionIndex].correct_option_index;
 
-                                            let buttonClass = 'border-2 border-slate-900 bg-white hover:bg-orange-50 hover:border-orange-600 text-slate-950 shadow-[2px_2px_0_#0f172a]';
+                                            let buttonClass = 'rounded-2xl border border-slate-200/80 bg-white hover:bg-orange-50 hover:border-orange-300 text-slate-950 shadow-sm';
 
                                             if (reviewMode) {
-                                                if (isCorrect) buttonClass = 'border-2 border-green-700 bg-green-50 text-green-950 font-bold shadow-[2px_2px_0_#15803d]';
-                                                else if (isSelected && !isCorrect) buttonClass = 'border-2 border-red-700 bg-red-50 text-red-950 font-bold shadow-[2px_2px_0_#b91c1c]';
-                                                else buttonClass = 'border-2 border-slate-500 bg-slate-50 text-slate-800';
+                                                if (isCorrect) buttonClass = 'rounded-2xl border border-emerald-300 bg-emerald-50 text-green-950 font-bold shadow-sm';
+                                                else if (isSelected && !isCorrect) buttonClass = 'rounded-2xl border border-red-300 bg-red-50 text-red-950 font-bold shadow-sm';
+                                                else buttonClass = 'rounded-2xl border border-slate-200 bg-slate-50 text-slate-800';
                                             } else if (isSelected) {
-                                                buttonClass = 'border-2 border-orange-600 bg-orange-50 text-orange-950 font-bold shadow-[3px_3px_0_#ea580c]';
+                                                buttonClass = 'rounded-2xl border border-orange-400 bg-orange-50 text-orange-950 font-bold shadow-sm';
                                             }
 
                                             return (
@@ -2795,7 +2825,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     disabled={reviewMode || hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id)}
                                                     className={`w-full text-left p-3.5 transition-all duration-200 ${buttonClass} ${hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id) && !reviewMode ? 'cursor-not-allowed' : ''}`}
                                                 >
-                                                    <span className="mr-3 font-mono nb-mono font-black text-inherit opacity-80">{String.fromCharCode(65 + idx)}.</span>
+                                                    <span className="mr-3 font-mono font-black text-inherit opacity-80">{String.fromCharCode(65 + idx)}.</span>
                                                     {isImageOption(option) ? (
                                                         <>
                                                             <img
@@ -2819,7 +2849,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                         evt.stopPropagation();
                                                                         retryImageLoad(`o_${quizQuestions[currentQuestionIndex]?.id || currentQuestionIndex}_${idx}`);
                                                                     }}
-                                                                    className="ml-2 text-[11px] px-2 py-1 nb-btn-secondary bg-orange-50 text-orange-700"
+                                                                    className="ml-2 text-[11px] px-2 py-1 rounded-full border border-orange-200 bg-orange-50 text-orange-700"
                                                                 >
                                                                     {language === 'en' ? 'Retry' : 'রিলোড'}
                                                                 </button>
@@ -2839,7 +2869,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col gap-2 p-4 sm:p-6 border-t-2 border-slate-900 bg-white shrink-0">
+                                <div className="flex flex-col gap-2 p-4 sm:p-6 border-t border-slate-200/80 bg-white shrink-0">
                                     <div className="flex justify-between items-center">
                                         <button
                                             type="button"
@@ -2848,7 +2878,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 setCurrentQuestionIndex((prev) => prev - 1);
                                                 setShowHint(false);
                                             }}
-                                            className="nb-btn-secondary px-4 py-2 font-bold text-sm disabled:opacity-30"
+                                            className="rounded-full border border-slate-200/80 bg-white px-4 py-2 font-bold text-sm text-slate-700 shadow-sm disabled:opacity-30"
                                         >
                                             ← Prev
                                         </button>
@@ -2860,10 +2890,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 aria-disabled={!reviewMode && !hourlyCurrentAnswered}
                                                 className={`px-6 py-2.5 font-bold text-sm transition-colors ${
                                                     reviewMode
-                                                        ? 'nb-btn-secondary'
+                                                        ? 'rounded-full border border-slate-200/80 bg-white text-slate-700 shadow-sm'
                                                         : hourlyCurrentAnswered
-                                                          ? 'nb-btn-primary bg-green-600 hover:bg-green-500'
-                                                          : 'nb-btn-secondary opacity-50 cursor-not-allowed'
+                                                          ? 'rounded-full bg-emerald-500 text-white shadow-sm hover:bg-emerald-600'
+                                                          : 'rounded-full border border-slate-200/80 bg-white text-slate-400 opacity-50 cursor-not-allowed'
                                                 }`}
                                             >
                                                 {reviewMode ? 'Close Review' : 'Finish Quiz'}
@@ -2879,8 +2909,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 aria-disabled={!reviewMode && !hourlyCurrentAnswered}
                                                 className={`px-6 py-2.5 font-bold text-sm transition-colors ${
                                                     reviewMode || hourlyCurrentAnswered
-                                                        ? 'nb-btn-primary'
-                                                        : 'nb-btn-secondary opacity-50 cursor-not-allowed'
+                                                        ? 'rounded-full bg-orange-500 text-white shadow-sm shadow-orange-500/30'
+                                                        : 'rounded-full border border-slate-200/80 bg-white text-slate-400 opacity-50 cursor-not-allowed'
                                                 }`}
                                             >
                                                 Next →
@@ -2899,7 +2929,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             </>
                         ) : submitRejected ? (
                             <div className="text-center py-6 px-4 sm:px-6 overflow-y-auto">
-                                <div className="nb-icon-badge w-20 h-20 bg-red-50 text-red-600 text-4xl flex items-center justify-center mx-auto mb-4">⛔</div>
+                                <div className="w-20 h-20 rounded-full bg-red-50 text-red-600 text-4xl flex items-center justify-center mx-auto mb-4">⛔</div>
                                 <h2 className={`text-2xl font-black text-slate-900 mb-3 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {submitRejected.type === 'time'
                                         ? (language === 'en' ? 'Score not counted' : 'স্কোর গণনা হয়নি')
@@ -2909,19 +2939,19 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     {submitRejected.message}
                                 </p>
                                 {submitRejected.type === 'time' && (
-                                    <div className={`mx-auto mb-6 max-w-md rounded-xl border-2 border-amber-300 bg-amber-50 p-3 text-left text-xs text-amber-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <div className={`mx-auto mb-6 max-w-md rounded-2xl border border-amber-200 bg-amber-50 p-3 text-left text-xs text-amber-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {language === 'en'
                                             ? 'How to fix: Phone Settings → Date & time → turn ON "Set automatically". Then reopen the hourly challenge.'
                                             : 'সমাধান: ফোন সেটিংস → তারিখ ও সময় → "স্বয়ংক্রিয়ভাবে সেট করুন" চালু করুন। তারপর আবার ঘণ্টার চ্যালেঞ্জ খুলুন।'}
                                     </div>
                                 )}
-                                <button type="button" onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); setSubmitRejected(null); }} className="w-full py-3 nb-btn-primary font-bold">
+                                <button type="button" onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); setSubmitRejected(null); }} className="w-full py-3 rounded-full bg-orange-500 text-white font-bold shadow-sm shadow-orange-500/30 transition-all hover:bg-orange-600 active:scale-[0.99]">
                                     {t.close}
                                 </button>
                             </div>
                         ) : (
                             <div className="text-center py-6 px-4 sm:px-6 overflow-y-auto">
-                                <div className={`nb-icon-badge w-20 h-20 text-4xl flex items-center justify-center mx-auto mb-4 ${isGuestUser(userProfile) ? 'bg-sky-50 text-sky-600' : 'bg-green-50 text-green-600'}`}>
+                                <div className={`w-20 h-20 rounded-full text-4xl flex items-center justify-center mx-auto mb-4 ${isGuestUser(userProfile) ? 'bg-sky-50 text-sky-600' : 'bg-green-50 text-green-600'}`}>
                                     {isGuestUser(userProfile) ? '👀' : '🎉'}
                                 </div>
                                 <h2 className={`text-2xl font-black text-slate-900 mb-6 ${language === 'bn' ? 'font-bengali' : ''}`}>
@@ -2931,10 +2961,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 </h2>
 
                                 <div className="flex flex-col items-center justify-center mb-8 animate-scale-in">
-                                    <div className={`text-6xl sm:text-7xl font-black mb-2 nb-mono ${(quizResults?.score || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    <div className={`text-6xl sm:text-7xl font-black mb-2 ${(quizResults?.score || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                         {(quizResults?.score || 0) > 0 ? '+' : ''}{quizResults?.score || 0}
                                     </div>
-                                    <div className={`text-xs sm:text-sm font-bold uppercase tracking-widest nb-mono ${(quizResults?.score || 0) >= 0 ? 'text-green-600/80' : 'text-red-600/80'}`}>
+                                    <div className={`text-xs sm:text-sm font-bold uppercase tracking-widest ${(quizResults?.score || 0) >= 0 ? 'text-green-600/80' : 'text-red-600/80'}`}>
                                         {isGuestUser(userProfile)
                                             ? (language === 'en' ? 'Practice score' : 'অনুশীলন স্কোর')
                                             : ((quizResults?.score || 0) >= 0
@@ -2944,21 +2974,21 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 </div>
 
                                 {isGuestUser(userProfile) && (
-                                    <div className={`mx-auto mb-6 max-w-md rounded-xl border-2 border-sky-300 bg-sky-50 px-4 py-3 text-left text-xs leading-relaxed text-sky-900 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <div className={`mx-auto mb-6 max-w-md rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-left text-xs leading-relaxed text-sky-900 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {guestPreviewText(language, 'hourlyResultGuest')}
                                     </div>
                                 )}
 
                                 <div className={`mx-auto mb-8 grid max-w-md gap-3 ${(quizResults?.penalty || 0) > 0 ? 'grid-cols-2' : 'grid-cols-1 max-w-xs'}`}>
-                                    <div className="nb-card bg-green-50 p-3">
-                                        <div className="text-[10px] font-bold text-green-600 uppercase tracking-tighter mb-1 nb-mono">
+                                    <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 shadow-sm">
+                                        <div className="text-[10px] font-bold text-green-600 uppercase tracking-tighter mb-1">
                                             {language === 'bn' ? 'সঠিক' : 'Right'}
                                         </div>
                                         <div className="text-lg font-black text-green-700 tabular-nums">+{quizResults?.pointsEarned || 0}</div>
                                     </div>
                                     {(quizResults?.penalty || 0) > 0 && (
-                                        <div className="nb-card bg-red-50 p-3">
-                                            <div className="text-[10px] font-bold text-red-600 uppercase tracking-tighter mb-1 nb-mono">
+                                        <div className="rounded-2xl border border-red-100 bg-red-50 p-3 shadow-sm">
+                                            <div className="text-[10px] font-bold text-red-600 uppercase tracking-tighter mb-1">
                                                 {language === 'bn' ? 'পেনাল্টি' : 'Penalty'}
                                             </div>
                                             <div className="text-lg font-black text-red-700 tabular-nums">-{quizResults.penalty}</div>
@@ -2975,7 +3005,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                                 {/* Sync Status Footer */}
                                 {!isGuestUser(userProfile) && (
-                                    <div className="mt-2 mb-6 border-2 border-slate-900 bg-white p-3 shadow-[2px_2px_0_#0f172a] max-w-xs mx-auto text-xs font-bold nb-mono">
+                                    <div className="mt-2 mb-6 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm max-w-xs mx-auto text-xs font-bold">
                                         {syncStatus === 'syncing' && (
                                             <div className="flex items-center justify-center gap-2 text-amber-600">
                                                 <span className="h-2 w-2 animate-ping rounded-full bg-amber-500" />
@@ -2997,7 +3027,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 <button
                                                     type="button"
                                                     onClick={() => submitHourlyQuiz(quizResults?.pointsEarned, quizResults?.penalty)}
-                                                    className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-slate-900 border-2 border-slate-900 font-black uppercase text-[10px] shadow-[1px_1px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5"
+                                                    className="px-3 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold uppercase text-[10px] shadow-sm active:scale-95"
                                                 >
                                                     {language === 'en' ? 'Retry Save' : 'পুনরায় চেষ্টা করুন'}
                                                 </button>
@@ -3006,7 +3036,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     </div>
                                 )}
 
-                                <button type="button" onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); }} className="w-full py-3 nb-btn-primary font-bold">
+                                <button type="button" onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); }} className="w-full py-3 rounded-full bg-orange-500 text-white font-bold shadow-sm shadow-orange-500/30 transition-all hover:bg-orange-600 active:scale-[0.99]">
                                     {isGuestUser(userProfile) ? guestPreviewText(language, 'hourlyCloseGuest') : t.close}
                                 </button>
                             </div>
@@ -3018,10 +3048,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             )}
             {/* Google Search Confirmation Modal */}
             {showSearchModal && createPortal(
-                <div className="neo-brutal fixed inset-0 z-[300] flex animate-fade-in items-end justify-center bg-slate-900/55 p-0 sm:items-center sm:p-4">
-                    <div className="nb-card flex w-full max-w-sm animate-slide-up-sheet flex-col items-center overflow-hidden border-t-2 border-slate-900 bg-[#fffdf7] p-8 pb-[calc(2rem+env(safe-area-inset-bottom))] text-center sm:animate-scale-in sm:border-2 sm:pb-8 sm:shadow-[4px_4px_0_#0f172a]">
-                        <div className="nb-hazard mb-4 w-full shrink-0" aria-hidden="true" />
-                        <div className="mb-6 flex h-16 w-16 items-center justify-center border-2 border-slate-900 bg-white shadow-[3px_3px_0_#0f172a]">
+                <div className="fixed inset-0 z-[300] flex animate-fade-in items-end justify-center bg-slate-900/55 p-0 sm:items-center sm:p-4">
+                    <div className="flex w-full max-w-sm animate-slide-up-sheet flex-col items-center overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] p-8 pb-[calc(2rem+env(safe-area-inset-bottom))] text-center shadow-xl sm:animate-scale-in sm:rounded-2xl sm:pb-8">
+                                                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-200/80 bg-white shadow-sm">
                             <svg className="w-9 h-9" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-1 .67-2.28 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -3041,7 +3070,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                         </p>
 
                         {searchCount < MAX_SEARCH_QUOTA && (
-                            <div className="w-full bg-slate-200 border-2 border-slate-900 h-2 mb-8 overflow-hidden">
+                            <div className="w-full bg-slate-200 rounded-full h-2 mb-8 overflow-hidden">
                                 <div
                                     className="h-full bg-blue-500 transition-all duration-700"
                                     style={{ width: `${(searchCount / MAX_SEARCH_QUOTA) * 100}%` }}
@@ -3054,7 +3083,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 <button
                                     type="button"
                                     onClick={confirmHourlyGoogleSearch}
-                                    className="w-full py-4 nb-btn-indigo font-black text-sm"
+                                    className="w-full py-4 rounded-full bg-orange-500 text-white font-black text-sm shadow-sm shadow-orange-500/30 transition-all hover:bg-orange-600 active:scale-[0.99]"
                                 >
                                     {t.searchProceed}
                                 </button>
@@ -3062,7 +3091,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             <button
                                 type="button"
                                 onClick={() => setShowSearchModal(false)}
-                                className={`w-full py-4 font-bold text-sm ${searchCount >= MAX_SEARCH_QUOTA ? 'nb-btn-primary' : 'nb-btn-secondary'}`}
+                                className={`w-full py-4 font-bold text-sm ${searchCount >= MAX_SEARCH_QUOTA ? 'rounded-full bg-orange-500 text-white shadow-sm shadow-orange-500/30' : 'rounded-full border border-slate-200/80 bg-white text-slate-700 shadow-sm'}`}
                             >
                                 {searchCount >= MAX_SEARCH_QUOTA ? (language === 'en' ? 'Got it' : 'বুঝেছি') : t.close}
                             </button>
@@ -3099,28 +3128,28 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 }
 
 const SkeletonCard = () => (
-    <div className="nb-card bg-white p-6 relative overflow-hidden">
+    <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-slate-200 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] shimmer"></div>
-            <div className="h-6 w-32 bg-slate-200 border border-slate-900 shimmer"></div>
+            <div className="h-12 w-12 rounded-full bg-slate-200 shimmer"></div>
+            <div className="h-6 w-32 rounded-lg bg-slate-200 shimmer"></div>
         </div>
-        <div className="h-8 w-3/4 bg-slate-200 border border-slate-900 mb-6 shimmer"></div>
-        <div className="flex justify-center gap-8 mb-8">
-            <div className="h-4 w-16 bg-slate-200 border border-slate-900 shimmer"></div>
-            <div className="h-4 w-16 bg-slate-200 border border-slate-900 shimmer"></div>
+        <div className="mb-6 h-8 w-3/4 rounded-lg bg-slate-200 shimmer"></div>
+        <div className="mb-8 flex justify-center gap-8">
+            <div className="h-4 w-16 rounded bg-slate-200 shimmer"></div>
+            <div className="h-4 w-16 rounded bg-slate-200 shimmer"></div>
         </div>
-        <div className="h-12 w-full bg-slate-200 border-2 border-slate-900 shimmer"></div>
+        <div className="h-12 w-full rounded-full bg-slate-200 shimmer"></div>
     </div>
 );
 
 const SkeletonRow = () => (
     <div className="flex items-center p-2">
-        <div className="w-6 h-6 bg-slate-200 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] shimmer mr-3"></div>
-        <div className="w-8 h-8 bg-slate-200 border-2 border-slate-900 shimmer mr-3"></div>
+        <div className="mr-3 h-6 w-6 rounded-full bg-slate-200 shimmer"></div>
+        <div className="mr-3 h-8 w-8 rounded-full bg-slate-200 shimmer"></div>
         <div className="flex-1 space-y-1">
-            <div className="h-3 w-24 bg-slate-200 border border-slate-900 shimmer"></div>
-            <div className="h-2.5 w-16 bg-slate-100 border border-slate-300 shimmer"></div>
+            <div className="h-3 w-24 rounded bg-slate-200 shimmer"></div>
+            <div className="h-2.5 w-16 rounded bg-slate-100 shimmer"></div>
         </div>
-        <div className="w-3 h-3 bg-slate-200 border border-slate-900 shimmer"></div>
+        <div className="h-3 w-3 rounded bg-slate-200 shimmer"></div>
     </div>
 );

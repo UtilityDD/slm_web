@@ -1431,13 +1431,38 @@ body,
   }
 
   .hourly-ring-live {
-    animation: hourly-ring-pulse 2s ease-in-out infinite;
+    animation: hourly-ring-pulse 1.8s ease-in-out infinite;
     cursor: pointer;
+    outline: none;
+  }
+
+  .hourly-ring-live:focus,
+  .hourly-ring-live:focus-visible {
+    outline: none;
+  }
+
+  .hourly-ring-aura {
+    background: radial-gradient(circle, rgba(249, 115, 22, 0.18) 0%, rgba(249, 115, 22, 0.06) 45%, transparent 70%);
+    animation: hourly-ring-aura-pulse 2.4s ease-in-out infinite;
+  }
+
+  .hourly-ring-live-bead {
+    animation: hourly-bead-pulse 1.6s ease-in-out infinite;
   }
 
   @keyframes hourly-ring-pulse {
     0%, 100% { filter: brightness(1); }
-    50% { filter: brightness(1.08); }
+    50% { filter: brightness(1.12); }
+  }
+
+  @keyframes hourly-ring-aura-pulse {
+    0%, 100% { opacity: 0.55; transform: scale(0.98); }
+    50% { opacity: 1; transform: scale(1.02); }
+  }
+
+  @keyframes hourly-bead-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.25); opacity: 0.9; }
   }
 
   .hourly-wait-clock {
@@ -1445,8 +1470,8 @@ body,
   }
 
   @keyframes hourly-wait-glow {
-    0%, 100% { box-shadow: 2px 2px 0 #0f172a; background-color: #fef3c7; }
-    50% { box-shadow: 3px 3px 0 #0f172a; background-color: #fde68a; }
+    0%, 100% { box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06); background-color: #fef3c7; }
+    50% { box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25); background-color: #fde68a; }
   }
 
   @keyframes pulse-rose {
