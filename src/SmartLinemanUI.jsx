@@ -140,6 +140,7 @@ export default function SmartLinemanUI() {
   const [forumPendingQuestionId, setForumPendingQuestionId] = useState(null);
   const [profileNudgeOpen, setProfileNudgeOpen] = useState(false);
   const [profileNudgePreview, setProfileNudgePreview] = useState(null);
+  const [idleStoryPreview, setIdleStoryPreview] = useState(null);
   const forumActivityTimerRef = useRef(null);
 
   const weatherDistrict = userProfile?.district || null;
@@ -1182,7 +1183,21 @@ export default function SmartLinemanUI() {
           />;
         case 'admin':
           if (!['admin', 'safety mitra', 'lineman', 'guest'].includes(userProfile?.role)) { setCurrentView('home'); return null; }
-          return <Admin language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} onPreviewProfileNudge={setProfileNudgePreview} />;
+          return (
+            <Admin
+              language={language}
+              user={user}
+              userProfile={userProfile}
+              setCurrentView={setCurrentView}
+              onPreviewProfileNudge={setProfileNudgePreview}
+              onPreviewIdleStory={(opts = {}) =>
+                setIdleStoryPreview({
+                  storyId: opts.storyId || undefined,
+                  key: Date.now(),
+                })
+              }
+            />
+          );
         case 'visual-quiz-preview':
           if (userProfile?.role !== 'admin') { setCurrentView('home'); return null; }
           return <VisualQuizPreview language={language} setCurrentView={setCurrentView} />;
@@ -1589,7 +1604,9 @@ export default function SmartLinemanUI() {
               currentView={currentView}
               setCurrentView={setCurrentView}
               onRequestOpenStory={(id) => setAwarenessOpenStoryId(id)}
-              blocked={idleReminderBlocked}
+              blocked={idleReminderBlocked && !idleStoryPreview}
+              preview={idleStoryPreview}
+              onPreviewClose={() => setIdleStoryPreview(null)}
             />
 
             {user && !isGuestUser(userProfile) && (

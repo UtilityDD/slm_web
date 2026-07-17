@@ -11,6 +11,7 @@ import {
   JOB_TYPES,
   PROFILE_NUDGE_FIELD_ORDER,
 } from '../data/profileFieldOptions';
+import { AWARENESS_STORIES } from '../data/awarenessStories';
 
 import SaveSuccessModal from './SaveSuccessModal';
 import AdminAnalytics from './AdminAnalytics';
@@ -746,7 +747,7 @@ function UserProfileCard({
   );
 }
 
-export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge }) {
+export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge, onPreviewIdleStory }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
@@ -812,6 +813,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
   const [showSystemCheckSection, setShowSystemCheckSection] = useState(false);
   const [showProfileNudgePreviewSection, setShowProfileNudgePreviewSection] = useState(false);
   const [nudgePreviewRequireMode, setNudgePreviewRequireMode] = useState(false);
+  const [showIdleStoryPreviewSection, setShowIdleStoryPreviewSection] = useState(false);
   const [showManageMenu, setShowManageMenu] = useState(false);
   const [profileSection, setProfileSection] = useState('team'); // 'team' | 'mine' for admin / safety mitra
   const [ownProfileRow, setOwnProfileRow] = useState(null);
@@ -1887,6 +1889,50 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                 {isEn
                   ? 'Preview only — Save / Not now will not change your profile.'
                   : 'শুধু প্রিভিউ — Save / Not now আপনার প্রোফাইল বদলাবে না।'}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Admin: preview idle full-screen story overlay */}
+      {isAdmin && !showAnalytics && showManageMenu && typeof onPreviewIdleStory === 'function' && (
+        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+          <button
+            type="button"
+            onClick={() => setShowIdleStoryPreviewSection((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+          >
+            <span className="font-semibold text-slate-800 text-sm">
+              {isEn ? 'Preview idle story' : 'আইডল স্টোরি প্রিভিউ'}
+            </span>
+            <span className="text-slate-400 text-xs">{showIdleStoryPreviewSection ? '▲' : '▼'}</span>
+          </button>
+          {showIdleStoryPreviewSection && (
+            <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-3">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => onPreviewIdleStory({})}
+                  className="rounded-full border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-bold text-orange-800 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-100"
+                >
+                  {isEn ? 'Random story' : 'এলোমেলো গল্প'}
+                </button>
+                {AWARENESS_STORIES.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => onPreviewIdleStory({ storyId: s.id })}
+                    className="rounded-full border border-slate-200/80 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-50"
+                  >
+                    {s.title[language] || s.title.en}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-slate-400">
+                {isEn
+                  ? 'Opens the idle full-screen image overlay immediately (no 4-minute wait).'
+                  : 'আইডল ফুল-স্ক্রিন ইমেজ ওভারলে তৎক্ষণাৎ খোলে (৪ মিনিট অপেক্ষা নেই)।'}
               </p>
             </div>
           )}

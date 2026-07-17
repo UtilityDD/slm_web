@@ -18,16 +18,28 @@ function resolveIdleTiming() {
     return { idleMs: IDLE_MS, appGraceMs: APP_GRACE_MS, cooldownMs: COOLDOWN_MS };
 }
 
+function pickStory(storyId) {
+    const pool = AWARENESS_STORIES;
+    if (!pool.length) return null;
+    if (storyId) {
+        return pool.find((s) => s.id === storyId) || pool[0];
+    }
+    return pool[Math.floor(Math.random() * pool.length)];
+}
+
 /**
  * After inactivity, fades in one random story card over the app.
  * z-[140]: below Logout / update modals (1000+).
+ * preview: { storyId?: string, key: number } — admin force-open overlay.
  */
 export default function IdleStoryReminder({
     language,
     currentView,
     setCurrentView,
     onRequestOpenStory,
-    blocked
+    blocked,
+    preview = null,
+    onPreviewClose,
 }) {
     const [open, setOpen] = useState(false);
     const [visible, setVisible] = useState(false);
@@ -39,6 +51,7 @@ export default function IdleStoryReminder({
     const appEligibleAtRef = useRef(0);
     const closeBtnRef = useRef(null);
     const fadeOutTimerRef = useRef(null);
+    const previewModeRef = useRef(false);
 
     useEffect(() => {
         appEligibleAtRef.current = Date.now() + resolveIdleTiming().appGraceMs;
@@ -73,9 +86,9 @@ export default function IdleStoryReminder({
         timerRef.current = setTimeout(() => {
             timerRef.current = null;
             if (document.visibilityState !== 'visible' || blocked) return;
-            const pool = AWARENESS_STORIES;
-            if (!pool.length) return;
-            const picked = pool[Math.floor(Math.random() * pool.length)];
+            const picked = pickStory();
+            if (!picked) return;
+            previewModeRef.current = false;
             setStory(picked);
             setOpen(true);
             requestAnimationFrame(() => setVisible(true));
@@ -95,16 +108,35 @@ export default function IdleStoryReminder({
 
     const closeOverlay = useCallback(() => {
         setVisible(false);
-        cooldownUntilRef.current = Date.now() + resolveIdleTiming().cooldownMs;
+        const wasPreview = previewModeRef.current;
+        if (!wasPreview) {
+            cooldownUntilRef.current = Date.now() + resolveIdleTiming().cooldownMs;
+        }
         clearFadeTimer();
         const fadeMs = reduceMotion ? 0 : 220;
         fadeOutTimerRef.current = setTimeout(() => {
             fadeOutTimerRef.current = null;
+            previewModeRef.current = false;
             setOpen(false);
             setStory(null);
+            if (wasPreview && typeof onPreviewClose === 'function') {
+                onPreviewClose();
+            }
             armIdleTimer();
         }, fadeMs);
-    }, [armIdleTimer, clearFadeTimer, reduceMotion]);
+    }, [armIdleTimer, clearFadeTimer, onPreviewClose, reduceMotion]);
+
+    useEffect(() => {
+        if (!preview?.key) return;
+        const picked = pickStory(preview.storyId);
+        if (!picked) return;
+        clearTimer();
+        clearFadeTimer();
+        previewModeRef.current = true;
+        setStory(picked);
+        setOpen(true);
+        requestAnimationFrame(() => setVisible(true));
+    }, [preview?.key, preview?.storyId, clearFadeTimer, clearTimer]);
 
     useEffect(() => {
         const onKey = (e) => {
@@ -136,7 +168,7 @@ export default function IdleStoryReminder({
     }, [bumpActivity, clearFadeTimer, clearTimer, closeOverlay, open]);
 
     useEffect(() => {
-        if (blocked && open) closeOverlay();
+        if (blocked && open && !previewModeRef.current) closeOverlay();
     }, [blocked, closeOverlay, open]);
 
     useEffect(() => {
@@ -155,19 +187,26 @@ export default function IdleStoryReminder({
     const handleRead = useCallback(() => {
         if (!story) return;
         const id = story.id;
+        const wasPreview = previewModeRef.current;
         setVisible(false);
-        cooldownUntilRef.current = Date.now() + resolveIdleTiming().cooldownMs;
+        if (!wasPreview) {
+            cooldownUntilRef.current = Date.now() + resolveIdleTiming().cooldownMs;
+        }
         clearFadeTimer();
         const fadeMs = reduceMotion ? 0 : 180;
         fadeOutTimerRef.current = setTimeout(() => {
             fadeOutTimerRef.current = null;
+            previewModeRef.current = false;
             setOpen(false);
             setStory(null);
+            if (wasPreview && typeof onPreviewClose === 'function') {
+                onPreviewClose();
+            }
             onRequestOpenStory(id);
             setCurrentView('accident-stories');
             armIdleTimer();
         }, fadeMs);
-    }, [armIdleTimer, clearFadeTimer, onRequestOpenStory, reduceMotion, setCurrentView, story]);
+    }, [armIdleTimer, clearFadeTimer, onPreviewClose, onRequestOpenStory, reduceMotion, setCurrentView, story]);
 
     if (!open || !story) return null;
 
@@ -175,13 +214,11 @@ export default function IdleStoryReminder({
     const bn = language === 'bn';
     const t = {
         en: {
-            context: 'A moment to remember',
-            viewMore: 'Tap to view more',
+            viewMore: 'Read this shattered dream…',
             close: 'Close'
         },
         bn: {
-            context: 'একটু মনে রাখার সময়',
-            viewMore: 'আরও দেখতে ট্যাপ করুন',
+            viewMore: 'ছিন্নভিন্ন স্বপ্নের কথা পড়ুন…',
             close: 'বন্ধ করুন'
         }
     }[language];
@@ -231,7 +268,7 @@ export default function IdleStoryReminder({
                 </span>
             </button>
 
-            {/* Floating header: title + close only */}
+            {/* Floating header: story title + close */}
             <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] bg-gradient-to-b from-slate-900/55 via-slate-900/20 to-transparent pt-[env(safe-area-inset-top,0px)]">
                 <div className="pointer-events-auto flex items-center gap-3 px-4 py-3 sm:px-5">
                     <h2
@@ -240,7 +277,7 @@ export default function IdleStoryReminder({
                             bn ? 'font-bengali' : ''
                         }`}
                     >
-                        {t.context}
+                        {title}
                     </h2>
                     <button
                         type="button"

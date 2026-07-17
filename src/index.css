@@ -2120,6 +2120,24 @@ body,
   animation: float-y 3s ease-in-out infinite;
 }
 
+/* SLM Radio FAB — fixed position, static 3D floating look (no bobbing) */
+.radio-fab-3d {
+  transform: translateY(-4px);
+  transform-origin: center bottom;
+}
+
+.radio-fab-ground-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 2.35rem;
+  height: 0.5rem;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  background: radial-gradient(ellipse at center, rgba(15, 23, 42, 0.32) 0%, rgba(15, 23, 42, 0) 72%);
+  pointer-events: none;
+}
+
 @keyframes node-glow {
 
   0%,

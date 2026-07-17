@@ -3793,11 +3793,11 @@ export default function Training({
                                     type="button"
                                     onClick={beginLessonFromCover}
                                     disabled={coverFlipPhase === 'open'}
-                                    className={`mt-8 flex min-h-[52px] w-full max-w-sm items-center justify-center gap-2 rounded-full bg-orange-500 px-6 py-3.5 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all duration-500 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-0 sm:mt-9 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}
+                                    className={`mt-5 inline-flex min-h-[36px] items-center justify-center gap-1.5 rounded-full border border-slate-300/90 bg-white/90 px-4 py-1.5 text-xs font-bold text-slate-600 shadow-sm transition-all duration-500 hover:border-orange-200 hover:bg-orange-50/80 hover:text-orange-700 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-0 sm:mt-6 sm:text-[13px] ${language === 'bn' ? 'font-bengali' : ''}`}
                                 >
                                     {language === 'en' ? 'Start Reading' : 'পড়া শুরু করুন'}
-                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" d="M9 5l7 7-7 7" />
                                     </svg>
                                 </button>
                             </div>

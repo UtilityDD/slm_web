@@ -352,22 +352,47 @@ export default function RadioMiniPlayer({ language, currentView }) {
         <button
           type="button"
           onClick={() => startRadio()}
-          className="group fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] right-[max(0.75rem,env(safe-area-inset-right))] z-[104] flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg shadow-slate-900/30 ring-1 ring-white/10 transition hover:bg-slate-800 active:scale-95 dark:bg-slate-800 dark:hover:bg-slate-700 md:hidden"
+          className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] right-[max(0.75rem,env(safe-area-inset-right))] z-[104] flex h-16 w-16 items-center justify-center bg-transparent p-0 active:scale-95 transition-transform md:hidden"
           aria-label={t.launch}
           title={t.launch}
         >
-          <svg className="h-[26px] w-[26px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            {/* antenna */}
-            <path d="M15 8.5 19.5 4.5" />
-            {/* body */}
-            <rect x="3" y="8.5" width="18" height="11.5" rx="2.4" />
-            {/* speaker */}
-            <circle cx="15.5" cy="14.25" r="3" />
-            <circle cx="15.5" cy="14.25" r="0.6" fill="currentColor" stroke="none" />
-            {/* dial + tuning marks */}
-            <path d="M6 12h5" className="text-orange-400" stroke="currentColor" />
-            <path d="M6.5 15.75h1.5M6.5 17.75h3" strokeWidth="1.3" opacity="0.6" />
-          </svg>
+          <span className="radio-fab-3d relative inline-flex items-center justify-center">
+            <span className="radio-fab-ground-shadow" aria-hidden />
+            <svg
+              className="relative h-12 w-12"
+              viewBox="0 0 48 48"
+              fill="none"
+              aria-hidden
+            >
+              <defs>
+                <linearGradient id="slmRadioFabBody" x1="8" y1="14" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#fdba74" />
+                  <stop offset="0.45" stopColor="#f97316" />
+                  <stop offset="1" stopColor="#c2410c" />
+                </linearGradient>
+                <linearGradient id="slmRadioFabFace" x1="12" y1="20" x2="28" y2="34" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#fff7ed" />
+                  <stop offset="1" stopColor="#ffedd5" />
+                </linearGradient>
+                <filter id="slmRadioFabDepth" x="-30%" y="-30%" width="160%" height="170%">
+                  <feDropShadow dx="0" dy="5" stdDeviation="3" floodColor="#9a3412" floodOpacity="0.4" />
+                  <feDropShadow dx="0" dy="1" stdDeviation="0.6" floodColor="#fed7aa" floodOpacity="0.55" />
+                </filter>
+              </defs>
+              {/* antenna */}
+              <path d="M30 18.5 38 8.5" stroke="#0f172a" strokeWidth="2.2" strokeLinecap="round" />
+              <circle cx="38.5" cy="7.5" r="2.4" fill="#f97316" stroke="#0f172a" strokeWidth="1.2" />
+              {/* body */}
+              <g filter="url(#slmRadioFabDepth)">
+                <rect x="6" y="16" width="32" height="22" rx="5" fill="url(#slmRadioFabBody)" stroke="#9a3412" strokeWidth="1.2" />
+                <rect x="9.5" y="19.5" width="14" height="15" rx="2.5" fill="url(#slmRadioFabFace)" stroke="#fdba74" strokeWidth="0.8" />
+                <circle cx="31" cy="27" r="6.2" fill="#fff7ed" stroke="#9a3412" strokeWidth="1.1" />
+                <circle cx="31" cy="27" r="3.4" fill="#fb923c" stroke="#c2410c" strokeWidth="0.9" />
+                <circle cx="31" cy="27" r="1.2" fill="#9a3412" />
+                <path d="M11.5 23.5h9M11.5 27h6.5M11.5 30.5h8" stroke="#ea580c" strokeWidth="1.4" strokeLinecap="round" opacity="0.85" />
+              </g>
+            </svg>
+          </span>
         </button>
       ) : null}
 
