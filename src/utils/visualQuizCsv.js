@@ -11,6 +11,7 @@ export const VISUAL_QUIZ_BATCH_06_URL = '/quiz_management/visual_quiz_batch_06.c
 export const VISUAL_QUIZ_BATCH_07_URL = '/quiz_management/visual_quiz_batch_07.csv';
 export const VISUAL_QUIZ_BATCH_08_URL = '/quiz_management/visual_quiz_batch_08.csv';
 export const VISUAL_QUIZ_BATCH_09_URL = '/quiz_management/visual_quiz_batch_09.csv';
+export const VISUAL_QUIZ_BATCH_10_URL = '/quiz_management/visual_quiz_batch_10.csv';
 export const VISUAL_QUIZ_MISTAKE_PREVIEW_URL = '/quiz_management/visual_quiz_batch_mistake_preview.csv';
 export const VISUAL_QUIZ_MATERIAL_PREVIEW_URL = '/quiz_management/visual_quiz_batch_material_preview.csv';
 export const VISUAL_QUIZ_PROCEDURE_PREVIEW_URL = '/quiz_management/visual_quiz_batch_procedure_preview.csv';

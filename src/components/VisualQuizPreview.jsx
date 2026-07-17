@@ -8,6 +8,7 @@ import {
     VISUAL_QUIZ_BATCH_07_URL,
     VISUAL_QUIZ_BATCH_08_URL,
     VISUAL_QUIZ_BATCH_09_URL,
+    VISUAL_QUIZ_BATCH_10_URL,
     VISUAL_QUIZ_MISTAKE_PREVIEW_URL,
     VISUAL_QUIZ_MATERIAL_PREVIEW_URL,
     VISUAL_QUIZ_PROCEDURE_PREVIEW_URL,
@@ -53,13 +54,14 @@ const SOURCES = {
     batch07: { id: 'batch07', labelBn: 'Draft: Batch 07 — Substation & Safety (vq-345+)', labelEn: 'Draft: Batch 07 — Substation & Safety (vq-345+)', url: VISUAL_QUIZ_BATCH_07_URL },
     batch08: { id: 'batch08', labelBn: 'Draft: Batch 08 — Wire Gauge Measurement (vq-395+)', labelEn: 'Draft: Batch 08 — Wire Gauge Measurement (vq-395+)', url: VISUAL_QUIZ_BATCH_08_URL },
     batch09: { id: 'batch09', labelBn: 'Draft: Batch 09 — Unsafe Action Spotting (vq-405+)', labelEn: 'Draft: Batch 09 — Unsafe Action Spotting (vq-405+)', url: VISUAL_QUIZ_BATCH_09_URL },
+    batch10: { id: 'batch10', labelBn: 'Draft: Batch 10 — Weather/Night & DTR Core (vq-410+)', labelEn: 'Draft: Batch 10 — Weather/Night & DTR Core (vq-410+)', url: VISUAL_QUIZ_BATCH_10_URL },
 };
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D'];
 
 export default function VisualQuizPreview({ language = 'bn', setCurrentView }) {
     const isBn = language === 'bn';
-    const [sourceId, setSourceId] = useState('batch09');
+    const [sourceId, setSourceId] = useState('batch10');
     const [includeDisabled, setIncludeDisabled] = useState(true);
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -232,8 +234,22 @@ export default function VisualQuizPreview({ language = 'bn', setCurrentView }) {
                 </div>
 
                 {loading && <p className="text-sm text-slate-600">{isBn ? 'লোড হচ্ছে…' : 'Loading…'}</p>}
-                {error && <p className="text-sm text-red-600">{error}</p>}
-                {!loading && !error && (
+                {error && (
+                    <p className="text-sm text-red-600">
+                        {isBn ? 'লোড ব্যর্থ' : 'Load failed'}: {error}
+                        <span className="block mt-1 text-xs text-slate-500">
+                            {SOURCES[sourceId]?.url || ''}
+                        </span>
+                    </p>
+                )}
+                {!loading && !error && questions.length === 0 && (
+                    <p className="text-sm text-amber-700">
+                        {isBn
+                            ? 'এই সোর্সে কোনো প্রশ্ন পাওয়া যায়নি। Batch 10 বেছে নিন বা CSV আপলোড করুন।'
+                            : 'No questions found for this source. Select Batch 10 or upload a CSV.'}
+                    </p>
+                )}
+                {!loading && !error && questions.length > 0 && (
                     <p className="text-sm text-slate-600">
                         {filteredQuestions.length} {isBn ? 'টি প্রশ্ন' : 'questions'}
                         {sourceId === 'upload' ? ` (${isBn ? 'আপলোড করা ফাইল' : 'uploaded file'})` : ''}

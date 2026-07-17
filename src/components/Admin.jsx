@@ -1629,6 +1629,13 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                   </button>
                   <button
                     type="button"
+                    onClick={() => setCurrentView('visual-quiz-preview')}
+                    className={ADMIN_THEME.menuBtn}
+                  >
+                    🖼️ {isEn ? 'Quiz Preview' : 'কুইজ প্রিভিউ'}
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setShowMoreMenu((v) => !v)}
                     className="px-3 py-2 rounded-lg text-sm font-semibold text-slate-500"
                   >
@@ -1642,9 +1649,6 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
             <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
               <button type="button" onClick={() => setCurrentView('admin-services')} className={moreMenuBtn}>
                 🚨 {isEn ? 'Emergency Contacts' : 'জরুরি নম্বর'}
-              </button>
-              <button type="button" onClick={() => setCurrentView('visual-quiz-preview')} className={moreMenuBtn}>
-                🖼️ {isEn ? 'Quiz Preview' : 'কুইজ প্রিভিউ'}
               </button>
               <button
                 type="button"
