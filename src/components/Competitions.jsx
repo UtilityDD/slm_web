@@ -20,8 +20,6 @@ import {
     getPenaltyPerWrongForLifetime,
     pickQuestionsByDifficultyMix
 } from '../utils/hourlyDifficulty';
-import { DotLottiePlayer } from '@dotlottie/react-player';
-import sandyLoading from '../assets/SandyLoading.lottie';
 import HourlyPenaltyInfoModal from './HourlyPenaltyInfoModal';
 import HourlyDayRing from './HourlyDayRing';
 import { MonthlyBoardHeader } from './MonthlyEncouragementBoards';
@@ -30,6 +28,7 @@ import { checkReadingGate } from '../utils/readingHabitGate';
 import { filterCoreCompletedLessonIds } from '../utils/trainingLessonIds';
 import ReadingGateModal from './ReadingGateModal';
 import { blockGuestWrite, isGuestUser, guestPreviewText } from '../utils/guestPreview';
+import { BrutalLoaderContent } from './loaders/PageLoader';
 import {
     getEncouragementCopy,
     getHallOfFameWinners,
@@ -609,6 +608,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             reviewHour: "Review %s quiz",
             reviewUnavailable: "Review isn’t available on this device for that hour.",
             reviewLast: "Review last attempt",
+            hourlyLoading: "Loading hourly challenge…",
+            loadingText: "Loading rankings…",
+            galleryLoading: "Opening the gallery…",
             topPlayersToday: "Top Players Today",
             viewAll: "View All",
             antiCheatExitTitle: "Exit Quiz?",
@@ -664,6 +666,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             reviewHour: "%s-এর উত্তর দেখুন",
             reviewUnavailable: "এই ঘণ্টার উত্তর এই ডিভাইসে সংরক্ষিত নেই।",
             reviewLast: "শেষ প্রচেষ্টা দেখুন",
+            hourlyLoading: "ঘণ্টার কুইজ লোড হচ্ছে…",
+            loadingText: "র‍্যাঙ্কিং লোড হচ্ছে…",
+            galleryLoading: "গ্যালারি খোলা হচ্ছে…",
             upcomingPowerPlay: "পাওয়ার প্লে",
             startsIn: "সময় বাকি",
             closingIn: "শেষ হতে বাকি",
@@ -1952,13 +1957,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                         {/* Overlay removed for professional cleaner look */}
 
                         {loadingGallery ? (
-                            <div className="flex flex-col items-center justify-center py-20 pointer-events-none">
-                                <div className="flex flex-col items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-md">
-                                    <div className="flex h-[120px] w-[120px] items-center justify-center overflow-hidden rounded-2xl border border-orange-100 bg-orange-50 shadow-sm">
-                                        <DotLottiePlayer src={sandyLoading} autoplay loop style={{ width: '100px', height: '100px' }} />
-                                    </div>
-                                    <p className={`animate-pulse text-sm font-bold text-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}>{language === 'en' ? 'Opening the Gallery…' : 'গ্যালারি খোলা হচ্ছে…'}</p>
-                                </div>
+                            <div
+                                className="flex min-h-[min(50vh,420px)] flex-col items-center justify-center py-16"
+                                role="status"
+                                aria-live="polite"
+                                aria-busy="true"
+                            >
+                                <BrutalLoaderContent compact message={t.galleryLoading} />
                             </div>
                         ) : (
                             <div className="space-y-5 sm:space-y-8 max-w-7xl mx-auto px-0 md:px-8">
@@ -2138,11 +2143,13 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     {/* Winners Podium / List Container */}
                     <div className="space-y-4">
                         {(leaderboardTab === 'all-time' ? loadingFull : loadingMonthly) ? (
-                            <div className="flex flex-col items-center justify-center py-16">
-                                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-orange-100 shadow-sm">
-                                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-200 border-t-orange-600"></div>
-                                </div>
-                                <p className={`mt-2 text-xs font-bold text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>{t.loadingText || 'Loading Rankings...'}</p>
+                            <div
+                                className="flex min-h-[min(50vh,420px)] flex-col items-center justify-center py-16"
+                                role="status"
+                                aria-live="polite"
+                                aria-busy="true"
+                            >
+                                <BrutalLoaderContent compact message={t.loadingText} />
                             </div>
                         ) : (leaderboardTab === 'all-time' ? fullLeaderboard : activeMonthlyList).length > 0 ? (
                             <>
@@ -2570,6 +2577,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                         )}
                     </div>
 
+                    {!loading && (
                     <div className="mt-2 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm sm:mt-3">
                         <div className="grid grid-cols-3 divide-x divide-slate-200/80">
                             <div className="bg-white px-1.5 py-2 text-center sm:px-3 sm:py-3">
@@ -2591,8 +2599,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             </div>
                         </div>
                     </div>
+                    )}
 
-                    {hourlyChaseMessage && (
+                    {!loading && hourlyChaseMessage && (
                         <div className="mt-2 border-t border-dashed border-slate-200/80 pt-2">
                             <div className="rounded-2xl border border-dashed border-orange-200/80 bg-gradient-to-br from-orange-50 via-[#fffdf7] to-amber-50 px-2 py-1.5 shadow-sm">
                                 <div className="flex items-start gap-1.5">
@@ -2620,25 +2629,39 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
             {/* 2. 24-HOUR DAY RING */}
             <div className="relative flex flex-col items-center px-3 py-3 sm:px-4 sm:py-5" ref={ladderRef}>
-                <HourlyDayRing
-                    slots={[...buildHourlySlots()].reverse()}
-                    language={language}
-                    timeLeft={timeLeft}
-                    loading={loading}
-                    hourlyQuizRefreshBusy={hourlyQuizRefreshBusy}
-                    labels={{
-                        liveNow: t.liveNow,
-                        nextChallengeLabel: t.nextChallengeLabel,
-                        startsIn: t.startsIn,
-                        timeLeft: t.timeLeft,
-                        upcomingStatus: t.upcomingStatus,
-                        reviewAnswers: t.reviewAnswers,
-                        reviewHour: t.reviewHour,
-                        reviewLast: t.reviewLast,
-                    }}
-                    onPlayLive={beginHourlyQuiz}
-                    onReview={startReview}
-                />
+                {loading ? (
+                    <div
+                        className="flex min-h-[min(70vh,520px)] w-full flex-col items-center justify-center py-8"
+                        role="status"
+                        aria-live="polite"
+                        aria-busy="true"
+                    >
+                        <BrutalLoaderContent
+                            compact
+                            message={t.hourlyLoading}
+                        />
+                    </div>
+                ) : (
+                    <HourlyDayRing
+                        slots={[...buildHourlySlots()].reverse()}
+                        language={language}
+                        timeLeft={timeLeft}
+                        loading={false}
+                        hourlyQuizRefreshBusy={hourlyQuizRefreshBusy}
+                        labels={{
+                            liveNow: t.liveNow,
+                            nextChallengeLabel: t.nextChallengeLabel,
+                            startsIn: t.startsIn,
+                            timeLeft: t.timeLeft,
+                            upcomingStatus: t.upcomingStatus,
+                            reviewAnswers: t.reviewAnswers,
+                            reviewHour: t.reviewHour,
+                            reviewLast: t.reviewLast,
+                        }}
+                        onPlayLive={beginHourlyQuiz}
+                        onReview={startReview}
+                    />
+                )}
             </div>
 
             {showAbortWarningModal && createPortal(

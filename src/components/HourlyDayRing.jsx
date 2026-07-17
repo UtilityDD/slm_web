@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { BrutalLoaderContent } from './loaders/PageLoader';
 
 const CX = 140;
 const CY = 140;
@@ -233,9 +234,16 @@ export default function HourlyDayRing({
 
     if (loading) {
         return (
-            <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-3">
-                <div className="aspect-square w-full max-w-[min(82vw,300px)] animate-pulse rounded-full border border-slate-200/80 bg-white shadow-sm" />
-                <div className="h-16 w-full max-w-[min(82vw,300px)] animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm" />
+            <div
+                className="mx-auto flex min-h-[min(60vh,420px)] w-full max-w-sm flex-col items-center justify-center py-8"
+                role="status"
+                aria-live="polite"
+                aria-busy="true"
+            >
+                <BrutalLoaderContent
+                    compact
+                    message={language === 'bn' ? 'ঘণ্টার কুইজ লোড হচ্ছে…' : 'Loading hourly challenge…'}
+                />
             </div>
         );
     }
