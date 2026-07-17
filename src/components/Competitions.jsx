@@ -435,7 +435,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         if (!showHallOfFame) {
             hallCelebrationShownRef.current = false;
             setShowHallCelebration(false);
+            return;
         }
+        // Always land on মাসের সেরা / Champion when opening Hall of Fame
+        setHallOfFameBoardTab(MONTHLY_SUB_TAB.CHAMPION);
     }, [showHallOfFame]);
 
     useEffect(() => {
@@ -1973,6 +1976,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                 setHallOfFamePrizeView('detailed');
                                                 storageUtils.setItem(HOF_PRIZE_VIEW_STORAGE_KEY, 'detailed');
                                                 setHallOfFameUserPrizeFilter(null);
+                                                setHallOfFameBoardTab(MONTHLY_SUB_TAB.CHAMPION);
                                             }}
                                             className={`min-h-[40px] rounded-full px-3 py-2 text-xs font-black transition-all active:scale-[0.98] sm:text-sm ${language === 'bn' ? 'font-bengali' : ''} ${
                                                 hallOfFamePrizeView !== 'by_user'
