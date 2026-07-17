@@ -27,38 +27,46 @@ export default function LogoutConfirmationModal({ onConfirm, onCancel, language,
       onClick={loading ? undefined : onCancel}
     >
       <div
-        className="neo-brutal w-full sm:max-w-sm animate-slide-up-sheet sm:animate-bounce-in"
+        className="w-full sm:max-w-sm animate-slide-up-sheet sm:animate-scale-in"
         role="dialog"
         aria-modal="true"
         aria-labelledby="logout-modal-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="nb-card overflow-hidden p-0 rounded-none sm:rounded-lg border-t-[2.5px] sm:border-[2.5px] border-slate-900 shadow-[0_-4px_0_#0f172a] sm:shadow-[4px_4px_0_#0f172a]">
-          <div className="nb-hazard" aria-hidden="true" />
+        <div className="relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
+          <div
+            className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
+            aria-hidden="true"
+          />
 
-          <div className="p-6 sm:p-7 text-center sm:text-left bg-[#fffdf7]">
-            <div className="nb-icon-badge w-14 h-14 flex items-center justify-center mx-auto sm:mx-0 mb-5 bg-red-100 text-red-700">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <div className="flex items-start gap-3.5 p-6 pt-7 sm:p-7 text-left">
+            <span
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600 shadow-sm"
+              aria-hidden="true"
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2
+                id="logout-modal-title"
+                className={`text-lg sm:text-xl font-black leading-tight text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}
+              >
+                {t.title}
+              </h2>
+              <p className={`mt-1 text-sm font-semibold leading-snug text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                {t.message}
+              </p>
             </div>
-            <h2
-              id="logout-modal-title"
-              className={`text-xl sm:text-2xl font-black text-slate-900 mb-2 ${language === 'bn' ? 'font-bengali' : ''}`}
-            >
-              {t.title}
-            </h2>
-            <p className={`text-slate-600 font-semibold text-sm sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
-              {t.message}
-            </p>
           </div>
 
-          <div className="p-4 sm:p-5 flex flex-col sm:flex-row gap-3 border-t-2 border-slate-900 bg-white pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-5">
+          <div className="flex flex-col gap-3 border-t border-slate-200/80 bg-white/60 p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:flex-row sm:p-5 sm:pb-5">
             <button
               type="button"
               onClick={onConfirm}
               disabled={loading}
-              className="order-1 sm:order-2 w-full sm:flex-1 min-h-[48px] py-3 nb-btn-danger font-black text-base flex items-center justify-center gap-2"
+              className={`order-1 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-red-500 py-3 text-base font-black text-white shadow-md shadow-red-500/30 transition-all active:scale-[0.98] disabled:opacity-60 sm:order-2 sm:flex-1 ${language === 'bn' ? 'font-bengali' : ''}`}
             >
               {loading ? (
                 <>
@@ -74,7 +82,7 @@ export default function LogoutConfirmationModal({ onConfirm, onCancel, language,
               type="button"
               onClick={onCancel}
               disabled={loading}
-              className="order-2 sm:order-1 w-full sm:flex-1 min-h-[48px] py-3 nb-btn-secondary font-black text-base disabled:opacity-50"
+              className={`order-2 min-h-[48px] w-full rounded-full border border-slate-200/80 bg-white py-3 text-base font-bold text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-[0.98] disabled:opacity-50 sm:order-1 sm:flex-1 ${language === 'bn' ? 'font-bengali' : ''}`}
             >
               {t.cancel}
             </button>

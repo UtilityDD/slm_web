@@ -1344,79 +1344,98 @@ export default function SmartLinemanUI() {
             )}
 
             {showSessionEndedModal && (
-              <div className="fixed inset-0 z-[400] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="session-ended-title">
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 text-center border border-slate-200 dark:border-slate-700 relative overflow-hidden">
-                  <div className="absolute -top-24 -right-24 w-48 h-48 bg-rose-500/10 blur-[100px] rounded-full pointer-events-none" />
-                  <div className="relative">
-                    <div className="w-20 h-20 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <svg className="w-10 h-10 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
+              <div className="fixed inset-0 z-[400] bg-slate-900/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="session-ended-title">
+                <div className="w-full sm:max-w-sm animate-slide-up-sheet sm:animate-scale-in">
+                  <div className="relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
+                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden="true" />
+
+                    <div className="flex items-start gap-3.5 p-6 pt-7 sm:p-7 text-left">
+                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 shadow-sm" aria-hidden="true">
+                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <h2 id="session-ended-title" className={`text-lg sm:text-xl font-black leading-tight text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                          {language === 'en' ? 'Signed out' : 'সাইন আউট হয়েছে'}
+                        </h2>
+                        <p className={`mt-1 text-sm font-semibold leading-snug text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                          {language === 'en'
+                            ? 'Your account was just signed in on another device. For your security, only one device can stay signed in at a time.'
+                            : 'আপনার অ্যাকাউন্টটি এইমাত্র অন্য একটি ডিভাইসে সাইন ইন করা হয়েছে। নিরাপত্তার জন্য একসাথে কেবল একটি ডিভাইসে সাইন ইন থাকা যায়।'}
+                        </p>
+                      </div>
                     </div>
-                    <h2 id="session-ended-title" className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                      {language === 'en' ? 'Signed out' : 'সাইন আউট হয়েছে'}
-                    </h2>
-                    <p className="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
-                      {language === 'en'
-                        ? 'Your account was just signed in on another device. For your security, only one device can stay signed in at a time.'
-                        : 'আপনার অ্যাকাউন্টটি এইমাত্র অন্য একটি ডিভাইসে সাইন ইন করা হয়েছে। নিরাপত্তার জন্য একসাথে কেবল একটি ডিভাইসে সাইন ইন থাকা যায়।'}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setShowSessionEndedModal(false)}
-                      className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-orange-600/20"
-                    >
-                      {language === 'en' ? 'OK' : 'ঠিক আছে'}
-                    </button>
+
+                    <div className="border-t border-slate-200/80 bg-white/60 p-4 sm:p-5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-5">
+                      <button
+                        type="button"
+                        onClick={() => setShowSessionEndedModal(false)}
+                        className={`w-full min-h-[48px] rounded-full bg-orange-500 py-3 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}
+                      >
+                        {language === 'en' ? 'OK' : 'ঠিক আছে'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
             {showActiveBroadcastModal && activeBroadcastNotice && (
-              <div className="fixed inset-0 z-[210] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 text-left border border-slate-200 dark:border-slate-700 relative overflow-hidden max-h-[85vh] flex flex-col">
-                  <div className="absolute -top-24 -right-24 w-48 h-48 bg-orange-500/10 blur-[100px] rounded-full pointer-events-none" />
-                  <div className="relative flex-1 min-h-0 flex flex-col">
-                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0 mb-4 bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">
-                      {activeBroadcastNotice.type === 'alert' ? '🚨' : activeBroadcastNotice.type === 'warning' ? '⚠️' : activeBroadcastNotice.type === 'update' ? '✅' : '📢'}
+              <div className="fixed inset-0 z-[210] bg-slate-900/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+                <div className="w-full sm:max-w-md max-h-[85vh] flex flex-col animate-slide-up-sheet sm:animate-scale-in">
+                  <div className="relative flex max-h-[85vh] min-h-0 flex-col overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
+                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden="true" />
+
+                    <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-6 pt-7 text-left sm:p-7">
+                      <div className="flex shrink-0 items-start gap-3.5">
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-xl leading-none shadow-sm" aria-hidden="true">
+                          {activeBroadcastNotice.type === 'alert' ? '🚨' : activeBroadcastNotice.type === 'warning' ? '⚠️' : activeBroadcastNotice.type === 'update' ? '✅' : '📢'}
+                        </span>
+                        <h2 className="min-w-0 flex-1 text-lg sm:text-xl font-black leading-tight text-slate-900">
+                          {activeBroadcastNotice.title}
+                        </h2>
+                      </div>
+                      <p className="mt-3 min-h-0 flex-1 overflow-y-auto custom-scrollbar whitespace-pre-wrap text-sm font-semibold leading-relaxed text-slate-600">
+                        {activeBroadcastNotice.message}
+                      </p>
                     </div>
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                      {activeBroadcastNotice.title}
-                    </h2>
-                    <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-wrap overflow-y-auto custom-scrollbar flex-1 mb-6">
-                      {activeBroadcastNotice.message}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setShowActiveBroadcastModal(false)}
-                      className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-orange-600/20 shrink-0"
-                    >
-                      {language === 'en' ? 'OK' : 'ঠিক আছে'}
-                    </button>
+
+                    <div className="shrink-0 border-t border-slate-200/80 bg-white/60 p-4 sm:p-5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-5">
+                      <button
+                        type="button"
+                        onClick={() => setShowActiveBroadcastModal(false)}
+                        className={`w-full min-h-[48px] rounded-full bg-orange-500 py-3 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}
+                      >
+                        {language === 'en' ? 'OK' : 'ঠিক আছে'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
             {showUpdateModal && updateInfo && (
-              <div className="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 text-center border border-slate-200 dark:border-slate-700 relative overflow-hidden">
-                  <div className="absolute -top-24 -right-24 w-48 h-48 bg-orange-500/10 blur-[100px] rounded-full"></div>
-                  <div className="relative">
-                    <div className="w-20 h-20 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <span className="text-4xl animate-bounce-slow">🚀</span>
-                    </div>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{language === 'en' ? 'Update Available' : 'নতুন সংস্করণ উপলব্ধ'}</h2>
-                    <p className="text-slate-600 dark:text-slate-300 mb-6">
+              <div className="fixed inset-0 z-[200] bg-slate-900/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+                <div className="w-full sm:max-w-md animate-slide-up-sheet sm:animate-scale-in">
+                  <div className="relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
+                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden="true" />
+                    <div className="flex items-start gap-3.5 p-6 pt-7 text-left sm:p-7">
+                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-2xl leading-none shadow-sm" aria-hidden="true">🚀</span>
+                      <div className="min-w-0 flex-1">
+                    <h2 className={`text-lg sm:text-xl font-black leading-tight text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>{language === 'en' ? 'Update Available' : 'নতুন সংস্করণ উপলব্ধ'}</h2>
+                    <p className={`mt-1 text-sm font-semibold leading-snug text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
                       {isForceUpdate ? (language === 'en' ? `A critical update (v${updateInfo.version_name}) is required to continue using the app.` : `পরবর্তী ধাপের জন্য একটি গুরুত্বপূর্ণ আপডেট (v${updateInfo.version_name}) প্রয়োজন।`) : (language === 'en' ? `A new version is available. Please refresh to apply the latest updates.` : `একটি নতুন সংস্করণ এসেছে। সর্বশেষ আপডেটগুলি পেতে দয়া করে রিফ্রেশ করুন।`)}
                     </p>
-                    <div className="space-y-3">
-                      <button onClick={() => { if (isForceUpdate && updateInfo.update_url && updateInfo.update_url !== '#') { Browser.open({ url: updateInfo.update_url }); } else { applyAppRefresh(); } }} className="block w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-all transform hover:scale-[1.02] shadow-lg shadow-orange-600/20">
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-3 border-t border-slate-200/80 bg-white/60 p-4 sm:p-5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-5">
+                      <button onClick={() => { if (isForceUpdate && updateInfo.update_url && updateInfo.update_url !== '#') { Browser.open({ url: updateInfo.update_url }); } else { applyAppRefresh(); } }} className={`w-full min-h-[48px] rounded-full bg-orange-500 py-3 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}>
                         {isForceUpdate ? (language === 'en' ? 'Update Now' : 'এখনই আপডেট করুন') : (language === 'en' ? 'Refresh Now' : 'এখনই রিফ্রেশ করুন')}
                       </button>
                       {!isForceUpdate && (
-                        <button onClick={() => setShowUpdateModal(false)} className="block w-full py-3 text-slate-500 dark:text-slate-400 font-bold hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+                        <button onClick={() => setShowUpdateModal(false)} className={`w-full min-h-[48px] rounded-full border border-slate-200/80 bg-white py-3 text-base font-bold text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}>
                           {language === 'en' ? 'Later' : 'পরে'}
                         </button>
                       )}
@@ -1646,18 +1665,67 @@ export default function SmartLinemanUI() {
             )}
 
             {showLanguageModal && (
-              <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-700 animate-scale-in">
-                  <div className="p-6 text-center border-b border-slate-100 dark:border-slate-700">
-                    <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">🌐</div>
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Choose Language</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">ভাষা নির্বাচন করুন</p>
+              <div
+                className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/55 animate-fade-in"
+                role="presentation"
+                onClick={() => setShowLanguageModal(false)}
+              >
+                <div
+                  className="w-full sm:max-w-sm animate-slide-up-sheet sm:animate-scale-in"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="language-modal-title"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
+                    <div
+                      className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
+                      aria-hidden="true"
+                    />
+
+                    <div className="flex items-start gap-3.5 p-6 pt-7 sm:p-7 text-left">
+                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-xl leading-none shadow-sm" aria-hidden="true">🌐</span>
+                      <div className="min-w-0 flex-1">
+                        <h3 id="language-modal-title" className="text-lg sm:text-xl font-black leading-tight text-slate-900">Choose Language</h3>
+                        <p className="mt-1 text-sm font-semibold leading-snug text-slate-600 font-bengali">ভাষা নির্বাচন করুন</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2.5 px-5 pb-5 sm:px-7">
+                      <button
+                        type="button"
+                        onClick={() => handleLanguageSelect('en')}
+                        className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3.5 shadow-sm transition-all active:scale-[0.98] ${language === 'en' ? 'border-orange-500 bg-orange-500 text-white shadow-orange-500/30' : 'border-slate-200/80 bg-white text-slate-900 hover:bg-orange-50'}`}
+                      >
+                        <span className="flex items-center gap-3">
+                          <span className="text-xl" aria-hidden>🇺🇸</span>
+                          <span className="text-sm font-black">English</span>
+                        </span>
+                        {language === 'en' && <span className="text-base font-black" aria-hidden>✓</span>}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleLanguageSelect('bn')}
+                        className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3.5 shadow-sm transition-all active:scale-[0.98] ${language === 'bn' ? 'border-orange-500 bg-orange-500 text-white shadow-orange-500/30' : 'border-slate-200/80 bg-white text-slate-900 hover:bg-orange-50'}`}
+                      >
+                        <span className="flex items-center gap-3">
+                          <span className="text-xl" aria-hidden>🇮🇳</span>
+                          <span className="text-sm font-black font-bengali">বাংলা (Bengali)</span>
+                        </span>
+                        {language === 'bn' && <span className="text-base font-black" aria-hidden>✓</span>}
+                      </button>
+                    </div>
+
+                    <div className="border-t border-slate-200/80 bg-white/60 p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:p-5 sm:pb-5">
+                      <button
+                        type="button"
+                        onClick={() => setShowLanguageModal(false)}
+                        className="w-full min-h-[48px] rounded-full border border-slate-200/80 bg-white py-3 text-base font-bold text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-[0.98]"
+                      >
+                        Cancel / বাতিল করুন
+                      </button>
+                    </div>
                   </div>
-                  <div className="p-4 grid grid-cols-1 gap-3">
-                    <button onClick={() => handleLanguageSelect('en')} className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${language === 'en' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-100 dark:border-slate-700 hover:border-orange-200'}`}><div className="flex items-center gap-3"><span className="text-2xl">🇺🇸</span><span className="font-bold text-slate-900 dark:text-slate-100">English</span></div>{language === 'en' && <span className="text-orange-600">✓</span>}</button>
-                    <button onClick={() => handleLanguageSelect('bn')} className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${language === 'bn' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-100 dark:border-slate-700 hover:border-orange-200'}`}><div className="flex items-center gap-3"><span className="text-2xl">🇮🇳</span><span className="font-bold text-slate-900 dark:text-slate-100">বাংলা (Bengali)</span></div>{language === 'bn' && <span className="text-orange-600">✓</span>}</button>
-                  </div>
-                  <div className="p-4 bg-slate-50 dark:bg-slate-800/50"><button onClick={() => setShowLanguageModal(false)} className="w-full py-3 font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">Cancel / বাতিল করুন</button></div>
                 </div>
               </div>
             )}
