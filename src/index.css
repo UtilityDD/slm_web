@@ -254,33 +254,186 @@ body,
     }
   }
 
-  .landing-podium-card {
+  .landing-nonprofit-strip {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 0.9rem 1rem;
+    border: 2px solid #0f172a;
     border-radius: 1rem;
-    transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
+    background: linear-gradient(120deg, #ecfdf5 0%, #fff 55%, #fff7ed 100%);
+    box-shadow: 3px 3px 0 #0f172a;
   }
 
-  .landing-podium-card--gold {
+  .landing-vm-card {
+    border: 2px solid #0f172a;
+    border-radius: 1rem;
+    padding: 1.25rem 1.35rem;
+    box-shadow: 3px 3px 0 #0f172a;
+  }
+
+  .landing-vm-card--vision {
     background: linear-gradient(165deg, #fffbeb 0%, #fef3c7 100%);
   }
 
-  .landing-podium-card--silver {
-    background: linear-gradient(165deg, #f8fafc 0%, #f1f5f9 100%);
+  .landing-vm-card--mission {
+    background: linear-gradient(165deg, #ecfeff 0%, #cffafe 100%);
   }
 
-  .landing-podium-card--bronze {
-    background: linear-gradient(165deg, #fff7ed 0%, #ffedd5 100%);
+  @media (min-width: 640px) {
+    .landing-vm-card {
+      padding: 1.5rem 1.65rem;
+    }
   }
 
-  .landing-podium-card--empty {
-    background: rgba(255, 255, 255, 0.7);
-    border: 1px dashed rgba(15, 23, 42, 0.14);
+  .landing-slim-stats {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.85rem 0.75rem;
+    border: 2px solid rgba(15, 23, 42, 0.12);
     border-radius: 1rem;
-    box-shadow: none;
+    background: rgba(255, 255, 255, 0.75);
   }
 
-  .landing-podium-card--empty:hover {
-    transform: none;
-    box-shadow: none;
+  .landing-slim-stat {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    padding: 0.25rem 0.35rem;
+  }
+
+  .landing-slim-stats__divider {
+    width: 1px;
+    align-self: stretch;
+    background: rgba(15, 23, 42, 0.1);
+    flex-shrink: 0;
+  }
+
+  .landing-prize-clean {
+    border: 2px solid #0f172a;
+    box-shadow: 3px 3px 0 #0f172a;
+    background: #fff;
+  }
+
+  .landing-prize-clean__stage {
+    background: linear-gradient(145deg, #fff7ed 0%, #fffdf7 45%, #ffedd5 100%);
+  }
+
+  .landing-prize-watermark {
+    position: absolute;
+    left: 0.2rem;
+    top: 50%;
+    z-index: 1;
+    writing-mode: vertical-rl;
+    transform: translateY(-50%) rotate(180deg);
+    white-space: nowrap;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: clamp(1.5rem, 5vw, 2.6rem);
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    color: rgba(15, 23, 42, 0.09);
+    pointer-events: none;
+    user-select: none;
+    line-height: 1;
+  }
+
+  @media (min-width: 640px) {
+    .landing-prize-watermark {
+      left: 0.45rem;
+      letter-spacing: 0.18em;
+    }
+  }
+
+  .landing-prize-winner-name {
+    position: absolute;
+    left: 50%;
+    bottom: 1rem;
+    z-index: 2;
+    transform: translateX(-50%);
+    max-width: min(88%, 22rem);
+    padding: 0.45rem 1rem;
+    border-radius: 9999px;
+    border: 2px solid #0f172a;
+    background: rgba(255, 253, 247, 0.94);
+    box-shadow: 2px 2px 0 #0f172a;
+    font-size: 0.9rem;
+    font-weight: 900;
+    color: #0f172a;
+    text-align: center;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  @media (min-width: 640px) {
+    .landing-prize-winner-name {
+      bottom: 1.25rem;
+      font-size: 1.05rem;
+      padding: 0.55rem 1.25rem;
+    }
+  }
+
+  .landing-month-toppers {
+    padding: 1.25rem 0.75rem 1.5rem;
+    border-radius: 1.25rem;
+    background: linear-gradient(180deg, rgba(255, 247, 237, 0.7) 0%, rgba(255, 253, 247, 0.35) 100%);
+    border: 1px solid rgba(15, 23, 42, 0.06);
+  }
+
+  @media (min-width: 640px) {
+    .landing-month-toppers {
+      padding: 1.75rem 1.5rem 2rem;
+    }
+  }
+
+  .landing-month-toppers__row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.65rem;
+  }
+
+  .landing-month-topper {
+    flex: 1 1 0;
+    max-width: 10.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0.35rem 0.25rem;
+  }
+
+  .landing-month-topper__avatar {
+    width: 5.5rem;
+    height: 5.5rem;
+  }
+
+  .landing-month-topper--champ .landing-month-topper__avatar {
+    width: 6.5rem;
+    height: 6.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .landing-month-toppers__row {
+      gap: 1.5rem;
+    }
+
+    .landing-month-topper__avatar {
+      width: 6.5rem;
+      height: 6.5rem;
+    }
+
+    .landing-month-topper--champ .landing-month-topper__avatar {
+      width: 8rem;
+      height: 8rem;
+    }
+
+    .landing-month-topper--champ {
+      padding-bottom: 0.5rem;
+    }
   }
 
   .landing-podium-avatar {
@@ -324,30 +477,232 @@ body,
     box-shadow: none;
   }
 
-  @media (min-width: 640px) {
-    .landing-podium-card--lift-1 {
-      padding-top: 1.75rem;
-      padding-bottom: 1.75rem;
-      min-height: 11.5rem;
-    }
+  .landing-sponsors-mask {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  }
 
-    .landing-podium-card--lift-2,
-    .landing-podium-card--lift-3 {
-      min-height: 9.75rem;
+  .landing-sponsors-marquee {
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .landing-sponsors-marquee-track {
+    display: flex;
+    width: max-content;
+    animation: landing-sponsors-scroll 40s linear infinite;
+  }
+
+  .landing-sponsors-marquee:hover .landing-sponsors-marquee-track,
+  .landing-sponsors-marquee:focus-within .landing-sponsors-marquee-track {
+    animation-play-state: paused;
+  }
+
+  .landing-sponsors-marquee-group {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  @keyframes landing-sponsors-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
     }
   }
 
-  @media (hover: hover) {
-    .landing-podium-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  @media (prefers-reduced-motion: reduce) {
+    .landing-sponsors-marquee-track {
+      animation: none;
+      flex-wrap: wrap;
+      width: 100%;
+      justify-content: center;
+      row-gap: 0.75rem;
     }
 
-    .landing-podium-card--empty:hover {
-      transform: none;
-      box-shadow: none;
-      background: rgba(255, 255, 255, 0.85);
+    .landing-sponsors-marquee-group[aria-hidden='true'] {
+      display: none;
     }
+  }
+
+  .landing-sponsor-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-shrink: 0;
+    min-width: 11rem;
+    max-width: 16rem;
+    padding: 0.65rem 0.9rem;
+    border: 2px solid #0f172a;
+    border-radius: 9999px;
+    background: #fff;
+    box-shadow: 2px 2px 0 #0f172a;
+  }
+
+  .landing-sponsor-avatar {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    object-fit: cover;
+    border: 2px solid #0f172a;
+    flex-shrink: 0;
+    background: #f8fafc;
+  }
+
+  .landing-sponsor-avatar--generic {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 900;
+    color: #0f172a;
+    background: linear-gradient(145deg, #fde68a, #fdba74);
+  }
+
+  .landing-engage-cta {
+    flex: 1;
+    min-height: 3.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem 1.25rem;
+    border: 2px solid #0f172a;
+    border-radius: 9999px;
+    font-size: 0.95rem;
+    font-weight: 900;
+    box-shadow: 3px 3px 0 #0f172a;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .landing-engage-cta--support {
+    background: #fff7ed;
+    color: #9a3412;
+  }
+
+  .landing-engage-cta--contact {
+    background: #0f172a;
+    color: #fff;
+  }
+
+  .landing-engage-cta:active {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 #0f172a;
+  }
+
+  .landing-no-money-badge {
+    padding: 0.4rem 0.75rem;
+    border-radius: 9999px;
+    border: 2px solid #0f172a;
+    background: #fee2e2;
+    color: #9f1239;
+    box-shadow: 2px 2px 0 #0f172a;
+  }
+
+  .landing-support-way {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 1rem 1.1rem;
+    border: 2px solid #0f172a;
+    border-radius: 1rem;
+    background: #fff;
+    box-shadow: 3px 3px 0 #0f172a;
+    transition: transform 0.15s ease, background-color 0.15s ease;
+  }
+
+  .landing-support-way:active {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 #0f172a;
+  }
+
+  @media (hover: hover) {
+    .landing-support-way:hover {
+      background: #fff7ed;
+    }
+  }
+
+  .landing-support-way__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    border-radius: 0.75rem;
+    border: 2px solid #0f172a;
+    background: #ffedd5;
+    color: #9a3412;
+  }
+
+  .landing-contact-form {
+    padding: 1.15rem 1.1rem 1.25rem;
+    border: 2px solid #0f172a;
+    border-radius: 1rem;
+    background: #fff;
+    box-shadow: 3px 3px 0 #0f172a;
+  }
+
+  @media (min-width: 640px) {
+    .landing-contact-form {
+      padding: 1.35rem 1.5rem 1.5rem;
+    }
+  }
+
+  .landing-contact-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #475569;
+  }
+
+  .landing-contact-field input,
+  .landing-contact-field select,
+  .landing-contact-field textarea {
+    min-height: 2.75rem;
+    padding: 0.65rem 0.85rem;
+    border: 2px solid rgba(15, 23, 42, 0.18);
+    border-radius: 0.75rem;
+    background: #fffdf7;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0f172a;
+    outline: none;
+  }
+
+  .landing-contact-field textarea {
+    min-height: 7rem;
+    resize: vertical;
+  }
+
+  .landing-contact-field input:focus,
+  .landing-contact-field select:focus,
+  .landing-contact-field textarea:focus {
+    border-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+  }
+
+  .landing-contact-submit {
+    width: 100%;
+    min-height: 3rem;
+    border-radius: 9999px;
+    border: 2px solid #0f172a;
+    background: #f97316;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 900;
+    box-shadow: 3px 3px 0 #0f172a;
+  }
+
+  .landing-contact-submit:active:not(:disabled) {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 #0f172a;
   }
 
   .landing-section-title {

@@ -217,6 +217,44 @@ export function normalizeHallOfFameViewMode(mode) {
     return HOF_VIEW_MODES.includes(mode) ? mode : 'detailed';
 }
 
+/** Slug for optional logo files under public/images/sponsor/{slug}.{ext} */
+function sponsorLogoSlug(englishName = '') {
+    return englishName
+        .toLowerCase()
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 64);
+}
+
+/**
+ * Unique prize sponsors for the landing horizontal scroll.
+ * Logos are optional files at /images/sponsor/{slug}.webp|png|jpg|jpeg — never prize product images.
+ */
+export function buildLandingSponsors(language = 'bn') {
+    const isBn = language === 'bn';
+    const seen = new Map();
+
+    for (const entry of prizeCatalog.prizes || []) {
+        const key = (entry.sponsor_en || '').trim().toLowerCase();
+        if (!key || seen.has(key)) continue;
+        const name = ((isBn ? entry.sponsor_bn : entry.sponsor_en) || entry.sponsor_en || '').trim();
+        if (!name) continue;
+        const slug = sponsorLogoSlug(entry.sponsor_en || name);
+        const logoCandidates = slug
+            ? PRIZE_IMAGE_EXTENSIONS.map((ext) => `/images/sponsor/${slug}.${ext}`)
+            : [];
+        seen.set(key, {
+            id: slug || key.replace(/\s+/g, '-'),
+            name,
+            logoCandidates,
+        });
+    }
+
+    return Array.from(seen.values());
+}
+
 /** Public landing carousel — catalog prizes enriched with winner names when available. */
 export function buildLandingPrizeSlides(language = 'bn', hallOfFameData = []) {
     const monthlyTabs = getEncouragementCopy(language).monthlyTabs;
@@ -240,7 +278,7 @@ export function buildLandingPrizeSlides(language = 'bn', hallOfFameData = []) {
 
     const rankLabels = language === 'en'
         ? { 1: '1st Prize', 2: '2nd Prize', 3: '3rd Prize' }
-        : { 1: '১ম পুরস্কার', 2: '২য় পুরস্কার', 3: '৩য় পুরস্কার' };
+        : { 1: 'প্রথম পুরস্কার', 2: 'দ্বিতীয় পুরস্কার', 3: 'তৃতীয় পুরস্কার' };
 
     return (prizeCatalog.prizes || [])
         .map((entry) => {
