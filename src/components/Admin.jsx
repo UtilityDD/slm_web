@@ -32,6 +32,57 @@ const ADMIN_THEME = {
   primaryBtn: 'rounded-full bg-orange-500 px-3 py-2 text-sm font-bold text-white shadow-sm shadow-orange-500/30 transition-all active:scale-95',
 };
 
+const EMPTY_SPONSOR_FORM = {
+  headline: '',
+  headlines_text: '',
+  subtext: '',
+  sponsor_name: '',
+  image_url: '',
+  logo_url: '',
+  contact_phone: '',
+  contact_email: '',
+  contact_url: '',
+  cta_label: '',
+  theme: 'dark',
+  display_seconds: 5,
+  allow_skip: true,
+  contact_safety_mitra: false,
+  starts_at: '',
+  ends_at: '',
+  is_active: true,
+};
+
+/** Preset: Bangla non-profit “sponsor wanted” ad. Load into form, then Save + enable. */
+const SPONSOR_ASK_PRESET = {
+  ...EMPTY_SPONSOR_FORM,
+  headline: 'স্পনসর চাই',
+  headlines_text: 'স্পনসর চাই\nআমরা নন-প্রফিট\nবিজ্ঞাপনে স্পনসর হোন',
+  subtext:
+    'স্মার্ট লাইনম্যান একটি নন-প্রফিট উদ্যোগ। পুরস্কারের জন্য স্পনসরদের ধন্যবাদ। বিজ্ঞাপনের মাধ্যমে আমাদের স্পনসর হতে পারেন—দোকান, ব্যবসা, ফার্ম, ঠিকাদার।',
+  sponsor_name: 'স্মার্ট লাইনম্যান',
+  image_url: '/images/sponsor/sponsor_ad_slot.webp',
+  contact_email: 'support@smartlineman.in',
+  contact_url: 'smartlineman.in',
+  cta_label: 'ইমেইল করুন',
+  theme: 'dark',
+  display_seconds: 10,
+  allow_skip: true,
+  contact_safety_mitra: true,
+  is_active: false,
+};
+
+/** Local demo (preview only, not saved) — same content as the preset. */
+const DEMO_SPONSOR_FORM = { ...SPONSOR_ASK_PRESET };
+
+// Convert a timestamptz from Supabase to a value usable by <input type="datetime-local">.
+function toLocalInputValue(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 const NOTIFICATION_URGENCY_STYLES = {
   info: { selected: 'border-orange-300 bg-orange-50 text-orange-700 shadow-sm', idle: 'border-slate-200/80 text-slate-600 hover:bg-orange-50' },
   update: { selected: 'border-emerald-300 bg-emerald-50 text-emerald-700 shadow-sm', idle: 'border-slate-200/80 text-slate-600 hover:bg-emerald-50' },
@@ -747,7 +798,7 @@ function UserProfileCard({
   );
 }
 
-export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge, onPreviewIdleStory }) {
+export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge, onPreviewIdleStory, onPreviewSponsorAd }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
@@ -814,6 +865,14 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
   const [showProfileNudgePreviewSection, setShowProfileNudgePreviewSection] = useState(false);
   const [nudgePreviewRequireMode, setNudgePreviewRequireMode] = useState(false);
   const [showIdleStoryPreviewSection, setShowIdleStoryPreviewSection] = useState(false);
+  const [showSponsorAdSection, setShowSponsorAdSection] = useState(false);
+  const [sponsorAds, setSponsorAds] = useState([]);
+  const [sponsorAdsLoading, setSponsorAdsLoading] = useState(false);
+  const [sponsorAdsError, setSponsorAdsError] = useState(null);
+  const [sponsorEditingId, setSponsorEditingId] = useState(null);
+  const [sponsorSaving, setSponsorSaving] = useState(false);
+  const [sponsorImageUploading, setSponsorImageUploading] = useState(false);
+  const [sponsorForm, setSponsorForm] = useState(EMPTY_SPONSOR_FORM);
   const [showManageMenu, setShowManageMenu] = useState(false);
   const [profileSection, setProfileSection] = useState('team'); // 'team' | 'mine' for admin / safety mitra
   const [ownProfileRow, setOwnProfileRow] = useState(null);
@@ -1134,6 +1193,207 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
       console.error(err);
       alert(err.message || 'Failed to delete notice');
     }
+  };
+
+  // ---- Sponsor full-screen ad management ----
+  const loadSponsorAds = async () => {
+    if (userProfile?.role !== 'admin' || !user?.id) return;
+    setSponsorAdsLoading(true);
+    setSponsorAdsError(null);
+    try {
+      const { data, error } = await supabase.rpc('get_sponsor_ads_admin', {
+        p_caller_id: user.id
+      });
+      if (error) throw error;
+      setSponsorAds(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Error loading sponsor ads:', err);
+      setSponsorAds([]);
+      setSponsorAdsError(
+        err?.message ||
+          (language === 'en'
+            ? 'Could not load sponsor ads. Run the SQL migration sponsor_ads_rpc.sql in Supabase if this is the first setup.'
+            : 'স্পনসর অ্যাড লোড করা যায়নি।')
+      );
+    } finally {
+      setSponsorAdsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (userProfile?.role === 'admin' && user?.id && showSponsorAdSection && sponsorAds.length === 0) {
+      loadSponsorAds();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userProfile?.role, user?.id, showSponsorAdSection]);
+
+  const resetSponsorForm = () => {
+    setSponsorForm(EMPTY_SPONSOR_FORM);
+    setSponsorEditingId(null);
+  };
+
+  const startEditSponsorAd = (row) => {
+    setSponsorEditingId(row.id);
+    setSponsorForm({
+      headline: row.headline || '',
+      headlines_text: Array.isArray(row.headlines) ? row.headlines.join('\n') : '',
+      subtext: row.subtext || '',
+      sponsor_name: row.sponsor_name || '',
+      image_url: row.image_url || '',
+      logo_url: row.logo_url || '',
+      contact_phone: row.contact_phone || '',
+      contact_email: row.contact_email || '',
+      contact_url: row.contact_url || '',
+      cta_label: row.cta_label || '',
+      theme: row.theme === 'light' ? 'light' : 'dark',
+      display_seconds: row.display_seconds || 5,
+      allow_skip: row.allow_skip !== false,
+      contact_safety_mitra: row.contact_safety_mitra === true,
+      starts_at: toLocalInputValue(row.starts_at),
+      ends_at: toLocalInputValue(row.ends_at),
+      is_active: row.is_active !== false,
+    });
+    setShowSponsorAdSection(true);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const parseSponsorHeadlines = (form) => {
+    if (Array.isArray(form.headlines)) {
+      const arr = form.headlines.map((h) => String(h || '').trim()).filter(Boolean);
+      if (arr.length) return arr;
+    }
+    return String(form.headlines_text || '')
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+  };
+
+  const handleSponsorImageUpload = async (file, field) => {
+    if (!file || !user?.id) return;
+    setSponsorImageUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `sponsor-${field}-${user.id}-${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: true,
+      });
+      if (uploadError) throw uploadError;
+      const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      const url = publicUrlData?.publicUrl;
+      if (url) setSponsorForm((prev) => ({ ...prev, [field]: url }));
+    } catch (err) {
+      console.error('Sponsor image upload failed:', err);
+      alert(err.message || 'Failed to upload image');
+    } finally {
+      setSponsorImageUploading(false);
+    }
+  };
+
+  const handleSaveSponsorAd = async () => {
+    if (!user?.id) return;
+    const headlinesArr = parseSponsorHeadlines(sponsorForm);
+    const primaryHeadline = (sponsorForm.headline || '').trim() || headlinesArr[0] || '';
+    if (!primaryHeadline && !sponsorForm.image_url.trim()) {
+      alert(language === 'en' ? 'Add at least a headline or an image.' : 'অন্তত একটি হেডলাইন বা ছবি দিন।');
+      return;
+    }
+    setSponsorSaving(true);
+    try {
+      const { error } = await supabase.rpc('admin_upsert_sponsor_ad', {
+        p_caller_id: user.id,
+        p_headline: primaryHeadline,
+        p_subtext: sponsorForm.subtext,
+        p_sponsor_name: sponsorForm.sponsor_name,
+        p_image_url: sponsorForm.image_url,
+        p_logo_url: sponsorForm.logo_url,
+        p_contact_phone: sponsorForm.contact_phone,
+        p_contact_email: sponsorForm.contact_email,
+        p_contact_url: sponsorForm.contact_url,
+        p_cta_label: sponsorForm.cta_label,
+        p_theme: sponsorForm.theme,
+        p_display_seconds: Number(sponsorForm.display_seconds) || 5,
+        p_allow_skip: sponsorForm.allow_skip,
+        p_starts_at: sponsorForm.starts_at ? new Date(sponsorForm.starts_at).toISOString() : null,
+        p_ends_at: sponsorForm.ends_at ? new Date(sponsorForm.ends_at).toISOString() : null,
+        p_is_active: sponsorForm.is_active,
+        p_headlines: headlinesArr.length ? headlinesArr : null,
+        p_contact_safety_mitra: sponsorForm.contact_safety_mitra === true,
+        p_id: sponsorEditingId,
+      });
+      if (error) throw error;
+      resetSponsorForm();
+      await loadSponsorAds();
+    } catch (err) {
+      console.error('Failed to save sponsor ad:', err);
+      alert(err.message || 'Failed to save sponsor ad');
+    } finally {
+      setSponsorSaving(false);
+    }
+  };
+
+  const handleToggleSponsorAdActive = async (row) => {
+    if (!user?.id) return;
+    try {
+      const next = row.is_active !== true;
+      const { error } = await supabase.rpc('admin_set_sponsor_ad_active', {
+        p_caller_id: user.id,
+        p_id: row.id,
+        p_is_active: next
+      });
+      if (error) throw error;
+      setSponsorAds((prev) => prev.map((r) => (r.id === row.id ? { ...r, is_active: next } : r)));
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Failed to update sponsor ad');
+    }
+  };
+
+  const handleDeleteSponsorAd = async (id) => {
+    if (!user?.id) return;
+    if (!window.confirm(language === 'en' ? 'Delete this sponsor ad permanently?' : 'এই স্পনসর অ্যাড স্থায়ীভাবে মুছবেন?')) return;
+    try {
+      const { error } = await supabase.rpc('admin_delete_sponsor_ad', {
+        p_caller_id: user.id,
+        p_id: id
+      });
+      if (error) throw error;
+      setSponsorAds((prev) => prev.filter((r) => r.id !== id));
+      if (sponsorEditingId === id) resetSponsorForm();
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Failed to delete sponsor ad');
+    }
+  };
+
+  const handlePreviewSponsorForm = (formOverride = null) => {
+    if (typeof onPreviewSponsorAd !== 'function') return;
+    const form = formOverride || sponsorForm;
+    const headlinesArr = parseSponsorHeadlines(form);
+    onPreviewSponsorAd({
+      id: sponsorEditingId || 'preview',
+      headline: form.headline || headlinesArr[0] || '',
+      headlines: headlinesArr.length ? headlinesArr : undefined,
+      subtext: form.subtext,
+      sponsor_name: form.sponsor_name,
+      image_url: form.image_url || null,
+      logo_url: form.logo_url || null,
+      contact_phone: form.contact_phone || null,
+      contact_email: form.contact_email || null,
+      contact_url: form.contact_url || null,
+      cta_label: form.cta_label || null,
+      theme: form.theme,
+      display_seconds: Number(form.display_seconds) || 5,
+      allow_skip: form.allow_skip,
+      contact_safety_mitra: form.contact_safety_mitra === true,
+    });
+  };
+
+  /** Fill form with demo content and open overlay — admin view only, nothing saved. */
+  const handleDemoSponsorPreview = () => {
+    setSponsorEditingId(null);
+    setSponsorForm(DEMO_SPONSOR_FORM);
+    handlePreviewSponsorForm(DEMO_SPONSOR_FORM);
   };
 
 
@@ -1934,6 +2194,350 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                   ? 'Opens the idle full-screen image overlay immediately (no 4-minute wait).'
                   : 'আইডল ফুল-স্ক্রিন ইমেজ ওভারলে তৎক্ষণাৎ খোলে (৪ মিনিট অপেক্ষা নেই)।'}
               </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Admin: sponsor full-screen ad */}
+      {isAdmin && !showAnalytics && showManageMenu && (
+        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+          <button
+            type="button"
+            onClick={() => setShowSponsorAdSection((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+          >
+            <span className="font-semibold text-slate-800 text-sm">
+              🎬 {isEn ? 'Sponsor ad (full screen)' : 'স্পনসর অ্যাড (ফুল স্ক্রিন)'}
+              {!sponsorAdsLoading && sponsorAds.length > 0 && (
+                <span className="ml-2 text-xs font-normal text-slate-400">({sponsorAds.length})</span>
+              )}
+            </span>
+            <span className="text-slate-400 text-xs">{showSponsorAdSection ? '▲' : '▼'}</span>
+          </button>
+          {showSponsorAdSection && (
+            <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-4">
+              <p className="text-xs text-slate-500">
+                {isEn
+                  ? 'Shown once per user session, full screen, only while enabled and inside the date range.'
+                  : 'প্রতি সেশনে একবার, ফুল স্ক্রিন, শুধু চালু ও তারিখ সীমার মধ্যে দেখানো হয়।'}
+              </p>
+
+              {typeof onPreviewSponsorAd === 'function' && (
+                <button
+                  type="button"
+                  onClick={handleDemoSponsorPreview}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-900 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-slate-800 active:scale-[0.99]"
+                >
+                  {isEn ? '▶ Demo: Bangla ad ask (admin only)' : '▶ ডেমো: বাংলা বিজ্ঞাপন অনুরোধ (শুধু অ্যাডমিন)'}
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSponsorEditingId(null);
+                  setSponsorForm({ ...SPONSOR_ASK_PRESET });
+                  setShowSponsorAdSection(true);
+                }}
+                className="w-full rounded-xl border border-orange-200 bg-orange-50 px-4 py-2.5 text-sm font-bold text-orange-700 transition-all hover:bg-orange-100 active:scale-[0.99]"
+              >
+                {isEn ? '↧ Load “sponsor wanted” preset into form' : '↧ ফর্মে “স্পনসর চাই” প্রিসেট লোড করুন'}
+              </button>
+
+              {/* Editor form */}
+              <div className={`rounded-xl p-3 space-y-3 ${ADMIN_THEME.inset}`}>
+                <p className="text-xs font-bold text-slate-700">
+                  {sponsorEditingId
+                    ? (isEn ? 'Editing ad' : 'অ্যাড সম্পাদনা')
+                    : (isEn ? 'New ad' : 'নতুন অ্যাড')}
+                </p>
+
+                <input
+                  type="text"
+                  value={sponsorForm.sponsor_name}
+                  onChange={(e) => setSponsorForm((p) => ({ ...p, sponsor_name: e.target.value }))}
+                  placeholder={isEn ? 'Sponsor / company name' : 'স্পনসর / কোম্পানির নাম'}
+                  className={ADMIN_THEME.input}
+                />
+                <input
+                  type="text"
+                  value={sponsorForm.headline}
+                  onChange={(e) => setSponsorForm((p) => ({ ...p, headline: e.target.value }))}
+                  placeholder={isEn ? 'Headline' : 'হেডলাইন'}
+                  className={ADMIN_THEME.input}
+                />
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-500">
+                    {isEn ? 'Rotating headlines (one per line, optional)' : 'ঘূর্ণায়মান হেডলাইন (প্রতি লাইনে একটি, ঐচ্ছিক)'}
+                  </label>
+                  <textarea
+                    value={sponsorForm.headlines_text}
+                    onChange={(e) => setSponsorForm((p) => ({ ...p, headlines_text: e.target.value }))}
+                    placeholder={isEn ? 'Line 1\nLine 2\nLine 3' : 'লাইন ১\nলাইন ২\nলাইন ৩'}
+                    rows={3}
+                    className={ADMIN_THEME.input}
+                  />
+                  <p className="text-[10px] text-slate-400">
+                    {isEn
+                      ? 'If set, these cycle in the ad instead of the single headline.'
+                      : 'দিলে অ্যাডে একক হেডলাইনের বদলে এগুলো ঘুরে ঘুরে দেখাবে।'}
+                  </p>
+                </div>
+                <textarea
+                  value={sponsorForm.subtext}
+                  onChange={(e) => setSponsorForm((p) => ({ ...p, subtext: e.target.value }))}
+                  placeholder={isEn ? 'Subtext / short message' : 'সাবটেক্সট / সংক্ষিপ্ত বার্তা'}
+                  rows={2}
+                  className={ADMIN_THEME.input}
+                />
+
+                {/* Images */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-slate-500">{isEn ? 'Product image' : 'প্রোডাক্ট ছবি'}</label>
+                    {sponsorForm.image_url && (
+                      <img src={sponsorForm.image_url} alt="" className="h-16 w-full object-contain rounded-lg bg-white border border-slate-200" />
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => e.target.files?.[0] && handleSponsorImageUpload(e.target.files[0], 'image_url')}
+                      className="block w-full text-[11px] text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:bg-orange-100 file:text-orange-700 file:text-[11px] file:font-semibold"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-slate-500">{isEn ? 'Logo (optional)' : 'লোগো (ঐচ্ছিক)'}</label>
+                    {sponsorForm.logo_url && (
+                      <img src={sponsorForm.logo_url} alt="" className="h-16 w-full object-contain rounded-lg bg-white border border-slate-200" />
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => e.target.files?.[0] && handleSponsorImageUpload(e.target.files[0], 'logo_url')}
+                      className="block w-full text-[11px] text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:bg-orange-100 file:text-orange-700 file:text-[11px] file:font-semibold"
+                    />
+                  </div>
+                </div>
+                {sponsorImageUploading && (
+                  <p className="text-[11px] text-orange-600">{isEn ? 'Uploading image…' : 'ছবি আপলোড হচ্ছে…'}</p>
+                )}
+
+                {/* Contact */}
+                <div className="grid grid-cols-1 gap-2">
+                  <input
+                    type="tel"
+                    value={sponsorForm.contact_phone}
+                    onChange={(e) => setSponsorForm((p) => ({ ...p, contact_phone: e.target.value }))}
+                    placeholder={isEn ? 'Contact phone' : 'যোগাযোগ ফোন'}
+                    className={ADMIN_THEME.input}
+                  />
+                  <input
+                    type="email"
+                    value={sponsorForm.contact_email}
+                    onChange={(e) => setSponsorForm((p) => ({ ...p, contact_email: e.target.value }))}
+                    placeholder={isEn ? 'Contact email' : 'যোগাযোগ ইমেইল'}
+                    className={ADMIN_THEME.input}
+                  />
+                  <input
+                    type="text"
+                    value={sponsorForm.contact_url}
+                    onChange={(e) => setSponsorForm((p) => ({ ...p, contact_url: e.target.value }))}
+                    placeholder={isEn ? 'Website / link' : 'ওয়েবসাইট / লিঙ্ক'}
+                    className={ADMIN_THEME.input}
+                  />
+                  <input
+                    type="text"
+                    value={sponsorForm.cta_label}
+                    onChange={(e) => setSponsorForm((p) => ({ ...p, cta_label: e.target.value }))}
+                    placeholder={isEn ? 'Button text (e.g. Learn more)' : 'বাটন টেক্সট'}
+                    className={ADMIN_THEME.input}
+                  />
+                </div>
+
+                {/* Style + timing */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-slate-500">{isEn ? 'Theme' : 'থিম'}</label>
+                    <select
+                      value={sponsorForm.theme}
+                      onChange={(e) => setSponsorForm((p) => ({ ...p, theme: e.target.value }))}
+                      className={ADMIN_THEME.input}
+                    >
+                      <option value="dark">{isEn ? 'Dark' : 'ডার্ক'}</option>
+                      <option value="light">{isEn ? 'Light' : 'লাইট'}</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-slate-500">{isEn ? 'Duration (sec)' : 'সময় (সেকেন্ড)'}</label>
+                    <input
+                      type="number"
+                      min={2}
+                      max={30}
+                      value={sponsorForm.display_seconds}
+                      onChange={(e) => setSponsorForm((p) => ({ ...p, display_seconds: e.target.value }))}
+                      className={ADMIN_THEME.input}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-slate-500">{isEn ? 'Start date' : 'শুরুর তারিখ'}</label>
+                    <input
+                      type="datetime-local"
+                      value={sponsorForm.starts_at}
+                      onChange={(e) => setSponsorForm((p) => ({ ...p, starts_at: e.target.value }))}
+                      className={ADMIN_THEME.input}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-slate-500">{isEn ? 'End date' : 'শেষ তারিখ'}</label>
+                    <input
+                      type="datetime-local"
+                      value={sponsorForm.ends_at}
+                      onChange={(e) => setSponsorForm((p) => ({ ...p, ends_at: e.target.value }))}
+                      className={ADMIN_THEME.input}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4">
+                  <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={sponsorForm.allow_skip}
+                      onChange={(e) => setSponsorForm((p) => ({ ...p, allow_skip: e.target.checked }))}
+                      className="w-4 h-4 rounded"
+                    />
+                    {isEn ? 'Allow skip' : 'স্কিপ অনুমতি'}
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={sponsorForm.contact_safety_mitra}
+                      onChange={(e) => setSponsorForm((p) => ({ ...p, contact_safety_mitra: e.target.checked }))}
+                      className="w-4 h-4 rounded"
+                    />
+                    {isEn ? 'Show Safety Mitra contact line' : 'সেফটি মিত্র যোগাযোগ লাইন দেখান'}
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={sponsorForm.is_active}
+                      onChange={(e) => setSponsorForm((p) => ({ ...p, is_active: e.target.checked }))}
+                      className="w-4 h-4 rounded"
+                    />
+                    {isEn ? 'Enabled' : 'চালু'}
+                  </label>
+                </div>
+
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleSaveSponsorAd}
+                    disabled={sponsorSaving || sponsorImageUploading}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50 transition-colors"
+                  >
+                    {sponsorSaving
+                      ? (isEn ? 'Saving…' : 'সেভ হচ্ছে…')
+                      : sponsorEditingId
+                        ? (isEn ? 'Update ad' : 'আপডেট')
+                        : (isEn ? 'Create ad' : 'তৈরি করুন')}
+                  </button>
+                  {typeof onPreviewSponsorAd === 'function' && (
+                    <button
+                      type="button"
+                      onClick={handlePreviewSponsorForm}
+                      className="px-4 py-2 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-orange-50 transition-colors"
+                    >
+                      {isEn ? 'Preview' : 'প্রিভিউ'}
+                    </button>
+                  )}
+                  {sponsorEditingId && (
+                    <button
+                      type="button"
+                      onClick={resetSponsorForm}
+                      className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-500 hover:text-slate-700"
+                    >
+                      {isEn ? 'Cancel edit' : 'বাতিল'}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Existing ads list */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-bold text-slate-700">{isEn ? 'Saved ads' : 'সংরক্ষিত অ্যাড'}</span>
+                  <button
+                    type="button"
+                    onClick={() => loadSponsorAds()}
+                    className="text-xs font-semibold text-orange-600 hover:text-orange-700"
+                  >
+                    {isEn ? 'Refresh' : 'রিফ্রেশ'}
+                  </button>
+                </div>
+                {sponsorAdsLoading ? (
+                  <p className="text-sm text-slate-500">{isEn ? 'Loading…' : 'লোড হচ্ছে…'}</p>
+                ) : sponsorAdsError ? (
+                  <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+                    <p className="font-semibold">{isEn ? 'Could not load sponsor ads.' : 'স্পনসর অ্যাড লোড হয়নি।'}</p>
+                    <p className="text-xs mt-1 text-amber-700/80">{sponsorAdsError}</p>
+                  </div>
+                ) : sponsorAds.length === 0 ? (
+                  <p className="text-sm text-slate-500">{isEn ? 'No sponsor ads yet.' : 'এখনও কোনো স্পনসর অ্যাড নেই।'}</p>
+                ) : (
+                  <ul className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
+                    {sponsorAds.map((row) => {
+                      const rowIsActive = row.is_active === true;
+                      return (
+                        <li key={row.id} className={`p-3 rounded-lg ${ADMIN_THEME.inset}`}>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${rowIsActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>
+                                  {rowIsActive ? (isEn ? 'Live' : 'চালু') : (isEn ? 'Off' : 'বন্ধ')}
+                                </span>
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 capitalize">{row.theme}</span>
+                                {(row.starts_at || row.ends_at) && (
+                                  <span className="text-[10px] text-slate-400">
+                                    {row.starts_at ? new Date(row.starts_at).toLocaleDateString() : '…'} – {row.ends_at ? new Date(row.ends_at).toLocaleDateString() : '…'}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="font-semibold text-sm text-slate-900 truncate">{row.headline || row.sponsor_name || '(untitled)'}</p>
+                              {row.subtext && <p className="text-xs text-slate-500 line-clamp-2 mt-0.5">{row.subtext}</p>}
+                            </div>
+                            <div className="flex flex-col gap-1 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => startEditSponsorAd(row)}
+                                className="px-2 py-1 rounded text-[10px] font-bold bg-white border border-slate-200 text-slate-700"
+                              >
+                                {isEn ? 'Edit' : 'সম্পাদনা'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleSponsorAdActive(row)}
+                                className="px-2 py-1 rounded text-[10px] font-bold bg-white border border-slate-200 text-slate-700"
+                              >
+                                {rowIsActive ? (isEn ? 'Turn off' : 'বন্ধ') : (isEn ? 'Turn on' : 'চালু')}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteSponsorAd(row.id)}
+                                className="px-2 py-1 rounded text-[10px] font-bold text-rose-600"
+                              >
+                                {isEn ? 'Remove' : 'মুছুন'}
+                              </button>
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
             </div>
           )}
         </div>

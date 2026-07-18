@@ -25,6 +25,7 @@ import RadioMiniPlayer from "./components/RadioMiniPlayer";
 import RadioDesktopLaunch from "./components/RadioDesktopLaunch";
 import { LifeSkillRadioProvider, RadioScrollPaddingBridge, RadioSafetyGuard } from "./context/LifeSkillRadioContext";
 import IdleStoryReminder from "./components/IdleStoryReminder";
+import SponsorAdOverlay from "./components/SponsorAdOverlay";
 import ProfileFieldNudge from "./components/ProfileFieldNudge";
 import { libraryService } from "./utils/libraryService";
 import { trackAppVisit } from "./utils/landingVisitService";
@@ -141,6 +142,8 @@ export default function SmartLinemanUI() {
   const [profileNudgeOpen, setProfileNudgeOpen] = useState(false);
   const [profileNudgePreview, setProfileNudgePreview] = useState(null);
   const [idleStoryPreview, setIdleStoryPreview] = useState(null);
+  const [sponsorAdPreview, setSponsorAdPreview] = useState(null);
+  const [sponsorAdOpen, setSponsorAdOpen] = useState(false);
   const forumActivityTimerRef = useRef(null);
 
   const weatherDistrict = userProfile?.district || null;
@@ -1196,6 +1199,9 @@ export default function SmartLinemanUI() {
                   key: Date.now(),
                 })
               }
+              onPreviewSponsorAd={(adRow) =>
+                setSponsorAdPreview({ ad: adRow, key: Date.now() })
+              }
             />
           );
         case 'visual-quiz-preview':
@@ -1308,6 +1314,13 @@ export default function SmartLinemanUI() {
     (currentView === 'update-password' && !user);
 
   const idleReminderBlocked = overlayBlocked || profileNudgeOpen;
+
+  const sponsorAdBlocked =
+    overlayBlocked ||
+    profileNudgeOpen ||
+    sidebarOpen ||
+    !user ||
+    ['login', 'verify', 'landing', 'update-password'].includes(currentView);
 
   const profileNudgeBlocked =
     overlayBlocked ||
@@ -1609,6 +1622,14 @@ export default function SmartLinemanUI() {
               onPreviewClose={() => setIdleStoryPreview(null)}
             />
 
+            <SponsorAdOverlay
+              language={language}
+              blocked={sponsorAdBlocked && !sponsorAdPreview}
+              preview={sponsorAdPreview}
+              onPreviewClose={() => setSponsorAdPreview(null)}
+              onOpenChange={setSponsorAdOpen}
+            />
+
             {user && !isGuestUser(userProfile) && (
               <ProfileFieldNudge
                 user={user}
@@ -1623,6 +1644,7 @@ export default function SmartLinemanUI() {
             )}
             {user &&
               !sidebarOpen &&
+              !sponsorAdOpen &&
               !['login', 'verify', 'update-password'].includes(currentView) &&
               currentView !== 'sops' &&
               currentView !== 'training' &&
