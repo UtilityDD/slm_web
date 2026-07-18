@@ -1315,12 +1315,28 @@ export default function SmartLinemanUI() {
 
   const idleReminderBlocked = overlayBlocked || profileNudgeOpen;
 
+  // Logged-out: allow on landing/login (with dwell delay in overlay).
+  // Do not reuse overlayBlocked wholesale — that always blocks `landing`.
   const sponsorAdBlocked =
-    overlayBlocked ||
+    appLoading ||
+    globalLoading ||
+    showLogoutModal ||
+    showLanguageModal ||
+    !!pushNotification ||
+    showActiveBroadcastModal ||
+    showUpdateModal ||
+    isRetiring ||
+    showSessionEndedModal ||
     profileNudgeOpen ||
     sidebarOpen ||
-    !user ||
-    ['login', 'verify', 'landing', 'update-password'].includes(currentView);
+    currentView === 'accident-stories' ||
+    currentView === 'verify' ||
+    (currentView === 'update-password' && !user) ||
+    (user
+      ? ['login', 'verify', 'landing', 'update-password'].includes(currentView)
+      : !['landing', 'login'].includes(currentView));
+
+  const sponsorAdMinDwellMs = user ? 0 : 12000;
 
   const profileNudgeBlocked =
     overlayBlocked ||
@@ -1625,6 +1641,7 @@ export default function SmartLinemanUI() {
             <SponsorAdOverlay
               language={language}
               blocked={sponsorAdBlocked && !sponsorAdPreview}
+              minDwellMs={sponsorAdMinDwellMs}
               preview={sponsorAdPreview}
               onPreviewClose={() => setSponsorAdPreview(null)}
               onOpenChange={setSponsorAdOpen}

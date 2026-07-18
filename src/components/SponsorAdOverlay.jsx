@@ -10,6 +10,8 @@ import { fetchActiveSponsorAd, hasSeenSponsorAd, markSponsorAdSeen } from '../ut
 export default function SponsorAdOverlay({
     language = 'en',
     blocked = false,
+    /** Wait this many ms on an eligible screen before showing (e.g. logged-out dwell). */
+    minDwellMs = 0,
     preview = null,
     onPreviewClose,
     onOpenChange,
@@ -164,15 +166,28 @@ export default function SponsorAdOverlay({
     useEffect(() => {
         if (blocked || open || preview?.key) return;
         let cancelled = false;
-        fetchActiveSponsorAd().then((row) => {
-            if (cancelled || !row?.id) return;
-            if (hasSeenSponsorAd(row.id)) return;
-            startShow(row, { isPreview: false });
-        });
+        let dwellTimer = null;
+
+        const tryShow = () => {
+            fetchActiveSponsorAd().then((row) => {
+                if (cancelled || !row?.id) return;
+                if (hasSeenSponsorAd(row.id)) return;
+                startShow(row, { isPreview: false });
+            });
+        };
+
+        const waitMs = Math.max(0, Number(minDwellMs) || 0);
+        if (waitMs > 0) {
+            dwellTimer = setTimeout(tryShow, waitMs);
+        } else {
+            tryShow();
+        }
+
         return () => {
             cancelled = true;
+            if (dwellTimer) clearTimeout(dwellTimer);
         };
-    }, [blocked, open, preview?.key, startShow]);
+    }, [blocked, open, preview?.key, startShow, minDwellMs]);
 
     useEffect(() => {
         if (blocked && open && !previewModeRef.current) finish();
