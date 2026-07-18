@@ -3219,38 +3219,35 @@ body,
   color: #0f172a;
 }
 
-.sponsor-ad-close-bright {
+.sponsor-ad-close-x {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
   border: none;
-  border-radius: 9999px;
-  padding: 0.55rem 1.15rem;
-  font-size: 0.9rem;
-  font-weight: 800;
-  color: #041018;
-  background: linear-gradient(135deg, #f8fafc 0%, #67e8f9 100%);
-  box-shadow:
-    0 0 0 2px rgba(103, 232, 249, 0.45),
-    0 0 28px rgba(56, 189, 248, 0.55),
-    0 10px 28px rgba(0, 0, 0, 0.35);
-  animation: sponsorClosePop 0.45s cubic-bezier(0.22, 1, 0.36, 1), sponsorCloseGlow 1.6s ease-in-out infinite 0.45s;
-  transition: transform 0.15s ease;
+  border-radius: 0;
+  background: transparent;
+  color: #ef4444;
+  box-shadow: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
-.sponsor-ad-close-bright:active {
-  transform: scale(0.96);
+.sponsor-ad-close-x svg {
+  width: 1.55rem;
+  height: 1.55rem;
+  display: block;
 }
-.sponsor-ad-close-bright:focus-visible {
-  outline: 2px solid #67e8f9;
+.sponsor-ad-close-x:active {
+  transform: scale(0.92);
+}
+.sponsor-ad-close-x:focus-visible {
+  outline: 2px solid #ef4444;
   outline-offset: 3px;
 }
-.sponsor-ad-light .sponsor-ad-close-bright {
-  color: #fff;
-  background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
-  box-shadow:
-    0 0 0 2px rgba(14, 165, 233, 0.35),
-    0 0 24px rgba(14, 165, 233, 0.4),
-    0 10px 24px rgba(15, 23, 42, 0.18);
+.sponsor-ad-light .sponsor-ad-close-x {
+  color: #dc2626;
 }
 
 .sponsor-ad-mitra-cue {
@@ -3277,35 +3274,6 @@ body,
   border-color: rgba(14, 165, 233, 0.35);
   background: rgba(14, 165, 233, 0.1);
   color: #0c4a6e;
-}
-
-.sponsor-ad-close-main {
-  display: none;
-}
-
-@keyframes sponsorClosePop {
-  from {
-    opacity: 0;
-    transform: scale(0.82);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-@keyframes sponsorCloseGlow {
-  0%, 100% {
-    box-shadow:
-      0 0 0 2px rgba(103, 232, 249, 0.4),
-      0 0 24px rgba(56, 189, 248, 0.45),
-      0 12px 28px rgba(0, 0, 0, 0.35);
-  }
-  50% {
-    box-shadow:
-      0 0 0 4px rgba(103, 232, 249, 0.65),
-      0 0 42px rgba(56, 189, 248, 0.75),
-      0 14px 32px rgba(0, 0, 0, 0.4);
-  }
 }
 
 .sponsor-ad-stage {

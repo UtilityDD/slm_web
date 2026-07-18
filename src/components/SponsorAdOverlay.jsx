@@ -5,7 +5,7 @@ import { fetchActiveSponsorAd, hasSeenSponsorAd, markSponsorAdSeen } from '../ut
 /**
  * Full-screen sponsor interstitial — typography-led, staged motion,
  * distinct from the app theme. Once per session; admin preview via `preview`.
- * Does not auto-close: after the timer, a bright Close button appears.
+ * Does not auto-close: after the timer, a red × close control appears.
  */
 export default function SponsorAdOverlay({
     language = 'en',
@@ -340,13 +340,12 @@ export default function SponsorAdOverlay({
                         type="button"
                         ref={closeBtnRef}
                         onClick={finish}
-                        className="sponsor-ad-close-bright"
+                        className="sponsor-ad-close-x"
                         aria-label={closeLabel}
                     >
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.8" viewBox="0 0 24 24" aria-hidden>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" aria-hidden>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                        <span>{closeLabel}</span>
                     </button>
                 )}
             </div>
