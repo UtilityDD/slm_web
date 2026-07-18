@@ -15,6 +15,12 @@ export const VISUAL_QUIZ_BATCH_10_URL = '/quiz_management/visual_quiz_batch_10.c
 export const VISUAL_QUIZ_MISTAKE_PREVIEW_URL = '/quiz_management/visual_quiz_batch_mistake_preview.csv';
 export const VISUAL_QUIZ_MATERIAL_PREVIEW_URL = '/quiz_management/visual_quiz_batch_material_preview.csv';
 export const VISUAL_QUIZ_PROCEDURE_PREVIEW_URL = '/quiz_management/visual_quiz_batch_procedure_preview.csv';
+export const VISUAL_QUIZ_CONTROL_ROOM_PREVIEW_URL = '/quiz_management/visual_quiz_batch_control_room_preview.csv';
+export const VISUAL_QUIZ_LADDER_PREVIEW_URL = '/quiz_management/visual_quiz_batch_ladder_preview.csv';
+export const VISUAL_QUIZ_TRANSFORMER_TROUBLESHOOTING_PREVIEW_URL =
+    '/quiz_management/visual_quiz_batch_transformer_troubleshooting_preview.csv';
+export const VISUAL_QUIZ_SWITCHYARD_PREVIEW_URL =
+    '/quiz_management/visual_quiz_batch_switchyard_preview.csv';
 
 const splitCSVLine = (line) => {
     const result = [];
