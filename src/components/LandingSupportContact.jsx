@@ -7,34 +7,34 @@ const SUPPORT_WAYS = [
     id: 'outreach',
     action: 'whatsapp_invite',
     icon: 'users',
-    title_en: 'Reach more linemen',
-    title_bn: 'আরও লাইনম্যানকে জানান',
-    body_en: 'Share with linemen you know — learn through play, earn prizes, become smarter.',
-    body_bn: 'আপনার পরিচিত লাইনম্যানদের শেয়ার করুন—খেলতে খেলতে শেখা, শিখতে শিখতে পুরস্কার, নিজেকে স্মার্ট বানানো।',
+    title_en: 'Share with linemen you know',
+    title_bn: 'আপনার পরিচিত লাইনম্যানদের সাথে শেয়ার করুন।',
+    body_en: 'Encourage a safer working life.',
+    body_bn: 'নিরাপদ কর্মজীবনকে উৎসাহিত করুন।',
   },
   {
     id: 'correction',
     icon: 'edit',
-    title_en: 'Suggest corrections',
-    title_bn: 'ভুল দেখলে জানান',
-    body_en: 'Spotted an error in a lesson, quiz, or SOP? Tell us—we fix content carefully with your help.',
-    body_bn: 'পাঠ, কুইজ বা SOP-এ কোনো ভুল চোখে পড়লে আমাদের জানান। আপনাদের কথায় আমরা সাবধানে ঠিক করি।',
+    title_en: 'Tell us if you spot a mistake',
+    title_bn: 'ভুল দেখলে জানান।',
+    body_en: 'Lesson, quiz, or anything else—just let us know.',
+    body_bn: 'পাঠ, কুইজ বা অন্য কিছুতে ভুল দেখতে পেলে আমাদের জানান।',
   },
   {
     id: 'training',
     icon: 'book',
-    title_en: 'Offer expert training online',
-    title_bn: 'অনলাইনে প্রশিক্ষণ দিন',
-    body_en: 'If you are a safety or field expert, volunteer a short online session for linemen.',
-    body_bn: 'নিরাপত্তা বা মাঠের কাজের অভিজ্ঞতা থাকলে লাইনম্যানদের জন্য অনলাইনে ছোট একটি প্রশিক্ষণ দিতে পারেন।',
+    title_en: 'Offer online training',
+    title_bn: 'অনলাইনে প্রশিক্ষণ দিতে পারেন।',
+    body_en: 'Share a useful work video—we’ll keep it in our video library.',
+    body_bn: 'কাজের ভালো শিক্ষণীয় ভিডিও শেয়ার করুন—আমাদের ভিডিও লাইব্রেরিতে রাখতে পারি।',
   },
   {
     id: 'prize_sponsor',
     icon: 'gift',
     title_en: 'Sponsor prizes directly',
-    title_bn: 'সরাসরি পুরস্কার দিন',
-    body_en: 'Buy and send prizes straight to winners. We never take donation money into our account.',
-    body_bn: 'বিজয়ীদের হাতে সরাসরি পুরস্কার কিনে পৌঁছে দিন। আমরা কোনো দান বা টাকা আমাদের অ্যাকাউন্টে নিই না।',
+    title_bn: 'সরাসরি পুরস্কার দিন।',
+    body_en: 'Buy and send prizes to winners. We never take money.',
+    body_bn: 'বিজয়ীদের হাতে পুরস্কার পৌঁছে দিন। আমরা কোনো টাকা নিই না।',
   },
 ];
 
@@ -107,7 +107,6 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
           'স্মার্ট লাইনম্যান কোনো অনুদান বা টাকা নেয় না। আমাদের অ্যাকাউন্টে টাকা পাঠাবেন না। সাহায্য মানে আপনার সময়, অভিজ্ঞতা আর বিজয়ীদের সরাসরি পুরস্কার।',
         noMoney: 'আমরা কোনো টাকা নিই না',
         contactTitle: 'যোগাযোগ করুন',
-        contactLead: 'আপনার কথা সরাসরি আমাদের কাছে পৌঁছাবে। যত তাড়াতাড়ি পারি উত্তর দেব।',
         name: 'নাম',
         phone: 'মোবাইল নম্বর',
         email: 'ইমেইল',
@@ -125,7 +124,6 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
           'SmartLineman does not accept donations or money. Please never send money to our account. Support means your time, expertise, and prizes sent directly to winners.',
         noMoney: 'We do not accept any money',
         contactTitle: 'Contact us',
-        contactLead: 'Your message reaches our team directly. We reply as soon as we can.',
         name: 'Name',
         phone: 'Phone',
         email: 'Email',
@@ -281,11 +279,6 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
             <h2 className={`text-lg font-black tracking-tight text-slate-900 sm:text-xl ${isBn ? 'font-bengali' : ''}`}>
               {t.contactTitle}
             </h2>
-            <p
-              className={`mt-2 max-w-2xl text-sm font-medium leading-relaxed text-slate-600 sm:text-base ${isBn ? 'font-bengali landing-bn-reading' : ''}`}
-            >
-              {t.contactLead}
-            </p>
           </div>
           {typeof onClose === 'function' && (
             <button
