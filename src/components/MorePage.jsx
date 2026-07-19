@@ -3,6 +3,7 @@ import { UserIcon } from './icons';
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../config';
 import { useLifeSkillRadio } from '../context/LifeSkillRadioContext';
 import { FAQ_PAGE_TITLE } from '../utils/faqFilters';
+import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
 
 const FACEBOOK_PAGE_URL = 'https://www.facebook.com/smartlineman';
 const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t';
@@ -169,7 +170,7 @@ export default function MorePage({
             if (navigator.vibrate) navigator.vibrate(5);
             startRadio();
           }}
-          className="mb-5 flex w-full items-center gap-3 rounded-2xl border border-indigo-200/80 bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-3.5 text-left text-white shadow-md shadow-indigo-500/20 transition-all hover:shadow-lg active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+          className="mb-3 flex w-full items-center gap-3 rounded-2xl border border-indigo-200/80 bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-3.5 text-left text-white shadow-md shadow-indigo-500/20 transition-all hover:shadow-lg active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white text-lg leading-none text-indigo-600 shadow-sm" aria-hidden>
             📻
@@ -179,6 +180,40 @@ export default function MorePage({
           </span>
           <span className={`shrink-0 rounded-full border border-white/50 bg-white/95 px-2 py-0.5 text-[9px] font-black text-indigo-700 ${bn ? 'font-bengali' : 'uppercase'}`}>
             {bn ? 'লাইভ' : 'Live'}
+          </span>
+        </button>
+
+        {/* Share with acquaintance linemen — same WhatsApp invite as landing "Reach more linemen" */}
+        <button
+          type="button"
+          onClick={() => {
+            if (navigator.vibrate) navigator.vibrate(5);
+            openLinemanInviteWhatsApp(language);
+          }}
+          className="mb-5 flex w-full items-start gap-3 rounded-2xl border border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-green-50/80 to-white px-4 py-3.5 text-left shadow-sm transition-all hover:shadow-md active:scale-[0.99]"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white shadow-sm" aria-hidden>
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.04 2a9.84 9.84 0 0 0-8.52 14.76L2 22l5.39-1.42A9.94 9.94 0 1 0 12.04 2Zm0 17.99a8.15 8.15 0 0 1-4.15-1.14l-.3-.18-3.2.84.85-3.12-.2-.32A8.15 8.15 0 1 1 12.04 20Zm4.47-6.1c-.24-.12-1.45-.72-1.68-.8-.22-.08-.38-.12-.55.12-.16.25-.63.8-.77.97-.14.16-.28.18-.53.06-.24-.12-1.03-.38-1.96-1.21a7.35 7.35 0 0 1-1.36-1.7c-.14-.24-.02-.37.1-.49.11-.11.25-.28.37-.42.12-.14.16-.24.24-.4.08-.17.04-.31-.02-.43-.06-.12-.55-1.32-.75-1.8-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.3-.22.25-.85.83-.85 2.02s.87 2.34.99 2.5c.12.17 1.71 2.61 4.14 3.66.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.45-.6 1.66-1.17.2-.58.2-1.07.14-1.17-.06-.1-.22-.16-.47-.28Z" />
+            </svg>
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center gap-2">
+              <span className={`text-sm font-black leading-tight text-slate-900 ${bn ? 'font-bengali' : ''}`}>
+                {bn ? 'আরও লাইনম্যানকে জানান' : 'Reach more linemen'}
+              </span>
+              <span className={`shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-black text-emerald-800 ${bn ? 'font-bengali' : 'uppercase'}`}>
+                {bn ? 'শেয়ার' : 'Share'}
+              </span>
+            </span>
+            <span className={`mt-1 block text-xs font-medium leading-relaxed text-slate-600 ${bn ? 'font-bengali' : ''}`}>
+              {bn
+                ? 'আপনার পরিচিত লাইনম্যানদের শেয়ার করুন—খেলতে খেলতে শেখা, শিখতে শিখতে পুরস্কার, নিজেকে স্মার্ট বানানো।'
+                : 'Share with linemen you know — learn through play, earn prizes, become smarter.'}
+            </span>
+          </span>
+          <span className={`mt-1 shrink-0 rounded-full bg-[#25D366] px-2.5 py-1 text-[10px] font-black text-white ${bn ? 'font-bengali' : ''}`}>
+            {bn ? 'শেয়ার' : 'Share'}
           </span>
         </button>
 
