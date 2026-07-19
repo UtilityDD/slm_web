@@ -1645,6 +1645,20 @@ export default function SmartLinemanUI() {
               preview={sponsorAdPreview}
               onPreviewClose={() => setSponsorAdPreview(null)}
               onOpenChange={setSponsorAdOpen}
+              onOpenLandingContact={
+                user
+                  ? undefined
+                  : () => {
+                      setSponsorAdPreview(null);
+                      setCurrentView('landing');
+                      window.setTimeout(() => {
+                        document.getElementById('contact')?.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'start',
+                        });
+                      }, 450);
+                    }
+              }
             />
 
             {user && !isGuestUser(userProfile) && (

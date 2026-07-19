@@ -62,8 +62,8 @@ const SPONSOR_ASK_PRESET = {
   sponsor_name: 'স্মার্ট লাইনম্যান',
   image_url: '/images/sponsor/sponsor_ad_slot.webp',
   contact_email: 'support@smartlineman.in',
-  contact_url: 'smartlineman.in',
-  cta_label: 'ইমেইল করুন',
+  contact_url: '',
+  cta_label: 'যোগাযোগ করুন',
   theme: 'dark',
   display_seconds: 10,
   allow_skip: true,
@@ -2222,6 +2222,11 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                   ? 'Shown once per user session, full screen, only while enabled and inside the date range.'
                   : 'প্রতি সেশনে একবার, ফুল স্ক্রিন, শুধু চালু ও তারিখ সীমার মধ্যে দেখানো হয়।'}
               </p>
+              <p className="text-[11px] text-slate-500 rounded-lg border border-slate-200 bg-white px-3 py-2">
+                {isEn
+                  ? 'Preview: click “Demo” for the full Bangla ad, or “Load preset” → check Safety Mitra / no-money → Preview. The highlighted “We do not take any money” line is not typed in Subtext — it appears on the ad when that option is on.'
+                  : 'প্রিভিউ: পুরো বাংলা অ্যাডের জন্য “ডেমো” চাপুন, অথবা “প্রিসেট লোড” → সেফটি মিত্র / টাকা নিই না টিক → প্রিভিউ। হাইলাইট “আমরা কোনো টাকা নিই না” সাবটেক্সটে লিখতে হয় না — অপশন চালু থাকলে অ্যাডে দেখায়।'}
+              </p>
 
               {typeof onPreviewSponsorAd === 'function' && (
                 <button
@@ -2418,7 +2423,9 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                       onChange={(e) => setSponsorForm((p) => ({ ...p, contact_safety_mitra: e.target.checked }))}
                       className="w-4 h-4 rounded"
                     />
-                    {isEn ? 'Show Safety Mitra contact line' : 'সেফটি মিত্র যোগাযোগ লাইন দেখান'}
+                    {isEn
+                      ? 'Sponsor-ask mode (no-money highlight + Safety Mitra + Contact us)'
+                      : 'স্পনসর-অনুরোধ মোড (টাকা নিই না হাইলাইট + সেফটি মিত্র + যোগাযোগ)'}
                   </label>
                   <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
                     <input
@@ -2430,6 +2437,22 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                     {isEn ? 'Enabled' : 'চালু'}
                   </label>
                 </div>
+
+                {sponsorForm.contact_safety_mitra && (
+                  <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 space-y-1">
+                    <p className="text-[11px] font-semibold text-amber-800">
+                      {isEn ? 'Shown highlighted on the ad (auto):' : 'অ্যাডে হাইলাইট হয়ে দেখাবে (অটো):'}
+                    </p>
+                    <p className="text-sm font-extrabold text-amber-900 font-bengali">
+                      {isEn ? 'We do not take any money' : 'আমরা কোনো টাকা নিই না'}
+                    </p>
+                    <p className="text-[11px] text-amber-800/80">
+                      {isEn
+                        ? 'Also adds Safety Mitra cue and Contact us → landing contact form (for logged-out users).'
+                        : 'সেফটি মিত্র বার্তা ও যোগাযোগ করুন → ল্যান্ডিং কন্টাক্ট ফর্মও যোগ হয় (লগআউট ইউজারের জন্য)।'}
+                    </p>
+                  </div>
+                )}
 
                 <div className="flex flex-wrap gap-2 pt-1">
                   <button
@@ -2447,10 +2470,10 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                   {typeof onPreviewSponsorAd === 'function' && (
                     <button
                       type="button"
-                      onClick={handlePreviewSponsorForm}
+                      onClick={() => handlePreviewSponsorForm()}
                       className="px-4 py-2 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-orange-50 transition-colors"
                     >
-                      {isEn ? 'Preview' : 'প্রিভিউ'}
+                      {isEn ? 'Preview current form' : 'বর্তমান ফর্ম প্রিভিউ'}
                     </button>
                   )}
                   {sponsorEditingId && (

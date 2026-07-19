@@ -15,6 +15,8 @@ export default function SponsorAdOverlay({
     preview = null,
     onPreviewClose,
     onOpenChange,
+    /** Opens landing-page Contact us section (id=contact). */
+    onOpenLandingContact,
 }) {
     const [ad, setAd] = useState(null);
     const [open, setOpen] = useState(false);
@@ -271,8 +273,21 @@ export default function SponsorAdOverlay({
             ? ad.contact_url
             : `https://${ad.contact_url}`
         : null;
-    const ctaHref = mailtoHref || webHref;
-    const ctaExternal = !mailtoHref && !!webHref;
+    const useLandingContact = isAdAsk && typeof onOpenLandingContact === 'function';
+    const ctaHref = useLandingContact ? null : mailtoHref || webHref;
+    const ctaExternal = !useLandingContact && !mailtoHref && !!webHref;
+    const ctaLabel =
+        ad.cta_label ||
+        (isEn ? 'Contact us' : 'যোগাযোগ করুন');
+    const noMoneyLabel = isEn ? 'We do not take any money' : 'আমরা কোনো টাকা নিই না';
+
+    const handleLandingContact = () => {
+        const fadeMs = reduceMotion ? 0 : 320;
+        finish();
+        window.setTimeout(() => {
+            if (typeof onOpenLandingContact === 'function') onOpenLandingContact();
+        }, fadeMs);
+    };
 
     const contactItems = [
         ad.contact_email && {
@@ -401,18 +416,37 @@ export default function SponsorAdOverlay({
                     <p className={`sponsor-ad-sub ${anim(5)}`}>{ad.subtext}</p>
                 )}
 
-                {ctaHref && (
-                    <a
-                        href={ctaHref}
-                        target={ctaExternal ? '_blank' : undefined}
-                        rel={ctaExternal ? 'noopener noreferrer' : undefined}
+                {isAdAsk && (
+                    <p className={`sponsor-ad-no-money ${anim(5)}`} role="status">
+                        {noMoneyLabel}
+                    </p>
+                )}
+
+                {useLandingContact ? (
+                    <button
+                        type="button"
+                        onClick={handleLandingContact}
                         className={`sponsor-ad-cta ${anim(6)}`}
                     >
-                        <span>{ad.cta_label || (isEn ? 'Contact us' : 'যোগাযোগ করুন')}</span>
+                        <span>{ctaLabel}</span>
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 6l6 6-6 6" />
                         </svg>
-                    </a>
+                    </button>
+                ) : (
+                    ctaHref && (
+                        <a
+                            href={ctaHref}
+                            target={ctaExternal ? '_blank' : undefined}
+                            rel={ctaExternal ? 'noopener noreferrer' : undefined}
+                            className={`sponsor-ad-cta ${anim(6)}`}
+                        >
+                            <span>{ctaLabel}</span>
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 6l6 6-6 6" />
+                            </svg>
+                        </a>
+                    )
                 )}
 
                 {(ad.contact_safety_mitra || isAdAsk) && (
