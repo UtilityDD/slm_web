@@ -621,8 +621,22 @@ export default function Landing({ language, onLanguageChange, setCurrentView }) 
           <p className="landing-hero-brand mb-5 sm:mb-7">
             SmartLineMan<span className="landing-hero-brand-tld">.in</span>
           </p>
-          <h1 className={`landing-hero-title ${bnFont ? 'landing-bn-ui' : ''}`}>
-            {t.heroTitle}
+          <h1
+            className={`landing-hero-lockup ${bnFont ? 'landing-bn-ui' : ''}`}
+            aria-label={language === 'bn' ? 'খেলতে খেলতে শিখুন' : 'Learn while you play'}
+          >
+            <span className="landing-hero-lockup__stack">
+              <span className="landing-hero-lockup__line">
+                {language === 'bn' ? 'খেলতে' : 'Play'}
+              </span>
+              <span className="landing-hero-lockup__line">
+                {language === 'bn' ? 'খেলতে' : 'Play'}
+              </span>
+            </span>
+            <span className="landing-hero-lockup__rule" aria-hidden="true" />
+            <span className="landing-hero-lockup__side">
+              {language === 'bn' ? 'শিখুন' : 'Learn'}
+            </span>
           </h1>
           <p className={`landing-hero-sub ${bnFont ? 'landing-bn-ui' : ''}`}>
             {language === 'bn' ? (

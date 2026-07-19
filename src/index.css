@@ -226,22 +226,105 @@ body,
     letter-spacing: -0.03em;
   }
 
-  .landing-hero-title {
-    margin: 0 auto 0.65rem;
-    max-width: 18ch;
-    font-size: clamp(1.45rem, 4.8vw, 2.35rem);
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    line-height: 1.25;
-    color: #0f172a;
-    text-wrap: balance;
+  /* Stacked “খেলতে / খেলতে” with tall “শিখুন” spanning both rows */
+  .landing-hero-lockup {
+    --hero-lockup-ink: #0f172a;
+    --hero-lockup-accent: #ea580c;
+    display: inline-grid;
+    grid-template-columns: max-content 0.12rem max-content;
+    grid-template-rows: auto auto;
+    column-gap: clamp(0.55rem, 2.2vw, 0.95rem);
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.85rem;
+    text-align: left;
     animation: landing-hero-rise 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
   }
 
-  .landing-page-light.lang-bn .landing-hero-title {
-    max-width: 14ch;
+  .landing-hero-lockup__stack {
+    display: contents;
+  }
+
+  .landing-hero-lockup__line {
+    grid-column: 1;
+    font-size: clamp(1.35rem, 4.6vw, 2.15rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    color: var(--hero-lockup-ink);
+  }
+
+  .landing-hero-lockup__line:first-child {
+    grid-row: 1;
+    animation: landing-hero-lockup-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+  }
+
+  .landing-hero-lockup__line:last-child {
+    grid-row: 2;
+    animation: landing-hero-lockup-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
+  }
+
+  .landing-page-light.lang-bn .landing-hero-lockup__line {
     letter-spacing: 0;
-    line-height: 1.4;
+    line-height: 1.18;
+  }
+
+  .landing-hero-lockup__rule {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    align-self: stretch;
+    width: 100%;
+    border-radius: 9999px;
+    background: linear-gradient(
+      180deg,
+      rgba(234, 88, 12, 0) 0%,
+      rgba(234, 88, 12, 0.55) 22%,
+      rgba(234, 88, 12, 0.55) 78%,
+      rgba(234, 88, 12, 0) 100%
+    );
+    animation: landing-hero-lockup-in 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.22s both;
+  }
+
+  .landing-hero-lockup__side {
+    grid-column: 3;
+    grid-row: 1 / -1;
+    display: flex;
+    align-items: center;
+    font-size: clamp(2.55rem, 9.5vw, 4.35rem);
+    font-weight: 900;
+    letter-spacing: -0.035em;
+    line-height: 0.92;
+    color: var(--hero-lockup-accent);
+    text-shadow: 0 10px 28px rgba(234, 88, 12, 0.18);
+    animation: landing-hero-side-in 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.26s both;
+  }
+
+  .landing-page-light.lang-bn .landing-hero-lockup__side {
+    letter-spacing: 0;
+    line-height: 1;
+    padding-bottom: 0.06em;
+  }
+
+  @keyframes landing-hero-lockup-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.55rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes landing-hero-side-in {
+    from {
+      opacity: 0;
+      transform: translateX(0.55rem) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
   }
 
   .landing-hero-sub {
@@ -345,7 +428,10 @@ body,
 
   @media (prefers-reduced-motion: reduce) {
     .landing-hero-brand,
-    .landing-hero-title,
+    .landing-hero-lockup,
+    .landing-hero-lockup__line,
+    .landing-hero-lockup__rule,
+    .landing-hero-lockup__side,
     .landing-hero-sub,
     .landing-join-block {
       animation: none;
