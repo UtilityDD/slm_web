@@ -23,7 +23,7 @@ const copy = {
     vision:
       'Every lineman works with confidence and modern safety knowledge—reducing field accidents and protecting families.',
     missionTitle: 'Our Mission',
-    mission: 'Practical 90-day training, daily safety tools, and fair rewards that make skills visible.',
+    mission: '90 days of simple training, quizzes, contests, prizes, and recognition.',
     nonprofitTitle: '100% non-profit · volunteer-run',
     nonprofitBody: 'SmartLineman is built and run by volunteers—no profit motive, only safer work for linemen.',
     statsMembers: 'Members',
@@ -50,8 +50,7 @@ const copy = {
     vision:
       'আমরা চাই, প্রতিটি লাইনম্যান আত্মবিশ্বাস ও সঠিক নিরাপত্তা জ্ঞান নিয়ে মাঠে নিরাপদে কাজ করতে পারেন। দুর্ঘটনা কমবে, পরিবারও নিশ্চিন্ত থাকবে।',
     missionTitle: 'আমরা যা করি',
-    mission:
-      '৯০ দিনের ব্যবহারিক প্রশিক্ষণ, প্রতিদিনের নিরাপত্তার সহায় আর ন্যায্য পুরস্কারের মাধ্যমে আপনাদের দক্ষতা সবার সামনে তুলে ধরি।',
+    mission: '৯০ দিনের সহজ প্রশিক্ষণ, কুইজ, প্রতিযোগিতা, পুরস্কার আর স্বীকৃতি।',
     nonprofitTitle: 'অলাভজনক উদ্যোগ · স্বেচ্ছাসেবীদের তৈরি',
     nonprofitBody:
       'স্মার্ট লাইনম্যান গড়ে তুলেছেন স্বেচ্ছাসেবীরাই। এখানে লাভের হিসাব নেই—আছে শুধু লাইনম্যানদের নিরাপদ কাজের অঙ্গীকার।',
@@ -295,8 +294,8 @@ function MonthToppers({
   if (!realPlayers.length) return null;
 
   const slots = Array.from({ length: Math.max(realPlayers.length, fillTo) }, (_, idx) => realPlayers[idx] || null);
-  // Desktop visual order: 2nd · 1st · 3rd
-  const deskOrder = slots.length === 3 ? ['sm:order-2', 'sm:order-1', 'sm:order-3'] : ['', '', ''];
+  // Visual podium order on all sizes: 2nd · 1st · 3rd (champion stays center)
+  const podiumOrder = slots.length === 3 ? ['order-2', 'order-1', 'order-3'] : ['', '', ''];
 
   return (
     <section className="landing-month-toppers relative z-10 mb-8 sm:mb-10">
@@ -318,7 +317,7 @@ function MonthToppers({
           return (
             <div
               key={isEmpty ? `empty-${rankIdx}` : `${player.id}-${rankIdx}`}
-              className={`landing-month-topper ${isFirst ? 'landing-month-topper--champ' : ''} ${isEmpty ? 'landing-month-topper--empty' : ''} ${deskOrder[rankIdx] || ''}`}
+              className={`landing-month-topper ${isFirst ? 'landing-month-topper--champ' : ''} ${isEmpty ? 'landing-month-topper--empty' : ''} ${podiumOrder[rankIdx] || ''}`}
               aria-label={isEmpty ? emptyTitle : undefined}
             >
               <div className="relative mx-auto shrink-0">
