@@ -7,6 +7,7 @@ import LandingPrizeCarousel from './LandingPrizeCarousel';
 import LandingSponsorsScroll from './LandingSponsorsScroll';
 import LandingSupportContact from './LandingSupportContact';
 import LandingVisitCounter from './LandingVisitCounter';
+import LandingNonprofitLineman from './LandingNonprofitLineman';
 import { fetchVisitCount } from '../utils/landingVisitService';
 import { fetchRegisteredUserCount } from '../utils/landingStatsService';
 
@@ -16,8 +17,8 @@ const LANDING_SAFETY_MITRA_DISPLAY = 20;
 
 const copy = {
   en: {
-    heroTitle: 'Train. Compete. Stay Safe.',
-    heroSubtitle: 'Safety training, fair competitions, and recognition for West Bengal linemen.',
+    heroTitle: 'Learn while you play',
+    heroSubtitle: 'From ordinary to smart',
     visionTitle: 'Our Vision',
     vision:
       'Every lineman works with confidence and modern safety knowledge—reducing field accidents and protecting families.',
@@ -41,9 +42,8 @@ const copy = {
     visitLabel: 'Visit:',
   },
   bn: {
-    heroTitle: 'শিখুন। এগোন। নিরাপদে থাকুন।',
-    heroSubtitle:
-      'পশ্চিমবঙ্গের লাইনম্যানদের জন্য সহজ নিরাপত্তা প্রশিক্ষণ, সুস্থ প্রতিযোগিতা আর যোগ্য সম্মান—এক জায়গায়।',
+    heroTitle: 'খেলতে খেলতে শিখুন',
+    heroSubtitle: 'সাধারণ থেকে স্মার্ট হয়ে উঠুন',
     visionTitle: 'আমাদের স্বপ্ন',
     vision:
       'আমরা চাই, প্রতিটি লাইনম্যান আত্মবিশ্বাস ও সঠিক নিরাপত্তা জ্ঞান নিয়ে মাঠে নিরাপদে কাজ করতে পারেন। দুর্ঘটনা কমবে, পরিবারও নিশ্চিন্ত থাকবে।',
@@ -611,30 +611,32 @@ export default function Landing({ language, onLanguageChange, setCurrentView }) 
       <div className="relative mx-auto max-w-5xl px-3 pb-8 sm:px-6 sm:pb-16">
 
         {/* Hero Section */}
-        <section className="relative z-10 mx-auto max-w-3xl pt-6 pb-8 text-center sm:pt-12 sm:pb-10">
+        <section className="relative z-10 mx-auto max-w-3xl pt-7 pb-8 text-center sm:pt-14 sm:pb-10">
           <div className="landing-hero-glow" aria-hidden="true" />
-          <p className="mb-3 text-[11px] font-black tracking-tight text-orange-600 sm:mb-4 sm:text-sm">
-            SmartLineMan<span className="text-slate-400">.in</span>
+          <p className="landing-hero-brand mb-5 sm:mb-7">
+            SmartLineMan<span className="landing-hero-brand-tld">.in</span>
           </p>
-          <h1 className={`mb-3 font-black leading-[1.25] tracking-tight text-balance text-slate-900 sm:mb-4 sm:leading-tight ${bnFont ? 'text-xl sm:text-3xl md:text-4xl' : 'text-2xl sm:text-4xl md:text-[2.75rem]'}`}>
+          <h1 className={`landing-hero-title ${bnFont ? 'landing-bn-ui' : ''}`}>
+            {t.heroTitle}
+          </h1>
+          <p className={`landing-hero-sub ${bnFont ? 'landing-bn-ui' : ''}`}>
             {language === 'bn' ? (
               <>
-                শিখুন। এগোন। <span className="text-orange-600">নিরাপদে থাকুন।</span>
+                সাধারণ থেকে <span className="landing-hero-accent">স্মার্ট</span> হয়ে উঠুন
               </>
             ) : (
               <>
-                Train. Compete. <span className="text-orange-600">Stay Safe.</span>
+                From ordinary to <span className="landing-hero-accent">smart</span>
               </>
             )}
-          </h1>
-
-          <p className={`mx-auto max-w-2xl text-sm font-medium leading-relaxed text-slate-600 sm:text-base ${bnFont ? 'landing-bn-reading' : ''}`}>{t.heroSubtitle}</p>
+          </p>
         </section>
 
         {/* Non-profit / volunteer highlight */}
-        <aside className="landing-nonprofit-strip relative z-10 mb-6 sm:mb-8" aria-label={t.nonprofitTitle}>
-          <SectionIconBadge name="sparkles" tone="emerald" className="h-9 w-9 shrink-0 sm:h-10 sm:w-10" />
-          <div className="min-w-0">
+        <aside className="landing-nonprofit-strip relative z-20 mb-6 sm:mb-8" aria-label={t.nonprofitTitle}>
+          <LandingNonprofitLineman />
+          <SectionIconBadge name="sparkles" tone="emerald" className="relative z-[1] h-9 w-9 shrink-0 sm:h-10 sm:w-10" />
+          <div className="relative z-[1] min-w-0">
             <p className={`text-sm font-black leading-snug text-slate-900 sm:text-base ${bnFont ? 'font-bengali' : ''}`}>
               {t.nonprofitTitle}
             </p>
@@ -646,7 +648,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView }) 
 
         {/* Vision & Mission — near top */}
         <section className="relative z-10 mb-6 grid grid-cols-1 gap-3 sm:mb-8 sm:gap-5 md:grid-cols-2">
-          <article className="landing-vm-card landing-vm-card--vision">
+          <article className="landing-vm-card landing-vm-card--vision relative">
             <SectionIconBadge name="eye" tone="amber" className="mb-3 sm:mb-4" />
             <h2 className={`mb-2 text-xl font-black tracking-tight text-slate-900 sm:text-2xl ${bnFont ? 'font-bengali' : ''}`}>{t.visionTitle}</h2>
             <p className={`text-sm font-medium leading-relaxed text-slate-700 sm:text-base ${bnFont ? 'landing-bn-reading' : ''}`}>{t.vision}</p>

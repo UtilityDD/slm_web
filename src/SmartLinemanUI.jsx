@@ -27,6 +27,7 @@ import { LifeSkillRadioProvider, RadioScrollPaddingBridge, RadioSafetyGuard } fr
 import IdleStoryReminder from "./components/IdleStoryReminder";
 import SponsorAdOverlay from "./components/SponsorAdOverlay";
 import ProfileFieldNudge from "./components/ProfileFieldNudge";
+import LandingSupportContact from "./components/LandingSupportContact";
 import { libraryService } from "./utils/libraryService";
 import { trackAppVisit } from "./utils/landingVisitService";
 import PageLoader from "./components/loaders/PageLoader";
@@ -143,6 +144,7 @@ export default function SmartLinemanUI() {
   const [profileNudgePreview, setProfileNudgePreview] = useState(null);
   const [idleStoryPreview, setIdleStoryPreview] = useState(null);
   const [sponsorAdPreview, setSponsorAdPreview] = useState(null);
+  const [adContactOpen, setAdContactOpen] = useState(false);
   const [sponsorAdOpen, setSponsorAdOpen] = useState(false);
   const forumActivityTimerRef = useRef(null);
 
@@ -1645,21 +1647,44 @@ export default function SmartLinemanUI() {
               preview={sponsorAdPreview}
               onPreviewClose={() => setSponsorAdPreview(null)}
               onOpenChange={setSponsorAdOpen}
-              onOpenLandingContact={
-                user
-                  ? undefined
-                  : () => {
-                      setSponsorAdPreview(null);
-                      setCurrentView('landing');
-                      window.setTimeout(() => {
-                        document.getElementById('contact')?.scrollIntoView({
-                          behavior: 'smooth',
-                          block: 'start',
-                        });
-                      }, 450);
-                    }
-              }
+              onOpenLandingContact={() => {
+                setSponsorAdPreview(null);
+                if (user) {
+                  setAdContactOpen(true);
+                  return;
+                }
+                setCurrentView('landing');
+                window.setTimeout(() => {
+                  document.getElementById('contact')?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                  });
+                }, 450);
+              }}
             />
+
+            {adContactOpen &&
+              createPortal(
+                <div
+                  className="fixed inset-0 z-[240] flex items-end justify-center bg-slate-950/55 p-3 backdrop-blur-[2px] sm:items-center sm:p-6"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label={language === 'bn' ? 'যোগাযোগ করুন' : 'Contact us'}
+                  onClick={() => setAdContactOpen(false)}
+                >
+                  <div
+                    className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl sm:p-6"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <LandingSupportContact
+                      language={language}
+                      formOnly
+                      onClose={() => setAdContactOpen(false)}
+                    />
+                  </div>
+                </div>,
+                document.body
+              )}
 
             {user && !isGuestUser(userProfile) && (
               <ProfileFieldNudge

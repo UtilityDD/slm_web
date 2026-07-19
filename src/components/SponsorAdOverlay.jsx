@@ -273,6 +273,7 @@ export default function SponsorAdOverlay({
             ? ad.contact_url
             : `https://${ad.contact_url}`
         : null;
+    /* Advertise / ask ads: CTA opens the in-app contact form, never mailto. */
     const useLandingContact = isAdAsk && typeof onOpenLandingContact === 'function';
     const ctaHref = useLandingContact ? null : mailtoHref || webHref;
     const ctaExternal = !useLandingContact && !mailtoHref && !!webHref;
@@ -290,12 +291,14 @@ export default function SponsorAdOverlay({
     };
 
     const contactItems = [
-        ad.contact_email && {
-            key: 'email',
-            href: mailtoHref,
-            label: ad.contact_email,
-            icon: 'M3 5h18a1 1 0 011 1v12a1 1 0 01-1 1H3a1 1 0 01-1-1V6a1 1 0 011-1zm0 2v.5l9 5.5 9-5.5V7l-9 5.5L3 7z',
-        },
+        /* Skip mailto on ask ads — contact CTA / form is the path */
+        !isAdAsk &&
+            ad.contact_email && {
+                key: 'email',
+                href: mailtoHref,
+                label: ad.contact_email,
+                icon: 'M3 5h18a1 1 0 011 1v12a1 1 0 01-1 1H3a1 1 0 01-1-1V6a1 1 0 011-1zm0 2v.5l9 5.5 9-5.5V7l-9 5.5L3 7z',
+            },
         ad.contact_phone && {
             key: 'phone',
             href: `tel:${ad.contact_phone}`,

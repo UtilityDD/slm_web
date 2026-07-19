@@ -76,7 +76,13 @@ function WayIcon({ name }) {
   );
 }
 
-export default function LandingSupportContact({ language = 'bn', onPickTopic }) {
+export default function LandingSupportContact({
+  language = 'bn',
+  onPickTopic,
+  /** When true, only the contact form (for ad-screen / modal open). */
+  formOnly = false,
+  onClose,
+}) {
   const isBn = language === 'bn';
   const [form, setForm] = useState({
     name: '',
@@ -181,6 +187,7 @@ export default function LandingSupportContact({ language = 'bn', onPickTopic }) 
 
   return (
     <div className="space-y-8 sm:space-y-10">
+      {!formOnly && (
       <section id="support" className="landing-engage-section scroll-mt-20 relative z-10">
         <div className="mb-4 sm:mb-5">
           <h2 className={`text-lg font-black tracking-tight text-slate-900 sm:text-xl ${isBn ? 'font-bengali' : ''}`}>
@@ -218,15 +225,30 @@ export default function LandingSupportContact({ language = 'bn', onPickTopic }) 
           ))}
         </div>
       </section>
+      )}
 
       <section id="contact" className="landing-engage-section scroll-mt-20 relative z-10">
-        <div className="mb-4 sm:mb-5">
-          <h2 className={`text-lg font-black tracking-tight text-slate-900 sm:text-xl ${isBn ? 'font-bengali' : ''}`}>
-            {t.contactTitle}
-          </h2>
-          <p className={`mt-2 max-w-2xl text-sm font-medium leading-relaxed text-slate-600 sm:text-base ${isBn ? 'font-bengali landing-bn-reading' : ''}`}>
-            {t.contactLead}
-          </p>
+        <div className="mb-4 sm:mb-5 flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className={`text-lg font-black tracking-tight text-slate-900 sm:text-xl ${isBn ? 'font-bengali' : ''}`}>
+              {t.contactTitle}
+            </h2>
+            <p className={`mt-2 max-w-2xl text-sm font-medium leading-relaxed text-slate-600 sm:text-base ${isBn ? 'font-bengali landing-bn-reading' : ''}`}>
+              {t.contactLead}
+            </p>
+          </div>
+          {typeof onClose === 'function' && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-slate-800"
+              aria-label={isBn ? 'বন্ধ করুন' : 'Close'}
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
 
         <form onSubmit={onSubmit} className="landing-contact-form space-y-3 sm:space-y-4" noValidate>

@@ -228,6 +228,23 @@ function sponsorLogoSlug(englishName = '') {
         .slice(0, 64);
 }
 
+/** Split "Name, title / place" into short name + remaining identity line. */
+function splitSponsorIdentity(full = '') {
+    const trimmed = String(full || '').trim();
+    if (!trimmed) return { shortName: '', detail: '', full: '' };
+    const comma = trimmed.indexOf(',');
+    if (comma === -1) {
+        return { shortName: trimmed, detail: '', full: trimmed };
+    }
+    const shortName = trimmed.slice(0, comma).trim();
+    const detail = trimmed.slice(comma + 1).trim();
+    return {
+        shortName: shortName || trimmed,
+        detail,
+        full: trimmed,
+    };
+}
+
 /**
  * Unique prize sponsors for the landing horizontal scroll.
  * Logos are optional files at /images/sponsor/{slug}.webp|png|jpg|jpeg — never prize product images.
@@ -239,15 +256,18 @@ export function buildLandingSponsors(language = 'bn') {
     for (const entry of prizeCatalog.prizes || []) {
         const key = (entry.sponsor_en || '').trim().toLowerCase();
         if (!key || seen.has(key)) continue;
-        const name = ((isBn ? entry.sponsor_bn : entry.sponsor_en) || entry.sponsor_en || '').trim();
-        if (!name) continue;
-        const slug = sponsorLogoSlug(entry.sponsor_en || name);
+        const full = ((isBn ? entry.sponsor_bn : entry.sponsor_en) || entry.sponsor_en || '').trim();
+        if (!full) continue;
+        const { shortName, detail } = splitSponsorIdentity(full);
+        const slug = sponsorLogoSlug(entry.sponsor_en || shortName);
         const logoCandidates = slug
             ? PRIZE_IMAGE_EXTENSIONS.map((ext) => `/images/sponsor/${slug}.${ext}`)
             : [];
         seen.set(key, {
             id: slug || key.replace(/\s+/g, '-'),
-            name,
+            name: shortName,
+            detail,
+            full,
             logoCandidates,
         });
     }

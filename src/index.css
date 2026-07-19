@@ -208,8 +208,81 @@ body,
     inset: -2rem -1rem auto;
     height: 14rem;
     pointer-events: none;
-    background: radial-gradient(circle at 50% 40%, rgba(249, 115, 22, 0.12), transparent 68%);
+    background: radial-gradient(circle at 50% 40%, rgba(249, 115, 22, 0.14), transparent 68%);
     filter: blur(2px);
+  }
+
+  .landing-hero-brand {
+    font-size: clamp(1.65rem, 5.5vw, 2.75rem);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: #0f172a;
+    animation: landing-hero-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .landing-hero-brand-tld {
+    color: #f97316;
+    letter-spacing: -0.03em;
+  }
+
+  .landing-hero-title {
+    margin: 0 auto 0.65rem;
+    max-width: 18ch;
+    font-size: clamp(1.45rem, 4.8vw, 2.35rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    color: #0f172a;
+    text-wrap: balance;
+    animation: landing-hero-rise 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+  }
+
+  .landing-page-light.lang-bn .landing-hero-title {
+    max-width: 14ch;
+    letter-spacing: 0;
+    line-height: 1.4;
+  }
+
+  .landing-hero-sub {
+    margin: 0 auto;
+    max-width: 22ch;
+    font-size: clamp(0.95rem, 2.8vw, 1.2rem);
+    font-weight: 600;
+    line-height: 1.45;
+    color: #475569;
+    text-wrap: balance;
+    animation: landing-hero-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.16s both;
+  }
+
+  .landing-page-light.lang-bn .landing-hero-sub {
+    max-width: 18ch;
+    letter-spacing: 0;
+    line-height: 1.55;
+  }
+
+  .landing-hero-accent {
+    color: #ea580c;
+    font-weight: 800;
+  }
+
+  @keyframes landing-hero-rise {
+    from {
+      opacity: 0;
+      transform: translateY(0.7rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .landing-hero-brand,
+    .landing-hero-title,
+    .landing-hero-sub {
+      animation: none;
+    }
   }
 
   .landing-hero-badge {
@@ -255,14 +328,549 @@ body,
   }
 
   .landing-nonprofit-strip {
+    position: relative;
     display: flex;
     align-items: flex-start;
     gap: 0.85rem;
-    padding: 0.9rem 1rem;
+    padding: 1rem 1rem 0.9rem;
     border: 2px solid #0f172a;
     border-radius: 1rem;
     background: linear-gradient(120deg, #ecfdf5 0%, #fff 55%, #fff7ed 100%);
     box-shadow: 3px 3px 0 #0f172a;
+    /* Keep fall gag visible inside the card */
+    overflow: visible;
+  }
+
+  /* Stick lineman — walks on the top border; feet plant on that line.
+     Absolute top is vs padding edge (inner border); -2px puts soles on the
+     outer top stroke of the 2px strip border. */
+  .landing-nonprofit-lineman {
+    position: absolute;
+    left: 0.5rem;
+    right: 0.5rem;
+    top: calc(-3.5rem - 2px);
+    height: 3.5rem;
+    pointer-events: none;
+    /* Above vision/mission cards during the fall gag */
+    z-index: 20;
+    overflow: visible;
+  }
+
+  .landing-nonprofit-lineman__walker {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 2.75rem;
+    height: 3.5rem;
+    transform-origin: center bottom;
+    animation: nonprofit-lineman-travel 26s linear infinite;
+    will-change: left, transform;
+    /* Clip any stroke that would paint below the walk line;
+       fall still works because the whole walker translates down. */
+    overflow: hidden;
+  }
+
+  .landing-nonprofit-lineman__svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .landing-nonprofit-lineman__limb {
+    fill: none;
+    stroke: #0f172a;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .landing-nonprofit-lineman__shin {
+    stroke-linecap: butt;
+  }
+
+  .landing-nonprofit-lineman__foot {
+    stroke-width: 1.6;
+    stroke-linecap: butt;
+  }
+
+  .landing-nonprofit-lineman__torso {
+    transform-box: fill-box;
+    transform-origin: center bottom;
+    animation: nonprofit-lineman-body 26s ease-in-out infinite;
+  }
+
+  .landing-nonprofit-lineman__helmet {
+    transform-box: fill-box;
+    transform-origin: center bottom;
+    animation: nonprofit-lineman-helmet-worn 26s linear infinite;
+  }
+
+  .landing-nonprofit-lineman__arms {
+    transform-box: fill-box;
+    transform-origin: center top;
+    animation: nonprofit-lineman-arms 26s ease-in-out infinite;
+  }
+
+  .landing-nonprofit-lineman__cap-fly {
+    position: absolute;
+    left: 45%;
+    bottom: 2.35rem;
+    width: 1.85rem;
+    height: 1.2rem;
+    margin-left: -0.925rem;
+    z-index: 22;
+    opacity: 0;
+    transform-origin: center center;
+    animation: nonprofit-cap-flight 26s linear infinite;
+    will-change: left, top, bottom, transform, opacity;
+  }
+
+  .landing-nonprofit-lineman__cap-fly-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 2px 2px rgba(15, 23, 42, 0.18));
+  }
+
+  /* Outbound → return → fall onto Vision card → look up for hat → climb back */
+  @keyframes nonprofit-lineman-travel {
+    0% {
+      left: 0%;
+      transform: translateX(-50%) scaleX(1) translateY(0) rotate(0deg);
+    }
+    32% {
+      left: 100%;
+      transform: translateX(-50%) scaleX(1) translateY(0) rotate(0deg);
+    }
+    32%,
+    36% {
+      left: 100%;
+      transform: translateX(-50%) scaleX(1) translateY(0) rotate(0deg);
+    }
+    38% {
+      left: 100%;
+      transform: translateX(-50%) scaleX(-1) translateY(0) rotate(0deg);
+    }
+    40% {
+      left: 92%;
+      transform: translateX(-50%) scaleX(-1) translateY(0) rotate(0deg);
+    }
+    48% {
+      left: 60%;
+      transform: translateX(-50%) scaleX(-1) translateY(0) rotate(0deg);
+    }
+    56% {
+      left: 28%;
+      transform: translateX(-50%) scaleX(-1) translateY(0) rotate(0deg);
+    }
+    62% {
+      left: 12%;
+      transform: translateX(-50%) scaleX(-1) translateY(0) rotate(0deg);
+    }
+    /* Hat hits him on the walk line */
+    63.5% {
+      left: 11%;
+      transform: translateX(-50%) scaleX(-1) translateY(0) rotate(14deg);
+    }
+    64.5% {
+      left: 10%;
+      transform: translateX(-50%) scaleX(-1) translateY(2px) rotate(-18deg);
+    }
+    /* Teeter from the hit, then fall */
+    66% {
+      left: 12%;
+      transform: translateX(-50%) scaleX(-1) translateY(6px) rotate(22deg);
+    }
+    /* Fall down toward the Vision card */
+    68% {
+      left: 16%;
+      transform: translateX(-50%) scaleX(1) translateY(4.5rem) rotate(28deg);
+    }
+    70% {
+      left: 20%;
+      transform: translateX(-50%) scaleX(1) translateY(8.5rem) rotate(12deg);
+    }
+    /* Land on Vision card */
+    72% {
+      left: 22%;
+      transform: translateX(-50%) scaleX(1) translateY(11.25rem) rotate(-6deg);
+    }
+    /* Sit / look up waiting for the hat (inside Vision card) */
+    74%,
+    84% {
+      left: 22%;
+      transform: translateX(-50%) scaleX(1) translateY(11.5rem) rotate(0deg);
+    }
+    /* Hat on — climb to the Vision card top edge */
+    86% {
+      left: 20%;
+      transform: translateX(-50%) scaleX(1) translateY(7.75rem) rotate(4deg);
+    }
+    /* Wait seated exactly on the Vision card top line */
+    87%,
+    93% {
+      left: 20%;
+      transform: translateX(-50%) scaleX(1) translateY(7.75rem) rotate(0deg);
+    }
+    /* Funny jump — float with knees folded, then up to nonprofit line */
+    94.5% {
+      left: 14%;
+      transform: translateX(-50%) scaleX(1) translateY(4.6rem) rotate(-6deg);
+    }
+    96% {
+      left: 10%;
+      transform: translateX(-50%) scaleX(1) translateY(3.2rem) rotate(8deg);
+    }
+    98% {
+      left: 5%;
+      transform: translateX(-50%) scaleX(1) translateY(1.1rem) rotate(-4deg);
+    }
+    100% {
+      left: 0%;
+      transform: translateX(-50%) scaleX(1) translateY(0) rotate(0deg);
+    }
+  }
+
+  @keyframes nonprofit-lineman-body {
+    /* Confident walk: lean with down/pass only — feet stay on the line */
+    0% {
+      transform: rotate(-2deg) translateY(0);
+    }
+    2.5% {
+      transform: rotate(3deg) translateY(0);
+    }
+    5% {
+      transform: rotate(-2deg) translateY(0);
+    }
+    7.5% {
+      transform: rotate(2deg) translateY(0);
+    }
+    10% {
+      transform: rotate(-2deg) translateY(0);
+    }
+    12.5% {
+      transform: rotate(3deg) translateY(0);
+    }
+    15% {
+      transform: rotate(-2deg) translateY(0);
+    }
+    17.5% {
+      transform: rotate(2deg) translateY(0);
+    }
+    /* Skip beat */
+    20% {
+      transform: rotate(-3deg) translateY(0);
+    }
+    22.5% {
+      transform: rotate(4deg) translateY(0);
+    }
+    25% {
+      transform: rotate(-2deg) translateY(0);
+    }
+    27.5% {
+      transform: rotate(2deg) translateY(0);
+    }
+    /* Tip-toe careful step */
+    30% {
+      transform: rotate(5deg) translateY(0);
+    }
+    32% {
+      transform: rotate(0deg) translateY(0);
+    }
+    /* Return hops stay light; fall gag handles leaving the line later */
+    40% {
+      transform: rotate(12deg) translateY(0);
+    }
+    48% {
+      transform: rotate(-14deg) translateY(0);
+    }
+    56% {
+      transform: rotate(12deg) translateY(0);
+    }
+    62% {
+      transform: rotate(-8deg) translateY(0);
+    }
+    /* Bonk reaction from the hat hit */
+    63.5% {
+      transform: rotate(18deg) translateY(0);
+    }
+    64.5% {
+      transform: rotate(-22deg) translateY(1px);
+    }
+    /* Fall tumble */
+    66% {
+      transform: rotate(24deg) translateY(2px);
+    }
+    70% {
+      transform: rotate(-10deg) translateY(0);
+    }
+    /* Look up waiting for hat */
+    74%,
+    84% {
+      transform: rotate(-26deg) translateY(-2px);
+    }
+    86% {
+      transform: rotate(6deg) translateY(0);
+    }
+    /* Sit pose on Vision card top edge */
+    87%,
+    93% {
+      transform: rotate(4deg) translateY(0);
+    }
+    /* Jump float — tucked body */
+    94.5% {
+      transform: rotate(-10deg) translateY(-1px);
+    }
+    96% {
+      transform: rotate(8deg) translateY(0);
+    }
+    98% {
+      transform: rotate(-4deg) translateY(0);
+    }
+    100% {
+      transform: rotate(0deg) translateY(0);
+    }
+  }
+
+  @keyframes nonprofit-lineman-helmet-worn {
+    0%,
+    13.5% {
+      opacity: 1;
+      transform: translate(0, 0) rotate(0deg);
+    }
+    /* Mid-outbound toss */
+    14.5%,
+    24% {
+      opacity: 0;
+      transform: translate(6px, -4px) rotate(-12deg);
+    }
+    25%,
+    62% {
+      opacity: 1;
+      transform: translate(0, 0) rotate(0deg);
+    }
+    /* Knocked off when the hat hits him, before the fall */
+    63.5%,
+    84.5% {
+      opacity: 0;
+      transform: translate(4px, -10px) rotate(28deg);
+    }
+    85%,
+    100% {
+      opacity: 1;
+      transform: translate(0, 0) rotate(0deg);
+    }
+  }
+
+  @keyframes nonprofit-lineman-arms {
+    /* Counter-swing opposite the legs (small, clean arcs) */
+    0% {
+      transform: rotate(12deg);
+    }
+    2.5% {
+      transform: rotate(-10deg);
+    }
+    5% {
+      transform: rotate(12deg);
+    }
+    7.5% {
+      transform: rotate(-10deg);
+    }
+    10% {
+      transform: rotate(12deg);
+    }
+    12.5% {
+      transform: rotate(-10deg);
+    }
+    /* Mid-outbound toss / catch */
+    14% {
+      transform: rotate(-18deg);
+    }
+    16% {
+      transform: rotate(42deg);
+    }
+    18% {
+      transform: rotate(58deg);
+    }
+    22% {
+      transform: rotate(-36deg);
+    }
+    /* Resume counter-swing through skip + tip-toe */
+    25% {
+      transform: rotate(14deg);
+    }
+    27.5% {
+      transform: rotate(-12deg);
+    }
+    30% {
+      transform: rotate(8deg);
+    }
+    32% {
+      transform: rotate(0deg);
+    }
+    34% {
+      transform: rotate(28deg);
+    }
+    36% {
+      transform: rotate(-20deg);
+    }
+    40% {
+      transform: rotate(48deg);
+    }
+    48% {
+      transform: rotate(-52deg);
+    }
+    56% {
+      transform: rotate(44deg);
+    }
+    62% {
+      transform: rotate(-20deg);
+    }
+    /* Arms flail from the hat hit */
+    63.5% {
+      transform: rotate(55deg);
+    }
+    65% {
+      transform: rotate(-50deg);
+    }
+    /* Flail while falling */
+    66% {
+      transform: rotate(60deg);
+    }
+    70% {
+      transform: rotate(-40deg);
+    }
+    /* Reach / look up waiting for the hat */
+    74%,
+    84% {
+      transform: rotate(-58deg);
+    }
+    86% {
+      transform: rotate(-12deg);
+    }
+    /* Idle while sitting on Vision top */
+    87%,
+    93% {
+      transform: rotate(12deg);
+    }
+    /* Jump float — arms out */
+    94.5% {
+      transform: rotate(-42deg);
+    }
+    96% {
+      transform: rotate(36deg);
+    }
+    98% {
+      transform: rotate(-12deg);
+    }
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+
+  @keyframes nonprofit-cap-flight {
+    /* Mid-outbound toss */
+    0%,
+    14% {
+      left: 34%;
+      bottom: 2.45rem;
+      top: auto;
+      opacity: 0;
+      transform: translateX(0) rotate(0deg) scale(1);
+    }
+    15% {
+      left: 40%;
+      bottom: 3.4rem;
+      top: auto;
+      opacity: 1;
+      transform: translateX(0) rotate(25deg) scale(1.05);
+    }
+    19% {
+      left: 56%;
+      bottom: auto;
+      top: -min(42vh, 18rem);
+      opacity: 1;
+      transform: translateX(0) rotate(200deg) scale(1.1);
+    }
+    23% {
+      left: 68%;
+      bottom: 2.55rem;
+      top: auto;
+      opacity: 1;
+      transform: translateX(0) rotate(340deg) scale(1);
+    }
+    25%,
+    58% {
+      left: 70%;
+      bottom: 2.45rem;
+      top: auto;
+      opacity: 0;
+      transform: translateX(0) rotate(0deg) scale(1);
+    }
+    /* Hat comes back and hits him on the walk line (before fall) */
+    60% {
+      left: 18%;
+      bottom: auto;
+      top: -4rem;
+      opacity: 1;
+      transform: translateX(0) rotate(-40deg) scale(1.08);
+    }
+    63.5% {
+      left: 11%;
+      bottom: auto;
+      top: 0.2rem;
+      opacity: 1;
+      transform: translateX(0) rotate(15deg) scale(1.12);
+    }
+    /* Bounce up off his head from the hit */
+    65% {
+      left: 13%;
+      bottom: auto;
+      top: -3.2rem;
+      opacity: 1;
+      transform: translateX(0) rotate(-20deg) scale(1.05);
+    }
+    /* Stay above while he falls and looks up */
+    72%,
+    78% {
+      left: 22%;
+      bottom: auto;
+      top: -4.5rem;
+      opacity: 1;
+      transform: translateX(0) rotate(12deg) scale(1.08);
+    }
+    /* Fall straight down onto the head while he waits below */
+    83% {
+      left: 22%;
+      bottom: auto;
+      top: 8.35rem;
+      opacity: 1;
+      transform: translateX(0) rotate(8deg) scale(1);
+    }
+    84.5% {
+      left: 22%;
+      bottom: auto;
+      top: 11.05rem;
+      opacity: 1;
+      transform: translateX(0) rotate(0deg) scale(1);
+    }
+    /* Caught on head — worn helmet takes over */
+    85%,
+    100% {
+      left: 22%;
+      bottom: auto;
+      top: 11.05rem;
+      opacity: 0;
+      transform: translateX(0) rotate(0deg) scale(0.95);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .landing-nonprofit-lineman {
+      display: none;
+    }
   }
 
   .landing-vm-card {
@@ -495,7 +1103,8 @@ body,
   }
 
   .landing-sponsors-marquee:hover .landing-sponsors-marquee-track,
-  .landing-sponsors-marquee:focus-within .landing-sponsors-marquee-track {
+  .landing-sponsors-marquee:focus-within .landing-sponsors-marquee-track,
+  .landing-sponsors.is-open .landing-sponsors-marquee-track {
     animation-play-state: paused;
   }
 
@@ -528,20 +1137,50 @@ body,
     .landing-sponsors-marquee-group[aria-hidden='true'] {
       display: none;
     }
+
+    .landing-sponsor-sheet-backdrop,
+    .landing-sponsor-sheet-card {
+      animation: none !important;
+    }
   }
 
   .landing-sponsor-chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.65rem;
+    justify-content: center;
     flex-shrink: 0;
-    min-width: 11rem;
-    max-width: 16rem;
-    padding: 0.65rem 0.9rem;
+    max-width: 14rem;
+    padding: 0.55rem 1rem;
     border: 2px solid #0f172a;
     border-radius: 9999px;
     background: #fff;
     box-shadow: 2px 2px 0 #0f172a;
+    cursor: pointer;
+    pointer-events: auto;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  .landing-sponsor-chip:hover {
+    background: #fffbeb;
+    transform: translateY(-1px);
+  }
+
+  .landing-sponsor-chip:active {
+    transform: translateY(1px);
+    box-shadow: 1px 1px 0 #0f172a;
+  }
+
+  .landing-sponsor-chip-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
   }
 
   .landing-sponsor-avatar {
@@ -554,6 +1193,12 @@ body,
     background: #f8fafc;
   }
 
+  .landing-sponsor-avatar--lg {
+    width: 4.5rem;
+    height: 4.5rem;
+    border-width: 3px;
+  }
+
   .landing-sponsor-avatar--generic {
     display: inline-flex;
     align-items: center;
@@ -562,6 +1207,123 @@ body,
     font-weight: 900;
     color: #0f172a;
     background: linear-gradient(145deg, #fde68a, #fdba74);
+  }
+
+  .landing-sponsor-avatar--lg.landing-sponsor-avatar--generic {
+    font-size: 1.5rem;
+  }
+
+  .landing-sponsor-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal, 200);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 1rem;
+    pointer-events: auto;
+  }
+
+  @media (min-width: 640px) {
+    .landing-sponsor-sheet {
+      align-items: center;
+      padding: 1.5rem;
+    }
+  }
+
+  .landing-sponsor-sheet-backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: rgba(15, 23, 42, 0.38);
+    animation: landing-sponsor-fade-in 0.28s ease both;
+  }
+
+  .landing-sponsor-sheet-card {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 22rem);
+    border: 2px solid #0f172a;
+    border-radius: 1.35rem;
+    background: #fff;
+    box-shadow: 4px 4px 0 #0f172a;
+    padding: 1.5rem 1.25rem 1.35rem;
+    animation: landing-sponsor-rise-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .landing-sponsor-sheet-close {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.65rem;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    border-radius: 9999px;
+    background: transparent;
+    color: #64748b;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .landing-sponsor-sheet-close:hover {
+    color: #0f172a;
+    background: #f1f5f9;
+  }
+
+  .landing-sponsor-sheet-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.45rem;
+  }
+
+  .landing-sponsor-sheet-eyebrow {
+    margin: 0.55rem 0 0;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #94a3b8;
+  }
+
+  .landing-sponsor-sheet-name {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: #0f172a;
+    line-height: 1.25;
+  }
+
+  .landing-sponsor-sheet-detail {
+    margin: 0.15rem 0 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #475569;
+    line-height: 1.45;
+  }
+
+  @keyframes landing-sponsor-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes landing-sponsor-rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(1.1rem) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
 
   .landing-engage-cta {
