@@ -6,7 +6,7 @@ export const LANDING_CONTACT_SCRIPT_URL =
   'https://script.google.com/macros/s/AKfycbzaEyBRGIfjuOi1XPUZtkeHKW24nisakmjuhPjmOGTxebmrdhI8H0AG4O_XvbA2PPvO/exec';
 
 const TOPIC_LABELS = {
-  outreach: { en: 'Reach more linemen', bn: 'আরও লাইনম্যানকে জানানো' },
+  join: { en: 'Want to join SmartLineman', bn: 'স্মার্ট লাইনম্যানে যোগ দিতে চাই' },
   correction: { en: 'Content correction', bn: 'পাঠের ভুল সংশোধন' },
   training: { en: 'Expert online training', bn: 'অনলাইন প্রশিক্ষণ দেওয়া' },
   prize_sponsor: { en: 'Direct prize sponsorship', bn: 'সরাসরি পুরস্কার দেওয়া' },

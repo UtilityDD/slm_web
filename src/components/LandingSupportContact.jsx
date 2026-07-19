@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useImperativeHandle, useState, forwardRef } from 'react';
 import { submitLandingContact } from '../utils/landingContactService';
+import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
 
 const SUPPORT_WAYS = [
   {
     id: 'outreach',
+    action: 'whatsapp_invite',
     icon: 'users',
     title_en: 'Reach more linemen',
     title_bn: 'আরও লাইনম্যানকে জানান',
-    body_en: 'Share SmartLineman in your circle, department, or Facebook groups so more workers can train safely.',
-    body_bn: 'নিজের দল, দপ্তর বা ফেসবুক গ্রুপে স্মার্ট লাইনম্যান শেয়ার করুন—যাতে আরও কর্মী নিরাপদে শিখতে পারেন।',
+    body_en: 'Share with linemen you know — learn through play, earn prizes, become smarter.',
+    body_bn: 'আপনার পরিচিত লাইনম্যানদের শেয়ার করুন—খেলতে খেলতে শেখা, শিখতে শিখতে পুরস্কার, নিজেকে স্মার্ট বানানো।',
   },
   {
     id: 'correction',
@@ -37,7 +39,7 @@ const SUPPORT_WAYS = [
 ];
 
 const TOPICS = [
-  { id: 'outreach', en: 'Reach more linemen', bn: 'আরও লাইনম্যানকে জানানো' },
+  { id: 'join', en: 'Want to join SmartLineman', bn: 'স্মার্ট লাইনম্যানে যোগ দিতে চাই' },
   { id: 'correction', en: 'Content correction', bn: 'পাঠের ভুল সংশোধন' },
   { id: 'training', en: 'Expert online training', bn: 'অনলাইন প্রশিক্ষণ দেওয়া' },
   { id: 'prize_sponsor', en: 'Direct prize sponsorship', bn: 'সরাসরি পুরস্কার দেওয়া' },
@@ -76,13 +78,16 @@ function WayIcon({ name }) {
   );
 }
 
-export default function LandingSupportContact({
-  language = 'bn',
-  onPickTopic,
-  /** When true, only the contact form (for ad-screen / modal open). */
-  formOnly = false,
-  onClose,
-}) {
+const LandingSupportContact = forwardRef(function LandingSupportContact(
+  {
+    language = 'bn',
+    onPickTopic,
+    /** When true, only the contact form (for ad-screen / modal open). */
+    formOnly = false,
+    onClose,
+  },
+  ref
+) {
   const isBn = language === 'bn';
   const [form, setForm] = useState({
     name: '',
@@ -135,9 +140,7 @@ export default function LandingSupportContact({
 
   const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
-  const applyTopic = (topicId) => {
-    setField('topic', topicId);
-    onPickTopic?.(topicId);
+  const scrollToContact = () => {
     const el = document.getElementById('contact');
     const scroller = document.getElementById('main-scroll-container');
     if (!el) return;
@@ -152,6 +155,18 @@ export default function LandingSupportContact({
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  const applyTopic = (topicId, { scroll = true } = {}) => {
+    setField('topic', topicId);
+    onPickTopic?.(topicId);
+    if (scroll) {
+      window.requestAnimationFrame(() => scrollToContact());
+    }
+  };
+
+  useImperativeHandle(ref, () => ({
+    openWithTopic: (topicId) => applyTopic(topicId || 'join', { scroll: true }),
+  }));
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -185,46 +200,79 @@ export default function LandingSupportContact({
     }
   };
 
+  useEffect(() => {
+    if (status !== 'ok') return undefined;
+    const tId = window.setTimeout(() => setStatus('idle'), 5000);
+    return () => window.clearTimeout(tId);
+  }, [status]);
+
   return (
     <div className="space-y-8 sm:space-y-10">
       {!formOnly && (
-      <section id="support" className="landing-engage-section scroll-mt-20 relative z-10">
-        <div className="mb-4 sm:mb-5">
-          <h2 className={`text-lg font-black tracking-tight text-slate-900 sm:text-xl ${isBn ? 'font-bengali' : ''}`}>
-            {t.supportTitle}
-          </h2>
-          <p className={`mt-2 max-w-3xl text-sm font-medium leading-relaxed text-slate-600 sm:text-base ${isBn ? 'font-bengali landing-bn-reading' : ''}`}>
-            {t.supportLead}
-          </p>
-          <p className={`landing-no-money-badge mt-3 inline-flex items-center gap-2 text-xs font-black sm:text-sm ${isBn ? 'font-bengali' : ''}`}>
-            <span aria-hidden>✕</span>
-            {t.noMoney}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
-          {SUPPORT_WAYS.map((way) => (
-            <button
-              key={way.id}
-              type="button"
-              onClick={() => applyTopic(way.id)}
-              className="landing-support-way group text-left touch-manipulation"
+        <section id="support" className="landing-engage-section scroll-mt-20 relative z-10">
+          <div className="mb-4 sm:mb-5">
+            <h2 className={`text-lg font-black tracking-tight text-slate-900 sm:text-xl ${isBn ? 'font-bengali' : ''}`}>
+              {t.supportTitle}
+            </h2>
+            <p
+              className={`mt-2 max-w-3xl text-sm font-medium leading-relaxed text-slate-600 sm:text-base ${isBn ? 'font-bengali landing-bn-reading' : ''}`}
             >
-              <span className="landing-support-way__icon">
-                <WayIcon name={way.icon} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className={`block text-sm font-black text-slate-900 sm:text-base ${isBn ? 'font-bengali' : ''}`}>
-                  {isBn ? way.title_bn : way.title_en}
+              {t.supportLead}
+            </p>
+            <p
+              className={`landing-no-money-badge mt-3 inline-flex items-center gap-2 text-xs font-black sm:text-sm ${isBn ? 'font-bengali' : ''}`}
+            >
+              <span aria-hidden>✕</span>
+              {t.noMoney}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+            {SUPPORT_WAYS.map((way) => (
+              <button
+                key={way.id}
+                type="button"
+                onClick={() => {
+                  if (way.action === 'whatsapp_invite') {
+                    openLinemanInviteWhatsApp(language);
+                    return;
+                  }
+                  applyTopic(way.id);
+                }}
+                className={`landing-support-way group text-left touch-manipulation ${
+                  way.action === 'whatsapp_invite' ? 'landing-support-way--whatsapp' : ''
+                }`}
+              >
+                <span className="landing-support-way__icon">
+                  {way.action === 'whatsapp_invite' ? (
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                      <path d="M12.04 2a9.84 9.84 0 0 0-8.52 14.76L2 22l5.39-1.42A9.94 9.94 0 1 0 12.04 2Zm0 17.99a8.15 8.15 0 0 1-4.15-1.14l-.3-.18-3.2.84.85-3.12-.2-.32A8.15 8.15 0 1 1 12.04 20Zm4.47-6.1c-.24-.12-1.45-.72-1.68-.8-.22-.08-.38-.12-.55.12-.16.25-.63.8-.77.97-.14.16-.28.18-.53.06-.24-.12-1.03-.38-1.96-1.21a7.35 7.35 0 0 1-1.36-1.7c-.14-.24-.02-.37.1-.49.11-.11.25-.28.37-.42.12-.14.16-.24.24-.4.08-.17.04-.31-.02-.43-.06-.12-.55-1.32-.75-1.8-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.3-.22.25-.85.83-.85 2.02s.87 2.34.99 2.5c.12.17 1.71 2.61 4.14 3.66.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.45-.6 1.66-1.17.2-.58.2-1.07.14-1.17-.06-.1-.22-.16-.47-.28Z" />
+                    </svg>
+                  ) : (
+                    <WayIcon name={way.icon} />
+                  )}
                 </span>
-                <span className={`mt-1 block text-xs font-medium leading-relaxed text-slate-600 sm:text-sm ${isBn ? 'font-bengali' : ''}`}>
-                  {isBn ? way.body_bn : way.body_en}
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center justify-between gap-2">
+                    <span className={`block text-sm font-black text-slate-900 sm:text-base ${isBn ? 'font-bengali' : ''}`}>
+                      {isBn ? way.title_bn : way.title_en}
+                    </span>
+                    {way.action === 'whatsapp_invite' && (
+                      <span className={`landing-support-way__share-label ${isBn ? 'font-bengali' : ''}`}>
+                        {isBn ? 'শেয়ার করুন' : 'Share'}
+                      </span>
+                    )}
+                  </span>
+                  <span
+                    className={`mt-1 block text-xs font-medium leading-relaxed text-slate-600 sm:text-sm ${isBn ? 'font-bengali' : ''}`}
+                  >
+                    {isBn ? way.body_bn : way.body_en}
+                  </span>
                 </span>
-              </span>
-            </button>
-          ))}
-        </div>
-      </section>
+              </button>
+            ))}
+          </div>
+        </section>
       )}
 
       <section id="contact" className="landing-engage-section scroll-mt-20 relative z-10">
@@ -233,7 +281,9 @@ export default function LandingSupportContact({
             <h2 className={`text-lg font-black tracking-tight text-slate-900 sm:text-xl ${isBn ? 'font-bengali' : ''}`}>
               {t.contactTitle}
             </h2>
-            <p className={`mt-2 max-w-2xl text-sm font-medium leading-relaxed text-slate-600 sm:text-base ${isBn ? 'font-bengali landing-bn-reading' : ''}`}>
+            <p
+              className={`mt-2 max-w-2xl text-sm font-medium leading-relaxed text-slate-600 sm:text-base ${isBn ? 'font-bengali landing-bn-reading' : ''}`}
+            >
               {t.contactLead}
             </p>
           </div>
@@ -252,7 +302,6 @@ export default function LandingSupportContact({
         </div>
 
         <form onSubmit={onSubmit} className="landing-contact-form space-y-3 sm:space-y-4" noValidate>
-          {/* Honeypot */}
           <input
             type="text"
             name="website"
@@ -343,4 +392,6 @@ export default function LandingSupportContact({
       </section>
     </div>
   );
-}
+});
+
+export default LandingSupportContact;

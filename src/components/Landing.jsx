@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { requestManager } from '../utils/requestManager';
 import { leaderboardService } from '../utils/leaderboardService';
@@ -34,6 +34,8 @@ const copy = {
     sponsorsTitle: 'Our sponsors',
     engageSupportBtn: 'How can you support us?',
     engageContactBtn: 'Contact us',
+    joinCta: 'Join SmartLineman',
+    joinHint: 'Are you a lineman? Join free.',
     login: 'Login',
     language: 'Language',
     loading: 'Loading…',
@@ -61,6 +63,8 @@ const copy = {
     sponsorsTitle: 'যাঁরা পাশে দাঁড়িয়েছেন',
     engageSupportBtn: 'কীভাবে সাহায্য করবেন?',
     engageContactBtn: 'যোগাযোগ করুন',
+    joinCta: 'স্মার্ট লাইনম্যানে যোগ দিন',
+    joinHint: 'আপনি কি লাইনম্যান? যোগ দিন বিনামূল্যে।',
     login: 'লগ ইন করুন',
     language: 'ভাষা',
     loading: 'একটু অপেক্ষা করুন…',
@@ -395,6 +399,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView }) 
   });
   const [visitCount, setVisitCount] = useState(null);
   const [visitLoading, setVisitLoading] = useState(true);
+  const contactFormRef = useRef(null);
 
   // Landing is always shown in light theme, regardless of global app theme.
   useEffect(() => {
@@ -630,6 +635,19 @@ export default function Landing({ language, onLanguageChange, setCurrentView }) 
               </>
             )}
           </p>
+          <div className="landing-join-block">
+            <p className={`landing-join-hint ${bnFont ? 'landing-bn-ui' : ''}`}>{t.joinHint}</p>
+            <button
+              type="button"
+              onClick={() => contactFormRef.current?.openWithTopic('join')}
+              className="landing-join-cta touch-manipulation"
+            >
+              <span className={bnFont ? 'font-bengali' : ''}>{t.joinCta}</span>
+              <svg className="landing-join-cta__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </button>
+          </div>
         </section>
 
         {/* Non-profit / volunteer highlight */}
@@ -716,7 +734,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView }) 
           </button>
         </div>
 
-        <LandingSupportContact language={language} />
+        <LandingSupportContact ref={contactFormRef} language={language} />
 
         {(visitLoading || visitCount != null) && (
           <div className="hidden sm:flex justify-center mt-10 sm:mt-12">
