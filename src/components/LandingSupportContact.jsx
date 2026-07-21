@@ -136,6 +136,10 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
         phoneOrEmail: 'Phone or email — at least one is required',
       };
 
+  const JOIN_MESSAGE = isBn
+    ? 'আমি স্মার্ট লাইনম্যান কমিউনিটিতে যোগ দিতে আগ্রহী। আমার মোবাইল নম্বর দিয়েছি। অনুগ্রহ করে যোগাযোগ করুন।'
+    : 'I am interested to join the lineman community. I have provided my mobile number. Kindly contact me.';
+
   const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
   const scrollToContact = () => {
@@ -154,8 +158,12 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
     }
   };
 
-  const applyTopic = (topicId, { scroll = true } = {}) => {
-    setField('topic', topicId);
+  const applyTopic = (topicId, { scroll = true, prefillMessage = false } = {}) => {
+    setForm((prev) => ({
+      ...prev,
+      topic: topicId,
+      ...(prefillMessage && topicId === 'join' ? { message: JOIN_MESSAGE } : {}),
+    }));
     onPickTopic?.(topicId);
     if (scroll) {
       window.requestAnimationFrame(() => scrollToContact());
@@ -163,7 +171,8 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
   };
 
   useImperativeHandle(ref, () => ({
-    openWithTopic: (topicId) => applyTopic(topicId || 'join', { scroll: true }),
+    openWithTopic: (topicId) =>
+      applyTopic(topicId || 'join', { scroll: true, prefillMessage: true }),
   }));
 
   const onSubmit = async (e) => {
