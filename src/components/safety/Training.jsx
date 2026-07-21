@@ -1128,6 +1128,8 @@ export default function Training({
     const [lockedLessonModal, setLockedLessonModal] = useState(null);
     const [trainingContent, setTrainingContent] = useState(null);
     const [trainingLoading, setTrainingLoading] = useState(false);
+    /** True after first chapter-list fetch finishes (success or error). Secondary widgets wait for this. */
+    const [trainingHomeReady, setTrainingHomeReady] = useState(false);
     const [completedLessons, setCompletedLessons] = useState([]);
     const [faqSearchQuery, setFaqSearchQuery] = useState('');
     const [faqActiveGroup, setFaqActiveGroup] = useState('all');
@@ -1492,10 +1494,14 @@ export default function Training({
         };
     }, [isTrainingNeoBrutalSurface]);
 
-    // Fetch user rank for leaderboard preview
+    // Fetch user rank for leaderboard preview — after Training home is ready, and not while
+    // a chapter/lesson is loading (frees bandwidth for Supabase lesson sync).
     useEffect(() => {
+        if (!trainingHomeReady || trainingLoading) return;
+        if (!user || isGuestUser(profile)) return;
+
+        let cancelled = false;
         const fetchRank = async () => {
-            if (!user || isGuestUser(profile)) return;
             try {
                 const rankData = await requestManager.fetch(
                     `user_rank_all_time_${user.id}`,
@@ -1515,12 +1521,12 @@ export default function Training({
 
                         if (countError) throw countError;
 
-                        return { rank: count + 1, score: myData.score };
+                        return { rank: (count ?? 0) + 1, score: myData.score };
                     },
                     { ttl: 5, swr: true, forceRefresh: false }
                 );
 
-                if (rankData) {
+                if (!cancelled && rankData) {
                     setUserRank(rankData);
                 }
             } catch (error) {
@@ -1529,11 +1535,16 @@ export default function Training({
         };
 
         fetchRank();
-    }, [user, completedLessons.length, profile]);
+        return () => { cancelled = true; };
+    }, [trainingHomeReady, trainingLoading, user, completedLessons.length, profile]);
 
+    // Hourly challenge eligibility — same deferral as rank (not on critical paint path).
     useEffect(() => {
+        if (!trainingHomeReady || trainingLoading) return;
+        if (!user) return;
+
+        let cancelled = false;
         const checkHourlyEligibility = async () => {
-            if (!user) return;
             try {
                 const nowRaw = new Date();
                 const now = new Date(nowRaw.getTime() + (5.5 * 60 * 60 * 1000));
@@ -1550,7 +1561,7 @@ export default function Training({
                     .eq('quiz_id', quizId)
                     .limit(1);
 
-                if (!error) {
+                if (!cancelled && !error) {
                     setIsHourlyPending(data.length === 0);
                 }
             } catch (err) {
@@ -1560,10 +1571,12 @@ export default function Training({
 
         checkHourlyEligibility();
 
-        // Setup an interval to check this every 5 minutes in case the hour rolls over while they are just sitting on the page
         const intervalId = setInterval(checkHourlyEligibility, 5 * 60 * 1000);
-        return () => clearInterval(intervalId);
-    }, [user]);
+        return () => {
+            cancelled = true;
+            clearInterval(intervalId);
+        };
+    }, [trainingHomeReady, trainingLoading, user]);
 
     const toggleChapterAudio = (chapterNum) => {
         if (activeAudioChapter === chapterNum && isAudioPlaying) {
@@ -2363,11 +2376,25 @@ export default function Training({
         });
     }, [language, setActiveImageModal]);
 
+    // PPE survey data — after Training home is ready; pause while a chapter is loading.
     useEffect(() => {
-        if (user?.id) {
-            fetchUserPPEData();
-        }
-    }, [user?.id]);
+        if (!trainingHomeReady || trainingLoading) return;
+        if (!user?.id) return;
+        let cancelled = false;
+        (async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('user_ppe')
+                    .select('id, name, details')
+                    .eq('user_id', user.id);
+                if (error) throw error;
+                if (!cancelled) setUserPPEData(data || []);
+            } catch (error) {
+                console.error('Error fetching PPE data for survey:', error);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [trainingHomeReady, trainingLoading, user?.id]);
 
     const fetchUserPPEData = async () => {
         if (!user?.id) return;
@@ -2388,6 +2415,7 @@ export default function Training({
         const fetchTrainingChapters = async () => {
             try {
                 setTrainingLoading(true);
+                setTrainingHomeReady(false);
                 setFetchError(false); // Clear previous error on retry
                 const data = await requestManager.fetch(
                     'training_manifest',
@@ -2411,6 +2439,7 @@ export default function Training({
                 setFetchError(true);
             } finally {
                 setTrainingLoading(false);
+                setTrainingHomeReady(true);
             }
         };
 
