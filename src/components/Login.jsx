@@ -51,12 +51,17 @@ const HERO_IMAGE_FOCUS = {
 };
 
 function HeroImageCrossfade({ images, activeIndex }) {
+    // Prefetch only the active slide and the next one — avoid ~3.5MB storm on login.
     useEffect(() => {
-        images.forEach((src) => {
+        const toPrefetch = [
+            images[activeIndex],
+            images[(activeIndex + 1) % images.length],
+        ].filter(Boolean);
+        toPrefetch.forEach((src) => {
             const img = new Image();
             img.src = src;
         });
-    }, [images]);
+    }, [images, activeIndex]);
 
     return (
         <div className="relative h-40 w-full overflow-hidden bg-slate-800 sm:h-44">
@@ -67,6 +72,7 @@ function HeroImageCrossfade({ images, activeIndex }) {
                     alt=""
                     aria-hidden={i !== activeIndex}
                     decoding="async"
+                    loading={i === activeIndex || i === (activeIndex + 1) % images.length ? 'eager' : 'lazy'}
                     className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${
                         i === activeIndex ? 'z-[1] opacity-100' : 'z-0 opacity-0'
                     }`}

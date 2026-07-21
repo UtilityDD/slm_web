@@ -2398,7 +2398,9 @@ export default function Training({
                         }
                         throw new Error('Manifest not found');
                     },
-                    { ttl: 60, swr: true, forceRefresh: true }
+                    // Cache-first + SWR: do not force a network hit on every mount.
+                    // Lesson bodies still sync from Supabase on chapter open.
+                    { ttl: 60, swr: true, forceRefresh: false }
                 );
 
                 if (data) {

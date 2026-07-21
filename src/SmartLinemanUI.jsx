@@ -66,10 +66,29 @@ const preloadComponent = (factory) => {
 };
 
 export default function SmartLinemanUI() {
-  // Background Data Pre-fetching
+  // Background Data Pre-fetching — deferred so first login / Training / Supabase
+  // lesson sync are not competing for bandwidth on cold start.
   useEffect(() => {
-    // Fetch safety library in background to warm up cache
-    libraryService.fetchLibrary().catch(err => console.warn('Background library pre-fetch failed:', err));
+    let cancelled = false;
+    let idleId = null;
+    const run = () => {
+      if (cancelled) return;
+      libraryService.fetchLibrary().catch(err => console.warn('Background library pre-fetch failed:', err));
+    };
+    const timer = setTimeout(() => {
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        idleId = window.requestIdleCallback(run, { timeout: 4000 });
+      } else {
+        run();
+      }
+    }, 8000);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      if (idleId != null && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+        window.cancelIdleCallback(idleId);
+      }
+    };
   }, []);
 
   // Count every app open once per browser session (guest + logged in)
@@ -253,13 +272,29 @@ export default function SmartLinemanUI() {
     }
   }, []);
 
-  // Background Preloading for Safety Library
+  // Background Preloading for Safety Library (Drive images) — far after first paint
+  // so post-login Training + Supabase chapter sync keep network priority.
   useEffect(() => {
-    // Wait 2 seconds before starting background download to prioritize initial app load
-    const timer = setTimeout(() => {
+    let cancelled = false;
+    let idleId = null;
+    const run = () => {
+      if (cancelled) return;
       preloadSafetyLibraryAssets();
-    }, 2000);
-    return () => clearTimeout(timer);
+    };
+    const timer = setTimeout(() => {
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        idleId = window.requestIdleCallback(run, { timeout: 6000 });
+      } else {
+        run();
+      }
+    }, 15000);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      if (idleId != null && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+        window.cancelIdleCallback(idleId);
+      }
+    };
   }, []);
 
   // Suraksha Sathi: expanded on each view, then auto-collapse after a longer pause
@@ -272,17 +307,18 @@ export default function SmartLinemanUI() {
   }, [currentView]);
 
   // Background Pre-fetching for Leaderboard & Monthly Stars
+  // Warm-cache only — Competitions / Training rank still fetch when opened.
+  // Deferred longer after login so Supabase lesson sync is not starved.
   useEffect(() => {
     if (user) {
       // Update last active status
       updateLastActive();
 
-      // Delay pre-fetching to prioritize initial UI rendering
       const timer = setTimeout(() => {
         leaderboardService.fetchAllTime();
         leaderboardService.fetchMonthly();
         leaderboardService.fetchHallOfFame();
-      }, 2000); // 2 second delay
+      }, 10000);
       return () => clearTimeout(timer);
     }
   }, [user]);
@@ -1338,7 +1374,8 @@ export default function SmartLinemanUI() {
       ? ['login', 'verify', 'landing', 'update-password'].includes(currentView)
       : !['landing', 'login'].includes(currentView));
 
-  const sponsorAdMinDwellMs = user ? 0 : 12000;
+  // Give Training / first Supabase lesson path time before full-screen ad.
+  const sponsorAdMinDwellMs = 12000;
 
   const profileNudgeBlocked =
     overlayBlocked ||

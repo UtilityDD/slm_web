@@ -34,12 +34,14 @@ const SafetyItemCarousel = ({ compact = false }) => {
   const sequence = useMemo(() => shuffle(LOADER_IMAGES), []);
   const [index, setIndex] = useState(() => Math.floor(Math.random() * sequence.length));
 
+  // Prefetch only current + next frame — avoid competing with login/Training network.
   useEffect(() => {
-    sequence.forEach((src) => {
+    const next = sequence[(index + 1) % sequence.length];
+    [sequence[index], next].filter(Boolean).forEach((src) => {
       const img = new Image();
       img.src = src;
     });
-  }, [sequence]);
+  }, [sequence, index]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -49,6 +51,8 @@ const SafetyItemCarousel = ({ compact = false }) => {
   }, [sequence.length]);
 
   const frameClass = compact ? 'h-28 w-28' : 'h-44 w-44 sm:h-52 sm:w-52';
+  const prevIndex = (index - 1 + sequence.length) % sequence.length;
+  const nextIndex = (index + 1) % sequence.length;
 
   return (
     <div
@@ -56,19 +60,23 @@ const SafetyItemCarousel = ({ compact = false }) => {
       role="img"
       aria-label="Loading safety equipment"
     >
-      {sequence.map((src, i) => (
-        <img
-          key={src}
-          src={src}
-          alt=""
-          aria-hidden
-          decoding="async"
-          fetchPriority={i === index ? 'high' : 'low'}
-          className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-150 ease-out ${
-            i === index ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
-      ))}
+      {sequence.map((src, i) => {
+        // Keep nearby frames mounted for smooth crossfade; others stay out of DOM.
+        if (i !== index && i !== prevIndex && i !== nextIndex) return null;
+        return (
+          <img
+            key={src}
+            src={src}
+            alt=""
+            aria-hidden
+            decoding="async"
+            fetchPriority={i === index ? 'high' : 'low'}
+            className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-150 ease-out ${
+              i === index ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+        );
+      })}
     </div>
   );
 };
