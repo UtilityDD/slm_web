@@ -2,18 +2,71 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { buildLandingSponsors } from '../utils/hallOfFamePrizes';
 
-function SponsorAvatar({ name, logoCandidates = [], size = 'sm' }) {
+/** Lightweight smiling fallback when no sponsor photo is available. */
+function SponsorSmileAvatar({ gender = 'man', size = 'sm' }) {
+    const sizeClass =
+        size === 'lg'
+            ? 'landing-sponsor-avatar landing-sponsor-avatar--portrait landing-sponsor-avatar--smile'
+            : 'landing-sponsor-avatar landing-sponsor-avatar--smile';
+    const isWoman = gender === 'woman';
+
+    return (
+        <span className={sizeClass} aria-hidden>
+            <svg
+                className="landing-sponsor-smile-svg"
+                viewBox="0 0 64 64"
+                width="100%"
+                height="100%"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                <circle cx="32" cy="32" r="30" fill="#fde68a" />
+                {isWoman ? (
+                    <>
+                        <path
+                            d="M10 30c2-14 12-22 22-22s20 8 22 22c-4-8-12-12-22-12S14 22 10 30Z"
+                            fill="#78350f"
+                        />
+                        <path
+                            d="M8 34c1.5-3 4-5 7-6 0 6 2 11 5 14H13c-2.5-2-4.2-5-5-8Z"
+                            fill="#78350f"
+                        />
+                        <path
+                            d="M56 34c-1.5-3-4-5-7-6 0 6-2 11-5 14h7c2.5-2 4.2-5 5-8Z"
+                            fill="#78350f"
+                        />
+                    </>
+                ) : (
+                    <path
+                        d="M14 28c1.5-10 9-16 18-16s16.5 6 18 16c-3.5-5-9-8-18-8s-14.5 3-18 8Z"
+                        fill="#78350f"
+                    />
+                )}
+                <circle cx="23.5" cy="30" r="2.4" fill="#0f172a" />
+                <circle cx="40.5" cy="30" r="2.4" fill="#0f172a" />
+                <path
+                    d="M24 40c2.4 3.2 5.6 4.8 8 4.8s5.6-1.6 8-4.8"
+                    stroke="#0f172a"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                />
+                <circle cx="18.5" cy="36.5" r="3" fill="#fb923c" opacity="0.45" />
+                <circle cx="45.5" cy="36.5" r="3" fill="#fb923c" opacity="0.45" />
+            </svg>
+        </span>
+    );
+}
+
+function SponsorAvatar({ name, gender = 'man', logoCandidates = [], size = 'sm' }) {
     const [candidateIndex, setCandidateIndex] = useState(0);
     const src = logoCandidates[candidateIndex];
-    const initial = (name || '?').charAt(0).toUpperCase();
-    const sizeClass = size === 'lg' ? 'landing-sponsor-avatar landing-sponsor-avatar--lg' : 'landing-sponsor-avatar';
+    const sizeClass =
+        size === 'lg'
+            ? 'landing-sponsor-avatar landing-sponsor-avatar--portrait'
+            : 'landing-sponsor-avatar';
 
     if (!src) {
-        return (
-            <span className={`${sizeClass} landing-sponsor-avatar--generic`} aria-hidden>
-                {initial}
-            </span>
-        );
+        return <SponsorSmileAvatar gender={gender} size={size} />;
     }
 
     return (
@@ -39,6 +92,11 @@ function SponsorChip({ sponsor, isBn, onOpen }) {
             }}
             aria-haspopup="dialog"
         >
+            <SponsorAvatar
+                name={sponsor.name}
+                gender={sponsor.gender}
+                logoCandidates={sponsor.logoCandidates}
+            />
             <span className={`landing-sponsor-chip-name ${isBn ? 'font-bengali' : ''}`}>
                 {sponsor.name}
             </span>
@@ -75,13 +133,7 @@ function SponsorIdentityCard({ sponsor, isBn, onClose, labels }) {
                     if (closeArmed) onClose();
                 }}
             />
-            <div
-                className="landing-sponsor-sheet-card"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="landing-sponsor-identity-title"
-                onClick={(e) => e.stopPropagation()}
-            >
+            <div className="landing-sponsor-sheet-panel">
                 <button
                     type="button"
                     className="landing-sponsor-sheet-close"
@@ -90,24 +142,41 @@ function SponsorIdentityCard({ sponsor, isBn, onClose, labels }) {
                 >
                     ×
                 </button>
-                <div className="landing-sponsor-sheet-body">
-                    <SponsorAvatar
-                        name={sponsor.name}
-                        logoCandidates={sponsor.logoCandidates}
-                        size="lg"
-                    />
-                    <p className="landing-sponsor-sheet-eyebrow">{labels.sponsor}</p>
-                    <h3
-                        id="landing-sponsor-identity-title"
-                        className={`landing-sponsor-sheet-name ${isBn ? 'font-bengali' : ''}`}
-                    >
-                        {sponsor.name}
-                    </h3>
-                    {sponsor.detail ? (
-                        <p className={`landing-sponsor-sheet-detail ${isBn ? 'font-bengali' : ''}`}>
-                            {sponsor.detail}
+                <div
+                    className="landing-sponsor-sheet-card"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="landing-sponsor-identity-title"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className="landing-sponsor-sheet-body">
+                        <div className="landing-sponsor-sheet-photo-wrap">
+                            <SponsorAvatar
+                                name={sponsor.name}
+                                gender={sponsor.gender}
+                                logoCandidates={sponsor.logoCandidates}
+                                size="lg"
+                            />
+                        </div>
+                        <p className={`landing-sponsor-sheet-thanks ${isBn ? 'font-bengali' : ''}`}>
+                            {labels.thanks}
                         </p>
-                    ) : null}
+                        <p className="landing-sponsor-sheet-eyebrow">{labels.sponsor}</p>
+                        <h3
+                            id="landing-sponsor-identity-title"
+                            className={`landing-sponsor-sheet-name ${isBn ? 'font-bengali' : ''}`}
+                        >
+                            {sponsor.name}
+                        </h3>
+                        {sponsor.detail ? (
+                            <p className={`landing-sponsor-sheet-detail ${isBn ? 'font-bengali' : ''}`}>
+                                {sponsor.detail}
+                            </p>
+                        ) : null}
+                        <p className={`landing-sponsor-sheet-note ${isBn ? 'font-bengali' : ''}`}>
+                            {labels.thanksNote}
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>,
@@ -121,8 +190,18 @@ export default function LandingSponsorsScroll({ language = 'bn', title = '' }) {
     const [activeSponsor, setActiveSponsor] = useState(null);
 
     const labels = isBn
-        ? { sponsor: 'স্পনসর', close: 'বন্ধ করুন' }
-        : { sponsor: 'Sponsor', close: 'Close' };
+        ? {
+              sponsor: 'স্পনসর',
+              close: 'বন্ধ করুন',
+              thanks: 'ধন্যবাদ',
+              thanksNote: 'আপনার সৌজন্যে আমরা এগিয়ে যেতে পারি।',
+          }
+        : {
+              sponsor: 'Sponsor',
+              close: 'Close',
+              thanks: 'Thank you',
+              thanksNote: 'Your kindness helps us keep going.',
+          };
 
     const openSponsor = useCallback((sponsor) => {
         setActiveSponsor(sponsor);
@@ -151,7 +230,9 @@ export default function LandingSponsorsScroll({ language = 'bn', title = '' }) {
             aria-label={title}
         >
             {title && (
-                <h2 className={`mb-3 text-base font-black tracking-tight text-slate-900 sm:mb-4 sm:text-lg ${isBn ? 'font-bengali' : ''}`}>
+                <h2
+                    className={`mb-3 text-base font-black tracking-tight text-slate-900 sm:mb-4 sm:text-lg ${isBn ? 'font-bengali' : ''}`}
+                >
                     {title}
                 </h2>
             )}

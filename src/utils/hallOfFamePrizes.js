@@ -217,7 +217,7 @@ export function normalizeHallOfFameViewMode(mode) {
     return HOF_VIEW_MODES.includes(mode) ? mode : 'detailed';
 }
 
-/** Slug for optional logo files under public/images/sponsor/{slug}.{ext} */
+/** Slug for sponsor id / legacy logo paths. */
 function sponsorLogoSlug(englishName = '') {
     return englishName
         .toLowerCase()
@@ -226,6 +226,72 @@ function sponsorLogoSlug(englishName = '') {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '')
         .slice(0, 64);
+}
+
+/**
+ * Photo file stems under public/assets/sponsor/ (keep filenames as uploaded).
+ * First English given name → actual file stem(s), including spelling variants.
+ */
+const SPONSOR_PHOTO_STEMS = {
+    aritra: ['aritra'],
+    prabhat: ['pravat', 'prabhat'],
+    parbati: ['parbati'],
+    jahangir: ['jahangir'],
+    subrata: ['subrata'],
+    nilkanth: ['nilkanta', 'nilkanth'],
+};
+
+/** Gender for missing-photo smile avatar — default man. */
+const SPONSOR_GENDER = {
+    aritra: 'man',
+    prabhat: 'man',
+    parbati: 'man',
+    jahangir: 'man',
+    subrata: 'man',
+    nilkanth: 'man',
+};
+
+function sponsorFirstToken(englishName = '') {
+    return String(englishName || '')
+        .trim()
+        .split(/[\s,]+/)[0]
+        .toLowerCase()
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '');
+}
+
+function getSponsorGender(englishName = '') {
+    const first = sponsorFirstToken(englishName);
+    return SPONSOR_GENDER[first] || 'man';
+}
+
+/** Ordered photo URLs for a sponsor — /assets/sponsor/{stem}.{ext}, then legacy /images/sponsor. */
+function getSponsorPhotoCandidates(englishName = '') {
+    const first = sponsorFirstToken(englishName);
+    const stems = SPONSOR_PHOTO_STEMS[first] || (first ? [first] : []);
+    const urls = [];
+    const seen = new Set();
+    for (const stem of stems) {
+        for (const ext of PRIZE_IMAGE_EXTENSIONS) {
+            const url = `/assets/sponsor/${stem}.${ext}`;
+            if (!seen.has(url)) {
+                seen.add(url);
+                urls.push(url);
+            }
+        }
+    }
+    const slug = sponsorLogoSlug(englishName);
+    if (slug) {
+        for (const ext of PRIZE_IMAGE_EXTENSIONS) {
+            const url = `/images/sponsor/${slug}.${ext}`;
+            if (!seen.has(url)) {
+                seen.add(url);
+                urls.push(url);
+            }
+        }
+    }
+    return urls;
 }
 
 /** Split "Name, title / place" into short name + remaining identity line. */
@@ -247,7 +313,7 @@ function splitSponsorIdentity(full = '') {
 
 /**
  * Unique prize sponsors for the landing horizontal scroll.
- * Logos are optional files at /images/sponsor/{slug}.webp|png|jpg|jpeg — never prize product images.
+ * Photos: public/assets/sponsor/{name}.jpeg (etc). Missing photos fall back to letter avatar in UI.
  */
 export function buildLandingSponsors(language = 'bn') {
     const isBn = language === 'bn';
@@ -260,14 +326,14 @@ export function buildLandingSponsors(language = 'bn') {
         if (!full) continue;
         const { shortName, detail } = splitSponsorIdentity(full);
         const slug = sponsorLogoSlug(entry.sponsor_en || shortName);
-        const logoCandidates = slug
-            ? PRIZE_IMAGE_EXTENSIONS.map((ext) => `/images/sponsor/${slug}.${ext}`)
-            : [];
+        const english = entry.sponsor_en || shortName;
+        const logoCandidates = getSponsorPhotoCandidates(english);
         seen.set(key, {
             id: slug || key.replace(/\s+/g, '-'),
             name: shortName,
             detail,
             full,
+            gender: getSponsorGender(english),
             logoCandidates,
         });
     }
