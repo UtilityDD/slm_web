@@ -9,7 +9,7 @@ const toBengaliNumber = (num, lang) => {
 
 /**
  * Horizontal lesson session strip — completed + unlocked upcoming lessons.
- * Lets learners jump lessons without returning to the training path page.
+ * Quiet circle row; a soft scroll peek hints that it can move sideways.
  */
 export default function LessonContinueStrip({
     lessons = [],
@@ -23,28 +23,58 @@ export default function LessonContinueStrip({
     useEffect(() => {
         const node = currentRef.current;
         const scroller = scrollerRef.current;
-        if (!node || !scroller) return;
-        const target =
-            node.offsetLeft - scroller.clientWidth / 2 + node.clientWidth / 2;
-        scroller.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+        if (!node || !scroller) return undefined;
+
+        const centerOnCurrent = () => {
+            const target =
+                node.offsetLeft - scroller.clientWidth / 2 + node.clientWidth / 2;
+            scroller.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+        };
+
+        centerOnCurrent();
+
+        const reduceMotion =
+            typeof window !== 'undefined' &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (reduceMotion) return undefined;
+
+        let peekBackTimer = 0;
+        const peekTimer = window.setTimeout(() => {
+            const maxScroll = scroller.scrollWidth - scroller.clientWidth;
+            if (maxScroll <= 12) return;
+
+            const start = scroller.scrollLeft;
+            const roomRight = Math.max(0, maxScroll - start);
+            const roomLeft = start;
+            // Prefer a right peek so it feels like “more ahead”; fall back left.
+            const peek =
+                roomRight > 10
+                    ? Math.min(56, roomRight)
+                    : roomLeft > 10
+                        ? -Math.min(56, roomLeft)
+                        : 0;
+            if (!peek) return;
+
+            scroller.scrollTo({ left: start + peek, behavior: 'smooth' });
+            peekBackTimer = window.setTimeout(() => {
+                scroller.scrollTo({ left: start, behavior: 'smooth' });
+            }, 520);
+        }, 780);
+
+        return () => {
+            window.clearTimeout(peekTimer);
+            window.clearTimeout(peekBackTimer);
+        };
     }, [lessons]);
 
     if (!lessons.length) return null;
 
     return (
-        <div className="w-full max-w-full pt-1">
-            <div className="mb-2.5 flex items-center justify-between gap-2 px-0.5">
-                <p className={`text-left text-[11px] font-bold text-slate-600 sm:text-xs ${language === 'bn' ? 'font-bengali' : ''}`}>
-                    {language === 'en' ? 'Your session — tap a lesson' : 'আপনার সেশন — পাঠে ট্যাপ করুন'}
-                </p>
-                <p className={`shrink-0 text-[10px] font-semibold text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                    {language === 'en' ? 'Swipe' : 'সোয়াইপ'} →
-                </p>
-            </div>
-
+        <div className="lesson-continue-strip w-full max-w-full">
             <div
                 ref={scrollerRef}
-                className="flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain px-1 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                className="lesson-continue-strip__scroller flex snap-x snap-mandatory gap-3.5 overflow-x-auto overscroll-x-contain px-3 py-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-4"
                 role="list"
                 aria-label={language === 'en' ? 'Open lessons' : 'খোলা পাঠসমূহ'}
             >
@@ -77,7 +107,7 @@ export default function LessonContinueStrip({
                             ref={lesson.isCurrent || lesson.isNext ? currentRef : undefined}
                             disabled={isOpening || !lesson.isUnlocked}
                             onClick={() => onSelect?.(lesson)}
-                            className={`group flex w-[4.25rem] shrink-0 snap-center flex-col items-center gap-1.5 touch-manipulation transition-transform active:scale-95 disabled:opacity-60 sm:w-[4.5rem]`}
+                            className="group flex w-14 shrink-0 snap-center flex-col items-center touch-manipulation transition-transform active:scale-95 disabled:opacity-60 sm:w-16"
                             aria-current={lesson.isCurrent ? 'true' : undefined}
                             aria-label={
                                 language === 'en'
@@ -103,13 +133,6 @@ export default function LessonContinueStrip({
                                         <span className="h-4 w-4 animate-spin rounded-full border-2 border-orange-500 border-t-transparent" />
                                     </span>
                                 )}
-                            </span>
-                            <span
-                                className={`max-w-full truncate text-[10px] font-bold leading-tight ${
-                                    lesson.isCurrent || lesson.isNext ? 'text-orange-600' : 'text-slate-500'
-                                } ${language === 'bn' ? 'font-bengali' : ''}`}
-                            >
-                                {status}
                             </span>
                         </button>
                     );

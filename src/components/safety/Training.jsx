@@ -1039,8 +1039,39 @@ function SectionPointFullCard({
         ? `text-[1.05rem] sm:text-[1.1rem] md:text-[1.15rem] text-slate-800 font-medium leading-[1.7] sm:leading-[1.85] ${language === 'bn' ? 'font-bengali leading-[1.85] sm:leading-[2.05]' : ''}`
         : `text-[1.025rem] sm:text-[1.075rem] md:text-[1.125rem] text-slate-800 font-medium leading-[1.65] sm:leading-[1.8] ${language === 'bn' ? 'font-bengali leading-[1.8] sm:leading-[2]' : ''}`;
 
+    const [donePhase, setDonePhase] = useState('idle'); // idle | completing
+    const doneTimerRef = useRef(null);
+
+    useEffect(() => () => {
+        if (doneTimerRef.current) window.clearTimeout(doneTimerRef.current);
+    }, []);
+
+    const handleStepDoneClick = () => {
+        if (donePhase === 'completing') return;
+        const reduceMotion =
+            typeof window !== 'undefined' &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduceMotion) {
+            onStepDone?.();
+            return;
+        }
+        setDonePhase('completing');
+        if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(8);
+        doneTimerRef.current = window.setTimeout(() => {
+            onStepDone?.();
+        }, 520);
+    };
+
     return (
-        <div className={shell}>
+        <div
+            className={`${shell} lesson-topic-card ${
+                showDoneButton
+                    ? donePhase === 'completing'
+                        ? 'is-completing'
+                        : 'is-enter'
+                    : ''
+            }`}
+        >
             <div className={`absolute inset-y-0 left-0 w-1 ${accent}`} aria-hidden />
             <div className={`flex flex-col ${stackGap}`}>
                 <h4 className={titleCls}>
@@ -1099,10 +1130,19 @@ function SectionPointFullCard({
                     <div className="mt-1 border-t border-slate-100 pt-5">
                         <button
                             type="button"
-                            onClick={onStepDone}
-                            className={`min-h-[48px] w-full rounded-full bg-orange-500 px-4 py-3.5 text-center text-[15px] font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}
+                            onClick={handleStepDoneClick}
+                            disabled={donePhase === 'completing'}
+                            className={`lesson-topic-done-btn min-h-[48px] w-full rounded-full bg-orange-500 px-4 py-3.5 text-center text-[15px] font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] disabled:cursor-wait ${
+                                donePhase === 'completing' ? 'is-completing' : ''
+                            } ${language === 'bn' ? 'font-bengali' : ''}`}
                         >
-                            {language === 'en' ? 'I have read this — continue' : 'পড়ে ফেলেছি — এগিয়ে যান'}
+                            {donePhase === 'completing'
+                                ? language === 'en'
+                                    ? 'Nice — next topic…'
+                                    : 'দারুণ — পরের বিষয়…'
+                                : language === 'en'
+                                    ? 'I have read this — continue'
+                                    : 'পড়ে ফেলেছি — এগিয়ে যান'}
                         </button>
                     </div>
                 )}
@@ -1174,6 +1214,11 @@ export default function Training({
     const lifeSkillWaitTimersRef = useRef(null);
     const lessonScrollRef = useRef(null);
     const lessonScrollInnerRef = useRef(null);
+    /** Visual-only page turn (does not affect next/prev gates or progress). */
+    const prevLessonSectionIndexRef = useRef(0);
+    const lessonPageTurnLessonIdRef = useRef(null);
+    const [lessonPageTurnDir, setLessonPageTurnDir] = useState('forward'); // forward | back | celebrate
+    const [lessonPageTurnTick, setLessonPageTurnTick] = useState(0);
     /** True when the lesson scroll pane is scrolled to the bottom (or content fits without scrolling). */
     const [lessonPaneScrolledToEnd, setLessonPaneScrolledToEnd] = useState(false);
     /** Section slide: steps completed (0..n); when equals n, guided flow is finished */
@@ -2024,6 +2069,38 @@ export default function Training({
     const isLastSlide = activeSectionIndex === slides.length - 1;
     const isNextDisabledByLessonRules =
         !isLastSlide && (isLessonSectionAdvanceBlocked() || !lessonPaneScrolledToEnd);
+
+    // Soft book page-turn when the slide index changes — visual only.
+    useEffect(() => {
+        if (!trainingContent) {
+            lessonPageTurnLessonIdRef.current = null;
+            prevLessonSectionIndexRef.current = 0;
+            setLessonPageTurnTick(0);
+            return;
+        }
+        const lessonId = trainingContent.level_id ?? trainingContent.id ?? 'lesson';
+        if (lessonPageTurnLessonIdRef.current !== lessonId) {
+            lessonPageTurnLessonIdRef.current = lessonId;
+            prevLessonSectionIndexRef.current = activeSectionIndex;
+            setLessonPageTurnTick(0);
+            return;
+        }
+        const prev = prevLessonSectionIndexRef.current;
+        if (prev === activeSectionIndex) return;
+        if (!prefersReducedMotion) {
+            const arrivingAtCompletion =
+                activeSectionIndex > prev && slides[activeSectionIndex]?.type === 'completion';
+            setLessonPageTurnDir(
+                arrivingAtCompletion ? 'celebrate' : activeSectionIndex > prev ? 'forward' : 'back'
+            );
+            setLessonPageTurnTick((t) => t + 1);
+            if (arrivingAtCompletion && typeof navigator !== 'undefined' && navigator.vibrate) {
+                navigator.vibrate([12, 40, 18]);
+            }
+        }
+        prevLessonSectionIndexRef.current = activeSectionIndex;
+    }, [activeSectionIndex, trainingContent, prefersReducedMotion, slides[activeSectionIndex]?.type]);
+
     const nextSlide = () => {
         if (!isLastSlide) {
             if (isLessonSectionAdvanceBlocked()) {
@@ -4533,13 +4610,23 @@ export default function Training({
                             )}
 
                             {/* Slide Content Area */}
-                            <div className="relative flex min-h-0 flex-1 flex-col">
+                            <div className="lesson-page-stage relative flex min-h-0 flex-1 flex-col">
                             {(() => {
                                 const activeSlide = slides[activeSectionIndex];
                                 const sectionPoints =
                                     activeSlide?.type === 'section' ? activeSlide.points ?? [] : [];
                                 const isSupplementaryCompletion =
                                     activeSlide?.type === 'completion' && trainingContent?.isSupplementary;
+                                const isCelebrateArrival =
+                                    !prefersReducedMotion &&
+                                    lessonPageTurnTick > 0 &&
+                                    lessonPageTurnDir === 'celebrate' &&
+                                    activeSlide?.type === 'completion';
+                                const pageTurnClass = prefersReducedMotion
+                                    ? 'animate-fade-in-up'
+                                    : lessonPageTurnTick > 0
+                                        ? `lesson-page-sheet is-turn-${lessonPageTurnDir}`
+                                        : 'animate-fade-in-up';
                                 return (
                                     <div
                                         ref={lessonScrollRef}
@@ -4552,10 +4639,36 @@ export default function Training({
                                         onTouchStart={handleReaderTouchStart}
                                         onTouchEnd={handleReaderTouchEnd}
                                     >
+                                        {!prefersReducedMotion && lessonPageTurnTick > 0 && lessonPageTurnDir === 'celebrate' && (
+                                            <div
+                                                key={`celebrate-${lessonPageTurnTick}`}
+                                                className="lesson-page-celebrate-burst"
+                                                aria-hidden
+                                            >
+                                                <span className="lesson-page-celebrate-flash" />
+                                                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((i) => (
+                                                    <span
+                                                        key={i}
+                                                        className={`lesson-page-celebrate-confetti c-${i % 6}`}
+                                                        style={{
+                                                            left: `${8 + ((i * 7) % 84)}%`,
+                                                            animationDelay: `${0.04 * i}s`,
+                                                        }}
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
+                                        {!prefersReducedMotion && lessonPageTurnTick > 0 && lessonPageTurnDir !== 'celebrate' && (
+                                            <div
+                                                key={`curl-${lessonPageTurnTick}`}
+                                                className={`lesson-page-curl lesson-page-curl--${lessonPageTurnDir}`}
+                                                aria-hidden
+                                            />
+                                        )}
                                         <div
                                             ref={lessonScrollInnerRef}
                                             key={activeSectionIndex}
-                                            className={`max-w-5xl mx-auto animate-fade-in-up relative px-4 sm:px-10 md:px-16 ${
+                                            className={`max-w-5xl mx-auto relative px-4 sm:px-10 md:px-16 ${pageTurnClass} ${
                                                 isSupplementaryCompletion
                                                     ? 'flex h-full min-h-0 flex-col items-center overflow-hidden py-3 pb-4 sm:py-8 sm:pb-10'
                                                     : 'px-6 py-10 pb-8 sm:py-14 sm:pb-10'
@@ -4656,7 +4769,7 @@ export default function Training({
                                                                         return (
                                                                             <div
                                                                                 key={pIdx}
-                                                                                className="flex items-start gap-3 rounded-xl border border-emerald-100 bg-emerald-50/70 px-3 py-3"
+                                                                                className="lesson-topic-done-chip flex items-start gap-3 rounded-xl border border-emerald-100 bg-emerald-50/70 px-3 py-3"
                                                                             >
                                                                                 <span className="mt-0.5 shrink-0 text-base text-emerald-600" aria-hidden>✓</span>
                                                                                 <h4 className={`min-w-0 flex-1 text-left text-[0.95rem] font-semibold leading-snug text-emerald-900 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
@@ -4906,44 +5019,48 @@ export default function Training({
 
                                             {slides[activeSectionIndex]?.type === 'completion' && (
                                                 <div
-                                                    className={`mx-auto flex w-full max-w-sm flex-col items-center text-center animate-fade-in sm:max-w-md ${
+                                                    className={`lesson-complete-stage relative mx-auto flex w-full max-w-lg flex-col items-center text-center ${
+                                                        isCelebrateArrival ? 'lesson-complete-reveal' : 'animate-fade-in'
+                                                    } ${
                                                         trainingContent.isSupplementary
-                                                            ? 'justify-center gap-0 py-1 sm:py-2'
-                                                            : 'justify-center px-3 py-6 sm:px-4 sm:py-10'
+                                                            ? 'justify-center gap-0 px-1 py-2 sm:py-4'
+                                                            : 'justify-start px-1 pb-8 pt-2 sm:px-2 sm:pb-12 sm:pt-4'
                                                     }`}
                                                 >
                                                     {trainingContent.isSupplementary ? (
-                                                        <div className="animate-fade-in-up flex w-full max-w-[19rem] flex-col items-center gap-5 sm:max-w-md sm:gap-6">
-                                                            <div className="relative mx-auto flex h-20 w-20 shrink-0 items-center justify-center sm:h-28 sm:w-28">
-                                                                <div className="absolute inset-0 rounded-full bg-indigo-500/10 blur-xl sm:blur-3xl"></div>
-                                                                <div className="relative text-4xl drop-shadow-sm sm:text-5xl" aria-hidden>
+                                                        <div className={`relative z-10 flex w-full max-w-sm flex-col items-center gap-7 sm:gap-8 ${isCelebrateArrival ? 'lesson-complete-reveal__body' : 'animate-fade-in-up'}`}>
+                                                            <div className="relative mx-auto flex h-28 w-28 shrink-0 items-center justify-center sm:h-32 sm:w-32">
+                                                                <div className="absolute inset-0 rounded-full bg-indigo-400/15 blur-2xl" aria-hidden />
+                                                                <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 text-4xl text-white shadow-lg shadow-indigo-500/30 sm:h-24 sm:w-24 sm:text-5xl" aria-hidden>
                                                                     ✨
                                                                 </div>
                                                             </div>
-                                                            <div className="w-full space-y-2">
+                                                            <div className="w-full space-y-3 px-1">
+                                                                <p className={`text-[11px] font-bold uppercase tracking-[0.14em] text-indigo-500 ${language === 'bn' ? 'font-bengali tracking-normal normal-case' : ''}`}>
+                                                                    {language === 'en' ? 'Well done' : 'সাবাশ'}
+                                                                </p>
                                                                 <h3
-                                                                    className={`text-lg font-black leading-snug text-slate-800 dark:text-white sm:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                    className={`text-2xl font-black leading-snug tracking-tight text-slate-900 sm:text-3xl ${language === 'bn' ? 'font-bengali' : ''}`}
                                                                 >
                                                                     {language === 'en' ? 'Deep Insight Gained' : 'নতুন অভিজ্ঞতা অর্জন করলেন'}
                                                                 </h3>
                                                                 <p
-                                                                    className={`text-[11px] font-semibold leading-relaxed text-slate-500 dark:text-slate-400 sm:text-sm ${language === 'bn' ? 'font-bengali sm:text-base' : ''}`}
+                                                                    className={`mx-auto max-w-xs text-sm font-medium leading-relaxed text-slate-600 sm:text-[0.95rem] sm:leading-7 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                                 >
                                                                     {language === 'en'
-                                                                        ? 'Taking care of yourself is as important as any technical skill. Well done.'
-                                                                        : 'নিজের যত্ন নেওয়া যেকোনো কারিগরি দক্ষতার মতোই সমান গুরুত্বপূর্ণ। আপনি দারুণ কাজ করেছেন!'}
+                                                                        ? 'Taking care of yourself is as important as any technical skill.'
+                                                                        : 'নিজের যত্ন নেওয়া যেকোনো কারিগরি দক্ষতার মতোই গুরুত্বপূর্ণ।'}
                                                                 </p>
                                                             </div>
-                                                            <div className="mx-auto h-px w-10 bg-slate-100 dark:bg-slate-800 sm:w-16"></div>
-                                                            
+
                                                             {trainingContent.hasQuiz ? (
-                                                                <div className="w-full space-y-4">
+                                                                <div className="flex w-full flex-col items-center gap-5 pt-1">
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                                                        className="flex min-h-[52px] w-full items-center justify-center gap-3 rounded-full bg-orange-500 py-3.5 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] sm:py-4 sm:text-lg"
+                                                                        className="flex min-h-[54px] w-full items-center justify-center gap-3 rounded-full bg-orange-500 px-5 py-3.5 text-base font-black text-white shadow-lg shadow-orange-500/30 transition-all hover:bg-orange-600 active:scale-[0.98] sm:text-lg"
                                                                     >
-                                                                        <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                                         </svg>
                                                                         {language === 'en' ? 'Test your Knowledge' : 'আপনার জ্ঞান যাচাই করুন'}
@@ -4956,9 +5073,9 @@ export default function Training({
                                                                             setIsJournalMode(false);
                                                                             setTrainingTab('supplementary');
                                                                         }}
-                                                                        className={`mx-auto block py-2 text-xs font-semibold text-slate-400 transition-colors hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                        className={`py-1 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-800 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                                     >
-                                                                        {language === 'en' ? '← Back to Supplementary List' : '← লাইফ স্কিল তালিকায় ফিরে যান'}
+                                                                        {language === 'en' ? '← Back to list' : '← তালিকায় ফিরে যান'}
                                                                     </button>
                                                                 </div>
                                                             ) : (
@@ -4970,14 +5087,14 @@ export default function Training({
                                                                         setIsJournalMode(false);
                                                                         setTrainingTab('supplementary');
                                                                     }}
-                                                                    className={`mx-auto block py-2 text-xs font-semibold text-slate-400 transition-colors hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                    className={`py-1 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-800 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                                 >
-                                                                    {language === 'en' ? '← Back to Supplementary List' : '← লাইফ স্কিল তালিকায় ফিরে যান'}
+                                                                    {language === 'en' ? '← Back to list' : '← তালিকায় ফিরে যান'}
                                                                 </button>
                                                             )}
                                                         </div>
                                                     ) : (
-                                                        <div className="animate-fade-in-up flex w-full max-w-md flex-col items-center gap-4 sm:max-w-lg sm:gap-5">
+                                                        <div className={`relative z-10 flex w-full flex-col items-center ${isCelebrateArrival ? 'lesson-complete-reveal__body' : 'animate-fade-in-up'}`}>
                                                             <LessonCompleteHero
                                                                 badge={trainingContent.badge || getRoadmapBadgeByLevel(
                                                                     Number(String(trainingContent.level_id || '').split('.')[0]) || 1
@@ -4986,24 +5103,29 @@ export default function Training({
                                                                 prefersReducedMotion={prefersReducedMotion}
                                                             />
 
-                                                            <div className="w-full space-y-1.5">
-                                                                <h3 className={`text-xl font-black leading-snug text-slate-900 sm:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                    {language === 'en' ? 'Mission Accomplished!' : 'অভিনন্দন! মিশন সম্পন্ন'}
-                                                                </h3>
-                                                                <p className={`text-xs font-semibold leading-relaxed text-slate-500 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            <div className="mt-2 w-full space-y-3 px-2 sm:mt-3 sm:space-y-3.5">
+                                                                <p className={`text-[11px] font-bold text-orange-600 sm:text-xs ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-[0.16em]'}`}>
                                                                     {language === 'en'
-                                                                        ? 'You finished this lesson. Challenge yourself, or jump to another open lesson below.'
-                                                                        : 'আপনি এই পাঠ শেষ করেছেন। চ্যালেঞ্জ নিন, অথবা নিচের খোলা পাঠে চলে যান।'}
+                                                                        ? `Lesson ${getTrainingHeaderLessonCode(trainingContent, language)} complete`
+                                                                        : `পাঠ ${getTrainingHeaderLessonCode(trainingContent, language)} সম্পন্ন`}
+                                                                </p>
+                                                                <h3 className={`text-[1.75rem] font-black leading-[1.15] tracking-tight text-slate-900 sm:text-4xl ${language === 'bn' ? 'font-bengali leading-snug' : ''}`}>
+                                                                    {language === 'en' ? 'Mission Accomplished' : 'অভিনন্দন'}
+                                                                </h3>
+                                                                <p className={`mx-auto max-w-[18rem] text-sm font-medium leading-relaxed text-slate-600 sm:max-w-sm sm:text-base sm:leading-7 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                    {language === 'en'
+                                                                        ? 'You finished this lesson. Take the challenge when you are ready.'
+                                                                        : 'আপনি এই পাঠ শেষ করেছেন। প্রস্তুত হলে চ্যালেঞ্জ নিন।'}
                                                                 </p>
                                                             </div>
 
-                                                            <div className="w-full max-w-full space-y-3">
+                                                            <div className="mt-8 flex w-full max-w-sm flex-col items-center gap-3 sm:mt-10">
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                                                    className="flex min-h-[52px] w-full items-center justify-center gap-3 rounded-full bg-orange-500 py-3.5 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] sm:py-4 sm:text-lg"
+                                                                    className="flex min-h-[56px] w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-4 text-base font-black text-white shadow-lg shadow-orange-500/35 transition-all hover:from-orange-600 hover:to-amber-600 active:scale-[0.98] sm:text-lg"
                                                                 >
-                                                                    <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                                     </svg>
                                                                     {language === 'en' ? 'Start Challenge' : 'চ্যালেঞ্জ শুরু করুন'}
@@ -5013,14 +5135,14 @@ export default function Training({
                                                                     <button
                                                                         type="button"
                                                                         onClick={handleLessonCompletionHourlyNav}
-                                                                        className={`mx-auto block py-1 text-sm font-medium text-slate-500 transition-colors hover:text-emerald-700 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                        className={`py-1.5 text-sm font-semibold text-emerald-700/90 transition-colors hover:text-emerald-800 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                                     >
-                                                                        {language === 'en' ? 'Hourly quiz →' : 'ঘণ্টাভিত্তিক কুইজ →'}
+                                                                        {language === 'en' ? 'Or try hourly quiz →' : 'অথবা ঘণ্টাভিত্তিক কুইজ →'}
                                                                     </button>
                                                                 )}
                                                             </div>
 
-                                                            <div className="w-full border-t border-slate-200/80 pt-3">
+                                                            <div className="mt-10 w-full border-t border-orange-100/90 pt-6 sm:mt-12 sm:pt-7">
                                                                 <LessonContinueStrip
                                                                     lessons={completionNavLessons}
                                                                     language={language}
