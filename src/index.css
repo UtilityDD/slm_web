@@ -687,47 +687,47 @@ body,
   }
 
   @keyframes nonprofit-lineman-body {
-    /* Confident walk: lean with down/pass only — feet stay on the line */
+    /* Lean with each plant / swing — no vertical bounce (feet stay on the line) */
     0% {
-      transform: rotate(-2deg) translateY(0);
+      transform: rotate(-4deg) translateY(0);
     }
     2.5% {
-      transform: rotate(3deg) translateY(0);
+      transform: rotate(1deg) translateY(0);
     }
     5% {
-      transform: rotate(-2deg) translateY(0);
-    }
-    7.5% {
-      transform: rotate(2deg) translateY(0);
-    }
-    10% {
-      transform: rotate(-2deg) translateY(0);
-    }
-    12.5% {
-      transform: rotate(3deg) translateY(0);
-    }
-    15% {
-      transform: rotate(-2deg) translateY(0);
-    }
-    17.5% {
-      transform: rotate(2deg) translateY(0);
-    }
-    /* Skip beat */
-    20% {
-      transform: rotate(-3deg) translateY(0);
-    }
-    22.5% {
       transform: rotate(4deg) translateY(0);
     }
+    7.5% {
+      transform: rotate(-1deg) translateY(0);
+    }
+    10% {
+      transform: rotate(-4deg) translateY(0);
+    }
+    12.5% {
+      transform: rotate(1deg) translateY(0);
+    }
+    15% {
+      transform: rotate(4deg) translateY(0);
+    }
+    17.5% {
+      transform: rotate(-1deg) translateY(0);
+    }
+    /* Skip beat — slightly bigger lean */
+    20% {
+      transform: rotate(-5deg) translateY(0);
+    }
+    22.5% {
+      transform: rotate(2deg) translateY(0);
+    }
     25% {
-      transform: rotate(-2deg) translateY(0);
+      transform: rotate(5deg) translateY(0);
     }
     27.5% {
-      transform: rotate(2deg) translateY(0);
+      transform: rotate(-2deg) translateY(0);
     }
     /* Tip-toe careful step */
     30% {
-      transform: rotate(5deg) translateY(0);
+      transform: rotate(4deg) translateY(0);
     }
     32% {
       transform: rotate(0deg) translateY(0);
@@ -818,24 +818,24 @@ body,
   }
 
   @keyframes nonprofit-lineman-arms {
-    /* Counter-swing opposite the legs (small, clean arcs) */
+    /* Counter-swing opposite the stepping leg */
     0% {
-      transform: rotate(12deg);
+      transform: rotate(18deg);
     }
     2.5% {
-      transform: rotate(-10deg);
+      transform: rotate(4deg);
     }
     5% {
-      transform: rotate(12deg);
+      transform: rotate(-16deg);
     }
     7.5% {
-      transform: rotate(-10deg);
+      transform: rotate(-6deg);
     }
     10% {
-      transform: rotate(12deg);
+      transform: rotate(18deg);
     }
     12.5% {
-      transform: rotate(-10deg);
+      transform: rotate(4deg);
     }
     /* Mid-outbound toss / catch */
     14% {
@@ -852,13 +852,13 @@ body,
     }
     /* Resume counter-swing through skip + tip-toe */
     25% {
-      transform: rotate(14deg);
+      transform: rotate(16deg);
     }
     27.5% {
-      transform: rotate(-12deg);
+      transform: rotate(-14deg);
     }
     30% {
-      transform: rotate(8deg);
+      transform: rotate(10deg);
     }
     32% {
       transform: rotate(0deg);

@@ -25,18 +25,19 @@ function HelmetMark({ className = '' }) {
 }
 
 /**
- * Cadence: outbound contact→down→pass→up (+ skip / tip-toe) → return → fall → sit → jump.
- * Keep keyTimes aligned with travel / hat gags in index.css (26s cycle).
+ * Cadence: outbound contact→stance→toe-off→swing→plant (+ skip / tip-toe)
+ * → return → fall → sit → jump. KeyTimes align with travel / hat gags (26s).
  */
 const LEG_TIMES =
     '0;.025;.05;.075;.1;.125;.15;.175;.2;.225;.25;.275;.3;.32;.36;.4;.44;.48;.52;.56;.6;.64;.68;.72;.76;.8;.84;.88;.92;.96;1';
+/* Snappy swing, softer plant — reads as real steps without dipping feet */
 const LEG_SPLINES = Array(LEG_TIMES.split(';').length - 1)
-    .fill('0.42 0 0.58 1')
+    .fill('0.4 0 0.2 1')
     .join(';');
 
 /**
  * Ambient stick-figure lineman on the nonprofit strip top border.
- * Confident worker walk outbound, then return / hat-bonk / Vision fall gags.
+ * Detailed worker walk outbound, then return / hat-bonk / Vision fall gags.
  */
 export default function LandingNonprofitLineman() {
     const cycle = '26s';
@@ -56,7 +57,6 @@ export default function LandingNonprofitLineman() {
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                 >
-                    {/* Hip + short legs so ankles sit just above the walk line (y≈61 / 64) */}
                     <g transform="translate(24 43)">
                         <g className="landing-nonprofit-lineman__torso">
                             <g className="landing-nonprofit-lineman__helmet">
@@ -95,7 +95,10 @@ export default function LandingNonprofitLineman() {
                             </g>
                         </g>
 
-                        {/* Left leg — soft hip; knee lifts clear of the line */}
+                        {/*
+                          Left: contact → stance → toe-off → swing → plant
+                          Hip +forward, Knee +flex, Foot +toes up / -push
+                        */}
                         <g className="landing-nonprofit-lineman__leg">
                             <animateTransform
                                 attributeName="transform"
@@ -105,7 +108,7 @@ export default function LandingNonprofitLineman() {
                                 calcMode="spline"
                                 keyTimes={LEG_TIMES}
                                 keySplines={LEG_SPLINES}
-                                values="-8 0 0;-4 0 0;6 0 0;10 0 0;-8 0 0;-4 0 0;6 0 0;10 0 0;-5 0 0;-1 0 0;12 0 0;8 0 0;-3 0 0;-1 0 0;12 0 0;0 0 0;0 0 0;-22 0 0;22 0 0;-22 0 0;22 0 0;-22 0 0;22 0 0;-12 0 0;8 0 0;-6 0 0;4 0 0;6 0 0;38 0 0;42 0 0;0 0 0"
+                                values="-16 0 0;-2 0 0;10 0 0;16 0 0;-16 0 0;-2 0 0;10 0 0;16 0 0;-12 0 0;0 0 0;14 0 0;10 0 0;-8 0 0;2 0 0;0 0 0;0 0 0;0 0 0;-22 0 0;22 0 0;-22 0 0;22 0 0;-22 0 0;22 0 0;-12 0 0;8 0 0;-6 0 0;4 0 0;6 0 0;38 0 0;42 0 0;0 0 0"
                             />
                             <line x1="0" y1="0" x2="0" y2="8.5" className="landing-nonprofit-lineman__limb" />
                             <g transform="translate(0 8.5)">
@@ -118,7 +121,7 @@ export default function LandingNonprofitLineman() {
                                     calcMode="spline"
                                     keyTimes={LEG_TIMES}
                                     keySplines={LEG_SPLINES}
-                                    values="10 0 0;22 0 0;40 0 0;14 0 0;10 0 0;22 0 0;40 0 0;14 0 0;14 0 0;26 0 0;58 0 0;20 0 0;12 0 0;14 0 0;10 0 0;0 0 0;0 0 0;8 0 0;28 0 0;8 0 0;28 0 0;8 0 0;28 0 0;18 0 0;12 0 0;50 0 0;55 0 0;58 0 0;88 0 0;92 0 0;0 0 0"
+                                    values="6 0 0;14 0 0;32 0 0;56 0 0;6 0 0;14 0 0;32 0 0;56 0 0;10 0 0;20 0 0;42 0 0;60 0 0;16 0 0;10 0 0;0 0 0;0 0 0;0 0 0;8 0 0;28 0 0;8 0 0;28 0 0;8 0 0;28 0 0;18 0 0;12 0 0;50 0 0;55 0 0;58 0 0;88 0 0;92 0 0;0 0 0"
                                 />
                                 <line
                                     x1="0"
@@ -137,14 +140,14 @@ export default function LandingNonprofitLineman() {
                                         calcMode="spline"
                                         keyTimes={LEG_TIMES}
                                         keySplines={LEG_SPLINES}
-                                        values="2 0 0;0 0 0;-4 0 0;2 0 0;2 0 0;0 0 0;-4 0 0;2 0 0;2 0 0;0 0 0;-6 0 0;2 0 0;4 0 0;4 0 0;5 0 0;0 0 0;0 0 0;10 0 0;-12 0 0;10 0 0;-12 0 0;10 0 0;-12 0 0;4 0 0;0 0 0;18 0 0;20 0 0;22 0 0;28 0 0;30 0 0;0 0 0"
+                                        values="8 0 0;2 0 0;-10 0 0;-6 0 0;8 0 0;2 0 0;-10 0 0;-6 0 0;6 0 0;0 0 0;-12 0 0;-4 0 0;6 0 0;4 0 0;0 0 0;0 0 0;0 0 0;10 0 0;-12 0 0;10 0 0;-12 0 0;10 0 0;-12 0 0;4 0 0;0 0 0;18 0 0;20 0 0;22 0 0;28 0 0;30 0 0;0 0 0"
                                     />
                                     <path d="M0 0h2.8" className="landing-nonprofit-lineman__limb landing-nonprofit-lineman__foot" />
                                 </g>
                             </g>
                         </g>
 
-                        {/* Right leg — opposite phase */}
+                        {/* Right — opposite phase */}
                         <g className="landing-nonprofit-lineman__leg">
                             <animateTransform
                                 attributeName="transform"
@@ -154,7 +157,7 @@ export default function LandingNonprofitLineman() {
                                 calcMode="spline"
                                 keyTimes={LEG_TIMES}
                                 keySplines={LEG_SPLINES}
-                                values="6 0 0;10 0 0;-8 0 0;-4 0 0;6 0 0;10 0 0;-8 0 0;-4 0 0;12 0 0;8 0 0;-5 0 0;-1 0 0;-3 0 0;-5 0 0;-10 0 0;0 0 0;0 0 0;22 0 0;-22 0 0;22 0 0;-22 0 0;22 0 0;-22 0 0;12 0 0;-6 0 0;8 0 0;-4 0 0;-8 0 0;36 0 0;40 0 0;0 0 0"
+                                values="10 0 0;16 0 0;-16 0 0;-2 0 0;10 0 0;16 0 0;-16 0 0;-2 0 0;14 0 0;10 0 0;-12 0 0;0 0 0;-6 0 0;-4 0 0;0 0 0;0 0 0;0 0 0;22 0 0;-22 0 0;22 0 0;-22 0 0;22 0 0;-22 0 0;12 0 0;-6 0 0;8 0 0;-4 0 0;-8 0 0;36 0 0;40 0 0;0 0 0"
                             />
                             <line x1="0" y1="0" x2="0" y2="8.5" className="landing-nonprofit-lineman__limb" />
                             <g transform="translate(0 8.5)">
@@ -167,7 +170,7 @@ export default function LandingNonprofitLineman() {
                                     calcMode="spline"
                                     keyTimes={LEG_TIMES}
                                     keySplines={LEG_SPLINES}
-                                    values="40 0 0;14 0 0;10 0 0;22 0 0;40 0 0;14 0 0;10 0 0;22 0 0;58 0 0;20 0 0;14 0 0;26 0 0;14 0 0;12 0 0;20 0 0;0 0 0;0 0 0;28 0 0;8 0 0;28 0 0;8 0 0;28 0 0;8 0 0;16 0 0;14 0 0;52 0 0;56 0 0;60 0 0;90 0 0;94 0 0;0 0 0"
+                                    values="32 0 0;56 0 0;6 0 0;14 0 0;32 0 0;56 0 0;6 0 0;14 0 0;42 0 0;60 0 0;10 0 0;20 0 0;16 0 0;12 0 0;0 0 0;0 0 0;0 0 0;28 0 0;8 0 0;28 0 0;8 0 0;28 0 0;8 0 0;16 0 0;14 0 0;52 0 0;56 0 0;60 0 0;90 0 0;94 0 0;0 0 0"
                                 />
                                 <line
                                     x1="0"
@@ -186,7 +189,7 @@ export default function LandingNonprofitLineman() {
                                         calcMode="spline"
                                         keyTimes={LEG_TIMES}
                                         keySplines={LEG_SPLINES}
-                                        values="-4 0 0;2 0 0;2 0 0;0 0 0;-4 0 0;2 0 0;2 0 0;0 0 0;-6 0 0;2 0 0;2 0 0;0 0 0;4 0 0;4 0 0;-5 0 0;0 0 0;0 0 0;-12 0 0;10 0 0;-12 0 0;10 0 0;-12 0 0;10 0 0;2 0 0;0 0 0;16 0 0;18 0 0;20 0 0;26 0 0;28 0 0;0 0 0"
+                                        values="-10 0 0;-6 0 0;8 0 0;2 0 0;-10 0 0;-6 0 0;8 0 0;2 0 0;-12 0 0;-4 0 0;6 0 0;0 0 0;4 0 0;4 0 0;0 0 0;0 0 0;0 0 0;-12 0 0;10 0 0;-12 0 0;10 0 0;-12 0 0;10 0 0;2 0 0;0 0 0;16 0 0;18 0 0;20 0 0;26 0 0;28 0 0;0 0 0"
                                     />
                                     <path d="M0 0h2.8" className="landing-nonprofit-lineman__limb landing-nonprofit-lineman__foot" />
                                 </g>
