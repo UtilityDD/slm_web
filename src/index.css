@@ -565,6 +565,25 @@ body,
     animation: nonprofit-lineman-arms 26s ease-in-out infinite;
   }
 
+  .landing-nonprofit-lineman__leg-l-hip,
+  .landing-nonprofit-lineman__leg-l-knee,
+  .landing-nonprofit-lineman__leg-l-foot,
+  .landing-nonprofit-lineman__leg-r-hip,
+  .landing-nonprofit-lineman__leg-r-knee,
+  .landing-nonprofit-lineman__leg-r-foot {
+    transform-origin: 0px 0px;
+    animation-duration: 26s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+  
+  .landing-nonprofit-lineman__leg-l-hip { animation-name: nonprofit-lineman-leg-l-hip; }
+  .landing-nonprofit-lineman__leg-l-knee { animation-name: nonprofit-lineman-leg-l-knee; }
+  .landing-nonprofit-lineman__leg-l-foot { animation-name: nonprofit-lineman-leg-l-foot; }
+  .landing-nonprofit-lineman__leg-r-hip { animation-name: nonprofit-lineman-leg-r-hip; }
+  .landing-nonprofit-lineman__leg-r-knee { animation-name: nonprofit-lineman-leg-r-knee; }
+  .landing-nonprofit-lineman__leg-r-foot { animation-name: nonprofit-lineman-leg-r-foot; }
+
   .landing-nonprofit-lineman__cap-fly {
     position: absolute;
     left: 45%;
@@ -687,104 +706,37 @@ body,
   }
 
   @keyframes nonprofit-lineman-body {
-    /* Lean with each plant / swing — no vertical bounce (feet stay on the line) */
-    0% {
-      transform: rotate(-4deg) translateY(0);
-    }
-    2.5% {
-      transform: rotate(1deg) translateY(0);
-    }
-    5% {
-      transform: rotate(4deg) translateY(0);
-    }
-    7.5% {
-      transform: rotate(-1deg) translateY(0);
-    }
-    10% {
-      transform: rotate(-4deg) translateY(0);
-    }
-    12.5% {
-      transform: rotate(1deg) translateY(0);
-    }
-    15% {
-      transform: rotate(4deg) translateY(0);
-    }
-    17.5% {
-      transform: rotate(-1deg) translateY(0);
-    }
-    /* Skip beat — slightly bigger lean */
-    20% {
-      transform: rotate(-5deg) translateY(0);
-    }
-    22.5% {
-      transform: rotate(2deg) translateY(0);
-    }
-    25% {
-      transform: rotate(5deg) translateY(0);
-    }
-    27.5% {
-      transform: rotate(-2deg) translateY(0);
-    }
-    /* Tip-toe careful step */
-    30% {
-      transform: rotate(4deg) translateY(0);
-    }
-    32% {
-      transform: rotate(0deg) translateY(0);
-    }
-    /* Return hops stay light; fall gag handles leaving the line later */
-    40% {
-      transform: rotate(12deg) translateY(0);
-    }
-    48% {
-      transform: rotate(-14deg) translateY(0);
-    }
-    56% {
-      transform: rotate(12deg) translateY(0);
-    }
-    62% {
-      transform: rotate(-8deg) translateY(0);
-    }
-    /* Bonk reaction from the hat hit */
-    63.5% {
-      transform: rotate(18deg) translateY(0);
-    }
-    64.5% {
-      transform: rotate(-22deg) translateY(1px);
-    }
-    /* Fall tumble */
-    66% {
-      transform: rotate(24deg) translateY(2px);
-    }
-    70% {
-      transform: rotate(-10deg) translateY(0);
-    }
-    /* Look up waiting for hat */
-    74%,
-    84% {
-      transform: rotate(-26deg) translateY(-2px);
-    }
-    86% {
-      transform: rotate(6deg) translateY(0);
-    }
-    /* Sit pose on Vision card top edge */
-    87%,
-    93% {
-      transform: rotate(4deg) translateY(0);
-    }
-    /* Jump float — tucked body */
-    94.5% {
-      transform: rotate(-10deg) translateY(-1px);
-    }
-    96% {
-      transform: rotate(8deg) translateY(0);
-    }
-    98% {
-      transform: rotate(-4deg) translateY(0);
-    }
-    100% {
-      transform: rotate(0deg) translateY(0);
-    }
+    0% { transform: rotate(6.0deg) translateY(0.0px); }
+    2.5% { transform: rotate(9.0deg) translateY(-0.0px); }
+    5% { transform: rotate(6.0deg) translateY(0.0px); }
+    7.5% { transform: rotate(3.0deg) translateY(-0.0px); }
+    10% { transform: rotate(6.0deg) translateY(0.0px); }
+    12.5% { transform: rotate(9.0deg) translateY(-0.0px); }
+    15% { transform: rotate(6.0deg) translateY(0.0px); }
+    17.5% { transform: rotate(3.0deg) translateY(-0.0px); }
+    20% { transform: rotate(6.0deg) translateY(0.0px); }
+    22.5% { transform: rotate(9.0deg) translateY(-0.0px); }
+    25% { transform: rotate(6.0deg) translateY(0.0px); }
+    27.5% { transform: rotate(3.0deg) translateY(-0.0px); }
+    30% { transform: rotate(6.0deg) translateY(0.0px); }
+    32% { transform: rotate(0.0deg) translateY(0.0px); }
+    36% { transform: rotate(6.0deg) translateY(0.0px); }
+    40% { transform: rotate(7.8deg) translateY(1.0px); }
+    44% { transform: rotate(3.1deg) translateY(0.6px); }
+    48% { transform: rotate(8.9deg) translateY(-0.6px); }
+    52% { transform: rotate(4.2deg) translateY(-1.0px); }
+    56% { transform: rotate(6.0deg) translateY(-0.0px); }
+    60% { transform: rotate(7.8deg) translateY(1.0px); }
+    64% { transform: rotate(29.5deg) translateY(2.0px); }
+    68% { transform: rotate(29.3deg) translateY(2.0px); }
+    72% { transform: rotate(-26.0deg) translateY(-2.0px); }
+    76% { transform: rotate(-26.0deg) translateY(-2.0px); }
+    80% { transform: rotate(-26.0deg) translateY(-2.0px); }
+    84% { transform: rotate(-26.0deg) translateY(-2.0px); }
+    88% { transform: rotate(4.0deg) translateY(0.0px); }
+    92% { transform: rotate(4.0deg) translateY(0.0px); }
+    96% { transform: rotate(-10.0deg) translateY(-1.0px); }
+    100% { transform: rotate(0.0deg) translateY(0.0px); }
   }
 
   @keyframes nonprofit-lineman-helmet-worn {
@@ -818,109 +770,37 @@ body,
   }
 
   @keyframes nonprofit-lineman-arms {
-    /* Counter-swing opposite the stepping leg */
-    0% {
-      transform: rotate(18deg);
-    }
-    2.5% {
-      transform: rotate(4deg);
-    }
-    5% {
-      transform: rotate(-16deg);
-    }
-    7.5% {
-      transform: rotate(-6deg);
-    }
-    10% {
-      transform: rotate(18deg);
-    }
-    12.5% {
-      transform: rotate(4deg);
-    }
-    /* Mid-outbound toss / catch */
-    14% {
-      transform: rotate(-18deg);
-    }
-    16% {
-      transform: rotate(42deg);
-    }
-    18% {
-      transform: rotate(58deg);
-    }
-    22% {
-      transform: rotate(-36deg);
-    }
-    /* Resume counter-swing through skip + tip-toe */
-    25% {
-      transform: rotate(16deg);
-    }
-    27.5% {
-      transform: rotate(-14deg);
-    }
-    30% {
-      transform: rotate(10deg);
-    }
-    32% {
-      transform: rotate(0deg);
-    }
-    34% {
-      transform: rotate(28deg);
-    }
-    36% {
-      transform: rotate(-20deg);
-    }
-    40% {
-      transform: rotate(48deg);
-    }
-    48% {
-      transform: rotate(-52deg);
-    }
-    56% {
-      transform: rotate(44deg);
-    }
-    62% {
-      transform: rotate(-20deg);
-    }
-    /* Arms flail from the hat hit */
-    63.5% {
-      transform: rotate(55deg);
-    }
-    65% {
-      transform: rotate(-50deg);
-    }
-    /* Flail while falling */
-    66% {
-      transform: rotate(60deg);
-    }
-    70% {
-      transform: rotate(-40deg);
-    }
-    /* Reach / look up waiting for the hat */
-    74%,
-    84% {
-      transform: rotate(-58deg);
-    }
-    86% {
-      transform: rotate(-12deg);
-    }
-    /* Idle while sitting on Vision top */
-    87%,
-    93% {
-      transform: rotate(12deg);
-    }
-    /* Jump float — arms out */
-    94.5% {
-      transform: rotate(-42deg);
-    }
-    96% {
-      transform: rotate(36deg);
-    }
-    98% {
-      transform: rotate(-12deg);
-    }
-    100% {
-      transform: rotate(0deg);
-    }
+    0% { transform: rotate(0.0deg); }
+    2.5% { transform: rotate(20.0deg); }
+    5% { transform: rotate(0.0deg); }
+    7.5% { transform: rotate(-20.0deg); }
+    10% { transform: rotate(0.0deg); }
+    12.5% { transform: rotate(20.0deg); }
+    15% { transform: rotate(0.0deg); }
+    17.5% { transform: rotate(-20.0deg); }
+    20% { transform: rotate(0.0deg); }
+    22.5% { transform: rotate(20.0deg); }
+    25% { transform: rotate(0.0deg); }
+    27.5% { transform: rotate(-20.0deg); }
+    30% { transform: rotate(0.0deg); }
+    32% { transform: rotate(0.0deg); }
+    36% { transform: rotate(0.0deg); }
+    40% { transform: rotate(11.8deg); }
+    44% { transform: rotate(-19.0deg); }
+    48% { transform: rotate(19.0deg); }
+    52% { transform: rotate(-11.8deg); }
+    56% { transform: rotate(0.0deg); }
+    60% { transform: rotate(11.8deg); }
+    64% { transform: rotate(42.1deg); }
+    68% { transform: rotate(41.2deg); }
+    72% { transform: rotate(-58.0deg); }
+    76% { transform: rotate(-58.0deg); }
+    80% { transform: rotate(-58.0deg); }
+    84% { transform: rotate(-58.0deg); }
+    88% { transform: rotate(12.0deg); }
+    92% { transform: rotate(12.0deg); }
+    96% { transform: rotate(-42.0deg); }
+    100% { transform: rotate(0.0deg); }
   }
 
   @keyframes nonprofit-cap-flight {
@@ -5054,5 +4934,1231 @@ body,
     filter: none !important;
     animation: none !important;
   }
+}
+
+
+
+@keyframes nonprofit-lineman-leg-l-hip {
+  0% { transform: rotate(0.0deg); }
+  0.5% { transform: rotate(-7.7deg); }
+  1% { transform: rotate(-14.7deg); }
+  1.5% { transform: rotate(-20.2deg); }
+  2% { transform: rotate(-23.8deg); }
+  2.5% { transform: rotate(-25.0deg); }
+  3% { transform: rotate(-23.8deg); }
+  3.5% { transform: rotate(-20.2deg); }
+  4% { transform: rotate(-14.7deg); }
+  4.5% { transform: rotate(-7.7deg); }
+  5% { transform: rotate(-0.0deg); }
+  5.5% { transform: rotate(7.7deg); }
+  6% { transform: rotate(14.7deg); }
+  6.5% { transform: rotate(20.2deg); }
+  7% { transform: rotate(23.8deg); }
+  7.5% { transform: rotate(25.0deg); }
+  8% { transform: rotate(23.8deg); }
+  8.5% { transform: rotate(20.2deg); }
+  9% { transform: rotate(14.7deg); }
+  9.5% { transform: rotate(7.7deg); }
+  10% { transform: rotate(0.0deg); }
+  10.5% { transform: rotate(-7.7deg); }
+  11% { transform: rotate(-14.7deg); }
+  11.5% { transform: rotate(-20.2deg); }
+  12% { transform: rotate(-23.8deg); }
+  12.5% { transform: rotate(-25.0deg); }
+  13% { transform: rotate(-23.8deg); }
+  13.5% { transform: rotate(-20.2deg); }
+  14% { transform: rotate(-14.7deg); }
+  14.5% { transform: rotate(-7.7deg); }
+  15% { transform: rotate(-0.0deg); }
+  15.5% { transform: rotate(7.7deg); }
+  16% { transform: rotate(14.7deg); }
+  16.5% { transform: rotate(20.2deg); }
+  17% { transform: rotate(23.8deg); }
+  17.5% { transform: rotate(25.0deg); }
+  18% { transform: rotate(23.8deg); }
+  18.5% { transform: rotate(20.2deg); }
+  19% { transform: rotate(14.7deg); }
+  19.5% { transform: rotate(7.7deg); }
+  20% { transform: rotate(0.0deg); }
+  20.5% { transform: rotate(-7.7deg); }
+  21% { transform: rotate(-14.7deg); }
+  21.5% { transform: rotate(-20.2deg); }
+  22% { transform: rotate(-23.8deg); }
+  22.5% { transform: rotate(-25.0deg); }
+  23% { transform: rotate(-23.8deg); }
+  23.5% { transform: rotate(-20.2deg); }
+  24% { transform: rotate(-14.7deg); }
+  24.5% { transform: rotate(-7.7deg); }
+  25% { transform: rotate(-0.0deg); }
+  25.5% { transform: rotate(7.7deg); }
+  26% { transform: rotate(14.7deg); }
+  26.5% { transform: rotate(20.2deg); }
+  27% { transform: rotate(23.8deg); }
+  27.5% { transform: rotate(25.0deg); }
+  28% { transform: rotate(23.8deg); }
+  28.5% { transform: rotate(20.2deg); }
+  29% { transform: rotate(14.7deg); }
+  29.5% { transform: rotate(7.7deg); }
+  30% { transform: rotate(0.0deg); }
+  30.5% { transform: rotate(0.0deg); }
+  31% { transform: rotate(0.0deg); }
+  31.5% { transform: rotate(0.0deg); }
+  32% { transform: rotate(0.0deg); }
+  32.5% { transform: rotate(0.0deg); }
+  33% { transform: rotate(0.0deg); }
+  33.5% { transform: rotate(0.0deg); }
+  34% { transform: rotate(0.0deg); }
+  34.5% { transform: rotate(0.0deg); }
+  35% { transform: rotate(0.0deg); }
+  35.5% { transform: rotate(0.0deg); }
+  36% { transform: rotate(0.0deg); }
+  36.5% { transform: rotate(-7.7deg); }
+  37% { transform: rotate(-14.7deg); }
+  37.5% { transform: rotate(-20.2deg); }
+  38% { transform: rotate(-23.8deg); }
+  38.5% { transform: rotate(-25.0deg); }
+  39% { transform: rotate(-23.8deg); }
+  39.5% { transform: rotate(-20.2deg); }
+  40% { transform: rotate(-14.7deg); }
+  40.5% { transform: rotate(-7.7deg); }
+  41% { transform: rotate(-0.0deg); }
+  41.5% { transform: rotate(7.7deg); }
+  42% { transform: rotate(14.7deg); }
+  42.5% { transform: rotate(20.2deg); }
+  43% { transform: rotate(23.8deg); }
+  43.5% { transform: rotate(25.0deg); }
+  44% { transform: rotate(23.8deg); }
+  44.5% { transform: rotate(20.2deg); }
+  45% { transform: rotate(14.7deg); }
+  45.5% { transform: rotate(7.7deg); }
+  46% { transform: rotate(-0.0deg); }
+  46.5% { transform: rotate(-7.7deg); }
+  47% { transform: rotate(-14.7deg); }
+  47.5% { transform: rotate(-20.2deg); }
+  48% { transform: rotate(-23.8deg); }
+  48.5% { transform: rotate(-25.0deg); }
+  49% { transform: rotate(-23.8deg); }
+  49.5% { transform: rotate(-20.2deg); }
+  50% { transform: rotate(-14.7deg); }
+  50.5% { transform: rotate(-7.7deg); }
+  51% { transform: rotate(0.0deg); }
+  51.5% { transform: rotate(7.7deg); }
+  52% { transform: rotate(14.7deg); }
+  52.5% { transform: rotate(20.2deg); }
+  53% { transform: rotate(23.8deg); }
+  53.5% { transform: rotate(25.0deg); }
+  54% { transform: rotate(23.8deg); }
+  54.5% { transform: rotate(20.2deg); }
+  55% { transform: rotate(14.7deg); }
+  55.5% { transform: rotate(7.7deg); }
+  56% { transform: rotate(-0.0deg); }
+  56.5% { transform: rotate(-7.7deg); }
+  57% { transform: rotate(-14.7deg); }
+  57.5% { transform: rotate(-20.2deg); }
+  58% { transform: rotate(-23.8deg); }
+  58.5% { transform: rotate(-25.0deg); }
+  59% { transform: rotate(-23.8deg); }
+  59.5% { transform: rotate(-20.2deg); }
+  60% { transform: rotate(-14.7deg); }
+  60.5% { transform: rotate(-36.8deg); }
+  61% { transform: rotate(-31.7deg); }
+  61.5% { transform: rotate(-24.7deg); }
+  62% { transform: rotate(-16.2deg); }
+  62.5% { transform: rotate(-6.6deg); }
+  63% { transform: rotate(3.4deg); }
+  63.5% { transform: rotate(13.1deg); }
+  64% { transform: rotate(22.1deg); }
+  64.5% { transform: rotate(29.6deg); }
+  65% { transform: rotate(35.4deg); }
+  65.5% { transform: rotate(38.9deg); }
+  66% { transform: rotate(40.0deg); }
+  66.5% { transform: rotate(38.6deg); }
+  67% { transform: rotate(34.8deg); }
+  67.5% { transform: rotate(28.9deg); }
+  68% { transform: rotate(21.2deg); }
+  68.5% { transform: rotate(12.1deg); }
+  69% { transform: rotate(2.3deg); }
+  69.5% { transform: rotate(-7.7deg); }
+  70% { transform: rotate(-17.1deg); }
+  70.5% { transform: rotate(-25.5deg); }
+  71% { transform: rotate(-32.4deg); }
+  71.5% { transform: rotate(-37.2deg); }
+  72% { transform: rotate(-80.0deg); }
+  72.5% { transform: rotate(-80.0deg); }
+  73% { transform: rotate(-80.0deg); }
+  73.5% { transform: rotate(-80.0deg); }
+  74% { transform: rotate(-80.0deg); }
+  74.5% { transform: rotate(-80.0deg); }
+  75% { transform: rotate(-80.0deg); }
+  75.5% { transform: rotate(-80.0deg); }
+  76% { transform: rotate(-80.0deg); }
+  76.5% { transform: rotate(-80.0deg); }
+  77% { transform: rotate(-80.0deg); }
+  77.5% { transform: rotate(-80.0deg); }
+  78% { transform: rotate(-80.0deg); }
+  78.5% { transform: rotate(-80.0deg); }
+  79% { transform: rotate(-80.0deg); }
+  79.5% { transform: rotate(-80.0deg); }
+  80% { transform: rotate(-80.0deg); }
+  80.5% { transform: rotate(-80.0deg); }
+  81% { transform: rotate(-80.0deg); }
+  81.5% { transform: rotate(-80.0deg); }
+  82% { transform: rotate(-80.0deg); }
+  82.5% { transform: rotate(-80.0deg); }
+  83% { transform: rotate(-80.0deg); }
+  83.5% { transform: rotate(-80.0deg); }
+  84% { transform: rotate(-80.0deg); }
+  84.5% { transform: rotate(-40.0deg); }
+  85% { transform: rotate(-40.0deg); }
+  85.5% { transform: rotate(-40.0deg); }
+  86% { transform: rotate(-40.0deg); }
+  86.5% { transform: rotate(-40.0deg); }
+  87% { transform: rotate(-40.0deg); }
+  87.5% { transform: rotate(-40.0deg); }
+  88% { transform: rotate(-40.0deg); }
+  88.5% { transform: rotate(-40.0deg); }
+  89% { transform: rotate(-40.0deg); }
+  89.5% { transform: rotate(-40.0deg); }
+  90% { transform: rotate(-40.0deg); }
+  90.5% { transform: rotate(-40.0deg); }
+  91% { transform: rotate(-40.0deg); }
+  91.5% { transform: rotate(-40.0deg); }
+  92% { transform: rotate(-40.0deg); }
+  92.5% { transform: rotate(-20.0deg); }
+  93% { transform: rotate(-20.0deg); }
+  93.5% { transform: rotate(-20.0deg); }
+  94% { transform: rotate(-20.0deg); }
+  94.5% { transform: rotate(-20.0deg); }
+  95% { transform: rotate(-20.0deg); }
+  95.5% { transform: rotate(-20.0deg); }
+  96% { transform: rotate(-20.0deg); }
+  96.5% { transform: rotate(0.0deg); }
+  97% { transform: rotate(0.0deg); }
+  97.5% { transform: rotate(0.0deg); }
+  98% { transform: rotate(0.0deg); }
+  98.5% { transform: rotate(0.0deg); }
+  99% { transform: rotate(0.0deg); }
+  99.5% { transform: rotate(0.0deg); }
+  100% { transform: rotate(0.0deg); }
+}
+
+@keyframes nonprofit-lineman-leg-l-knee {
+  0% { transform: rotate(0.0deg); }
+  0.5% { transform: rotate(0.0deg); }
+  1% { transform: rotate(0.0deg); }
+  1.5% { transform: rotate(0.0deg); }
+  2% { transform: rotate(0.0deg); }
+  2.5% { transform: rotate(0.0deg); }
+  3% { transform: rotate(18.5deg); }
+  3.5% { transform: rotate(35.3deg); }
+  4% { transform: rotate(48.5deg); }
+  4.5% { transform: rotate(57.1deg); }
+  5% { transform: rotate(60.0deg); }
+  5.5% { transform: rotate(57.1deg); }
+  6% { transform: rotate(48.5deg); }
+  6.5% { transform: rotate(35.3deg); }
+  7% { transform: rotate(18.5deg); }
+  7.5% { transform: rotate(0.0deg); }
+  8% { transform: rotate(0.0deg); }
+  8.5% { transform: rotate(0.0deg); }
+  9% { transform: rotate(0.0deg); }
+  9.5% { transform: rotate(0.0deg); }
+  10% { transform: rotate(0.0deg); }
+  10.5% { transform: rotate(0.0deg); }
+  11% { transform: rotate(0.0deg); }
+  11.5% { transform: rotate(0.0deg); }
+  12% { transform: rotate(0.0deg); }
+  12.5% { transform: rotate(0.0deg); }
+  13% { transform: rotate(18.5deg); }
+  13.5% { transform: rotate(35.3deg); }
+  14% { transform: rotate(48.5deg); }
+  14.5% { transform: rotate(57.1deg); }
+  15% { transform: rotate(60.0deg); }
+  15.5% { transform: rotate(57.1deg); }
+  16% { transform: rotate(48.5deg); }
+  16.5% { transform: rotate(35.3deg); }
+  17% { transform: rotate(18.5deg); }
+  17.5% { transform: rotate(0.0deg); }
+  18% { transform: rotate(0.0deg); }
+  18.5% { transform: rotate(0.0deg); }
+  19% { transform: rotate(0.0deg); }
+  19.5% { transform: rotate(0.0deg); }
+  20% { transform: rotate(0.0deg); }
+  20.5% { transform: rotate(0.0deg); }
+  21% { transform: rotate(0.0deg); }
+  21.5% { transform: rotate(0.0deg); }
+  22% { transform: rotate(0.0deg); }
+  22.5% { transform: rotate(0.0deg); }
+  23% { transform: rotate(18.5deg); }
+  23.5% { transform: rotate(35.3deg); }
+  24% { transform: rotate(48.5deg); }
+  24.5% { transform: rotate(57.1deg); }
+  25% { transform: rotate(60.0deg); }
+  25.5% { transform: rotate(57.1deg); }
+  26% { transform: rotate(48.5deg); }
+  26.5% { transform: rotate(35.3deg); }
+  27% { transform: rotate(18.5deg); }
+  27.5% { transform: rotate(0.0deg); }
+  28% { transform: rotate(0.0deg); }
+  28.5% { transform: rotate(0.0deg); }
+  29% { transform: rotate(0.0deg); }
+  29.5% { transform: rotate(0.0deg); }
+  30% { transform: rotate(0.0deg); }
+  30.5% { transform: rotate(0.0deg); }
+  31% { transform: rotate(0.0deg); }
+  31.5% { transform: rotate(0.0deg); }
+  32% { transform: rotate(0.0deg); }
+  32.5% { transform: rotate(0.0deg); }
+  33% { transform: rotate(0.0deg); }
+  33.5% { transform: rotate(0.0deg); }
+  34% { transform: rotate(0.0deg); }
+  34.5% { transform: rotate(0.0deg); }
+  35% { transform: rotate(0.0deg); }
+  35.5% { transform: rotate(0.0deg); }
+  36% { transform: rotate(0.0deg); }
+  36.5% { transform: rotate(0.0deg); }
+  37% { transform: rotate(0.0deg); }
+  37.5% { transform: rotate(0.0deg); }
+  38% { transform: rotate(0.0deg); }
+  38.5% { transform: rotate(0.0deg); }
+  39% { transform: rotate(18.5deg); }
+  39.5% { transform: rotate(35.3deg); }
+  40% { transform: rotate(48.5deg); }
+  40.5% { transform: rotate(57.1deg); }
+  41% { transform: rotate(60.0deg); }
+  41.5% { transform: rotate(57.1deg); }
+  42% { transform: rotate(48.5deg); }
+  42.5% { transform: rotate(35.3deg); }
+  43% { transform: rotate(18.5deg); }
+  43.5% { transform: rotate(0.0deg); }
+  44% { transform: rotate(0.0deg); }
+  44.5% { transform: rotate(0.0deg); }
+  45% { transform: rotate(0.0deg); }
+  45.5% { transform: rotate(0.0deg); }
+  46% { transform: rotate(0.0deg); }
+  46.5% { transform: rotate(0.0deg); }
+  47% { transform: rotate(0.0deg); }
+  47.5% { transform: rotate(0.0deg); }
+  48% { transform: rotate(0.0deg); }
+  48.5% { transform: rotate(0.0deg); }
+  49% { transform: rotate(18.5deg); }
+  49.5% { transform: rotate(35.3deg); }
+  50% { transform: rotate(48.5deg); }
+  50.5% { transform: rotate(57.1deg); }
+  51% { transform: rotate(60.0deg); }
+  51.5% { transform: rotate(57.1deg); }
+  52% { transform: rotate(48.5deg); }
+  52.5% { transform: rotate(35.3deg); }
+  53% { transform: rotate(18.5deg); }
+  53.5% { transform: rotate(0.0deg); }
+  54% { transform: rotate(0.0deg); }
+  54.5% { transform: rotate(0.0deg); }
+  55% { transform: rotate(0.0deg); }
+  55.5% { transform: rotate(0.0deg); }
+  56% { transform: rotate(0.0deg); }
+  56.5% { transform: rotate(0.0deg); }
+  57% { transform: rotate(0.0deg); }
+  57.5% { transform: rotate(0.0deg); }
+  58% { transform: rotate(0.0deg); }
+  58.5% { transform: rotate(0.0deg); }
+  59% { transform: rotate(18.5deg); }
+  59.5% { transform: rotate(35.3deg); }
+  60% { transform: rotate(48.5deg); }
+  60.5% { transform: rotate(1.6deg); }
+  61% { transform: rotate(4.1deg); }
+  61.5% { transform: rotate(7.6deg); }
+  62% { transform: rotate(11.9deg); }
+  62.5% { transform: rotate(16.7deg); }
+  63% { transform: rotate(21.7deg); }
+  63.5% { transform: rotate(26.6deg); }
+  64% { transform: rotate(31.0deg); }
+  64.5% { transform: rotate(34.8deg); }
+  65% { transform: rotate(37.7deg); }
+  65.5% { transform: rotate(39.4deg); }
+  66% { transform: rotate(40.0deg); }
+  66.5% { transform: rotate(39.3deg); }
+  67% { transform: rotate(37.4deg); }
+  67.5% { transform: rotate(34.5deg); }
+  68% { transform: rotate(30.6deg); }
+  68.5% { transform: rotate(26.1deg); }
+  69% { transform: rotate(21.1deg); }
+  69.5% { transform: rotate(16.2deg); }
+  70% { transform: rotate(11.4deg); }
+  70.5% { transform: rotate(7.2deg); }
+  71% { transform: rotate(3.8deg); }
+  71.5% { transform: rotate(1.4deg); }
+  72% { transform: rotate(90.0deg); }
+  72.5% { transform: rotate(90.0deg); }
+  73% { transform: rotate(90.0deg); }
+  73.5% { transform: rotate(90.0deg); }
+  74% { transform: rotate(90.0deg); }
+  74.5% { transform: rotate(90.0deg); }
+  75% { transform: rotate(90.0deg); }
+  75.5% { transform: rotate(90.0deg); }
+  76% { transform: rotate(90.0deg); }
+  76.5% { transform: rotate(90.0deg); }
+  77% { transform: rotate(90.0deg); }
+  77.5% { transform: rotate(90.0deg); }
+  78% { transform: rotate(90.0deg); }
+  78.5% { transform: rotate(90.0deg); }
+  79% { transform: rotate(90.0deg); }
+  79.5% { transform: rotate(90.0deg); }
+  80% { transform: rotate(90.0deg); }
+  80.5% { transform: rotate(90.0deg); }
+  81% { transform: rotate(90.0deg); }
+  81.5% { transform: rotate(90.0deg); }
+  82% { transform: rotate(90.0deg); }
+  82.5% { transform: rotate(90.0deg); }
+  83% { transform: rotate(90.0deg); }
+  83.5% { transform: rotate(90.0deg); }
+  84% { transform: rotate(90.0deg); }
+  84.5% { transform: rotate(80.0deg); }
+  85% { transform: rotate(80.0deg); }
+  85.5% { transform: rotate(80.0deg); }
+  86% { transform: rotate(80.0deg); }
+  86.5% { transform: rotate(80.0deg); }
+  87% { transform: rotate(80.0deg); }
+  87.5% { transform: rotate(80.0deg); }
+  88% { transform: rotate(80.0deg); }
+  88.5% { transform: rotate(80.0deg); }
+  89% { transform: rotate(80.0deg); }
+  89.5% { transform: rotate(80.0deg); }
+  90% { transform: rotate(80.0deg); }
+  90.5% { transform: rotate(80.0deg); }
+  91% { transform: rotate(80.0deg); }
+  91.5% { transform: rotate(80.0deg); }
+  92% { transform: rotate(80.0deg); }
+  92.5% { transform: rotate(40.0deg); }
+  93% { transform: rotate(40.0deg); }
+  93.5% { transform: rotate(40.0deg); }
+  94% { transform: rotate(40.0deg); }
+  94.5% { transform: rotate(40.0deg); }
+  95% { transform: rotate(40.0deg); }
+  95.5% { transform: rotate(40.0deg); }
+  96% { transform: rotate(40.0deg); }
+  96.5% { transform: rotate(0.0deg); }
+  97% { transform: rotate(0.0deg); }
+  97.5% { transform: rotate(0.0deg); }
+  98% { transform: rotate(0.0deg); }
+  98.5% { transform: rotate(0.0deg); }
+  99% { transform: rotate(0.0deg); }
+  99.5% { transform: rotate(0.0deg); }
+  100% { transform: rotate(0.0deg); }
+}
+
+@keyframes nonprofit-lineman-leg-l-foot {
+  0% { transform: rotate(8.8deg); }
+  0.5% { transform: rotate(12.1deg); }
+  1% { transform: rotate(14.3deg); }
+  1.5% { transform: rotate(15.0deg); }
+  2% { transform: rotate(14.3deg); }
+  2.5% { transform: rotate(12.1deg); }
+  3% { transform: rotate(8.8deg); }
+  3.5% { transform: rotate(4.6deg); }
+  4% { transform: rotate(0.0deg); }
+  4.5% { transform: rotate(-4.6deg); }
+  5% { transform: rotate(-8.8deg); }
+  5.5% { transform: rotate(-12.1deg); }
+  6% { transform: rotate(-14.3deg); }
+  6.5% { transform: rotate(-15.0deg); }
+  7% { transform: rotate(-14.3deg); }
+  7.5% { transform: rotate(-12.1deg); }
+  8% { transform: rotate(-8.8deg); }
+  8.5% { transform: rotate(-4.6deg); }
+  9% { transform: rotate(-0.0deg); }
+  9.5% { transform: rotate(4.6deg); }
+  10% { transform: rotate(8.8deg); }
+  10.5% { transform: rotate(12.1deg); }
+  11% { transform: rotate(14.3deg); }
+  11.5% { transform: rotate(15.0deg); }
+  12% { transform: rotate(14.3deg); }
+  12.5% { transform: rotate(12.1deg); }
+  13% { transform: rotate(8.8deg); }
+  13.5% { transform: rotate(4.6deg); }
+  14% { transform: rotate(-0.0deg); }
+  14.5% { transform: rotate(-4.6deg); }
+  15% { transform: rotate(-8.8deg); }
+  15.5% { transform: rotate(-12.1deg); }
+  16% { transform: rotate(-14.3deg); }
+  16.5% { transform: rotate(-15.0deg); }
+  17% { transform: rotate(-14.3deg); }
+  17.5% { transform: rotate(-12.1deg); }
+  18% { transform: rotate(-8.8deg); }
+  18.5% { transform: rotate(-4.6deg); }
+  19% { transform: rotate(-0.0deg); }
+  19.5% { transform: rotate(4.6deg); }
+  20% { transform: rotate(8.8deg); }
+  20.5% { transform: rotate(12.1deg); }
+  21% { transform: rotate(14.3deg); }
+  21.5% { transform: rotate(15.0deg); }
+  22% { transform: rotate(14.3deg); }
+  22.5% { transform: rotate(12.1deg); }
+  23% { transform: rotate(8.8deg); }
+  23.5% { transform: rotate(4.6deg); }
+  24% { transform: rotate(0.0deg); }
+  24.5% { transform: rotate(-4.6deg); }
+  25% { transform: rotate(-8.8deg); }
+  25.5% { transform: rotate(-12.1deg); }
+  26% { transform: rotate(-14.3deg); }
+  26.5% { transform: rotate(-15.0deg); }
+  27% { transform: rotate(-14.3deg); }
+  27.5% { transform: rotate(-12.1deg); }
+  28% { transform: rotate(-8.8deg); }
+  28.5% { transform: rotate(-4.6deg); }
+  29% { transform: rotate(-0.0deg); }
+  29.5% { transform: rotate(4.6deg); }
+  30% { transform: rotate(8.8deg); }
+  30.5% { transform: rotate(0.0deg); }
+  31% { transform: rotate(0.0deg); }
+  31.5% { transform: rotate(0.0deg); }
+  32% { transform: rotate(0.0deg); }
+  32.5% { transform: rotate(0.0deg); }
+  33% { transform: rotate(0.0deg); }
+  33.5% { transform: rotate(0.0deg); }
+  34% { transform: rotate(0.0deg); }
+  34.5% { transform: rotate(0.0deg); }
+  35% { transform: rotate(0.0deg); }
+  35.5% { transform: rotate(0.0deg); }
+  36% { transform: rotate(8.8deg); }
+  36.5% { transform: rotate(12.1deg); }
+  37% { transform: rotate(14.3deg); }
+  37.5% { transform: rotate(15.0deg); }
+  38% { transform: rotate(14.3deg); }
+  38.5% { transform: rotate(12.1deg); }
+  39% { transform: rotate(8.8deg); }
+  39.5% { transform: rotate(4.6deg); }
+  40% { transform: rotate(-0.0deg); }
+  40.5% { transform: rotate(-4.6deg); }
+  41% { transform: rotate(-8.8deg); }
+  41.5% { transform: rotate(-12.1deg); }
+  42% { transform: rotate(-14.3deg); }
+  42.5% { transform: rotate(-15.0deg); }
+  43% { transform: rotate(-14.3deg); }
+  43.5% { transform: rotate(-12.1deg); }
+  44% { transform: rotate(-8.8deg); }
+  44.5% { transform: rotate(-4.6deg); }
+  45% { transform: rotate(0.0deg); }
+  45.5% { transform: rotate(4.6deg); }
+  46% { transform: rotate(8.8deg); }
+  46.5% { transform: rotate(12.1deg); }
+  47% { transform: rotate(14.3deg); }
+  47.5% { transform: rotate(15.0deg); }
+  48% { transform: rotate(14.3deg); }
+  48.5% { transform: rotate(12.1deg); }
+  49% { transform: rotate(8.8deg); }
+  49.5% { transform: rotate(4.6deg); }
+  50% { transform: rotate(-0.0deg); }
+  50.5% { transform: rotate(-4.6deg); }
+  51% { transform: rotate(-8.8deg); }
+  51.5% { transform: rotate(-12.1deg); }
+  52% { transform: rotate(-14.3deg); }
+  52.5% { transform: rotate(-15.0deg); }
+  53% { transform: rotate(-14.3deg); }
+  53.5% { transform: rotate(-12.1deg); }
+  54% { transform: rotate(-8.8deg); }
+  54.5% { transform: rotate(-4.6deg); }
+  55% { transform: rotate(0.0deg); }
+  55.5% { transform: rotate(4.6deg); }
+  56% { transform: rotate(8.8deg); }
+  56.5% { transform: rotate(12.1deg); }
+  57% { transform: rotate(14.3deg); }
+  57.5% { transform: rotate(15.0deg); }
+  58% { transform: rotate(14.3deg); }
+  58.5% { transform: rotate(12.1deg); }
+  59% { transform: rotate(8.8deg); }
+  59.5% { transform: rotate(4.6deg); }
+  60% { transform: rotate(0.0deg); }
+  60.5% { transform: rotate(0.0deg); }
+  61% { transform: rotate(0.0deg); }
+  61.5% { transform: rotate(0.0deg); }
+  62% { transform: rotate(0.0deg); }
+  62.5% { transform: rotate(0.0deg); }
+  63% { transform: rotate(0.0deg); }
+  63.5% { transform: rotate(0.0deg); }
+  64% { transform: rotate(0.0deg); }
+  64.5% { transform: rotate(0.0deg); }
+  65% { transform: rotate(0.0deg); }
+  65.5% { transform: rotate(0.0deg); }
+  66% { transform: rotate(0.0deg); }
+  66.5% { transform: rotate(0.0deg); }
+  67% { transform: rotate(0.0deg); }
+  67.5% { transform: rotate(0.0deg); }
+  68% { transform: rotate(0.0deg); }
+  68.5% { transform: rotate(0.0deg); }
+  69% { transform: rotate(0.0deg); }
+  69.5% { transform: rotate(0.0deg); }
+  70% { transform: rotate(0.0deg); }
+  70.5% { transform: rotate(0.0deg); }
+  71% { transform: rotate(0.0deg); }
+  71.5% { transform: rotate(0.0deg); }
+  72% { transform: rotate(-20.0deg); }
+  72.5% { transform: rotate(-20.0deg); }
+  73% { transform: rotate(-20.0deg); }
+  73.5% { transform: rotate(-20.0deg); }
+  74% { transform: rotate(-20.0deg); }
+  74.5% { transform: rotate(-20.0deg); }
+  75% { transform: rotate(-20.0deg); }
+  75.5% { transform: rotate(-20.0deg); }
+  76% { transform: rotate(-20.0deg); }
+  76.5% { transform: rotate(-20.0deg); }
+  77% { transform: rotate(-20.0deg); }
+  77.5% { transform: rotate(-20.0deg); }
+  78% { transform: rotate(-20.0deg); }
+  78.5% { transform: rotate(-20.0deg); }
+  79% { transform: rotate(-20.0deg); }
+  79.5% { transform: rotate(-20.0deg); }
+  80% { transform: rotate(-20.0deg); }
+  80.5% { transform: rotate(-20.0deg); }
+  81% { transform: rotate(-20.0deg); }
+  81.5% { transform: rotate(-20.0deg); }
+  82% { transform: rotate(-20.0deg); }
+  82.5% { transform: rotate(-20.0deg); }
+  83% { transform: rotate(-20.0deg); }
+  83.5% { transform: rotate(-20.0deg); }
+  84% { transform: rotate(-20.0deg); }
+  84.5% { transform: rotate(0.0deg); }
+  85% { transform: rotate(0.0deg); }
+  85.5% { transform: rotate(0.0deg); }
+  86% { transform: rotate(0.0deg); }
+  86.5% { transform: rotate(0.0deg); }
+  87% { transform: rotate(0.0deg); }
+  87.5% { transform: rotate(0.0deg); }
+  88% { transform: rotate(0.0deg); }
+  88.5% { transform: rotate(0.0deg); }
+  89% { transform: rotate(0.0deg); }
+  89.5% { transform: rotate(0.0deg); }
+  90% { transform: rotate(0.0deg); }
+  90.5% { transform: rotate(0.0deg); }
+  91% { transform: rotate(0.0deg); }
+  91.5% { transform: rotate(0.0deg); }
+  92% { transform: rotate(0.0deg); }
+  92.5% { transform: rotate(20.0deg); }
+  93% { transform: rotate(20.0deg); }
+  93.5% { transform: rotate(20.0deg); }
+  94% { transform: rotate(20.0deg); }
+  94.5% { transform: rotate(20.0deg); }
+  95% { transform: rotate(20.0deg); }
+  95.5% { transform: rotate(20.0deg); }
+  96% { transform: rotate(20.0deg); }
+  96.5% { transform: rotate(0.0deg); }
+  97% { transform: rotate(0.0deg); }
+  97.5% { transform: rotate(0.0deg); }
+  98% { transform: rotate(0.0deg); }
+  98.5% { transform: rotate(0.0deg); }
+  99% { transform: rotate(0.0deg); }
+  99.5% { transform: rotate(0.0deg); }
+  100% { transform: rotate(0.0deg); }
+}
+
+@keyframes nonprofit-lineman-leg-r-hip {
+  0% { transform: rotate(0.0deg); }
+  0.5% { transform: rotate(7.7deg); }
+  1% { transform: rotate(14.7deg); }
+  1.5% { transform: rotate(20.2deg); }
+  2% { transform: rotate(23.8deg); }
+  2.5% { transform: rotate(25.0deg); }
+  3% { transform: rotate(23.8deg); }
+  3.5% { transform: rotate(20.2deg); }
+  4% { transform: rotate(14.7deg); }
+  4.5% { transform: rotate(7.7deg); }
+  5% { transform: rotate(0.0deg); }
+  5.5% { transform: rotate(-7.7deg); }
+  6% { transform: rotate(-14.7deg); }
+  6.5% { transform: rotate(-20.2deg); }
+  7% { transform: rotate(-23.8deg); }
+  7.5% { transform: rotate(-25.0deg); }
+  8% { transform: rotate(-23.8deg); }
+  8.5% { transform: rotate(-20.2deg); }
+  9% { transform: rotate(-14.7deg); }
+  9.5% { transform: rotate(-7.7deg); }
+  10% { transform: rotate(0.0deg); }
+  10.5% { transform: rotate(7.7deg); }
+  11% { transform: rotate(14.7deg); }
+  11.5% { transform: rotate(20.2deg); }
+  12% { transform: rotate(23.8deg); }
+  12.5% { transform: rotate(25.0deg); }
+  13% { transform: rotate(23.8deg); }
+  13.5% { transform: rotate(20.2deg); }
+  14% { transform: rotate(14.7deg); }
+  14.5% { transform: rotate(7.7deg); }
+  15% { transform: rotate(0.0deg); }
+  15.5% { transform: rotate(-7.7deg); }
+  16% { transform: rotate(-14.7deg); }
+  16.5% { transform: rotate(-20.2deg); }
+  17% { transform: rotate(-23.8deg); }
+  17.5% { transform: rotate(-25.0deg); }
+  18% { transform: rotate(-23.8deg); }
+  18.5% { transform: rotate(-20.2deg); }
+  19% { transform: rotate(-14.7deg); }
+  19.5% { transform: rotate(-7.7deg); }
+  20% { transform: rotate(0.0deg); }
+  20.5% { transform: rotate(7.7deg); }
+  21% { transform: rotate(14.7deg); }
+  21.5% { transform: rotate(20.2deg); }
+  22% { transform: rotate(23.8deg); }
+  22.5% { transform: rotate(25.0deg); }
+  23% { transform: rotate(23.8deg); }
+  23.5% { transform: rotate(20.2deg); }
+  24% { transform: rotate(14.7deg); }
+  24.5% { transform: rotate(7.7deg); }
+  25% { transform: rotate(0.0deg); }
+  25.5% { transform: rotate(-7.7deg); }
+  26% { transform: rotate(-14.7deg); }
+  26.5% { transform: rotate(-20.2deg); }
+  27% { transform: rotate(-23.8deg); }
+  27.5% { transform: rotate(-25.0deg); }
+  28% { transform: rotate(-23.8deg); }
+  28.5% { transform: rotate(-20.2deg); }
+  29% { transform: rotate(-14.7deg); }
+  29.5% { transform: rotate(-7.7deg); }
+  30% { transform: rotate(0.0deg); }
+  30.5% { transform: rotate(0.0deg); }
+  31% { transform: rotate(0.0deg); }
+  31.5% { transform: rotate(0.0deg); }
+  32% { transform: rotate(0.0deg); }
+  32.5% { transform: rotate(0.0deg); }
+  33% { transform: rotate(0.0deg); }
+  33.5% { transform: rotate(0.0deg); }
+  34% { transform: rotate(0.0deg); }
+  34.5% { transform: rotate(0.0deg); }
+  35% { transform: rotate(0.0deg); }
+  35.5% { transform: rotate(0.0deg); }
+  36% { transform: rotate(0.0deg); }
+  36.5% { transform: rotate(7.7deg); }
+  37% { transform: rotate(14.7deg); }
+  37.5% { transform: rotate(20.2deg); }
+  38% { transform: rotate(23.8deg); }
+  38.5% { transform: rotate(25.0deg); }
+  39% { transform: rotate(23.8deg); }
+  39.5% { transform: rotate(20.2deg); }
+  40% { transform: rotate(14.7deg); }
+  40.5% { transform: rotate(7.7deg); }
+  41% { transform: rotate(0.0deg); }
+  41.5% { transform: rotate(-7.7deg); }
+  42% { transform: rotate(-14.7deg); }
+  42.5% { transform: rotate(-20.2deg); }
+  43% { transform: rotate(-23.8deg); }
+  43.5% { transform: rotate(-25.0deg); }
+  44% { transform: rotate(-23.8deg); }
+  44.5% { transform: rotate(-20.2deg); }
+  45% { transform: rotate(-14.7deg); }
+  45.5% { transform: rotate(-7.7deg); }
+  46% { transform: rotate(0.0deg); }
+  46.5% { transform: rotate(7.7deg); }
+  47% { transform: rotate(14.7deg); }
+  47.5% { transform: rotate(20.2deg); }
+  48% { transform: rotate(23.8deg); }
+  48.5% { transform: rotate(25.0deg); }
+  49% { transform: rotate(23.8deg); }
+  49.5% { transform: rotate(20.2deg); }
+  50% { transform: rotate(14.7deg); }
+  50.5% { transform: rotate(7.7deg); }
+  51% { transform: rotate(-0.0deg); }
+  51.5% { transform: rotate(-7.7deg); }
+  52% { transform: rotate(-14.7deg); }
+  52.5% { transform: rotate(-20.2deg); }
+  53% { transform: rotate(-23.8deg); }
+  53.5% { transform: rotate(-25.0deg); }
+  54% { transform: rotate(-23.8deg); }
+  54.5% { transform: rotate(-20.2deg); }
+  55% { transform: rotate(-14.7deg); }
+  55.5% { transform: rotate(-7.7deg); }
+  56% { transform: rotate(0.0deg); }
+  56.5% { transform: rotate(7.7deg); }
+  57% { transform: rotate(14.7deg); }
+  57.5% { transform: rotate(20.2deg); }
+  58% { transform: rotate(23.8deg); }
+  58.5% { transform: rotate(25.0deg); }
+  59% { transform: rotate(23.8deg); }
+  59.5% { transform: rotate(20.2deg); }
+  60% { transform: rotate(14.7deg); }
+  60.5% { transform: rotate(36.8deg); }
+  61% { transform: rotate(31.7deg); }
+  61.5% { transform: rotate(24.7deg); }
+  62% { transform: rotate(16.2deg); }
+  62.5% { transform: rotate(6.6deg); }
+  63% { transform: rotate(-3.4deg); }
+  63.5% { transform: rotate(-13.1deg); }
+  64% { transform: rotate(-22.1deg); }
+  64.5% { transform: rotate(-29.6deg); }
+  65% { transform: rotate(-35.4deg); }
+  65.5% { transform: rotate(-38.9deg); }
+  66% { transform: rotate(-40.0deg); }
+  66.5% { transform: rotate(-38.6deg); }
+  67% { transform: rotate(-34.8deg); }
+  67.5% { transform: rotate(-28.9deg); }
+  68% { transform: rotate(-21.2deg); }
+  68.5% { transform: rotate(-12.1deg); }
+  69% { transform: rotate(-2.3deg); }
+  69.5% { transform: rotate(7.7deg); }
+  70% { transform: rotate(17.1deg); }
+  70.5% { transform: rotate(25.5deg); }
+  71% { transform: rotate(32.4deg); }
+  71.5% { transform: rotate(37.2deg); }
+  72% { transform: rotate(-70.0deg); }
+  72.5% { transform: rotate(-70.0deg); }
+  73% { transform: rotate(-70.0deg); }
+  73.5% { transform: rotate(-70.0deg); }
+  74% { transform: rotate(-70.0deg); }
+  74.5% { transform: rotate(-70.0deg); }
+  75% { transform: rotate(-70.0deg); }
+  75.5% { transform: rotate(-70.0deg); }
+  76% { transform: rotate(-70.0deg); }
+  76.5% { transform: rotate(-70.0deg); }
+  77% { transform: rotate(-70.0deg); }
+  77.5% { transform: rotate(-70.0deg); }
+  78% { transform: rotate(-70.0deg); }
+  78.5% { transform: rotate(-70.0deg); }
+  79% { transform: rotate(-70.0deg); }
+  79.5% { transform: rotate(-70.0deg); }
+  80% { transform: rotate(-70.0deg); }
+  80.5% { transform: rotate(-70.0deg); }
+  81% { transform: rotate(-70.0deg); }
+  81.5% { transform: rotate(-70.0deg); }
+  82% { transform: rotate(-70.0deg); }
+  82.5% { transform: rotate(-70.0deg); }
+  83% { transform: rotate(-70.0deg); }
+  83.5% { transform: rotate(-70.0deg); }
+  84% { transform: rotate(-70.0deg); }
+  84.5% { transform: rotate(10.0deg); }
+  85% { transform: rotate(10.0deg); }
+  85.5% { transform: rotate(10.0deg); }
+  86% { transform: rotate(10.0deg); }
+  86.5% { transform: rotate(10.0deg); }
+  87% { transform: rotate(10.0deg); }
+  87.5% { transform: rotate(10.0deg); }
+  88% { transform: rotate(10.0deg); }
+  88.5% { transform: rotate(10.0deg); }
+  89% { transform: rotate(10.0deg); }
+  89.5% { transform: rotate(10.0deg); }
+  90% { transform: rotate(10.0deg); }
+  90.5% { transform: rotate(10.0deg); }
+  91% { transform: rotate(10.0deg); }
+  91.5% { transform: rotate(10.0deg); }
+  92% { transform: rotate(10.0deg); }
+  92.5% { transform: rotate(-20.0deg); }
+  93% { transform: rotate(-20.0deg); }
+  93.5% { transform: rotate(-20.0deg); }
+  94% { transform: rotate(-20.0deg); }
+  94.5% { transform: rotate(-20.0deg); }
+  95% { transform: rotate(-20.0deg); }
+  95.5% { transform: rotate(-20.0deg); }
+  96% { transform: rotate(-20.0deg); }
+  96.5% { transform: rotate(0.0deg); }
+  97% { transform: rotate(0.0deg); }
+  97.5% { transform: rotate(0.0deg); }
+  98% { transform: rotate(0.0deg); }
+  98.5% { transform: rotate(0.0deg); }
+  99% { transform: rotate(0.0deg); }
+  99.5% { transform: rotate(0.0deg); }
+  100% { transform: rotate(0.0deg); }
+}
+
+@keyframes nonprofit-lineman-leg-r-knee {
+  0% { transform: rotate(60.0deg); }
+  0.5% { transform: rotate(57.1deg); }
+  1% { transform: rotate(48.5deg); }
+  1.5% { transform: rotate(35.3deg); }
+  2% { transform: rotate(18.5deg); }
+  2.5% { transform: rotate(0.0deg); }
+  3% { transform: rotate(0.0deg); }
+  3.5% { transform: rotate(0.0deg); }
+  4% { transform: rotate(0.0deg); }
+  4.5% { transform: rotate(0.0deg); }
+  5% { transform: rotate(0.0deg); }
+  5.5% { transform: rotate(0.0deg); }
+  6% { transform: rotate(0.0deg); }
+  6.5% { transform: rotate(0.0deg); }
+  7% { transform: rotate(0.0deg); }
+  7.5% { transform: rotate(0.0deg); }
+  8% { transform: rotate(18.5deg); }
+  8.5% { transform: rotate(35.3deg); }
+  9% { transform: rotate(48.5deg); }
+  9.5% { transform: rotate(57.1deg); }
+  10% { transform: rotate(60.0deg); }
+  10.5% { transform: rotate(57.1deg); }
+  11% { transform: rotate(48.5deg); }
+  11.5% { transform: rotate(35.3deg); }
+  12% { transform: rotate(18.5deg); }
+  12.5% { transform: rotate(0.0deg); }
+  13% { transform: rotate(0.0deg); }
+  13.5% { transform: rotate(0.0deg); }
+  14% { transform: rotate(0.0deg); }
+  14.5% { transform: rotate(0.0deg); }
+  15% { transform: rotate(0.0deg); }
+  15.5% { transform: rotate(0.0deg); }
+  16% { transform: rotate(0.0deg); }
+  16.5% { transform: rotate(0.0deg); }
+  17% { transform: rotate(0.0deg); }
+  17.5% { transform: rotate(0.0deg); }
+  18% { transform: rotate(18.5deg); }
+  18.5% { transform: rotate(35.3deg); }
+  19% { transform: rotate(48.5deg); }
+  19.5% { transform: rotate(57.1deg); }
+  20% { transform: rotate(60.0deg); }
+  20.5% { transform: rotate(57.1deg); }
+  21% { transform: rotate(48.5deg); }
+  21.5% { transform: rotate(35.3deg); }
+  22% { transform: rotate(18.5deg); }
+  22.5% { transform: rotate(0.0deg); }
+  23% { transform: rotate(0.0deg); }
+  23.5% { transform: rotate(0.0deg); }
+  24% { transform: rotate(0.0deg); }
+  24.5% { transform: rotate(0.0deg); }
+  25% { transform: rotate(0.0deg); }
+  25.5% { transform: rotate(0.0deg); }
+  26% { transform: rotate(0.0deg); }
+  26.5% { transform: rotate(0.0deg); }
+  27% { transform: rotate(0.0deg); }
+  27.5% { transform: rotate(0.0deg); }
+  28% { transform: rotate(18.5deg); }
+  28.5% { transform: rotate(35.3deg); }
+  29% { transform: rotate(48.5deg); }
+  29.5% { transform: rotate(57.1deg); }
+  30% { transform: rotate(60.0deg); }
+  30.5% { transform: rotate(0.0deg); }
+  31% { transform: rotate(0.0deg); }
+  31.5% { transform: rotate(0.0deg); }
+  32% { transform: rotate(0.0deg); }
+  32.5% { transform: rotate(0.0deg); }
+  33% { transform: rotate(0.0deg); }
+  33.5% { transform: rotate(0.0deg); }
+  34% { transform: rotate(0.0deg); }
+  34.5% { transform: rotate(0.0deg); }
+  35% { transform: rotate(0.0deg); }
+  35.5% { transform: rotate(0.0deg); }
+  36% { transform: rotate(60.0deg); }
+  36.5% { transform: rotate(57.1deg); }
+  37% { transform: rotate(48.5deg); }
+  37.5% { transform: rotate(35.3deg); }
+  38% { transform: rotate(18.5deg); }
+  38.5% { transform: rotate(0.0deg); }
+  39% { transform: rotate(0.0deg); }
+  39.5% { transform: rotate(0.0deg); }
+  40% { transform: rotate(0.0deg); }
+  40.5% { transform: rotate(0.0deg); }
+  41% { transform: rotate(0.0deg); }
+  41.5% { transform: rotate(0.0deg); }
+  42% { transform: rotate(0.0deg); }
+  42.5% { transform: rotate(0.0deg); }
+  43% { transform: rotate(0.0deg); }
+  43.5% { transform: rotate(0.0deg); }
+  44% { transform: rotate(18.5deg); }
+  44.5% { transform: rotate(35.3deg); }
+  45% { transform: rotate(48.5deg); }
+  45.5% { transform: rotate(57.1deg); }
+  46% { transform: rotate(60.0deg); }
+  46.5% { transform: rotate(57.1deg); }
+  47% { transform: rotate(48.5deg); }
+  47.5% { transform: rotate(35.3deg); }
+  48% { transform: rotate(18.5deg); }
+  48.5% { transform: rotate(0.0deg); }
+  49% { transform: rotate(0.0deg); }
+  49.5% { transform: rotate(0.0deg); }
+  50% { transform: rotate(0.0deg); }
+  50.5% { transform: rotate(0.0deg); }
+  51% { transform: rotate(0.0deg); }
+  51.5% { transform: rotate(0.0deg); }
+  52% { transform: rotate(0.0deg); }
+  52.5% { transform: rotate(0.0deg); }
+  53% { transform: rotate(0.0deg); }
+  53.5% { transform: rotate(0.0deg); }
+  54% { transform: rotate(18.5deg); }
+  54.5% { transform: rotate(35.3deg); }
+  55% { transform: rotate(48.5deg); }
+  55.5% { transform: rotate(57.1deg); }
+  56% { transform: rotate(60.0deg); }
+  56.5% { transform: rotate(57.1deg); }
+  57% { transform: rotate(48.5deg); }
+  57.5% { transform: rotate(35.3deg); }
+  58% { transform: rotate(18.5deg); }
+  58.5% { transform: rotate(0.0deg); }
+  59% { transform: rotate(0.0deg); }
+  59.5% { transform: rotate(0.0deg); }
+  60% { transform: rotate(0.0deg); }
+  60.5% { transform: rotate(38.4deg); }
+  61% { transform: rotate(35.9deg); }
+  61.5% { transform: rotate(32.4deg); }
+  62% { transform: rotate(28.1deg); }
+  62.5% { transform: rotate(23.3deg); }
+  63% { transform: rotate(18.3deg); }
+  63.5% { transform: rotate(13.4deg); }
+  64% { transform: rotate(9.0deg); }
+  64.5% { transform: rotate(5.2deg); }
+  65% { transform: rotate(2.3deg); }
+  65.5% { transform: rotate(0.6deg); }
+  66% { transform: rotate(0.0deg); }
+  66.5% { transform: rotate(0.7deg); }
+  67% { transform: rotate(2.6deg); }
+  67.5% { transform: rotate(5.5deg); }
+  68% { transform: rotate(9.4deg); }
+  68.5% { transform: rotate(13.9deg); }
+  69% { transform: rotate(18.9deg); }
+  69.5% { transform: rotate(23.8deg); }
+  70% { transform: rotate(28.6deg); }
+  70.5% { transform: rotate(32.8deg); }
+  71% { transform: rotate(36.2deg); }
+  71.5% { transform: rotate(38.6deg); }
+  72% { transform: rotate(80.0deg); }
+  72.5% { transform: rotate(80.0deg); }
+  73% { transform: rotate(80.0deg); }
+  73.5% { transform: rotate(80.0deg); }
+  74% { transform: rotate(80.0deg); }
+  74.5% { transform: rotate(80.0deg); }
+  75% { transform: rotate(80.0deg); }
+  75.5% { transform: rotate(80.0deg); }
+  76% { transform: rotate(80.0deg); }
+  76.5% { transform: rotate(80.0deg); }
+  77% { transform: rotate(80.0deg); }
+  77.5% { transform: rotate(80.0deg); }
+  78% { transform: rotate(80.0deg); }
+  78.5% { transform: rotate(80.0deg); }
+  79% { transform: rotate(80.0deg); }
+  79.5% { transform: rotate(80.0deg); }
+  80% { transform: rotate(80.0deg); }
+  80.5% { transform: rotate(80.0deg); }
+  81% { transform: rotate(80.0deg); }
+  81.5% { transform: rotate(80.0deg); }
+  82% { transform: rotate(80.0deg); }
+  82.5% { transform: rotate(80.0deg); }
+  83% { transform: rotate(80.0deg); }
+  83.5% { transform: rotate(80.0deg); }
+  84% { transform: rotate(80.0deg); }
+  84.5% { transform: rotate(90.0deg); }
+  85% { transform: rotate(90.0deg); }
+  85.5% { transform: rotate(90.0deg); }
+  86% { transform: rotate(90.0deg); }
+  86.5% { transform: rotate(90.0deg); }
+  87% { transform: rotate(90.0deg); }
+  87.5% { transform: rotate(90.0deg); }
+  88% { transform: rotate(90.0deg); }
+  88.5% { transform: rotate(90.0deg); }
+  89% { transform: rotate(90.0deg); }
+  89.5% { transform: rotate(90.0deg); }
+  90% { transform: rotate(90.0deg); }
+  90.5% { transform: rotate(90.0deg); }
+  91% { transform: rotate(90.0deg); }
+  91.5% { transform: rotate(90.0deg); }
+  92% { transform: rotate(90.0deg); }
+  92.5% { transform: rotate(40.0deg); }
+  93% { transform: rotate(40.0deg); }
+  93.5% { transform: rotate(40.0deg); }
+  94% { transform: rotate(40.0deg); }
+  94.5% { transform: rotate(40.0deg); }
+  95% { transform: rotate(40.0deg); }
+  95.5% { transform: rotate(40.0deg); }
+  96% { transform: rotate(40.0deg); }
+  96.5% { transform: rotate(0.0deg); }
+  97% { transform: rotate(0.0deg); }
+  97.5% { transform: rotate(0.0deg); }
+  98% { transform: rotate(0.0deg); }
+  98.5% { transform: rotate(0.0deg); }
+  99% { transform: rotate(0.0deg); }
+  99.5% { transform: rotate(0.0deg); }
+  100% { transform: rotate(0.0deg); }
+}
+
+@keyframes nonprofit-lineman-leg-r-foot {
+  0% { transform: rotate(-8.8deg); }
+  0.5% { transform: rotate(-12.1deg); }
+  1% { transform: rotate(-14.3deg); }
+  1.5% { transform: rotate(-15.0deg); }
+  2% { transform: rotate(-14.3deg); }
+  2.5% { transform: rotate(-12.1deg); }
+  3% { transform: rotate(-8.8deg); }
+  3.5% { transform: rotate(-4.6deg); }
+  4% { transform: rotate(-0.0deg); }
+  4.5% { transform: rotate(4.6deg); }
+  5% { transform: rotate(8.8deg); }
+  5.5% { transform: rotate(12.1deg); }
+  6% { transform: rotate(14.3deg); }
+  6.5% { transform: rotate(15.0deg); }
+  7% { transform: rotate(14.3deg); }
+  7.5% { transform: rotate(12.1deg); }
+  8% { transform: rotate(8.8deg); }
+  8.5% { transform: rotate(4.6deg); }
+  9% { transform: rotate(0.0deg); }
+  9.5% { transform: rotate(-4.6deg); }
+  10% { transform: rotate(-8.8deg); }
+  10.5% { transform: rotate(-12.1deg); }
+  11% { transform: rotate(-14.3deg); }
+  11.5% { transform: rotate(-15.0deg); }
+  12% { transform: rotate(-14.3deg); }
+  12.5% { transform: rotate(-12.1deg); }
+  13% { transform: rotate(-8.8deg); }
+  13.5% { transform: rotate(-4.6deg); }
+  14% { transform: rotate(-0.0deg); }
+  14.5% { transform: rotate(4.6deg); }
+  15% { transform: rotate(8.8deg); }
+  15.5% { transform: rotate(12.1deg); }
+  16% { transform: rotate(14.3deg); }
+  16.5% { transform: rotate(15.0deg); }
+  17% { transform: rotate(14.3deg); }
+  17.5% { transform: rotate(12.1deg); }
+  18% { transform: rotate(8.8deg); }
+  18.5% { transform: rotate(4.6deg); }
+  19% { transform: rotate(0.0deg); }
+  19.5% { transform: rotate(-4.6deg); }
+  20% { transform: rotate(-8.8deg); }
+  20.5% { transform: rotate(-12.1deg); }
+  21% { transform: rotate(-14.3deg); }
+  21.5% { transform: rotate(-15.0deg); }
+  22% { transform: rotate(-14.3deg); }
+  22.5% { transform: rotate(-12.1deg); }
+  23% { transform: rotate(-8.8deg); }
+  23.5% { transform: rotate(-4.6deg); }
+  24% { transform: rotate(-0.0deg); }
+  24.5% { transform: rotate(4.6deg); }
+  25% { transform: rotate(8.8deg); }
+  25.5% { transform: rotate(12.1deg); }
+  26% { transform: rotate(14.3deg); }
+  26.5% { transform: rotate(15.0deg); }
+  27% { transform: rotate(14.3deg); }
+  27.5% { transform: rotate(12.1deg); }
+  28% { transform: rotate(8.8deg); }
+  28.5% { transform: rotate(4.6deg); }
+  29% { transform: rotate(0.0deg); }
+  29.5% { transform: rotate(-4.6deg); }
+  30% { transform: rotate(-8.8deg); }
+  30.5% { transform: rotate(0.0deg); }
+  31% { transform: rotate(0.0deg); }
+  31.5% { transform: rotate(0.0deg); }
+  32% { transform: rotate(0.0deg); }
+  32.5% { transform: rotate(0.0deg); }
+  33% { transform: rotate(0.0deg); }
+  33.5% { transform: rotate(0.0deg); }
+  34% { transform: rotate(0.0deg); }
+  34.5% { transform: rotate(0.0deg); }
+  35% { transform: rotate(0.0deg); }
+  35.5% { transform: rotate(0.0deg); }
+  36% { transform: rotate(-8.8deg); }
+  36.5% { transform: rotate(-12.1deg); }
+  37% { transform: rotate(-14.3deg); }
+  37.5% { transform: rotate(-15.0deg); }
+  38% { transform: rotate(-14.3deg); }
+  38.5% { transform: rotate(-12.1deg); }
+  39% { transform: rotate(-8.8deg); }
+  39.5% { transform: rotate(-4.6deg); }
+  40% { transform: rotate(0.0deg); }
+  40.5% { transform: rotate(4.6deg); }
+  41% { transform: rotate(8.8deg); }
+  41.5% { transform: rotate(12.1deg); }
+  42% { transform: rotate(14.3deg); }
+  42.5% { transform: rotate(15.0deg); }
+  43% { transform: rotate(14.3deg); }
+  43.5% { transform: rotate(12.1deg); }
+  44% { transform: rotate(8.8deg); }
+  44.5% { transform: rotate(4.6deg); }
+  45% { transform: rotate(-0.0deg); }
+  45.5% { transform: rotate(-4.6deg); }
+  46% { transform: rotate(-8.8deg); }
+  46.5% { transform: rotate(-12.1deg); }
+  47% { transform: rotate(-14.3deg); }
+  47.5% { transform: rotate(-15.0deg); }
+  48% { transform: rotate(-14.3deg); }
+  48.5% { transform: rotate(-12.1deg); }
+  49% { transform: rotate(-8.8deg); }
+  49.5% { transform: rotate(-4.6deg); }
+  50% { transform: rotate(-0.0deg); }
+  50.5% { transform: rotate(4.6deg); }
+  51% { transform: rotate(8.8deg); }
+  51.5% { transform: rotate(12.1deg); }
+  52% { transform: rotate(14.3deg); }
+  52.5% { transform: rotate(15.0deg); }
+  53% { transform: rotate(14.3deg); }
+  53.5% { transform: rotate(12.1deg); }
+  54% { transform: rotate(8.8deg); }
+  54.5% { transform: rotate(4.6deg); }
+  55% { transform: rotate(-0.0deg); }
+  55.5% { transform: rotate(-4.6deg); }
+  56% { transform: rotate(-8.8deg); }
+  56.5% { transform: rotate(-12.1deg); }
+  57% { transform: rotate(-14.3deg); }
+  57.5% { transform: rotate(-15.0deg); }
+  58% { transform: rotate(-14.3deg); }
+  58.5% { transform: rotate(-12.1deg); }
+  59% { transform: rotate(-8.8deg); }
+  59.5% { transform: rotate(-4.6deg); }
+  60% { transform: rotate(-0.0deg); }
+  60.5% { transform: rotate(0.0deg); }
+  61% { transform: rotate(0.0deg); }
+  61.5% { transform: rotate(0.0deg); }
+  62% { transform: rotate(0.0deg); }
+  62.5% { transform: rotate(0.0deg); }
+  63% { transform: rotate(0.0deg); }
+  63.5% { transform: rotate(0.0deg); }
+  64% { transform: rotate(0.0deg); }
+  64.5% { transform: rotate(0.0deg); }
+  65% { transform: rotate(0.0deg); }
+  65.5% { transform: rotate(0.0deg); }
+  66% { transform: rotate(0.0deg); }
+  66.5% { transform: rotate(0.0deg); }
+  67% { transform: rotate(0.0deg); }
+  67.5% { transform: rotate(0.0deg); }
+  68% { transform: rotate(0.0deg); }
+  68.5% { transform: rotate(0.0deg); }
+  69% { transform: rotate(0.0deg); }
+  69.5% { transform: rotate(0.0deg); }
+  70% { transform: rotate(0.0deg); }
+  70.5% { transform: rotate(0.0deg); }
+  71% { transform: rotate(0.0deg); }
+  71.5% { transform: rotate(0.0deg); }
+  72% { transform: rotate(-10.0deg); }
+  72.5% { transform: rotate(-10.0deg); }
+  73% { transform: rotate(-10.0deg); }
+  73.5% { transform: rotate(-10.0deg); }
+  74% { transform: rotate(-10.0deg); }
+  74.5% { transform: rotate(-10.0deg); }
+  75% { transform: rotate(-10.0deg); }
+  75.5% { transform: rotate(-10.0deg); }
+  76% { transform: rotate(-10.0deg); }
+  76.5% { transform: rotate(-10.0deg); }
+  77% { transform: rotate(-10.0deg); }
+  77.5% { transform: rotate(-10.0deg); }
+  78% { transform: rotate(-10.0deg); }
+  78.5% { transform: rotate(-10.0deg); }
+  79% { transform: rotate(-10.0deg); }
+  79.5% { transform: rotate(-10.0deg); }
+  80% { transform: rotate(-10.0deg); }
+  80.5% { transform: rotate(-10.0deg); }
+  81% { transform: rotate(-10.0deg); }
+  81.5% { transform: rotate(-10.0deg); }
+  82% { transform: rotate(-10.0deg); }
+  82.5% { transform: rotate(-10.0deg); }
+  83% { transform: rotate(-10.0deg); }
+  83.5% { transform: rotate(-10.0deg); }
+  84% { transform: rotate(-10.0deg); }
+  84.5% { transform: rotate(20.0deg); }
+  85% { transform: rotate(20.0deg); }
+  85.5% { transform: rotate(20.0deg); }
+  86% { transform: rotate(20.0deg); }
+  86.5% { transform: rotate(20.0deg); }
+  87% { transform: rotate(20.0deg); }
+  87.5% { transform: rotate(20.0deg); }
+  88% { transform: rotate(20.0deg); }
+  88.5% { transform: rotate(20.0deg); }
+  89% { transform: rotate(20.0deg); }
+  89.5% { transform: rotate(20.0deg); }
+  90% { transform: rotate(20.0deg); }
+  90.5% { transform: rotate(20.0deg); }
+  91% { transform: rotate(20.0deg); }
+  91.5% { transform: rotate(20.0deg); }
+  92% { transform: rotate(20.0deg); }
+  92.5% { transform: rotate(20.0deg); }
+  93% { transform: rotate(20.0deg); }
+  93.5% { transform: rotate(20.0deg); }
+  94% { transform: rotate(20.0deg); }
+  94.5% { transform: rotate(20.0deg); }
+  95% { transform: rotate(20.0deg); }
+  95.5% { transform: rotate(20.0deg); }
+  96% { transform: rotate(20.0deg); }
+  96.5% { transform: rotate(0.0deg); }
+  97% { transform: rotate(0.0deg); }
+  97.5% { transform: rotate(0.0deg); }
+  98% { transform: rotate(0.0deg); }
+  98.5% { transform: rotate(0.0deg); }
+  99% { transform: rotate(0.0deg); }
+  99.5% { transform: rotate(0.0deg); }
+  100% { transform: rotate(0.0deg); }
 }
 
