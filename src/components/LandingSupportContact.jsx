@@ -46,6 +46,33 @@ const TOPICS = [
   { id: 'other', en: 'Other', bn: 'অন্যান্য' },
 ];
 
+const TOPIC_MESSAGES = {
+  bn: {
+    join: 'আমি স্মার্ট লাইনম্যান কমিউনিটিতে যোগ দিতে আগ্রহী। আমার মোবাইল নম্বর দিয়েছি। অনুগ্রহ করে যোগাযোগ করুন।',
+    training:
+      'আমার (আপনার দক্ষতার ক্ষেত্র উল্লেখ করুন) বিষয়ে দক্ষতা আছে। আমি কমিউনিটিকে অনলাইন প্রশিক্ষণ দিতে চাই।',
+    correction: 'আমি নিম্নলিখিত ভুলগুলো লক্ষ্য করেছি… যেমন…',
+    prize_sponsor: 'আমি আগামী মাসের পুরস্কার স্পনসর করতে চাই।',
+  },
+  en: {
+    join: 'I am interested to join the lineman community. I have provided my mobile number. Kindly contact me.',
+    training:
+      'I have expertise in the field of (mention your expertise). I want to impart online training to the community.',
+    correction: 'I noticed the following mistakes… like…',
+    prize_sponsor: 'I want to sponsor the prizes for next month.',
+  },
+};
+
+function topicMessagesFor(language) {
+  return TOPIC_MESSAGES[language === 'bn' ? 'bn' : 'en'];
+}
+
+/** True when the message is still an untouched autofill for this topic (either language). */
+function isUntouchedTopicPrefill(topicId, message) {
+  if (!message) return false;
+  return message === TOPIC_MESSAGES.bn[topicId] || message === TOPIC_MESSAGES.en[topicId];
+}
+
 function WayIcon({ name }) {
   const common = 'w-5 h-5';
   if (name === 'users') {
@@ -136,9 +163,7 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
         phoneOrEmail: 'Phone or email — at least one is required',
       };
 
-  const JOIN_MESSAGE = isBn
-    ? 'আমি স্মার্ট লাইনম্যান কমিউনিটিতে যোগ দিতে আগ্রহী। আমার মোবাইল নম্বর দিয়েছি। অনুগ্রহ করে যোগাযোগ করুন।'
-    : 'I am interested to join the lineman community. I have provided my mobile number. Kindly contact me.';
+  const TOPIC_MESSAGES_LANG = topicMessagesFor(language);
 
   const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
@@ -159,16 +184,27 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
   };
 
   const applyTopic = (topicId, { scroll = true, prefillMessage = false } = {}) => {
+    const prefill = prefillMessage ? TOPIC_MESSAGES_LANG[topicId] : null;
     setForm((prev) => ({
       ...prev,
       topic: topicId,
-      ...(prefillMessage && topicId === 'join' ? { message: JOIN_MESSAGE } : {}),
+      ...(prefill ? { message: prefill } : {}),
     }));
     onPickTopic?.(topicId);
     if (scroll) {
       window.requestAnimationFrame(() => scrollToContact());
     }
   };
+
+  // When language toggles, swap autofill text — but only if the user hasn't edited it.
+  useEffect(() => {
+    setForm((prev) => {
+      if (!isUntouchedTopicPrefill(prev.topic, prev.message)) return prev;
+      const nextMessage = topicMessagesFor(language)[prev.topic];
+      if (!nextMessage || nextMessage === prev.message) return prev;
+      return { ...prev, message: nextMessage };
+    });
+  }, [language]);
 
   useImperativeHandle(ref, () => ({
     openWithTopic: (topicId) =>
@@ -244,7 +280,7 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
                     openLinemanInviteWhatsApp(language);
                     return;
                   }
-                  applyTopic(way.id);
+                  applyTopic(way.id, { scroll: true, prefillMessage: true });
                 }}
                 className={`landing-support-way group text-left touch-manipulation ${
                   way.action === 'whatsapp_invite' ? 'landing-support-way--whatsapp' : ''

@@ -354,7 +354,7 @@ function MonthToppers({
                   </>
                 ) : (
                   <>
-                    <p className={`truncate text-sm font-black leading-snug text-slate-900 sm:text-base ${bnFont ? 'font-bengali' : ''}`}>{player.name}</p>
+                    <p className={`landing-month-topper__name font-black text-slate-900 ${bnFont ? 'font-bengali' : ''}`}>{player.name}</p>
                     <p className="text-xs font-bold tabular-nums text-orange-700 sm:text-sm">
                       {player.points} <span className="font-semibold text-orange-600/80">{ptsLabel}</span>
                     </p>
