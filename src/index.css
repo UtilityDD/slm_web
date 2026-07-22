@@ -4335,9 +4335,47 @@ body,
   }
 }
 
-/* In-lesson book page turn — visual only (next/prev logic unchanged) */
+/* Desktop lesson reader — open book on a warm desk (not a dark modal) */
+.lesson-reader-desk {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  cursor: pointer;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 28%, #f6efe0 0%, #e9dfcb 48%, #dccfb8 100%);
+}
+.lesson-reader-page {
+  position: relative;
+  z-index: 1;
+  background-color: #fffdf7;
+}
+@media (min-width: 1024px) {
+  .lesson-reader-page {
+    background-color: #fcfaf2;
+    background-image:
+      linear-gradient(90deg, rgba(92, 64, 36, 0.07) 0%, rgba(92, 64, 36, 0.025) 0.85rem, transparent 2.4rem),
+      radial-gradient(rgba(70, 50, 30, 0.035) 1px, transparent 0);
+    background-size: auto, 26px 26px;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.65),
+      0 1px 0 rgba(255, 255, 255, 0.35),
+      0 22px 48px -18px rgba(55, 40, 22, 0.32),
+      0 8px 18px -10px rgba(55, 40, 22, 0.18);
+  }
+  .lesson-reader-page .lesson-page-stage::before {
+    width: 1.35rem;
+    background: linear-gradient(
+      90deg,
+      rgba(92, 64, 36, 0.12) 0%,
+      rgba(92, 64, 36, 0.045) 42%,
+      transparent 100%
+    );
+  }
+}
+
+/* In-lesson book page turn — cover-style 3D leaf (next/prev logic unchanged) */
 .lesson-page-stage {
-  perspective: 2000px;
+  perspective: 1600px;
   perspective-origin: left center;
   transform-style: preserve-3d;
 }
@@ -4363,19 +4401,23 @@ body,
   transform: translateZ(0);
 }
 .lesson-page-sheet.is-turn-forward {
-  animation: lesson-page-enter-forward 0.85s cubic-bezier(0.33, 0.1, 0.2, 1) both;
+  animation: lesson-page-enter-forward 1.2s cubic-bezier(0.42, 0.02, 0.16, 1) both;
 }
 .lesson-page-sheet.is-turn-back {
-  animation: lesson-page-enter-back 0.85s cubic-bezier(0.33, 0.1, 0.2, 1) both;
+  transform-origin: right center;
+  animation: lesson-page-enter-back 1.2s cubic-bezier(0.42, 0.02, 0.16, 1) both;
 }
 .lesson-page-sheet.is-turn-celebrate {
   animation: lesson-page-enter-celebrate 0.9s cubic-bezier(0.2, 0.9, 0.22, 1) both;
 }
-/* Transform-only for smoother compositing (no filter keyframes). */
+/* Incoming sheet reveals from under the turning leaf (cover-like easing). */
 @keyframes lesson-page-enter-forward {
   0% {
-    opacity: 0;
-    transform: rotateY(-48deg) translate3d(4%, 0, 0);
+    opacity: 0.2;
+    transform: rotateY(58deg) translate3d(-3%, 0, -28px);
+  }
+  42% {
+    opacity: 1;
   }
   100% {
     opacity: 1;
@@ -4384,8 +4426,11 @@ body,
 }
 @keyframes lesson-page-enter-back {
   0% {
-    opacity: 0;
-    transform: rotateY(48deg) translate3d(-4%, 0, 0);
+    opacity: 0.2;
+    transform: rotateY(-58deg) translate3d(3%, 0, -28px);
+  }
+  42% {
+    opacity: 1;
   }
   100% {
     opacity: 1;
@@ -4550,62 +4595,128 @@ body,
     transform: none;
   }
 }
+
+/* Turning leaf — same idea as hardcover: front + back, hinge on binding */
 .lesson-page-curl {
   position: absolute;
   inset: 0;
   z-index: 24;
   pointer-events: none;
   transform-origin: left center;
+  transform-style: preserve-3d;
   border-radius: inherit;
-  transform: translateZ(0);
+}
+.lesson-page-curl-front,
+.lesson-page-curl-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: inherit;
+  overflow: hidden;
+}
+.lesson-page-curl-front {
+  background:
+    linear-gradient(90deg, rgba(92, 64, 36, 0.08) 0%, transparent 1.4rem),
+    linear-gradient(180deg, #fffdf7 0%, #f7f0e4 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(180, 150, 110, 0.22),
+    -6px 0 22px rgba(55, 40, 22, 0.12);
+}
+.lesson-page-curl-lines {
+  position: absolute;
+  inset: 12% 14% 14% 16%;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 1.35rem,
+    rgba(148, 120, 80, 0.07) 1.35rem,
+    rgba(148, 120, 80, 0.07) calc(1.35rem + 1px)
+  );
+  opacity: 0.85;
+  pointer-events: none;
+}
+.lesson-page-curl-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.06) 26%,
+    transparent 48%
+  );
+  pointer-events: none;
+}
+.lesson-page-curl-fold {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 2.25rem;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(55, 40, 22, 0.04) 40%,
+    rgba(55, 40, 22, 0.12) 100%
+  );
+  pointer-events: none;
+}
+.lesson-page-curl-back {
+  transform: rotateY(180deg);
+  background: linear-gradient(
+    135deg,
+    #efe6d4 0%,
+    #e4d7c0 38%,
+    #d9c9ae 72%,
+    #efe6d4 100%
+  );
+  box-shadow: inset 0 0 0 1px rgba(120, 90, 50, 0.18);
+}
+.lesson-page-curl-back::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(55, 40, 22, 0.14) 0%,
+    transparent 18%,
+    transparent 82%,
+    rgba(55, 40, 22, 0.1) 100%
+  );
+  pointer-events: none;
 }
 .lesson-page-curl--forward {
-  background:
-    linear-gradient(
-      105deg,
-      transparent 0%,
-      transparent 36%,
-      rgba(15, 23, 42, 0.04) 52%,
-      rgba(255, 253, 247, 0.78) 68%,
-      #f3e8d4 84%,
-      #e8dcc4 100%
-    );
-  box-shadow: inset -16px 0 28px -18px rgba(15, 23, 42, 0.16);
-  animation: lesson-page-curl-forward 0.85s cubic-bezier(0.33, 0.1, 0.2, 1) both;
+  transform-origin: left center;
+  animation: lesson-page-curl-forward 1.2s cubic-bezier(0.42, 0.02, 0.16, 1) both;
 }
 .lesson-page-curl--back {
   transform-origin: right center;
-  background:
-    linear-gradient(
-      255deg,
-      transparent 0%,
-      transparent 36%,
-      rgba(15, 23, 42, 0.04) 52%,
-      rgba(255, 253, 247, 0.78) 68%,
-      #f3e8d4 84%,
-      #e8dcc4 100%
-    );
-  box-shadow: inset 16px 0 28px -18px rgba(15, 23, 42, 0.16);
-  animation: lesson-page-curl-back 0.85s cubic-bezier(0.33, 0.1, 0.2, 1) both;
+  animation: lesson-page-curl-back 1.2s cubic-bezier(0.42, 0.02, 0.16, 1) both;
 }
 @keyframes lesson-page-curl-forward {
   0% {
-    opacity: 0.95;
+    opacity: 1;
     transform: rotateY(0deg);
+  }
+  70% {
+    opacity: 1;
   }
   100% {
     opacity: 0;
-    transform: rotateY(-88deg);
+    transform: rotateY(-168deg);
   }
 }
 @keyframes lesson-page-curl-back {
   0% {
-    opacity: 0.95;
+    opacity: 1;
     transform: rotateY(0deg);
+  }
+  70% {
+    opacity: 1;
   }
   100% {
     opacity: 0;
-    transform: rotateY(88deg);
+    transform: rotateY(168deg);
   }
 }
 @media (prefers-reduced-motion: reduce) {

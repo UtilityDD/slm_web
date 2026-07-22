@@ -18,7 +18,6 @@ import LessonRadioOverlay from './LessonRadioOverlay';
 import PPESurveyModal from './PPESurveyModal';
 import OnboardingSequence from './OnboardingSequence';
 import { DotLottiePlayer } from '@dotlottie/react-player';
-import sandyLoading from '../../assets/SandyLoading.lottie';
 import calendarLottie from '../../assets/calendar.lottie';
 import protipLottie from '../../assets/protip.lottie';
 import mythLottie from '../../assets/myth.lottie';
@@ -71,6 +70,9 @@ const LOADING_TIPS = {
         'পারমিট মেনে চলুন; প্রয়োজনে সঙ্গী নিয়ে কাজ করুন।',
     ],
 };
+
+/** Shared hardcover art for the lesson cover (preloaded on Training mount). */
+const LESSON_COVER_IMAGE_SRC = '/assets/covers/lesson-cover-smartlineman.webp';
 
 /** localStorage JSON `{ visits, dismissed }`; legacy v1 `'1'` = dismissed. */
 const LIFE_SKILLS_HINT_STORAGE_KEY = 'slm_training_lifeskills_hint_v2';
@@ -961,8 +963,8 @@ function TrainingLessonFigure({ src, alt, caption, onClick, language, className 
     }, [src]);
 
     const buttonClass = isInline
-        ? `my-3 sm:my-4 block w-full overflow-visible bg-transparent p-0 text-left ${className}`
-        : `my-3 sm:my-4 block w-full max-w-lg overflow-visible bg-transparent p-0 text-left clear-both ${className}`;
+        ? `my-3 sm:my-4 mx-auto block w-full max-w-md overflow-visible bg-transparent p-0 text-center ${className}`
+        : `my-3 sm:my-4 mx-auto block w-full max-w-lg overflow-visible bg-transparent p-0 text-center clear-both ${className}`;
 
     const captionClass = `mb-1.5 sm:mb-2 text-center text-[11px] sm:text-xs font-bold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`;
     const hintClass = `mt-1.5 text-center text-[10px] font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`;
@@ -984,11 +986,11 @@ function TrainingLessonFigure({ src, alt, caption, onClick, language, className 
                     {caption}
                 </p>
             )}
-            <div className="relative w-full">
+            <div className="relative mx-auto flex w-full justify-center">
                 {!imgReady && (
                     <TrainingImageLoadPlaceholder
                         language={language}
-                        className={isInline ? 'aspect-[4/5] max-h-[22rem]' : 'aspect-[3/4]'}
+                        className={isInline ? 'aspect-[4/5] w-full max-h-[22rem]' : 'aspect-[3/4] w-full'}
                     />
                 )}
                 <img
@@ -998,7 +1000,7 @@ function TrainingLessonFigure({ src, alt, caption, onClick, language, className 
                     loading="lazy"
                     onLoad={() => setImgReady(true)}
                     onError={() => setImgReady(true)}
-                    className={`h-auto w-full rounded-sm object-contain object-top transition-opacity duration-300 ${
+                    className={`mx-auto h-auto max-h-[min(70vh,36rem)] w-full max-w-full rounded-sm object-contain object-center transition-opacity duration-300 ${
                         imgReady ? 'relative opacity-100' : 'absolute inset-0 h-full w-full opacity-0'
                     }`}
                 />
@@ -1321,6 +1323,24 @@ export default function Training({
         const onChange = () => setPrefersReducedMotion(mq.matches);
         mq.addEventListener('change', onChange);
         return () => mq.removeEventListener('change', onChange);
+    }, []);
+
+    // Warm the lesson cover art so it is ready when a path lesson opens.
+    useEffect(() => {
+        if (typeof window === 'undefined') return undefined;
+        const img = new Image();
+        img.decoding = 'async';
+        img.src = LESSON_COVER_IMAGE_SRC;
+
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'image';
+        link.href = LESSON_COVER_IMAGE_SRC;
+        link.type = 'image/webp';
+        document.head.appendChild(link);
+        return () => {
+            link.remove();
+        };
     }, []);
 
     useEffect(() => {
@@ -3197,28 +3217,23 @@ export default function Training({
             {/* Main Content Area */}
             {trainingLoading ? (
                 <div className="animate-fade-in relative z-10">
-                    {/* Only show Lottie if we're not loading subchapters within a main chapter */}
+                    {/* Lesson open / initial fetch — skip heavy Lottie; cover appears next */}
                     {!selectedChapter ? (
-                        <div className="loading-container-fixed">
-                            <div className="flex flex-col items-center rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
-                                <div className="mb-4 flex h-48 w-48 items-center justify-center overflow-hidden rounded-2xl border border-orange-100 bg-orange-50 shadow-sm lg:h-64 lg:w-64">
-                                    {prefersReducedMotion ? (
-                                        <div className="flex h-full w-full items-center justify-center text-7xl" aria-hidden>📖</div>
-                                    ) : (
-                                        <DotLottiePlayer
-                                            src={sandyLoading}
-                                            autoplay
-                                            loop
-                                        />
-                                    )}
+                        <div
+                            className="loading-container-fixed"
+                            aria-busy="true"
+                            aria-label={language === 'en' ? 'Loading lesson' : 'পাঠ লোড হচ্ছে'}
+                        >
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="h-1 w-28 overflow-hidden rounded-full bg-slate-200/90">
+                                    <div className="h-full w-1/2 animate-pulse rounded-full bg-orange-400/90" />
                                 </div>
-                                <p className={`animate-pulse font-black text-slate-800 ${language === 'bn' ? 'font-bengali text-xl' : 'text-lg'}`}>
-                                    {language === 'en' ? 'Loading lesson…' : 'পাঠ লোড হচ্ছে…'}
-                                </p>
+                                {!trainingHomeReady && (
+                                    <p className={`text-sm font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en' ? 'Loading…' : 'লোড হচ্ছে…'}
+                                    </p>
+                                )}
                             </div>
-                            <p className={`mx-auto mt-4 max-w-md px-4 text-center text-sm font-semibold leading-relaxed text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                {LOADING_TIPS[language === 'bn' ? 'bn' : 'en'][loadingTipIndex % LOADING_TIPS.en.length]}
-                            </p>
                         </div>
                     ) : (
                         <div className="space-y-4">
@@ -3850,9 +3865,12 @@ export default function Training({
                                                 <div className="lesson-book-cover-turn-front">
                                                     <div className="lesson-book-cover-art relative h-full w-full overflow-hidden">
                                                         <img
-                                                            src="/assets/covers/lesson-cover-smartlineman.webp"
+                                                            src={LESSON_COVER_IMAGE_SRC}
                                                             alt=""
+                                                            width={900}
+                                                            height={1350}
                                                             decoding="async"
+                                                            fetchPriority="high"
                                                             className="absolute inset-0 h-full w-full object-cover"
                                                             style={{ objectPosition: 'center 26%' }}
                                                         />
@@ -4126,11 +4144,11 @@ export default function Training({
                                                     </div>
 
                                                     {q.image && (
-                                                        <div className="mt-4 max-w-md overflow-hidden rounded-2xl border border-slate-200/80 shadow-sm">
+                                                        <div className="mx-auto mt-4 max-w-md overflow-hidden rounded-2xl border border-slate-200/80 shadow-sm">
                                                             <img
                                                                 src={`/quizzes/faq_images/${q.image}`}
                                                                 alt={q.question}
-                                                                className="h-auto w-full object-cover"
+                                                                className="mx-auto h-auto w-full object-contain object-center"
                                                                 loading="lazy"
                                                             />
                                                         </div>
@@ -4423,27 +4441,32 @@ export default function Training({
             {/* Safety Journal UI - Immersive Slide-based Experience */}
             {
                 trainingContent && createPortal(
-                    <div className="fixed inset-x-0 bottom-0 top-0 z-[120] flex animate-fade-in-up flex-col overflow-hidden bg-[#fffdf7] md:top-14 lg:inset-x-0 lg:bottom-6 lg:top-16 lg:mx-auto lg:w-[1000px] lg:max-w-[95vw] lg:rounded-2xl lg:border lg:border-slate-200/80 lg:shadow-xl">
-                        {/* Desktop Backdrop Overlay */}
-                        <div className="hidden lg:block fixed inset-0 -z-10 bg-slate-900/40" onClick={() => {
-                            if (gateFocusPending?.lessonId) {
-                                notifyGateFocusRequired();
-                                return;
-                            }
-                            stop();
-                            setTrainingContent(null);
-                            setIsJournalMode(false);
-                            setSelectedChapter(null);
-                            setSelectedLesson(null);
-                        }} />
-                        <div className="relative flex h-full flex-col overflow-hidden">
+                    <div className="lesson-reader-root fixed inset-x-0 bottom-0 top-0 z-[120] flex animate-fade-in-up flex-col overflow-hidden bg-[#fffdf7] md:top-14 lg:items-center lg:justify-center lg:bg-transparent">
+                        {/* Desktop desk atmosphere (replaces dark modal dim) */}
+                        <div
+                            className="lesson-reader-desk hidden lg:block"
+                            onClick={() => {
+                                if (gateFocusPending?.lessonId) {
+                                    notifyGateFocusRequired();
+                                    return;
+                                }
+                                stop();
+                                setTrainingContent(null);
+                                setIsJournalMode(false);
+                                setSelectedChapter(null);
+                                setSelectedLesson(null);
+                            }}
+                            aria-hidden
+                        />
+                        {/* Open book page — constrained reading measure on desktop */}
+                        <div className="lesson-reader-page relative flex h-full w-full flex-col overflow-hidden lg:my-5 lg:h-[calc(100%-2.5rem)] lg:w-[min(44rem,92vw)] lg:max-w-[44rem] lg:rounded-sm lg:border lg:border-stone-300/70">
                             {/* Soft Material reading header */}
-                            <div className="sticky top-0 z-[100] border-b border-slate-200/80 bg-[#fffdf7]/95 backdrop-blur-md">
+                            <div className="sticky top-0 z-[100] border-b border-stone-200/70 bg-[#fcfaf2]/95 backdrop-blur-md">
                                 <div
                                     className="h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
                                     aria-hidden="true"
                                 />
-                                <div className="mx-auto flex h-14 w-full max-w-5xl items-center px-4 py-2.5 sm:h-16 sm:px-5 sm:py-3">
+                                <div className="mx-auto flex h-14 w-full max-w-3xl items-center px-4 py-2.5 sm:h-16 sm:px-6 sm:py-3 lg:px-8">
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -4519,7 +4542,7 @@ export default function Training({
                                 </div>
 
                                 {/* Soft progress bar */}
-                                <div className="relative z-20 h-1.5 w-full bg-slate-100">
+                                <div className="relative z-20 h-1.5 w-full bg-stone-200/70">
                                     <div
                                         className="h-full rounded-r-full bg-orange-500 transition-all duration-1000 ease-out"
                                         style={{ width: `${((activeSectionIndex + 1) / slides.length) * 100}%` }}
@@ -4527,7 +4550,7 @@ export default function Training({
                                 </div>
 
                                 {trainingContent?.isSupplementary ? (
-                                    <div className="max-w-5xl mx-auto w-full px-4 pb-2 pt-1">
+                                    <div className="mx-auto w-full max-w-3xl px-4 pb-2 pt-1 lg:px-8">
                                         <button
                                             type="button"
                                             disabled={!supplementaryRadioSrc}
@@ -4611,6 +4634,39 @@ export default function Training({
 
                             {/* Slide Content Area */}
                             <div className="lesson-page-stage relative flex min-h-0 flex-1 flex-col">
+                                {!prefersReducedMotion && lessonPageTurnTick > 0 && lessonPageTurnDir === 'celebrate' && (
+                                    <div
+                                        key={`celebrate-${lessonPageTurnTick}`}
+                                        className="lesson-page-celebrate-burst"
+                                        aria-hidden
+                                    >
+                                        <span className="lesson-page-celebrate-flash" />
+                                        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((i) => (
+                                            <span
+                                                key={i}
+                                                className={`lesson-page-celebrate-confetti c-${i % 6}`}
+                                                style={{
+                                                    left: `${8 + ((i * 7) % 84)}%`,
+                                                    animationDelay: `${0.04 * i}s`,
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                                {!prefersReducedMotion && lessonPageTurnTick > 0 && lessonPageTurnDir !== 'celebrate' && (
+                                    <div
+                                        key={`curl-${lessonPageTurnTick}`}
+                                        className={`lesson-page-curl lesson-page-curl--${lessonPageTurnDir}`}
+                                        aria-hidden
+                                    >
+                                        <div className="lesson-page-curl-front">
+                                            <div className="lesson-page-curl-lines" />
+                                            <div className="lesson-page-curl-sheen" />
+                                            <div className="lesson-page-curl-fold" />
+                                        </div>
+                                        <div className="lesson-page-curl-back" />
+                                    </div>
+                                )}
                             {(() => {
                                 const activeSlide = slides[activeSectionIndex];
                                 const sectionPoints =
@@ -4639,70 +4695,43 @@ export default function Training({
                                         onTouchStart={handleReaderTouchStart}
                                         onTouchEnd={handleReaderTouchEnd}
                                     >
-                                        {!prefersReducedMotion && lessonPageTurnTick > 0 && lessonPageTurnDir === 'celebrate' && (
-                                            <div
-                                                key={`celebrate-${lessonPageTurnTick}`}
-                                                className="lesson-page-celebrate-burst"
-                                                aria-hidden
-                                            >
-                                                <span className="lesson-page-celebrate-flash" />
-                                                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((i) => (
-                                                    <span
-                                                        key={i}
-                                                        className={`lesson-page-celebrate-confetti c-${i % 6}`}
-                                                        style={{
-                                                            left: `${8 + ((i * 7) % 84)}%`,
-                                                            animationDelay: `${0.04 * i}s`,
-                                                        }}
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
-                                        {!prefersReducedMotion && lessonPageTurnTick > 0 && lessonPageTurnDir !== 'celebrate' && (
-                                            <div
-                                                key={`curl-${lessonPageTurnTick}`}
-                                                className={`lesson-page-curl lesson-page-curl--${lessonPageTurnDir}`}
-                                                aria-hidden
-                                            />
-                                        )}
                                         <div
                                             ref={lessonScrollInnerRef}
                                             key={activeSectionIndex}
-                                            className={`max-w-5xl mx-auto relative px-4 sm:px-10 md:px-16 ${pageTurnClass} ${
+                                            className={`mx-auto relative max-w-3xl px-4 sm:px-8 lg:px-10 ${pageTurnClass} ${
                                                 isSupplementaryCompletion
                                                     ? 'flex h-full min-h-0 flex-col items-center overflow-hidden py-3 pb-4 sm:py-8 sm:pb-10'
-                                                    : 'px-6 py-10 pb-8 sm:py-14 sm:pb-10'
+                                                    : 'px-5 py-8 pb-8 sm:py-10 sm:pb-10 lg:py-12'
                                             }`}
                                         >
                                             {activeSlide?.type === 'hero' && (
-                                                <div className="flex flex-col items-center justify-center space-y-10 pb-16 pt-4 sm:space-y-12 sm:pb-20 sm:pt-6">
-                                                    <div className="w-full space-y-6 text-center sm:space-y-8">
+                                                <div className="flex flex-col items-center justify-center space-y-8 pb-12 pt-2 sm:space-y-9 sm:pb-14 sm:pt-4 lg:space-y-8 lg:pb-10">
+                                                    <div className="w-full space-y-5 text-center sm:space-y-6">
                                                         <div className="space-y-3">
                                                             <p className={`text-[11px] font-bold text-orange-600 sm:text-xs ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-wider'}`}>
                                                                 {language === 'en'
                                                                     ? `Lesson ${getTrainingHeaderLessonCode(trainingContent, language)}`
                                                                     : `পাঠ ${getTrainingHeaderLessonCode(trainingContent, language)}`}
                                                             </p>
-                                                            <div className="mx-auto h-1 w-16 rounded-full bg-orange-400/80" />
+                                                            <div className="mx-auto h-1 w-14 rounded-full bg-orange-400/80" />
                                                         </div>
 
-                                                        <h1 className={`px-2 text-[1.65rem] font-black leading-snug tracking-tight text-slate-900 sm:px-4 sm:text-4xl md:text-[2.75rem] ${language === 'bn' ? 'font-bengali leading-[1.45]' : ''}`}>
+                                                        <h1 className={`px-2 text-[1.65rem] font-black leading-snug tracking-tight text-stone-900 sm:px-4 sm:text-[2rem] lg:text-[2.15rem] ${language === 'bn' ? 'font-bengali leading-[1.45]' : ''}`}>
                                                             {trainingContent.level_title}
                                                         </h1>
                                                     </div>
 
-                                                    <div className="relative w-full max-w-lg">
-                                                        <div className="absolute inset-0 -z-10 rounded-full bg-orange-100/40 blur-2xl" />
-                                                        <p className={`px-3 text-center text-[1.1rem] font-medium leading-[1.85] text-slate-800 sm:px-4 sm:text-xl sm:leading-[1.95] ${language === 'bn' ? 'font-bengali text-[1.2rem] leading-[2.05] sm:text-[1.35rem] sm:leading-[2.2]' : ''}`}>
+                                                    <div className="relative w-full max-w-prose">
+                                                        <p className={`px-1 text-center text-[1.1rem] font-medium leading-[1.85] text-stone-800 sm:px-2 sm:text-[1.15rem] sm:leading-[1.9] lg:text-[1.175rem] lg:leading-[1.95] ${language === 'bn' ? 'font-bengali text-[1.2rem] leading-[2.05] sm:text-[1.25rem] sm:leading-[2.15]' : ''}`}>
                                                             {renderTextWithImages(trainingContent.mission_briefing)}
                                                         </p>
                                                     </div>
 
-                                                    <div className="pb-4 pt-6 sm:pb-6 sm:pt-8">
-                                                        <p className={`mx-auto max-w-sm text-center text-xs font-medium leading-relaxed text-slate-500 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    <div className="pb-2 pt-4 sm:pb-4 sm:pt-6">
+                                                        <p className={`mx-auto max-w-sm text-center text-xs font-medium leading-relaxed text-stone-500 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                             {language === 'en'
-                                                                ? 'Use the side arrows or swipe to go to the next part.'
-                                                                : 'পরের অংশে যেতে পাশের তীর চাপুন অথবা সোয়াইপ করুন।'}
+                                                                ? 'Use the side arrows or swipe to turn the page.'
+                                                                : 'পাতা উল্টাতে পাশের তীর চাপুন অথবা সোয়াইপ করুন।'}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -4710,17 +4739,17 @@ export default function Training({
 
                                             {activeSlide?.type === 'section' && (
                                                 <article className="space-y-5 sm:space-y-7">
-                                                    <header className="relative mb-3 border-b border-slate-200/80 pb-4 pt-1 sm:mb-5 sm:pb-5">
+                                                    <header className="relative mb-3 border-b border-stone-200/70 pb-4 pt-1 sm:mb-5 sm:pb-5">
                                                         <p className={`mb-2 text-center font-bold text-orange-600 ${language === 'bn' ? 'font-bengali text-xs' : 'text-[11px] uppercase tracking-wider'}`}>
                                                             {language === 'en' ? 'In this part' : 'এই অংশে'}
                                                         </p>
-                                                        <h3 className={`text-center text-[1.4rem] font-black leading-snug tracking-tight text-slate-900 sm:text-2xl md:text-[2rem] ${language === 'bn' ? 'font-bengali leading-[1.45]' : ''}`}>
+                                                        <h3 className={`text-center text-[1.4rem] font-black leading-snug tracking-tight text-stone-900 sm:text-[1.75rem] lg:text-[1.85rem] ${language === 'bn' ? 'font-bengali leading-[1.45]' : ''}`}>
                                                             {activeSlide.title}
                                                         </h3>
                                                     </header>
 
                                                     {sectionReaderMode === 'overview' && sectionPoints.length > 0 && (
-                                                        <div className="sticky top-0 z-20 -mx-2 mb-3 flex justify-center border-b border-slate-200/80 bg-[#fffdf7]/95 px-2 py-2 backdrop-blur-md sm:-mx-4">
+                                                        <div className="sticky top-0 z-20 -mx-2 mb-3 flex justify-center border-b border-stone-200/70 bg-[#fcfaf2]/95 px-2 py-2 backdrop-blur-md sm:-mx-4">
                                                             <button
                                                                 type="button"
                                                                 onClick={() => {
@@ -4730,7 +4759,7 @@ export default function Training({
                                                                         lessonScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
                                                                     });
                                                                 }}
-                                                                className={`rounded-full border border-slate-200/80 bg-white px-3.5 py-1.5 text-[12px] font-bold text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                className={`rounded-full border border-stone-200/80 bg-white px-3.5 py-1.5 text-[12px] font-bold text-stone-700 shadow-sm transition-all hover:bg-orange-50 active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                             >
                                                                 {language === 'en' ? '← Step-by-step' : '← ধাপে ধাপে'}
                                                             </button>
@@ -4740,7 +4769,7 @@ export default function Training({
                                                     {sectionPoints.length > 0 && sectionReaderMode === 'guided' && sectionGuidedStepDone < sectionPoints.length && (
                                                         <>
                                                             <div
-                                                                className="sticky top-0 z-20 -mx-2 mb-2 border-b border-slate-200/80 bg-[#fffdf7]/95 px-2 py-2.5 backdrop-blur-md sm:-mx-4 sm:px-3"
+                                                                className="sticky top-0 z-20 -mx-2 mb-2 border-b border-stone-200/70 bg-[#fcfaf2]/95 px-2 py-2.5 backdrop-blur-md sm:-mx-4 sm:px-3"
                                                                 aria-label={
                                                                     language === 'en'
                                                                         ? `Step ${sectionGuidedStepDone + 1} of ${sectionPoints.length}`
@@ -4822,7 +4851,7 @@ export default function Training({
                                                             {sectionTickDetailIndex !== null &&
                                                             sectionPoints[sectionTickDetailIndex] != null ? (
                                                                 <div className="space-y-4">
-                                                                    <div className="sticky top-0 z-10 -mx-1 mb-1 border-b border-emerald-200/80 bg-[#fcfaf2]/98 px-1 py-2.5 backdrop-blur-md dark:border-emerald-900/45 dark:bg-slate-900/95 sm:-mx-2 sm:px-2">
+                                                                    <div className="sticky top-0 z-10 -mx-1 mb-1 border-b border-emerald-200/80 bg-[#fcfaf2]/98 px-1 py-2.5 backdrop-blur-md sm:-mx-2 sm:px-2">
                                                                         <button
                                                                             type="button"
                                                                             onClick={() => {
@@ -4831,13 +4860,13 @@ export default function Training({
                                                                                     lessonScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
                                                                                 });
                                                                             }}
-                                                                            className={`inline-flex items-center gap-2 rounded-xl border border-emerald-300/90 bg-white px-3 py-2 text-sm font-bold text-emerald-900 shadow-sm transition-colors hover:bg-emerald-50 dark:border-emerald-700 dark:bg-slate-800 dark:text-emerald-100 dark:hover:bg-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                            className={`inline-flex items-center gap-2 rounded-xl border border-emerald-300/90 bg-white px-3 py-2 text-sm font-bold text-emerald-900 shadow-sm transition-colors hover:bg-emerald-50 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                                         >
                                                                             <span aria-hidden>←</span>
                                                                             {language === 'en' ? 'Back to list' : 'তালিকায় ফিরুন'}
                                                                         </button>
                                                                     </div>
-                                                                    <div className="mx-auto max-w-[40rem] rounded-2xl border border-emerald-200/40 bg-white/90 px-3 py-4 shadow-sm dark:border-emerald-900/35 dark:bg-slate-900/75 sm:px-5 sm:py-6 md:px-7 md:py-8">
+                                                                    <div className="mx-auto max-w-[40rem] rounded-2xl border border-emerald-200/40 bg-white/90 px-3 py-4 shadow-sm sm:px-5 sm:py-6 md:px-7 md:py-8">
                                                                         <SectionPointFullCard
                                                                             point={sectionPoints[sectionTickDetailIndex]}
                                                                             pIdx={sectionTickDetailIndex}
@@ -4864,18 +4893,18 @@ export default function Training({
                                                                             }}
                                                                             className={`flex w-full items-start gap-3 rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-3.5 text-left transition-colors hover:bg-emerald-50 sm:py-4 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                                         >
-                                                                            <span className="shrink-0 text-lg text-emerald-600 dark:text-emerald-400" aria-hidden>
+                                                                            <span className="shrink-0 text-lg text-emerald-600" aria-hidden>
                                                                                 ✓
                                                                             </span>
                                                                             <span className="min-w-0 flex-1">
-                                                                                <span className="block text-sm font-bold leading-snug text-emerald-900 dark:text-emerald-100">
+                                                                                <span className="block text-sm font-bold leading-snug text-emerald-900">
                                                                                     {point.item_name}
                                                                                 </span>
-                                                                                <span className="mt-0.5 block text-[11px] font-medium text-emerald-800/75 dark:text-emerald-200/80">
+                                                                                <span className="mt-0.5 block text-[11px] font-medium text-emerald-800/75">
                                                                                     {language === 'en' ? 'Tap to read' : 'ট্যাপ করে পড়ুন'}
                                                                                 </span>
                                                                             </span>
-                                                                            <span className="shrink-0 self-center text-emerald-600/70 dark:text-emerald-400/80" aria-hidden>
+                                                                            <span className="shrink-0 self-center text-emerald-600/70" aria-hidden>
                                                                                 →
                                                                             </span>
                                                                         </button>
@@ -4890,7 +4919,7 @@ export default function Training({
                                                                                     lessonScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
                                                                                 });
                                                                             }}
-                                                                            className={`text-[11px] font-semibold text-emerald-800 underline decoration-emerald-600/60 underline-offset-2 hover:text-emerald-600 dark:text-emerald-200 dark:hover:text-emerald-100 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                            className={`text-[11px] font-semibold text-emerald-800 underline decoration-emerald-600/60 underline-offset-2 hover:text-emerald-600 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                                         >
                                                                             {language === 'en' ? 'All topics — full page' : 'সব বিষয় — সম্পূর্ণ পাতা'}
                                                                         </button>
@@ -5213,8 +5242,8 @@ export default function Training({
                             </div>
 
                             {!isLastSlide && slides.length > 1 && (
-                                <div className="shrink-0 border-t border-slate-200/80 bg-white/95 px-4 py-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:px-6 sm:py-3">
-                                    <div className="mx-auto flex max-w-5xl items-center justify-center gap-4">
+                                <div className="shrink-0 border-t border-stone-200/70 bg-[#fcfaf2]/95 px-4 py-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:px-6 sm:py-3">
+                                    <div className="mx-auto flex max-w-3xl items-center justify-center gap-4">
                                         <p className={`text-xs font-bold tabular-nums text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                             {language === 'en' ? 'Page' : 'পাতা'}
                                             <span className="mx-1.5 text-orange-600">{activeSectionIndex + 1}</span>
