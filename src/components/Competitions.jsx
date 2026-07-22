@@ -2129,7 +2129,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     <>
                     <div className={`max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-3 ${leaderboardTab === 'all-time' ? 'pb-48 md:pb-56' : 'pb-24 md:pb-28'}`}>
                     {leaderboardTab === 'monthly' && !loadingMonthly && monthlyBoardMeta && (
-                        <div className="max-w-2xl mx-auto px-2">
+                        <div className="max-w-2xl mx-auto mb-1 px-2 sm:mb-2">
                             <MonthlyBoardHeader
                                 meta={monthlyBoardMeta}
                                 language={language}
@@ -2177,9 +2177,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     };
 
                                     return (
-                                        <div className="leaderboard-podium-stage relative mb-5 overflow-hidden rounded-3xl border border-orange-200/70 bg-gradient-to-b from-amber-50 via-orange-50/50 to-white px-2 pb-2 pt-6 shadow-lg shadow-orange-500/10 sm:mb-6 sm:px-5 sm:pb-3 sm:pt-7">
-                                            <div className="pointer-events-none absolute -left-8 top-0 h-36 w-36 rounded-full bg-amber-300/35 blur-3xl" aria-hidden />
-                                            <div className="pointer-events-none absolute -right-10 top-6 h-32 w-32 rounded-full bg-orange-400/25 blur-3xl" aria-hidden />
+                                        <div className="leaderboard-podium-stage relative mb-5 overflow-visible rounded-3xl border border-orange-200/70 bg-gradient-to-b from-amber-50 via-orange-50/50 to-white px-2 pb-2 pt-11 shadow-lg shadow-orange-500/10 sm:mb-6 sm:px-5 sm:pb-3 sm:pt-12">
+                                            {/* Clip decorative blurs only — keep crown outside overflow so it is never covered */}
+                                            <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl" aria-hidden>
+                                                <div className="absolute -left-8 top-0 h-36 w-36 rounded-full bg-amber-300/35 blur-3xl" />
+                                                <div className="absolute -right-10 top-6 h-32 w-32 rounded-full bg-orange-400/25 blur-3xl" />
+                                            </div>
 
                                             <div className="relative z-10 grid grid-cols-3 items-end gap-2 sm:gap-4">
                                             {topPlayers.map((player, idx) => {
@@ -2201,7 +2204,9 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                     >
                                                         <div className="relative mb-2.5 flex flex-col items-center">
                                                             {rank === 1 && !superseded && (
-                                                                <span className="animate-crown absolute -top-6 z-20 text-2xl leading-none sm:-top-7 sm:text-3xl" aria-hidden>👑</span>
+                                                                <span className="pointer-events-none absolute -top-9 left-1/2 z-30 -translate-x-1/2 sm:-top-10" aria-hidden>
+                                                                    <span className="animate-crown block text-2xl leading-none sm:text-3xl">👑</span>
+                                                                </span>
                                                             )}
                                                             <div className={`relative ${isWinner ? 'h-[5.25rem] w-[5.25rem] sm:h-28 sm:w-28' : 'h-[4.35rem] w-[4.35rem] sm:h-24 sm:w-24'} shrink-0`}>
                                                                 <div
