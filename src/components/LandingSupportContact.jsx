@@ -1,7 +1,7 @@
-import React, { useEffect, useImperativeHandle, useState, forwardRef } from 'react';
+import React, { useEffect, useImperativeHandle, useMemo, useState, forwardRef } from 'react';
 import { submitLandingContact } from '../utils/landingContactService';
 import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
-
+import wbLocations from '../data/wb_locations.json';
 const SUPPORT_WAYS = [
   {
     id: 'outreach',
@@ -116,10 +116,12 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
   ref
 ) {
   const isBn = language === 'bn';
+  const districts = useMemo(() => Object.keys(wbLocations || {}).sort(), []);
   const [form, setForm] = useState({
     name: '',
     phone: '',
     email: '',
+    district: '',
     topic: 'other',
     message: '',
     website: '',
@@ -137,6 +139,8 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
         name: 'নাম',
         phone: 'মোবাইল নম্বর',
         email: 'ইমেইল',
+        district: 'জেলা',
+        districtPlaceholder: 'জেলা বেছে নিন',
         topic: 'বিষয়',
         message: 'আপনার কথা',
         submit: 'পাঠিয়ে দিন',
@@ -154,6 +158,8 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
         name: 'Name',
         phone: 'Phone',
         email: 'Email',
+        district: 'District',
+        districtPlaceholder: 'Select district',
         topic: 'Topic',
         message: 'Message',
         submit: 'Send message',
@@ -236,7 +242,7 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
         return;
       }
       setStatus('ok');
-      setForm({ name: '', phone: '', email: '', topic: 'other', message: '', website: '' });
+      setForm({ name: '', phone: '', email: '', district: '', topic: 'other', message: '', website: '' });
     } catch {
       setStatus('error');
       setErrorMsg(t.errorFallback);
@@ -400,6 +406,22 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
             </label>
           </div>
           <p className={`text-[11px] font-semibold text-slate-500 ${isBn ? 'font-bengali' : ''}`}>{t.phoneOrEmail}</p>
+
+          <label className="landing-contact-field">
+            <span className={isBn ? 'font-bengali' : ''}>{t.district}</span>
+            <select
+              value={form.district}
+              onChange={(e) => setField('district', e.target.value)}
+              className={isBn ? 'font-bengali' : ''}
+            >
+              <option value="">{t.districtPlaceholder}</option>
+              {districts.map((dist) => (
+                <option key={dist} value={dist}>
+                  {dist}
+                </option>
+              ))}
+            </select>
+          </label>
 
           <label className="landing-contact-field">
             <span className={isBn ? 'font-bengali' : ''}>{t.message} *</span>

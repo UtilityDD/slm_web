@@ -2,6 +2,8 @@
  * Browser → Google Apps Script web app (no Vercel env needed).
  * Redeploy the Apps Script after updating scripts/google-apps-script-landing-contact.js
  */
+import wbLocations from '../data/wb_locations.json';
+
 export const LANDING_CONTACT_SCRIPT_URL =
   'https://script.google.com/macros/s/AKfycbzaEyBRGIfjuOi1XPUZtkeHKW24nisakmjuhPjmOGTxebmrdhI8H0AG4O_XvbA2PPvO/exec';
 
@@ -12,6 +14,8 @@ const TOPIC_LABELS = {
   prize_sponsor: { en: 'Direct prize sponsorship', bn: 'সরাসরি পুরস্কার দেওয়া' },
   other: { en: 'Other', bn: 'অন্যান্য' },
 };
+
+const WB_DISTRICTS = new Set(Object.keys(wbLocations || {}));
 
 function trimStr(v, max = 2000) {
   return String(v || '')
@@ -25,7 +29,7 @@ function topicLabel(topic, language) {
   return language === 'bn' ? row.bn : row.en;
 }
 
-function buildFormattedMessage({ name, phone, email, topic, message, language }) {
+function buildFormattedMessage({ name, phone, email, district, topic, message, language }) {
   const when = new Date().toISOString();
   const topicText = topicLabel(topic, language);
   return [
@@ -39,6 +43,7 @@ function buildFormattedMessage({ name, phone, email, topic, message, language })
     `Name: ${name}`,
     `Phone: ${phone || '—'}`,
     `Email: ${email || '—'}`,
+    `District: ${district || '—'}`,
     '',
     'Message:',
     message,
@@ -50,7 +55,16 @@ function buildFormattedMessage({ name, phone, email, topic, message, language })
  * Validate + send contact payload to Apps Script.
  * Uses text/plain + no-cors so the browser can POST without a server proxy.
  */
-export async function submitLandingContact({ name, phone, email, topic, message, language, website }) {
+export async function submitLandingContact({
+  name,
+  phone,
+  email,
+  district,
+  topic,
+  message,
+  language,
+  website,
+}) {
   // Honeypot — pretend success for bots
   if (trimStr(website, 80)) {
     return { ok: true };
@@ -59,6 +73,8 @@ export async function submitLandingContact({ name, phone, email, topic, message,
   const cleanName = trimStr(name, 120);
   const cleanPhone = trimStr(phone, 40);
   const cleanEmail = trimStr(email, 120);
+  const cleanDistrictRaw = trimStr(district, 80);
+  const cleanDistrict = WB_DISTRICTS.has(cleanDistrictRaw) ? cleanDistrictRaw : '';
   const cleanTopic = trimStr(topic, 40) || 'other';
   const cleanMessage = trimStr(message, 4000);
   const lang = language === 'en' ? 'en' : 'bn';
@@ -84,6 +100,7 @@ export async function submitLandingContact({ name, phone, email, topic, message,
     name: cleanName,
     phone: cleanPhone,
     email: cleanEmail,
+    district: cleanDistrict,
     topic: cleanTopic,
     topicLabel: topicLabel(cleanTopic, lang),
     message: cleanMessage,
@@ -92,6 +109,7 @@ export async function submitLandingContact({ name, phone, email, topic, message,
       name: cleanName,
       phone: cleanPhone,
       email: cleanEmail,
+      district: cleanDistrict,
       topic: cleanTopic,
       message: cleanMessage,
       language: lang,
