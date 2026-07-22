@@ -268,12 +268,14 @@ function getSponsorGender(englishName = '') {
 
 /** Ordered photo URLs for a sponsor — /assets/sponsor/{stem}.{ext}, then legacy /images/sponsor. */
 function getSponsorPhotoCandidates(englishName = '') {
+    // Prefer webp (optimized), then jpeg (current source files), then other fallbacks.
+    const SPONSOR_IMAGE_EXTENSIONS = ['webp', 'jpeg', 'jpg', 'png'];
     const first = sponsorFirstToken(englishName);
     const stems = SPONSOR_PHOTO_STEMS[first] || (first ? [first] : []);
     const urls = [];
     const seen = new Set();
     for (const stem of stems) {
-        for (const ext of PRIZE_IMAGE_EXTENSIONS) {
+        for (const ext of SPONSOR_IMAGE_EXTENSIONS) {
             const url = `/assets/sponsor/${stem}.${ext}`;
             if (!seen.has(url)) {
                 seen.add(url);
@@ -283,7 +285,7 @@ function getSponsorPhotoCandidates(englishName = '') {
     }
     const slug = sponsorLogoSlug(englishName);
     if (slug) {
-        for (const ext of PRIZE_IMAGE_EXTENSIONS) {
+        for (const ext of SPONSOR_IMAGE_EXTENSIONS) {
             const url = `/images/sponsor/${slug}.${ext}`;
             if (!seen.has(url)) {
                 seen.add(url);
@@ -313,7 +315,7 @@ function splitSponsorIdentity(full = '') {
 
 /**
  * Unique prize sponsors for the landing horizontal scroll.
- * Photos: public/assets/sponsor/{name}.jpeg (etc). Missing photos fall back to letter avatar in UI.
+ * Photos: public/assets/sponsor/{name}.webp (preferred) or .jpeg. Missing photos fall back to smile avatar in UI.
  */
 export function buildLandingSponsors(language = 'bn') {
     const isBn = language === 'bn';

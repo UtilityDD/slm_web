@@ -2,6 +2,47 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { buildLandingSponsors } from '../utils/hallOfFamePrizes';
 
+/** Shared across chip + modal so we don't re-probe failed extensions on open. */
+const sponsorPhotoStatus = new Map(); // url -> true | false
+
+function firstCandidateIndex(candidates = []) {
+    let firstUnknown = -1;
+    for (let i = 0; i < candidates.length; i += 1) {
+        const status = sponsorPhotoStatus.get(candidates[i]);
+        if (status === true) return i;
+        if (status === false) continue;
+        if (firstUnknown === -1) firstUnknown = i;
+    }
+    return firstUnknown === -1 ? candidates.length : firstUnknown;
+}
+
+function preloadSponsorPhotos(sponsors = []) {
+    for (const sponsor of sponsors) {
+        const candidates = sponsor.logoCandidates || [];
+        const tryAt = (idx) => {
+            const url = candidates[idx];
+            if (!url) return;
+            const status = sponsorPhotoStatus.get(url);
+            if (status === true) return;
+            if (status === false) {
+                tryAt(idx + 1);
+                return;
+            }
+            const img = new Image();
+            img.decoding = 'async';
+            img.onload = () => {
+                sponsorPhotoStatus.set(url, true);
+            };
+            img.onerror = () => {
+                sponsorPhotoStatus.set(url, false);
+                tryAt(idx + 1);
+            };
+            img.src = url;
+        };
+        tryAt(firstCandidateIndex(candidates));
+    }
+}
+
 /** Lightweight smiling fallback when no sponsor photo is available. */
 function SponsorSmileAvatar({ gender = 'man', size = 'sm' }) {
     const sizeClass =
@@ -57,13 +98,20 @@ function SponsorSmileAvatar({ gender = 'man', size = 'sm' }) {
     );
 }
 
-function SponsorAvatar({ name, gender = 'man', logoCandidates = [], size = 'sm' }) {
-    const [candidateIndex, setCandidateIndex] = useState(0);
+function SponsorAvatar({ gender = 'man', logoCandidates = [], size = 'sm' }) {
+    const candidatesKey = logoCandidates.join('|');
+    const [candidateIndex, setCandidateIndex] = useState(() => firstCandidateIndex(logoCandidates));
+
+    useEffect(() => {
+        setCandidateIndex(firstCandidateIndex(logoCandidates));
+    }, [candidatesKey, logoCandidates]);
+
     const src = logoCandidates[candidateIndex];
     const sizeClass =
         size === 'lg'
             ? 'landing-sponsor-avatar landing-sponsor-avatar--portrait'
             : 'landing-sponsor-avatar';
+    const isPortrait = size === 'lg';
 
     if (!src) {
         return <SponsorSmileAvatar gender={gender} size={size} />;
@@ -73,9 +121,17 @@ function SponsorAvatar({ name, gender = 'man', logoCandidates = [], size = 'sm' 
         <img
             src={src}
             alt=""
-            loading="lazy"
+            loading={isPortrait ? 'eager' : 'lazy'}
+            {...(isPortrait ? { fetchPriority: 'high' } : {})}
+            decoding="async"
             className={sizeClass}
-            onError={() => setCandidateIndex((prev) => prev + 1)}
+            onLoad={() => {
+                sponsorPhotoStatus.set(src, true);
+            }}
+            onError={() => {
+                sponsorPhotoStatus.set(src, false);
+                setCandidateIndex((prev) => prev + 1);
+            }}
         />
     );
 }
@@ -93,7 +149,6 @@ function SponsorChip({ sponsor, isBn, onOpen }) {
             aria-haspopup="dialog"
         >
             <SponsorAvatar
-                name={sponsor.name}
                 gender={sponsor.gender}
                 logoCandidates={sponsor.logoCandidates}
             />
@@ -152,7 +207,6 @@ function SponsorIdentityCard({ sponsor, isBn, onClose, labels }) {
                     <div className="landing-sponsor-sheet-body">
                         <div className="landing-sponsor-sheet-photo-wrap">
                             <SponsorAvatar
-                                name={sponsor.name}
                                 gender={sponsor.gender}
                                 logoCandidates={sponsor.logoCandidates}
                                 size="lg"
@@ -202,6 +256,11 @@ export default function LandingSponsorsScroll({ language = 'bn', title = '' }) {
               thanks: 'Thank you',
               thanksNote: 'Your kindness helps us keep going.',
           };
+
+    // Warm the browser cache (and resolve working URL) before a chip is tapped.
+    useEffect(() => {
+        preloadSponsorPhotos(sponsors);
+    }, [sponsors]);
 
     const openSponsor = useCallback((sponsor) => {
         setActiveSponsor(sponsor);
