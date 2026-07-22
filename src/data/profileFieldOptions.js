@@ -1,6 +1,14 @@
 /** Shared select options for profile demographic fields. */
 
-export const JOB_TYPES = ['HT-Mobile Van', 'LT-Mobile Van', 'HT-LT Others'];
+export const JOB_TYPES = [
+  'HT-Mobile Van',
+  'LT-Mobile Van',
+  'HT-LT Others',
+  'Substation Operation',
+  'Engineer',
+  'Non-Technical',
+  'Others',
+];
 
 export const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
