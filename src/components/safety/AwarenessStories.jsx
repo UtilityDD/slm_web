@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Share } from '@capacitor/share';
 import { WEBSITE_URL } from '../../config';
-import { AWARENESS_STORIES } from '../../data/awarenessStories';
+import { AWARENESS_STORIES, EMOTIONAL_IMAGE_FOCUS } from '../../data/awarenessStories';
 import { storageUtils } from '../../utils/storageUtils';
 
 function usePrefersReducedMotion() {
@@ -17,7 +17,18 @@ function usePrefersReducedMotion() {
     return reduce;
 }
 
-const StoryCard = ({ story, onOpen, language }) => {
+function storyImageFocus(src) {
+    return EMOTIONAL_IMAGE_FOCUS[src] || 'center 20%';
+}
+
+function storyParagraphs(text) {
+    return String(text || '')
+        .split(/\n\n+/)
+        .map((p) => p.trim())
+        .filter(Boolean);
+}
+
+const StoryCard = ({ story, onOpen, language, priority = false }) => {
     const title = story.title[language];
     const excerpt = story.excerpt[language];
     const category = story.category[language];
@@ -31,17 +42,22 @@ const StoryCard = ({ story, onOpen, language }) => {
             type="button"
             onClick={() => onOpen(story)}
             aria-label={openLabel}
-            className="group w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 touch-manipulation"
+            className="group w-full overflow-hidden rounded-3xl border border-slate-200/70 bg-white text-left shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_36px_-14px_rgba(15,23,42,0.22)] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 touch-manipulation"
         >
-            <div className="relative h-48 overflow-hidden bg-slate-100 sm:h-56">
+            <div className="relative aspect-[4/5] overflow-hidden bg-slate-100 sm:aspect-[5/6]">
                 <img
                     src={story.image}
                     alt=""
+                    decoding="async"
+                    loading={priority ? 'eager' : 'lazy'}
+                    fetchPriority={priority ? 'high' : 'auto'}
                     className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03] motion-reduce:group-hover:scale-100"
+                    style={{ objectPosition: storyImageFocus(story.image) }}
                 />
-                <div className="absolute left-3 top-3">
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-slate-900/55 via-slate-900/15 to-transparent" />
+                <div className="absolute left-3 top-3 sm:left-4 sm:top-4">
                     <span
-                        className={`rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold text-orange-800 shadow-sm backdrop-blur ${
+                        className={`rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold tracking-wide text-orange-800 shadow-sm backdrop-blur ${
                             language === 'bn' ? 'font-bengali' : ''
                         }`}
                     >
@@ -50,27 +66,27 @@ const StoryCard = ({ story, onOpen, language }) => {
                 </div>
             </div>
 
-            <div className="space-y-2 p-5 sm:p-6">
+            <div className="space-y-2.5 px-5 py-5 sm:px-6 sm:py-6">
                 <h2
-                    className={`text-xl font-black leading-tight tracking-tight text-slate-900 transition-colors group-hover:text-orange-600 sm:text-2xl ${
+                    className={`text-[1.35rem] font-black leading-snug tracking-tight text-slate-900 transition-colors group-hover:text-orange-600 sm:text-2xl ${
                         language === 'bn' ? 'font-bengali' : ''
                     }`}
                 >
                     {title}
                 </h2>
                 <p
-                    className={`text-sm leading-relaxed text-slate-600 line-clamp-4 sm:text-base ${
+                    className={`text-sm leading-relaxed text-slate-600 line-clamp-3 sm:text-[0.95rem] sm:leading-relaxed ${
                         language === 'bn' ? 'font-bengali' : ''
                     }`}
                 >
                     {excerpt}
                 </p>
                 <div
-                    className={`mt-3 flex items-center gap-1.5 pt-1 text-sm font-bold text-orange-600 ${
+                    className={`mt-1 flex items-center gap-1.5 pt-1 text-sm font-bold text-orange-600 ${
                         language === 'bn' ? 'font-bengali' : ''
                     }`}
                 >
-                    <span>{language === 'en' ? 'Read full account' : 'সম্পূর্ণ বর্ণনা পড়ুন'}</span>
+                    <span>{language === 'en' ? 'Read the full story' : 'পুরো ঘটনা পড়ুন'}</span>
                     <span aria-hidden className="transition-transform group-hover:translate-x-0.5">
                         →
                     </span>
@@ -128,13 +144,31 @@ const AwarenessStories = ({ setCurrentView, language = 'en', initialStoryId = nu
         };
     }, []);
 
+    // Prefetch story images so opening a card feels instant.
+    useEffect(() => {
+        stories.forEach((story) => {
+            const img = new Image();
+            img.decoding = 'async';
+            img.src = story.image;
+        });
+    }, [stories]);
+
     const handleShare = async (story) => {
+        const title = story.title[language];
+        const body =
+            story.shareText?.[language] ||
+            `${story.excerpt[language]}\n\n${story.moral[language]}`;
+        const site = (WEBSITE_URL || 'https://smartlineman.in').replace(/\/$/, '');
+        const closer =
+            language === 'en'
+                ? `Read more on SmartLineMan — and join our lineman community:\n${site}`
+                : `SmartLineMan-এ আরও পড়ুন — আমাদের লাইনম্যান কমিউনিটিতে যোগ দিন:\n${site}`;
         try {
             await Share.share({
-                title: story.title[language],
-                text: `${story.title[language]}\n\n${story.excerpt[language]}\n\nStay safe with SmartLineMan.`,
-                url: WEBSITE_URL,
-                dialogTitle: language === 'en' ? 'Share story' : 'গল্প শেয়ার'
+                title,
+                text: `${title}\n\n${body}\n\n${closer}`,
+                url: site,
+                dialogTitle: language === 'en' ? 'Share this story' : 'এই ঘটনা শেয়ার করুন'
             });
         } catch (err) {
             console.error('Share failed:', err);
@@ -149,10 +183,14 @@ const AwarenessStories = ({ setCurrentView, language = 'en', initialStoryId = nu
             ? 'Back to home'
             : 'হোমে ফিরুন';
 
+    const detailParagraphs = selectedStory
+        ? storyParagraphs(selectedStory.fullContent[language])
+        : [];
+
     return (
         <div className="relative z-[20] flex h-full min-h-0 w-full flex-1 flex-col bg-[#fffdf7] text-slate-900">
             <header className="shrink-0 border-b border-slate-200/80 bg-[#fffdf7]/95 backdrop-blur safe-area-inset-top">
-                <div className="mx-auto grid w-full max-w-lg grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 px-3 py-3 sm:max-w-xl sm:px-4">
+                <div className="mx-auto grid w-full max-w-lg grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 px-3 py-3 sm:max-w-xl sm:px-4 lg:max-w-6xl">
                     <button
                         type="button"
                         onClick={() => (selectedStory ? setSelectedStory(null) : setCurrentView('home'))}
@@ -207,15 +245,16 @@ const AwarenessStories = ({ setCurrentView, language = 'en', initialStoryId = nu
                         </h1>
 
                         <div
-                            className="flex flex-col gap-5 sm:gap-6"
+                            className="flex flex-col gap-6 sm:gap-7"
                             role="feed"
                             aria-label={language === 'en' ? 'Stories' : 'গল্পসমূহ'}
                         >
-                            {stories.map((story) => (
+                            {stories.map((story, index) => (
                                 <StoryCard
                                     key={story.id}
                                     story={story}
                                     language={language}
+                                    priority={index === 0}
                                     onOpen={(s) => {
                                         setDetailScrollY(0);
                                         setSelectedStory(s);
@@ -230,7 +269,7 @@ const AwarenessStories = ({ setCurrentView, language = 'en', initialStoryId = nu
                                         aria-expanded={false}
                                         className="min-h-[48px] w-full rounded-full border border-slate-200/80 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-50 active:scale-[0.99]"
                                     >
-                                        {language === 'en' ? 'Load more stories' : 'আরও গল্প লোড করুন'}
+                                        {language === 'en' ? 'Load more stories' : 'আরও গল্প দেখুন'}
                                     </button>
                                 ) : (
                                     <p
@@ -251,29 +290,32 @@ const AwarenessStories = ({ setCurrentView, language = 'en', initialStoryId = nu
                         onScroll={handleDetailScroll}
                         className="min-h-full animate-fadeIn lg:overflow-visible"
                     >
-                        <div className="lg:grid lg:min-h-full lg:grid-cols-2">
-                            <div className="relative min-h-[48vh] w-full overflow-hidden sm:min-h-[52vh] lg:sticky lg:top-0 lg:min-h-screen">
+                        <div className="lg:mx-auto lg:grid lg:min-h-full lg:max-w-6xl lg:grid-cols-2 lg:gap-0">
+                            <div className="relative min-h-[42vh] w-full overflow-hidden sm:min-h-[48vh] lg:sticky lg:top-0 lg:h-[calc(100dvh-4.5rem)] lg:min-h-0">
                                 <img
                                     src={selectedStory.image}
                                     alt=""
-                                    className="absolute inset-0 h-[120%] w-full object-cover motion-reduce:transform-none"
+                                    decoding="async"
+                                    fetchPriority="high"
+                                    className="absolute inset-0 h-[115%] w-full object-cover motion-reduce:transform-none lg:h-full"
                                     style={{
+                                        objectPosition: storyImageFocus(selectedStory.image),
                                         transform:
                                             !reduceMotion && typeof window !== 'undefined' && window.innerWidth < 1024
-                                                ? `translateY(${detailScrollY * 0.2}px)`
+                                                ? `translateY(${detailScrollY * 0.18}px)`
                                                 : 'none'
                                     }}
                                 />
-                                <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-900/80 via-slate-900/40 to-transparent p-5 pt-16 sm:p-8 lg:p-10">
+                                <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-900/85 via-slate-900/35 to-transparent px-5 pb-6 pt-20 sm:px-8 sm:pb-8 lg:px-10 lg:pb-10">
                                     <span
-                                        className={`mb-2 inline-block rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold text-orange-800 shadow-sm backdrop-blur ${
+                                        className={`mb-2.5 inline-block rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold text-orange-800 shadow-sm backdrop-blur ${
                                             bn ? 'font-bengali' : ''
                                         }`}
                                     >
                                         {selectedStory.category[language]}
                                     </span>
                                     <h1
-                                        className={`text-2xl font-black leading-tight text-white drop-shadow-sm sm:text-3xl lg:text-4xl ${
+                                        className={`max-w-xl text-[1.65rem] font-black leading-[1.15] text-white drop-shadow-sm sm:text-3xl lg:text-4xl ${
                                             bn ? 'font-bengali' : ''
                                         }`}
                                     >
@@ -282,9 +324,9 @@ const AwarenessStories = ({ setCurrentView, language = 'en', initialStoryId = nu
                                 </div>
                             </div>
 
-                            <div className="bg-[#fffdf7] px-4 py-6 sm:px-6 sm:py-8 lg:py-10 lg:pl-8 lg:pr-10">
-                                <div className="mx-auto max-w-prose space-y-5">
-                                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
+                            <div className="bg-[#fffdf7] px-4 py-6 sm:px-7 sm:py-9 lg:py-12 lg:pl-10 lg:pr-12">
+                                <div className="mx-auto max-w-prose space-y-6">
+                                    <div className="flex flex-wrap items-center justify-between gap-3">
                                         <div className="flex min-w-0 items-center gap-3">
                                             <div
                                                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-orange-500 text-sm font-black text-white shadow-sm shadow-orange-500/30"
@@ -294,17 +336,19 @@ const AwarenessStories = ({ setCurrentView, language = 'en', initialStoryId = nu
                                             </div>
                                             <div className="min-w-0">
                                                 <p className={`text-sm font-black text-slate-900 ${bn ? 'font-bengali' : ''}`}>
-                                                    {language === 'en' ? 'Verified account' : 'যাচাই করা বর্ণনা'}
+                                                    {language === 'en' ? 'True account' : 'সত্য ঘটনা'}
                                                 </p>
                                                 <p className={`text-xs font-semibold text-slate-500 ${bn ? 'font-bengali' : ''}`}>
-                                                    {language === 'en' ? 'For awareness, not gossip' : 'সচেতনতার জন্য, গসিপ নয়'}
+                                                    {language === 'en'
+                                                        ? 'For awareness — not gossip'
+                                                        : 'সচেতনতার শিক্ষা — গুজব নয়'}
                                                 </p>
                                             </div>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => handleShare(selectedStory)}
-                                            aria-label={language === 'en' ? 'Share this story' : 'এই গল্প শেয়ার করুন'}
+                                            aria-label={language === 'en' ? 'Share this story' : 'এই ঘটনা শেয়ার করুন'}
                                             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-sm transition-all hover:bg-orange-50 active:scale-95"
                                         >
                                             <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden>
@@ -318,15 +362,17 @@ const AwarenessStories = ({ setCurrentView, language = 'en', initialStoryId = nu
                                     </div>
 
                                     <div
-                                        className={`rounded-2xl border border-slate-200/80 bg-white p-5 text-base leading-relaxed text-slate-700 shadow-sm sm:p-6 sm:text-lg ${
-                                            bn ? 'font-bengali leading-relaxed' : ''
+                                        className={`space-y-4 text-[1.05rem] leading-[1.75] text-slate-700 sm:text-lg sm:leading-[1.8] ${
+                                            bn ? 'font-bengali' : ''
                                         } reading-content`}
                                     >
-                                        {selectedStory.fullContent[language]}
+                                        {detailParagraphs.map((para, i) => (
+                                            <p key={i}>{para}</p>
+                                        ))}
                                     </div>
 
                                     <aside
-                                        className={`rounded-2xl border border-orange-100 bg-orange-50/70 p-5 sm:p-6 ${
+                                        className={`border-l-4 border-orange-400 bg-orange-50/80 px-5 py-5 sm:px-6 sm:py-6 ${
                                             bn ? 'font-bengali' : ''
                                         }`}
                                         aria-label={
@@ -341,7 +387,7 @@ const AwarenessStories = ({ setCurrentView, language = 'en', initialStoryId = nu
                                         </p>
                                     </aside>
 
-                                    <div className="flex flex-col gap-3 pb-6 sm:flex-row">
+                                    <div className="flex flex-col gap-3 pb-8 pt-1 sm:flex-row">
                                         <button
                                             type="button"
                                             onClick={() => {
@@ -357,7 +403,7 @@ const AwarenessStories = ({ setCurrentView, language = 'en', initialStoryId = nu
                                             onClick={() => handleShare(selectedStory)}
                                             className="min-h-[48px] flex-1 rounded-full border border-slate-200/80 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-50 active:scale-[0.99]"
                                         >
-                                            {language === 'en' ? 'Share' : 'শেয়ার'}
+                                            {language === 'en' ? 'Share story' : 'শেয়ার করুন'}
                                         </button>
                                     </div>
                                 </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { AWARENESS_STORIES } from '../data/awarenessStories';
+import { AWARENESS_STORIES, EMOTIONAL_IMAGE_FOCUS } from '../data/awarenessStories';
 
 const IDLE_MS = 4 * 60 * 1000;
 const COOLDOWN_MS = 25 * 60 * 1000;
@@ -250,7 +250,10 @@ export default function IdleStoryReminder({
                 <img
                     src={story.image}
                     alt=""
+                    decoding="async"
+                    fetchPriority="high"
                     className="absolute inset-0 h-full w-full object-cover"
+                    style={{ objectPosition: EMOTIONAL_IMAGE_FOCUS[story.image] || 'center 20%' }}
                 />
                 {/* Soft bottom gradient so the cue stays readable */}
                 <div

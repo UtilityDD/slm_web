@@ -4,6 +4,7 @@ import { storageUtils } from '../utils/storageUtils';
 import { DotLottiePlayer } from '@dotlottie/react-player';
 import noInternetLottie from '../assets/no_internet.lottie';
 import { SUPPORT_EMAIL } from '../config';
+import { EMOTIONAL_IMAGE_FOCUS } from '../data/awarenessStories';
 
 /**
  * Single-device session: generate a unique id for this device, persist it
@@ -42,16 +43,10 @@ function LoginLogo() {
 }
 
 /** Per-slide object-position — faces sit high in these square crops; wide hero strips top/bottom by default. */
-const HERO_IMAGE_FOCUS = {
-    '/assets/emotional/lineman.png': 'center 42%',
-    '/assets/emotional/child.png': 'center 14%',
-    '/assets/emotional/wife.png': '38% 32%',
-    '/assets/emotional/mother.png': 'center 10%',
-    '/assets/emotional/eyes.png': 'center 12%',
-};
+const HERO_IMAGE_FOCUS = EMOTIONAL_IMAGE_FOCUS;
 
 function HeroImageCrossfade({ images, activeIndex }) {
-    // Prefetch only the active slide and the next one — avoid ~3.5MB storm on login.
+    // Prefetch only the active slide and the next one — keep login light.
     useEffect(() => {
         const toPrefetch = [
             images[activeIndex],
@@ -152,11 +147,11 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
     const [connectionError, setConnectionError] = useState(false);
 
     const emotionalImages = [
-        '/assets/emotional/lineman.png',
-        '/assets/emotional/child.png',
-        '/assets/emotional/wife.png',
-        '/assets/emotional/mother.png',
-        '/assets/emotional/eyes.png'
+        '/assets/emotional/lineman.webp',
+        '/assets/emotional/child.webp',
+        '/assets/emotional/wife.webp',
+        '/assets/emotional/mother.webp',
+        '/assets/emotional/eyes.webp'
     ];
 
     useEffect(() => {
