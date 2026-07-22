@@ -738,8 +738,12 @@ body,
     left: 50%;
     bottom: 1rem;
     z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
     transform: translateX(-50%);
-    max-width: min(88%, 22rem);
+    max-width: min(92%, 26rem);
     padding: 0.45rem 1rem;
     border-radius: 9999px;
     border: 2px solid #0f172a;
@@ -750,9 +754,25 @@ body,
     color: #0f172a;
     text-align: center;
     line-height: 1.25;
-    white-space: nowrap;
+  }
+
+  .landing-prize-winner-label {
+    flex-shrink: 0;
+    color: #c2410c;
+    letter-spacing: 0.01em;
+  }
+
+  .landing-prize-winner-sep {
+    flex-shrink: 0;
+    color: #94a3b8;
+    font-weight: 800;
+  }
+
+  .landing-prize-winner-person {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   @media (min-width: 640px) {

@@ -101,7 +101,13 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
 
                                     {item.winnerName && (
                                         <p className={`landing-prize-winner-name ${isBn ? 'font-bengali' : ''}`}>
-                                            {item.winnerName}
+                                            <span className="landing-prize-winner-label">
+                                                {isBn ? 'বিজেতা' : 'Winner'}
+                                            </span>
+                                            <span className="landing-prize-winner-sep" aria-hidden>
+                                                ·
+                                            </span>
+                                            <span className="landing-prize-winner-person">{item.winnerName}</span>
                                         </p>
                                     )}
                                 </div>
