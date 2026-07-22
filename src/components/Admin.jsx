@@ -2120,6 +2120,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
               <div className="flex flex-wrap gap-2">
                 {PROFILE_NUDGE_FIELD_ORDER.map((fieldKey) => {
                   const labels = {
+                    avatar_url: isEn ? 'Photo' : 'ছবি',
                     district: isEn ? 'District' : 'জেলা',
                     block: isEn ? 'Block' : 'ব্লক',
                     job: isEn ? 'Job' : 'কাজ',

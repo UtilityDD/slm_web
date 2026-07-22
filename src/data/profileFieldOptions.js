@@ -29,6 +29,7 @@ export const EDUCATION_LEVELS = [
 
 /** Progressive nudge order: one field at a time. */
 export const PROFILE_NUDGE_FIELD_ORDER = [
+  'avatar_url',
   'district',
   'block',
   'job',

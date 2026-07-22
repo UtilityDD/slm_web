@@ -104,6 +104,10 @@ export function getNextNudgeField(profile, nudgeState) {
   return null;
 }
 
+/** Columns needed to decide / show the next nudge field. */
+export const PROFILE_NUDGE_SELECT =
+  'avatar_url, district, block, job, dob, education, blood_group, is_donor, profile_nudge_state';
+
 export function getSkipCount(nudgeState, field) {
   const n = normalizeNudgeState(nudgeState).skips[field];
   return typeof n === 'number' && n > 0 ? n : 0;
