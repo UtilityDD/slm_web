@@ -4,7 +4,7 @@ import secureStorage from '../../utils/secureStorage';
 import { supabase } from '../../supabaseClient';
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../../config';
 import HomeSkeleton from '../loaders/HomeSkeleton';
-import { badgeLevels, calculateLevelFromProgress, getBadgeByLevel, getRoadmapBadgeByLevel } from '../../utils/badgeUtils';
+import { calculateLevelFromProgress, getBadgeByLevel, getRoadmapBadgeByLevel } from '../../utils/badgeUtils';
 import { cacheHelper } from '../../utils/cacheHelper';
 import { invalidateLeaderboardCaches } from '../../utils/leaderboardCacheKeys';
 import { storageUtils } from '../../utils/storageUtils';
@@ -27,7 +27,15 @@ import {
     loadSupplementaryCompletedModuleIds,
     appendSupplementaryCompletion,
 } from '../../utils/supplementaryProgressStorage';
-import { filterCoreCompletedLessonIds, isSupplementaryProgressLessonId } from '../../utils/trainingLessonIds';
+import {
+    filterCoreCompletedLessonIds,
+    isSupplementaryProgressLessonId,
+    buildLifeSkillBonusQuizId,
+    buildLifeSkillActiveCooldowns,
+    buildLifeSkillTotalsByModule,
+    getLifeSkillScoreCooldownDaysLeft,
+    LIFE_SKILL_MONTHLY_BONUS_POINTS,
+} from '../../utils/trainingLessonIds';
 import { logReadingHabitCompletion, logReadingHabitReview } from '../../utils/readingHabitLog';
 import { checkReadingGate } from '../../utils/readingHabitGate';
 import {
@@ -214,75 +222,6 @@ function countCoreProgramLessonsCompleted(completedLessons) {
     }).length;
 }
 
-/** Max wait (ms) before opening a life skill (no progress in main path through 3.10). */
-const LIFE_SKILL_OPEN_MAX_WAIT_MS = 60_000;
-
-const TECHNICIAN_BADGE = badgeLevels.find((b) => b.level === 3) || { en: 'Technician', bn: 'টেকনিশিয়ান' };
-
-function parseCoreLessonId(id) {
-    const m = String(id).match(/^(\d+)\.(\d+)$/);
-    if (!m) return null;
-    return { ch: parseInt(m[1], 10), n: parseInt(m[2], 10) };
-}
-
-/** True if lesson `a` is strictly after `b` on the main path (same chapter: higher number; else higher chapter). */
-function coreLessonIdStrictlyAfter(aId, bId) {
-    const a = parseCoreLessonId(aId);
-    const b = parseCoreLessonId(bId);
-    if (!a || !b) return false;
-    if (a.ch !== b.ch) return a.ch > b.ch;
-    return a.n > b.n;
-}
-
-/** Ordered ids from 1.1 through 3.10 (clamped to manifest counts for chapters 1–3). */
-function buildLifeSkillGateLessonIds(trainingChapters) {
-    const ids = [];
-    for (let ch = 1; ch <= 3; ch += 1) {
-        const cnt = getCoreChapterLessonCount(ch, trainingChapters);
-        if (cnt <= 0) continue;
-        const cap = ch === 3 ? Math.min(10, cnt) : cnt;
-        for (let i = 1; i <= cap; i += 1) {
-            ids.push(`${ch}.${i}`);
-        }
-    }
-    return ids;
-}
-
-/**
- * No wait: every lesson in the 1.1…3.10 gate segment is done, or any completed core lesson is strictly after the gate end (e.g. 4.1).
- */
-function hasZeroLifeSkillGateDelay(coreSet, gateIds) {
-    if (!gateIds.length) return true;
-    const lastGateId = gateIds[gateIds.length - 1];
-    for (const id of coreSet) {
-        if (typeof id === 'string' && coreLessonIdStrictlyAfter(id, lastGateId)) return true;
-    }
-    let d = 0;
-    for (const id of gateIds) {
-        if (coreSet.has(id)) d += 1;
-    }
-    return d >= gateIds.length;
-}
-
-/**
- * First catalogue card (index 0) is always instant. Others: linear 60s→0s over progress through lessons 1.1…3.10; 0 after 3.10 (or beyond).
- */
-function getLifeSkillOpenDelayMs(moduleIndex, completedLessons, trainingChapters) {
-    if (moduleIndex === 0) return 0;
-    const gateIds = buildLifeSkillGateLessonIds(trainingChapters);
-    if (!gateIds.length) return 0;
-    const coreArr = filterCoreCompletedLessonIds(Array.isArray(completedLessons) ? completedLessons : []);
-    const coreSet = new Set(coreArr);
-    if (hasZeroLifeSkillGateDelay(coreSet, gateIds)) return 0;
-    let d = 0;
-    for (const id of gateIds) {
-        if (coreSet.has(id)) d += 1;
-    }
-    const n = gateIds.length;
-    const raw = LIFE_SKILL_OPEN_MAX_WAIT_MS * (1 - d / n);
-    return Math.min(LIFE_SKILL_OPEN_MAX_WAIT_MS, Math.max(0, Math.round(raw)));
-}
-
 /** First chapter in 1..9 with an incomplete lesson; null if all core lessons done. */
 function getActiveCoreChapterNumber(completedLessons, trainingChapters) {
     const core = new Set(filterCoreCompletedLessonIds(Array.isArray(completedLessons) ? completedLessons : []));
@@ -357,7 +296,9 @@ const deriveLifeSkillCodeFromLevelId = (levelId) => {
     return `LS${String(n).padStart(2, '0')}`;
 };
 
-/** Header / hero: Life Skill modules use short codes (LS01); core lessons keep level_id. */
+/** Header / hero: Life Skill modules use short codes (LS01); core lessons keep level_id.
+ * Life Skill code digits always stay Latin (LS01), even in Bengali UI.
+ */
 const getTrainingHeaderLessonCode = (trainingContent, lang) => {
     if (!trainingContent?.level_id) return '';
     if (trainingContent.isSupplementary) {
@@ -367,9 +308,7 @@ const getTrainingHeaderLessonCode = (trainingContent, lang) => {
         } else {
             code = deriveLifeSkillCodeFromLevelId(trainingContent.level_id);
         }
-        if (code) {
-            return lang === 'bn' ? toBengaliNumber(code, 'bn') : code;
-        }
+        return code || '';
     }
     return lang === 'bn' ? toBengaliNumber(trainingContent.level_id, lang) : `${trainingContent.level_id}`;
 };
@@ -1185,6 +1124,10 @@ export default function Training({
     const [trainingTab, setTrainingTab] = useState('core'); // 'core' | 'supplementary'
     const [supplementaryModules, setSupplementaryModules] = useState([]);
     const [suppCompleted, setSuppCompleted] = useState([]);
+    /** moduleId → ISO created_at of last Life Skill award still inside the 30-day cooldown. */
+    const [lifeSkillScoreCooldownByModule, setLifeSkillScoreCooldownByModule] = useState(() => new Map());
+    /** moduleId → lifetime points from this Life Skill card’s awards. */
+    const [lifeSkillTotalsByModule, setLifeSkillTotalsByModule] = useState(() => new Map());
     const [showLifeSkillsHint, setShowLifeSkillsHint] = useState(() => {
         const s = readLifeSkillsHintState();
         return !s.dismissed && s.visits < MAX_LIFE_SKILLS_HINT_VISITS;
@@ -1211,9 +1154,11 @@ export default function Training({
     const [userPPEData, setUserPPEData] = useState([]);
     const galleryRef = useRef(null);
     const [supplementaryRadioOverlayOpen, setSupplementaryRadioOverlayOpen] = useState(false);
-    /** Countdown overlay while opening a life skill (encourages core reading first; first module has no wait). */
-    const [lifeSkillWaitUi, setLifeSkillWaitUi] = useState(null);
-    const lifeSkillWaitTimersRef = useRef(null);
+    /** True after audible listen (volume > 0, not muted) to ≥97% / end for current Life Skill session. */
+    const [lifeSkillListenQualified, setLifeSkillListenQualified] = useState(false);
+    const lifeSkillListenQualifiedRef = useRef(false);
+    /** After quiz pass: force Listen overlay before awarding monthly points. */
+    const [lifeSkillScoreGateActive, setLifeSkillScoreGateActive] = useState(false);
     const lessonScrollRef = useRef(null);
     const lessonScrollInnerRef = useRef(null);
     /** Visual-only page turn (does not affect next/prev gates or progress). */
@@ -1391,8 +1336,45 @@ export default function Training({
             setSuppCompleted(loadSupplementaryCompletedModuleIds(user.id));
         } else {
             setSuppCompleted([]);
+            setLifeSkillScoreCooldownByModule(new Map());
+            setLifeSkillTotalsByModule(new Map());
         }
     }, [user]);
+
+    // Life Skill per-card totals + 30-day cooldown (from quiz_attempts).
+    useEffect(() => {
+        if (!user || isGuestUser(profile)) {
+            setLifeSkillScoreCooldownByModule(new Map());
+            setLifeSkillTotalsByModule(new Map());
+            return;
+        }
+
+        let cancelled = false;
+        (async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('quiz_attempts')
+                    .select('quiz_id, created_at, score')
+                    .eq('user_id', user.id)
+                    .like('quiz_id', 'life_skill_bonus_%');
+
+                if (cancelled || error) {
+                    if (error) console.error('Error loading life skill card scores:', error);
+                    return;
+                }
+
+                const rows = data || [];
+                setLifeSkillScoreCooldownByModule(buildLifeSkillActiveCooldowns(rows));
+                setLifeSkillTotalsByModule(buildLifeSkillTotalsByModule(rows));
+            } catch (err) {
+                console.error('Error loading life skill card scores:', err);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [user, profile]);
 
     const handleMarkSupplementaryRead = useCallback(
         (moduleId, { silent = false } = {}) => {
@@ -1468,29 +1450,6 @@ export default function Training({
         writeLifeSkillsHintState({ ...s, dismissed: true });
         setShowLifeSkillsHint(false);
     }, [trainingTab]);
-
-    const clearLifeSkillWaitTimers = useCallback(() => {
-        const t = lifeSkillWaitTimersRef.current;
-        if (t?.intervalId) clearInterval(t.intervalId);
-        if (t?.timeoutId) clearTimeout(t.timeoutId);
-        lifeSkillWaitTimersRef.current = null;
-    }, []);
-
-    useEffect(() => {
-        if (trainingTab !== 'supplementary') {
-            clearLifeSkillWaitTimers();
-            setLifeSkillWaitUi(null);
-        }
-    }, [trainingTab, clearLifeSkillWaitTimers]);
-
-    useEffect(
-        () => () => {
-            const t = lifeSkillWaitTimersRef.current;
-            if (t?.intervalId) clearInterval(t.intervalId);
-            if (t?.timeoutId) clearTimeout(t.timeoutId);
-        },
-        []
-    );
 
     // Count core-home "visits" for Life Skills hint; cap at MAX_LIFE_SKILLS_HINT_VISITS.
     useEffect(() => {
@@ -1843,54 +1802,21 @@ export default function Training({
     }, [trainingContent, trainingChapters, completedLessons, profile?.role]);
 
     const openLifeSkillModule = useCallback(
-        (module, moduleIndex) => {
+        (module) => {
             const cardTitle = language === 'en' ? module.title_en : module.title_bn;
-            const doOpen = () => {
-                setTrainingContent({
-                    level_id: module.id,
-                    lesson_code: module.lesson_code ?? null,
-                    level_title: cardTitle,
-                    manuscript_url: module.manuscript_url,
-                    isSupplementary: true,
-                    audio_url_en: module.audio_url_en ?? null,
-                    audio_url_bn: module.audio_url_bn ?? null,
-                });
-                setIsJournalMode(true);
-                setActiveSectionIndex(0);
-            };
-            const delayMs =
-                profile?.role === 'admin'
-                    ? 0
-                    : getLifeSkillOpenDelayMs(moduleIndex, completedLessons, trainingChapters);
-            if (delayMs <= 0) {
-                doOpen();
-                return;
-            }
-            clearLifeSkillWaitTimers();
-            const totalSec = Math.max(1, Math.ceil(delayMs / 1000));
-            const startedAt = Date.now();
-            const levelNum = calculateLevelFromProgress(completedLessons, trainingChapters);
-            const userBadge = getBadgeByLevel(levelNum, readingPoints || 0);
-            setLifeSkillWaitUi({
-                cardTitle,
-                secondsLeft: totalSec,
-                currentBadgeEn: userBadge.en,
-                currentBadgeBn: userBadge.bn,
+            setTrainingContent({
+                level_id: module.id,
+                lesson_code: module.lesson_code ?? null,
+                level_title: cardTitle,
+                manuscript_url: module.manuscript_url,
+                isSupplementary: true,
+                audio_url_en: module.audio_url_en ?? null,
+                audio_url_bn: module.audio_url_bn ?? null,
             });
-            lifeSkillWaitTimersRef.current = {
-                intervalId: setInterval(() => {
-                    const elapsedSec = Math.floor((Date.now() - startedAt) / 1000);
-                    const left = Math.max(0, totalSec - elapsedSec);
-                    setLifeSkillWaitUi((prev) => (prev ? { ...prev, secondsLeft: left } : null));
-                }, 250),
-                timeoutId: setTimeout(() => {
-                    clearLifeSkillWaitTimers();
-                    setLifeSkillWaitUi(null);
-                    doOpen();
-                }, delayMs),
-            };
+            setIsJournalMode(true);
+            setActiveSectionIndex(0);
         },
-        [language, completedLessons, trainingChapters, readingPoints, clearLifeSkillWaitTimers, profile?.role]
+        [language]
     );
 
     // Auto-scroll to current reading position
@@ -1957,6 +1883,10 @@ export default function Training({
     const supplementaryAutoSavedRef = useRef(null);
     useEffect(() => {
         supplementaryAutoSavedRef.current = null;
+        lifeSkillListenQualifiedRef.current = false;
+        setLifeSkillListenQualified(false);
+        setLifeSkillScoreGateActive(false);
+        setSupplementaryRadioOverlayOpen(false);
     }, [trainingContent?.level_id]);
 
     /** Life Skills: persist completion silently when the learner reaches the last screen. */
@@ -2929,14 +2859,189 @@ export default function Training({
         await speak(fullText, currentSpeechId);
     };
 
-    const finalizeLessonCompletion = async (lessonId) => {
-        if (isSupplementaryProgressLessonId(lessonId)) {
-            handleMarkSupplementaryRead(lessonId, { silent: false });
+    const closeLifeSkillSession = useCallback(
+        (lessonId) => {
+            if (lessonId) {
+                handleMarkSupplementaryRead(lessonId, { silent: true });
+            }
             setShowQuizModal(false);
             setPendingLessonId(null);
+            setLifeSkillScoreGateActive(false);
+            setSupplementaryRadioOverlayOpen(false);
             setTrainingContent(null);
             setIsJournalMode(false);
             setTrainingTab('supplementary');
+        },
+        [handleMarkSupplementaryRead]
+    );
+
+    const awardLifeSkillMonthlyPoints = useCallback(
+        async (lessonId) => {
+            if (!user || !lessonId || isGuestUser(profile)) {
+                if (isGuestUser(profile) && typeof showNotification === 'function') {
+                    showNotification(guestPreviewText(language, 'lessonResultGuest'), 'info');
+                }
+                return;
+            }
+
+            try {
+                const { data: priorRows, error: priorError } = await supabase
+                    .from('quiz_attempts')
+                    .select('quiz_id, created_at')
+                    .eq('user_id', user.id)
+                    .like('quiz_id', `life_skill_bonus_${lessonId}_%`)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+
+                if (priorError) {
+                    console.error('Error checking life skill score cooldown:', priorError);
+                } else {
+                    const lastAwardAt = priorRows?.[0]?.created_at;
+                    const daysLeft = getLifeSkillScoreCooldownDaysLeft(lastAwardAt);
+                    if (daysLeft > 0) {
+                        setLifeSkillScoreCooldownByModule((prev) => {
+                            const next = new Map(prev);
+                            next.set(lessonId, lastAwardAt);
+                            return next;
+                        });
+                        if (typeof showNotification === 'function') {
+                            showNotification(
+                                language === 'en'
+                                    ? `Practice saved — points again in ${daysLeft} day${daysLeft === 1 ? '' : 's'}.`
+                                    : `অনুশীলন সংরক্ষিত — ${toBengaliNumber(daysLeft, 'bn')} দিন পর আবার পয়েন্ট পাবেন।`,
+                                'info'
+                            );
+                        }
+                        return;
+                    }
+                }
+
+                const inputQuizId = buildLifeSkillBonusQuizId(lessonId);
+                const { data: rpcData, error: rpcError } = await supabase.rpc('award_training_points', {
+                    input_quiz_id: inputQuizId,
+                    input_score: LIFE_SKILL_MONTHLY_BONUS_POINTS,
+                    p_user_id: user.id,
+                });
+
+                if (rpcError) {
+                    console.error('Error awarding life skill bonus:', rpcError);
+                    if (typeof showNotification === 'function') {
+                        showNotification(
+                            language === 'en' ? 'Error saving points' : 'পয়েন্ট সেভ করতে ত্রুটি',
+                            'error'
+                        );
+                    }
+                    return;
+                }
+
+                const alreadyAwarded =
+                    rpcData &&
+                    typeof rpcData === 'object' &&
+                    (rpcData.already_awarded === true || rpcData.already_awarded === 'true');
+
+                const awardedAt = new Date().toISOString();
+                setLifeSkillScoreCooldownByModule((prev) => {
+                    const next = new Map(prev);
+                    next.set(lessonId, awardedAt);
+                    return next;
+                });
+
+                if (!alreadyAwarded) {
+                    setLifeSkillTotalsByModule((prev) => {
+                        const next = new Map(prev);
+                        next.set(lessonId, (next.get(lessonId) || 0) + LIFE_SKILL_MONTHLY_BONUS_POINTS);
+                        return next;
+                    });
+                    invalidateLeaderboardCaches(user.id);
+                    cacheHelper.clear(`profile_${user.id}`);
+                    setRecentReward(LIFE_SKILL_MONTHLY_BONUS_POINTS);
+                    setTimeout(() => setRecentReward(null), 5000);
+                    if (typeof showNotification === 'function') {
+                        showNotification(
+                            language === 'en'
+                                ? `+${LIFE_SKILL_MONTHLY_BONUS_POINTS} points — Life Skill quiz. Next score in 30 days.`
+                                : `+${LIFE_SKILL_MONTHLY_BONUS_POINTS} পয়েন্ট — লাইফ স্কিল কুইজ। পরবর্তী পয়েন্ট ৩০ দিন পর।`,
+                            'success'
+                        );
+                    }
+                } else if (typeof showNotification === 'function') {
+                    showNotification(
+                        language === 'en'
+                            ? 'Practice saved — points already claimed for this module today.'
+                            : 'অনুশীলন সংরক্ষিত — এই মডিউলের পয়েন্ট আজ ইতিমধ্যে নেওয়া হয়েছে।',
+                        'info'
+                    );
+                }
+            } catch (err) {
+                console.error('Critical error awarding life skill points:', err);
+                if (typeof showNotification === 'function') {
+                    showNotification(
+                        language === 'en' ? 'Error saving points' : 'পয়েন্ট সেভ করতে ত্রুটি',
+                        'error'
+                    );
+                }
+            }
+        },
+        [user, profile, language, showNotification]
+    );
+
+    /** After quiz pass: insist on listen when audio exists; award only outside cooldown. */
+    const resolveLifeSkillScoreAfterPass = useCallback(
+        async (lessonId) => {
+            if (!lessonId) return;
+
+            if (isGuestUser(profile)) {
+                if (typeof showNotification === 'function') {
+                    showNotification(guestPreviewText(language, 'lessonResultGuest'), 'info');
+                }
+                closeLifeSkillSession(lessonId);
+                return;
+            }
+
+            const hasAudio = !!supplementaryRadioSrc;
+            const cooldownDaysLeft = getLifeSkillScoreCooldownDaysLeft(
+                lifeSkillScoreCooldownByModule.get(lessonId)
+            );
+
+            // Still require listen when audio exists (even during cooldown / practice).
+            if (hasAudio && !lifeSkillListenQualifiedRef.current) {
+                setPendingLessonId(lessonId);
+                setShowQuizModal(false);
+                setLifeSkillScoreGateActive(true);
+                setSupplementaryRadioOverlayOpen(true);
+                return;
+            }
+
+            if (cooldownDaysLeft > 0) {
+                if (typeof showNotification === 'function') {
+                    showNotification(
+                        language === 'en'
+                            ? `Practice saved — points again in ${cooldownDaysLeft} day${cooldownDaysLeft === 1 ? '' : 's'}.`
+                            : `অনুশীলন সংরক্ষিত — ${toBengaliNumber(cooldownDaysLeft, 'bn')} দিন পর আবার পয়েন্ট পাবেন।`,
+                        'info'
+                    );
+                }
+                closeLifeSkillSession(lessonId);
+                return;
+            }
+
+            await awardLifeSkillMonthlyPoints(lessonId);
+            closeLifeSkillSession(lessonId);
+        },
+        [
+            profile,
+            language,
+            showNotification,
+            supplementaryRadioSrc,
+            lifeSkillScoreCooldownByModule,
+            awardLifeSkillMonthlyPoints,
+            closeLifeSkillSession,
+        ]
+    );
+
+    const finalizeLessonCompletion = async (lessonId) => {
+        if (isSupplementaryProgressLessonId(lessonId)) {
+            await resolveLifeSkillScoreAfterPass(lessonId);
             return;
         }
 
@@ -3152,10 +3257,50 @@ export default function Training({
     };
 
     const handleQuizComplete = (score) => {
-        if (pendingLessonId) {
-            finalizeLessonCompletion(pendingLessonId);
+        if (!pendingLessonId) return;
+        if (isSupplementaryProgressLessonId(pendingLessonId)) {
+            void resolveLifeSkillScoreAfterPass(pendingLessonId);
+            return;
         }
+        finalizeLessonCompletion(pendingLessonId);
     };
+
+    const handleLifeSkillListenQualified = useCallback(() => {
+        lifeSkillListenQualifiedRef.current = true;
+        setLifeSkillListenQualified(true);
+        if (!lifeSkillScoreGateActive) return;
+        const lessonId = pendingLessonId || trainingContent?.level_id;
+        if (!lessonId || !isSupplementaryProgressLessonId(lessonId)) return;
+        setLifeSkillScoreGateActive(false);
+        setSupplementaryRadioOverlayOpen(false);
+        void (async () => {
+            await awardLifeSkillMonthlyPoints(lessonId);
+            closeLifeSkillSession(lessonId);
+        })();
+    }, [
+        lifeSkillScoreGateActive,
+        pendingLessonId,
+        trainingContent?.level_id,
+        awardLifeSkillMonthlyPoints,
+        closeLifeSkillSession,
+    ]);
+
+    const handleLifeSkillSkipWithoutScore = useCallback(() => {
+        const lessonId = pendingLessonId || trainingContent?.level_id;
+        setLifeSkillScoreGateActive(false);
+        setSupplementaryRadioOverlayOpen(false);
+        if (typeof showNotification === 'function') {
+            showNotification(
+                language === 'en'
+                    ? 'No points this time — you left without listening.'
+                    : 'এবার পয়েন্ট হয়নি — অডিও না শুনে বেরিয়ে এসেছেন।',
+                'info'
+            );
+        }
+        if (lessonId && isSupplementaryProgressLessonId(lessonId)) {
+            closeLifeSkillSession(lessonId);
+        }
+    }, [pendingLessonId, trainingContent?.level_id, language, showNotification, closeLifeSkillSession]);
 
     const handleGuestQuizComplete = () => {
         setShowQuizModal(false);
@@ -3714,14 +3859,30 @@ export default function Training({
                                 </p>
                             </header>
                             <div className="mx-auto mb-20 grid max-w-7xl animate-fade-in-up grid-cols-1 gap-4 px-2 py-4 min-[420px]:grid-cols-2 sm:mb-28 sm:gap-5 sm:py-6 md:grid-cols-3 lg:mb-32">
-                            {supplementaryModules.map((module, moduleIndex) => {
+                            {supplementaryModules.map((module) => {
                                 const isCompleted = suppCompleted.includes(module.id);
+                                const lastAwardAt = lifeSkillScoreCooldownByModule.get(module.id);
+                                const daysUntilScore = lastAwardAt
+                                    ? getLifeSkillScoreCooldownDaysLeft(lastAwardAt)
+                                    : 0;
+                                const onCooldown = daysUntilScore > 0;
+                                const cardTotalPts = lifeSkillTotalsByModule.get(module.id) || 0;
                                 const cardTitle = language === 'en' ? module.title_en : module.title_bn;
+                                const nextScoreLabel = !onCooldown
+                                    ? null
+                                    : language === 'en'
+                                      ? `Points claimed — available again in ${daysUntilScore} day${daysUntilScore === 1 ? '' : 's'}`
+                                      : `পয়েন্ট নেওয়া হয়েছে — ${toBengaliNumber(daysUntilScore, 'bn')} দিন পর আবার পাবেন`;
+                                const nextScoreChip = !onCooldown
+                                    ? null
+                                    : language === 'en'
+                                      ? `Again in ${daysUntilScore}d`
+                                      : `${toBengaliNumber(daysUntilScore, 'bn')} দিনে আবার`;
                                 return (
                                     <button
                                         key={module.id}
                                         type="button"
-                                        onClick={() => openLifeSkillModule(module, moduleIndex)}
+                                        onClick={() => openLifeSkillModule(module)}
                                         className={`group relative aspect-[3/4] w-full max-h-[280px] overflow-hidden rounded-2xl border border-slate-200/80 bg-white text-left shadow-sm transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffdf7] hover:shadow-md active:scale-[0.99] sm:max-h-[320px] md:aspect-[4/5] md:max-h-[360px] ${
                                             isCompleted ? 'ring-2 ring-emerald-500 ring-offset-2 ring-offset-[#fffdf7]' : ''
                                         }`}
@@ -3759,6 +3920,22 @@ export default function Training({
                                             aria-hidden
                                         />
                                         <div className="absolute inset-x-0 bottom-0 px-4 pb-4 pt-12 sm:px-5 sm:pb-5 sm:pt-14 md:px-6 md:pb-6 md:pt-16">
+                                            {cardTotalPts > 0 && (
+                                                <p
+                                                    className={`mb-1.5 text-xs font-bold tabular-nums tracking-wide text-amber-200 sm:text-sm [text-shadow:0_1px_2px_rgba(0,0,0,0.85)] ${
+                                                        language === 'bn' ? 'font-bengali' : ''
+                                                    }`}
+                                                    title={
+                                                        language === 'en'
+                                                            ? `Total points from this Life Skill: ${cardTotalPts}`
+                                                            : `এই লাইফ স্কিল থেকে মোট পয়েন্ট: ${toBengaliNumber(cardTotalPts, 'bn')}`
+                                                    }
+                                                >
+                                                    {language === 'en'
+                                                        ? `${cardTotalPts} pts`
+                                                        : `${toBengaliNumber(cardTotalPts, 'bn')} পয়েন্ট`}
+                                                </p>
+                                            )}
                                             <h3
                                                 className={`line-clamp-3 text-lg text-white sm:text-xl md:text-2xl lg:text-[1.65rem] [text-shadow:0_1px_2px_rgba(0,0,0,0.85),0_4px_20px_rgba(0,0,0,0.55),0_0_1px_rgba(0,0,0,0.9)] ${
                                                     language === 'bn'
@@ -3769,6 +3946,18 @@ export default function Training({
                                                 {cardTitle}
                                             </h3>
                                         </div>
+
+                                        {onCooldown && (
+                                            <div
+                                                className={`absolute left-2 top-2 z-10 rounded-full border border-white/25 bg-black/55 px-2.5 py-1 text-[11px] font-bold tabular-nums tracking-tight text-white shadow-sm backdrop-blur-sm sm:left-3 sm:top-3 sm:text-xs ${
+                                                    language === 'bn' ? 'font-bengali' : ''
+                                                }`}
+                                                title={nextScoreLabel}
+                                            >
+                                                <span className="sr-only">{nextScoreLabel}</span>
+                                                <span aria-hidden>{nextScoreChip}</span>
+                                            </div>
+                                        )}
 
                                         {isCompleted && (
                                             <div
@@ -4343,109 +4532,17 @@ export default function Training({
                 document.body
             )}
 
-            {lifeSkillWaitUi &&
-                createPortal(
-                    <div
-                        role="dialog"
-                        aria-modal="true"
-                        aria-live="polite"
-                        aria-labelledby="lifeskill-wait-headline"
-                        className="fixed inset-0 z-[215] flex animate-fade-in items-center justify-center bg-slate-900/55 p-4"
-                        onClick={(e) => {
-                            if (e.target === e.currentTarget) {
-                                clearLifeSkillWaitTimers();
-                                setLifeSkillWaitUi(null);
-                            }
-                        }}
-                    >
-                        <div className="relative w-full max-w-sm animate-scale-in">
-                            <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-[#fffdf7] p-0 shadow-sm">
-                                <div className="h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden="true" />
-                                <div className="relative space-y-4 p-6 text-center sm:p-7">
-                                <p
-                                    id="lifeskill-wait-headline"
-                                    className={`line-clamp-3 text-base font-black leading-snug text-slate-900 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}
-                                >
-                                    {lifeSkillWaitUi.cardTitle}
-                                </p>
-                                <p className="text-5xl font-black tabular-nums text-indigo-700 sm:text-6xl">
-                                    {language === 'en'
-                                        ? lifeSkillWaitUi.secondsLeft
-                                        : toBengaliNumber(lifeSkillWaitUi.secondsLeft, 'bn')}
-                                </p>
-                                <div className={`space-y-3 text-left text-sm leading-relaxed text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                    {language === 'en' ? (
-                                        <>
-                                            <p>
-                                                Your main training badge:{' '}
-                                                <span className="font-black text-indigo-700">
-                                                    {lifeSkillWaitUi.currentBadgeEn}
-                                                </span>
-                                                .
-                                            </p>
-                                            <p>
-                                                To read or listen to life skills alongside, you will need to reach the{' '}
-                                                <span className="font-black text-slate-900">
-                                                    {TECHNICIAN_BADGE.en}
-                                                </span>{' '}
-                                                badge. Please wait{' '}
-                                                <span className="font-black text-indigo-700">
-                                                    {lifeSkillWaitUi.secondsLeft}s
-                                                </span>
-                                                . After you finish through lesson{' '}
-                                                <span className="font-black">3.10</span> on the main path, there is no
-                                                wait.
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <p>
-                                                মূল পাঠে এখন আপনার ব্যাজ{' '}
-                                                <span className="font-black text-indigo-700">
-                                                    {lifeSkillWaitUi.currentBadgeBn}
-                                                </span>
-                                                । লাইফ স্কিল একসঙ্গে দেখতে বা শুনতে{' '}
-                                                <span className="font-black text-slate-900">
-                                                    {TECHNICIAN_BADGE.bn}
-                                                </span>{' '}
-                                                ব্যাজে যেতে হবে।
-                                            </p>
-                                            <p>
-                                                <span className="font-black text-indigo-700">
-                                                    {toBengaliNumber(lifeSkillWaitUi.secondsLeft, 'bn')}
-                                                </span>{' '}
-                                                সেকেন্ড অপেক্ষা করুন। মূল পাঠের{' '}
-                                                <span className="font-black">৩.১০</span> পর্যন্ত শেষ করলে আর অপেক্ষা
-                                                করতে হবে না।
-                                            </p>
-                                        </>
-                                    )}
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        clearLifeSkillWaitTimers();
-                                        setLifeSkillWaitUi(null);
-                                    }}
-                                    className="w-full rounded-full border border-slate-200/80 bg-white px-4 py-3 text-sm font-bold shadow-sm"
-                                >
-                                    {language === 'en' ? 'Cancel' : 'বাতিল'}
-                                </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>,
-                    document.body
-                )}
-
             {/* Safety Journal UI - Immersive Slide-based Experience */}
             {
                 trainingContent && createPortal(
-                    <div className="lesson-reader-root fixed inset-x-0 bottom-0 top-0 z-[120] flex animate-fade-in-up flex-col overflow-hidden bg-[#fffdf7] md:top-14 lg:items-center lg:justify-center lg:bg-transparent">
+                    <div className={`lesson-reader-root fixed inset-x-0 bottom-0 top-0 z-[120] flex animate-fade-in-up flex-col overflow-hidden bg-[#fffdf7] md:top-14 lg:items-center lg:justify-center lg:bg-transparent ${
+                        lifeSkillScoreGateActive || supplementaryRadioOverlayOpen ? 'pointer-events-none' : ''
+                    }`}>
                         {/* Desktop desk atmosphere (replaces dark modal dim) */}
                         <div
                             className="lesson-reader-desk hidden lg:block"
                             onClick={() => {
+                                if (lifeSkillScoreGateActive || supplementaryRadioOverlayOpen) return;
                                 if (gateFocusPending?.lessonId) {
                                     notifyGateFocusRequired();
                                     return;
@@ -4470,6 +4567,7 @@ export default function Training({
                                     <button
                                         type="button"
                                         onClick={() => {
+                                            if (lifeSkillScoreGateActive || supplementaryRadioOverlayOpen) return;
                                             if (gateFocusPending?.lessonId) {
                                                 notifyGateFocusRequired();
                                                 return;
@@ -4577,15 +4675,6 @@ export default function Training({
                                             </span>
                                             {language === 'bn' ? 'মনোযোগ দিয়ে শুনুন' : 'Listen (full screen)'}
                                         </button>
-                                        {supplementaryRadioSrc ? (
-                                            <LessonRadioOverlay
-                                                isOpen={supplementaryRadioOverlayOpen}
-                                                onClose={() => setSupplementaryRadioOverlayOpen(false)}
-                                                src={supplementaryRadioSrc}
-                                                language={language}
-                                                lessonTitle={trainingContent.level_title}
-                                            />
-                                        ) : null}
                                     </div>
                                 ) : null}
                             </div>
@@ -5283,20 +5372,71 @@ export default function Training({
                 showQuizModal && createPortal(
                     <ChapterQuizModal
                         isOpen={showQuizModal}
-                        onClose={() => setShowQuizModal(false)}
+                        onClose={() => {
+                            if (lifeSkillScoreGateActive) return;
+                            setShowQuizModal(false);
+                        }}
                         onReadAgain={handleReadAgain}
-                        onHourlyQuiz={handleQuizResultHourlyNav}
+                        onHourlyQuiz={
+                            isSupplementaryProgressLessonId(pendingLessonId || trainingContent?.level_id || '')
+                                ? undefined
+                                : handleQuizResultHourlyNav
+                        }
                         questions={currentQuizQuestions}
                         onComplete={handleQuizComplete}
                         onGuestComplete={handleGuestQuizComplete}
                         guestPreview={isGuestUser(profile)}
                         chapterTitle={trainingContent?.level_title}
                         lessonId={trainingContent?.level_id}
+                        lessonBadge={getTrainingHeaderLessonCode(trainingContent, language)}
                         language={language}
+                        isLifeSkill={isSupplementaryProgressLessonId(
+                            pendingLessonId || trainingContent?.level_id || ''
+                        )}
+                        lifeSkillNeedsListen={
+                            !!trainingContent?.isSupplementary &&
+                            !!supplementaryRadioSrc &&
+                            !lifeSkillListenQualified
+                        }
+                        lifeSkillCooldownDays={getLifeSkillScoreCooldownDaysLeft(
+                            lifeSkillScoreCooldownByModule.get(
+                                pendingLessonId || trainingContent?.level_id
+                            )
+                        )}
                     />,
                     document.body
                 )
             }
+
+            {trainingContent?.isSupplementary &&
+                supplementaryRadioSrc &&
+                supplementaryRadioOverlayOpen &&
+                createPortal(
+                    <LessonRadioOverlay
+                        isOpen={supplementaryRadioOverlayOpen}
+                        onClose={() => {
+                            if (lifeSkillScoreGateActive) return;
+                            setSupplementaryRadioOverlayOpen(false);
+                        }}
+                        src={supplementaryRadioSrc}
+                        language={language}
+                        lessonTitle={trainingContent.level_title}
+                        scoreGateMode={lifeSkillScoreGateActive}
+                        bonusPoints={LIFE_SKILL_MONTHLY_BONUS_POINTS}
+                        cooldownDays={
+                            lifeSkillScoreGateActive
+                                ? getLifeSkillScoreCooldownDaysLeft(
+                                      lifeSkillScoreCooldownByModule.get(
+                                          pendingLessonId || trainingContent?.level_id
+                                      )
+                                  )
+                                : 0
+                        }
+                        onListenQualified={handleLifeSkillListenQualified}
+                        onSkipWithoutScore={handleLifeSkillSkipWithoutScore}
+                    />,
+                    document.body
+                )}
 
 
             {/* Image Preview Modal */}

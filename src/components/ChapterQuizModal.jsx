@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Share } from '@capacitor/share';
 import { DotLottiePlayer } from '@dotlottie/react-player';
@@ -72,7 +72,23 @@ function ReviewOptionMarker({ isSelected, isCorrect }) {
 
 const LESSON_QUIZ_PASS_RATE = 0.7;
 
-const ChapterQuizModal = ({ isOpen, onClose, onComplete, onGuestComplete, onReadAgain, onHourlyQuiz, questions = [], language = 'en', isPractice = false, lessonId = '', guestPreview = false }) => {
+const ChapterQuizModal = ({
+    isOpen,
+    onClose,
+    onComplete,
+    onGuestComplete,
+    onReadAgain,
+    onHourlyQuiz,
+    questions = [],
+    language = 'en',
+    isPractice = false,
+    lessonId = '',
+    guestPreview = false,
+    isLifeSkill = false,
+    lifeSkillNeedsListen = false,
+    lifeSkillCooldownDays = 0,
+    lessonBadge = '',
+}) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [userAnswers, setUserAnswers] = useState({});
     const [showResult, setShowResult] = useState(false);
@@ -174,7 +190,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onGuestComplete, onRead
         }
     }, []);
 
-    const t = {
+    const tBase = {
         en: {
             title: 'Chapter Quiz',
             question: 'Question',
@@ -269,7 +285,40 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onGuestComplete, onRead
             reportCopiedAlert: 'রিপোর্ট ক্লিপবোর্ডে কপি হয়েছে। হোয়াটসঅ্যাপ গ্রুপে পেস্ট করুন।',
             searchGoogleTitle: 'গুগলে খুঁজুন'
         }
-    }[language] || { en: {} };
+    }[language] || {};
+
+    const t = isLifeSkill
+        ? {
+              ...tBase,
+              ...(language === 'bn'
+                  ? {
+                        title: 'লাইফ স্কিল কুইজ',
+                        continue: lifeSkillNeedsListen ? 'এগিয়ে যান' : 'শেষ করুন',
+                        resultPassHint:
+                            lifeSkillNeedsListen && lifeSkillCooldownDays > 0
+                                ? `সাবাশ—এবার অডিও শুনুন। পয়েন্ট ${String(lifeSkillCooldownDays).replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[d])} দিন পর।`
+                                : lifeSkillNeedsListen
+                                  ? 'সাবাশ—এবার অডিও শুনলে পয়েন্ট পাবেন।'
+                                  : lifeSkillCooldownDays > 0
+                                    ? `অনুশীলন ঠিক আছে — ${String(lifeSkillCooldownDays).replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[d])} দিন পর আবার পয়েন্ট পাবেন।`
+                                    : 'সাবাশ—কুইজ পাস হয়েছে।',
+                        readAgain: 'আবার পড়ুন',
+                    }
+                  : {
+                        title: 'Life Skill Quiz',
+                        continue: lifeSkillNeedsListen ? 'Continue' : 'Done',
+                        resultPassHint:
+                            lifeSkillNeedsListen && lifeSkillCooldownDays > 0
+                                ? `Nice work—please listen next. Points again in ${lifeSkillCooldownDays} day${lifeSkillCooldownDays === 1 ? '' : 's'}.`
+                                : lifeSkillNeedsListen
+                                  ? 'Nice work—listen next to unlock your points.'
+                                  : lifeSkillCooldownDays > 0
+                                    ? `Practice is fine — points again in ${lifeSkillCooldownDays} day${lifeSkillCooldownDays === 1 ? '' : 's'}.`
+                                    : 'Nice work—you passed this quiz.',
+                        readAgain: 'Read again',
+                    }),
+          }
+        : tBase;
 
     const [shuffledQuestions, setShuffledQuestions] = useState([]);
     const [isRetryShuffle, setIsRetryShuffle] = useState(false);
@@ -573,13 +622,19 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onGuestComplete, onRead
                     <>
                         <div className={`flex items-center justify-between gap-3 p-4 ${isFullscreenScreen ? 'border-b border-slate-200/80 bg-white text-slate-900' : 'border-b border-slate-200/80 bg-white'}`}>
                             <div className="flex min-w-0 items-center gap-2">
-                                {lessonId && (
+                                {(lessonBadge || lessonId) && (
                                     <span className={`shrink-0 rounded-full border border-orange-100 bg-orange-50 px-2.5 py-1 text-xs font-black ${isFullscreenScreen ? 'text-orange-700' : 'text-orange-700'}`}>
-                                        {lessonId}
+                                        {lessonBadge || lessonId}
                                     </span>
                                 )}
                                 <h3 className={`truncate text-lg font-bold ${isFullscreenScreen ? 'text-slate-900' : 'text-slate-900'}`}>
-                                    {isReviewMode ? t.reviewTitle : showResult ? t.result : `${t.question} ${currentQuestionIndex + 1}/${totalQuestions}`}
+                                    {isReviewMode
+                                        ? t.reviewTitle
+                                        : showResult
+                                          ? isLifeSkill
+                                            ? t.title
+                                            : t.result
+                                          : `${t.question} ${currentQuestionIndex + 1}/${totalQuestions}`}
                                 </h3>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
@@ -637,7 +692,7 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onGuestComplete, onRead
                                     </button>
                                 ) : (
                                     <>
-                                        {showResult && typeof onHourlyQuiz === 'function' && (
+                                        {showResult && !isLifeSkill && typeof onHourlyQuiz === 'function' && (
                                             <button
                                                 type="button"
                                                 onClick={handleHourlyQuizNav}
@@ -907,9 +962,11 @@ const ChapterQuizModal = ({ isOpen, onClose, onComplete, onGuestComplete, onRead
                                                     className="rounded-full bg-orange-500 text-white shadow-sm shadow-orange-500/30 flex w-full items-center justify-center gap-2 py-3.5 text-sm font-semibold"
                                                 >
                                                     <span>{t.continue}</span>
-                                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                                    </svg>
+                                                    {!isLifeSkill && (
+                                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                                        </svg>
+                                                    )}
                                                 </button>
                                                 )
                                             ) : (
