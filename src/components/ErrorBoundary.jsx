@@ -14,9 +14,20 @@ class ErrorBoundary extends React.Component {
     }
 
     componentDidCatch(error, errorInfo) {
-        // You can also log the error to an error reporting service
         console.error("Uncaught error:", error, errorInfo);
         this.setState({ error, errorInfo });
+
+        // After a deploy, old lazy chunks 404. Reload once so users pick up the new build.
+        const msg = String(error?.message || error || '');
+        const isChunkError = /Failed to fetch dynamically imported module|Loading chunk|Importing a module script failed|error loading dynamically imported module/i.test(msg);
+        if (!isChunkError) return;
+
+        const key = 'slm_chunk_reload';
+        const last = Number(sessionStorage.getItem(key) || 0);
+        const now = Date.now();
+        if (now - last < 15000) return;
+        sessionStorage.setItem(key, String(now));
+        window.location.reload();
     }
 
     handleReload = () => {

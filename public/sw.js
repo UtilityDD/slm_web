@@ -1,4 +1,4 @@
-const CACHE_NAME = 'suraksha-sathi-v27-1.4.1';
+const CACHE_NAME = 'suraksha-sathi-v28-1.4.2';
 const LOADER_IMAGES = [
   '/images/loader/helmet.webp',
   '/images/loader/goggles.webp',
@@ -65,15 +65,21 @@ const ASSETS_TO_CACHE = [
   '/quizzes/lesson_10_11.json'
 ];
 
+// Wait for the app to ask before activating, so users can choose "Reload".
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return Promise.allSettled(
-        ASSETS_TO_CACHE.map(url => cache.add(url))
+        ASSETS_TO_CACHE.map((url) => cache.add(url))
       );
     })
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('activate', (event) => {
