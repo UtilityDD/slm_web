@@ -2440,14 +2440,14 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                 </div>
 
                 {sponsorForm.contact_safety_mitra && (
-                  <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 space-y-1">
-                    <p className="text-[11px] font-semibold text-amber-800">
+                  <div className="px-1 py-1 space-y-1">
+                    <p className="text-[11px] font-semibold text-slate-500">
                       {isEn ? 'Shown highlighted on the ad (auto):' : 'অ্যাডে হাইলাইট হয়ে দেখাবে (অটো):'}
                     </p>
-                    <p className="text-sm font-extrabold text-amber-900 font-bengali">
+                    <p className="text-sm font-extrabold text-amber-600 font-bengali underline underline-offset-4 decoration-amber-500/70">
                       {isEn ? 'We do not take any money' : 'আমরা কোনো টাকা নিই না'}
                     </p>
-                    <p className="text-[11px] text-amber-800/80">
+                    <p className="text-[11px] text-slate-500">
                       {isEn
                         ? 'Also adds Safety Mitra cue and Contact us → landing contact form (for logged-out users).'
                         : 'সেফটি মিত্র বার্তা ও যোগাযোগ করুন → ল্যান্ডিং কন্টাক্ট ফর্মও যোগ হয় (লগআউট ইউজারের জন্য)।'}
