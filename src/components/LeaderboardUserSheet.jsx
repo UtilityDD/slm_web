@@ -20,6 +20,7 @@ import {
     getRankMedal,
     MONTHLY_SUB_TAB,
 } from '../utils/monthlyEncouragementBoards';
+import { lessonIdFromCoreLessonBonusQuizId } from '../utils/trainingLessonIds';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -72,10 +73,7 @@ const getDaysBetween = (startValue, endValue) => {
     return Math.max(1, Math.ceil((end - start) / MS_PER_DAY) + 1);
 };
 
-const parseLessonId = (quizId = '') => {
-    if (!quizId.startsWith('lesson_bonus_')) return null;
-    return quizId.replace('lesson_bonus_', '').trim();
-};
+const parseLessonId = (quizId = '') => lessonIdFromCoreLessonBonusQuizId(quizId);
 
 function computeLearningStats(profile, attempts) {
     const completedLessons = Array.isArray(profile?.completed_lessons)

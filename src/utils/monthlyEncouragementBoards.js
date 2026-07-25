@@ -1,5 +1,7 @@
 /** Rules and copy for monthly encouragement boards + token prize resolution. */
 
+import { lessonIdFromCoreLessonBonusQuizId } from './trainingLessonIds';
+
 export const BOARD_IDS = {
     MAIN: 'main_champion',
     NEW_PLAYER: 'new_player',
@@ -418,7 +420,8 @@ export function aggregateActivityAttempts(rows) {
         if (qid.startsWith('hourly-challenge')) {
             byUser[id].hourly += 1;
         } else if (qid.startsWith('lesson_bonus')) {
-            byUser[id].lessons.add(qid);
+            const lessonId = lessonIdFromCoreLessonBonusQuizId(qid) || qid;
+            byUser[id].lessons.add(lessonId);
             byUser[id].learner_score += Number(row.score) || 0;
         }
     }

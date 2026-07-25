@@ -16,6 +16,7 @@ export default function LessonContinueStrip({
     language = 'en',
     onSelect,
     openingId = null,
+    compact = false,
 }) {
     const scrollerRef = useRef(null);
     const currentRef = useRef(null);
@@ -74,7 +75,9 @@ export default function LessonContinueStrip({
         <div className="lesson-continue-strip w-full max-w-full">
             <div
                 ref={scrollerRef}
-                className="lesson-continue-strip__scroller flex snap-x snap-mandatory gap-3.5 overflow-x-auto overscroll-x-contain px-3 py-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-4"
+                className={`lesson-continue-strip__scroller flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
+                    compact ? 'gap-2.5 px-2 py-0.5 sm:gap-3.5 sm:px-3 sm:py-1' : 'gap-3.5 px-3 py-1 sm:gap-4'
+                }`}
                 role="list"
                 aria-label={language === 'en' ? 'Open lessons' : 'খোলা পাঠসমূহ'}
             >
@@ -107,7 +110,9 @@ export default function LessonContinueStrip({
                             ref={lesson.isCurrent || lesson.isNext ? currentRef : undefined}
                             disabled={isOpening || !lesson.isUnlocked}
                             onClick={() => onSelect?.(lesson)}
-                            className="group flex w-14 shrink-0 snap-center flex-col items-center touch-manipulation transition-transform active:scale-95 disabled:opacity-60 sm:w-16"
+                            className={`group flex shrink-0 snap-center flex-col items-center touch-manipulation transition-transform active:scale-95 disabled:opacity-60 ${
+                                compact ? 'w-11 sm:w-16' : 'w-14 sm:w-16'
+                            }`}
                             aria-current={lesson.isCurrent ? 'true' : undefined}
                             aria-label={
                                 language === 'en'
@@ -115,8 +120,13 @@ export default function LessonContinueStrip({
                                     : `পাঠ ${label}, ${status}`
                             }
                         >
-                            <span className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-black tabular-nums transition-colors sm:h-14 sm:w-14 sm:text-base ${circleClass}`}>
-                                {language === 'bn' ? (
+                            <span
+                                className={`relative flex items-center justify-center rounded-full border-2 font-black tabular-nums transition-colors ${circleClass} ${
+                                    compact
+                                        ? 'h-10 w-10 text-xs sm:h-14 sm:w-14 sm:text-base'
+                                        : 'h-12 w-12 text-sm sm:h-14 sm:w-14 sm:text-base'
+                                }`}
+                            >                                {language === 'bn' ? (
                                     <span className="font-bengali leading-none">{label}</span>
                                 ) : (
                                     label

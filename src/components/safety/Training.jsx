@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom';
 import secureStorage from '../../utils/secureStorage';
 import { supabase } from '../../supabaseClient';
-import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../../config';
+import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL, CORE_LESSON_MONTHLY_BONUS_ENABLED, CORE_LESSON_MONTHLY_BONUS_LAUNCH_ISO } from '../../config';
 import HomeSkeleton from '../loaders/HomeSkeleton';
 import { calculateLevelFromProgress, getBadgeByLevel, getRoadmapBadgeByLevel } from '../../utils/badgeUtils';
 import { cacheHelper } from '../../utils/cacheHelper';
@@ -13,6 +13,7 @@ import ChapterQuizModal from '../ChapterQuizModal';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import LessonCelebration from './LessonCelebration';
 import LessonCompleteHero from './LessonCompleteHero';
+import LessonScoreStatusFlip from './LessonScoreStatusFlip';
 import LessonContinueStrip from './LessonContinueStrip';
 import LessonRadioOverlay from './LessonRadioOverlay';
 import PPESurveyModal from './PPESurveyModal';
@@ -35,6 +36,11 @@ import {
     buildLifeSkillTotalsByModule,
     getLifeSkillScoreCooldownDaysLeft,
     LIFE_SKILL_MONTHLY_BONUS_POINTS,
+    buildCoreLessonMonthlyBonusQuizId,
+    buildCoreLessonActiveCooldowns,
+    getCoreLessonScoreCooldownDaysLeft,
+    lessonIdFromCoreLessonBonusQuizId,
+    CORE_LESSON_MONTHLY_BONUS_POINTS,
 } from '../../utils/trainingLessonIds';
 import { logReadingHabitCompletion, logReadingHabitReview } from '../../utils/readingHabitLog';
 import { checkReadingGate } from '../../utils/readingHabitGate';
@@ -1217,6 +1223,8 @@ export default function Training({
     const [lifeSkillScoreCooldownByModule, setLifeSkillScoreCooldownByModule] = useState(() => new Map());
     /** moduleId → lifetime points from this Life Skill card’s awards. */
     const [lifeSkillTotalsByModule, setLifeSkillTotalsByModule] = useState(() => new Map());
+    /** lessonId → ISO effective award time while still inside the 30-day core re-claim cooldown. */
+    const [coreLessonScoreCooldownByLesson, setCoreLessonScoreCooldownByLesson] = useState(() => new Map());
     const [showLifeSkillsHint, setShowLifeSkillsHint] = useState(() => {
         const s = readLifeSkillsHintState();
         return !s.dismissed && s.visits < MAX_LIFE_SKILLS_HINT_VISITS;
@@ -1457,6 +1465,40 @@ export default function Training({
                 setLifeSkillTotalsByModule(buildLifeSkillTotalsByModule(rows));
             } catch (err) {
                 console.error('Error loading life skill card scores:', err);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [user, profile]);
+
+    // Core lesson 30-day re-claim cooldowns (quiz_attempts lesson_bonus_*). Feature-flagged; no RPC changes.
+    useEffect(() => {
+        if (!CORE_LESSON_MONTHLY_BONUS_ENABLED || !user || isGuestUser(profile)) {
+            setCoreLessonScoreCooldownByLesson(new Map());
+            return undefined;
+        }
+
+        let cancelled = false;
+        (async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('quiz_attempts')
+                    .select('quiz_id, created_at')
+                    .eq('user_id', user.id)
+                    .like('quiz_id', 'lesson_bonus_%');
+
+                if (cancelled || error) {
+                    if (error) console.error('Error loading core lesson score cooldowns:', error);
+                    return;
+                }
+
+                setCoreLessonScoreCooldownByLesson(
+                    buildCoreLessonActiveCooldowns(data || [], CORE_LESSON_MONTHLY_BONUS_LAUNCH_ISO)
+                );
+            } catch (err) {
+                console.error('Error loading core lesson score cooldowns:', err);
             }
         })();
 
@@ -3128,6 +3170,122 @@ export default function Training({
         ]
     );
 
+    const awardCoreLessonMonthlyPoints = useCallback(
+        async (lessonId) => {
+            if (!CORE_LESSON_MONTHLY_BONUS_ENABLED || !user || !lessonId || isGuestUser(profile)) {
+                return { awarded: false, skipped: true };
+            }
+
+            try {
+                const { data: priorRows, error: priorError } = await supabase
+                    .from('quiz_attempts')
+                    .select('quiz_id, created_at')
+                    .eq('user_id', user.id)
+                    .or(
+                        `quiz_id.eq.lesson_bonus_${lessonId},quiz_id.like.lesson_bonus_${lessonId}_%`
+                    )
+                    .order('created_at', { ascending: false })
+                    .limit(40);
+
+                if (priorError) {
+                    console.error('Error checking core lesson score cooldown:', priorError);
+                } else {
+                    const forLesson = (priorRows || []).filter(
+                        (row) => lessonIdFromCoreLessonBonusQuizId(row.quiz_id) === lessonId
+                    );
+                    const active = buildCoreLessonActiveCooldowns(
+                        forLesson,
+                        CORE_LESSON_MONTHLY_BONUS_LAUNCH_ISO
+                    );
+                    const lastAwardAt = active.get(lessonId);
+                    const daysLeft = getCoreLessonScoreCooldownDaysLeft(lastAwardAt);
+                    if (daysLeft > 0) {
+                        setCoreLessonScoreCooldownByLesson((prev) => {
+                            const next = new Map(prev);
+                            next.set(lessonId, lastAwardAt);
+                            return next;
+                        });
+                        if (typeof showNotification === 'function') {
+                            showNotification(
+                                language === 'en'
+                                    ? `Practice saved — points again in ${daysLeft} day${daysLeft === 1 ? '' : 's'}.`
+                                    : `অনুশীলন সংরক্ষিত — ${toBengaliNumber(daysLeft, 'bn')} দিন পর আবার পয়েন্ট পাবেন।`,
+                                'info'
+                            );
+                        }
+                        return { awarded: false, daysLeft };
+                    }
+                }
+
+                const inputQuizId = buildCoreLessonMonthlyBonusQuizId(lessonId);
+                const { data: rpcData, error: rpcError } = await supabase.rpc('award_training_points', {
+                    input_quiz_id: inputQuizId,
+                    input_score: CORE_LESSON_MONTHLY_BONUS_POINTS,
+                    p_user_id: user.id,
+                });
+
+                if (rpcError) {
+                    console.error('Error awarding core lesson monthly bonus:', rpcError);
+                    if (typeof showNotification === 'function') {
+                        showNotification(
+                            language === 'en' ? 'Error saving points' : 'পয়েন্ট সেভ করতে ত্রুটি',
+                            'error'
+                        );
+                    }
+                    return { awarded: false, error: true };
+                }
+
+                const alreadyAwarded =
+                    rpcData &&
+                    typeof rpcData === 'object' &&
+                    (rpcData.already_awarded === true || rpcData.already_awarded === 'true');
+
+                const awardedAt = new Date().toISOString();
+                setCoreLessonScoreCooldownByLesson((prev) => {
+                    const next = new Map(prev);
+                    next.set(lessonId, awardedAt);
+                    return next;
+                });
+
+                if (!alreadyAwarded) {
+                    invalidateLeaderboardCaches(user.id);
+                    cacheHelper.clear(`profile_${user.id}`);
+                    setRecentReward(CORE_LESSON_MONTHLY_BONUS_POINTS);
+                    setTimeout(() => setRecentReward(null), 5000);
+                    if (typeof showNotification === 'function') {
+                        showNotification(
+                            language === 'en'
+                                ? `+${CORE_LESSON_MONTHLY_BONUS_POINTS} points — lesson review. Next score in 30 days.`
+                                : `+${CORE_LESSON_MONTHLY_BONUS_POINTS} পয়েন্ট — পাঠ রিভিউ। পরবর্তী পয়েন্ট ৩০ দিন পর।`,
+                            'success'
+                        );
+                    }
+                    return { awarded: true };
+                }
+
+                if (typeof showNotification === 'function') {
+                    showNotification(
+                        language === 'en'
+                            ? 'Practice saved — points already claimed for this lesson today.'
+                            : 'অনুশীলন সংরক্ষিত — এই পাঠের পয়েন্ট আজ ইতিমধ্যে নেওয়া হয়েছে।',
+                        'info'
+                    );
+                }
+                return { awarded: false, alreadyAwarded: true };
+            } catch (err) {
+                console.error('Critical error awarding core lesson monthly points:', err);
+                if (typeof showNotification === 'function') {
+                    showNotification(
+                        language === 'en' ? 'Error saving points' : 'পয়েন্ট সেভ করতে ত্রুটি',
+                        'error'
+                    );
+                }
+                return { awarded: false, error: true };
+            }
+        },
+        [user, profile, language, showNotification]
+    );
+
     const finalizeLessonCompletion = async (lessonId) => {
         if (isSupplementaryProgressLessonId(lessonId)) {
             await resolveLifeSkillScoreAfterPass(lessonId);
@@ -3192,6 +3350,13 @@ export default function Training({
                         cacheHelper.clear(`profile_${user.id}`);
                         setRecentReward(bonusPoints);
                         setTimeout(() => setRecentReward(null), 5000);
+                        if (CORE_LESSON_MONTHLY_BONUS_ENABLED) {
+                            setCoreLessonScoreCooldownByLesson((prev) => {
+                                const next = new Map(prev);
+                                next.set(lessonId, new Date().toISOString());
+                                return next;
+                            });
+                        }
                     }
 
                     if (pointsAwarded || gateUnlock) {
@@ -3276,6 +3441,9 @@ export default function Training({
                     'success'
                 );
             }
+        } else if (CORE_LESSON_MONTHLY_BONUS_ENABLED && user) {
+            // Voluntary re-read of a completed lesson — monthly +20 when off cooldown.
+            await awardCoreLessonMonthlyPoints(lessonId);
         }
         setShowQuizModal(false);
         setPendingLessonId(null);
@@ -3765,10 +3933,43 @@ export default function Training({
                                             }
 
                                             const isNext = !item.isCompleted && item.isUnlocked;
+                                            const scoreDaysLeft =
+                                                CORE_LESSON_MONTHLY_BONUS_ENABLED && item.isCompleted
+                                                    ? getCoreLessonScoreCooldownDaysLeft(
+                                                          coreLessonScoreCooldownByLesson.get(item.id)
+                                                      )
+                                                    : 0;
+                                            const scoreClaimReady =
+                                                CORE_LESSON_MONTHLY_BONUS_ENABLED &&
+                                                item.isCompleted &&
+                                                scoreDaysLeft === 0;
+                                            const roadmapStatusLabel = item.isCompleted
+                                                ? !CORE_LESSON_MONTHLY_BONUS_ENABLED
+                                                    ? language === 'en'
+                                                        ? 'Read again'
+                                                        : 'আবার পড়ুন'
+                                                    : scoreDaysLeft > 0
+                                                      ? language === 'en'
+                                                          ? `Read again. Points in ${scoreDaysLeft} day${scoreDaysLeft === 1 ? '' : 's'}.`
+                                                          : `আবার পড়ুন। ${toBengaliNumber(scoreDaysLeft, 'bn')} দিন পর পয়েন্ট।`
+                                                      : language === 'en'
+                                                        ? 'Read again. +20 points ready.'
+                                                        : 'আবার পড়ুন। +২০ পয়েন্ট প্রস্তুত।'
+                                                : item.isUnlocked
+                                                  ? language === 'en'
+                                                      ? 'Quick read'
+                                                      : 'দ্রুত পড়ুন'
+                                                  : language === 'en'
+                                                    ? 'Locked'
+                                                    : 'লক করা';
                                             return (
                                                 <div
                                                     key={`lesson-${item.id}`}
                                                     id={`roadmap-node-${item.id}`}
+                                                    role="button"
+                                                    tabIndex={item.isUnlocked ? 0 : -1}
+                                                    title={roadmapStatusLabel}
+                                                    aria-label={`Lesson ${item.id}. ${roadmapStatusLabel}`}
                                                     onClick={() => {
                                                         if (item.isUnlocked) {
                                                             handleChapterClick(journeyChapters.find(c => c.number === item.chapterNumber), item.lessonNumber);
@@ -3783,13 +3984,32 @@ export default function Training({
                                                             });
                                                         }
                                                     }}
-                                                    className={`group absolute z-20 flex h-16 w-16 cursor-pointer flex-col items-center justify-center rounded-full border-2 transition-all duration-300 active:scale-95 sm:h-20 sm:w-20 ${item.isCompleted ? 'border-emerald-700/25 bg-emerald-400 text-slate-900 shadow-md hover:shadow-lg' : item.isUnlocked ? `border-slate-900/10 ${item.badge.color} text-slate-900 shadow-md hover:shadow-lg` : 'cursor-not-allowed border-slate-300 bg-slate-200 text-slate-500 opacity-80 shadow-sm grayscale'} ${isNext ? 'animate-float-y border-orange-500 shadow-lg shadow-orange-500/30 ring-4 ring-orange-400/40' : ''}`}
+                                                    onKeyDown={(e) => {
+                                                        if (!item.isUnlocked) return;
+                                                        if (e.key === 'Enter' || e.key === ' ') {
+                                                            e.preventDefault();
+                                                            handleChapterClick(
+                                                                journeyChapters.find((c) => c.number === item.chapterNumber),
+                                                                item.lessonNumber
+                                                            );
+                                                        }
+                                                    }}
+                                                    className={`group absolute z-20 flex h-16 w-16 cursor-pointer flex-col items-center justify-center rounded-full border-2 transition-all duration-300 active:scale-95 sm:h-20 sm:w-20 ${item.isCompleted ? 'border-emerald-700/25 bg-emerald-400 text-slate-900 shadow-md hover:shadow-lg' : item.isUnlocked ? `border-slate-900/10 ${item.badge.color} text-slate-900 shadow-md hover:shadow-lg` : 'cursor-not-allowed border-slate-300 bg-slate-200 text-slate-500 opacity-80 shadow-sm grayscale'} ${isNext ? 'animate-float-y border-orange-500 shadow-lg shadow-orange-500/30 ring-4 ring-orange-400/40' : ''} ${scoreClaimReady ? 'ring-2 ring-amber-400/50' : ''}`}
                                                     style={{ left: `${xPos}%`, top: yPos, transform: 'translate(-50%, -50%)' }}
                                                 >
                                                     <span className={`text-base sm:text-lg font-black ${language === 'bn' ? 'font-bengali' : ''}`}>{toBengaliNumber(item.id, language)}</span>
-                                                    <div className={`pointer-events-none absolute top-full z-50 mt-3 w-max max-w-[9rem] rounded-full bg-slate-900/90 px-3 py-1.5 text-center text-[10px] font-bold text-white opacity-0 shadow-lg backdrop-blur-sm transition-opacity group-hover:opacity-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    {/* Desktop-only hover chip — mobile has no hover; status is on the lesson screen + amber check. */}
+                                                    <div className={`pointer-events-none absolute top-full z-50 mt-3 hidden w-max max-w-[11rem] rounded-full bg-slate-900/90 px-3 py-1.5 text-center text-[10px] font-bold text-white opacity-0 shadow-lg backdrop-blur-sm transition-opacity [@media(hover:hover)]:block [@media(hover:hover)]:group-hover:opacity-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                         {item.isCompleted ? (
-                                                            language === 'en' ? 'Read Again' : 'আবার পড়ুন'
+                                                            !CORE_LESSON_MONTHLY_BONUS_ENABLED
+                                                                ? (language === 'en' ? 'Read Again' : 'আবার পড়ুন')
+                                                                : scoreDaysLeft > 0
+                                                                  ? (language === 'en'
+                                                                        ? `Read again · points in ${scoreDaysLeft}d`
+                                                                        : `আবার পড়ুন · ${toBengaliNumber(scoreDaysLeft, 'bn')} দিনে পয়েন্ট`)
+                                                                  : (language === 'en'
+                                                                        ? 'Read again · +20 ready'
+                                                                        : 'আবার পড়ুন · +২০ প্রস্তুত')
                                                         ) : item.isUnlocked ? (
                                                             language === 'en' ? 'Quick Read' : 'দ্রুত পড়ুন'
                                                         ) : (
@@ -3797,8 +4017,35 @@ export default function Training({
                                                         )}
                                                     </div>
                                                     {item.isCompleted && (
-                                                        <div className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-slate-900/20 bg-white text-emerald-600 shadow-sm sm:h-6 sm:w-6">
-                                                            <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                                                        <div
+                                                            className={`absolute -right-0.5 -top-0.5 flex items-center justify-center overflow-hidden rounded-full border shadow-sm ${
+                                                                scoreClaimReady
+                                                                    ? 'h-5 min-w-[1.35rem] px-0.5 border-amber-400/80 bg-amber-50 text-amber-700 ring-1 ring-amber-300/70 sm:h-6 sm:min-w-[1.55rem]'
+                                                                    : 'h-5 w-5 border-slate-900/20 bg-white text-emerald-600 sm:h-6 sm:w-6'
+                                                            }`}
+                                                            aria-hidden
+                                                        >
+                                                            {scoreClaimReady ? (
+                                                                <>
+                                                                    <svg
+                                                                        className="animate-lesson-score-ready-a absolute h-3 w-3 sm:h-3.5 sm:w-3.5"
+                                                                        fill="none"
+                                                                        stroke="currentColor"
+                                                                        viewBox="0 0 24 24"
+                                                                    >
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                                                    </svg>
+                                                                    <span
+                                                                        className={`animate-lesson-score-ready-b absolute text-[8px] font-black leading-none tracking-tight sm:text-[9px] ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                    >
+                                                                        +{language === 'bn' ? toBengaliNumber(20, 'bn') : '20'}
+                                                                    </span>
+                                                                </>
+                                                            ) : (
+                                                                <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                                                </svg>
+                                                            )}
                                                         </div>
                                                     )}
                                                     
@@ -4851,6 +5098,7 @@ export default function Training({
                                     activeSlide?.type === 'section' ? activeSlide.points ?? [] : [];
                                 const isSupplementaryCompletion =
                                     activeSlide?.type === 'completion' && trainingContent?.isSupplementary;
+                                const isCompletionSlide = activeSlide?.type === 'completion';
                                 const isCelebrateArrival =
                                     !prefersReducedMotion &&
                                     lessonPageTurnTick > 0 &&
@@ -4865,7 +5113,7 @@ export default function Training({
                                     <div
                                         ref={lessonScrollRef}
                                         className={`relative flex-1 scroll-smooth transition-colors duration-700 ${
-                                            isSupplementaryCompletion
+                                            isCompletionSlide
                                                 ? 'min-h-0 overflow-x-hidden overflow-y-hidden'
                                                 : 'overflow-y-auto'
                                         }`}
@@ -4877,8 +5125,8 @@ export default function Training({
                                             ref={lessonScrollInnerRef}
                                             key={activeSectionIndex}
                                             className={`mx-auto relative max-w-3xl px-4 sm:px-8 lg:px-10 ${pageTurnClass} ${
-                                                isSupplementaryCompletion
-                                                    ? 'flex h-full min-h-0 flex-col items-center overflow-hidden py-3 pb-4 sm:py-8 sm:pb-10'
+                                                isCompletionSlide
+                                                    ? 'flex h-full min-h-0 flex-col items-center overflow-hidden py-2 pb-3 sm:py-6 sm:pb-8'
                                                     : 'px-5 py-8 pb-8 sm:py-10 sm:pb-10 lg:py-12'
                                             }`}
                                         >
@@ -5226,12 +5474,12 @@ export default function Training({
 
                                             {slides[activeSectionIndex]?.type === 'completion' && (
                                                 <div
-                                                    className={`lesson-complete-stage relative mx-auto flex w-full max-w-lg flex-col items-center text-center ${
+                                                    className={`lesson-complete-stage lesson-complete-fit relative mx-auto flex h-full min-h-0 w-full max-w-lg flex-col items-center text-center ${
                                                         isCelebrateArrival ? 'lesson-complete-reveal' : 'animate-fade-in'
                                                     } ${
                                                         trainingContent.isSupplementary
-                                                            ? 'justify-center gap-0 px-1 py-2 sm:py-4'
-                                                            : 'justify-start px-1 pb-8 pt-2 sm:px-2 sm:pb-12 sm:pt-4'
+                                                            ? 'justify-center gap-0 px-1 py-1 sm:py-4'
+                                                            : 'justify-between gap-2 px-1 py-1 sm:justify-center sm:gap-4 sm:px-2 sm:py-4'
                                                     }`}
                                                 >
                                                     {trainingContent.isSupplementary ? (
@@ -5301,36 +5549,50 @@ export default function Training({
                                                             )}
                                                         </div>
                                                     ) : (
-                                                        <div className={`relative z-10 flex w-full flex-col items-center ${isCelebrateArrival ? 'lesson-complete-reveal__body' : 'animate-fade-in-up'}`}>
-                                                            <LessonCompleteHero
-                                                                badge={trainingContent.badge || getRoadmapBadgeByLevel(
-                                                                    Number(String(trainingContent.level_id || '').split('.')[0]) || 1
-                                                                )}
-                                                                language={language}
-                                                                prefersReducedMotion={prefersReducedMotion}
-                                                            />
+                                                        <div className={`relative z-10 flex h-full min-h-0 w-full flex-col items-center ${isCelebrateArrival ? 'lesson-complete-reveal__body' : 'animate-fade-in-up'}`}>
+                                                            <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-2 sm:gap-3">
+                                                                <LessonCompleteHero
+                                                                    badge={trainingContent.badge || getRoadmapBadgeByLevel(
+                                                                        Number(String(trainingContent.level_id || '').split('.')[0]) || 1
+                                                                    )}
+                                                                    language={language}
+                                                                    prefersReducedMotion={prefersReducedMotion}
+                                                                    fitViewport
+                                                                />
 
-                                                            <div className="mt-2 w-full space-y-3 px-2 sm:mt-3 sm:space-y-3.5">
-                                                                <p className={`text-[11px] font-bold text-orange-600 sm:text-xs ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-[0.16em]'}`}>
-                                                                    {language === 'en'
-                                                                        ? `Lesson ${getTrainingHeaderLessonCode(trainingContent, language)} complete`
-                                                                        : `পাঠ ${getTrainingHeaderLessonCode(trainingContent, language)} সম্পন্ন`}
-                                                                </p>
-                                                                <h3 className={`text-[1.75rem] font-black leading-[1.15] tracking-tight text-slate-900 sm:text-4xl ${language === 'bn' ? 'font-bengali leading-snug' : ''}`}>
-                                                                    {language === 'en' ? 'Mission Accomplished' : 'অভিনন্দন'}
-                                                                </h3>
-                                                                <p className={`mx-auto max-w-[18rem] text-sm font-medium leading-relaxed text-slate-600 sm:max-w-sm sm:text-base sm:leading-7 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                    {language === 'en'
-                                                                        ? 'You finished this lesson. Take the challenge when you are ready.'
-                                                                        : 'আপনি এই পাঠ শেষ করেছেন। প্রস্তুত হলে চ্যালেঞ্জ নিন।'}
-                                                                </p>
+                                                                <div className="w-full shrink-0 space-y-1.5 px-2 sm:space-y-2.5">
+                                                                    <p className={`text-[10px] font-bold text-orange-600 sm:text-xs ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-[0.16em]'}`}>
+                                                                        {language === 'en'
+                                                                            ? `Lesson ${getTrainingHeaderLessonCode(trainingContent, language)} complete`
+                                                                            : `পাঠ ${getTrainingHeaderLessonCode(trainingContent, language)} সম্পন্ন`}
+                                                                    </p>
+                                                                    <h3 className={`text-[1.45rem] font-black leading-[1.15] tracking-tight text-slate-900 sm:text-4xl ${language === 'bn' ? 'font-bengali leading-snug' : ''}`}>
+                                                                        {language === 'en' ? 'Mission Accomplished' : 'অভিনন্দন'}
+                                                                    </h3>
+                                                                    <p className={`mx-auto max-w-[18rem] text-[13px] font-medium leading-snug text-slate-600 sm:max-w-sm sm:text-base sm:leading-7 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                        {language === 'en'
+                                                                            ? 'You finished this lesson. Take the challenge when you are ready.'
+                                                                            : 'আপনি এই পাঠ শেষ করেছেন। প্রস্তুত হলে চ্যালেঞ্জ নিন।'}
+                                                                    </p>
+                                                                    {CORE_LESSON_MONTHLY_BONUS_ENABLED && (
+                                                                        <LessonScoreStatusFlip
+                                                                            language={language}
+                                                                            daysLeft={getCoreLessonScoreCooldownDaysLeft(
+                                                                                coreLessonScoreCooldownByLesson.get(trainingContent.level_id)
+                                                                            )}
+                                                                            bonusPoints={CORE_LESSON_MONTHLY_BONUS_POINTS}
+                                                                            prefersReducedMotion={prefersReducedMotion}
+                                                                            compact
+                                                                        />
+                                                                    )}
+                                                                </div>
                                                             </div>
 
-                                                            <div className="mt-8 flex w-full max-w-sm flex-col items-center gap-3 sm:mt-10">
+                                                            <div className="mt-2 flex w-full max-w-sm shrink-0 flex-col items-center gap-2 sm:mt-6 sm:gap-3">
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => initiateLessonCompletion(trainingContent.level_id)}
-                                                                    className="flex min-h-[56px] w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-4 text-base font-black text-white shadow-lg shadow-orange-500/35 transition-all hover:from-orange-600 hover:to-amber-600 active:scale-[0.98] sm:text-lg"
+                                                                    className="flex min-h-[48px] w-full items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-3 text-[0.95rem] font-black text-white shadow-lg shadow-orange-500/35 transition-all hover:from-orange-600 hover:to-amber-600 active:scale-[0.98] sm:min-h-[56px] sm:gap-3 sm:py-4 sm:text-lg"
                                                                 >
                                                                     <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -5342,20 +5604,21 @@ export default function Training({
                                                                     <button
                                                                         type="button"
                                                                         onClick={handleLessonCompletionHourlyNav}
-                                                                        className={`py-1.5 text-sm font-semibold text-emerald-700/90 transition-colors hover:text-emerald-800 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                        className={`py-1 text-sm font-semibold text-emerald-700/90 transition-colors hover:text-emerald-800 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                                     >
                                                                         {language === 'en' ? 'Or try hourly quiz →' : 'অথবা ঘণ্টাভিত্তিক কুইজ →'}
                                                                     </button>
                                                                 )}
-                                                            </div>
 
-                                                            <div className="mt-10 w-full border-t border-orange-100/90 pt-6 sm:mt-12 sm:pt-7">
-                                                                <LessonContinueStrip
-                                                                    lessons={completionNavLessons}
-                                                                    language={language}
-                                                                    onSelect={openLessonFromCompletionStrip}
-                                                                    openingId={completionStripOpeningId}
-                                                                />
+                                                                <div className="w-full border-t border-orange-100/90 pt-3 sm:pt-5">
+                                                                    <LessonContinueStrip
+                                                                        lessons={completionNavLessons}
+                                                                        language={language}
+                                                                        onSelect={openLessonFromCompletionStrip}
+                                                                        openingId={completionStripOpeningId}
+                                                                        compact
+                                                                    />
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     )}

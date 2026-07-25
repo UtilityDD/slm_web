@@ -6,6 +6,7 @@ import { supabase } from '../supabaseClient';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 import { requestManager } from '../utils/requestManager';
 import { WEBSITE_URL } from '../config';
+import { lessonIdFromCoreLessonBonusQuizId } from '../utils/trainingLessonIds';
 import UserProfilePrizeList from './UserProfilePrizeList';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -44,10 +45,7 @@ const getDaysBetween = (startValue, endValue) => {
 
 const safePhone = (profile) => profile?.phone_number || profile?.phone || '';
 
-const parseLessonId = (quizId = '') => {
-    if (!quizId.startsWith('lesson_bonus_')) return null;
-    return quizId.replace('lesson_bonus_', '').trim();
-};
+const parseLessonId = (quizId = '') => lessonIdFromCoreLessonBonusQuizId(quizId);
 
 const getActivityLabel = (quizId = '', language = 'bn') => {
     if (quizId.startsWith('lesson_bonus_')) return language === 'en' ? 'Lesson' : 'পাঠ';

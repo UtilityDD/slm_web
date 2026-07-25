@@ -2574,6 +2574,65 @@ body,
     }
   }
 
+  /* Core lesson +20 claimable badge: swap tick ↔ +20 (mobile-friendly, no hover). */
+  @keyframes lesson-score-ready-swap-a {
+    0%,
+    42% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50%,
+    92% {
+      opacity: 0;
+      transform: scale(0.72);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes lesson-score-ready-swap-b {
+    0%,
+    42% {
+      opacity: 0;
+      transform: scale(0.72);
+    }
+    50%,
+    92% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0.72);
+    }
+  }
+
+  .animate-lesson-score-ready-a {
+    animation: lesson-score-ready-swap-a 2.8s ease-in-out infinite;
+  }
+
+  .animate-lesson-score-ready-b {
+    animation: lesson-score-ready-swap-b 2.8s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-lesson-score-ready-a,
+    .animate-lesson-score-ready-b {
+      animation: none;
+    }
+
+    .animate-lesson-score-ready-a {
+      opacity: 0;
+    }
+
+    .animate-lesson-score-ready-b {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   /* Live Card Specifics */
   .live-card-glow {
     position: relative;
@@ -3904,6 +3963,62 @@ body,
     opacity: 1;
   }
 }
+
+/* Lesson complete: score status 3D flip card */
+.lesson-score-flip {
+  perspective: 900px;
+}
+
+.lesson-score-flip__inner {
+  position: relative;
+  min-height: 5.5rem;
+  transform-style: preserve-3d;
+  animation: lesson-score-flip-y 5.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.lesson-complete-fit .lesson-score-flip__inner {
+  min-height: 4.35rem;
+}
+
+.lesson-score-flip__face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.lesson-score-flip__face--a {
+  position: relative;
+}
+
+.lesson-score-flip__face--b {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: rotateY(180deg);
+}
+
+@keyframes lesson-score-flip-y {
+  0%,
+  42% {
+    transform: rotateY(0deg);
+  }
+  50%,
+  92% {
+    transform: rotateY(180deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lesson-score-flip__inner {
+    animation: none;
+  }
+}
+
 .animate-lesson-complete-pop {
   animation: lesson-complete-pop 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
 }
@@ -4299,6 +4414,12 @@ body,
 .lesson-complete-stage {
   isolation: isolate;
 }
+.lesson-complete-fit {
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
 .lesson-complete-stage::before {
   content: '';
   position: absolute;
@@ -4312,6 +4433,22 @@ body,
   background:
     radial-gradient(ellipse at 50% 28%, rgba(251, 146, 60, 0.22) 0%, rgba(251, 191, 36, 0.1) 36%, transparent 72%),
     radial-gradient(ellipse at 50% 70%, rgba(52, 211, 153, 0.08) 0%, transparent 58%);
+}
+@media (max-height: 700px) {
+  .lesson-complete-fit .lesson-complete-hero {
+    height: min(14vh, 6.25rem);
+  }
+  .lesson-complete-fit .lesson-score-flip {
+    margin-top: 0.35rem;
+  }
+  .lesson-complete-fit .lesson-score-flip__inner {
+    min-height: 3.85rem;
+  }
+}
+@media (max-height: 620px) {
+  .lesson-complete-fit .lesson-continue-strip {
+    display: none;
+  }
 }
 .lesson-complete-hero {
   filter: drop-shadow(0 18px 28px rgba(249, 115, 22, 0.12));

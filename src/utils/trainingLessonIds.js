@@ -121,3 +121,134 @@ export function filterCoreCompletedLessonIds(ids) {
         (id) => typeof id === 'string' && !isSupplementaryProgressLessonId(id)
     );
 }
+
+/** Same rolling window as Life Skills — reused for core lesson re-claims. */
+export const CORE_LESSON_SCORE_COOLDOWN_MS = LIFE_SKILL_SCORE_COOLDOWN_MS;
+
+/** Points for a core lesson monthly re-claim (matches first-completion bonus). */
+export const CORE_LESSON_MONTHLY_BONUS_POINTS = 20;
+
+const CORE_LESSON_ID_RE = /^\d+\.\d+$/;
+
+/**
+ * First-time award id (unchanged legacy format).
+ * @param {string} lessonId e.g. 1.1
+ */
+export function buildCoreLessonFirstBonusQuizId(lessonId) {
+    const id = typeof lessonId === 'string' ? lessonId.trim() : '';
+    return `lesson_bonus_${id}`;
+}
+
+/**
+ * Day-stamped re-claim id so award_training_points can insert a new row after cooldown.
+ * Example: lesson_bonus_1.1_2026_07_25
+ *
+ * @param {string} lessonId
+ * @param {Date} [date]
+ */
+export function buildCoreLessonMonthlyBonusQuizId(lessonId, date = new Date()) {
+    const id = typeof lessonId === 'string' ? lessonId.trim() : '';
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `lesson_bonus_${id}_${y}_${m}_${d}`;
+}
+
+/** @param {string} quizId */
+export function isCoreLessonLegacyBonusQuizId(quizId) {
+    return /^lesson_bonus_\d+\.\d+$/.test(String(quizId || ''));
+}
+
+/** @param {string} quizId */
+export function isCoreLessonDayStampedBonusQuizId(quizId) {
+    return /^lesson_bonus_\d+\.\d+_\d{4}_\d{2}_\d{2}$/.test(String(quizId || ''));
+}
+
+/**
+ * Parse lesson id from lesson_bonus_1.1 or lesson_bonus_1.1_2026_07_25.
+ * @param {string} quizId
+ * @returns {string|null}
+ */
+export function lessonIdFromCoreLessonBonusQuizId(quizId) {
+    const s = String(quizId || '');
+    if (!s.startsWith('lesson_bonus_')) return null;
+    const rest = s.slice('lesson_bonus_'.length);
+    const stamped = rest.match(/^(\d+\.\d+)_\d{4}_\d{2}_\d{2}$/);
+    if (stamped) return stamped[1];
+    if (CORE_LESSON_ID_RE.test(rest)) return rest;
+    return null;
+}
+
+/**
+ * Effective cooldown anchor for a single attempt row.
+ * Legacy pre-launch rows floor at launchIso (untrusted/backfilled timestamps).
+ * Never anchors in the future (avoids "31 days" when launch is later today).
+ *
+ * @param {{ quiz_id?: string, created_at?: string }} row
+ * @param {string} launchIso
+ * @param {Date} [now]
+ * @returns {string|null} ISO timestamp
+ */
+export function getCoreLessonEffectiveAwardAt(row, launchIso, now = new Date()) {
+    if (!row?.created_at) return null;
+    const quizId = String(row.quiz_id || '');
+    if (isCoreLessonDayStampedBonusQuizId(quizId)) return row.created_at;
+
+    const createdMs = new Date(row.created_at).getTime();
+    if (!Number.isFinite(createdMs)) return null;
+
+    if (isCoreLessonLegacyBonusQuizId(quizId) && launchIso) {
+        const launchMs = new Date(launchIso).getTime();
+        if (Number.isFinite(launchMs) && createdMs < launchMs) {
+            const softStartMs = Math.min(launchMs, now.getTime());
+            return new Date(softStartMs).toISOString();
+        }
+    }
+    return row.created_at;
+}
+
+/** Whole days left — same math as Life Skills, capped at 30 for display sanity. */
+export function getCoreLessonScoreCooldownDaysLeft(awardedAt, now = new Date()) {
+    const days = getLifeSkillScoreCooldownDaysLeft(awardedAt, now);
+    if (days <= 0) return 0;
+    return Math.min(30, days);
+}
+
+/**
+ * Latest effective award timestamp per core lesson (whether still in cooldown or not).
+ * @param {Array<{ quiz_id?: string, created_at?: string }>} attempts
+ * @param {string} launchIso
+ * @returns {Map<string, string>} lessonId → ISO effective awarded-at
+ */
+export function buildCoreLessonLatestAwardByLesson(attempts, launchIso) {
+    const latestByLesson = new Map();
+    for (const row of attempts || []) {
+        const lessonId = lessonIdFromCoreLessonBonusQuizId(row.quiz_id);
+        if (!lessonId) continue;
+        const effectiveAt = getCoreLessonEffectiveAwardAt(row, launchIso);
+        if (!effectiveAt) continue;
+        const prev = latestByLesson.get(lessonId);
+        if (!prev || new Date(effectiveAt) > new Date(prev)) {
+            latestByLesson.set(lessonId, effectiveAt);
+        }
+    }
+    return latestByLesson;
+}
+
+/**
+ * Lessons still inside the 30-day cooldown (effective award times).
+ * @param {Array<{ quiz_id?: string, created_at?: string }>} attempts
+ * @param {string} launchIso
+ * @param {Date} [now]
+ * @returns {Map<string, string>} lessonId → ISO effective awarded-at
+ */
+export function buildCoreLessonActiveCooldowns(attempts, launchIso, now = new Date()) {
+    const latest = buildCoreLessonLatestAwardByLesson(attempts, launchIso);
+    const active = new Map();
+    for (const [lessonId, awardedAt] of latest) {
+        if (getCoreLessonScoreCooldownDaysLeft(awardedAt, now) > 0) {
+            active.set(lessonId, awardedAt);
+        }
+    }
+    return active;
+}
