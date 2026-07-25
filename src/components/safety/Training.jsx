@@ -884,22 +884,104 @@ function TrainingImageZoomViewer({ src, alt, language }) {
     );
 }
 
-/** Lesson figure — full-width on topic cards and inline in text boxes. Tap opens enlarge modal. */
+/** Lesson figure — tap opens enlarge modal; staying on it while reading auto-opens once. */
+const FIGURE_DWELL_MS = 1400;
+
 function TrainingLessonFigure({ src, alt, caption, onClick, language, className = '', inlineFloat = false }) {
     const enlargeLabel = language === 'en' ? 'Tap to enlarge' : 'বড় করে দেখতে ট্যাপ করুন';
     const inlineHint = language === 'en' ? 'Tap to view large' : 'বড় ছবি দেখতে ট্যাপ করুন';
+    const dwellHint = language === 'en' ? 'Hold on the image to zoom…' : 'ছবির ওপর থাকলে জুম হবে…';
     const isInline = inlineFloat;
+    const rootRef = useRef(null);
     const imgRef = useRef(null);
+    const dwellTimerRef = useRef(null);
+    const openedRef = useRef(false);
+    const onClickRef = useRef(onClick);
     const [imgReady, setImgReady] = useState(false);
+    const [dwelling, setDwelling] = useState(false);
+
+    useEffect(() => {
+        onClickRef.current = onClick;
+    }, [onClick]);
 
     useEffect(() => {
         setImgReady(false);
+        setDwelling(false);
+        openedRef.current = false;
+        if (dwellTimerRef.current) {
+            window.clearTimeout(dwellTimerRef.current);
+            dwellTimerRef.current = null;
+        }
     }, [src]);
 
     useEffect(() => {
         const img = imgRef.current;
         if (img?.complete && img.naturalWidth > 0) setImgReady(true);
     }, [src]);
+
+    useEffect(() => () => {
+        if (dwellTimerRef.current) window.clearTimeout(dwellTimerRef.current);
+    }, []);
+
+    useEffect(() => {
+        const el = rootRef.current;
+        if (!el || typeof IntersectionObserver === 'undefined') return undefined;
+
+        const clearDwell = () => {
+            if (dwellTimerRef.current) {
+                window.clearTimeout(dwellTimerRef.current);
+                dwellTimerRef.current = null;
+            }
+            setDwelling(false);
+        };
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (openedRef.current) {
+                    clearDwell();
+                    return;
+                }
+                const visibleEnough = entry.isIntersecting && entry.intersectionRatio >= 0.55;
+                if (!visibleEnough) {
+                    clearDwell();
+                    return;
+                }
+                const reduceMotion =
+                    typeof window !== 'undefined' &&
+                    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (reduceMotion) return;
+
+                setDwelling(true);
+                if (dwellTimerRef.current) window.clearTimeout(dwellTimerRef.current);
+                dwellTimerRef.current = window.setTimeout(() => {
+                    dwellTimerRef.current = null;
+                    setDwelling(false);
+                    if (openedRef.current) return;
+                    openedRef.current = true;
+                    onClickRef.current?.();
+                }, FIGURE_DWELL_MS);
+            },
+            { threshold: [0, 0.55, 0.75, 1], rootMargin: '0px' }
+        );
+
+        observer.observe(el);
+        return () => {
+            observer.disconnect();
+            clearDwell();
+        };
+    }, [src]);
+
+    const openNow = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openedRef.current = true;
+        setDwelling(false);
+        if (dwellTimerRef.current) {
+            window.clearTimeout(dwellTimerRef.current);
+            dwellTimerRef.current = null;
+        }
+        onClick?.();
+    };
 
     const buttonClass = isInline
         ? `my-3 sm:my-4 mx-auto block w-full max-w-md overflow-visible bg-transparent p-0 text-center ${className}`
@@ -910,12 +992,9 @@ function TrainingLessonFigure({ src, alt, caption, onClick, language, className 
 
     return (
         <button
+            ref={rootRef}
             type="button"
-            onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onClick?.();
-            }}
+            onClick={openNow}
             title={enlargeLabel}
             aria-label={caption ? `${caption} — ${enlargeLabel}` : enlargeLabel}
             className={buttonClass}
@@ -925,7 +1004,11 @@ function TrainingLessonFigure({ src, alt, caption, onClick, language, className 
                     {caption}
                 </p>
             )}
-            <div className="relative mx-auto flex w-full justify-center">
+            <div
+                className={`relative mx-auto flex w-full justify-center overflow-hidden rounded-sm transition-transform duration-500 ease-out ${
+                    dwelling ? 'scale-[1.03] ring-2 ring-orange-300/70 ring-offset-2 ring-offset-white' : 'scale-100'
+                }`}
+            >
                 {!imgReady && (
                     <TrainingImageLoadPlaceholder
                         language={language}
@@ -944,11 +1027,9 @@ function TrainingLessonFigure({ src, alt, caption, onClick, language, className 
                     }`}
                 />
             </div>
-            {isInline && (
-                <p className={hintClass}>
-                    {inlineHint}
-                </p>
-            )}
+            <p className={hintClass}>
+                {dwelling ? dwellHint : isInline ? inlineHint : enlargeLabel}
+            </p>
         </button>
     );
 }
