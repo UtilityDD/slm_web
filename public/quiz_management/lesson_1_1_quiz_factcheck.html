@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lesson 1.1 Quiz Fact-Check</title>
+  <style>
+    :root {
+      --bg: #f8fafc; --ink: #0f172a; --muted: #64748b; --card: #fff; --line: #cbd5e1;
+      --ok: #166534; --ok-bg: #f0fdf4; --warn: #92400e; --warn-bg: #fffbeb;
+      --bad: #991b1b; --bad-bg: #fef2f2; --fix: #1e40af; --fix-bg: #eff6ff;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Noto Sans Bengali", "Hind Siliguri", system-ui, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.5; }
+    header { position: sticky; top: 0; z-index: 10; background: var(--card); border-bottom: 2px solid var(--ink); padding: 0.9rem 1.1rem; }
+    header h1 { margin: 0 0 0.35rem; font-size: 1.15rem; }
+    header p { margin: 0.2rem 0; color: var(--muted); font-size: 0.88rem; }
+    .stats { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+    .tag { font-size: 0.78rem; border: 1px solid var(--line); padding: 0.15rem 0.45rem; background: #f1f5f9; }
+    .tag.ok { background: var(--ok-bg); color: var(--ok); border-color: #86efac; }
+    .tag.warn { background: var(--warn-bg); color: var(--warn); border-color: #fcd34d; }
+    .tag.bad { background: var(--bad-bg); color: var(--bad); border-color: #fca5a5; }
+    .tag.fix { background: var(--fix-bg); color: var(--fix); border-color: #93c5fd; }
+    main { max-width: 920px; margin: 0 auto; padding: 1rem; }
+    .card { background: var(--card); border: 2px solid var(--ink); border-left-width: 8px; margin-bottom: 0.85rem; padding: 0.85rem 1rem; }
+    .card.PASS { border-left-color: var(--ok); }
+    .card.SOFT { border-left-color: #d97706; }
+    .card.FAIL { border-left-color: var(--bad); }
+    .card.FIXED { border-left-color: var(--fix); }
+    .head { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin-bottom: 0.35rem; }
+    .qnum { font-weight: 700; font-size: 0.85rem; background: #e2e8f0; padding: 0.1rem 0.4rem; }
+    .badge { font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.45rem; border: 1px solid; }
+    .badge.PASS { background: var(--ok-bg); color: var(--ok); border-color: #86efac; }
+    .badge.SOFT { background: var(--warn-bg); color: var(--warn); border-color: #fcd34d; }
+    .badge.FAIL { background: var(--bad-bg); color: var(--bad); border-color: #fca5a5; }
+    .badge.FIXED { background: var(--fix-bg); color: var(--fix); border-color: #93c5fd; }
+    .qtext { font-weight: 600; margin: 0.3rem 0 0.45rem; }
+    .opts { margin: 0; padding-left: 1.1rem; font-size: 0.92rem; }
+    .opts li.correct { color: var(--ok); font-weight: 600; }
+    .note { margin-top: 0.5rem; font-size: 0.86rem; padding: 0.45rem 0.55rem; background: #f8fafc; border: 1px dashed var(--line); }
+    .summary { background: var(--card); border: 2px solid var(--ink); padding: 1rem; margin-bottom: 1rem; }
+    .summary h2 { margin: 0 0 0.45rem; font-size: 1.05rem; }
+    footer { max-width: 920px; margin: 0 auto 2rem; padding: 0 1rem; color: var(--muted); font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Lesson 1.1 Quiz — Fact Check</h1>
+    <p>Pool after relocation: 33 questions in <code>questions_1_1.json</code>. Checked against IS 2925, ASTM/IEC glove classes, and lesson content.</p>
+    <div class="stats">
+      <span class="tag ok">PASS: 28</span>
+      <span class="tag warn">SOFT / rewrite: 3</span>
+      <span class="tag fix">FIXED now: 2</span>
+      <span class="tag bad">Hard fail found: 1 (helmet 5 kV — fixed to 2 kV)</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="summary">
+      <h2>Bottom line</h2>
+      <ul>
+        <li><strong>Real factual error found and fixed:</strong> Helmet electrical test voltage is <strong>2 kV (2000 V)</strong> per IS 2925:1984 Appendix H — quiz had wrongly marked <strong>5 kV</strong>.</li>
+        <li><strong>Misleading claim fixed:</strong> Helmet “5 years per IS” — IS 2925 does <em>not</em> set a 5-year life. Reworded to manufacturer guidance.</li>
+        <li><strong>Class 0 = 1 kV</strong> max use: correct (ASTM D120 / IEC 60903).</li>
+        <li><strong>IS 2925</strong> for industrial safety helmet: correct; distractors IS 4770 (gloves), IS 732 (wiring), IS 3043 (earthing) are good.</li>
+      </ul>
+    </section>
+
+    <article class="card FIXED">
+      <div class="head"><span class="qnum">Q30</span><span class="badge FIXED">FIXED</span></div>
+      <p class="qtext">সেফটি হেলমেটের টেস্ট ভোল্টেজ… (was 5 kV)</p>
+      <ol class="opts">
+        <li>এক কেভি</li>
+        <li class="correct">দুই কেভি ✓ (now correct)</li>
+        <li>পাঁচ কেভি ← was wrongly marked</li>
+        <li>দশ কেভি</li>
+      </ol>
+      <div class="note">
+        <strong>Source:</strong> IS 2925:1984 Appendix H — apply <em>2000 V</em> AC, 50 Hz, 1 min; leakage ≤ 3 mA.
+        Question text also updated to name IS 2925 electrical resistance test.
+      </div>
+    </article>
+
+    <article class="card FIXED">
+      <div class="head"><span class="qnum">Q33</span><span class="badge FIXED">FIXED (wording)</span></div>
+      <p class="qtext">Was: “IS অনুযায়ী … কত বছর” → Now: “নির্মাতার সাধারণ পরামর্শ অনুযায়ী … শেল কত বছরের মধ্যে বদলানো”</p>
+      <ol class="opts">
+        <li>এক বছর</li>
+        <li>তিন বছর</li>
+        <li class="correct">পাঁচ বছর ✓</li>
+        <li>দশ বছর</li>
+      </ol>
+      <div class="note">
+        <strong>Why:</strong> IS 2925 does not mandate a calendar life. Industry/manufacturer guidance commonly ~2–5 years from manufacture/use; 5 years is a common shell rule of thumb, but must not be attributed to IS.
+      </div>
+    </article>
+
+    <article class="card PASS">
+      <div class="head"><span class="qnum">Q29</span><span class="badge PASS">PASS</span></div>
+      <p class="qtext">লাইভ লাইনে কাজের হেলমেট → IS 2925</p>
+      <div class="note">Correct Indian industrial helmet standard. Note: IS 2925’s 2 kV electrical test ≠ full live-line rating; still the right IS number among the options.</div>
+    </article>
+
+    <article class="card PASS">
+      <div class="head"><span class="qnum">Q31</span><span class="badge PASS">PASS</span></div>
+      <p class="qtext">Class 0 insulating gloves → 1 kV</p>
+      <div class="note">ASTM D120 / IEC 60903: Class 0 max use 1000 V AC (proof test typically 5 kV). Correct.</div>
+    </article>
+
+    <article class="card PASS">
+      <div class="head"><span class="qnum">Q6</span><span class="badge PASS">PASS (already fixed)</span></div>
+      <p class="qtext">PPE = পার্সোনাল প্রোটেকটিভ ইকুইপমেন্ট</p>
+      <div class="note">Fixed during relocation. Full expansion is Personal Protective Equipment.</div>
+    </article>
+
+    <article class="card SOFT">
+      <div class="head"><span class="qnum">Q7</span><span class="badge SOFT">SOFT</span></div>
+      <p class="qtext">সাধারণ কারিগরি কাজ → মজবুত চামড়ার গ্লাভস</p>
+      <div class="note">
+        Factually OK for mechanical work, but <strong>conflicts with lesson 1.1 teaching</strong> (rubber for shock, cut-resistant optional).
+        Learners may think leather is fine near line work. <strong>Recommend rewrite</strong> to: “লাইভ/সম্ভাব্য লাইভ কাজে কোন গ্লাভস?” → বৈদ্যুতিক রাবার.
+      </div>
+    </article>
+
+    <article class="card SOFT">
+      <div class="head"><span class="qnum">Q17</span><span class="badge SOFT">SOFT</span></div>
+      <p class="qtext">রাবার গ্লাভসের ওপর চামড়ার কভার → ফুটো থেকে রক্ষা</p>
+      <div class="note">
+        Industry practice: leather protectors give <em>mechanical</em> protection (cut/abrasion/puncture) over rubber gloves — not primarily “hole protection” as the main purpose, though they help prevent damage that creates holes.
+        Answer is acceptable; better wording: “কাটা/ছেঁড়া/ঘর্ষণ থেকে রাবার গ্লাভস বাঁচাতে”.
+      </div>
+    </article>
+
+    <article class="card SOFT">
+      <div class="head"><span class="qnum">Q27</span><span class="badge SOFT">SOFT</span></div>
+      <p class="qtext">ল্যানিয়ার্ড হুক → কাঁধের ওপরে বা সমান্তরাল</p>
+      <div class="note">
+        Fall-arrest anchorage should generally be at or above dorsal D-ring / shoulder height — OK.
+        Phrasing is a bit vague (“সমান্তরাল”); acceptable for field quiz.
+      </div>
+    </article>
+
+    <article class="card PASS">
+      <div class="head"><span class="qnum">Most others</span><span class="badge PASS">PASS</span></div>
+      <p class="qtext">Synthetic clothing ban · air test · dielectric meaning · cracked helmet · ISI · chin strap · waist belt spine injury · oil/grease discard · pin-hole gloves · nail in sole · Class rating = voltage · double lanyard · daily PPE check · harness purpose</p>
+      <div class="note">Aligned with chapter_1_1.json teaching and standard field PPE practice. No factual dispute found.</div>
+    </article>
+
+    <section class="summary">
+      <h2>Actions taken in questions_1_1.json</h2>
+      <ul>
+        <li>Helmet test voltage: correct answer → <strong>2 kV</strong>; question names IS 2925.</li>
+        <li>Helmet life: removed false “IS অনুযায়ী”; now manufacturer guidance / 5-year shell rule of thumb.</li>
+      </ul>
+      <h2>Optional follow-ups (not auto-changed)</h2>
+      <ul>
+        <li>Rewrite Q7 (leather for “general work”) to avoid confusing with rubber insulating gloves.</li>
+        <li>Sharpen Q17 leather-protector wording to mechanical protection.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    Fact-check file for manual review ·
+    <code>public/quiz_management/lesson_1_1_quiz_factcheck.html</code>
+  </footer>
+</body>
+</html>

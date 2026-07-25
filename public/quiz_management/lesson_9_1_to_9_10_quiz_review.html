@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chapter 9 Quiz Relevance & Fact-Check</title>
+  <style>
+    :root { --bg:#f8fafc; --ink:#0f172a; --muted:#64748b; --card:#fff; --line:#cbd5e1;
+      --ok:#166534; --ok-bg:#f0fdf4; --fix:#1e40af; --fix-bg:#eff6ff; --crit:#991b1b; --crit-bg:#fef2f2; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif; background:var(--bg); color:var(--ink); line-height:1.5; }
+    header { position:sticky; top:0; z-index:10; background:var(--card); border-bottom:2px solid var(--ink); padding:.9rem 1.1rem; }
+    header h1 { margin:0 0 .35rem; font-size:1.15rem; }
+    header p { margin:.2rem 0; color:var(--muted); font-size:.88rem; }
+    .stats { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.55rem; }
+    .tag { font-size:.78rem; border:1px solid var(--line); padding:.15rem .45rem; background:#f1f5f9; }
+    .tag.ok { background:var(--ok-bg); color:var(--ok); border-color:#86efac; }
+    .tag.fix { background:var(--fix-bg); color:var(--fix); border-color:#93c5fd; }
+    .tag.crit { background:var(--crit-bg); color:var(--crit); border-color:#fca5a5; }
+    main { max-width:980px; margin:0 auto; padding:1rem; }
+    .summary { background:var(--card); border:2px solid var(--ink); padding:1rem; margin-bottom:1rem; }
+    .lesson { background:var(--card); border:2px solid var(--ink); margin-bottom:1rem; }
+    .lesson > h2 { margin:0; padding:.75rem 1rem; border-bottom:1px solid var(--line); font-size:1.05rem; display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; }
+    .badge { font-size:.72rem; font-weight:700; padding:.15rem .45rem; border:1px solid; }
+    .badge.ok { background:var(--ok-bg); color:var(--ok); border-color:#86efac; }
+    .badge.fix { background:var(--fix-bg); color:var(--fix); border-color:#93c5fd; }
+    .badge.crit { background:var(--crit-bg); color:var(--crit); border-color:#fca5a5; }
+    .body { padding:.85rem 1rem; }
+    .body h3 { margin:.6rem 0 .35rem; font-size:.95rem; }
+    .body ul { margin:.25rem 0 .5rem; padding-left:1.2rem; }
+    .q { border-top:1px dashed var(--line); padding:.45rem 0; font-size:.9rem; }
+    .ans { color:var(--ok); }
+    footer { max-width:980px; margin:0 auto 2rem; padding:0 1rem; color:var(--muted); font-size:.8rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Chapter 9 (9.1–9.10) — Quiz Relevance & Fact-Check</h1>
+    <p>Testing Manual: transformer IR → test reports. Same pipeline as Ch.1–8.</p>
+    <div class="stats">
+      <span class="tag crit">9.4 REBUILT (was transformer cooling, not cable)</span>
+      <span class="tag fix">9.8: 152 → 24 + lightning → 1.9</span>
+      <span class="tag fix">All lessons trimmed to ~24</span>
+    </div>
+  </header>
+  <main>
+    <section class="summary">
+      <h2 style="margin-top:0;font-size:1.05rem">Executive summary</h2>
+      <ul>
+        <li><strong>Critical:</strong> <code>questions_9_4.json</code> was a transformer WTI/Buchholz bank — rebuilt for UG cable testing.</li>
+        <li><strong>9.8:</strong> Huge consumer-battery trivia stretch trimmed; general lightning Q → 1.9.</li>
+        <li><strong>Rest:</strong> On-topic testing lessons; soft/oversized padding capped at ~24.</li>
+      </ul>
+    </section>
+
+    <section class="lesson" id="L9_1">
+      <h2>
+        <span>Lesson 9.1</span>
+        <span class="badge fix">TRIMMED</span>
+        <span class="tag">50 → 24 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>ট্রান্সফরমার টেস্টিং (পার্ট ১): মৌলিক পরীক্ষা</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Transformer basic IR/megger — on-topic.</li><li>Received parked cooling/Buchholz/OTI items from old 9.4; trimmed to ~24 theme-core.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> HV IR megger typically 2.5/5 kV — matches chapter</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> অধ্যায় ৯.১ অনুযায়ী, সাবস্টেশনের 'রোগী' হিসেবে কাকে অভিহিত করা হয়েছে?<br/><span class="ans">→ ট্রান্সফরমারকে</span></div><div class="q"><strong>Q2</strong> ট্রান্সফরমারের প্রাথমিক স্বাস্থ্য পরীক্ষায় কোন দুটি প্রধান টেস্ট করা হয়?<br/><span class="ans">→ মেগার টেস্ট ও ওয়াইন্ডিং রেজিস্ট্যান্স টেস্ট</span></div><div class="q"><strong>Q3</strong> ইনসুলেশন রেজিস্ট্যান্স টেস্টের জন্য কোন যন্ত্র ব্যবহার করা হয়?<br/><span class="ans">→ মেগার ব্যবহার হয়</span></div><div class="q"><strong>Q4</strong> হাই ভোল্টেজ ট্রান্সফরমারের ইনসুলেশন টেস্টে সাধারণত কত ভোল্টের মেগার ব্যবহার হয়?<br/><span class="ans">→ ৫০০০ বা ২৫০০ ভোল্টের মেগার</span></div><div class="q"><strong>Q5</strong> মেগার টেস্টের সময় ট্রান্সফরমারের বডি বা ট্যাঙ্কের অবস্থা কী হওয়া উচিত?<br/><span class="ans">→ ভালোভাবে আর্থ করা থাকতে হবে</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +19 more in <code>questions_9_1.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L9_2">
+      <h2>
+        <span>Lesson 9.2</span>
+        <span class="badge fix">TRIMMED</span>
+        <span class="tag">50 → 24 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>ট্রান্সফরমার টেস্টিং (পার্ট ২): তেল পরীক্ষা</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Oil BDV/DGA/sample — on-topic.</li><li>Kept rain-sample bans (oil-test technical, not 1.9 PPE).</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Sample from bottom valve; avoid plastic bottles — chapter-aligned</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> অধ্যায় ৯.২ অনুযায়ী, ট্রান্সফরমারের তেলকে শরীরের কোন অংশের সাথে তুলনা করা হয়েছে?<br/><span class="ans">→ রক্তের সাথে</span></div><div class="q"><strong>Q2</strong> ট্রান্সফরমার তেলের প্রধান দুটি কাজ কী কী?<br/><span class="ans">→ ইনসুলেশন দেওয়া ও কয়েলের তাপ কমিয়ে রাখা</span></div><div class="q"><strong>Q3</strong> তেলের স্যাম্পল কালেকশনের জন্য কোন ধরনের বোতল ব্যবহার করা উচিত নয়?<br/><span class="ans">→ প্লাস্টিকের বোতল ব্যবহার নিষেধ</span></div><div class="q"><strong>Q4</strong> ট্রান্সফরমারের কোন ভালভ থেকে তেলের স্যাম্পল নেওয়া সঠিক নিয়ম?<br/><span class="ans">→ নিচের ভালভ থেকে নিতে হয়</span></div><div class="q"><strong>Q5</strong> নিচের ভালভ থেকে তেল নেওয়া হয় কেন?<br/><span class="ans">→ জল ও ভারী গাদ নিচে জমে, তাই আসল অবস্থা বোঝা যায়</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +19 more in <code>questions_9_2.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L9_3">
+      <h2>
+        <span>Lesson 9.3</span>
+        <span class="badge fix">TRIMMED</span>
+        <span class="tag">49 → 24 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>সার্কিট ব্রেকার টেস্টিং: কমান্ডোর ফিটনেস টেস্ট</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>CB testing: SF6/VCB checks, timing/mechanical — on-topic; trimmed.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Check SF6/gas & mechanism before functional tests — good practice</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> অধ্যায় ৯.৩ অনুযায়ী, সার্কিট ব্রেকারকে পাওয়ার সিস্টেমের কীসের সাথে তুলনা করা হয়েছে?<br/><span class="ans">→ সাইলেন্ট কমান্ডোর সাথে</span></div><div class="q"><strong>Q2</strong> সার্কিট ব্রেকার টেস্টিংয়ের প্রথম ধাপ কোনটি?<br/><span class="ans">→ ভিজ্যুয়াল ও মেকানিক্যাল চেক করা</span></div><div class="q"><strong>Q3</strong> এসএফসিক্স সার্কিট ব্রেকার টেস্ট করার আগে কোনটি চেক করা বাধ্যতামূলক?<br/><span class="ans">→ গ্যাসের প্রেসার চেক করা</span></div><div class="q"><strong>Q4</strong> ব্রেকারের মেকানিক্যাল চেক-আপে কোন মেকানিজমটি পরীক্ষা করা জরুরি?<br/><span class="ans">→ স্প্রিং চার্জ মেকানিজম পরীক্ষা করা</span></div><div class="q"><strong>Q5</strong> সিআরএম টেস্টে ১০০ অ্যাম্পিয়ার কারেন্ট ব্যবহার করা হয় কেন?<br/><span class="ans">→ কন্টাক্টের অক্সাইড লেয়ার পাংচার করে সঠিক রিডিং পেতে</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +19 more in <code>questions_9_3.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L9_4">
+      <h2>
+        <span>Lesson 9.4</span>
+        <span class="badge crit">REBUILT</span>
+        <span class="tag">45 → 20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>কেবিল টেস্টিং: লুকানো নেটওয়ার্কের স্বাস্থ্য</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>CRITICAL: quiz was transformer WTI/Buchholz/cooling bank — wrong lesson.</li><li>Rebuilt 20 cable-testing Qs from chapter (IR, VLF, sheath, discharge, water treeing).</li><li>Old bank moved into 9.1 then trimmed.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> HT cable IR ~5 kV megger; LT 500/1000 V — matches chapter</li><li><strong>PASS:</strong> Prefer VLF over DC Hi-Pot on XLPE — matches myth buster</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> আন্ডারগ্রাউন্ড কেবিল টেস্টিং-এর প্রধান উদ্দেশ্য কী?<br/><span class="ans">→ মাটির নিচের কেবিলের ইনসুলেশন ও স্বাস্থ্য নিশ্চিত করা যাতে ফল্ট/ব্ল্যাকআউট এড়ানো যায়</span></div><div class="q"><strong>Q2</strong> কেবিলের কন্টিনিউটি টেস্ট দিয়ে মূলত কী নিশ্চিত করা হয়?<br/><span class="ans">→ কন্ডাক্টর মাঝপথে ছেঁড়া নেই এবং পথ সম্পূর্ণ আছে</span></div><div class="q"><strong>Q3</strong> ফেজ আইডেন্টিফিকেশন টেস্ট কেন জরুরি?<br/><span class="ans">→ যাতে সোর্সের R/Y/B ফেজ লোড সাইডের সঠিক ফেজে পৌঁছায়; জয়েন্টে ফেজ গুলিয়ে না যায়</span></div><div class="q"><strong>Q4</strong> HT কেবিলের ইনসুলেশন রেজিস্ট্যান্স (IR) টেস্টে সাধারণত কোন মেগার ব্যবহার করা হয়?<br/><span class="ans">→ ৫০০০ ভোল্ট (5 kV) মেগার</span></div><div class="q"><strong>Q5</strong> LT কেবিলের IR টেস্টে সাধারণত কোন রেটিং-এর মেগার ব্যবহার করা হয়?<br/><span class="ans">→ ৫০০/১০০০ ভোল্ট</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_9_4.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L9_5">
+      <h2>
+        <span>Lesson 9.5</span>
+        <span class="badge fix">TRIMMED</span>
+        <span class="tag">50 → 24 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>আর্থিং সিস্টেম টেস্টিং: অদৃশ্য রক্ষকের শক্তি পরীক্ষা</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Earth testing — on-topic; trimmed. Lightning benefit of good earth kept as earthing fact.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Broken earth strip defeats protection — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> অধ্যায় ৯.৫ অনুযায়ী, আর্থিং সিস্টেমকে ইলেকট্রিক্যাল সিস্টেমের কীসের সাথে তুলনা করা হয়েছে?<br/><span class="ans">→ সিস্টেমের ভিত্তি বা অদৃশ্য ড্রেনের সাথে</span></div><div class="q"><strong>Q2</strong> আর্থিং-এর মূল কাজ কী?<br/><span class="ans">→ ফল্ট কারেন্টকে নিরাপদে মাটিতে নামিয়ে দেওয়া</span></div><div class="q"><strong>Q3</strong> যদি আর্থিং সিস্টেম ঠিক মতো কাজ না করে, তবে ফল্টের সময় কী ঘটতে পারে?<br/><span class="ans">→ ফিউজ বা ব্রেকার কাজ না করে শক লাগার ঝুঁকি বাড়বে</span></div><div class="q"><strong>Q4</strong> আর্থ পিট পরিদর্শনের সময় প্রথমেই কোনটি চেক করা উচিত?<br/><span class="ans">→ আর্থ স্ট্রিপ ও ইলেকট্রোডের সংযোগস্থলে জং বা ফাটল</span></div><div class="q"><strong>Q5</strong> আর্থ স্ট্রিপ ছিঁড়ে বা পচে গেলে কোন সমস্যাটি তৈরি হয়?<br/><span class="ans">→ সুরক্ষা ব্যবস্থা সম্পূর্ণ অকেজো হয়ে পড়ে</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +19 more in <code>questions_9_5.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L9_6">
+      <h2>
+        <span>Lesson 9.6</span>
+        <span class="badge fix">TRIMMED</span>
+        <span class="tag">59 → 24 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>ইনসুলেটর টেস্টিং: প্রহরীর শক্তি পরীক্ষা</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Insulator testing — on-topic (also holds earlier polymer/porosity relocates from Ch.3).</li><li>Kept rain-unsuitable-for-test Qs (measurement validity).</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Disc IR with 5 kV megger; healthy ≥ ~500 MΩ — training rule OK</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> অধ্যায় ৯.৬ অনুযায়ী, ইনসুলেটরকে হাই ভোল্টেজ লাইনের কীসের সাথে তুলনা করা হয়েছে?<br/><span class="ans">→ লাইনের সীমান্ত প্রহরীর সাথে</span></div><div class="q"><strong>Q2</strong> ইনসুলেটরের প্রধান কাজ কী?<br/><span class="ans">→ লাইভ তারকে ধরে রেখে ভোল্টেজকে টাওয়ারে নামতে না দেওয়া</span></div><div class="q"><strong>Q3</strong> ইনসুলেটর ভিজ্যুয়াল ইন্সপেকশনে কোন যন্ত্রটি সবচেয়ে বেশি ব্যবহৃত হয়?<br/><span class="ans">→ হাই-পাওয়ার বাইনোকুলার ব্যবহৃত হয়</span></div><div class="q"><strong>Q4</strong> ভিজ্যুয়াল ইন্সপেকশনে ইনসুলেটরের কোন ত্রুটিটি খোঁজা হয়?<br/><span class="ans">→ ভাঙা অংশ বা পোড়া দাগ বা ফ্ল্যাশওভার চিহ্ন দেখা হয়</span></div><div class="q"><strong>Q5</strong> একটি পোর্সেলিন ডিস্ক ইনসুলেটর টেস্ট করতে কত ভোল্টের মেগার লাগে?<br/><span class="ans">→ ৫০০০ ভোল্টের মেগার লাগে</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +19 more in <code>questions_9_6.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L9_7">
+      <h2>
+        <span>Lesson 9.7</span>
+        <span class="badge fix">TRIMMED</span>
+        <span class="tag">50 → 24 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>রিলে টেস্টিং: মস্তিষ্কের কার্যকারিতা পরীক্ষা</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Relay secondary injection / numerical relay health — on-topic; trimmed.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Watchdog/error on numerical relay → investigate, do not ignore — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> অধ্যায় ৯.৭ অনুযায়ী, প্রোটেকশন রিলেকে সাবস্টেশনের কীসের সাথে তুলনা করা হয়েছে?<br/><span class="ans">→ সিস্টেমের মস্তিষ্কের সাথে</span></div><div class="q"><strong>Q2</strong> রিলে টেস্টিংয়ের জন্য কোন কিটটি প্রধানত ব্যবহার করা হয়?<br/><span class="ans">→ সেকেন্ডারি ইনজেকশন কিট</span></div><div class="q"><strong>Q3</strong> রিলে টেস্টিংয়ে 'আইকিউ টেস্ট' বলতে কী বোঝানো হয়েছে?<br/><span class="ans">→ রিলের সঠিক সিদ্ধান্ত নেওয়ার ক্ষমতা যাচাই</span></div><div class="q"><strong>Q4</strong> নিউমেরিক্যাল রিলের ডিসপ্লেতে ওয়াচডগ বা এরর লাইট জ্বললে কী বুঝতে হবে?<br/><span class="ans">→ রিলের ইন্টারনাল ফল্ট বা হার্ডওয়্যার সমস্যা হয়েছে</span></div><div class="q"><strong>Q5</strong> রিলের পিক-আপ টেস্টে কী দেখা হয়?<br/><span class="ans">→ নির্দিষ্ট কারেন্ট দিলে রিলের স্টার্ট বা পিক-আপ হয় কিনা</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +19 more in <code>questions_9_7.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L9_8">
+      <h2>
+        <span>Lesson 9.8</span>
+        <span class="badge fix">TRIMMED</span>
+        <span class="tag">152 → 24 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>ব্যাটারি এবং চার্জার টেস্টিং: জরুরি শক্তির উৎস</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Battery/charger testing — on-topic but pool was 152 with consumer-battery trivia stretch.</li><li>Trimmed to substation DC bank theme; lightning hair-raise → 1.9.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> DC battery backs protection/tripping on AC fail — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> অধ্যায় ৯.৮ অনুযায়ী, ব্যাটারি ব্যাংককে সাবস্টেশনের কীসের সাথে তুলনা করা হয়েছে?<br/><span class="ans">→ সিস্টেমের লাইফ সাপোর্টের সাথে</span></div><div class="q"><strong>Q2</strong> সাবস্টেশনে এসি সাপ্লাই ফেল করলে প্রোটেকশন সিস্টেমকে কে বাঁচিয়ে রাখে?<br/><span class="ans">→ ডিসি ব্যাটারি ব্যাংক বাঁচিয়ে রাখে</span></div><div class="q"><strong>Q3</strong> ব্যাটারি ফেইল করলে বিপদের সময় কোনটি কাজ করবে না?<br/><span class="ans">→ ব্রেকার ট্রিপ করবে না ও রিলে কাজ করবে না</span></div><div class="q"><strong>Q4</strong> ব্যাটারির সেল ভোল্টেজ মাপার জন্য কোন যন্ত্র ব্যবহার করা হয়?<br/><span class="ans">→ মাল্টিমিটারের ডিসি ভোল্টেজ মোড ব্যবহার করা হয়</span></div><div class="q"><strong>Q5</strong> একটি ২ ভোল্টের সেলের ভোল্টেজ কতর নিচে নামলে তাকে দুর্বল ধরা হয়?<br/><span class="ans">→ ১.৮ ভোল্টের নিচে নামলে দুর্বল</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +19 more in <code>questions_9_8.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L9_9">
+      <h2>
+        <span>Lesson 9.9</span>
+        <span class="badge fix">TRIMMED</span>
+        <span class="tag">50 → 24 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>ক্যাপাসিটর ব্যাংক টেস্টিং: পাওয়ার বুস্টারের কার্যকারিতা</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Cap bank testing + residual charge hazard — on-topic; trimmed.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Caps store charge after switch-off — critical safety</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> অধ্যায় ৯.৯ অনুযায়ী, ক্যাপাসিটর ব্যাংককে পাওয়ার সিস্টেমের কীসের সাথে তুলনা করা হয়েছে?<br/><span class="ans">→ সিস্টেমের পাওয়ার বুস্টারের সাথে</span></div><div class="q"><strong>Q2</strong> ক্যাপাসিটর ব্যাংক মূলত কেন ব্যবহার করা হয়?<br/><span class="ans">→ পাওয়ার ফ্যাক্টর উন্নত ও ভোল্টেজ স্থিতিশীল করতে</span></div><div class="q"><strong>Q3</strong> ক্যাপাসিটর অফ করার পরেও এটি কেন বিপজ্জনক থাকতে পারে?<br/><span class="ans">→ ভেতরে চার্জ জমা থাকে যা মারাত্মক শক দিতে পারে</span></div><div class="q"><strong>Q4</strong> ক্যাপাসিটর ইউনিটের ভিজ্যুয়াল ইন্সপেকশনে সবচেয়ে বড় ভয়ের লক্ষণ কোনটি?<br/><span class="ans">→ ক্যানের বডি ফুলে যাওয়া বা বিকৃত হওয়া</span></div><div class="q"><strong>Q5</strong> ক্যাপাসিটর ফুলে গেলে কী করা উচিত?<br/><span class="ans">→ অবিলম্বে সার্কিট থেকে বাদ দিয়ে রিপ্লেস করা</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +19 more in <code>questions_9_9.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L9_10">
+      <h2>
+        <span>Lesson 9.10</span>
+        <span class="badge fix">TRIMMED</span>
+        <span class="tag">50 → 24 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>টেস্টিং রিপোর্ট তৈরি: ডাক্তারের প্রেসক্রিপশন</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Test report documentation — on-topic; weather note in report kept as documentation practice.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Report must ID equipment + results before decisions — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> অধ্যায় ৯.১০ অনুযায়ী, টেস্টিং রিপোর্টকে কার সাথে তুলনা করা হয়েছে?<br/><span class="ans">→ ডাক্তারের প্রেসক্রিপশনের সাথে</span></div><div class="q"><strong>Q2</strong> টেস্টিং রিপোর্টের ওপর ভিত্তি করে কী সিদ্ধান্ত নেওয়া হয়?<br/><span class="ans">→ মেশিনটি চার্জ করা হবে নাকি মেরামত হবে</span></div><div class="q"><strong>Q3</strong> রিপোর্টের শুরুতে ইকুইপমেন্টের কোন তথ্যটি লেখা বাধ্যতামূলক?<br/><span class="ans">→ মেশিনের নেমপ্লেট ডেটা ও সিরিয়াল নম্বর</span></div><div class="q"><strong>Q4</strong> ইকুইপমেন্টের অদ্বিতীয় পরিচয় বা 'ফিঙ্গারপ্রিন্ট' কোনটি?<br/><span class="ans">→ সিরিয়াল নম্বর</span></div><div class="q"><strong>Q5</strong> রিপোর্টে আবহাওয়ার কথা উল্লেখ করা কেন জরুরি?<br/><span class="ans">→ আর্দ্রতা ও তাপমাত্রা টেস্ট রেজাল্টকে প্রভাবিত করে</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +19 more in <code>questions_9_10.json</code></p>
+      </div>
+    </section>
+  </main>
+  <footer>
+    Generated 2026-07-25 · <code>public/quiz_management/lesson_9_1_to_9_10_quiz_review.html</code>
+    · Log: <code>lesson_9_quiz_cleanup_log.md</code>
+  </footer>
+</body>
+</html>

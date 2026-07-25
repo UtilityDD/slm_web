@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chapter 5 Quiz Relevance & Fact-Check</title>
+  <style>
+    :root { --bg:#f8fafc; --ink:#0f172a; --muted:#64748b; --card:#fff; --line:#cbd5e1;
+      --ok:#166534; --ok-bg:#f0fdf4; --fix:#1e40af; --fix-bg:#eff6ff; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif; background:var(--bg); color:var(--ink); line-height:1.5; }
+    header { position:sticky; top:0; z-index:10; background:var(--card); border-bottom:2px solid var(--ink); padding:.9rem 1.1rem; }
+    header h1 { margin:0 0 .35rem; font-size:1.15rem; }
+    header p { margin:.2rem 0; color:var(--muted); font-size:.88rem; }
+    .stats { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.55rem; }
+    .tag { font-size:.78rem; border:1px solid var(--line); padding:.15rem .45rem; background:#f1f5f9; }
+    .tag.ok { background:var(--ok-bg); color:var(--ok); border-color:#86efac; }
+    main { max-width:980px; margin:0 auto; padding:1rem; }
+    .summary { background:var(--card); border:2px solid var(--ink); padding:1rem; margin-bottom:1rem; }
+    .lesson { background:var(--card); border:2px solid var(--ink); margin-bottom:1rem; }
+    .lesson > h2 { margin:0; padding:.75rem 1rem; border-bottom:1px solid var(--line); font-size:1.05rem; display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; }
+    .badge { font-size:.72rem; font-weight:700; padding:.15rem .45rem; border:1px solid; }
+    .badge.ok { background:var(--ok-bg); color:var(--ok); border-color:#86efac; }
+    .body { padding:.85rem 1rem; }
+    .body h3 { margin:.6rem 0 .35rem; font-size:.95rem; }
+    .body ul { margin:.25rem 0 .5rem; padding-left:1.2rem; }
+    .q { border-top:1px dashed var(--line); padding:.45rem 0; font-size:.9rem; }
+    .ans { color:var(--ok); }
+    footer { max-width:980px; margin:0 auto 2rem; padding:0 1rem; color:var(--muted); font-size:.8rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Chapter 5 (5.1–5.10) — Quiz Relevance & Fact-Check</h1>
+    <p>Fault Finder badge: trip response → preventive maintenance. Same pipeline as Ch.1–4.</p>
+    <div class="stats">
+      <span class="tag ok">All 5.1–5.10: on-topic (20 Q each)</span>
+      <span class="tag ok">No mass relocation needed</span>
+    </div>
+  </header>
+  <main>
+    <section class="summary">
+      <h2 style="margin-top:0;font-size:1.05rem">Executive summary</h2>
+      <ul>
+        <li><strong>Pools:</strong> Each lesson has 20 questions aligned to Fault Finder scope.</li>
+        <li><strong>Weather/kite/storm items in 5.3:</strong> Kept — they teach <em>fault identification</em>, not storm PPE (1.9).</li>
+        <li><strong>Fact-check:</strong> Core answers (L-G prevalence, TDR/thumper, PTW sequence, megger) pass.</li>
+      </ul>
+    </section>
+
+    <section class="lesson" id="L5_1">
+      <h2>
+        <span>Lesson 5.1</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>'লাইন ট্রিপ করেছে'—প্রথম কাজ কী?</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>First response to feeder trip: relay data, treat as live, O/C vs E/F, auto-recloser lockout — match chapter.</li><li>Weather mentions are fault-cause clues (e.g. bird in clear weather), not 1.9 storm PPE.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Collect trip/relay data before rushing to field — correct</li><li><strong>PASS:</strong> Safe sequence Permit → Isolation → Earthing — matches PTW teaching</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> কন্ট্রোল রুম থেকে 'লাইন ট্রিপ' করার খবর পাওয়ার পর আপনার প্রথম টেকনিক্যাল পদক্ষেপ কী হবে?<br/><span class="ans">→ ট্রিপিং-এর সময় ও রিলে ডাটা জানা</span></div><div class="q"><strong>Q2</strong> একটি ট্রিপ হওয়া লাইনকে কাজ করার আগে টেকনিক্যালি কী হিসেবে গণ্য করতে হবে?<br/><span class="ans">→ লাইভ বা জীবন্ত</span></div><div class="q"><strong>Q3</strong> কন্ট্রোল রুম যদি 'আর্থ ফল্ট' (E/F) ইন্ডিকেশন দেয়, তবে ফিল্ডে কী খোঁজা যৌক্তিক?<br/><span class="ans">→ লাইন-টু-গ্রাউন্ড ফল্ট</span></div><div class="q"><strong>Q4</strong> 'অটো-রিক্লোজার' (Auto-Recloser) লক-আউট হয়ে যাওয়া কিসের ইঙ্গিত দেয়?<br/><span class="ans">→ স্থায়ী বা পারমানেন্ট ফল্ট</span></div><div class="q"><strong>Q5</strong> মিথ: 'লাইন ট্রিপ করেছে, মানে ওটা ডেড'—এই ধারণাটি বিপজ্জনক কেন?<br/><span class="ans">→ অটো-রিক্লোজ বা ব্যাক-ফিড</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_5_1.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L5_2">
+      <h2>
+        <span>Lesson 5.2</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>লাইন পেট্রোলিং-এর সঠিক নিয়ম</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Patrolling technique: binoculars, smell of burn, FPI, sectionizer, never poke fallen conductor — match chapter.</li><li>Step-potential hop kept — patrol hazard near downed live wire.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Fallen wire may be live without sparking — myth OK</li><li><strong>PASS:</strong> Feet-together hop / shuffle for step potential — correct field rule</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> লাইন পেট্রোলিং করার সময় মাটিতে পড়ে থাকা তার দেখলে আপনার প্রথম কাজ কী?<br/><span class="ans">→ নিরাপদ দূরত্ব বজায় রেখে এলাকা ঘেরা</span></div><div class="q"><strong>Q2</strong> পোলের ওপরের সূক্ষ্ম ক্ষতি (যেমন ইনসুলেটরে হেয়ারলাইন ক্র্যাক) দেখার জন্য কোন টুলটি সবচেয়ে কার্যকর?<br/><span class="ans">→ উচ্চ ক্ষমতার বাইনোকুলার</span></div><div class="q"><strong>Q3</strong> পেট্রোলিং-এর সময় ওপরের দিকে তাকাতে গিয়ে হোঁচট খাওয়া এড়ানোর সেরা উপায় কী?<br/><span class="ans">→ দাঁড়িয়ে দেখা, তারপর আবার হাঁটা</span></div><div class="q"><strong>Q4</strong> রাতের অন্ধকারে পেট্রোলিং করার একটি কারিগরি সুবিধা কী?<br/><span class="ans">→ স্পার্ক বা করোনা সহজে দৃশ্যমান হয়</span></div><div class="q"><strong>Q5</strong> পেট্রোলিং-এর সময় যদি আপনি পোড়া ইনসুলেশন বা তেলের গন্ধ পান, এটি কিসের ইঙ্গিত দেয়?<br/><span class="ans">→ কাছাকাছি ফল্ট বা ওভারহিটিং</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_5_2.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L5_3">
+      <h2>
+        <span>Lesson 5.3</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>সাধারণ ফল্ট: অপরাধীদের প্যারেড</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Common fault parade: tree, tracking mark, jumper melt, bird, LA, kite string — identification lesson (keep).</li><li>Storm/kite/lightning items are fault types taught here, not weather-safety misplacements.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Carbon track ≠ clean-and-reuse insulator — correct</li><li><strong>PASS:</strong> Wet metallic kite string can phase-to-phase short — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> ঝড়ের পর লাইনের ওপর একটি বড় গাছের ডাল পড়ে থাকতে দেখলে, এটি কোন ধরনের ফল্টের কারণ হতে পারে?<br/><span class="ans">→ ফেজ-টু-আর্থ বা ফেজ-টু-ফেজ শর্ট সার্কিট ফল্ট হতে পারে</span></div><div class="q"><strong>Q2</strong> একটি ডিস্ক ইনসুলেটরের গায়ে ফ্ল্যাশওভারের কারণে তৈরি হওয়া কালো দাগকে কী বলা হয়?<br/><span class="ans">→ বৈদ্যুতিক শর্ট সার্কিটের কারণে তৈরি হওয়া কার্বন ট্র্যাক</span></div><div class="q"><strong>Q3</strong> একটি জাম্পার কানেক্টর গলে বা পুড়ে যাওয়ার সবচেয়ে সাধারণ কারণ কী?<br/><span class="ans">→ লুজ কানেকশনের কারণে তারে তৈরি হওয়া একটি স্থায়ী হটস্পট</span></div><div class="q"><strong>Q4</strong> যদি লাইনের তারে একটি পোড়া পাখি আটকে থাকতে দেখা যায়, এটি কী ধরনের ফল্টের ইঙ্গিত দেয়?<br/><span class="ans">→ ফেজ-টু-ফেজ বা ফেজ-টু-আর্থ শর্ট সার্কিট ফল্ট ঘটার ইঙ্গিত দেয়</span></div><div class="q"><strong>Q5</strong> একটি বিস্ফোরিত বা ভাঙা লাইটনিং অ্যারেস্টার (LA) দেখলে কী বোঝা যায়?<br/><span class="ans">→ লাইনের ওপর প্রচণ্ড সার্জ ভোল্টেজ বা শক্তিশালী বজ্রপাত পড়েছিল</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_5_3.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L5_4">
+      <h2>
+        <span>Lesson 5.4</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>ফিউজ বারবার উড়ে যাওয়ার কারণ: অস্থায়ী বনাম স্থায়ী ফল্ট</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Repeated fuse blow: transient vs permanent, sectionizing, never upsize fuse, megger — match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Instant re-blow with bang → solid permanent fault — correct</li><li><strong>PASS:</strong> Do not “burn out” fault by repeated charging — myth OK</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> ফিউজ লাগানোর সাথে সাথেই যদি একটি বড় বিস্ফোরণ সহ আবার উড়ে যায়, এটি কোন ধরনের ফল্টের লক্ষণ?<br/><span class="ans">→ সিস্টেমের স্থায়ী বা পার্মানেন্ট ফল্ট</span></div><div class="q"><strong>Q2</strong> একটি 'অস্থায়ী ফল্ট'-এর উদাহরণ কোনটি?<br/><span class="ans">→ বাতাসে দুটি তারের ক্ষণিকের স্পর্শ</span></div><div class="q"><strong>Q3</strong> ট্রান্সফরমারের এইচটি (HT) ফিউজ বারবার উড়ে যাওয়ার কারণ যদি এলটি (LT) নেটওয়ার্কে হয়, তবে সমস্যাটি কীভাবে খুঁজে বের করবেন?<br/><span class="ans">→ এলটি ফিডারগুলো খুলে সেকশনালাইজিং পদ্ধতির মাধ্যমে</span></div><div class="q"><strong>Q4</strong> একটি অটো-রিক্লোজার কোন ধরনের ফল্টের বিরুদ্ধে সবচেয়ে বেশি কার্যকর?<br/><span class="ans">→ লাইনে ঘটা অস্থায়ী বা ট্রানজিয়েন্ট ফল্টে</span></div><div class="q"><strong>Q5</strong> মিথ: 'লাইনটা কয়েকবার চার্জ করলে ফল্টটা জ্বলে গিয়ে ঠিক হয়ে যাবে'—এই অভ্যাসটি বিপজ্জনক কেন?<br/><span class="ans">→ কারণ স্থায়ী ফল্টে যন্ত্রপাতি মারাত্মকভাবে ক্ষতিগ্রস্ত হয়ে আগুন লাগতে পারে</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_5_4.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L5_5">
+      <h2>
+        <span>Lesson 5.5</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>'লো-ভোল্টেজ' সমস্যার সমাধান</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Low voltage: one customer vs area, long LT drop, imbalance, measure on-load, OLTC/tap — match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> N–E voltage → weak/high-R neutral — good field clue</li><li><strong>PASS:</strong> Voltage OK unloaded ≠ OK on load — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> একজন গ্রাহকের 'লো-ভোল্টেজ' অভিযোগ পাওয়ার পর আপনার প্রথম প্রশ্ন কী হওয়া উচিত?<br/><span class="ans">→ সমস্যাটি কেবল আপনার নাকি পুরো এলাকার?</span></div><div class="q"><strong>Q2</strong> যদি শুধু একজন গ্রাহকের লো-ভোল্টেজের সমস্যা হয়, তবে কারণটি সম্ভবত কোথায়?<br/><span class="ans">→ সার্ভিস কানেকশন বা ইন্টারনাল ওয়্যারিং-এ</span></div><div class="q"><strong>Q3</strong> গ্রাহকের বাড়িতে আলো কাঁপা (Flickering)-র সবচেয়ে সাধারণ কারণ কী?<br/><span class="ans">→ সার্ভিস কানেকশন বা নিউট্রালে লুজ কন্টাক্ট</span></div><div class="q"><strong>Q4</strong> একটি পুরো এলাকার লো-ভোল্টেজ সমস্যার একটি প্রধান কারণ কী?<br/><span class="ans">→ ট্রান্সফরমার বা লাইনের ওভারলোডিং</span></div><div class="q"><strong>Q5</strong> একটি লম্বা এলটি লাইনের শেষ প্রান্তের গ্রাহকরা প্রায়ই লো-ভোল্টেজ পান কেন?<br/><span class="ans">→ দীর্ঘ লাইনে ভোল্টেজ ড্রপ বেশি হওয়ায়</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_5_5.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L5_6">
+      <h2>
+        <span>Lesson 5.6</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>শর্ট সার্কিট এবং ওপেন সার্কিট ফল্ট: দুই ভিন্ন শত্রু</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Short vs open: L-G most common, arc heat, single-phasing, broken jumper as open — match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Phase on ground = L-G fault — correct</li><li><strong>PASS:</strong> Voltage at bolted short ≈ 0 — correct</li><li><strong>PASS:</strong> L-G most frequent asymmetrical fault on distribution — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> যখন একটি লাইভ ফেজ তার সরাসরি মাটিতে পড়ে যায়, তখন এটি কোন ধরনের ফল্ট?<br/><span class="ans">→ লাইন-টু-গ্রাউন্ড ফল্ট</span></div><div class="q"><strong>Q2</strong> একটি 'ওপেন সার্কিট' ফল্টের প্রধান লক্ষণ কোনটি?<br/><span class="ans">→ কারেন্ট প্রবাহ শূন্য হওয়া</span></div><div class="q"><strong>Q3</strong> শর্ট সার্কিটের সময় লাইনে কারেন্টের কী পরিবর্তন হয়?<br/><span class="ans">→ কারেন্ট অত্যাধিক বাড়ে</span></div><div class="q"><strong>Q4</strong> লাইনের জাম্পার কানেক্টর খুলে বা ছিঁড়ে যাওয়া কোন ধরনের ফল্ট?<br/><span class="ans">→ ওপেন সার্কিট ফল্ট</span></div><div class="q"><strong>Q5</strong> ফিউজ বা সার্কিট ব্রেকার মূলত কোন ফল্ট থেকে রক্ষার জন্য ডিজাইন করা হয়?<br/><span class="ans">→ শর্ট সার্কিট ফল্ট</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_5_6.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L5_7">
+      <h2>
+        <span>Lesson 5.7</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>রাতের বেলা ফল্ট খোঁজার কৌশল</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Night fault find: corona glow, tracking sparks, torch, reflective PPE, thermal — match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Night can reveal corona/arcs invisible by day — correct</li><li><strong>SOFT:</strong> Corona camera UV day detection — advanced but directionally OK</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> রাতের অন্ধকারে ফল্ট খোঁজার একটি বড় সুবিধা কী?<br/><span class="ans">→ স্পার্কিং বা ফ্ল্যাশ সহজে দৃশ্যমান হয়</span></div><div class="q"><strong>Q2</strong> রাতের বেলা পেট্রোলিং-এর জন্য আপনার সবচেয়ে জরুরি সরঞ্জাম কোনটি?<br/><span class="ans">→ উচ্চ ক্ষমতার টর্চলাইট</span></div><div class="q"><strong>Q3</strong> হাই-ভোল্টেজ লাইনের ক্ষতিগ্রস্ত ইনসুলেটরের চারপাশে যে হালকা নীল আভা দেখা যায়, তাকে কী বলে?<br/><span class="ans">→ করোনা ডিসচার্জ</span></div><div class="q"><strong>Q4</strong> রাতের বেলা রাস্তার পাশে কাজ করার সময় কোন PPE-টি আপনার সুরক্ষা বহুগুণ বাড়িয়ে দেয়?<br/><span class="ans">→ রিফ্লেক্টিভ জ্যাকেট</span></div><div class="q"><strong>Q5</strong> যদি আপনি পেট্রোলিং-এর সময় দূর থেকে একটি আলোর ঝলকানি বা ফ্ল্যাশ দেখেন, এর মানে কী?<br/><span class="ans">→ সম্ভাব্য ফল্টের অবস্থান</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_5_7.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L5_8">
+      <h2>
+        <span>Lesson 5.8</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>ট্রান্সফরমারের সাধারণ সমস্যা: হৃৎপিণ্ডের রোগ নির্ণয়</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>DTR diagnosis: winding short, oil carbonization, bushing, Buchholz, megger HT-E=0 — match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Megger HT-to-earth ≈ 0 → winding/body short — correct</li><li><strong>PASS:</strong> Water in oil destroys insulation — myth OK</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> ট্রান্সফরমারের এইচটি (HT) ফিউজ বারবার উড়ে যাওয়ার সবচেয়ে গুরুতর সম্ভাব্য কারণ কী?<br/><span class="ans">→ ভেতরের এইচটি বা এলটি ওয়াইন্ডিং-এ বড়সড় শর্ট সার্কিট হওয়া</span></div><div class="q"><strong>Q2</strong> একটি ট্রান্সফরমার থেকে আসা স্বাভাবিক মৃদু 'হামিং' শব্দের বদলে যদি খটখট শব্দ হয়, এটি কিসের লক্ষণ?<br/><span class="ans">→ ভেতরের কোর বা ওয়াইন্ডিং-এ লুজ কানেকশন বা যান্ত্রিক সমস্যা</span></div><div class="q"><strong>Q3</strong> ট্রান্সফরমারের বুশিং-এর গ্যাসকেট থেকে তেল লিক করলে প্রধান বিপদ কী?<br/><span class="ans">→ তেলের লেভেল কমে গিয়ে কুলিং ও ইনসুলেশন মারাত্মক ব্যাহত হওয়া</span></div><div class="q"><strong>Q4</strong> যদি এইচটি ফিউজ ঠিক থাকে, কিন্তু ট্রান্সফরমারের এলটি (LT) সাইডে কোনো ভোল্টেজ না পাওয়া যায়, সমস্যাটি কোথায়?<br/><span class="ans">→ ট্রান্সফরমারের ভেতরের এলটি ওয়াইন্ডিং বা এলটি বুশিং-এর কানেকশনে</span></div><div class="q"><strong>Q5</strong> একটি ট্রান্সফরমারকে লাইন থেকে বিচ্ছিন্ন করার পর, কোন টুলটি দিয়ে এর ভেতরের শর্ট সার্কিট নিশ্চিতভাবে পরীক্ষা করা যায়?<br/><span class="ans">→ মেগার বা ইনসুলেশন টেস্টার</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_5_8.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L5_9">
+      <h2>
+        <span>Lesson 5.9</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>কেবিল ফল্ট খোঁজার প্রাথমিক ধারণা</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>UG cable intro: dig-in damage, thumper, TDR, ARM, joints weak — match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Thumper = HV pulse → acoustic discharge at fault — correct</li><li><strong>PASS:</strong> TDR uses reflection time; open → same polarity reflection — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> আন্ডারগ্রাউন্ড (UG) কেবিল ফল্টের সবচেয়ে সাধারণ কারণ কী?<br/><span class="ans">→ রাস্তায় মাটি খোঁড়ার সময় কেবিলে লাগা যান্ত্রিক আঘাত</span></div><div class="q"><strong>Q2</strong> একটি ইউজি কেবিলের ফল্ট খোঁজা ওভারহেড লাইনের চেয়ে কঠিন কেন?<br/><span class="ans">→ কারণ ফল্ট মাটির নিচে লুকানো থাকায় সরাসরি চোখে দেখা যায় না</span></div><div class="q"><strong>Q3</strong> ইউজি কেবিলের ফল্টের ধরন (শর্ট সার্কিট/আর্থ ফল্ট/ওপেন সার্কিট) নির্ণয় করার জন্য প্রাথমিক কোন যন্ত্রগুলো ব্যবহার করা হয়?<br/><span class="ans">→ ইনসুলেশন টেস্টার (মেগার) এবং সাধারণ মাল্টিমিটার</span></div><div class="q"><strong>Q4</strong> একটি 'কেবিল থাম্পার' (Cable Thumper) কীভাবে ফল্টের অবস্থান সনাক্ত করে?<br/><span class="ans">→ হাই-ভোল্টেজ পাল্স পাঠিয়ে ফল্টের জায়গায় ডিসচার্জ শব্দ তৈরি করে</span></div><div class="q"><strong>Q5</strong> একটি 'টাইম ডোমেইন রিফ্লেক্টোমিটার' (TDR) কী পরিমাপ করে ফল্টের দূরত্ব বলে দেয়?<br/><span class="ans">→ ফল্ট থেকে প্রতিফলিত হয়ে সিগন্যাল পাল্স ফিরে আসার সময়</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_5_9.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L5_10">
+      <h2>
+        <span>Lesson 5.10</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>প্রিভেন্টিভ মেইনটেন্যান্স: গোয়েন্দা থেকে ডাক্তার</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Preventive maintenance: PM vs breakdown, CBM/DGA, bathtub curve, planned outage — match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> PM prevents failure; small loose nut can escalate — correct</li><li><strong>PASS:</strong> Bathtub useful-life stage lowest failure rate — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> প্রিভেন্টিভ মেইনটেন্যান্স (PM)-এর প্রধান উদ্দেশ্য কী?<br/><span class="ans">→ সরঞ্জাম খারাপ হওয়ার বা ফল্ট ঘটার সম্ভাবনা আগে কমানো</span></div><div class="q"><strong>Q2</strong> 'ব্রেকডাউন মেইনটেন্যান্স'-এর তুলনায় প্রিভেন্টিভ মেইনটেন্যান্স ভালো কেন?<br/><span class="ans">→ কারণ এটি সিস্টেমের নির্ভরযোগ্যতা বাড়ায় ও ব্ল্যাকআউট কমায়</span></div><div class="q"><strong>Q3</strong> লাইনম্যানের প্রিভেন্টিভ মেইনটেন্যান্স চেকলিস্টের একটি গুরুত্বপূর্ণ কাজ কোনটি?<br/><span class="ans">→ থার্মাল ক্যামেরা দিয়ে হটস্পট খোঁজা ও কানেকশন টাইট দেওয়া</span></div><div class="q"><strong>Q4</strong> 'কন্ডিশন-বেসড মেইনটেন্যান্স' (CBM) বলতে কী বোঝায়?<br/><span class="ans">→ সরঞ্জামের বর্তমান অবস্থা পর্যবেক্ষণ করে প্রয়োজন অনুযায়ী কাজ করা</span></div><div class="q"><strong>Q5</strong> ট্রান্সফরমার তেলের DGA (Dissolved Gas Analysis) টেস্ট কোন ধরনের মেইনটেন্যান্সের উদাহরণ?<br/><span class="ans">→ কন্ডিশন-বেসড বা প্রিভেন্টিভ মেইনটেন্যান্স</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_5_10.json</code></p>
+      </div>
+    </section>
+  </main>
+  <footer>
+    Generated 2026-07-25 · <code>public/quiz_management/lesson_5_1_to_5_10_quiz_review.html</code>
+    · Log: <code>lesson_5_quiz_cleanup_log.md</code>
+  </footer>
+</body>
+</html>

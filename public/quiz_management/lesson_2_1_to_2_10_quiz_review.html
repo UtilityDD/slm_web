@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chapter 2 Quiz Relevance & Fact-Check</title>
+  <style>
+    :root { --bg:#f8fafc; --ink:#0f172a; --muted:#64748b; --card:#fff; --line:#cbd5e1;
+      --ok:#166534; --ok-bg:#f0fdf4; --warn:#92400e; --warn-bg:#fffbeb; --fix:#1e40af; --fix-bg:#eff6ff; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif; background:var(--bg); color:var(--ink); line-height:1.5; }
+    header { position:sticky; top:0; z-index:10; background:var(--card); border-bottom:2px solid var(--ink); padding:.9rem 1.1rem; }
+    header h1 { margin:0 0 .35rem; font-size:1.15rem; }
+    header p { margin:.2rem 0; color:var(--muted); font-size:.88rem; }
+    .stats { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.55rem; }
+    .tag { font-size:.78rem; border:1px solid var(--line); padding:.15rem .45rem; background:#f1f5f9; }
+    .tag.ok { background:var(--ok-bg); color:var(--ok); border-color:#86efac; }
+    .tag.warn { background:var(--warn-bg); color:var(--warn); border-color:#fcd34d; }
+    .tag.fix { background:var(--fix-bg); color:var(--fix); border-color:#93c5fd; }
+    main { max-width:980px; margin:0 auto; padding:1rem; }
+    .summary { background:var(--card); border:2px solid var(--ink); padding:1rem; margin-bottom:1rem; }
+    .lesson { background:var(--card); border:2px solid var(--ink); margin-bottom:1rem; }
+    .lesson > h2 { margin:0; padding:.75rem 1rem; border-bottom:1px solid var(--line); font-size:1.05rem; display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; }
+    .badge { font-size:.72rem; font-weight:700; padding:.15rem .45rem; border:1px solid; }
+    .badge.ok { background:var(--ok-bg); color:var(--ok); border-color:#86efac; }
+    .badge.warn { background:var(--warn-bg); color:var(--warn); border-color:#fcd34d; }
+    .badge.fix { background:var(--fix-bg); color:var(--fix); border-color:#93c5fd; }
+    .body { padding:.85rem 1rem; }
+    .body h3 { margin:.6rem 0 .35rem; font-size:.95rem; }
+    .body ul { margin:.25rem 0 .5rem; padding-left:1.2rem; }
+    .q { border-top:1px dashed var(--line); padding:.45rem 0; font-size:.9rem; }
+    .ans { color:var(--ok); }
+    footer { max-width:980px; margin:0 auto 2rem; padding:0 1rem; color:var(--muted); font-size:.8rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Chapter 2 (2.1–2.10) — Quiz Relevance & Fact-Check</h1>
+    <p>Same pipeline as Chapter 1: relevance, relocate off-topic, fact fixes, manual review file.</p>
+    <div class="stats">
+      <span class="tag ok">2.1–2.4, 2.6, 2.8–2.10: on-topic</span>
+      <span class="tag fix">2.5: weather Qs → 1.9</span>
+      <span class="tag warn">2.7: megger pool trimmed + 11kV factfix</span>
+    </div>
+  </header>
+  <main>
+    <section class="summary">
+      <h2 style="margin-top:0;font-size:1.05rem">Executive summary</h2>
+      <ul>
+        <li><strong>2.5:</strong> Removed 2 off-topic items (rain insulating blanket, lightning step potential) → lesson 1.9.</li>
+        <li><strong>2.7:</strong> Trimmed oversized megger bank; relocated storm/PTW/capacitor Qs; fixed 11 kV test voltage to <strong>2500V</strong>.</li>
+        <li><strong>Other lessons:</strong> Tool-chapter quizzes largely match content; no mass relocation needed.</li>
+      </ul>
+    </section>
+
+    <section class="lesson" id="L2_1">
+      <h2>
+        <span>Lesson 2.1</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">21 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>লাইনম্যানের টুলবক্স পরিচিতি</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Toolbox tools, VDE 1000V, line tester — matches chapter.</li><li>Q on lowering tools by rope/bucket (from 1.1) kept — tool handling.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> VDE 1000V = rated for work up to 1000 V AC — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> একজন লাইনম্যানের কম্বিনেশন প্লায়ার্সের ইনসুলেশনের ওপর কোন রেটিং থাকাটা সুরক্ষার জন্য অপরিহার্য?<br/><span class="ans">→ VDE 1000V ছাপ</span></div><div class="q"><strong>Q2</strong> সাধারণ ছুরি বা কাটার দিয়ে তারের ইনসুলেশন ছিললে প্রধান কারিগরি বিপদ কী?<br/><span class="ans">→ কন্ডাক্টরে আঁচড় লাগা</span></div><div class="q"><strong>Q3</strong> একটি ইনসুলেটেড স্ক্রুড্রাইভারের কোন অংশটি ইনসুলেটেড থাকা বাধ্যতামূলক?<br/><span class="ans">→ হাতল থেকে ব্লেড পর্যন্ত</span></div><div class="q"><strong>Q4</strong> নাট-বল্টু খোলার সময় ভুল সাইজের স্প্যানার ব্যবহার করলে মূলত কী ক্ষতি হতে পারে?<br/><span class="ans">→ নাটের মাথা নষ্ট হওয়া</span></div><div class="q"><strong>Q5</strong> লাইন টেস্টার দিয়ে নিচের কোন বিষয়টি নিখুঁতভাবে পরীক্ষা করা সম্ভব নয়?<br/><span class="ans">→ ভোল্টেজের সঠিক মাত্রা</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +16 more in <code>questions_2_1.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L2_2">
+      <h2>
+        <span>Lesson 2.2</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>মাল্টিমিটারের জাদু</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Multimeter ports, AC/DC, continuity, CAT rating, True RMS — all match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> CAT IV for outdoor/overhead — correct framing</li><li><strong>SOFT:</strong> “CAT III বা CAT IV” for outdoor — CAT IV preferred at service entrance/OH; acceptable</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> একটি লাইভ থ্রি-ফেজ লাইনের Phase-to-Neutral ভোল্টেজ মাপার জন্য মাল্টিমিটারের ডায়াল কোন সেটিং-এ রাখতে হবে?<br/><span class="ans">→ V~ (এসি ভোল্টেজ মোড)</span></div><div class="q"><strong>Q2</strong> একটি ফিউজ ভালো আছে না উড়ে গেছে, তা পরীক্ষা করার জন্য মাল্টিমিটারের কোন মোডটি সবচেয়ে দ্রুত এবং সহজ?<br/><span class="ans">→ কন্টিনিউটি মোড চেক করা</span></div><div class="q"><strong>Q3</strong> কন্টিনিউটি বা রেজিস্ট্যান্স পরীক্ষা করার আগে সবচেয়ে জরুরি সুরক্ষা পদক্ষেপ কী?<br/><span class="ans">→ পাওয়ার সাপ্লাই বন্ধ করা</span></div><div class="q"><strong>Q4</strong> মাল্টিমিটারের কালো প্রোবটি সাধারণত কোন পোর্টে লাগানো হয়?<br/><span class="ans">→ COM বা কমন ব্ল্যাক পোর্ট</span></div><div class="q"><strong>Q5</strong> লাইনম্যানদের জন্য আউটডোর কাজে কোন সেফটি রেটিং-এর মাল্টিমিটার ব্যবহার করা উচিত?<br/><span class="ans">→ CAT III বা CAT IV রেটিং</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_2_2.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L2_3">
+      <h2>
+        <span>Lesson 2.3</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>ল্যাগস ক্রিম্পিং: সঠিক চাপ, নিরাপদ কানেকশন</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Crimping rules, Al paste, die match, cold welding — match chapter. Skinning nick Q is prep-related — keep.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> No solder after crimp; Al anti-oxidant paste — industry standard</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> একটি সঠিক ক্রিম্পিং সংযোগকে বাতাসরোধী (Airtight) করার মূল কারণ কী?<br/><span class="ans">→ অক্সিডেশন ও জং রোধ করার জন্য</span></div><div class="q"><strong>Q2</strong> অ্যালুমিনিয়ামের পরিবাহীর জন্য কোন ধরনের ল্যাগ ব্যবহার করা কারিগরিভাবে সঠিক?<br/><span class="ans">→ অ্যালুমিনিয়ামের তৈরি ল্যাগ</span></div><div class="q"><strong>Q3</strong> একটি ক্রিম্পিং টুলের 'ডাই' (Die) নির্বাচন করার প্রধান ভিত্তি কোনটি?<br/><span class="ans">→ তার ও ল্যাগের সঠিক সাইজ বা মাপ</span></div><div class="q"><strong>Q4</strong> ক্রিম্প করার পর সংযোগের যান্ত্রিক ক্ষমতা পরীক্ষা করতে কোন টেস্টটি করা হয়?<br/><span class="ans">→ টান দিয়ে দেখা বা সঠিক পুল টেস্ট</span></div><div class="q"><strong>Q5</strong> ক্রিম্পিং-এর পর সোল্ডার বা ঝালাই করা কেন অনুচিত বলে মনে করা হয়?<br/><span class="ans">→ তাপ সংযোগকে দুর্বল করতে পারে</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_2_3.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L2_4">
+      <h2>
+        <span>Lesson 2.4</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>কাম-অ্যালং ক্ল্যাম্প (Come-Along Clamp): নিয়ন্ত্রিত শক্তি</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Come-along / wire grip / sag-tension / safe position — match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Do not overload rating; no cheater pipe on handle — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> কাম-অ্যালং ক্ল্যাম্প সিস্টেমের প্রধান কারিগরি কাজ কী?<br/><span class="ans">→ সঠিক টেনশন বা টানে আনা</span></div><div class="q"><strong>Q2</strong> ACSR কন্ডাক্টরের জন্য বিশেষ ধরনের ওয়্যার গ্রিপ ব্যবহার করা হয় কেন?<br/><span class="ans">→ অ্যালুমিনিয়াম স্ট্র্যান্ড সুরক্ষা</span></div><div class="q"><strong>Q3</strong> তার টানার সময় একজন লাইনম্যানের সবচেয়ে নিরাপদ অবস্থান কোনটি?<br/><span class="ans">→ টানের লাইনের সমান্তরাল পাশে</span></div><div class="q"><strong>Q4</strong> কাম-অ্যালং-এর হ্যান্ডেলের ওপর অতিরিক্ত পাইপ লাগানো উচিত নয় কেন?<br/><span class="ans">→ অতিরিক্ত চাপে যন্ত্র ভাঙার ঝুঁকি</span></div><div class="q"><strong>Q5</strong> কাজ শেষে টেনশন রিলিজ করার সময় কী ধরনের সতর্কতা নেওয়া উচিত?<br/><span class="ans">→ ধীরে ও নিয়ন্ত্রিত ভাবে রিলিজ</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_2_4.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L2_5">
+      <h2>
+        <span>Lesson 2.5</span>
+        <span class="badge fix">FIXED</span>
+        <span class="tag">21 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>অপারেটিং রড (হট স্টিক): দূরত্বের সুরক্ষা</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Hot stick / DO fuse / isolator off-load / care — core on-topic.</li><li>Moved rain insulating-blanket + lightning step-potential Qs back to lesson 1.9.</li><li>Kept wet/dirty hot stick insulation Q (fits stick care).</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Fiberglass hot stick; bamboo forbidden; wet stick loses insulation</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> অপারেটিং রড বা 'হট স্টিক'-এর প্রধান কারিগরি কাজ কী?<br/><span class="ans">→ লাইভ লাইন থেকে নিরাপদ দূরত্ব বজায় রাখা</span></div><div class="q"><strong>Q2</strong> একটি আধুনিক হট স্টিক মূলত কোন উপাদান দিয়ে তৈরি করা হয়?<br/><span class="ans">→ উচ্চমানের ফাইবারগ্লাস বা ইপোক্সি রেজিন</span></div><div class="q"><strong>Q3</strong> ডিও ফিউজ (DO Fuse) অপারেট করার সময় নিরাপদ অবস্থান কোনটি?<br/><span class="ans">→ ফিউজের পাশে বা কিছুটা কোণাকুণি অবস্থান</span></div><div class="q"><strong>Q4</strong> ডিও ফিউজ খোলার সময় আর্ক বা ফ্ল্যাশ হওয়ার মূল কারণ কী?<br/><span class="ans">→ কারেন্ট থাকা অবস্থায় সার্কিট বিচ্ছিন্ন করা</span></div><div class="q"><strong>Q5</strong> শুকনো বাঁশের লাঠি দিয়ে ফিউজ খোলা কেন আইনত নিষিদ্ধ?<br/><span class="ans">→ আর্দ্রতার কারণে ইনসুলেশন ক্ষমতা কম থাকে</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +16 more in <code>questions_2_5.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L2_6">
+      <h2>
+        <span>Lesson 2.6</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>কেবিল স্কিনিং-এর শিল্প</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Cable skinning / nick / pencil sharpening / XLPE vs PVC — match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Nick → stress concentration; XLPE higher heat rating than PVC — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> কেবিলের ইনসুলেশন ছিলার সময় কন্ডাক্টরের গায়ে আঁচড় বা 'নিক' লাগলে প্রধান বিপদ কী?<br/><span class="ans">→ হটস্পট বা তার ছিঁড়ে যাওয়ার ঝুঁকি</span></div><div class="q"><strong>Q2</strong> ইনসুলেশন ছিলার জন্য নিচের কোন হাতিয়ারটি ব্যবহার করা সবচেয়ে নিরাপদ ও সঠিক?<br/><span class="ans">→ সঠিক সাইজের ওয়্যার স্ট্রিপার</span></div><div class="q"><strong>Q3</strong> কেবিল স্কিনিং করার সময় 'পেন্সিল শার্পনিং' পদ্ধতি অনুসরণ করার মূল কারণ কী?<br/><span class="ans">→ কন্ডাক্টরকে আঁচড় থেকে বাঁচাতে</span></div><div class="q"><strong>Q4</strong> ইনসুলেশন কাটার সময় ব্যবহৃত ব্লেড বা ছুরিটি কোন দিকে চালনা করা উচিত?<br/><span class="ans">→ শরীর থেকে বাইরের দিকে সোজাসুজি</span></div><div class="q"><strong>Q5</strong> কন্ডাক্টরের ওপর সামান্য আঁচড় থাকলেও তা ক্ষতিকর—এই ধারণাটি সঠিক কেন?<br/><span class="ans">→ জয়েন্ট দুর্বল হয় ও গরম হয়ে যায়</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_2_6.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L2_7">
+      <h2>
+        <span>Lesson 2.7</span>
+        <span class="badge fix">TRIMMED</span>
+        <span class="tag">87 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>'মেগার' (Megger) কী ও কেন?</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Was 100 Q vs short megger chapter — trimmed peripheral + relocated weather/PTW/capacitor items.</li><li>Kept IR method, 1 MΩ rule, discharge-after-test, PI/DAR (advanced section).</li><li>Fact-fixed 11 kV preferred test voltage to 2500V.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> 415V gear → 500V megger (matches chapter example)</li><li><strong>FIXED:</strong> 11 kV → typically 2500V (was “1000 or 2500”)</li><li><strong>PASS:</strong> PI = IR10 / IR1; good PI ≥ 2 — matches advanced section</li><li><strong>PASS:</strong> Min ~1 MΩ IE Rules thumb rule — matches chapter</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> মেগার (Megger) মূলত কী ধরনের বৈদ্যুতিক পরিমাপক যন্ত্র হিসেবে ব্যবহৃত হয়?<br/><span class="ans">→ অত্যন্ত উচ্চ মানের ইনসুলেশন রেজিস্ট্যান্স পরিমাপ করতে</span></div><div class="q"><strong>Q2</strong> ইনসুলেশন রেজিস্ট্যান্স পরিমাপের জন্য মেগার সাধারণত কোন ধরনের ভোল্টেজ তৈরি করে?<br/><span class="ans">→ উচ্চ মানের ডিরেক্ট কারেন্ট বা ডিসি (DC) ভোল্টেজ</span></div><div class="q"><strong>Q3</strong> সাধারণ মাল্টিমিটার দিয়ে ইনসুলেশন রেজিস্ট্যান্স সঠিকভাবে পরীক্ষা করা যায় না কেন?<br/><span class="ans">→ মাল্টিমিটারের অত্যন্ত কম ভোল্টেজ ইনসুলেশনের ওপর পর্যাপ্ত চাপ সৃষ্টি করতে পারে না</span></div><div class="q"><strong>Q4</strong> মেগারের ডিসপ্লেতে সাধারণত কোন একক বা ইউনিটে রিডিং প্রদর্শিত হয়?<br/><span class="ans">→ মেগা-ওহম (MΩ) অথবা গিগা-ওহম (GΩ) এককে</span></div><div class="q"><strong>Q5</strong> মেগারের সাহায্যে ইনসুলেশন পরীক্ষা করার সময় ডিসি (DC) ভোল্টেজ ব্যবহারের প্রধান সুবিধা কী?<br/><span class="ans">→ ডিসি ভোল্টেজ ক্যাপাসিটিভ চার্জিং শেষ হওয়ার পর একটি স্থিতিশীল রেজিস্ট্যান্স রিডিং দেয়</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +82 more in <code>questions_2_7.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L2_8">
+      <h2>
+        <span>Lesson 2.8</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>ফেজ সিকোয়েন্স মিটার: সঠিক ঘূর্ণন</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Phase sequence meter, R-Y-B, reverse fix swap two phases — match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> India RYB / clockwise as ABC convention framing — field OK</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> একটি থ্রি-ফেজ মোটরের ঘূর্ণনের দিক (Direction of Rotation) প্রধানত কিসের ওপর নির্ভর করে?<br/><span class="ans">→ সাপ্লাইয়ের ফেজ সিকোয়েন্সের ওপর</span></div><div class="q"><strong>Q2</strong> ভারতে স্ট্যান্ডার্ড থ্রি-ফেজ কালার কোড ও সিকোয়েন্স কোনটি ধরা হয়?<br/><span class="ans">→ R-Y-B (লাল-হলুদ-নীল)</span></div><div class="q"><strong>Q3</strong> ফেজ সিকোয়েন্স মিটার 'রিভার্স' দেখালে সেটি ঠিক করার প্র্যাকটিক্যাল উপায় কী?<br/><span class="ans">→ যেকোনো দুটি ফেজ ইন্টারচেঞ্জ করা</span></div><div class="q"><strong>Q4</strong> কোন কাজটি করার পর ফেজ সিকোয়েন্স টেস্ট করা আবশ্যিক?<br/><span class="ans">→ নতুন সার্ভিস কানেকশন দেওয়ার পর</span></div><div class="q"><strong>Q5</strong> ফেজ সিকোয়েন্স টেস্ট করার সময় সবচেয়ে জরুরি সেফটি প্রিকশন কোনটি?<br/><span class="ans">→ ইনসুলেটেড গ্লাভস ও পিপিই পরা</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_2_8.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L2_9">
+      <h2>
+        <span>Lesson 2.9</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>হাইড্রোলিক ক্রিম্পার ও কাটার: দানবীয় শক্তি</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Hydraulic crimper/cutter, Pascal, die match, no live cut — match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Never cut live cable with hydraulic cutter — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> হাইড্রোলিক টুলস কোন বৈজ্ঞানিক সূত্রের ওপর ভিত্তি করে কাজ করে?<br/><span class="ans">→ বিজ্ঞানী প্যাসকেলের সূত্র</span></div><div class="q"><strong>Q2</strong> বড় আকারের (যেমন ৪০০ স্কয়ার মিমি) কেবিলের জন্য হ্যান্ড ক্রিম্পারের বদলে হাইড্রোলিক ক্রিম্পার ব্যবহার করা হয় কেন?<br/><span class="ans">→ নিখুঁত ও অত্যন্ত মজবুত জয়েন্ট তৈরি করতে</span></div><div class="q"><strong>Q3</strong> হাইড্রোলিক ক্রিম্পিং টুলের 'ডাই' (Die) নির্বাচন কিসের ওপর নির্ভর করে?<br/><span class="ans">→ কেবিল এবং ল্যাগের সঠিক সাইজের ওপর</span></div><div class="q"><strong>Q4</strong> হাইড্রোলিক ক্রিম্পার ব্যবহার করার সময় কখন পাম্প করা থামানো উচিত?<br/><span class="ans">→ যখন প্রেসার রিলিজ ভালভ ক্লিক করে</span></div><div class="q"><strong>Q5</strong> হাইড্রোলিক টুল ব্যবহার করার সময় সবচেয়ে জরুরি ব্যক্তিগত সুরক্ষা সতর্কতা কী?<br/><span class="ans">→ চলমান ডাই বা ব্লেড থেকে আঙুল দূরে রাখা</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_2_9.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L2_10">
+      <h2>
+        <span>Lesson 2.10</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>হাতিয়ারের যত্ন ও রক্ষণাবেক্ষণ</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Daily care, rust, calibration, retire damaged insulated tools — match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Calibrate meters periodically; discard cracked insulation — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> প্রতিটি কাজের দিন শেষে টুলসের যত্ন নেওয়ার জন্য ন্যূনতম কত মিনিট সময় দেওয়া উচিত?<br/><span class="ans">→ অন্তত ৫ থেকে ১০ মিনিট সময় দেওয়া উচিত</span></div><div class="q"><strong>Q2</strong> ধাতব টুলসের প্রধান শত্রু মরিচা প্রতিরোধের সেরা উপায় কী?<br/><span class="ans">→ পরিষ্কার করে শুকনো রাখা ও হালকা তেল দেওয়া</span></div><div class="q"><strong>Q3</strong> একটি পরিমাপক যন্ত্রকে (যেমন মাল্টিমিটার) বছরে একবার ক্যালিব্রেট (Calibrate) করানো উচিত কেন?<br/><span class="ans">→ মিটারের রিডিং সর্বদা নির্ভুল ও নির্ভরযোগ্য রাখতে</span></div><div class="q"><strong>Q4</strong> নিচের কোন পরিস্থিতিতে একটি ইনসুলেটেড টুলকে অবিলম্বে বাতিল করা উচিত?<br/><span class="ans">→ ইনসুলেটেড হাতলে কোনো গভীর ফাটল বা কাট থাকলে</span></div><div class="q"><strong>Q5</strong> মিথ: 'ভালো কোম্পানির টুল কিনলে যত্ন করার দরকার নেই'—এই ধারণাটি ভুল কেন?<br/><span class="ans">→ ভুল ব্যবহার ও অবহেলায় দামি টুলসও নষ্ট হয়ে যায়</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_2_10.json</code></p>
+      </div>
+    </section>
+  </main>
+  <footer>
+    Generated 2026-07-25 · <code>public/quiz_management/lesson_2_1_to_2_10_quiz_review.html</code>
+    · Log: <code>lesson_2_quiz_cleanup_log.md</code>
+  </footer>
+</body>
+</html>

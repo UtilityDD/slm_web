@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chapter 6 Quiz Relevance & Fact-Check</title>
+  <style>
+    :root { --bg:#f8fafc; --ink:#0f172a; --muted:#64748b; --card:#fff; --line:#cbd5e1;
+      --ok:#166534; --ok-bg:#f0fdf4; --fix:#1e40af; --fix-bg:#eff6ff; --crit:#991b1b; --crit-bg:#fef2f2; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif; background:var(--bg); color:var(--ink); line-height:1.5; }
+    header { position:sticky; top:0; z-index:10; background:var(--card); border-bottom:2px solid var(--ink); padding:.9rem 1.1rem; }
+    header h1 { margin:0 0 .35rem; font-size:1.15rem; }
+    header p { margin:.2rem 0; color:var(--muted); font-size:.88rem; }
+    .stats { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.55rem; }
+    .tag { font-size:.78rem; border:1px solid var(--line); padding:.15rem .45rem; background:#f1f5f9; }
+    .tag.ok { background:var(--ok-bg); color:var(--ok); border-color:#86efac; }
+    .tag.fix { background:var(--fix-bg); color:var(--fix); border-color:#93c5fd; }
+    .tag.crit { background:var(--crit-bg); color:var(--crit); border-color:#fca5a5; }
+    main { max-width:980px; margin:0 auto; padding:1rem; }
+    .summary { background:var(--card); border:2px solid var(--ink); padding:1rem; margin-bottom:1rem; }
+    .lesson { background:var(--card); border:2px solid var(--ink); margin-bottom:1rem; }
+    .lesson > h2 { margin:0; padding:.75rem 1rem; border-bottom:1px solid var(--line); font-size:1.05rem; display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; }
+    .badge { font-size:.72rem; font-weight:700; padding:.15rem .45rem; border:1px solid; }
+    .badge.ok { background:var(--ok-bg); color:var(--ok); border-color:#86efac; }
+    .badge.fix { background:var(--fix-bg); color:var(--fix); border-color:#93c5fd; }
+    .badge.crit { background:var(--crit-bg); color:var(--crit); border-color:#fca5a5; }
+    .body { padding:.85rem 1rem; }
+    .body h3 { margin:.6rem 0 .35rem; font-size:.95rem; }
+    .body ul { margin:.25rem 0 .5rem; padding-left:1.2rem; }
+    .q { border-top:1px dashed var(--line); padding:.45rem 0; font-size:.9rem; }
+    .ans { color:var(--ok); }
+    footer { max-width:980px; margin:0 auto 2rem; padding:0 1rem; color:var(--muted); font-size:.8rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Chapter 6 (6.1–6.11) — Quiz Relevance & Fact-Check</h1>
+    <p>যন্ত্র গুরু: DTR → earthing. Same pipeline as Ch.1–5.</p>
+    <div class="stats">
+      <span class="tag crit">6.4 REBUILT (was 6.3 fuse copy)</span>
+      <span class="tag fix">6.1, 6.5, 6.6, 6.9, 6.11: weather → 1.9</span>
+      <span class="tag ok">6.2–6.3, 6.7–6.8, 6.10: on-topic</span>
+    </div>
+  </header>
+  <main>
+    <section class="summary">
+      <h2 style="margin-top:0;font-size:1.05rem">Executive summary</h2>
+      <ul>
+        <li><strong>Critical:</strong> <code>questions_6_4.json</code> was an exact copy of the 6.3 HRC fuse quiz — rebuilt for AB switch / isolator.</li>
+        <li><strong>Weather strip:</strong> General storm/rain PPE items moved or deduped into 1.9; equipment-specific rain risks kept where taught.</li>
+        <li><strong>Note:</strong> Chapter 6 has <strong>11</strong> lessons (6.1–6.11).</li>
+      </ul>
+    </section>
+
+    <section class="lesson" id="L6_1">
+      <h2>
+        <span>Lesson 6.1</span>
+        <span class="badge fix">FIXED</span>
+        <span class="tag">21 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>ডিস্ট্রিবিউশন ট্রান্সফরমার (DTR): লাইনের হৃৎপিণ্ড</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>DTR parts: oil, breather, Dyn11, Buchholz, conservator — match chapter.</li><li>Moved rain bushing-touch + wet hand-tool Qs → 1.9.</li><li>Kept top-cover standing ban — DTR work safety in lesson scope.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Oil cools + insulates; pink silica = moisture — correct</li><li><strong>PASS:</strong> Dyn11 = delta/star vector group — correct orientation</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> একটি ডিস্ট্রিবিউশন ট্রান্সফরমারের প্রধান কাজ কী?<br/><span class="ans">→ উচ্চ এসি ভোল্টেজকে ব্যবহারযোগ্য কম ভোল্টেজে নামানো</span></div><div class="q"><strong>Q2</strong> ট্রান্সফরমার অয়েলের দুটি প্রধান কাজ কী?<br/><span class="ans">→ ভেতরের ইনসুলেশন বজায় রাখা এবং তাপ শুষে ঠান্ডা রাখা</span></div><div class="q"><strong>Q3</strong> ট্রান্সফরমারের ব্রিদারের (Breather) ভেতরে থাকা সিলিকা জেলের রং গোলাপি হয়ে গেলে কী বোঝা যায়?<br/><span class="ans">→ এটি জলীয় বাষ্প শোষণ করে নিজের কার্যকারিতা হারিয়েছে</span></div><div class="q"><strong>Q4</strong> HT এবং LT বুশিং-এর মধ্যে পার্থক্য কীভাবে বোঝা যায়?<br/><span class="ans">→ HT বুশিং আকারে বড় হয় এবং এর ক্রিপেজ দূরত্ব বেশি হয়</span></div><div class="q"><strong>Q5</strong> একটি ট্রান্সফরমার থেকে আসা মৃদু 'হামিং' শব্দ কেন হয়?<br/><span class="ans">→ কোরের ক্রমাগত ম্যাগনেটাইজড ও ডি-ম্যাগনেটাইজড হওয়ার কারণে</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +16 more in <code>questions_6_1.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L6_2">
+      <h2>
+        <span>Lesson 6.2</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>সার্কিট ব্রেকার: চূড়ান্ত রক্ষাকর্তা</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>CB vs fuse, VCB vacuum, rack-out, spring charged, SF6 — match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Tripped breaker ≠ safe to work; need isolate/earth — myth OK</li><li><strong>PASS:</strong> VCB arc quench in vacuum — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> ফিউজের তুলনায় সার্কিট ব্রেকারের প্রধান সুবিধা কী?<br/><span class="ans">→ ট্রিপ করার পর এটিকে রিসেট করে পুনরায় ব্যবহার করা যায়</span></div><div class="q"><strong>Q2</strong> সার্কিট ব্রেকার কার কাছ থেকে ট্রিপ করার নির্দেশ পায়?<br/><span class="ans">→ প্যানেলে থাকা প্রোটেকশন রিলের সেন্সিং সিগন্যাল থেকে</span></div><div class="q"><strong>Q3</strong> আধুনিক ডিস্ট্রিবিউশন সাবস্টেশনে কোন ধরনের সার্কিট ব্রেকার সবচেয়ে বেশি ব্যবহৃত হয়?<br/><span class="ans">→ ভ্যাকুয়াম সার্কিট ব্রেকার বা ভিসিবি (VCB)</span></div><div class="q"><strong>Q4</strong> একটি ভিসিবি (VCB)-র আর্ক নেভানোর মাধ্যম কী?<br/><span class="ans">→ ভ্যাকুয়াম বোতলের ভেতরের শূন্য মাধ্যম</span></div><div class="q"><strong>Q5</strong> ব্রেকার কন্ট্রোল প্যানেলের সবুজ বাতি (Green Lamp) জ্বলা মানে কী?<br/><span class="ans">→ ব্রেকারটি বর্তমানে খোলা বা OFF/TRIP অবস্থায় আছে</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_6_2.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L6_3">
+      <h2>
+        <span>Lesson 6.3</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>ফিউজ: নীরব প্রহরী</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>HRC, kit-kat, discrimination, I²t, never copper link — match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> HRC = High Rupturing Capacity; quartz sand quench — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> ফিডার পিলার বা ইনডোর প্যানেলে কোন ধরনের ফিউজ ব্যবহার করা হয়, যা বিস্ফোরণ ছাড়া নিরাপদে ফল্ট ক্লিয়ার করে?<br/><span class="ans">→ এইচআরসি (HRC) কার্টিজ ফিউজ</span></div><div class="q"><strong>Q2</strong> HRC ফিউজের পুরো কথা কী?<br/><span class="ans">→ High Rupturing Capacity</span></div><div class="q"><strong>Q3</strong> একটি রি-ওয়্যারেবল বা কিট-ক্যাট ফিউজ আধুনিক সিস্টেমে ব্যবহার করা হয় না কেন?<br/><span class="ans">→ ব্রেকিং ক্যাপাসিটি কম এবং ভুল মাপের তার বাঁধার ঝুঁকি থাকে</span></div><div class="q"><strong>Q4</strong> HRC ফিউজের ভেতরে কোয়ার্টজ বালু থাকার কারণ কী?<br/><span class="ans">→ শর্ট সার্কিটের সময় তৈরি হওয়া আর্ক দ্রুত শোষণ করে নিভিয়ে দেওয়া</span></div><div class="q"><strong>Q5</strong> একটি উড়ে যাওয়া HRC ফিউজের ইন্ডিকেটর ডটটি কেমন দেখায়?<br/><span class="ans">→ ইন্ডিকেটরটি ছিটকে বেরিয়ে যায় অথবা সম্পূর্ণ কালো রঙের হয়ে যায়</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_6_3.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L6_4">
+      <h2>
+        <span>Lesson 6.4</span>
+        <span class="badge crit">REBUILT</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>AB সুইচ ও আইসোলেটর: ট্র্যাফিক কন্ট্রোলার</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>CRITICAL: quiz was 100% copy of 6.3 fuse bank (+2 weather extras).</li><li>Rebuilt 20 Qs from chapter: off-load rule, operate order, gang/tilting, interlocking, arcing horn.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Isolator = off-load visible gap; CB interrupts fault — correct</li><li><strong>PASS:</strong> Open order: breaker first, then isolator — matches chapter</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> আইসোলেটর বা AB সুইচের প্রধান উদ্দেশ্য কী?<br/><span class="ans">→ পাওয়ার সিস্টেম থেকে সার্কিটকে শারীরিকভাবে বিচ্ছিন্ন করে দৃশ্যমান গ্যাপ তৈরি করা</span></div><div class="q"><strong>Q2</strong> AB সুইচকে "এয়ার ব্রেক" সুইচ বলা হয় কেন?<br/><span class="ans">→ এটি বাতাসে (Air) কন্টাক্ট পয়েন্ট খোলে ও বন্ধ করে</span></div><div class="q"><strong>Q3</strong> আইসোলেটর অপারেট করার "গোল্ডেন রুল" কী?<br/><span class="ans">→ শুধুমাত্র নো-লোড বা অফ-লোড অবস্থায় অপারেট করতে হবে</span></div><div class="q"><strong>Q4</strong> লোড থাকা অবস্থায় আইসোলেটর খুললে প্রধান বিপদ কী?<br/><span class="ans">→ কন্টাক্টে প্রচণ্ড দীর্ঘস্থায়ী আর্ক তৈরি হয়ে সুইচ ও অপারেটর ক্ষতিগ্রস্ত হতে পারে</span></div><div class="q"><strong>Q5</strong> লাইন বন্ধ করার সঠিক অপারেশন ক্রম কোনটি?<br/><span class="ans">→ আগে সার্কিট ব্রেকার খুলে অফ-লোড করুন, পরে আইসোলেটর খুলুন</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_6_4.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L6_5">
+      <h2>
+        <span>Lesson 6.5</span>
+        <span class="badge fix">FIXED</span>
+        <span class="tag">22 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>আন্ডারগ্রাউন্ড (UG) কেবিল: লুকানো নেটওয়ার্ক</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>UG cable: XLPE/PILC, armor, jointing dryness, termination, PD — match chapter.</li><li>Kept rain jointing moisture risk (cable-technical).</li><li>Moved drum-drag rain, insulator pollution, lightning step potential → 1.9.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Joints are weak points; moisture kills joint insulation — correct</li><li><strong>PASS:</strong> Armor ≠ dig-proof — myth OK</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> একটি হাই-ভোল্টেজ ইউজি কেবিলের 'আর্মার' স্তরের প্রধান কাজ কী?<br/><span class="ans">→ যান্ত্রিক আঘাত ও মাটি খোঁড়াখুঁড়ি থেকে বাঁচানো</span></div><div class="q"><strong>Q2</strong> আধুনিক ইউজি কেবিলে কোন ধরনের ইনসুলেশন উপাদান সবচেয়ে বেশি ব্যবহৃত হয়?<br/><span class="ans">→ XLPE (ক্রস-লিঙ্কড পলিইথিলিন)</span></div><div class="q"><strong>Q3</strong> ইউজি কেবিল সিস্টেমের ফল্ট সাধারণত কোন জায়গায় সবচেয়ে বেশি হয়?<br/><span class="ans">→ টার্মিনেশন এবং জয়েন্টগুলোতে</span></div><div class="q"><strong>Q4</strong> একটি কেবিল 'টার্মিনেশন কিট'-এর প্রধান কাজ কী?<br/><span class="ans">→ প্রান্তকে আর্দ্রতা থেকে বাঁচানো ও বৈদ্যুতিক চাপ কমানো</span></div><div class="q"><strong>Q5</strong> PILC এবং XLPE কেবিলের মধ্যে প্রধান পার্থক্য কী?<br/><span class="ans">→ PILC-তে তেল-কাগজ এবং XLPE-তে পলিমার ইনসুলেশন থাকে</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +17 more in <code>questions_6_5.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L6_6">
+      <h2>
+        <span>Lesson 6.6</span>
+        <span class="badge fix">FIXED</span>
+        <span class="tag">21 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>এবি কেবিল (AB Cable): ঝঞ্ঝাটমুক্ত আধুনিক লাইন</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>AB cable: messenger, IPC, tension clamp, XLPE — match chapter.</li><li>Kept storm abrasion on AB insulation (equipment-specific).</li><li>Removed general “trust instinct / stop work” → already in 1.9.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> AB insulated ≠ safe bare-hand — myth OK</li><li><strong>PASS:</strong> Messenger carries mechanical tension — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> এবি কেবিল (Aerial Bunched Cable)-এর প্রধান সুবিধা কী?<br/><span class="ans">→ ইনসুলেশন থাকায় চুরি ও লাইন ফল্ট উল্লেখযোগ্যভাবে কমে যায়</span></div><div class="q"><strong>Q2</strong> একটি এলটি এবি কেবিলের যান্ত্রিক টান বা ওজন কোন তারটি বহন করে?<br/><span class="ans">→ বেয়ার নিউট্রাল-কাম-মেসেঞ্জার তারটি টান বহন করে</span></div><div class="q"><strong>Q3</strong> এবি কেবিলের সার্ভিস কানেকশনের জন্য কোন ধরনের কানেক্টর ব্যবহার করা হয়?<br/><span class="ans">→ ইনসুলেশন পিয়ার্সিং কানেক্টর (IPC)</span></div><div class="q"><strong>Q4</strong> যেখানে এবি কেবিল লাইন শেষ হয় বা মোড় নেয়, সেখানে কোন ধরনের ক্ল্যাম্প ব্যবহার করা হয়?<br/><span class="ans">→ অ্যাঙ্কারিং বা ডেড-এন্ড ক্ল্যাম্প</span></div><div class="q"><strong>Q5</strong> মিথ: 'এবি কেবিল সম্পূর্ণ ইনসুলেটেড, তাই এতে খালি হাতে কাজ করা যায়'—এই ধারণাটি মারাত্মক ভুল কেন?<br/><span class="ans">→ কারণ ইনসুলেশনের অদৃশ্য ফাটল বা পিন-হোল মারাত্মক শক দিতে পারে</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +16 more in <code>questions_6_6.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L6_7">
+      <h2>
+        <span>Lesson 6.7</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">21 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>ক্যাপাসিটর ব্যাংক: পাওয়ার বুস্টার</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Cap bank PF, stored charge, wait/discharge rod, APFC — match chapter. Kept megger-after-discharge Q.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Capacitors store charge after switch-off — critical safety</li><li><strong>SOFT:</strong> Minimum wait time — utility SoP varies; chapter rule OK for training</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> একটি ক্যাপাসিটর ব্যাংকের প্রধান কাজ কী?<br/><span class="ans">→ পাওয়ার ফ্যাক্টর উন্নত ও লস কমানো</span></div><div class="q"><strong>Q2</strong> ক্যাপাসিটর ব্যাংকের সাথে কাজ করার সবচেয়ে বড় এবং লুকানো বিপদ কোনটি?<br/><span class="ans">→ সাপ্লাই বন্ধের পরও এতে চার্জ সঞ্চিত থাকে</span></div><div class="q"><strong>Q3</strong> ক্যাপাসিটর ব্যাংক সুইচ অফ করার পর কাজ শুরু করার আগে ন্যূনতম কতক্ষণ অপেক্ষা করা বাধ্যতামূলক?<br/><span class="ans">→ ন্যূনতম ৫ থেকে ১০ মিনিট অপেক্ষা করা</span></div><div class="q"><strong>Q4</strong> অপেক্ষার পরেও, ক্যাপাসিটর ব্যাংকে কাজ করার আগে কোন সুরক্ষা পদক্ষেপটি নেওয়া উচিত?<br/><span class="ans">→ ডিসচার্জ রড দিয়ে টার্মিনালগুলো আর্থিং করা</span></div><div class="q"><strong>Q5</strong> একটি কম পাওয়ার ফ্যাক্টর সিস্টেমে কী অসুবিধা সৃষ্টি করে?<br/><span class="ans">→ একই কাজের জন্য লাইনকে বেশি কারেন্ট টানতে হয়</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +16 more in <code>questions_6_7.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L6_8">
+      <h2>
+        <span>Lesson 6.8</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>অটো-রিক্লোজার ও সেকশনালাইজার: লাইনের স্মার্ট ব্রেন</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Recloser vs sectionizer, non-reclose for work, lockout — match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Most OH faults transient; sectionizer does not interrupt fault current — correct</li><li><strong>PASS:</strong> Enable Non-Reclose before work downstream — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> একটি অটো-রিক্লোজারের প্রধান কাজ কী?<br/><span class="ans">→ অস্থায়ী ফল্টে স্বয়ংক্রিয়ভাবে লাইন ট্রিপ করে আবার চালু করা</span></div><div class="q"><strong>Q2</strong> ওভারহেড লাইনের বেশিরভাগ ফল্টই (৮০-৯০%) কোন প্রকৃতির হয়?<br/><span class="ans">→ অস্থায়ী বা ট্রানজিয়েন্ট প্রকৃতির</span></div><div class="q"><strong>Q3</strong> একটি সেকশনালাইজার কীভাবে ফল্টি সেকশনকে বিচ্ছিন্ন করে?<br/><span class="ans">→ আপস্ট্রিম রিক্লোজার ট্রিপ করার পর ডেড লাইনে স্বয়ংক্রিয়ভাবে খুলে</span></div><div class="q"><strong>Q4</strong> রিক্লোজারযুক্ত লাইনে কাজ করার আগে কোন ফাংশনটি অ্যাক্টিভেট করা অপরিহার্য?<br/><span class="ans">→ নন-রিক্লোজ (Non-Reclose) বা হট-লাইন ট্যাগ মোড</span></div><div class="q"><strong>Q5</strong> যদি একটি রিক্লোজার কয়েকবার চেষ্টার পর 'লক-আউট' হয়ে যায়, এটি কিসের ইঙ্গিত?<br/><span class="ans">→ লাইনে একটি স্থায়ী ফল্ট বা পার্মানেন্ট ব্রেকডাউন রয়েছে</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_6_8.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L6_9">
+      <h2>
+        <span>Lesson 6.9</span>
+        <span class="badge fix">FIXED</span>
+        <span class="tag">21 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>এলটি ডিস্ট্রিবিউশন পিলার: শেষ প্রবেশদ্বার</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>LT pillar: busbar, HRC, imbalance, lock door — match chapter (overlaps 3.7 lightly, OK).</li><li>Kept rain-in-open-pillar blast risk (pillar-specific).</li><li>Moved lightning vs rubber gloves → 1.9 (dup).</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> 415 V still lethal; no copper instead of HRC — correct</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> একটি এলটি ডিস্ট্রিবিউশন বক্স বা ফিডার পিলারের প্রধান কাজ কী?<br/><span class="ans">→ ট্রান্সফরমার থেকে আসা বিদ্যুৎকে বিভিন্ন আউটগোয়িং ফিডারে ভাগ করা এবং সুরক্ষা দেওয়া</span></div><div class="q"><strong>Q2</strong> ফিডার পিলারের ভেতরে থাকা মোটা ধাতব পাতগুলোকে কী বলা হয়, যার সাথে সব কানেকশন যুক্ত থাকে?<br/><span class="ans">→ কপার বাসবার</span></div><div class="q"><strong>Q3</strong> ফিডার পিলারে সাধারণত কোন ধরনের ফিউজ ব্যবহার করা হয়?<br/><span class="ans">→ এইচআরসি (HRC) ফিউজ লিঙ্ক</span></div><div class="q"><strong>Q4</strong> একটি কানেকশন লুজ থাকলে ফিডার পিলারের ভেতরে কী তৈরি হতে পারে?<br/><span class="ans">→ হটস্পট তৈরি হতে পারে, যা অতিরিক্ত গরম হয়ে বক্সে আগুন ধরিয়ে দিতে পারে</span></div><div class="q"><strong>Q5</strong> ফিডার পিলারের দরজা সবসময় বন্ধ এবং লক করে রাখা উচিত কেন?<br/><span class="ans">→ জনসাধারণের নিরাপত্তা নিশ্চিত করা এবং ভেতরের যন্ত্রপাতিকে সম্পূর্ণ সুরক্ষিত রাখা</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +16 more in <code>questions_6_9.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L6_10">
+      <h2>
+        <span>Lesson 6.10</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>এনার্জি মিটার: ক্যাশ রেজিস্টার</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Energy meter, tamper, CT/MF, smart meter, 1 unit = 1 kWh — match chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> 1 unit = 1 kWh — correct</li><li><strong>PASS:</strong> Modern meters resist magnet tamper — myth framing OK</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> একটি আধুনিক ইলেকট্রনিক এনার্জি মিটার কী পরিমাপ করে?<br/><span class="ans">→ কিলোওয়াট-আওয়ার বা 'ইউনিট'</span></div><div class="q"><strong>Q2</strong> মিটারের ওপর থাকা CAL/Impulse LED-এর ফ্ল্যাশিং-এর গতি দিয়ে কী বোঝা যায়?<br/><span class="ans">→ গ্রাহকের বিদ্যুৎ খরচের পরিমাণ</span></div><div class="q"><strong>Q3</strong> গ্রাহকের বাড়ির সমস্ত লোড বন্ধ থাকা সত্ত্বেও যদি CAL LED ব্লিঙ্ক করে, এটি কিসের লক্ষণ?<br/><span class="ans">→ বাড়িতে আর্থ লিকেজ বা বিদ্যুৎ চুরির ঘটনা</span></div><div class="q"><strong>Q4</strong> বিদ্যুৎ চুরি বা ট্যাম্পারিং-এর প্রধান এবং প্রথম লক্ষণ কোনটি?<br/><span class="ans">→ মিটারের বডি বা টার্মিনাল সিল ভাঙা থাকা</span></div><div class="q"><strong>Q5</strong> মিটার 'বাইপাস' করা বলতে কী বোঝায়?<br/><span class="ans">→ মিটারকে এড়িয়ে অবৈধভাবে বিদ্যুৎ ব্যবহার করা</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +15 more in <code>questions_6_10.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L6_11">
+      <h2>
+        <span>Lesson 6.11</span>
+        <span class="badge fix">FIXED</span>
+        <span class="tag">21 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>আর্থিং সিস্টেম: অদৃশ্য অভিভাবক</strong></p>
+        <h3>Relevance notes</h3>
+        <ul><li>Earthing system (parallels 4.6 craft lesson) — on-topic for equipment badge.</li><li>Kept rain lowering earth resistance (technical).</li><li>Moved storm gantry/earth wire, outdoor stop-work, weather worsens mid-repair → 1.9.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Low earth R preferred; LA needs good earth — correct</li><li><strong>SOFT:</strong> Neutral vs body earthing “which more critical” — both mandatory</li></ul>
+        <h3>Sample questions</h3>
+        <div class="q"><strong>Q1</strong> বৈদ্যুতিক সিস্টেমে আর্থিং-এর প্রধান উদ্দেশ্য কী?<br/><span class="ans">→ ফল্ট কারেন্টকে মাটিতে পাঠিয়ে মানুষ ও যন্ত্রপাতিকে বৈদ্যুতিক শকের হাত থেকে সুরক্ষিত রাখা</span></div><div class="q"><strong>Q2</strong> একটি ভালো আর্থিং সিস্টেমের রেজিস্ট্যান্স কেমন হওয়া উচিত?<br/><span class="ans">→ ফল্ট কারেন্ট দ্রুত মাটিতে যাওয়ার জন্য এর মান সবসময় যতটা সম্ভব কম হওয়া উচিত</span></div><div class="q"><strong>Q3</strong> লাইন পেট্রোলিং-এর সময় আর্থিং-এর কোন জিনিসটি চাক্ষুষভাবে পরীক্ষা করা সবচেয়ে জরুরি?<br/><span class="ans">→ আর্থিং তার বা স্ট্রিপটি কোথাও কাটা, ছেঁড়া বা এর নাট-বল্টু কানেকশন লুজ আছে কিনা</span></div><div class="q"><strong>Q4</strong> শুকনো আবহাওয়ায় আর্থ পিটে জল দেওয়ার কারণ কী?<br/><span class="ans">→ মাটির আর্দ্রতা বাড়িয়ে আর্থ রেজিস্ট্যান্সকে নির্দিষ্ট মাত্রায় কমিয়ে সেফটি নিশ্চিত করার জন্য</span></div><div class="q"><strong>Q5</strong> আর্থিং-এর স্বাস্থ্য মাপার জন্য কোন যন্ত্রটি ব্যবহার করা হয়?<br/><span class="ans">→ সঠিক মান পাওয়ার জন্য আর্থ মেগার বা আর্থ রেজিস্ট্যান্স টেস্টার</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +16 more in <code>questions_6_11.json</code></p>
+      </div>
+    </section>
+  </main>
+  <footer>
+    Generated 2026-07-25 · <code>public/quiz_management/lesson_6_1_to_6_11_quiz_review.html</code>
+    · Log: <code>lesson_6_quiz_cleanup_log.md</code>
+  </footer>
+</body>
+</html>

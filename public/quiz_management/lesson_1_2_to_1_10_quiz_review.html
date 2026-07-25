@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lessons 1.2–1.10 Quiz Relevance & Fact-Check</title>
+  <style>
+    :root { --bg:#f8fafc; --ink:#0f172a; --muted:#64748b; --card:#fff; --line:#cbd5e1;
+      --ok:#166534; --ok-bg:#f0fdf4; --warn:#92400e; --warn-bg:#fffbeb; --bad:#991b1b; --bad-bg:#fef2f2; --fix:#1e40af; --fix-bg:#eff6ff; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif; background:var(--bg); color:var(--ink); line-height:1.5; }
+    header { position:sticky; top:0; z-index:10; background:var(--card); border-bottom:2px solid var(--ink); padding:.9rem 1.1rem; }
+    header h1 { margin:0 0 .35rem; font-size:1.15rem; }
+    header p { margin:.2rem 0; color:var(--muted); font-size:.88rem; }
+    .stats { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.55rem; }
+    .tag { font-size:.78rem; border:1px solid var(--line); padding:.15rem .45rem; background:#f1f5f9; }
+    .tag.ok { background:var(--ok-bg); color:var(--ok); border-color:#86efac; }
+    .tag.warn { background:var(--warn-bg); color:var(--warn); border-color:#fcd34d; }
+    .tag.fix { background:var(--fix-bg); color:var(--fix); border-color:#93c5fd; }
+    .tag.bad { background:var(--bad-bg); color:var(--bad); border-color:#fca5a5; }
+    main { max-width:980px; margin:0 auto; padding:1rem; }
+    .summary { background:var(--card); border:2px solid var(--ink); padding:1rem; margin-bottom:1rem; }
+    .lesson { background:var(--card); border:2px solid var(--ink); margin-bottom:1rem; }
+    .lesson > h2 { margin:0; padding:.75rem 1rem; border-bottom:1px solid var(--line); font-size:1.05rem; display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; }
+    .badge { font-size:.72rem; font-weight:700; padding:.15rem .45rem; border:1px solid; }
+    .badge.ok { background:var(--ok-bg); color:var(--ok); border-color:#86efac; }
+    .badge.warn { background:var(--warn-bg); color:var(--warn); border-color:#fcd34d; }
+    .badge.fix { background:var(--fix-bg); color:var(--fix); border-color:#93c5fd; }
+    .badge.bad { background:var(--bad-bg); color:var(--bad); border-color:#fca5a5; }
+    .body { padding:.85rem 1rem; }
+    .body h3 { margin:.6rem 0 .35rem; font-size:.95rem; }
+    .body ul { margin:.25rem 0 .5rem; padding-left:1.2rem; }
+    .q { border-top:1px dashed var(--line); padding:.55rem 0; font-size:.9rem; }
+    .q strong { display:inline-block; min-width:2.2rem; }
+    .ans { color:var(--ok); }
+    footer { max-width:980px; margin:0 auto 2rem; padding:0 1rem; color:var(--muted); font-size:.8rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Lessons 1.2–1.10 — Quiz Relevance & Fact-Check</h1>
+    <p>Companion to lesson 1.1 review. Actions: rebuild 1.8 fire quiz, fix 1.2 distances, trim 1.9 to chapter themes.</p>
+    <div class="stats">
+      <span class="tag ok">1.3–1.7, 1.10: on-topic</span>
+      <span class="tag fix">1.8: rebuilt (was 1.7 copy)</span>
+      <span class="tag fix">1.2: distance facts fixed</span>
+      <span class="tag warn">1.9: trimmed to 77 chapter-aligned Qs</span>
+    </div>
+  </header>
+  <main>
+    <section class="summary">
+      <h2 style="margin-top:0;font-size:1.05rem">Executive summary</h2>
+      <ul>
+        <li><strong>Critical bug:</strong> <code>questions_1_8.json</code> was almost identical to first-aid lesson 1.7 — rebuilt from fire chapter.</li>
+        <li><strong>1.2–1.7:</strong> pools match lesson topics (including items relocated from 1.1).</li>
+        <li><strong>1.10:</strong> intentionally cross-topic module review — keep as-is.</li>
+        <li><strong>1.9:</strong> trimmed 100 → <strong>77</strong> chapter-aligned questions; stretch items relocated (see lesson_1_9_quiz_trim_log.md).</li>
+      </ul>
+    </section>
+
+    <section class="lesson" id="L1_2">
+      <h2>
+        <span>Lesson 1.2</span>
+        <span class="badge ok">MOSTLY ON-TOPIC</span>
+        <span class="tag">22 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>পাওয়ার লাইনের 'লক্ষ্মণ রেখা'</strong></p>
+        <p style="color:var(--muted);font-size:.9rem"><strong>Scope:</strong> Safe approach distance, arc flash, corona, weather/tool effects on clearance</p>
+        <h3>Relevance notes</h3>
+        <ul><li>Relocated arc-goggles + fallen-wire from 1.1 fit this lesson.</li><li>FIXED: operating-rod distance was wrongly “২ ফুট”; now ৮ ফুট / ২.৫ মিটার for 11 kV.</li><li>FIXED: 33 kV distance wording aligned to lesson (~১০ ফুট / ৩.০ মিটার).</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>FIXED:</strong> 11 kV SAD ≈ 2.5 m (8 ft); 33 kV ≈ 3.0 m (10 ft) per chapter</li><li><strong>PASS:</strong> Air dielectric ~30 kV/cm mentioned in advanced section — quiz dielectric/arc items OK</li></ul>
+        <h3>Sample questions (manual skim)</h3>
+        <div class="q"><strong>Q1</strong> 'আর্ক ফ্ল্যাশ' (Arc Flash) কারিগরি পরিভাষায় আসলে কী?<br/><span class="ans">→ বাতাসের মাধ্যমে বিদ্যুৎ পরিবহন</span></div><div class="q"><strong>Q2</strong> ৩৩ কেভি লাইনে কাজের সময় শরীর থেকে তারের ন্যূনতম দূরত্ব কত রাখা উচিত?<br/><span class="ans">→ প্রায় দশ ফুট (৩.০ মিটার)</span></div><div class="q"><strong>Q3</strong> বৃষ্টির দিনে বৈদ্যুতিক লাইনের কাছে যাওয়া বেশি বিপজ্জনক কেন?<br/><span class="ans">→ বাতাস বিদ্যুৎ পরিবাহী হয়ে ওঠে</span></div><div class="q"><strong>Q4</strong> হাতে অপারেটিং রড থাকলেও ১১ কেভি লাইন থেকে শরীরের ন্যূনতম নিরাপদ দূরত্ব কত রাখা উচিত?<br/><span class="ans">→ কমপক্ষে আট ফুট (প্রায় ২.৫ মিটার)</span></div><div class="q"><strong>Q5</strong> বাতাসের ডাই-ইলেকট্রিক স্ট্রেন্থ নষ্ট হয়ে গেলে মূলত কী ঘটে?<br/><span class="ans">→ বাতাসের মধ্যেই বিদ্যুৎ অগ্নিকাণ্ড</span></div><div class="q"><strong>Q6</strong> নিরাপদ দূরত্ব বজায় রাখা সবচেয়ে জরুরি কোন আবহাওয়ায়?<br/><span class="ans">→ ঘন কুয়াশা বা প্রবল বৃষ্টিতে</span></div><div class="q"><strong>Q7</strong> হাই-ভোল্টেজ লাইনের 'হিসহিস' শব্দের প্রধান কারণ কী?<br/><span class="ans">→ বাতাসে হওয়া করোনা এফেক্ট</span></div><div class="q"><strong>Q8</strong> 'সেফ অ্যাপ্রোচ ডিসটেন্স' বলতে আসলে কোন দূরত্বকে বোঝায়?<br/><span class="ans">→ তার থেকে শরীরের সঠিক দূরত্ব</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +14 more in <code>questions_1_2.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L1_3">
+      <h2>
+        <span>Lesson 1.3</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">21 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>পোলের 'ভাষা' পড়তে শিখুন</strong></p>
+        <p style="color:var(--muted);font-size:.9rem"><strong>Scope:</strong> Pole inspection: 360°, sound test, visual scan, hardware</p>
+        <h3>Relevance notes</h3>
+        <ul><li>Relocated bent-pole risk from 1.1 fits leaning-pole / wire-tension content.</li><li>No clear off-topic items found.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Sound-test / rust-at-ground-line / hairline crack guidance matches chapter</li></ul>
+        <h3>Sample questions (manual skim)</h3>
+        <div class="q"><strong>Q1</strong> স্টিল পোলে মরিচা বা জং সাধারণত কোথায় সবচেয়ে বেশি ধরে?<br/><span class="ans">→ মাটির ঠিক উপরিভাগে</span></div><div class="q"><strong>Q2</strong> হাতুড়ি দিয়ে PCC পোলে ঠুকলে 'ফাঁপা' শব্দ হওয়ার মূল কারণ কী?<br/><span class="ans">→ ভেতরে গভীর ফাটল আছে</span></div><div class="q"><strong>Q3</strong> স্টিল টিউবুলার পোলের ওপরের ঢাকনা না থাকলে প্রধান কারিগরি ক্ষতি কী?<br/><span class="ans">→ ভেতরে বৃষ্টির জল জমবে</span></div><div class="q"><strong>Q4</strong> PCC পোলের কংক্রিট খসে রড বেরিয়ে থাকলে একজন লাইনম্যানের করণীয় কী?<br/><span class="ans">→ বিপজ্জনক রিপোর্ট করা</span></div><div class="q"><strong>Q5</strong> পরিদর্শনের সময় পোলের গোড়ার মাটি বা ঘাস কেন সরিয়ে দেখা উচিত?<br/><span class="ans">→ মরিচা বা জং পরীক্ষা</span></div><div class="q"><strong>Q6</strong> পোলে ওঠার ঠিক আগে কোন সুরক্ষা কাজটি করা সবথেকে আবশ্যিক?<br/><span class="ans">→ পোলটি ধাক্কা দিয়ে দেখা</span></div><div class="q"><strong>Q7</strong> পোলের গোড়ায় 'মাফিং' বা কংক্রিট ঢালাই মূলত কেন করা হয়?<br/><span class="ans">→ মরিচা বা ক্ষয় আটকাতে</span></div><div class="q"><strong>Q8</strong> PCC পোলে লম্বালম্বি সরু ফাটল দেখলে একজন পেশাদারের মত কী বুঝবেন?<br/><span class="ans">→ পোলটি কাজ করা ঝুঁকিপূর্ণ</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +13 more in <code>questions_1_3.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L1_4">
+      <h2>
+        <span>Lesson 1.4</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>সেফটি হারনেস: আপনার লাইফলাইন</strong></p>
+        <p style="color:var(--muted);font-size:.9rem"><strong>Scope:</strong> Full body harness, waist belt myth, inspection, fitting, lanyard/anchor</p>
+        <h3>Relevance notes</h3>
+        <ul><li>Pool tightly matches harness lesson. Suspension trauma is advanced but valid fall-arrest topic.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Waist belt vs full-body harness teaching consistent with chapter + 1.1</li></ul>
+        <h3>Sample questions (manual skim)</h3>
+        <div class="q"><strong>Q1</strong> উঁচু পোলে ওঠার সময় জীবন বাঁচাতে কোনটি পরা বাধ্যতামূলক?<br/><span class="ans">→ ফুল বডি সেফটি হারনেস</span></div><div class="q"><strong>Q2</strong> সাধারণ কোমরের বেল্ট বা পোল বেল্টের আসল কাজ কী?<br/><span class="ans">→ কাজের সময় সাপোর্ট দেওয়া</span></div><div class="q"><strong>Q3</strong> হারনেসের ফিতে বা ওয়েববিং পরীক্ষা করার সময় কী দেখা জরুরি?<br/><span class="ans">→ ছেঁড়া বা পোড়া দাগ আছে কি না</span></div><div class="q"><strong>Q4</strong> হারনেসের ধাতব ডি-রিং-এ কী থাকলে তা অবিলম্বে বাতিল করতে হবে?<br/><span class="ans">→ ফাটল বা বিকৃতি থাকা</span></div><div class="q"><strong>Q5</strong> হারনেসের 'মেয়াদ উত্তীর্ণের তারিখ' দেখা কেন অত্যন্ত গুরুত্বপূর্ণ?<br/><span class="ans">→ ফিতের শক্তি কমে যাওয়ার ভয়</span></div><div class="q"><strong>Q6</strong> ফুল বডি হারনেস ব্যবহারের সময় শরীরে কীভাবে ফিট হওয়া উচিত?<br/><span class="ans">→ আরামদায়ক কিন্তু টাইট ফিটিং</span></div><div class="q"><strong>Q7</strong> হারনেসের পেছনের ডি-রিংটি পিঠের ঠিক কোথায় থাকা উচিত?<br/><span class="ans">→ দুই কাঁধের ঠিক মাঝখানের হাড়</span></div><div class="q"><strong>Q8</strong> পোলে কাজ করার সময় নিচের কোনটি নিরাপদ অ্যাঙ্কর পয়েন্ট নয়?<br/><span class="ans">→ পুরানো বা ভাঙা ইনসুলেটর পিন</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +12 more in <code>questions_1_4.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L1_5">
+      <h2>
+        <span>Lesson 1.5</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">22 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>ডিসচার্জ রড ব্যবহারের কায়দা</strong></p>
+        <p style="color:var(--muted);font-size:.9rem"><strong>Scope:</strong> Capacitive/induced voltage, earth-first discharge, rod care</p>
+        <h3>Relevance notes</h3>
+        <ul><li>Relocated discharge-rod + backfeed from 1.1 fit “dead line still dangerous”.</li><li>Backfeed (solar/UPS) is a valid extra hazard beyond capacitive/induced — keep.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Earth-first then line is correct and matches chapter golden rule</li></ul>
+        <h3>Sample questions (manual skim)</h3>
+        <div class="q"><strong>Q1</strong> লাইন বন্ধ করার পরেও তাতে বিপজ্জনক ভোল্টেজ থাকার প্রধান কারণ কী?<br/><span class="ans">→ স্ট্যাটিক ও ইন্ডুসড চার্জ</span></div><div class="q"><strong>Q2</strong> ডিসচার্জ রড ব্যবহারের প্রথম এবং সবচেয়ে জরুরি ধাপ কোনটি?<br/><span class="ans">→ আর্থিং ক্ল্যাম্পটি ভালো করে লাগানো</span></div><div class="q"><strong>Q3</strong> যদি কোনো লাইনম্যান ভুল করে আগে লাইনে হুক লাগিয়ে পরে আর্থিং করতে যান, তবে কী হবে?<br/><span class="ans">→ লাইনম্যানের শরীরে বিদ্যুৎ যাবে</span></div><div class="q"><strong>Q4</strong> ডিসচার্জ করার সময় একটি ছোট 'চট্' শব্দ বা স্পার্ক হওয়া কী প্রমাণ করে?<br/><span class="ans">→ অবশিষ্ট চার্জ নিষ্ক্রিয় হওয়া</span></div><div class="q"><strong>Q5</strong> একটি ১১ কেভি রেটিং-এর ডিসচার্জ রড কি ৩৩ কেভি লাইনে ব্যবহার করা নিরাপদ?<br/><span class="ans">→ না, ইনসুলেশন ক্ষমতা কম ও বিপজ্জনক</span></div><div class="q"><strong>Q6</strong> নিচের কোনটি একটি নির্ভরযোগ্য আর্থিং পয়েন্ট নয়?<br/><span class="ans">→ মরিচা ধরা ও আলগা নাট-বল্টু</span></div><div class="q"><strong>Q7</strong> আপনার ডিসচার্জ রডের ইনসুলেটিং স্টিকে একটি ফাটল দেখলে কী করবেন?<br/><span class="ans">→ রডটি অবিলম্বে বাতিল করে দেওয়া</span></div><div class="q"><strong>Q8</strong> মিথ: 'লাইন মাত্র ৫ মিনিটের জন্য বন্ধ, ডিসচার্জ করার দরকার নেই'—এই ধারণাটি কেন ভুল?<br/><span class="ans">→ বিপদ সবসময় থাকে ও চার্জ জমে</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +14 more in <code>questions_1_5.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L1_6">
+      <h2>
+        <span>Lesson 1.6</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">22 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>পারমিট-টু-ওয়ার্ক (PTW): একটি জীবন বীমা</strong></p>
+        <p style="color:var(--muted);font-size:.9rem"><strong>Scope:</strong> PTW, LOTO, Line Clear return</p>
+        <h3>Relevance notes</h3>
+        <ul><li>Relocated LC + LOTO from 1.1 fit. Interlocking Q is stretch but related to isolation safety.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Verbal PTW invalid; permit holder returns LC — matches chapter</li></ul>
+        <h3>Sample questions (manual skim)</h3>
+        <div class="q"><strong>Q1</strong> পারমিট-টু-ওয়ার্ক (PTW)-এর প্রধান কারিগরি উদ্দেশ্য কী?<br/><span class="ans">→ ভুলবশত লাইন চালু হওয়া থেকে সুরক্ষা দেওয়া</span></div><div class="q"><strong>Q2</strong> PTW প্রোটোকলের সাথে কোন আন্তর্জাতিক সুরক্ষা পদ্ধতিটি জড়িত?<br/><span class="ans">→ LOTO (লক-আউট, ট্যাগ-আউট)</span></div><div class="q"><strong>Q3</strong> শাটডাউন অনুরোধ করার পর আপনার প্রথম আবশ্যিক কাজ কী?<br/><span class="ans">→ স্বাক্ষরিত PTW হাতে পাওয়া পর্যন্ত থামা</span></div><div class="q"><strong>Q4</strong> পারমিটে 'Feeder-A' লেখা থাকলে আপনি 'Feeder-B'-তে কী করবেন?<br/><span class="ans">→ কাজ বন্ধ করে সঠিক পারমিট সংগ্রহ করা</span></div><div class="q"><strong>Q5</strong> কাজ শেষ হওয়ার পর কন্ট্রোল রুমকে কোন সংকেত দেওয়া হয়?<br/><span class="ans">→ 'লাইন ক্লিয়ার' (Line Clear) দেওয়া</span></div><div class="q"><strong>Q6</strong> একজন দক্ষ লাইনম্যান হিসেবে PTW সম্পর্কে আপনার দায়িত্ব কী?<br/><span class="ans">→ শর্তগুলি জানা ও টিমের নিরাপত্তা নিশ্চিত করা</span></div><div class="q"><strong>Q7</strong> মিথ: 'পারমিট নেওয়া মানেই লাইন ১০০% নিরাপদ'—এটি ভুল কেন?<br/><span class="ans">→ ইন্ডুসড ভোল্টেজ বা ব্যাকফিড হওয়ার ভয় থাকে</span></div><div class="q"><strong>Q8</strong> LOTO পদ্ধতিতে 'ট্যাগ' ব্যবহারের প্রধান উপযোগিতা কী?<br/><span class="ans">→ সতর্কবার্তা দিয়ে অন্যকে অপারেশনে বাধা দেওয়া</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +14 more in <code>questions_1_6.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L1_7">
+      <h2>
+        <span>Lesson 1.7</span>
+        <span class="badge ok">ON-TOPIC</span>
+        <span class="tag">21 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>শক লাগলে ফার্স্ট এইড</strong></p>
+        <p style="color:var(--muted);font-size:.9rem"><strong>Scope:</strong> Electric shock first aid, isolate source, CPR, do not touch live victim</p>
+        <h3>Relevance notes</h3>
+        <ul><li>Relocated “power source first” from 1.1 fits. Pool matches first-aid chapter.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> Do not touch live victim; isolate source first — correct</li><li><strong>SOFT:</strong> Brain-cell death timing / VF wording are simplified medical facts — OK for field quiz</li></ul>
+        <h3>Sample questions (manual skim)</h3>
+        <div class="q"><strong>Q1</strong> বিদ্যুৎস্পৃষ্ট কাউকে সাহায্য করার প্রথম এবং সবচেয়ে গুরুত্বপূর্ণ নিয়ম কী?<br/><span class="ans">→ আগে নিজের নিরাপত্তা নিশ্চিত করা</span></div><div class="q"><strong>Q2</strong> বিদ্যুৎস্পৃষ্ট ব্যক্তিকে বিদ্যুতের উৎস থেকে আলাদা করার জন্য সবচেয়ে নিরাপদ বস্তু কোনটি?<br/><span class="ans">→ শুকনো কাঠের লাঠি বা বাঁশ</span></div><div class="q"><strong>Q3</strong> যদি সম্ভব হয়, তবে বিদ্যুৎস্পৃষ্ট ব্যক্তিকে বাঁচানোর সবচেয়ে সেরা কারিগরি উপায় কোনটি?<br/><span class="ans">→ মেইন সুইচ বা MCB দ্রুত বন্ধ করা</span></div><div class="q"><strong>Q4</strong> ভিকটিমকে নিরাপদ জায়গায় আনার পর একজন লাইনম্যানের প্রথম কাজ কী হওয়া উচিত?<br/><span class="ans">→ তার চেতনা বা শারীরিক জ্ঞান পরীক্ষা করা</span></div><div class="q"><strong>Q5</strong> যদি ভিকটিম সাড়া না দেন এবং তার শ্বাসপ্রশ্বাস না চলে, তবে তৎক্ষণাৎ কী করা উচিত?<br/><span class="ans">→ দ্রুত চিকিৎসা সাহায্য ও সিপিআর দেওয়া</span></div><div class="q"><strong>Q6</strong> সিপিআর (CPR) দেওয়ার প্রধান ও মৌলিক কারিগরি উদ্দেশ্য মূলত কী?<br/><span class="ans">→ ফুসফুস ও হৃৎপিণ্ড সাময়িক সচল রাখা</span></div><div class="q"><strong>Q7</strong> মিথ: 'শক লাগা ব্যক্তিকে মাটিতে পুঁতে দিলে বিদ্যুৎ বেরিয়ে যায়'—এই ধারণাটি কেন ভুল?<br/><span class="ans">→ সময় নষ্ট ও ইনফেকশনের বড় ঝুঁকি বাড়ে</span></div><div class="q"><strong>Q8</strong> বিদ্যুৎস্পৃষ্ট ব্যক্তি কথা বললেও তাকে কেন হাসপাতালে নিয়ে যাওয়া জরুরি?<br/><span class="ans">→ ভেতরের সুপ্ত ও বড় কোনো ক্ষতি যাচাই করা</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +13 more in <code>questions_1_7.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L1_8">
+      <h2>
+        <span>Lesson 1.8</span>
+        <span class="badge fix">FIXED — WAS WRONG QUIZ</span>
+        <span class="tag">20 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>মাঠে আগুন লাগলে করণীয়</strong></p>
+        <p style="color:var(--muted);font-size:.9rem"><strong>Scope:</strong> Fire classes A/B/C, no water on B/C, DCP/CO2/sand, PASS</p>
+        <h3>Relevance notes</h3>
+        <ul><li>CRITICAL: previous questions_1_8.json was a near-copy of 1.7 first-aid (20/21 identical).</li><li>Rebuilt 20 fire questions from chapter_1_8.json; kept DCP/CO2 panel extinguisher item.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>FIXED:</strong> Replaced entire off-topic first-aid pool with fire content</li><li><strong>PASS:</strong> PASS = Pull Aim Squeeze Sweep; Class C = live electrical; no water on B/C</li></ul>
+        <h3>Sample questions (manual skim)</h3>
+        <div class="q"><strong>Q1</strong> মাঠের কাজে Class C আগুন বলতে মূলত কোন আগুনকে বোঝায়?<br/><span class="ans">→ লাইভ বৈদ্যুতিক সরঞ্জামের আগুন</span></div><div class="q"><strong>Q2</strong> ট্রান্সফরমার অয়েল বা ডিজেলের আগুন কোন Class-এর?<br/><span class="ans">→ Class B</span></div><div class="q"><strong>Q3</strong> শুকনো ঘাস, কাঠ বা কাগজের আগুন কোন Class-এর?<br/><span class="ans">→ Class A</span></div><div class="q"><strong>Q4</strong> Class C (বৈদ্যুতিক) আগুনে জল কেন কঠোরভাবে নিষিদ্ধ?<br/><span class="ans">→ জল বিদ্যুৎ পরিবাহী—শকের ঝুঁকি</span></div><div class="q"><strong>Q5</strong> তেলের (Class B) আগুনে জল দেওয়া কেন বিপজ্জনক?<br/><span class="ans">→ তেল জলে ভাসে ও আগুন ছড়ায়</span></div><div class="q"><strong>Q6</strong> Class C আগুনে নিরাপদ হলে প্রথম সবচেয়ে গুরুত্বপূর্ণ কাজ কোনটি?<br/><span class="ans">→ পাওয়ার সোর্স OFF করা</span></div><div class="q"><strong>Q7</strong> ফিল্ডে সবচেয়ে উপযোগী সাধারণ অগ্নি নির্বাপক কোনটি?<br/><span class="ans">→ DCP (Dry Chemical Powder / ABC)</span></div><div class="q"><strong>Q8</strong> CO2 এক্সটিংগুইশার মূলত কীভাবে আগুন নেভায়?<br/><span class="ans">→ অক্সিজেন সরিয়ে দেয়</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +12 more in <code>questions_1_8.json</code></p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L1_9">
+      <h2>
+        <span>Lesson 1.9</span>
+        <span class="badge warn">TRIMMED TO CHAPTER</span>
+        <span class="tag">77 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>ঝড়-বৃষ্টিতে কাজ: কখন 'না' বলবেন</strong></p>
+        <p style="color:var(--muted);font-size:.9rem"><strong>Scope:</strong> Rain, lightning, high wind (≥40–50 km/h), stop-work authority</p>
+        <h3>Relevance notes</h3>
+        <ul>
+          <li>TRIMMED (text-based): restored from git HEAD (100) → <strong>77</strong> chapter-aligned.</li>
+          <li>Relocated stretch: UG jointing, earth pit, bushing, joints, pillar, cable drum, insulating blanket, battery room, DTR fuse, LA, first-aid, AB cable, isolator, stay wire, corona, PTW restore, oil check → matching lessons.</li>
+          <li>Dropped: motor terminal rain Q (no clean home).</li>
+          <li>Kept critical chapter items: wet PPE, visibility, PPE≠lightning, step potential, shelter, forecast, instinct, galloping, 40–50 km/h stop, say-no.</li>
+          <li>Log: <code>lesson_1_9_quiz_trim_log.md</code></li>
+        </ul>
+        <h3>Fact-check</h3>
+        <ul>
+          <li><strong>PASS:</strong> Wind stop 40–50 km/h matches chapter</li>
+          <li><strong>PASS:</strong> Lightning PPE myth matches chapter</li>
+          <li><strong>SOFT:</strong> Anemometer / control-room window detail still stretch but weather-adjacent — kept</li>
+        </ul>
+        <h3>Sample questions (manual skim)</h3>
+        <div class="q"><strong>Q1</strong> বৃষ্টির সময় … সাধারণ রক্ষণাবেক্ষণ … সঠিক নিয়ম?<br/><span class="ans">→ সাধারণ রক্ষণাবেক্ষণ বন্ধ</span></div>
+        <div class="q"><strong>…</strong> ভেজা পিপিই / Reduced Visibility / রেড লাইন বজ্র / স্টেপ পটেনশিয়াল / গ্যালোপিং / আবহাওয়ার পূর্বাভাস / প্রবৃত্তি / 'না' বলা</div>
+        <p style="color:var(--muted);font-size:.85rem">Full list: <code>questions_1_9.json</code> (77) · trim log for moves</p>
+      </div>
+    </section>
+
+    <section class="lesson" id="L1_10">
+      <h2>
+        <span>Lesson 1.10</span>
+        <span class="badge ok">ON-TOPIC (BY DESIGN)</span>
+        <span class="tag">21 questions</span>
+      </h2>
+      <div class="body">
+        <p><strong>১০ সেকেন্ডের মেন্টাল চেকলিস্ট</strong></p>
+        <p style="color:var(--muted);font-size:.9rem"><strong>Scope:</strong> Module review / 10-second mental checklist across chapter 1</p>
+        <h3>Relevance notes</h3>
+        <ul><li>Intentionally spans PPE, clearance, pole, harness, discharge, PTW, first aid, fire, weather.</li><li>Toolbox talk from 1.1 fits pre-climb risk discussion / checklist culture.</li><li>Do not treat cross-topic questions as off-topic here.</li></ul>
+        <h3>Fact-check</h3>
+        <ul><li><strong>PASS:</strong> PASS order and module recap items consistent with prior lessons</li></ul>
+        <h3>Sample questions (manual skim)</h3>
+        <div class="q"><strong>Q1</strong> পতনের সুরক্ষা (Fall Arrest) এবং কাজের সাপোর্টের জন্য কোন সরঞ্জাম দুটি ব্যবহার করা উচিত?<br/><span class="ans">→ ফুল বডি হারনেস ও পোল বেল্ট</span></div><div class="q"><strong>Q2</strong> ঘন কুয়াশার মধ্যে ১১ কেভি লাইনের কাছে কাজ করার সময় নিরাপদ দূরত্বের কী পরিবর্তন করবেন?<br/><span class="ans">→ নিরাপদ দূরত্ব আগের চেয়ে বাড়িয়ে দেবেন</span></div><div class="q"><strong>Q3</strong> স্টিলের পোলের গোড়ায় হাতুড়ি মারলে ভোঁতা শব্দ ও মরিচা খসে পড়ার প্রকৃত কারণ কী?<br/><span class="ans">→ পোলটি অত্যন্ত দুর্বল ও বিপজ্জনক হয়েছে</span></div><div class="q"><strong>Q4</strong> আপনার ফুল বডি হারনেসের বেল্টে সামান্য ছেঁড়া দাগ লক্ষ্য করলে আপনার করণীয় কী?<br/><span class="ans">→ সম্পূর্ণ হারনেসটি অবিলম্বে বাতিল করা</span></div><div class="q"><strong>Q5</strong> ডিসচার্জ রড ব্যবহারের সবচেয়ে জরুরি ও প্রধান কারিগরি নিয়ম (Golden Rule) কোনটি?<br/><span class="ans">→ প্রথমে আর্থিং-এ পরে লাইনে লাগানো</span></div><div class="q"><strong>Q6</strong> PTW থাকা সত্ত্বেও কাজ শুরুর আগে কেন লাইনটি পুনরায় পরীক্ষা ও ডিসচার্জ করা উচিত?<br/><span class="ans">→ ইন্ডুসড ভোল্টেজ বা ভুল চার্জিং এড়াতে</span></div><div class="q"><strong>Q7</strong> আপনার সহকর্মী হটাৎ বিদ্যুৎস্পৃষ্ট হলে আপনার প্রথম ও প্রধান পদক্ষেপ কোনটি হবে?<br/><span class="ans">→ দ্রুত পাওয়ার বিচ্ছিন্ন বা আলাদা করা</span></div><div class="q"><strong>Q8</strong> চালু বৈদ্যুতিক প্যানেলে আগুন লাগলে অগ্নিনির্বাপক হিসেবে জল ব্যবহার করা নিষিদ্ধ কেন?<br/><span class="ans">→ বিদ্যুৎ পরিবহনের কারণে শক খাওয়ার ঝুঁকি</span></div>
+        <p style="color:var(--muted);font-size:.85rem">… +13 more in <code>questions_1_10.json</code></p>
+      </div>
+    </section>
+  </main>
+  <footer>
+    Generated 2026-07-25 ·
+    <code>public/quiz_management/lesson_1_2_to_1_10_quiz_review.html</code>
+    · Also see <code>lesson_1_1_quiz_relevance_review.html</code> / <code>lesson_1_1_quiz_factcheck.html</code>
+  </footer>
+</body>
+</html>

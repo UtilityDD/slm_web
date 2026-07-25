@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lesson 1.1 Quiz Relevance Review — PPE</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --card: #fff;
+      --line: #cbd5e1;
+      --ok: #166534;
+      --ok-bg: #f0fdf4;
+      --ok-border: #86efac;
+      --partial: #92400e;
+      --partial-bg: #fffbeb;
+      --partial-border: #fcd34d;
+      --off: #991b1b;
+      --off-bg: #fef2f2;
+      --off-border: #fca5a5;
+      --issue: #1e40af;
+      --issue-bg: #eff6ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans Bengali", "Hind Siliguri", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--card);
+      border-bottom: 2px solid var(--ink);
+      padding: 0.9rem 1.1rem;
+    }
+    header h1 { margin: 0 0 0.3rem; font-size: 1.2rem; }
+    header p { margin: 0.2rem 0; color: var(--muted); font-size: 0.88rem; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.75rem;
+    }
+    .toolbar button, .toolbar select {
+      font: inherit;
+      padding: 0.4rem 0.65rem;
+      border: 1px solid var(--ink);
+      background: #fff;
+      cursor: pointer;
+    }
+    .toolbar button.active {
+      background: var(--ink);
+      color: #fff;
+    }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.65rem;
+    }
+    .tag {
+      font-size: 0.78rem;
+      background: #f1f5f9;
+      border: 1px solid var(--line);
+      padding: 0.2rem 0.5rem;
+    }
+    .tag.ok { background: var(--ok-bg); border-color: var(--ok-border); color: var(--ok); }
+    .tag.partial { background: var(--partial-bg); border-color: var(--partial-border); color: var(--partial); }
+    .tag.off { background: var(--off-bg); border-color: var(--off-border); color: var(--off); }
+    .tag.issue { background: var(--issue-bg); border-color: #93c5fd; color: var(--issue); }
+    main { max-width: 920px; margin: 0 auto; padding: 1rem; }
+    .summary {
+      background: var(--card);
+      border: 2px solid var(--ink);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .summary h2 { margin: 0 0 0.5rem; font-size: 1.05rem; }
+    .summary ul { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+    .summary li { margin: 0.25rem 0; }
+    .lesson-topics {
+      background: #f1f5f9;
+      border: 1px solid var(--line);
+      padding: 0.85rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    .lesson-topics h3 { margin: 0 0 0.4rem; font-size: 0.95rem; }
+    .card {
+      background: var(--card);
+      border: 2px solid var(--ink);
+      margin-bottom: 0.85rem;
+      padding: 0.9rem 1rem;
+    }
+    .card.RELATED { border-left: 8px solid var(--ok); }
+    .card.PARTIAL { border-left: 8px solid #d97706; }
+    .card.OFF_TOPIC { border-left: 8px solid var(--off); }
+    .card-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      align-items: center;
+      margin-bottom: 0.45rem;
+    }
+    .qnum {
+      font-weight: 700;
+      font-size: 0.85rem;
+      background: #e2e8f0;
+      padding: 0.1rem 0.45rem;
+    }
+    .badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      padding: 0.15rem 0.45rem;
+      border: 1px solid;
+    }
+    .badge.RELATED { background: var(--ok-bg); color: var(--ok); border-color: var(--ok-border); }
+    .badge.PARTIAL { background: var(--partial-bg); color: var(--partial); border-color: var(--partial-border); }
+    .badge.OFF_TOPIC { background: var(--off-bg); color: var(--off); border-color: var(--off-border); }
+    .badge.CONTENT_ISSUE { background: var(--issue-bg); color: var(--issue); border-color: #93c5fd; }
+    .qtext { font-weight: 600; margin: 0.35rem 0 0.5rem; }
+    .opts { margin: 0; padding-left: 1.1rem; font-size: 0.92rem; }
+    .opts li { margin: 0.15rem 0; }
+    .opts li.correct { color: var(--ok); font-weight: 600; }
+    .note {
+      margin-top: 0.55rem;
+      font-size: 0.86rem;
+      padding: 0.45rem 0.55rem;
+      background: #f8fafc;
+      border: 1px dashed var(--line);
+    }
+    .note strong { color: var(--muted); }
+    footer {
+      max-width: 920px;
+      margin: 0 auto 2rem;
+      padding: 0 1rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Lesson 1.1 Quiz ↔ Content Relevance Review</h1>
+    <p>
+      Source quiz: <code>/quizzes/questions_1_1.json</code> (now <strong>33</strong> PPE questions; was 49) ·
+      Lesson content: <code>/quizzes/chapter_1_1.json</code> ·
+      App shows random 10 on completion
+    </p>
+    <p style="background:#f0fdf4;border:1px solid #86efac;padding:0.5rem 0.65rem;margin:0.5rem 0 0;">
+      <strong>RELOCATED (2026-07-25):</strong> 16 off-topic questions moved to matching lessons.
+      See <code>/quiz_management/lesson_1_1_quiz_relocation_log.md</code>.
+      Cards below marked OFF-TOPIC are historical (pre-move) for audit — they no longer live in 1.1.
+    </p>
+    <div class="toolbar">
+      <button type="button" class="active" data-filter="ALL">All</button>
+      <button type="button" data-filter="OFF_TOPIC">Off-topic only</button>
+      <button type="button" data-filter="PARTIAL">Partial / stretch</button>
+      <button type="button" data-filter="RELATED">Related only</button>
+      <button type="button" data-filter="CONTENT_ISSUE">Content issues</button>
+    </div>
+    <div class="stats">
+      <span class="tag ok">RELATED: 26</span>
+      <span class="tag partial">PARTIAL: 5</span>
+      <span class="tag off">OFF-TOPIC: 18</span>
+      <span class="tag issue">CONTENT ISSUES: 2</span>
+      <span class="tag">Pool risk: any attempt can draw ~3–4 off-topic Qs</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="summary">
+      <h2>How to use this file</h2>
+      <ul>
+        <li>Filter <strong>Off-topic only</strong> first — these are the main user complaints.</li>
+        <li>Decide KEEP / REMOVE / MOVE-TO-OTHER-LESSON for each card.</li>
+        <li>RELATED questions can stay in <code>questions_1_1.json</code>.</li>
+        <li>PARTIAL = PPE-adjacent but not taught in 1.1 text (keep only if you want stretch difficulty).</li>
+      </ul>
+    </section>
+
+    <section class="lesson-topics">
+      <h3>Lesson 1.1 taught topics (scope check)</h3>
+      <p style="margin:0">
+        Title: <em>মিশন শুরু: প্রথম দিনের ইউনিফর্ম ও পিপিই (PPE)</em> —
+        Cotton/FR clothing (no synthetic/silk) · Safety helmet (ISI, crack, chin strap, suspension) ·
+        Safety shoes (insulation, nail in sole) · Insulating rubber gloves (air test, holes, oil/grease, voltage class) ·
+        Cut-resistant gloves (optional, not for shock) · Full body harness vs waist belt ·
+        Dielectric strength · Shock absorber / lanyard · Daily PPE self-check · Pro tips on dirty PPE
+      </p>
+      <p style="margin:0.5rem 0 0; color:#64748b">
+        <strong>Not in 1.1:</strong> discharge rod, backfeed, LC, LOTO, ladder 4:1, fire extinguisher,
+        first aid for shock, digging/cable, bent pole, hot stick, arc goggles, transformer top cover, toolbox talk
+      </p>
+    </section>
+
+    <!-- Q1 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q1</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">মাঠে কাজ করার সময় কোন ধরনের পোশাক পরা একদম নিষিদ্ধ?</p>
+      <ol class="opts">
+        <li>হালকা সুতির গেঞ্জি</li>
+        <li>মজবুত রাবার জুতো</li>
+        <li class="correct">সিন্থেটিক বা সিল্ক ✓</li>
+        <li>প্লাস্টিকের হেলমেট</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Clothing section — synthetic melts into skin during arc/flash.</div>
+    </article>
+
+    <!-- Q2 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q2</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">রাবার গ্লাভস ব্যবহারের আগে ফু দিয়ে ফুলিয়ে মূলত কী পরীক্ষা করা হয়?</p>
+      <ol class="opts">
+        <li>গ্লাভসের হাতের মাপ</li>
+        <li>বাতাসের উষ্ণতা মাপ</li>
+        <li class="correct">সূক্ষ্ম ফুটো বা লিক ✓</li>
+        <li>রাবারের নমনীয়তা</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Rubber gloves daily_check — air test.</div>
+    </article>
+
+    <!-- Q3 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q3</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">'ডাই-ইলেকট্রিক স্ট্রেন্থ' বলতে কারিগরি ভাষায় কী বোঝায়?</p>
+      <ol class="opts">
+        <li>সর্বোচ্চ ওজন ক্ষমতা</li>
+        <li>কারেন্ট বহন ক্ষমতা</li>
+        <li class="correct">ভোল্টেজ সহ্য ক্ষমতা ✓</li>
+        <li>জল নিরোধক ক্ষমতা</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> advanced_section — Dielectric Strength.</div>
+    </article>
+
+    <!-- Q4 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q4</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">ভেজা মাটিতে সাধারণ চটি পরে কাজ করা বিপজ্জনক কেন?</p>
+      <ol class="opts">
+        <li>চটি ছিঁড়ে যেতে পারে</li>
+        <li class="correct">মাটির সাথে আর্থ হওয়া ✓</li>
+        <li>পায়ে কাদা লেগে যাওয়া</li>
+        <li>দেখতে খারাপ লাগা</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Safety shoes — insulation from ground / earth path.</div>
+    </article>
+
+    <!-- Q5 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q5</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">আপনার সহকর্মীর হেলমেটে একটি ছোট ফাটল দেখলে কী পদক্ষেপ নেবেন?</p>
+      <ol class="opts">
+        <li>টেপ লাগিয়ে ব্যবহার</li>
+        <li class="correct">হেলমেটটি দ্রুত বদল ✓</li>
+        <li>সাবধানে কাজ করা</li>
+        <li>বিষয়টি এড়িয়ে যাওয়া</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Helmet daily_check + myth_buster (cracked helmet).</div>
+    </article>
+
+    <!-- Q6 -->
+    <article class="card RELATED" data-status="RELATED CONTENT_ISSUE">
+      <div class="card-head">
+        <span class="qnum">Q6</span>
+        <span class="badge RELATED">RELATED</span>
+        <span class="badge CONTENT_ISSUE">CONTENT ISSUE</span>
+      </div>
+      <p class="qtext">'PPE'-এর সঠিক ও সম্পূর্ণ কারিগরি অর্থ কী?</p>
+      <ol class="opts">
+        <li>পাওয়ার প্রোটেকশন</li>
+        <li>পোল প্রিপারেশন</li>
+        <li class="correct">পার্সোনাল প্রোটেকশন ✓ (marked)</li>
+        <li>প্রাইমারি পাওয়ার</li>
+      </ol>
+      <div class="note"><strong>Issue:</strong> Correct expansion should be <em>Personal Protective Equipment</em>. Marked option is incomplete (“Personal Protection”). Rewrite options.</div>
+    </article>
+
+    <!-- Q7 -->
+    <article class="card PARTIAL" data-status="PARTIAL">
+      <div class="card-head"><span class="qnum">Q7</span><span class="badge PARTIAL">PARTIAL</span></div>
+      <p class="qtext">সাধারণ কারিগরি কাজের জন্য কোন ধরনের গ্লাভস ব্যবহার করা উচিত?</p>
+      <ol class="opts">
+        <li>পাতলা সার্জিক্যাল</li>
+        <li>বৈদ্যুতিক রাবার</li>
+        <li class="correct">মজবুত চামড়ার ✓</li>
+        <li>সাধারণ সুতির</li>
+      </ol>
+      <div class="note"><strong>Gap:</strong> Lesson teaches rubber (shock) vs cut-resistant — not “leather for general work.” Can confuse learners right after rubber-gloves section. Consider rewrite or remove.</div>
+    </article>
+
+    <!-- Q8 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q8</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">সেফটি জুতো পরলে বিদ্যুৎ শক থেকে বাঁচার সম্ভাবনা বাড়ে কেন?</p>
+      <ol class="opts">
+        <li>জুতো খুব শক্ত হয়</li>
+        <li>জুতো পা গরম রাখে</li>
+        <li class="correct">মাটি থেকে ইনসুলেশন ✓</li>
+        <li>জুতোর ভার বাড়ানোর</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Safety shoes importance.</div>
+    </article>
+
+    <!-- Q9 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q9</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">কাজ শুরুর আগে প্রতিদিন PPE পরীক্ষা করা কেন আবশ্যিক?</p>
+      <ol class="opts">
+        <li>দপ্তরের নিয়ম পালনে</li>
+        <li>সময় কাটানোর জন্য</li>
+        <li class="correct">নিজের সুরক্ষা নিশ্চিত ✓</li>
+        <li>সরঞ্জাম পরিষ্কার রাখা</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Pro tip — check your own PPE daily.</div>
+    </article>
+
+    <!-- Q10 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q10</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">কোন পরিস্থিতিতে হেলমেট পরা সবথেকে বেশি গুরুত্বপূর্ণ?</p>
+      <ol class="opts">
+        <li>অফিসে বসে থাকাকালীন</li>
+        <li>রাস্তায় হাঁটার সময়</li>
+        <li class="correct">পোল বা লাইনের নিচে ✓</li>
+        <li>শুধুমাত্র গরমকালে</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Helmet section (falling objects / line work context).</div>
+    </article>
+
+    <!-- Q11 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q11</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">যদি আপনার রাবার গ্লাভসে তেল বা গ্রিজ লেগে যায়, তবে কী করা উচিত?</p>
+      <ol class="opts">
+        <li>কিছু না করে কাজ করা</li>
+        <li>কাপড় দিয়ে মুছে রাখা</li>
+        <li class="correct">গ্লাভসটি বাতিল করা ✓</li>
+        <li>জলে ধুয়ে নিয়ে রাখা</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Rubber gloves specs + pro tip (oil/grease).</div>
+    </article>
+
+    <!-- Q12 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q12</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">শরীরে ঠিকঠাক ফিট হওয়া সুতির পোশাক পরার পরামর্শ কেন দেওয়া হয়?</p>
+      <ol class="opts">
+        <li>দেখতে স্মার্ট লাগে</li>
+        <li class="correct">তারে আটকে পড়া রোধ ✓</li>
+        <li>কাপড় কম নষ্ট হওয়া</li>
+        <li>গরমে আরাম পাওয়ার</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Clothing specs — not too loose/tight.</div>
+    </article>
+
+    <!-- Q13 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q13</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">নিচের কোনটি PPE সরঞ্জামের অন্তর্ভুক্ত নয় বলে আপনি মনে করেন?</p>
+      <ol class="opts">
+        <li>সুরক্ষা হেলমেট</li>
+        <li class="correct">ব্যক্তিগত মোবাইল ✓</li>
+        <li>সেফটি বুট জুতো</li>
+        <li>হাতের হ্যান্ড গ্লাভস</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> PPE kit concept (easy but on-topic).</div>
+    </article>
+
+    <!-- Q14 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q14</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">আইএসআই (ISI) মার্ক দেওয়া হেলমেট ব্যবহার করা কেন উচিত?</p>
+      <ol class="opts">
+        <li>দেখতে খুব সুন্দর বলে</li>
+        <li class="correct">সুরক্ষার মান ঠিক থাকা ✓</li>
+        <li>দামে অনেক সস্তা বলে</li>
+        <li>ওজনে খুব হালকা বলে</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Helmet specifications — ISI marked.</div>
+    </article>
+
+    <!-- Q15 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q15</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">আপনার সেফটি জুতো বৃষ্টির জলে ভিজে গেলে কী পদক্ষেপ নেবেন?</p>
+      <ol class="opts">
+        <li>ভেজা জুতোই পরা</li>
+        <li class="correct">ভালো করে শুকিয়ে পরা ✓</li>
+        <li>সামান্য ভিজে রাখা</li>
+        <li>অন্য কাউকে দেওয়া</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Shoe insulation care (reasonable extension of shoe section).</div>
+    </article>
+
+    <!-- Q16 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q16</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">ফুল বডি হারনেসের প্রধান ও মৌলিক কারিগরি কাজ কী?</p>
+      <ol class="opts">
+        <li>কাজের সাপোর্ট দেওয়া</li>
+        <li class="correct">পতনের হাত থেকে রক্ষা ✓</li>
+        <li>ওপরে দ্রুত উঠে যাওয়া</li>
+        <li>টুলস ঝুলিয়ে রাখা</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Full body harness + myth vs waist belt.</div>
+    </article>
+
+    <!-- Q17 -->
+    <article class="card PARTIAL" data-status="PARTIAL">
+      <div class="card-head"><span class="qnum">Q17</span><span class="badge PARTIAL">PARTIAL</span></div>
+      <p class="qtext">রাবারের ইনসুলেটিং গ্লাভসের ওপর চামড়ার কভার কেন পরা হয়?</p>
+      <ol class="opts">
+        <li>হাত অনেক গরম রাখতে</li>
+        <li class="correct">ফুটো হওয়া থেকে রক্ষা ✓</li>
+        <li>ধরতে অনেক সুবিধা হয়</li>
+        <li>দপ্তরের পুরোনো নিয়ম</li>
+      </ol>
+      <div class="note"><strong>Gap:</strong> Leather protector over rubber gloves is industry practice but <em>not mentioned</em> in chapter_1_1.json. Keep only if you add that fact to the lesson.</div>
+    </article>
+
+    <!-- Q18 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q18</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">সুপারভাইজার ছেঁড়া হারনেস দিয়ে কাজ করতে বললে আপনার উত্তর কী হবে?</p>
+      <ol class="opts">
+        <li>ওই হারনেস নিয়েই কাজ</li>
+        <li>কোমরের বেল্ট ব্যবহার</li>
+        <li class="correct">কাজ করতে রাজি না হওয়া ✓</li>
+        <li>অন্যের সাথে বদলানো</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Harness daily_check + pro tip (refuse damaged PPE).</div>
+    </article>
+
+    <!-- Q19 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q19</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">হেলমেটের চিন স্ট্র্যাপ (Chin Strap) আলগা বা না থাকলে কী বিপদ হতে পারে?</p>
+      <ol class="opts">
+        <li>মাথায় ব্যথা হতে পারে</li>
+        <li>দেখতে খারাপ লাগতে পারে</li>
+        <li class="correct">হেলমেট খুলে পড়ে যাওয়া ✓</li>
+        <li>ঘাড়ের খুব ক্ষতি হওয়া</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Helmet importance — chin strap.</div>
+    </article>
+
+    <!-- Q20 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q20</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">পতনের সময় কোমরের বেল্ট (Waist Belt) থাকলে শরীরে কী ক্ষতি হতে পারে?</p>
+      <ol class="opts">
+        <li>হাতে পায়ে চোট লাগা</li>
+        <li>মাথায় গভীর আঘাত লাগা</li>
+        <li class="correct">মেরুদণ্ডে বড় চোট লাগা ✓</li>
+        <li>কাঁধে খুব ব্যথা হওয়া</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Harness importance + myth_buster.</div>
+    </article>
+
+    <!-- Q21 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q21</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">প্রচণ্ড বৃষ্টির সময় আপনার PPE-এর ওপর নতুন কোন বিপদ সৃষ্টি হয়?</p>
+      <ol class="opts">
+        <li>পোশাক ওজনে ভারী হওয়া</li>
+        <li>গায়ের রঙ চটে যাওয়া</li>
+        <li class="correct">ইনসুলেশন ক্ষমতা কমা ✓</li>
+        <li>চামড়া খুব শক্ত হওয়া</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Wet/dirty PPE reduces insulation (gloves/shoes theme).</div>
+    </article>
+
+    <!-- Q22 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q22</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">রাবার গ্লাভসে ট্রান্সফরমার তেল লাগলে তৎক্ষণাৎ বাতিল করা উচিত কেন?</p>
+      <ol class="opts">
+        <li>এটি খুব পিচ্ছিল বলে</li>
+        <li class="correct">ইনসুলেশন ক্ষমতা কমে ✓</li>
+        <li>গায়ের রঙ বদলে যায়</li>
+        <li>বাজে গন্ধ বেরোয় বলে</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Oil on rubber gloves / dielectric damage.</div>
+    </article>
+
+    <!-- Q23 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q23</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">প্রতিবার পোলে ওঠার আগে PPE নিয়ে সবথেকে জরুরি চিন্তা কোনটি?</p>
+      <ol class="opts">
+        <li>ইউনিফর্ম পরিষ্কার কি</li>
+        <li class="correct">ত্রুটি কি পরীক্ষা করেছি ✓</li>
+        <li>রঙ কি ঠিক আছে দেখা</li>
+        <li>জুতো পালিশ করা কি</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Pro tips — check PPE before climb.</div>
+    </article>
+
+    <!-- Q24 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q24</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">এলটি লাইনের কাজে রাবার গ্লাভসে ছোট ফুটো থাকলে কি ব্যবহার করা যাবে?</p>
+      <ol class="opts">
+        <li>হ্যাঁ, ভোল্টেজ কম আছে</li>
+        <li>হ্যাঁ, সাবধানে কাজ করলে</li>
+        <li class="correct">না, মারাত্মক শকের ভয় ✓</li>
+        <li>না, তবে এটি সামান্য ঝুঁকি</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Even pin-hole in rubber gloves is fatal.</div>
+    </article>
+
+    <!-- Q25 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q25</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">জুতোর সোলে পেরেক ঢুকে ফুটো হয়ে গেলে আপনার সঠিক করণীয় কী?</p>
+      <ol class="opts">
+        <li>পেরেক বের করে চালানো</li>
+        <li>বিষয়টি পুরোপুরি এড়িয়ে</li>
+        <li class="correct">জুতোটি বাতিল করা ✓</li>
+        <li>ফুটোটি টেপ দিয়ে মোড়া</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Shoes daily_check — nail/metal creates current path.</div>
+    </article>
+
+    <!-- Q26 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q26</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">একটি ইনসুলেটিং রাবার গ্লাভসের ওপর লেখা 'Class' রেটিং কী নির্দেশ করে?</p>
+      <ol class="opts">
+        <li>রাবারের সঠিক কোয়ালিটি</li>
+        <li>গ্লাভসের হাতের মাপ</li>
+        <li class="correct">ভোল্টেজ সহ্য ক্ষমতা ✓</li>
+        <li>কবে তৈরি হয়েছে দেখা</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Gloves specs — correct class for voltage + dielectric section.</div>
+    </article>
+
+    <!-- ========== OFF TOPIC BLOCK ========== -->
+
+    <!-- Q27 -->
+    <article class="card OFF_TOPIC" data-status="OFF_TOPIC">
+      <div class="card-head"><span class="qnum">Q27</span><span class="badge OFF_TOPIC">OFF-TOPIC</span></div>
+      <p class="qtext">পোলে ওঠার আগে 'টুলবক্স টক' (Toolbox Talk) কেন করা হয়?</p>
+      <ol class="opts">
+        <li>কাজের সময় ঠিক করতে</li>
+        <li class="correct">ঝুঁকি নিয়ে আলোচনা ✓</li>
+        <li>টুলস গুনে দেখার জন্য</li>
+        <li>সকালের হাজিরা নিতে</li>
+      </ol>
+      <div class="note"><strong>Not in 1.1.</strong> Procedure / daily briefing topic — move to a later safety-procedure lesson.</div>
+    </article>
+
+    <!-- Q28 -->
+    <article class="card OFF_TOPIC" data-status="OFF_TOPIC">
+      <div class="card-head"><span class="qnum">Q28</span><span class="badge OFF_TOPIC">OFF-TOPIC</span></div>
+      <p class="qtext">লাইন অফ করার পর 'ডিসচার্জ রড' ব্যবহারের সঠিক নিয়ম কোনটি?</p>
+      <ol class="opts">
+        <li>আগে তারে ছোঁয়ানো</li>
+        <li class="correct">আগে আর্থিং করা ✓</li>
+        <li>দুই দিকে লাগানো</li>
+        <li>রড হাতে ধরা</li>
+      </ol>
+      <div class="note"><strong>Not in 1.1.</strong> Earthing / discharge equipment — not PPE clothing lesson.</div>
+    </article>
+
+    <!-- Q29 -->
+    <article class="card OFF_TOPIC" data-status="OFF_TOPIC">
+      <div class="card-head"><span class="qnum">Q29</span><span class="badge OFF_TOPIC">OFF-TOPIC</span></div>
+      <p class="qtext">উঁচু পোলে কাজ করার সময় টুলস নিচে ফেলার সঠিক পদ্ধতি কী?</p>
+      <ol class="opts">
+        <li>নিচ দেখে সাবধানে ফেলা</li>
+        <li>হেলপারকে ক্যাচ ধরতে বলা</li>
+        <li class="correct">দড়ি ও বালতি ব্যবহার ✓</li>
+        <li>পকেটে নিয়ে নেমে আসা</li>
+      </ol>
+      <div class="note"><strong>Not in 1.1.</strong> Work-at-height tool handling.</div>
+    </article>
+
+    <!-- Q30 -->
+    <article class="card OFF_TOPIC" data-status="OFF_TOPIC">
+      <div class="card-head"><span class="qnum">Q30</span><span class="badge OFF_TOPIC">OFF-TOPIC</span></div>
+      <p class="qtext">কোনো লাইনে 'ব্যাকফিড' (Backfeed) হওয়ার প্রধান কারিগরি কারণ কী?</p>
+      <ol class="opts">
+        <li>ট্রান্সফরমার বেশি গরম</li>
+        <li class="correct">গ্রাহকের সোলার বা ইউপিএস ✓</li>
+        <li>আর্থিংয়ের সঠিক সমস্যা</li>
+        <li>লাইনের দৈর্ঘ্য বেশি হওয়া</li>
+      </ol>
+      <div class="note"><strong>Not in 1.1.</strong> Completely unrelated electrical concept.</div>
+    </article>
+
+    <!-- Q31 -->
+    <article class="card OFF_TOPIC" data-status="OFF_TOPIC">
+      <div class="card-head"><span class="qnum">Q31</span><span class="badge OFF_TOPIC">OFF-TOPIC</span></div>
+      <p class="qtext">মই বসানোর সময় দেয়াল থেকে গোড়ার দূরত্বের অনুপাত কত হওয়া উচিত?</p>
+      <ol class="opts">
+        <li>এক ফুট : দুই ফুট</li>
+        <li>এক ফুট : তিন ফুট</li>
+        <li class="correct">এক ফুট : চার ফুট ✓</li>
+        <li>এক ফুট : এক ফুট</li>
+      </ol>
+      <div class="note"><strong>Not in 1.1.</strong> Ladder safety (likely another chapter).</div>
+    </article>
+
+    <!-- Q32 -->
+    <article class="card OFF_TOPIC" data-status="OFF_TOPIC">
+      <div class="card-head"><span class="qnum">Q32</span><span class="badge OFF_TOPIC">OFF-TOPIC</span></div>
+      <p class="qtext">বৃষ্টির জলে ভেজা দড়ি বা রোপ ব্যবহার করা কেন বিপজ্জনক?</p>
+      <ol class="opts">
+        <li>দড়ি ওজনে ভারী হওয়া</li>
+        <li>দড়ি অনেক পিচ্ছিল হওয়া</li>
+        <li class="correct">বিদ্যুৎ পরিবাহী হওয়া ✓</li>
+        <li>দড়ি দ্রুত ছিঁড়ে যাওয়া</li>
+      </ol>
+      <div class="note"><strong>Not in 1.1.</strong> Rope/tools — not part of PPE kit taught here.</div>
+    </article>
+
+    <!-- Q33 -->
+    <article class="card OFF_TOPIC" data-status="OFF_TOPIC">
+      <div class="card-head"><span class="qnum">Q33</span><span class="badge OFF_TOPIC">OFF-TOPIC</span></div>
+      <p class="qtext">বৈদ্যুতিক প্যানেলে আগুন নেভানোর জন্য কোন নির্বাপক যন্ত্র সঠিক?</p>
+      <ol class="opts">
+        <li>প্রচুর পরিমাণ জল</li>
+        <li>রাসায়নিক লিকুইড ফোম</li>
+        <li class="correct">ড্রাই পাউডার বা CO2 ✓</li>
+        <li>ভেজা মোটা চটের বস্তা</li>
+      </ol>
+      <div class="note"><strong>Not in 1.1.</strong> Fire safety — different lesson.</div>
+    </article>
+
+    <!-- Q34 -->
+    <article class="card OFF_TOPIC" data-status="OFF_TOPIC">
+      <div class="card-head"><span class="qnum">Q34</span><span class="badge OFF_TOPIC">OFF-TOPIC</span></div>
+      <p class="qtext">সহকর্মীর ইলেকট্রিক শক লাগলে সবার আগে কী করবেন?</p>
+      <ol class="opts">
+        <li>হাত ধরে টেনে সরানো</li>
+        <li>জোরে হটাৎ চিৎকার</li>
+        <li class="correct">পাওয়ার সোর্স বন্ধ করা ✓</li>
+        <li>সারা শরীরে জল ঢালা</li>
+      </ol>
+      <div class="note"><strong>Not in 1.1.</strong> First aid / emergency response.</div>
+    </article>
+
+    <!-- Q35 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q35</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">সেফটি হারনেসের ল্যানিয়ার্ড (Lanyard) হুক কোথায় আটকানো নিরাপদ?</p>
+      <ol class="opts">
+        <li>কোমরের অনেক নিচে</li>
+        <li class="correct">কাঁধের ওপরে বা সমান্তরাল ✓</li>
+        <li>পায়ের পাতার কাছে</li>
+        <li>যেকোনো সুবিধাজনক স্থানে</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Harness / energy-absorber lanyard image. Slightly advanced but in-scope.</div>
+    </article>
+
+    <!-- Q36 -->
+    <article class="card OFF_TOPIC" data-status="OFF_TOPIC">
+      <div class="card-head"><span class="qnum">Q36</span><span class="badge OFF_TOPIC">OFF-TOPIC</span></div>
+      <p class="qtext">লাইন ক্লিয়ারেন্স (LC) ফেরত দেওয়ার আগে জরুরি কাজ কোনটি?</p>
+      <ol class="opts">
+        <li>সব টুলস গুছিয়ে নেওয়া</li>
+        <li class="correct">আর্থিং রড বা চেইন খোলা ✓</li>
+        <li>সবার নাম ধরে ডাকা</li>
+        <li>অফিসে ফোন করা</li>
+      </ol>
+      <div class="note"><strong>Not in 1.1.</strong> PTW / LC procedure.</div>
+    </article>
+
+    <!-- Q37 -->
+    <article class="card OFF_TOPIC" data-status="OFF_TOPIC">
+      <div class="card-head"><span class="qnum">Q37</span><span class="badge OFF_TOPIC">OFF-TOPIC</span></div>
+      <p class="qtext">গর্ত খোঁড়ার সময় আচমকা কেবিল বেরিয়ে আসলে কী করবেন?</p>
+      <ol class="opts">
+        <li>কেবিল সরিয়ে কাজ করা</li>
+        <li>সাবধানে পাশ দিয়ে খুঁড়া</li>
+        <li class="correct">কাজ থামিয়ে জানানো ✓</li>
+        <li>সরাসরি কেবিলটি কাটা</li>
+      </ol>
+      <div class="note"><strong>Not in 1.1.</strong> Excavation / UG cable safety.</div>
+    </article>
+
+    <!-- Q38 -->
+    <article class="card OFF_TOPIC" data-status="OFF_TOPIC">
+      <div class="card-head"><span class="qnum">Q38</span><span class="badge OFF_TOPIC">OFF-TOPIC</span></div>
+      <p class="qtext">বাঁকা পোল সোজা করার সময় প্রথম বড় ঝুঁকি কোনটি?</p>
+      <ol class="opts">
+        <li>পোলটি সরাসরি ভাঙা</li>
+        <li class="correct">তারের টানে ছিটকে আসা ✓</li>
+        <li>নিচের মাটি হটাৎ ধসা</li>
+        <li>ইনসুলেটর পড়ে যাওয়া</li>
+      </ol>
+      <div class="note"><strong>Not in 1.1.</strong> Pole work technique — not PPE.</div>
+    </article>
+
+    <!-- Q39 -->
+    <article class="card PARTIAL" data-status="PARTIAL">
+      <div class="card-head"><span class="qnum">Q39</span><span class="badge PARTIAL">PARTIAL</span></div>
+      <p class="qtext">রাস্তার ফিউজ বক্সে কাজ করার সময় পায়ে কী থাকা আবশ্যিক?</p>
+      <ol class="opts">
+        <li>সাধারণ চামড়া চটি</li>
+        <li class="correct">ইনসুলেটিং শু বা ম্যাট ✓</li>
+        <li>সাধারণ কাঠের তক্তা</li>
+        <li>প্লাস্টিকের কোনো শিট</li>
+      </ol>
+      <div class="note"><strong>Stretch:</strong> Shoes are in-scope, but fuse-box + insulating mat scenario is not taught in 1.1.</div>
+    </article>
+
+    <!-- Q40 -->
+    <article class="card OFF_TOPIC" data-status="OFF_TOPIC">
+      <div class="card-head"><span class="qnum">Q40</span><span class="badge OFF_TOPIC">OFF-TOPIC</span></div>
+      <p class="qtext">আর্ক ফ্ল্যাশ থেকে চোখ বাঁচাতে কোন গগলস সবথেকে ভালো?</p>
+      <ol class="opts">
+        <li>কালো রঙের রোদ চশমা</li>
+        <li class="correct">সঠিক UV প্রোটেকশন ✓</li>
+        <li>পড়ার সাধারণ গ্লাস</li>
+        <li>স্বচ্ছ সাধারণ প্লাস্টিক</li>
+      </ol>
+      <div class="note"><strong>Not in 1.1.</strong> Eye PPE / arc flash goggles not covered in this lesson’s kit.</div>
+    </article>
+
+    <!-- Q41 -->
+    <article class="card OFF_TOPIC" data-status="OFF_TOPIC">
+      <div class="card-head"><span class="qnum">Q41</span><span class="badge OFF_TOPIC">OFF-TOPIC</span></div>
+      <p class="qtext">ট্রান্সফরমারের টপ কভারের ওপর দাঁড়িয়ে কাজ করা কেন বারণ?</p>
+      <ol class="opts">
+        <li>বুশিং ফেটে যাওয়ার ভয়</li>
+        <li class="correct">পা পিছলে পড়ার ঝুঁকি ✓</li>
+        <li>তেল লিক করার সম্ভাবনা</li>
+        <li>কভারটি খুব গরম থাকা</li>
+      </ol>
+      <div class="note"><strong>Not in 1.1.</strong> Transformer work practice.</div>
+    </article>
+
+    <!-- Q42 -->
+    <article class="card OFF_TOPIC" data-status="OFF_TOPIC">
+      <div class="card-head"><span class="qnum">Q42</span><span class="badge OFF_TOPIC">OFF-TOPIC</span></div>
+      <p class="qtext">'লক আউট ট্যাগ আউট' (LOTO) পদ্ধতি কোথায় ব্যবহৃত হয়?</p>
+      <ol class="opts">
+        <li>অফিস বন্ধ করার সময়</li>
+        <li class="correct">ব্রেকার অফ রাখার জন্য ✓</li>
+        <li>গাড়ি পার্কিং করার সময়</li>
+        <li>হাজিরা খাতায় সই করা</li>
+      </ol>
+      <div class="note"><strong>Not in 1.1.</strong> Isolation / LOTO procedure.</div>
+    </article>
+
+    <!-- Q43 -->
+    <article class="card OFF_TOPIC" data-status="OFF_TOPIC">
+      <div class="card-head"><span class="qnum">Q43</span><span class="badge OFF_TOPIC">OFF-TOPIC</span></div>
+      <p class="qtext">কোনো তার ছিঁড়ে মাটিতে পড়ে থাকলে সেটিকে কী মনে করবেন?</p>
+      <ol class="opts">
+        <li>তারটি মৃত বা ডেড আছে</li>
+        <li>তারটি আর্থ হয়ে গেছে</li>
+        <li class="correct">তারটি চার্জ বা লাইভ ✓</li>
+        <li>তারটি ওজনে খুব হালকা</li>
+      </ol>
+      <div class="note"><strong>Not in 1.1.</strong> Live-line hazard assumption — general safety, not PPE lesson.</div>
+    </article>
+
+    <!-- Q44 -->
+    <article class="card OFF_TOPIC" data-status="OFF_TOPIC">
+      <div class="card-head"><span class="qnum">Q44</span><span class="badge OFF_TOPIC">OFF-TOPIC</span></div>
+      <p class="qtext">হট স্টিক (Hot Stick) ভিজে গেলে বা নোংরা থাকলে কী সমস্যা হতে পারে?</p>
+      <ol class="opts">
+        <li>ওজনে অনেক ভারী হবে</li>
+        <li class="correct">ইনসুলেশন ক্ষমতা কমবে ✓</li>
+        <li>রডটি অনেক পিচ্ছিল হবে</li>
+        <li>দেখতে অনেক পুরোনো হবে</li>
+      </ol>
+      <div class="note"><strong>Not in 1.1.</strong> Hot stick is a tool, not in the 1.1 PPE kit.</div>
+    </article>
+
+    <!-- Q45 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q45</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">লাইভ লাইনে কাজের হেলমেট কোন IS রেটিং-এর হওয়া উচিত?</p>
+      <ol class="opts">
+        <li class="correct">IS 2925 রেটিং ✓</li>
+        <li>IS 4770 রেটিং</li>
+        <li>IS 732 রেটিং</li>
+        <li>IS 3043 রেটিং</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Helmet / ISI theme. Exact IS number is not printed in chapter text — advanced but acceptable if you want standards depth.</div>
+    </article>
+
+    <!-- Q46 -->
+    <article class="card PARTIAL" data-status="PARTIAL CONTENT_ISSUE">
+      <div class="card-head">
+        <span class="qnum">Q46</span>
+        <span class="badge PARTIAL">PARTIAL</span>
+        <span class="badge CONTENT_ISSUE">VERIFY FACT</span>
+      </div>
+      <p class="qtext">সেফটি হেলমেটের টেস্ট ভোল্টেজ সাধারণত কত হয়ে থাকে?</p>
+      <ol class="opts">
+        <li>এক কেভি ভোল্টেজ</li>
+        <li>দুই কেভি ভোল্টেজ</li>
+        <li class="correct">পাঁচ কেভি ভোল্টেজ ✓</li>
+        <li>দশ কেভি ভোল্টেজ</li>
+      </ol>
+      <div class="note"><strong>Gap:</strong> Not taught in 1.1. Also verify against IS 2925 before keeping — fact-check needed.</div>
+    </article>
+
+    <!-- Q47 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q47</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">Class 0 ইনসুলেটিং গ্লাভস সর্বোচ্চ কত ভোল্টেজ নিতে পারে?</p>
+      <ol class="opts">
+        <li>পাঁচশ ভোল্ট পর্যন্ত</li>
+        <li class="correct">এক কেভি ভোল্ট পর্যন্ত ✓</li>
+        <li>সাত দশমিক পাঁচ কেভি</li>
+        <li>এগারো কেভি পর্যন্ত</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Voltage class of insulating gloves (advanced detail of gloves section).</div>
+    </article>
+
+    <!-- Q48 -->
+    <article class="card RELATED" data-status="RELATED">
+      <div class="card-head"><span class="qnum">Q48</span><span class="badge RELATED">RELATED</span></div>
+      <p class="qtext">ডাবল ল্যানিয়ার্ড ব্যবহারের প্রধান কারিগরি কারণ কী?</p>
+      <ol class="opts">
+        <li>কাজের গতি বাড়ানো</li>
+        <li>পেশাদার স্টাইল দেখানো</li>
+        <li class="correct">নিরবচ্ছিন্ন নিরাপত্তা ✓</li>
+        <li>ওজনে হালকা করার জন্য</li>
+      </ol>
+      <div class="note"><strong>Lesson match:</strong> Harness / lanyard fall-protection theme (100% tie-off).</div>
+    </article>
+
+    <!-- Q49 -->
+    <article class="card PARTIAL" data-status="PARTIAL">
+      <div class="card-head"><span class="qnum">Q49</span><span class="badge PARTIAL">PARTIAL</span></div>
+      <p class="qtext">IS অনুযায়ী সেফটি হেলমেট সাধারণত কত বছর ব্যবহার করা যায়?</p>
+      <ol class="opts">
+        <li>এক বছর মাত্র</li>
+        <li>তিন বছর মাত্র</li>
+        <li class="correct">পাঁচ বছর মাত্র ✓</li>
+        <li>দশ বছর মাত্র</li>
+      </ol>
+      <div class="note"><strong>Gap:</strong> Helmet care is in-scope, but 5-year life is not stated in chapter_1_1.json. Confirm standard before keeping.</div>
+    </article>
+
+    <section class="summary">
+      <h2>Relocation completed (2026-07-25)</h2>
+      <ul>
+        <li><strong>Moved (16):</strong> Q27→1.10 · Q28→1.5 · Q29→2.1 · Q30→1.5 · Q31→4.9 · Q32→1.9 · Q33→1.8 · Q34→1.7 · Q36→1.6 · Q37→6.5 · Q38→1.3 · Q40→1.2 · Q41→6.1 · Q42→1.6 · Q43→1.2 · Q44→2.5</li>
+        <li><strong>Fixed:</strong> Q6 PPE expansion → Personal Protective Equipment</li>
+        <li><strong>Kept in 1.1:</strong> 33 PPE-related / partial questions (including former Q7, Q17, Q35, Q39, Q45–Q49 stretch items)</li>
+        <li>Full log: <code>lesson_1_1_quiz_relocation_log.md</code></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    Generated for manual review · Lesson 1.1 PPE quiz relevance ·
+    Open this file in a browser from
+    <code>public/quiz_management/lesson_1_1_quiz_relevance_review.html</code>
+    (or via local server <code>/quiz_management/lesson_1_1_quiz_relevance_review.html</code>).
+  </footer>
+
+  <script>
+    const buttons = document.querySelectorAll('.toolbar button[data-filter]');
+    const cards = document.querySelectorAll('article.card');
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        buttons.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.dataset.filter;
+        cards.forEach((card) => {
+          const status = card.dataset.status || '';
+          const show =
+            filter === 'ALL' ||
+            status.split(' ').includes(filter);
+          card.classList.toggle('hidden', !show);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
