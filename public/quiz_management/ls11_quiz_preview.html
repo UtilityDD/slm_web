@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LS11 Quiz Preview — রাগী গ্রাহককে শান্তভাবে সামলানো</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --card: #fff;
+      --line: #cbd5e1;
+      --ok: #15803d;
+      --ok-bg: #f0fdf4;
+      --warn-bg: #fffbeb;
+      --warn: #92400e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans Bengali", "Hind Siliguri", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--card);
+      border-bottom: 2px solid var(--ink);
+      padding: 0.85rem 1.1rem;
+    }
+    header h1 { margin: 0 0 0.25rem; font-size: 1.15rem; }
+    header p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.75rem;
+    }
+    .toolbar input[type="search"] {
+      flex: 1 1 220px;
+      min-width: 180px;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid var(--line);
+      font: inherit;
+    }
+    .toolbar label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.85rem;
+      user-select: none;
+    }
+    .toolbar button {
+      font: inherit;
+      padding: 0.4rem 0.65rem;
+      border: 1px solid var(--ink);
+      background: #fff;
+      cursor: pointer;
+    }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.6rem;
+    }
+    .tag {
+      font-size: 0.75rem;
+      background: #f1f5f9;
+      border: 1px solid var(--line);
+      padding: 0.15rem 0.45rem;
+    }
+    main { max-width: 880px; margin: 0 auto; padding: 1rem; }
+    .card {
+      background: var(--card);
+      border: 2px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .card.hidden { display: none; }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.55rem;
+      font-size: 0.75rem;
+    }
+    h2 {
+      margin: 0 0 0.7rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .opt {
+      border: 1px solid var(--line);
+      padding: 0.55rem 0.65rem;
+      margin: 0.4rem 0;
+      display: flex;
+      gap: 0.55rem;
+      align-items: flex-start;
+    }
+    .opt .letter {
+      flex: 0 0 auto;
+      font-weight: 700;
+      min-width: 1.4rem;
+    }
+    .opt .body { flex: 1; }
+    .opt .len {
+      flex: 0 0 auto;
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .opt.ok {
+      border-color: var(--ok);
+      background: var(--ok-bg);
+    }
+    .hide-answers .opt.ok {
+      border-color: var(--line);
+      background: transparent;
+    }
+    .hide-answers .opt.ok .mark,
+    .hide-answers .answer-line { display: none; }
+    .mark {
+      color: var(--ok);
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .answer-line {
+      margin: 0.55rem 0 0;
+      font-size: 0.88rem;
+      color: var(--warn);
+      background: var(--warn-bg);
+      padding: 0.45rem 0.55rem;
+    }
+    .nav {
+      position: fixed;
+      right: 0.75rem;
+      bottom: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .nav a, .nav button {
+      font: inherit;
+      text-decoration: none;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--ink);
+      padding: 0.35rem 0.55rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-align: center;
+    }
+    @media print {
+      header { position: static; }
+      .toolbar, .nav { display: none !important; }
+      .card { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>LS11 Quiz Preview — রাগী গ্রাহককে শান্তভাবে সামলানো</h1>
+    <p>Embedded snapshot of <code>questions_supp_10_11.json</code> · open this file directly · App picks 10 random per attempt</p>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search question or option…" />
+      <label><input id="hideAnswers" type="checkbox" /> Hide answers</label>
+      <label><input id="showLen" type="checkbox" checked /> Show option length</label>
+      <button type="button" id="expandAll">Show all</button>
+      <button type="button" id="printBtn">Print</button>
+      <a href="./ls_quiz_preview_index.html" style="font:inherit;padding:0.4rem 0.65rem;border:1px solid var(--ink);background:#fff;text-decoration:none;color:inherit;">All LS</a>
+    </div>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <main id="list"><p>Loading…</p></main>
+
+  <div class="nav">
+    <a href="#top" id="topLink">Top</a>
+    <button type="button" id="toQ1">Q1</button>
+  </div>
+
+  <script>
+    document.body.id = 'top';
+    const LETTERS = ['A', 'B', 'C', 'D'];
+    const listEl = document.getElementById('list');
+    const statsEl = document.getElementById('stats');
+    const searchEl = document.getElementById('search');
+    const hideAnswersEl = document.getElementById('hideAnswers');
+    const showLenEl = document.getElementById('showLen');
+
+    function optionLen(text) {
+      return [...String(text || '')].length;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(s) {
+      return escapeHtml(s).toLowerCase();
+    }
+
+    function render(questions) {
+      const indexDist = [0, 0, 0, 0];
+      questions.forEach((q) => {
+        if (q.correctAnswerIndex >= 0 && q.correctAnswerIndex < 4) {
+          indexDist[q.correctAnswerIndex] += 1;
+        }
+      });
+
+      statsEl.innerHTML = [
+        '<span class="tag">Total: ' + questions.length + '</span>',
+        '<span class="tag">Correct @ A/B/C/D: ' + indexDist.join(' / ') + '</span>',
+        '<span class="tag">Tip: green = correct</span>'
+      ].join('');
+
+      listEl.innerHTML = questions.map((q, i) => {
+        const opts = Array.isArray(q.options) ? q.options : [];
+        const correct = q.correctAnswerIndex;
+        const optHtml = opts.map((opt, oi) => {
+          const isOk = oi === correct;
+          return (
+            '<div class="opt ' + (isOk ? 'ok' : '') + '">' +
+              '<span class="letter">' + LETTERS[oi] + '.</span>' +
+              '<span class="body">' + escapeHtml(opt) + (isOk ? ' <span class="mark">✓ correct</span>' : '') + '</span>' +
+              '<span class="len" data-len>' + optionLen(opt) + ' ch</span>' +
+            '</div>'
+          );
+        }).join('');
+
+        const correctText = opts[correct] != null
+          ? LETTERS[correct] + '. ' + escapeHtml(opts[correct])
+          : '(missing)';
+
+        return (
+          '<article class="card" id="q-' + (i + 1) + '" data-search="' +
+            escapeAttr((q.questionText || '') + ' ' + opts.join(' ')) + '">' +
+            '<div class="meta">' +
+              '<span class="tag">Q' + (i + 1) + '</span>' +
+              '<span class="tag">correctAnswerIndex: ' + correct + '</span>' +
+            '</div>' +
+            '<h2>' + escapeHtml(q.questionText || '') + '</h2>' +
+            optHtml +
+            '<p class="answer-line"><strong>Answer:</strong> ' + correctText + '</p>' +
+          '</article>'
+        );
+      }).join('');
+
+      applyLenVisibility();
+      applyFilter();
+    }
+
+    function applyFilter() {
+      const q = (searchEl.value || '').trim().toLowerCase();
+      let visible = 0;
+      document.querySelectorAll('.card').forEach((card) => {
+        const hit = !q || (card.getAttribute('data-search') || '').includes(q);
+        card.classList.toggle('hidden', !hit);
+        if (hit) visible += 1;
+      });
+      const old = statsEl.querySelector('[data-visible]');
+      if (old) old.remove();
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.dataset.visible = '1';
+      tag.textContent = q ? ('Showing: ' + visible) : 'Showing: all';
+      statsEl.appendChild(tag);
+    }
+
+    function applyLenVisibility() {
+      document.querySelectorAll('[data-len]').forEach((el) => {
+        el.style.display = showLenEl.checked ? '' : 'none';
+      });
+    }
+
+    hideAnswersEl.addEventListener('change', () => {
+      document.body.classList.toggle('hide-answers', hideAnswersEl.checked);
+    });
+    showLenEl.addEventListener('change', applyLenVisibility);
+    searchEl.addEventListener('input', applyFilter);
+    document.getElementById('expandAll').addEventListener('click', () => {
+      searchEl.value = '';
+      applyFilter();
+    });
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+    document.getElementById('toQ1').addEventListener('click', () => {
+      document.getElementById('q-1')?.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    const QUIZ_DATA = [
+  {
+    "questionText": "লাইন কাটায় গ্রাহক চিৎকার করলে প্রথমে কী করবেন?",
+    "options": [
+      "শান্তভাবে শুনুন—কথা শেষ করতে দিন",
+      "মাঝপথে কথা কেটে পাল্টা জবাব",
+      "তাড়াতাড়ি মিথ্যা সময় দিয়ে পাঠিয়ে দিন",
+      "কাছে গিয়ে তর্ক শুরু করুন"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "গ্রাহক চিৎকার করলে মাঝপথে কথা কাটলে কী হয়?",
+    "options": [
+      "রাগ বাড়ে; তর্ক বাড়ে",
+      "গ্রাহক দ্রুত শান্ত হয়",
+      "কাজ দ্রুত শেষ হয়",
+      "বিল মিটে যায়"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "গ্রাহকের কথা শেষ হওয়ার আগে জবাব দিচ্ছেন কি—এই চেক কেন?",
+    "options": [
+      "শোনা শেষ না করে তর্ক এড়াতে",
+      "বেশি চা-পানি চাওয়ার জন্য",
+      "পিএফ যাচাই করতে",
+      "প্রাইভেট কাজ বাড়াতে"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "রাগী গ্রাহকের সামনে দাঁড়ানোর সঠিক দেহভঙ্গি?",
+    "options": [
+      "নম্রভাবে সোজা দাঁড়ানো, শান্ত চোখে কথা",
+      "হাত পকেটে বা আড়াআড়ি দাঁড়ানো",
+      "হাত তুলে চিৎকার করা",
+      "পিঠ ফিরিয়ে দাঁড়ানো"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "শান্ত দেহভঙ্গি ও চোখের প্রভাব কী?",
+    "options": [
+      "রাগ বাড়াতে বা কমাতে পারে",
+      "কোনো প্রভাব নেই",
+      "শুধু বেতন বাড়ায়",
+      "পিপিই দেওয়ার দায়িত্ব কমায়"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "কথা বলার সময় ভঙ্গি শান্ত কি—এই দৈনিক চেক কেন?",
+    "options": [
+      "দেহভঙ্গি রাগ কমাতে সাহায্য করে",
+      "গ্রাহককে ভয় দেখাতে",
+      "পে স্লিপ বানাতে",
+      "পোলে দ্রুত ওঠার জন্য"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "গ্রাহক জোরে বললে আপনার স্বর কীভাবে রাখবেন?",
+    "options": [
+      "স্বর নামিয়ে শান্ত করে উত্তর",
+      "আরও জোরে চিৎকার",
+      "চুপ করে থাকা—কিছু বলবেন না",
+      "মিথ্যা প্রতিশ্রুতি দিয়ে পাঠানো"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "আপনি শান্ত স্বরে কথা বললে অনেক সময় কী হয়?",
+    "options": [
+      "গ্রাহকও স্বর নামান",
+      "ঝগড়া আরও বাড়ে",
+      "লাইন নিজে ঠিক হয়ে যায়",
+      "বেতন দ্বিগুণ হয়"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "চিৎকারের জবাবে আপনিও চিৎকার করছেন কি—এই প্রশ্নের উদ্দেশ্য?",
+    "options": [
+      "নিজের স্বর নামিয়ে শান্ত থাকা",
+      "গ্রাহককে আরও রাগানো",
+      "পিপিই খুলে ফেলা",
+      "ডিউটি শেষ করে বাড়ি যাওয়া"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "গ্রাহক খুব কাছে এসে তর্ক করলে কী করবেন?",
+    "options": [
+      "আরও কাছে গিয়ে পাল্টা তর্ক",
+      "নিরাপদ দূরত্বে থাকুন; খারাপ হলে সরে যান",
+      "হাত তুলে ঝাপট দেওয়া",
+      "মিথ্যা বলে পালিয়ে যান"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "পরিস্থিতি খারাপ হলে প্রথমে কী?",
+    "options": [
+      "একা তর্ক চালিয়ে যাওয়া",
+      "সহকর্মীকে জানিয়ে নিরাপদ দূরত্বে সরে যাওয়া",
+      "গ্রাহককে ধমক দেওয়া",
+      "ফোন বন্ধ করে চুপ থাকা"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "হুমকি পেলে একা তর্ক চালিয়ে যাচ্ছেন কি—এই চেক কেন?",
+    "options": [
+      "গ্রাহককে জিততে",
+      "নিজের জীবন ও নিরাপত্তা আগে",
+      "ওভারটাইম বাড়াতে",
+      "বিল দ্রুত আদায় করতে"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "প্রো টিপ: রাগী পরিস্থিতি ব্যক্তিগত আক্রমণ ভেবে নেবেন না—কারণ?",
+    "options": [
+      "গ্রাহক সবসময় ঠিক",
+      "রাগ প্রায়ই পরিস্থিতির ওপর, ব্যক্তির ওপর নয়",
+      "আপনি সবসময় ভুল",
+      "চিৎকার করলেই কাজ হয়"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "গ্রাহককে শান্ত করতে মিথ্যা আশ্বাস দেওয়া উচিত?",
+    "options": [
+      "হ্যাঁ, যেকোনো সময় বলুন",
+      "না—যা জানেন সৎ করে বলুন",
+      "শুধু বড় অঙ্কের প্রতিশ্রুতি দিন",
+      "ফোন বন্ধ করে চলে যান"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "আইডি কার্ড ও পরিষ্কার পোশাক কেন গুরুত্বপূর্ণ?",
+    "options": [
+      "শুধু ছবি তোলার জন্য",
+      "গ্রাহকের আস্থা বাড়ায়",
+      "পিএফ কাটার জন্য",
+      "প্রাইভেট কাজের বিজ্ঞাপন"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "ভুল ধারণা: পাল্টা চিৎকার করলে গ্রাহক শান্ত হয়—সত্যি?",
+    "options": [
+      "হ্যাঁ, সবসময় কাজ করে",
+      "ভুল—ঝগড়া ও হামলার ঝুঁকি বাড়ে",
+      "শুধু রাতে কাজ করে",
+      "শুধু অফিসে কাজ করে"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "শান্ত থাকাই শক্তি—এই পাঠ কী বোঝায়?",
+    "options": [
+      "চুপ থাকলেই সব ঠিক",
+      "পাল্টা চিৎকারে নয়, শোনা ও শান্ত স্বরে জবাব",
+      "গ্রাহককে игнор করুন",
+      "মিথ্যা বললেই শান্ত"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "হুমকি বা আক্রমণের আশঙ্কায় কাকে জানাবেন?",
+    "options": [
+      "শুধু পরিবারকে",
+      "সহকর্মী ও স্থানীয় প্রশাসন",
+      "কাউকে না—চুপ থাকুন",
+      "শুধু সোশ্যাল মিডিয়ায়"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "ডিসকম গ্রাহকসেবার সাধারণ নিয়ম অনুযায়ী কী?",
+    "options": [
+      "পাল্টা চিৎকার",
+      "মিথ্যা সময় দেওয়া",
+      "শোনা, শান্ত ভঙ্গি, সৎ উত্তর",
+      "একা তর্ক চালিয়ে যাওয়া"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "লাইন কাটা বা বিভ্রাটে গ্রাহক রেগে গেলে মূল কারণ কী হতে পারে?",
+    "options": [
+      "সবসময় আপনার ব্যক্তিগত দোষ",
+      "শুধু বেতন কম",
+      "বিদ্যুৎহীনতার চাপ—পরিস্থিতিগত রাগ",
+      "পিপিই না থাকা"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "গ্রাহক শুনলে সাধারণত কী হয়?",
+    "options": [
+      "আরও রেগে যায়",
+      "বিল মাফ হয়",
+      "একটু শান্ত হয়",
+      "লাইন নিজে ঠিক হয়"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "তর্ক করলে গ্রাহকের রাগে কী প্রভাব?",
+    "options": [
+      "রাগ কমে",
+      "কোনো প্রভাব নেই",
+      "রাগ বাড়ে",
+      "বেতন বাড়ে"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "হাত পকেটে দাঁড়ানো কেন এড়াবেন?",
+    "options": [
+      "শুধু ঠান্ডা লাগে",
+      "পিএফ কাটা যায় না",
+      "রাগী গ্রাহকের কাছে আক্রমণাত্মক মনে হতে পারে",
+      "পোলে ওঠা যায় না"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "নিরাপদ দূরত্বে থাকার মূল কারণ?",
+    "options": [
+      "গ্রাহককে ভয় দেখানো",
+      "ওভারটাইম দাবি",
+      "নিজের জীবন ও নিরাপত্তা আগে",
+      "প্রাইভেট কাজ"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "মিথ্যা আশ্বাস দিলে দীর্ঘমেয়াদে কী হতে পারে?",
+    "options": [
+      "গ্রাহক চিরকাল খুশি",
+      "বেতন দ্বিগুণ",
+      "আস্থা হারানো ও আরও রাগ",
+      "পিপিই বিনামূল্যে"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "শান্ত চোখে কথা বলার ফল?",
+    "options": [
+      "গ্রাহক আরও রাগে",
+      "লাইন কেটে যায়",
+      "পরিস্থিতি শান্ত রাখতে সাহায্য",
+      "পে স্লিপ বদলে যায়"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "সহকর্মীকে জানানো কখন জরুরি?",
+    "options": [
+      "প্রতিদিন সকালে",
+      "শুধু বেতনের দিন",
+      "পরিস্থিতি খারাপ বা হুমকি হলে",
+      "ছুটির দিন"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "পাল্টা চিৎকারের প্রধান ঝুঁকি কী?",
+    "options": [
+      "গ্রাহক তৎক্ষণাৎ শান্ত",
+      "বিল মিটে যায়",
+      "পিএফ বাড়ে",
+      "ঝগড়া ও হামলার সম্ভাবনা বাড়ে"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "রাগী গ্রাহক সামলাতে ‘শোনা’ কেন প্রথম ধাপ?",
+    "options": [
+      "শুনলে বিল মাফ",
+      "শুনলে লাইন ঠিক",
+      "শুনলে ওভারটাইম মিলে",
+      "শুনলে মানুষ একটু শান্ত হয়"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "পরিষ্কার পোশাক ও আইডি কার্ড কাজে কী সাহায্য করে?",
+    "options": [
+      "গ্রাহককে রাগায়",
+      "পিপিই লাগে না",
+      "প্রাইভেট কাজের অনুমতি",
+      "পেশাদারি দেখিয়ে আস্থা বাড়ায়"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "গ্রাহক জোরে বললে আপনি জোরে জবাব দিলে?",
+    "options": [
+      "সবসময় শান্তি",
+      "বেতন বাড়ে",
+      "ফিডার ঠিক হয়",
+      "ঝগড়া বাড়ার সম্ভাবনা"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "একা তর্ক চালিয়ে যাওয়া কেন বিপজ্জনক?",
+    "options": [
+      "বেতন কমে",
+      "পিএফ বন্ধ",
+      "লাইন কাটা বন্ধ",
+      "নিজের নিরাপত্তা ঝুঁকিতে"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "যা জানেন সৎ করে বলুন—এর অর্থ?",
+    "options": [
+      "যেকোনো কথা বলুন",
+      "চুপ থাকুন",
+      "গ্রাহককে ধমক দিন",
+      "মিথ্যা সময় বা প্রতিশ্রুতি দেবেন না"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "মিশন ব্রিফিং: লাইন কাটায় পাল্টা চিৎকারে কী বাড়ে?",
+    "options": [
+      "গ্রাহকের আস্থা",
+      "বেতন",
+      "পিপিই",
+      "ঝগড়া"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "রাগী গ্রাহক সামলানোর মূল শক্তি কোথায়?",
+    "options": [
+      "পাল্টা চিৎকার",
+      "মিথ্যা আশ্বাস",
+      "একা কাছে গিয়ে তর্ক",
+      "শান্ত থাকা—শোনা, ভঙ্গি, নিচু স্বর"
+    ],
+    "correctAnswerIndex": 3
+  }
+];
+
+    render(QUIZ_DATA);
+  </script>
+</body>
+</html>

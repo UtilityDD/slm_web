@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LS08 Quiz Preview — সন্তানের পড়াশোনা</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --card: #fff;
+      --line: #cbd5e1;
+      --ok: #15803d;
+      --ok-bg: #f0fdf4;
+      --warn-bg: #fffbeb;
+      --warn: #92400e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans Bengali", "Hind Siliguri", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--card);
+      border-bottom: 2px solid var(--ink);
+      padding: 0.85rem 1.1rem;
+    }
+    header h1 { margin: 0 0 0.25rem; font-size: 1.15rem; }
+    header p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.75rem;
+    }
+    .toolbar input[type="search"] {
+      flex: 1 1 220px;
+      min-width: 180px;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid var(--line);
+      font: inherit;
+    }
+    .toolbar label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.85rem;
+      user-select: none;
+    }
+    .toolbar button {
+      font: inherit;
+      padding: 0.4rem 0.65rem;
+      border: 1px solid var(--ink);
+      background: #fff;
+      cursor: pointer;
+    }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.6rem;
+    }
+    .tag {
+      font-size: 0.75rem;
+      background: #f1f5f9;
+      border: 1px solid var(--line);
+      padding: 0.15rem 0.45rem;
+    }
+    main { max-width: 880px; margin: 0 auto; padding: 1rem; }
+    .card {
+      background: var(--card);
+      border: 2px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .card.hidden { display: none; }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.55rem;
+      font-size: 0.75rem;
+    }
+    h2 {
+      margin: 0 0 0.7rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .opt {
+      border: 1px solid var(--line);
+      padding: 0.55rem 0.65rem;
+      margin: 0.4rem 0;
+      display: flex;
+      gap: 0.55rem;
+      align-items: flex-start;
+    }
+    .opt .letter {
+      flex: 0 0 auto;
+      font-weight: 700;
+      min-width: 1.4rem;
+    }
+    .opt .body { flex: 1; }
+    .opt .len {
+      flex: 0 0 auto;
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .opt.ok {
+      border-color: var(--ok);
+      background: var(--ok-bg);
+    }
+    .hide-answers .opt.ok {
+      border-color: var(--line);
+      background: transparent;
+    }
+    .hide-answers .opt.ok .mark,
+    .hide-answers .answer-line { display: none; }
+    .mark {
+      color: var(--ok);
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .answer-line {
+      margin: 0.55rem 0 0;
+      font-size: 0.88rem;
+      color: var(--warn);
+      background: var(--warn-bg);
+      padding: 0.45rem 0.55rem;
+    }
+    .nav {
+      position: fixed;
+      right: 0.75rem;
+      bottom: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .nav a, .nav button {
+      font: inherit;
+      text-decoration: none;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--ink);
+      padding: 0.35rem 0.55rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-align: center;
+    }
+    @media print {
+      header { position: static; }
+      .toolbar, .nav { display: none !important; }
+      .card { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>LS08 Quiz Preview — সন্তানের পড়াশোনা</h1>
+    <p>Embedded snapshot of <code>questions_supp_10_8.json</code> · open this file directly · App picks 10 random per attempt</p>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search question or option…" />
+      <label><input id="hideAnswers" type="checkbox" /> Hide answers</label>
+      <label><input id="showLen" type="checkbox" checked /> Show option length</label>
+      <button type="button" id="expandAll">Show all</button>
+      <button type="button" id="printBtn">Print</button>
+      <a href="./ls_quiz_preview_index.html" style="font:inherit;padding:0.4rem 0.65rem;border:1px solid var(--ink);background:#fff;text-decoration:none;color:inherit;">All LS</a>
+    </div>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <main id="list"><p>Loading…</p></main>
+
+  <div class="nav">
+    <a href="#top" id="topLink">Top</a>
+    <button type="button" id="toQ1">Q1</button>
+  </div>
+
+  <script>
+    document.body.id = 'top';
+    const LETTERS = ['A', 'B', 'C', 'D'];
+    const listEl = document.getElementById('list');
+    const statsEl = document.getElementById('stats');
+    const searchEl = document.getElementById('search');
+    const hideAnswersEl = document.getElementById('hideAnswers');
+    const showLenEl = document.getElementById('showLen');
+
+    function optionLen(text) {
+      return [...String(text || '')].length;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(s) {
+      return escapeHtml(s).toLowerCase();
+    }
+
+    function render(questions) {
+      const indexDist = [0, 0, 0, 0];
+      questions.forEach((q) => {
+        if (q.correctAnswerIndex >= 0 && q.correctAnswerIndex < 4) {
+          indexDist[q.correctAnswerIndex] += 1;
+        }
+      });
+
+      statsEl.innerHTML = [
+        '<span class="tag">Total: ' + questions.length + '</span>',
+        '<span class="tag">Correct @ A/B/C/D: ' + indexDist.join(' / ') + '</span>',
+        '<span class="tag">Tip: green = correct</span>'
+      ].join('');
+
+      listEl.innerHTML = questions.map((q, i) => {
+        const opts = Array.isArray(q.options) ? q.options : [];
+        const correct = q.correctAnswerIndex;
+        const optHtml = opts.map((opt, oi) => {
+          const isOk = oi === correct;
+          return (
+            '<div class="opt ' + (isOk ? 'ok' : '') + '">' +
+              '<span class="letter">' + LETTERS[oi] + '.</span>' +
+              '<span class="body">' + escapeHtml(opt) + (isOk ? ' <span class="mark">✓ correct</span>' : '') + '</span>' +
+              '<span class="len" data-len>' + optionLen(opt) + ' ch</span>' +
+            '</div>'
+          );
+        }).join('');
+
+        const correctText = opts[correct] != null
+          ? LETTERS[correct] + '. ' + escapeHtml(opts[correct])
+          : '(missing)';
+
+        return (
+          '<article class="card" id="q-' + (i + 1) + '" data-search="' +
+            escapeAttr((q.questionText || '') + ' ' + opts.join(' ')) + '">' +
+            '<div class="meta">' +
+              '<span class="tag">Q' + (i + 1) + '</span>' +
+              '<span class="tag">correctAnswerIndex: ' + correct + '</span>' +
+            '</div>' +
+            '<h2>' + escapeHtml(q.questionText || '') + '</h2>' +
+            optHtml +
+            '<p class="answer-line"><strong>Answer:</strong> ' + correctText + '</p>' +
+          '</article>'
+        );
+      }).join('');
+
+      applyLenVisibility();
+      applyFilter();
+    }
+
+    function applyFilter() {
+      const q = (searchEl.value || '').trim().toLowerCase();
+      let visible = 0;
+      document.querySelectorAll('.card').forEach((card) => {
+        const hit = !q || (card.getAttribute('data-search') || '').includes(q);
+        card.classList.toggle('hidden', !hit);
+        if (hit) visible += 1;
+      });
+      const old = statsEl.querySelector('[data-visible]');
+      if (old) old.remove();
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.dataset.visible = '1';
+      tag.textContent = q ? ('Showing: ' + visible) : 'Showing: all';
+      statsEl.appendChild(tag);
+    }
+
+    function applyLenVisibility() {
+      document.querySelectorAll('[data-len]').forEach((el) => {
+        el.style.display = showLenEl.checked ? '' : 'none';
+      });
+    }
+
+    hideAnswersEl.addEventListener('change', () => {
+      document.body.classList.toggle('hide-answers', hideAnswersEl.checked);
+    });
+    showLenEl.addEventListener('change', applyLenVisibility);
+    searchEl.addEventListener('input', applyFilter);
+    document.getElementById('expandAll').addEventListener('click', () => {
+      searchEl.value = '';
+      applyFilter();
+    });
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+    document.getElementById('toQ1').addEventListener('click', () => {
+      document.getElementById('q-1')?.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    const QUIZ_DATA = [
+  {
+    "questionText": "ডিউটি শেষে বাড়ি ফিরে সন্তানকে প্রথমে কী জিজ্ঞাসা করা ভালো?",
+    "options": [
+      "আজ স্কুলে কী পড়েছে, কোনো সমস্যা আছে কি না",
+      "শুধু টিভি কখন চালু করবে",
+      "শুধু ফোন কতক্ষণ খেলবে",
+      "শুধু বাইরে খেলতে যাবে কি না"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "সন্তান পড়ার সময় টিভি ও মোবাইল চালু থাকলে সবচেয়ে বড় সমস্যা কী?",
+    "options": [
+      "বইয়ের রং বদলায়",
+      "মনোযোগ ভেঙে পড়া আটকে যায়",
+      "স্কুলের সময় বাড়ে",
+      "শিক্ষকের নাম বদলায়"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "মেয়ের পড়াশোনা চালিয়ে রাখতে কন্যাশ্রী স্কিমের তথ্য কোথায় পাবেন?",
+    "options": [
+      "শুধু হোয়াটসঅ্যাপ গ্রুপে",
+      "শুধু পোলের নিচে",
+      "স্কুল শিক্ষক বা ব্লক শিক্ষা অফিসে",
+      "শুধু রাস্তার দালালের কাছে"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "উচ্চ শিক্ষার বড় খরচে সাহায্যের জন্য কোন সরকারি স্কিম জানতে হবে?",
+    "options": [
+      "শুধু চিটফান্ড",
+      "শুধু মহাজনের ঋণ",
+      "শুধু হোয়াটসঅ্যাপ লোন",
+      "স্টুডেন্ট ক্রেডিট কার্ড—ব্যাংক বা শিক্ষা দপ্তরে"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "সন্তানকে আইটিআই বা কম্পিউটার প্রশিক্ষণে পাঠাতে চান—এটা কেন ভালো?",
+    "options": [
+      "কাজের দক্ষতা বাড়ে—ভবিষ্যতে উপার্জনে সাহায্য",
+      "শুধু স্কুলের ছুটি বাড়ে",
+      "শুধু টিভি দেখার সময় বাড়ে",
+      "শুধু ফোন গেম খেলার সময় বাড়ে"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "সন্তানের সামনে শিক্ষকের সমালোচনা করলে কী হয়?",
+    "options": [
+      "বাচ্চার আত্মবিশ্বাস বাড়ে",
+      "স্কুলে যাওয়ার ইচ্ছা কমতে পারে—সমালোচনা এড়ান",
+      "পড়ায় মনোযোগ দ্বিগুণ হয়",
+      "শিক্ষক স্বয়ং বদলে যায়"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "বই ও খাতার জন্য ছোট সঞ্চয় রাখার সঠিক উপায় কোনটি?",
+    "options": [
+      "সব টাকা একদিনে খেলনায়",
+      "হোয়াটসঅ্যাপ স্কিমে",
+      "প্রতি মাসে অল্প অল্প আলাদা করে জমানো",
+      "মহাজনের কাছে ঋণ নেওয়া"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "‘আমি কম পড়েছি—বাচ্চাকে গাইড করতে পারি না’—এই ধারণা কেন ভুল?",
+    "options": [
+      "কম পড়লে সন্তান পড়তে পারে না",
+      "শুধু ধনীরাই গাইড করতে পারে",
+      "গাইড করতে হলে অবশ্যই শিক্ষক হতে হয়",
+      "রোজ খোঁজ, শান্ত পরিবেশ ও স্কুলের সঙ্গে যোগাযোগই বড় সাহায্য"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "পড়ার জন্য ছোট শান্ত জায়গা বানাতে কী করা উচিত?",
+    "options": [
+      "টিভি ও মোবাইল বন্ধ বা দূরে রেখে শান্ত কোণে বসানো",
+      "টিভি জোরে চালু রেখে পড়া",
+      "সবাই মিলে ফোনে গেম খেলা",
+      "রান্নাঘরে সব শব্দে পড়া"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "শিক্ষা সহায়তার জন্য শিক্ষাশ্রী স্কিমের তথ্য কোথায় পাবেন?",
+    "options": [
+      "শুধু পাড়ার দোকানে",
+      "স্কুল বা ব্লক শিক্ষা অফিসে",
+      "শুধু হোয়াটসঅ্যাপে",
+      "শুধু পোলের ওপর"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "সন্তান কলেজে পড়তে চায়—খরচ বেশি হলে প্রথমে কোথায় জিজ্ঞাসা করবেন?",
+    "options": [
+      "অচেনা মহাজন",
+      "চিটফান্ড",
+      "ব্যাংক বা শিক্ষা দপ্তরে স্টুডেন্ট ক্রেডিট কার্ড সম্পর্কে",
+      "হোয়াটসঅ্যাপ লোন অ্যাপ"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "লাইনম্যান হিসেবে আপনি নিজে অষ্টম শ্রেণি পর্যন্ত পড়েছেন—সন্তানের পড়াশোনায় কী করতে পারেন?",
+    "options": [
+      "কিছুই করবেন না—সব শিক্ষকের ওপর",
+      "শুধু টিভি দেখতে বলবেন",
+      "শুধু ফোন খেলতে দেবেন",
+      "রোজ স্কুলের খোঁজ নেওয়া ও শান্ত পড়ার জায়গা দেওয়া"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "সন্তান বলল আজ স্কুলে গণিত কঠিন লাগল—আপনার সঠিক প্রতিক্রিয়া?",
+    "options": [
+      "শোনা ও উৎসাহ দেওয়া—পরে শিক্ষকের সঙ্গে কথা বলা",
+      "‘তুই পারবি না’ বলে সমালোচনা",
+      "স্কুল যাওয়া বন্ধ করে দেওয়া",
+      "শিক্ষকের সামনে বাচ্চাকে দোষ দেওয়া"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "পড়ার সময় ঘর শান্ত রাখার মূল কারণ কী?",
+    "options": [
+      "বিদ্যুৎ বিল কমানো",
+      "মনোযোগ না ভাঙলে পড়া ভালো হয়",
+      "টিভি বিক্রি করা",
+      "ফোনের ব্যাটারি বাঁচানো"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "কন্যাশ্রী স্কিম মূলত কাদের পড়াশোনায় সাহায্য করে?",
+    "options": [
+      "শুধু ছেলেদের",
+      "শুধু শিক্ষকদের",
+      "মেয়েদের—পড়া চালিয়ে রাখতে",
+      "শুধু অফিস কর্মচারীদের"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "সন্তানের সামনে ‘শিক্ষক ভালো নয়’ বললে কী সমস্যা হতে পারে?",
+    "options": [
+      "পড়ায় আগ্রহ বাড়ে",
+      "শিক্ষক স্বয়ং বদলে যায়",
+      "স্কুলের সময় কমে",
+      "বাচ্চার স্কুলে যাওয়ার মনোবল কমতে পারে"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "ডিউটি শেষে ১০ মিনিট সন্তানের সঙ্গে স্কুলের কথা বললে কী লাভ?",
+    "options": [
+      "নিয়মিত খোঁজ বাচ্চার আত্মবিশ্বাস বাড়ায়",
+      "শুধু টিভি দেখার সময় বাড়ে",
+      "শুধু ফোন খেলার সময় বাড়ে",
+      "স্কুল বন্ধ হয়ে যায়"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "বই কেনার জন্য প্রতি মাসে ১০০ টাকা আলাদা রাখলে কী হয়?",
+    "options": [
+      "ঋণ স্বয়ং মুছে যায়",
+      "বছর শেষে বই-খাতার খরচ মেটানো সহজ",
+      "স্কুলের সময় বাড়ে",
+      "শিক্ষক বদলে যায়"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "সন্তানকে কম্পিউটার বা আইটিআই প্রশিক্ষণে উৎসাহ দিলে দীর্ঘমেয়াদে কী সুবিধা?",
+    "options": [
+      "শুধু ফোন গেম খেলার দক্ষতা",
+      "শুধু টিভি দেখার সময়",
+      "কাজের দক্ষতা ও উপার্জনের সুযোগ বাড়ে",
+      "স্কুলের ছুটি বাড়ে"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "শিক্ষকের সঙ্গে সমস্যা থাকলে সন্তানের সামনে কী করা উচিত?",
+    "options": [
+      "সন্তানের সামনে তীব্র সমালোচনা",
+      "সন্তানকে স্কুল যেতে না বলা",
+      "সন্তানকে শিক্ষকের বিরুদ্ধে উস্কানি",
+      "আলাদাভাবে শিক্ষকের সঙ্গে কথা বলা—সন্তানের সামনে নয়"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "‘কম পড়া বাবা-মা সন্তানকে সাহায্য করতে পারে না’—সঠিক বাস্তবতা কী?",
+    "options": [
+      "খোঁজ নেওয়া, শান্ত জায়গা ও স্কুল যোগাযোগই বড় সাহায্য",
+      "সাহায্য করতে হলে অবশ্যই স্নাতক",
+      "সাহায্য শুধু টিউটর দিতে পারে",
+      "কম পড়লে সন্তান পড়বে না"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "পড়ার সময় মোবাইল হাতের কাছে থাকলে কী সমস্যা?",
+    "options": [
+      "বইয়ের পাতা বেশি হয়",
+      "মনোযোগ ভেঙে পড়া আটকে যায়",
+      "স্কুলের সময় কমে",
+      "টিভি চ্যানেল বদলায়"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "মেয়ে ক্লাস নাইনে—কন্যাশ্রীর জন্য কাকে জিজ্ঞাসা করবেন?",
+    "options": [
+      "পাড়ার মহাজন",
+      "হোয়াটসঅ্যাপ দালাল",
+      "স্কুল শিক্ষক বা ব্লক অফিস",
+      "রাস্তার চিটফান্ড এজেন্ট"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "সন্তান ইঞ্জিনিয়ারিং পড়তে চায়—বড় খরচে কোন সরকারি সাহায্য খোঁজা যায়?",
+    "options": [
+      "শুধু মহাজনের ঋণ",
+      "শুধু চিটফান্ড",
+      "শুধু হোয়াটসঅ্যাপ লোন",
+      "স্টুডেন্ট ক্রেডিট কার্ড—ব্যাংকে জিজ্ঞাসা"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "রাতে ডিউটি শেষে সন্তান পড়ছে—আপনি কী করবেন?",
+    "options": [
+      "টিভি বন্ধ রেখে ঘর শান্ত রাখবেন",
+      "টিভি জোরে চালু রাখবেন",
+      "ফোনে গেম খেলবেন পাশে",
+      "সবাই মিলে কথা বলবেন জোরে"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "সন্তান স্কুলে সমস্যায়—আপনি নিজে কম পড়েছেন। প্রথম পদক্ষেপ?",
+    "options": [
+      "কিছু করবেন না",
+      "স্কুল শিক্ষকের সঙ্গে যোগাযোগ ও বাচ্চার কথা শোনা",
+      "সন্তানকে দোষ দিয়ে বকবেন",
+      "স্কুল বন্ধ করে দেবেন"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "শিক্ষাশ্রী স্কিম সম্পর্কে তথ্য পেতে কোথায় যাবেন?",
+    "options": [
+      "শুধু পোলের নিচে",
+      "শুধু হোয়াটসঅ্যাপ গ্রুপ",
+      "স্কুল বা ব্লক শিক্ষা অফিস",
+      "শুধু রাস্তার দালাল"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "সন্তানের পড়ার পরিকল্পনা নিয়ে পরিবারে আলোচনা কেন দরকার?",
+    "options": [
+      "শুধু টিভি চ্যানেল বেছে নিতে",
+      "শুধু ফোন কেনার জন্য",
+      "শুধু ছুটি বাড়াতে",
+      "উচ্চ শিক্ষা ও স্টুডেন্ট ক্রেডিট কার্ডের মতো সাহায্য সময়মতো খোঁজতে"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "পড়ার জন্য ছোট শান্ত কোণ—এতে কী রাখা উচিত?",
+    "options": [
+      "বই, খাতা, আলো—টিভি/মোবাইল দূরে",
+      "টিভি ও গেম কনসোল",
+      "জোরে চালানো রেডিও",
+      "সবাই মিলে ফোন"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "লাইনম্যানের কাজে সময় কম—তবু সন্তানের পড়াশোনায় কী করা যায়?",
+    "options": [
+      "কিছুই না—সব স্কুলের ওপর",
+      "ডিউটি শেষে রোজ অল্প সময় খোঁজ নেওয়া",
+      "শুধু টিভি দেখতে বলা",
+      "শুধু ফোন খেলতে দেওয়া"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "সন্তানকে আইটিআই-তে পাঠানোর সুবিধা কী?",
+    "options": [
+      "শুধু স্কুলের ছুটি",
+      "শুধু টিভি দেখার সময়",
+      "হাতে-কলমে দক্ষতা—কাজ পাওয়ার সুযোগ",
+      "শুধু ফোন গেম"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "বাচ্চার সামনে শিক্ষককে নিয়ে রাগ প্রকাশ করলে কী হতে পারে?",
+    "options": [
+      "পড়ায় আগ্রহ বাড়ে",
+      "শিক্ষক স্বয়ং বদলে যায়",
+      "স্কুলের নম্বর বাড়ে",
+      "স্কুলে যাওয়ার ইচ্ছা কমে—সমালোচনা এড়ান"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "প্রতিদিন ‘আজ কী পড়লে’ জিজ্ঞাসা করলে কী লাভ?",
+    "options": [
+      "বাচ্চা মনে করে পড়াশোনা গুরুত্বপূর্ণ",
+      "শুধু টিভি দেখার সময় বাড়ে",
+      "স্কুল বন্ধ হয়",
+      "ফোন বেশি খেলে"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "বই-খাতার জন্য ছোট সঞ্চয়—কোথায় রাখা ভালো?",
+    "options": [
+      "হোয়াটসঅ্যাপ স্কিমে",
+      "আলাদা কৌটোয় বা ব্যাংক/পোস্ট অফিসে",
+      "মহাজনের কাছে",
+      "চিটফান্ডে"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "লাইনম্যান হিসেবে সন্তানের শিক্ষায় সবচেয়ে কার্যকর তিনটি সাহায্য কোনটি?",
+    "options": [
+      "শুধু দামি টিউটর, টিভি ও ফোন",
+      "শুধু শিক্ষকের সমালোচনা, ঋণ ও চিটফান্ড",
+      "রোজ খোঁজ, শান্ত পড়ার জায়গা, স্কুল/সরকারি স্কিম ও বই সঞ্চয়",
+      "কিছুই না—সব স্কুলের ওপর"
+    ],
+    "correctAnswerIndex": 2
+  }
+];
+
+    render(QUIZ_DATA);
+  </script>
+</body>
+</html>

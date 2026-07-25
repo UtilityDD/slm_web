@@ -26,7 +26,7 @@ Each entry is one card on the **Life Skill** tab. Typical fields:
 | `title_en` / `title_bn` | Yes | Card + journal title by language. |
 | `description_en` / `description_bn` | Yes | Card body. |
 | `manuscript_url` | Yes | Path under `public/`, e.g. `/quizzes/lesson_10_1.json`. Fetched when the user opens the module. |
-| `image_url` | Optional | Under `public/`, e.g. `/assets/supplementary/stress_mgmt.png`. |
+| `image_url` | Optional | Under `public/`, e.g. `/assets/supplementary/stress_mgmt.webp`. |
 | `highlights_en` / `highlights_bn` | Optional | Chip text on the card. |
 | `trusted_blurb_en` / `trusted_blurb_bn` | Optional | Small footnote under highlights (source alignment). |
 | `category` | Optional | Styling / label (`mental`, `financial`, etc.). |
@@ -38,7 +38,7 @@ Each entry is one card on the **Life Skill** tab. Typical fields:
 1. Add a row to `supplementary_modules.json` with a new `id` (e.g. `supp_10_6`) and `lesson_code` (e.g. `LS06`).
 2. Add `public/quizzes/lesson_10_6.json` (or your chosen path) with **`level_id` equal to that `id`** and the usual `mission_briefing`, `sections`, optional `pro_tip` / `myth_buster` / `advanced_section` (see [Training lesson reader](./training-lesson-reader.md)).
 3. Point `manuscript_url` at the new JSON.
-4. Add a card image under `public/assets/supplementary/` if you use `image_url`.
+4. Add a card image under `public/assets/supplementary/` (prefer WebP; run `node scripts/optimize-supplementary-webp.mjs` if you start from PNG) if you use `image_url`.
 
 Opening a module sets `trainingContent` with `isSupplementary: true`, `lesson_code`, `audio_url_*`, then fetches the manuscript and merges fields while **preserving** `lesson_code` / deriving it from `level_id` when needed.
 

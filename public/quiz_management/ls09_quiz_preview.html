@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LS09 Quiz Preview — নেশা ছাড়ুন, সুস্থ থাকুন</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --card: #fff;
+      --line: #cbd5e1;
+      --ok: #15803d;
+      --ok-bg: #f0fdf4;
+      --warn-bg: #fffbeb;
+      --warn: #92400e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans Bengali", "Hind Siliguri", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--card);
+      border-bottom: 2px solid var(--ink);
+      padding: 0.85rem 1.1rem;
+    }
+    header h1 { margin: 0 0 0.25rem; font-size: 1.15rem; }
+    header p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.75rem;
+    }
+    .toolbar input[type="search"] {
+      flex: 1 1 220px;
+      min-width: 180px;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid var(--line);
+      font: inherit;
+    }
+    .toolbar label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.85rem;
+      user-select: none;
+    }
+    .toolbar button {
+      font: inherit;
+      padding: 0.4rem 0.65rem;
+      border: 1px solid var(--ink);
+      background: #fff;
+      cursor: pointer;
+    }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.6rem;
+    }
+    .tag {
+      font-size: 0.75rem;
+      background: #f1f5f9;
+      border: 1px solid var(--line);
+      padding: 0.15rem 0.45rem;
+    }
+    main { max-width: 880px; margin: 0 auto; padding: 1rem; }
+    .card {
+      background: var(--card);
+      border: 2px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .card.hidden { display: none; }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.55rem;
+      font-size: 0.75rem;
+    }
+    h2 {
+      margin: 0 0 0.7rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .opt {
+      border: 1px solid var(--line);
+      padding: 0.55rem 0.65rem;
+      margin: 0.4rem 0;
+      display: flex;
+      gap: 0.55rem;
+      align-items: flex-start;
+    }
+    .opt .letter {
+      flex: 0 0 auto;
+      font-weight: 700;
+      min-width: 1.4rem;
+    }
+    .opt .body { flex: 1; }
+    .opt .len {
+      flex: 0 0 auto;
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .opt.ok {
+      border-color: var(--ok);
+      background: var(--ok-bg);
+    }
+    .hide-answers .opt.ok {
+      border-color: var(--line);
+      background: transparent;
+    }
+    .hide-answers .opt.ok .mark,
+    .hide-answers .answer-line { display: none; }
+    .mark {
+      color: var(--ok);
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .answer-line {
+      margin: 0.55rem 0 0;
+      font-size: 0.88rem;
+      color: var(--warn);
+      background: var(--warn-bg);
+      padding: 0.45rem 0.55rem;
+    }
+    .nav {
+      position: fixed;
+      right: 0.75rem;
+      bottom: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .nav a, .nav button {
+      font: inherit;
+      text-decoration: none;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--ink);
+      padding: 0.35rem 0.55rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-align: center;
+    }
+    @media print {
+      header { position: static; }
+      .toolbar, .nav { display: none !important; }
+      .card { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>LS09 Quiz Preview — নেশা ছাড়ুন, সুস্থ থাকুন</h1>
+    <p>Embedded snapshot of <code>questions_supp_10_9.json</code> · open this file directly · App picks 10 random per attempt</p>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search question or option…" />
+      <label><input id="hideAnswers" type="checkbox" /> Hide answers</label>
+      <label><input id="showLen" type="checkbox" checked /> Show option length</label>
+      <button type="button" id="expandAll">Show all</button>
+      <button type="button" id="printBtn">Print</button>
+      <a href="./ls_quiz_preview_index.html" style="font:inherit;padding:0.4rem 0.65rem;border:1px solid var(--ink);background:#fff;text-decoration:none;color:inherit;">All LS</a>
+    </div>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <main id="list"><p>Loading…</p></main>
+
+  <div class="nav">
+    <a href="#top" id="topLink">Top</a>
+    <button type="button" id="toQ1">Q1</button>
+  </div>
+
+  <script>
+    document.body.id = 'top';
+    const LETTERS = ['A', 'B', 'C', 'D'];
+    const listEl = document.getElementById('list');
+    const statsEl = document.getElementById('stats');
+    const searchEl = document.getElementById('search');
+    const hideAnswersEl = document.getElementById('hideAnswers');
+    const showLenEl = document.getElementById('showLen');
+
+    function optionLen(text) {
+      return [...String(text || '')].length;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(s) {
+      return escapeHtml(s).toLowerCase();
+    }
+
+    function render(questions) {
+      const indexDist = [0, 0, 0, 0];
+      questions.forEach((q) => {
+        if (q.correctAnswerIndex >= 0 && q.correctAnswerIndex < 4) {
+          indexDist[q.correctAnswerIndex] += 1;
+        }
+      });
+
+      statsEl.innerHTML = [
+        '<span class="tag">Total: ' + questions.length + '</span>',
+        '<span class="tag">Correct @ A/B/C/D: ' + indexDist.join(' / ') + '</span>',
+        '<span class="tag">Tip: green = correct</span>'
+      ].join('');
+
+      listEl.innerHTML = questions.map((q, i) => {
+        const opts = Array.isArray(q.options) ? q.options : [];
+        const correct = q.correctAnswerIndex;
+        const optHtml = opts.map((opt, oi) => {
+          const isOk = oi === correct;
+          return (
+            '<div class="opt ' + (isOk ? 'ok' : '') + '">' +
+              '<span class="letter">' + LETTERS[oi] + '.</span>' +
+              '<span class="body">' + escapeHtml(opt) + (isOk ? ' <span class="mark">✓ correct</span>' : '') + '</span>' +
+              '<span class="len" data-len>' + optionLen(opt) + ' ch</span>' +
+            '</div>'
+          );
+        }).join('');
+
+        const correctText = opts[correct] != null
+          ? LETTERS[correct] + '. ' + escapeHtml(opts[correct])
+          : '(missing)';
+
+        return (
+          '<article class="card" id="q-' + (i + 1) + '" data-search="' +
+            escapeAttr((q.questionText || '') + ' ' + opts.join(' ')) + '">' +
+            '<div class="meta">' +
+              '<span class="tag">Q' + (i + 1) + '</span>' +
+              '<span class="tag">correctAnswerIndex: ' + correct + '</span>' +
+            '</div>' +
+            '<h2>' + escapeHtml(q.questionText || '') + '</h2>' +
+            optHtml +
+            '<p class="answer-line"><strong>Answer:</strong> ' + correctText + '</p>' +
+          '</article>'
+        );
+      }).join('');
+
+      applyLenVisibility();
+      applyFilter();
+    }
+
+    function applyFilter() {
+      const q = (searchEl.value || '').trim().toLowerCase();
+      let visible = 0;
+      document.querySelectorAll('.card').forEach((card) => {
+        const hit = !q || (card.getAttribute('data-search') || '').includes(q);
+        card.classList.toggle('hidden', !hit);
+        if (hit) visible += 1;
+      });
+      const old = statsEl.querySelector('[data-visible]');
+      if (old) old.remove();
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.dataset.visible = '1';
+      tag.textContent = q ? ('Showing: ' + visible) : 'Showing: all';
+      statsEl.appendChild(tag);
+    }
+
+    function applyLenVisibility() {
+      document.querySelectorAll('[data-len]').forEach((el) => {
+        el.style.display = showLenEl.checked ? '' : 'none';
+      });
+    }
+
+    hideAnswersEl.addEventListener('change', () => {
+      document.body.classList.toggle('hide-answers', hideAnswersEl.checked);
+    });
+    showLenEl.addEventListener('change', applyLenVisibility);
+    searchEl.addEventListener('input', applyFilter);
+    document.getElementById('expandAll').addEventListener('click', () => {
+      searchEl.value = '';
+      applyFilter();
+    });
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+    document.getElementById('toQ1').addEventListener('click', () => {
+      document.getElementById('q-1')?.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    const QUIZ_DATA = [
+  {
+    "questionText": "দিনে গুটখায় ৪০ টাকা খরচ—বছরে প্রায় কত টাকা?",
+    "options": [
+      "প্রায় ১৪,৬০০ টাকা—সঞ্চয় বা বিমায় যেত",
+      "মাত্র ৪০০ টাকা",
+      "প্রায় ৪০০০ টাকা",
+      "টাকা খরচ হয় না"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "গুটখা ও বিড়ি দীর্ঘদিন খেলে ফুসফুস ও মুখে কী ঝুঁকি বাড়ে?",
+    "options": [
+      "শুধু চুল পড়া",
+      "ক্যানসার ও শ্বাসকষ্ট—মুখ ও ফুসফুসের রোগ",
+      "শুধু নখ বড় হওয়া",
+      "শুধু চামড়া শুকনো"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "পোলে উঠতে গিয়ে সহজে হাঁপ ধরলে কী করবেন?",
+    "options": [
+      "লুকিয়ে কাজ চালিয়ে যাওয়া",
+      "আরও গুটখা খেয়ে ‘শক্তি’ নেওয়া",
+      "সতর্ক হওয়া—নেশা কমানো ও চিকিৎসার খোঁজ",
+      "উঁচুতে কাজ বাড়ানো"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "নেশা ছাড়তে ধীরে ধীরে কমানোর সময় মুখে কী রাখতে পারেন?",
+    "options": [
+      "আরও গুটখা",
+      "আরও বিড়ি",
+      "মদ",
+      "লবঙ্গ, মৌরি বা জোয়ান"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "ডিউটি শেষে নেশার বদলে কী করা ভালো অভ্যাস গড়ে তোলে?",
+    "options": [
+      "পরিবারের সঙ্গে একটু সময় কাটানো",
+      "একা পোলের নিচে গুটখা খাওয়া",
+      "সহকর্মীদের সঙ্গে আরও বিড়ি",
+      "রাত জাগা ফোন স্ক্রল"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "নেশায় না খরচ করা টাকা আলাদা কৌটোয় জমালে কী লাভ?",
+    "options": [
+      "টাকা হারিয়ে যায়",
+      "দেখবেন কত বাঁচে—ছাড়ার প্রেরণা বাড়ে",
+      "কৌটো ভেঙে যায়",
+      "ব্যাংক জরিমানা দেয়"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "যে সঙ্গী বারবার নেশা করতে উস্কায়—আপনার সঠিক সিদ্ধান্ত?",
+    "options": [
+      "সঙ্গে সঙ্গে বেশি খাওয়া",
+      "সব টাকা তাকে দিয়ে দেওয়া",
+      "এমন সঙ্গ এড়িয়ে চলা",
+      "অফিসে নিয়ে যাওয়া"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "নেশা ছাড়তে খুব কষ্ট হলে কোথায় সাহায্য নেবেন?",
+    "options": [
+      "শুধু পাড়ার দোকান",
+      "শুধু হোয়াটসঅ্যাপ গ্রুপ",
+      "শুধু মহাজন",
+      "সরকারি নেশামুক্তি বা মানসিক স্বাস্থ্য কেন্দ্র"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "‘নেশা না করলে ঘুম হয় না’—এই ধারণা কেন ভুল?",
+    "options": [
+      "প্রথমে কষ্ট লাগতে পারে, কিছুদিন পর ঘুম ও শক্তি ভালো হয়",
+      "নেশা ছাড়া ঘুম সম্ভব নয়",
+      "নেশা ছাড়লে শক্তি চিরকাল কম",
+      "ঘুম শুধু গুটখায় পাওয়া যায়"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "লাইভ লাইনের কাজে শ্বাসকষ্ট হলে সবচেয়ে বড় ঝুঁকি কী?",
+    "options": [
+      "শুধু বেতন দেরি",
+      "মনোযোগ ভেঙে দুর্ঘটনার সম্ভাবনা বাড়া",
+      "শুধু ইউনিফর্ম নোংরা",
+      "শুধু হাজিরা কম"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "দৈনিক নেশার খরচ মাস ও বছরে গুণ করে দেখলে কী বোঝা যায়?",
+    "options": [
+      "খরচ খুব কম—চিন্তার নয়",
+      "নেশা বিনামূল্যে",
+      "বছরে বড় অঙ্ক—সঞ্চয় বা বিমায় যেত",
+      "শুধু একদিনের খরচ"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "হঠাৎ একদিনে সব নেশা ছাড়ার চেষ্টা কেন কঠিন হতে পারে?",
+    "options": [
+      "সবসময় সহজ",
+      "ব্যাংক বাধা দেয়",
+      "অফিস নিষেধ করে",
+      "ধীরে ধীরে কমালে অভ্যাস ভাঙা সহজ"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "গুটখা-বিড়ি কমালে ফুসফুসে কী উন্নতি হতে পারে?",
+    "options": [
+      "শ্বাসকষ্ট কম—পোলে কাজে নিরাপদ",
+      "শ্বাস আরও খারাপ",
+      "কাজে মনোযোগ কম",
+      "ঘুম নষ্ট"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "ডিউটি শেষে পরিবারের সঙ্গে কথা বললে নেশার অভ্যাসে কী সাহায্য?",
+    "options": [
+      "নেশা বাড়ে",
+      "ভালো অভ্যাস পুরনো নেশার অভ্যাস সরাতে সাহায্য",
+      "পরিবার নেশা করে",
+      "টাকা কম হয়"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "নেশার টাকা কৌটোয় জমানোর উদ্দেশ্য কী?",
+    "options": [
+      "টাকা লুকিয়ে রাখা",
+      "মহাজনকে দেওয়া",
+      "না খরচ করা টাকা দেখে ছাড়ার ইচ্ছা বাড়ানো",
+      "চিটফান্ডে দেওয়া"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "সহকর্মী ডিউটির পর বিড়ি খেতে ডাকল—আপনি কী করবেন?",
+    "options": [
+      "সঙ্গে সঙ্গে বেশি খাবেন",
+      "সব টাকা তাকে দেবেন",
+      "অফিসে নেশা নিয়ে যাবেন",
+      "নেশা উস্কায় এমন সঙ্গ এড়িয়ে চলবেন"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "‘নেশা ছাড়লে কাজে শক্তি থাকবে না’—বাস্তবে কী হয়?",
+    "options": [
+      "কিছুদিন পর শরীর ভালো—শক্তি ও ঘুম উন্নতি",
+      "চিরকাল শক্তি কম",
+      "ঘুম সম্ভব নয়",
+      "কাজ করা যায় না"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "মুখে ক্যানসারের ঝুঁকি বাড়ায় প্রধানত কোন অভ্যাস?",
+    "options": [
+      "প্রচুর পানি পান",
+      "গুটখা ও তামাকজাত দ্রব্য",
+      "রাতে ঘুম",
+      "ফল খাওয়া"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "আজ গতকালের চেয়ে এক প্যাক কম গুটখা খেলেন—এটা কোন পদ্ধতির অংশ?",
+    "options": [
+      "হঠাৎ সব ছাড়া",
+      "আরও বেশি খাওয়া",
+      "ধীরে ধীরে পরিমাণ কমানো",
+      "চিটফান্ডে টাকা দেওয়া"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "নেশামুক্তি কেন্দ্রে যাওয়া কখন ঠিক?",
+    "options": [
+      "শুধু ছুটির দিনে",
+      "নেশা ছাড়তে একা পারছেন না—খুব কষ্ট হলে",
+      "শুধু বন্ধু বললে",
+      "কখনো নয়"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "দিনে ৩০ টাকা বিড়িতে, মাসে প্রায় ৯০০—বছরে কত?",
+    "options": [
+      "প্রায় ৯০০ টাকা",
+      "প্রায় ৩০০০ টাকা",
+      "প্রায় ১০,৮০০ টাকা—সঞ্চয় হতে পারত",
+      "খরচ হয় না"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "পোলে কাজে হাঁপ ধরলে নেশা কমানো কেন জরুরি?",
+    "options": [
+      "বেতন বাড়ে",
+      "ইউনিফর্ম সুন্দর হয়",
+      "অফিস ছুটি বাড়ে",
+      "শ্বাসকষ্টে দুর্ঘটনার ঝুঁকি বাড়ে—নিরাপত্তা"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "মুখে লবঙ্গ বা মৌরি রাখলে কী সাহায্য?",
+    "options": [
+      "গুটখার ইচ্ছা কমাতে—ধীরে ছাড়ার সময়",
+      "আরও গুটখা খেতে",
+      "ঘুম নষ্ট",
+      "ব্যাংক জরিমানা"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "রাতের ডিউটি শেষে বাড়ি গিয়ে প্রথমে কী করলে নেশা কমে?",
+    "options": [
+      "সঙ্গে সঙ্গে গুটখা",
+      "সন্তান-পরিবারের সঙ্গে কিছুক্ষণ কথা",
+      "একা টিভি ও বিড়ি",
+      "সহকর্মীকে ফোন করে নেশা"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "নেশার দৈনিক খরচ হিসাব করার মূল উদ্দেশ্য?",
+    "options": [
+      "বন্ধুদের দেখানো",
+      "মহাজনকে টাকা দেওয়া",
+      "বছরে কত টাকা যায় দেখে ছাড়ার সিদ্ধান্ত নেওয়া",
+      "লটারি কেনা"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "‘নেশা ছাড়া ঘুম হয় না’—কিছু সপ্তাহ পর সাধারণত কী হয়?",
+    "options": [
+      "ঘুম চিরকাল নষ্ট",
+      "শক্তি চিরকাল কম",
+      "কাজ করা যায় না",
+      "ঘুম ও শক্তি ধীরে ধীরে ভালো হয়"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "লাইনম্যানের কাজে ফুসফুস দুর্বল হলে প্রধান ঝুঁকি?",
+    "options": [
+      "উঁচু পোলে শ্বাসকষ্ট—দুর্ঘটনা",
+      "শুধু বেতন কাটা",
+      "শুধু ইউনিফর্ম নোংরা",
+      "শুধু হাজিরা"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "নেশা ছাড়তে ‘আজ গতকালের চেয়ে কম’—এটা কোন কৌশল?",
+    "options": [
+      "হঠাৎ সব বন্ধ",
+      "ধীরে ধীরে পরিমাণ কমানো",
+      "আরও বেশি খাওয়া",
+      "চিটফান্ড"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "পাড়ার দোকানে সবাই গুটখা খায়—আপনি কী করবেন?",
+    "options": [
+      "সঙ্গে সঙ্গে বেশি খাবেন",
+      "সব টাকা দোকানে",
+      "নেশা উস্কায় এমন সঙ্গ ও জায়গা এড়িয়ে চলবেন",
+      "অফিসে নিয়ে যাবেন"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "সরকারি নেশামুক্তি কেন্দ্রে গেলে কী পাবেন?",
+    "options": [
+      "আরও গুটখা",
+      "বিনামূল্যে বিড়ি",
+      "মদ",
+      "ছাড়তে সাহায্য ও পরামর্শ"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "নেশা না করে বাঁচানো টাকা দিয়ে কী করা যায়?",
+    "options": [
+      "পরিবারের জন্য সঞ্চয় বা বিমা",
+      "আরও গুটখা কেনা",
+      "চিটফান্ড",
+      "মহাজনের সুদ"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "অল্প হাঁপ ধরলেও পোলে কাজ চালালে কী ঝুঁকি?",
+    "options": [
+      "বেতন বাড়ে",
+      "মনোযোগ কমে—দুর্ঘটনার সম্ভাবনা",
+      "ইউনিফর্ম পরিষ্কার",
+      "ছুটি বাড়ে"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "জোয়ান মুখে রাখলে কোন অভ্যাস ছাড়তে সাহায্য?",
+    "options": [
+      "টিভি দেখা",
+      "ঘুম",
+      "গুটখা-বিড়ি ধীরে কমানো",
+      "ব্যাংক হিসাব"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "‘নেশা ছাড়লে কাজ করতে পারব না’—সঠিক বাস্তবতা?",
+    "options": [
+      "হ্যাঁ, চিরকাল কাজ যায় না",
+      "হ্যাঁ, শক্তি শূন্য",
+      "হ্যাঁ, ঘুম হয় না",
+      "না—কিছুদিন পর শরীর ও কাজে শক্তি ভালো হয়"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "লাইনম্যান হিসেবে নেশামুক্ত থাকতে সবচেয়ে কার্যকর তিনটি পদক্ষেপ?",
+    "options": [
+      "খরচ হিসাব, ধীরে কমানো, পরিবারের সময়, কৌটোয় সঞ্চয়, খারাপ সঙ্গ এড়ানো ও প্রয়োজনে নেশামুক্তি কেন্দ্র",
+      "শুধু বেশি গুটখা, বিড়ি ও মদ",
+      "শুধু চিটফান্ড ও মহাজন",
+      "কিছুই না—নেশা ছাড়া যায় না"
+    ],
+    "correctAnswerIndex": 0
+  }
+];
+
+    render(QUIZ_DATA);
+  </script>
+</body>
+</html>

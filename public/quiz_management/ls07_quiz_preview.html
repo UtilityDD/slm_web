@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LS07 Quiz Preview — বীমা, পিএফ ও অধিকার</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --card: #fff;
+      --line: #cbd5e1;
+      --ok: #15803d;
+      --ok-bg: #f0fdf4;
+      --warn-bg: #fffbeb;
+      --warn: #92400e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans Bengali", "Hind Siliguri", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--card);
+      border-bottom: 2px solid var(--ink);
+      padding: 0.85rem 1.1rem;
+    }
+    header h1 { margin: 0 0 0.25rem; font-size: 1.15rem; }
+    header p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.75rem;
+    }
+    .toolbar input[type="search"] {
+      flex: 1 1 220px;
+      min-width: 180px;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid var(--line);
+      font: inherit;
+    }
+    .toolbar label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.85rem;
+      user-select: none;
+    }
+    .toolbar button {
+      font: inherit;
+      padding: 0.4rem 0.65rem;
+      border: 1px solid var(--ink);
+      background: #fff;
+      cursor: pointer;
+    }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.6rem;
+    }
+    .tag {
+      font-size: 0.75rem;
+      background: #f1f5f9;
+      border: 1px solid var(--line);
+      padding: 0.15rem 0.45rem;
+    }
+    main { max-width: 880px; margin: 0 auto; padding: 1rem; }
+    .card {
+      background: var(--card);
+      border: 2px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .card.hidden { display: none; }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.55rem;
+      font-size: 0.75rem;
+    }
+    h2 {
+      margin: 0 0 0.7rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .opt {
+      border: 1px solid var(--line);
+      padding: 0.55rem 0.65rem;
+      margin: 0.4rem 0;
+      display: flex;
+      gap: 0.55rem;
+      align-items: flex-start;
+    }
+    .opt .letter {
+      flex: 0 0 auto;
+      font-weight: 700;
+      min-width: 1.4rem;
+    }
+    .opt .body { flex: 1; }
+    .opt .len {
+      flex: 0 0 auto;
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .opt.ok {
+      border-color: var(--ok);
+      background: var(--ok-bg);
+    }
+    .hide-answers .opt.ok {
+      border-color: var(--line);
+      background: transparent;
+    }
+    .hide-answers .opt.ok .mark,
+    .hide-answers .answer-line { display: none; }
+    .mark {
+      color: var(--ok);
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .answer-line {
+      margin: 0.55rem 0 0;
+      font-size: 0.88rem;
+      color: var(--warn);
+      background: var(--warn-bg);
+      padding: 0.45rem 0.55rem;
+    }
+    .nav {
+      position: fixed;
+      right: 0.75rem;
+      bottom: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .nav a, .nav button {
+      font: inherit;
+      text-decoration: none;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--ink);
+      padding: 0.35rem 0.55rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-align: center;
+    }
+    @media print {
+      header { position: static; }
+      .toolbar, .nav { display: none !important; }
+      .card { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>LS07 Quiz Preview — বীমা, পিএফ ও অধিকার</h1>
+    <p>Embedded snapshot of <code>questions_supp_10_7.json</code> · open this file directly · App picks 10 random per attempt</p>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search question or option…" />
+      <label><input id="hideAnswers" type="checkbox" /> Hide answers</label>
+      <label><input id="showLen" type="checkbox" checked /> Show option length</label>
+      <button type="button" id="expandAll">Show all</button>
+      <button type="button" id="printBtn">Print</button>
+      <a href="./ls_quiz_preview_index.html" style="font:inherit;padding:0.4rem 0.65rem;border:1px solid var(--ink);background:#fff;text-decoration:none;color:inherit;">All LS</a>
+    </div>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <main id="list"><p>Loading…</p></main>
+
+  <div class="nav">
+    <a href="#top" id="topLink">Top</a>
+    <button type="button" id="toQ1">Q1</button>
+  </div>
+
+  <script>
+    document.body.id = 'top';
+    const LETTERS = ['A', 'B', 'C', 'D'];
+    const listEl = document.getElementById('list');
+    const statsEl = document.getElementById('stats');
+    const searchEl = document.getElementById('search');
+    const hideAnswersEl = document.getElementById('hideAnswers');
+    const showLenEl = document.getElementById('showLen');
+
+    function optionLen(text) {
+      return [...String(text || '')].length;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(s) {
+      return escapeHtml(s).toLowerCase();
+    }
+
+    function render(questions) {
+      const indexDist = [0, 0, 0, 0];
+      questions.forEach((q) => {
+        if (q.correctAnswerIndex >= 0 && q.correctAnswerIndex < 4) {
+          indexDist[q.correctAnswerIndex] += 1;
+        }
+      });
+
+      statsEl.innerHTML = [
+        '<span class="tag">Total: ' + questions.length + '</span>',
+        '<span class="tag">Correct @ A/B/C/D: ' + indexDist.join(' / ') + '</span>',
+        '<span class="tag">Tip: green = correct</span>'
+      ].join('');
+
+      listEl.innerHTML = questions.map((q, i) => {
+        const opts = Array.isArray(q.options) ? q.options : [];
+        const correct = q.correctAnswerIndex;
+        const optHtml = opts.map((opt, oi) => {
+          const isOk = oi === correct;
+          return (
+            '<div class="opt ' + (isOk ? 'ok' : '') + '">' +
+              '<span class="letter">' + LETTERS[oi] + '.</span>' +
+              '<span class="body">' + escapeHtml(opt) + (isOk ? ' <span class="mark">✓ correct</span>' : '') + '</span>' +
+              '<span class="len" data-len>' + optionLen(opt) + ' ch</span>' +
+            '</div>'
+          );
+        }).join('');
+
+        const correctText = opts[correct] != null
+          ? LETTERS[correct] + '. ' + escapeHtml(opts[correct])
+          : '(missing)';
+
+        return (
+          '<article class="card" id="q-' + (i + 1) + '" data-search="' +
+            escapeAttr((q.questionText || '') + ' ' + opts.join(' ')) + '">' +
+            '<div class="meta">' +
+              '<span class="tag">Q' + (i + 1) + '</span>' +
+              '<span class="tag">correctAnswerIndex: ' + correct + '</span>' +
+            '</div>' +
+            '<h2>' + escapeHtml(q.questionText || '') + '</h2>' +
+            optHtml +
+            '<p class="answer-line"><strong>Answer:</strong> ' + correctText + '</p>' +
+          '</article>'
+        );
+      }).join('');
+
+      applyLenVisibility();
+      applyFilter();
+    }
+
+    function applyFilter() {
+      const q = (searchEl.value || '').trim().toLowerCase();
+      let visible = 0;
+      document.querySelectorAll('.card').forEach((card) => {
+        const hit = !q || (card.getAttribute('data-search') || '').includes(q);
+        card.classList.toggle('hidden', !hit);
+        if (hit) visible += 1;
+      });
+      const old = statsEl.querySelector('[data-visible]');
+      if (old) old.remove();
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.dataset.visible = '1';
+      tag.textContent = q ? ('Showing: ' + visible) : 'Showing: all';
+      statsEl.appendChild(tag);
+    }
+
+    function applyLenVisibility() {
+      document.querySelectorAll('[data-len]').forEach((el) => {
+        el.style.display = showLenEl.checked ? '' : 'none';
+      });
+    }
+
+    hideAnswersEl.addEventListener('change', () => {
+      document.body.classList.toggle('hide-answers', hideAnswersEl.checked);
+    });
+    showLenEl.addEventListener('change', applyLenVisibility);
+    searchEl.addEventListener('input', applyFilter);
+    document.getElementById('expandAll').addEventListener('click', () => {
+      searchEl.value = '';
+      applyFilter();
+    });
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+    document.getElementById('toQ1').addEventListener('click', () => {
+      document.getElementById('q-1')?.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    const QUIZ_DATA = [
+  {
+    "questionText": "লাইনম্যানের ঝুঁকিপূর্ণ কাজে ‘টার্ম বিমা’ মানে প্রধানত কী?",
+    "options": [
+      "অল্প প্রিমিয়ামে বড় অঙ্কের সুরক্ষা—জমানোর স্কিম নয়",
+      "বেশি প্রিমিয়ামে ছোট সুরক্ষা",
+      "শুধু গাড়ি মেরামতের জন্য বিমা",
+      "শুধু ফসল ক্ষতির জন্য বিমা"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "ব্যাংক অ্যাকাউন্ট থেকে বছরে অল্প টাকায় পিএমজেজেবিওয়াই কোন ধরনের সুরক্ষা দেয়?",
+    "options": [
+      "দুর্ঘটনা বিমা—আঘাতে সাহায্য",
+      "জীবন বিমা—মৃত্যুতে পরিবারকে সাহায্য",
+      "শুধু মোবাইল রিচার্জ ছাড়",
+      "শুধু বিদ্যুৎ বিল কমানো"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "উঁচু পোলে কাজে আঘাত লাগলে পিএমএসবিওয়াই কী সাহায্য করে?",
+    "options": [
+      "শুধু নতুন হেলমেট কেনার ছাড়",
+      "শুধু অফিসে অতিরিক্ত ছুটি",
+      "দুর্ঘটনা বিমা—আঘাত বা অঙ্গহানিতে সাহায্য",
+      "শুধু গাড়ি কিস্তির সুবিধা"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "ডিউটির ফাঁকে ইউএএন নম্বর ও পিএফ ব্যালেন্স কেন দেখে নেওয়া উচিত?",
+    "options": [
+      "শুধু ফোনের ওয়ালপেপার বদলাতে",
+      "শুধু সোশ্যাল মিডিয়ায় পোস্ট করতে",
+      "শুধু অফিসের চেয়ার বদলাতে",
+      "ভুল হিসাব বা নমিনি না থাকলে পরিবারের সমস্যা হতে পারে"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "পশ্চিমবঙ্গে হাসপাতালে চিকিৎসার সময় স্বাস্থ্য সাথী কার্ড দেখালে কী হয়?",
+    "options": [
+      "বড় চিকিৎসা খরচ কমাতে সাহায্য পাওয়া যায়",
+      "শুধু অ্যাম্বুলেন্স বিনামূল্যে",
+      "শুধু ওষুধের দোকানে ছাড়",
+      "শুধু ডাক্তারের অ্যাপয়েন্টমেন্ট বাতিল"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "পিএফ, বিমা ও ব্যাংক অ্যাকাউন্টে নমিনি আপডেট না রাখলে সবচেয়ে বড় ঝুঁকি কী?",
+    "options": [
+      "শুধু পাসবুকের রং বদলায়",
+      "আপনার অবর্তমানে পরিবার টাকা পেতে দেরি ও ঝামেলা",
+      "শুধু মোবাইল নেটওয়ার্ক দুর্বল হয়",
+      "শুধু অফিসের ইউনিফর্ম নতুন পাওয়া যায়"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "বিদ্যুৎ কাজে ঝুঁকি আছে—বিমা ও পিএফের কাগজপত্র পরিবারকে জানানো কেন জরুরি?",
+    "options": [
+      "শুধু সোশ্যাল মিডিয়ায় ছবি পোস্টের জন্য",
+      "শুধু বন্ধুদের দেখানোর জন্য",
+      "দুর্ঘটনায় পরিবার দ্রুত সাহায্য ও টাকা পেতে পারে",
+      "শুধু অফিসের হাজিরা বাড়ানোর জন্য"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "পিএফ থেকে বারবার টাকা তুলে খরচ করলে কী হয়?",
+    "options": [
+      "পিএফ স্বয়ং দ্বিগুণ হয়",
+      "ব্যাংক বাড়তি সুদ দেয়",
+      "বিমা প্রিমিয়াম বিনামূল্যে হয়",
+      "ভবিষ্যতের সুরক্ষা কমে—বারবার তোলা ঠিক নয়"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "লাইভ লাইনে কাজ করতে গিয়ে হাতে আঘাত লাগল—প্রথমে কী করবেন?",
+    "options": [
+      "সঙ্গে সঙ্গে অফিসে দুর্ঘটনা রিপোর্ট করা",
+      "লুকিয়ে রেখে পরে বাড়ি গিয়ে বলা",
+      "শুধু বাড়িতে পরিবারকে জানানো",
+      "আঘাত লুকিয়ে কাজ চালিয়ে যাওয়া"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "‘জীবন বীমা মানে টাকা জমানোর স্কিম’—টার্ম বিমার ক্ষেত্রে এই ধারণা কেন ভুল?",
+    "options": [
+      "টার্ম বিমায় সব টাকা ফেরত পাওয়া যায়",
+      "টার্ম বিমার মূল কাজ সুরক্ষা—জমানোর স্কিম আলাদা",
+      "টার্ম বিমা শুধু গাড়ির জন্য",
+      "টার্ম বিমায় প্রিমিয়াম একদম লাগে না"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "ইএসআই সুবিধা থাকলে চিকিৎসার সময় কী করা উচিত?",
+    "options": [
+      "সুবিধা লুকিয়ে নিজে সব খরচ করা",
+      "শুধু বাড়িতে ওষুধ খাওয়া",
+      "ইএসআই সুবিধা ব্যবহার করা—চিকিৎসা খরচ কমাতে",
+      "হাসপাতালে কোনো কার্ড দেখানো নয়"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "‘পিএফ এখন তুলে খরচ করলেই ভালো’—এই ভাবনা কেন ভুল?",
+    "options": [
+      "পিএফ তোললে বেতন দ্বিগুণ হয়",
+      "পিএফ তোললে বিমা বিনামূল্যে হয়",
+      "পিএফ তোললে নমিনি আপডেট লাগে না",
+      "বারবার তুললে ভবিষ্যতের সুরক্ষা কমে—অবসরে কাজে লাগে"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "লাইনম্যান হিসেবে পিএমজেজেবিওয়াই ও পিএমএসবিওয়াই কেন বিশেষভাবে দরকার?",
+    "options": [
+      "ঝুঁকিপূর্ণ কাজে অল্প খরচে জীবন ও দুর্ঘটনার সুরক্ষা",
+      "শুধু মোবাইল ডেটা বাড়ানোর জন্য",
+      "শুধু অফিসের ইউনিফর্ম বদলানোর জন্য",
+      "শুধু ব্যাংকের কিউ কমানোর জন্য"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "পিএফ অ্যাকাউন্টে নমিনির নাম খালি দেখলে কী করবেন?",
+    "options": [
+      "শুধু ফোনের ওয়ালপেপার বদলে রাখা",
+      "দ্রুত নমিনির নাম আপডেট করার ব্যবস্থা",
+      "পিএফ কাগজ ফেলে দিয়ে নতুন ফোন কেনা",
+      "ম্যানেজারের সই নিজে করে দেওয়া"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "টার্ম বিমা আর জমানোর স্কিমের বিমার মূল পার্থক্য কী?",
+    "options": [
+      "দুটোই এক—কোনো পার্থক্য নেই",
+      "টার্ম বিমায় শুধু গাড়ি সুরক্ষিত",
+      "টার্ম বিমায় কম প্রিমিয়ামে বড় সুরক্ষা—জমানো আলাদা বিষয়",
+      "জমানোর স্কিমে প্রিমিয়াম সবসময় বেশি"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "ডিউটি শেষে বাড়ি ফিরে পরিবারকে কী জানিয়ে রাখা উচিত?",
+    "options": [
+      "শুধু পোলের নম্বর",
+      "শুধু সহকর্মীর ফোন নম্বর",
+      "শুধু হেলমেটের রং",
+      "বিমা, পিএফ ও স্বাস্থ্য কার্ডের কাগজ কোথায় আছে"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "ইউএএন নম্বর কোথায় সেভ করে রাখা ভালো?",
+    "options": [
+      "ফোনে সেভ—প্রয়োজনে দ্রুত পিএফ দেখতে",
+      "শুধু পোলের নম্বর প্লেটে",
+      "শুধু হেলমেটের ভিতরে",
+      "শুধু ফেসবুক প্রোফাইলে"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "কর্মক্ষেত্রে দুর্ঘটনা হলে দেরি করে রিপোর্ট করলে কী সমস্যা?",
+    "options": [
+      "বেতন স্বয়ং দ্বিগুণ হয়",
+      "চিকিৎসা ও ক্ষতিপূরণ পেতে ঝামেলা বাড়তে পারে",
+      "বিমা প্রিমিয়াম বিনামূল্যে হয়",
+      "পিএফ ব্যালেন্স বাড়ে"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "সহকর্মী জিজ্ঞেস করল পিএমএসবিওয়াই কোন ধরনের বিমা—সঠিক উত্তর?",
+    "options": [
+      "জীবন বিমা—মৃত্যুতে সাহায্য",
+      "ফসল বিমা—ক্ষতির সময় ক্ষতিপূরণ",
+      "দুর্ঘটনা বিমা—আঘাত বা অঙ্গহানিতে সাহায্য",
+      "গাড়ি বিমা—দুর্ঘটনায় গাড়ি মেরামত"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "বিমা এজেন্ট বলল ‘এটা জমানোর স্কিম’—টার্ম বিমা কেন আলাদা?",
+    "options": [
+      "টার্ম বিমায় টাকা জমানোই মূল উদ্দেশ্য",
+      "টার্ম বিমায় প্রিমিয়াম একদম লাগে না",
+      "টার্ম বিমা শুধু গাড়ির জন্য",
+      "টার্ম বিমার মূল কাজ সুরক্ষা—জমানোর স্কিম গুলিয়ে ফেলবেন না"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "পশ্চিমবঙ্গে স্বাস্থ্য সাথী কার্ড কোথায় রাখা উচিত?",
+    "options": [
+      "সহজে পাওয়া জায়গায়—জরুরি সময়ে হাসপাতালে দেখাতে",
+      "শুধু অফিসের টুলবক্সের নিচে",
+      "শুধু পোলের ওপর",
+      "শুধু ফোনের গেম ফোল্ডারে"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "পিএফ থেকে একবার বড় অংক তুলে খরচ করলে দীর্ঘমেয়াদে কী ক্ষতি?",
+    "options": [
+      "বিমা স্বয়ং বাতিল হয়",
+      "ভবিষ্যতের সঞ্চয় কমে—অবসর বা জরুরি সময়ে কষ্ট",
+      "ইউএএন নম্বর বদলে যায়",
+      "নমিনি স্বয়ং আপডেট হয়"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "উঁচু পোলে দুর্ঘটনায় পরিবারের আর্থিক সুরক্ষার জন্য আগে থেকে কী রাখা জরুরি?",
+    "options": [
+      "শুধু সোশ্যাল মিডিয়ায় ছবি",
+      "শুধু নতুন মোবাইলের পরিকল্পনা",
+      "নমিনি আপডেট, টার্ম বা সরকারি বিমা ও পিএফ ঠিক রাখা",
+      "শুধু অচেনা লোন অ্যাপের তালিকা"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "লাইনে কাজে বিদ্যুৎ আঘাত লাগল—অফিসে রিপোর্ট না করলে কী হতে পারে?",
+    "options": [
+      "বেতন তিনগুণ হয়ে যায়",
+      "বিমা ও চিকিৎসার রেকর্ড ঠিক থাকে",
+      "পিএফ স্বয়ং বাড়ে",
+      "চিকিৎসা ও ক্ষতিপূরণ পেতে ঝামেলা—রিপোর্ট দরকার"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "পিএমজেজেবিওয়াই কোথা থেকে নেওয়া যায়?",
+    "options": [
+      "ব্যাংক অ্যাকাউন্ট থেকে—বছরে অল্প টাকায়",
+      "শুধু হোয়াটসঅ্যাপ গ্রুপ থেকে",
+      "শুধু রাস্তার দালালের কাছ থেকে",
+      "শুধু পোলের নিচে দাঁড়িয়ে"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "পরিবার জানে না আপনার বিমা কোথায়—এটা কেন বিপজ্জনক?",
+    "options": [
+      "বিমা প্রিমিয়াম বাড়ে",
+      "দুর্ঘটনায় পরিবার দ্রুত সাহায্য পেতে পারে না",
+      "পিএফ ব্যালেন্স শূন্য হয়",
+      "ইউএএন নম্বর মুছে যায়"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "ইএসআই কার্ড থাকলে কর্মক্ষেত্রের চিকিৎসায় কী সুবিধা?",
+    "options": [
+      "শুধু মোবাইল রিচার্জ ছাড়",
+      "শুধু বিদ্যুৎ বিল মওকুফ",
+      "চিকিৎসা খরচ কমাতে সাহায্য—কার্ড দেখিয়ে",
+      "শুধু অফিসে অতিরিক্ত ছুটি"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "‘পিএফ তুললেই হাতে টাকা—ভবিষ্যতে আবার জমাব’—এই পরিকল্পনা কেন ঠিক নয়?",
+    "options": [
+      "পিএফ তোললে সুদ তিনগুণ",
+      "পিএফ তোললে বিমা বিনামূল্যে",
+      "পিএফ তোললে নমিনি লাগে না",
+      "বারবার তুললে ভবিষ্যতের সুরক্ষা কমে—বিরতিতে জমান"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "টার্ম বিমায় ‘কম প্রিমিয়াম, বড় কভার’—লাইনম্যানের জন্য এটা কেন গুরুত্বপূর্ণ?",
+    "options": [
+      "অবর্তমানে পরিবারকে বড় সুরক্ষা দেয়",
+      "শুধু গাড়ি কেনার জন্য লোন",
+      "শুধু মোবাইল রিচার্জ ছাড়",
+      "শুধু বিদ্যুৎ বিল কমায়"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "পিএফ ও বিমায় নমিনি বদলাতে হলে কোথায় যোগাযোগ?",
+    "options": [
+      "শুধু ফেসবুকে পোস্ট",
+      "ইপিএফও/ব্যাংক/বিমা অফিসে আপডেটের আবেদন",
+      "শুধু হেলমেটে লিখে রাখা",
+      "শুধু সহকর্মীকে মৌখিক বলা"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "কর্মক্ষেত্রে ছোট আঘাত লাগলেও রিপোর্ট করা কেন জরুরি?",
+    "options": [
+      "শুধু ম্যানেজারকে খুশি করতে",
+      "শুধু ছুটি বাড়াতে",
+      "রেকর্ড থাকলে পরে চিকিৎসা ও ক্ষতিপূরণে সাহায্য",
+      "শুধু সহকর্মীকে দোষ দিতে"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "‘জীবন বীমা মানেই সঞ্চয়’—টার্ম বিমার বাস্তবতা কী?",
+    "options": [
+      "হ্যাঁ, সব বিমাই সঞ্চয়",
+      "হ্যাঁ, প্রিমিয়াম ফেরত পাওয়া যায় সবসময়",
+      "হ্যাঁ, বিমা বিনামূল্যে",
+      "না—টার্ম বিমার মূল কাজ সুরক্ষা, জমানো আলাদা"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "মাঝে মাঝে ইউএএন দিয়ে পিএফ ব্যালেন্স চেক করার উদ্দেশ্য কী?",
+    "options": [
+      "হিসাব ঠিক আছে কি না নিশ্চিত হওয়া",
+      "শুধু ফোনের ব্যাটারি দেখা",
+      "শুধু গেমের স্কোর দেখা",
+      "শুধু ওয়ালপেপার বদলানো"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "লাইনম্যানের মতো ঝুঁকিপূর্ণ কাজে সবচেয়ে গুরুত্বপূর্ণ দীর্ঘমেয়াদি সুরক্ষা কোনটি?",
+    "options": [
+      "শুধু নতুন হেলমেট কেনা",
+      "নমিনি ঠিক রাখা, সরকারি বিমা চালু, পিএফ জমিয়ে রাখা ও দুর্ঘটনা রিপোর্ট",
+      "শুধু সোশ্যাল মিডিয়া ব্যবহার",
+      "পিএফ বারবার তুলে খরচ"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "স্বাস্থ্য সাথী ও ইএসআই—দুটোই মূলত কী সাহায্য করে?",
+    "options": [
+      "শুধু মোবাইল ডেটা বাড়ায়",
+      "শুধু অফিসের ছুটি বাড়ায়",
+      "চিকিৎসা খরচ কমাতে—কার্ড ও সুবিধা ব্যবহার করে",
+      "শুধু বিদ্যুৎ বিল মওকুফ"
+    ],
+    "correctAnswerIndex": 2
+  }
+];
+
+    render(QUIZ_DATA);
+  </script>
+</body>
+</html>

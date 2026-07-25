@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LS05 Quiz Preview — জরুরি প্রাথমিক চিকিৎসা</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --card: #fff;
+      --line: #cbd5e1;
+      --ok: #15803d;
+      --ok-bg: #f0fdf4;
+      --warn-bg: #fffbeb;
+      --warn: #92400e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans Bengali", "Hind Siliguri", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--card);
+      border-bottom: 2px solid var(--ink);
+      padding: 0.85rem 1.1rem;
+    }
+    header h1 { margin: 0 0 0.25rem; font-size: 1.15rem; }
+    header p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.75rem;
+    }
+    .toolbar input[type="search"] {
+      flex: 1 1 220px;
+      min-width: 180px;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid var(--line);
+      font: inherit;
+    }
+    .toolbar label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.85rem;
+      user-select: none;
+    }
+    .toolbar button {
+      font: inherit;
+      padding: 0.4rem 0.65rem;
+      border: 1px solid var(--ink);
+      background: #fff;
+      cursor: pointer;
+    }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.6rem;
+    }
+    .tag {
+      font-size: 0.75rem;
+      background: #f1f5f9;
+      border: 1px solid var(--line);
+      padding: 0.15rem 0.45rem;
+    }
+    main { max-width: 880px; margin: 0 auto; padding: 1rem; }
+    .card {
+      background: var(--card);
+      border: 2px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .card.hidden { display: none; }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.55rem;
+      font-size: 0.75rem;
+    }
+    h2 {
+      margin: 0 0 0.7rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .opt {
+      border: 1px solid var(--line);
+      padding: 0.55rem 0.65rem;
+      margin: 0.4rem 0;
+      display: flex;
+      gap: 0.55rem;
+      align-items: flex-start;
+    }
+    .opt .letter {
+      flex: 0 0 auto;
+      font-weight: 700;
+      min-width: 1.4rem;
+    }
+    .opt .body { flex: 1; }
+    .opt .len {
+      flex: 0 0 auto;
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .opt.ok {
+      border-color: var(--ok);
+      background: var(--ok-bg);
+    }
+    .hide-answers .opt.ok {
+      border-color: var(--line);
+      background: transparent;
+    }
+    .hide-answers .opt.ok .mark,
+    .hide-answers .answer-line { display: none; }
+    .mark {
+      color: var(--ok);
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .answer-line {
+      margin: 0.55rem 0 0;
+      font-size: 0.88rem;
+      color: var(--warn);
+      background: var(--warn-bg);
+      padding: 0.45rem 0.55rem;
+    }
+    .nav {
+      position: fixed;
+      right: 0.75rem;
+      bottom: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .nav a, .nav button {
+      font: inherit;
+      text-decoration: none;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--ink);
+      padding: 0.35rem 0.55rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-align: center;
+    }
+    @media print {
+      header { position: static; }
+      .toolbar, .nav { display: none !important; }
+      .card { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>LS05 Quiz Preview — জরুরি প্রাথমিক চিকিৎসা</h1>
+    <p>Embedded snapshot of <code>questions_supp_10_5.json</code> · open this file directly · App picks 10 random per attempt</p>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search question or option…" />
+      <label><input id="hideAnswers" type="checkbox" /> Hide answers</label>
+      <label><input id="showLen" type="checkbox" checked /> Show option length</label>
+      <button type="button" id="expandAll">Show all</button>
+      <button type="button" id="printBtn">Print</button>
+      <a href="./ls_quiz_preview_index.html" style="font:inherit;padding:0.4rem 0.65rem;border:1px solid var(--ink);background:#fff;text-decoration:none;color:inherit;">All LS</a>
+    </div>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <main id="list"><p>Loading…</p></main>
+
+  <div class="nav">
+    <a href="#top" id="topLink">Top</a>
+    <button type="button" id="toQ1">Q1</button>
+  </div>
+
+  <script>
+    document.body.id = 'top';
+    const LETTERS = ['A', 'B', 'C', 'D'];
+    const listEl = document.getElementById('list');
+    const statsEl = document.getElementById('stats');
+    const searchEl = document.getElementById('search');
+    const hideAnswersEl = document.getElementById('hideAnswers');
+    const showLenEl = document.getElementById('showLen');
+
+    function optionLen(text) {
+      return [...String(text || '')].length;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(s) {
+      return escapeHtml(s).toLowerCase();
+    }
+
+    function render(questions) {
+      const indexDist = [0, 0, 0, 0];
+      questions.forEach((q) => {
+        if (q.correctAnswerIndex >= 0 && q.correctAnswerIndex < 4) {
+          indexDist[q.correctAnswerIndex] += 1;
+        }
+      });
+
+      statsEl.innerHTML = [
+        '<span class="tag">Total: ' + questions.length + '</span>',
+        '<span class="tag">Correct @ A/B/C/D: ' + indexDist.join(' / ') + '</span>',
+        '<span class="tag">Tip: green = correct</span>'
+      ].join('');
+
+      listEl.innerHTML = questions.map((q, i) => {
+        const opts = Array.isArray(q.options) ? q.options : [];
+        const correct = q.correctAnswerIndex;
+        const optHtml = opts.map((opt, oi) => {
+          const isOk = oi === correct;
+          return (
+            '<div class="opt ' + (isOk ? 'ok' : '') + '">' +
+              '<span class="letter">' + LETTERS[oi] + '.</span>' +
+              '<span class="body">' + escapeHtml(opt) + (isOk ? ' <span class="mark">✓ correct</span>' : '') + '</span>' +
+              '<span class="len" data-len>' + optionLen(opt) + ' ch</span>' +
+            '</div>'
+          );
+        }).join('');
+
+        const correctText = opts[correct] != null
+          ? LETTERS[correct] + '. ' + escapeHtml(opts[correct])
+          : '(missing)';
+
+        return (
+          '<article class="card" id="q-' + (i + 1) + '" data-search="' +
+            escapeAttr((q.questionText || '') + ' ' + opts.join(' ')) + '">' +
+            '<div class="meta">' +
+              '<span class="tag">Q' + (i + 1) + '</span>' +
+              '<span class="tag">correctAnswerIndex: ' + correct + '</span>' +
+            '</div>' +
+            '<h2>' + escapeHtml(q.questionText || '') + '</h2>' +
+            optHtml +
+            '<p class="answer-line"><strong>Answer:</strong> ' + correctText + '</p>' +
+          '</article>'
+        );
+      }).join('');
+
+      applyLenVisibility();
+      applyFilter();
+    }
+
+    function applyFilter() {
+      const q = (searchEl.value || '').trim().toLowerCase();
+      let visible = 0;
+      document.querySelectorAll('.card').forEach((card) => {
+        const hit = !q || (card.getAttribute('data-search') || '').includes(q);
+        card.classList.toggle('hidden', !hit);
+        if (hit) visible += 1;
+      });
+      const old = statsEl.querySelector('[data-visible]');
+      if (old) old.remove();
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.dataset.visible = '1';
+      tag.textContent = q ? ('Showing: ' + visible) : 'Showing: all';
+      statsEl.appendChild(tag);
+    }
+
+    function applyLenVisibility() {
+      document.querySelectorAll('[data-len]').forEach((el) => {
+        el.style.display = showLenEl.checked ? '' : 'none';
+      });
+    }
+
+    hideAnswersEl.addEventListener('change', () => {
+      document.body.classList.toggle('hide-answers', hideAnswersEl.checked);
+    });
+    showLenEl.addEventListener('change', applyLenVisibility);
+    searchEl.addEventListener('input', applyFilter);
+    document.getElementById('expandAll').addEventListener('click', () => {
+      searchEl.value = '';
+      applyFilter();
+    });
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+    document.getElementById('toQ1').addEventListener('click', () => {
+      document.getElementById('q-1')?.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    const QUIZ_DATA = [
+  {
+    "questionText": "গ্রামের পোলের পাশে সহকর্মীকে সাপে কামড়েছে—প্রথমে কী করবেন?",
+    "options": [
+      "আক্রান্তকে শান্ত করে শুইয়ে দিয়ে হাসপাতালে নিয়ে যাওয়া",
+      "দৌড়ে ওঝার কাছে নিয়ে ঝাড়ফুঁক করানো",
+      "কামড়ানো জায়গায় বরফ বেঁধে বসিয়ে রাখা",
+      "মুখ দিয়ে বিষ চুষে বের করার চেষ্টা"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "সাপে কাটলে কামড়ানো হাত-পা কোথায় রাখা ভালো?",
+    "options": [
+      "মাথার ওপর তুলে রেখে দ্রুত হাঁটানো",
+      "যথাসম্ভব হৃদপিণ্ডের নিচে রেখে স্থির রাখা",
+      "শক্ত গিঁট দিয়ে উপরে বেঁধে রাখা",
+      "বারবার নাড়িয়ে রক্ত চলাচল বাড়ানো"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "সাপে কামড়ানো অংশ কম নড়াতে কী ব্যবহার করতে পারেন?",
+    "options": [
+      "শক্ত গিঁট দিয়ে খুব শক্ত করে বেঁধে ফেলা",
+      "বরফ প্যাক দিয়ে ঠান্ডা করে রাখা",
+      "লাঠি বা কাঠ দিয়ে হালকা করে স্থির রাখা",
+      "মুখ দিয়ে চুষে বিষ বের করার চেষ্টা"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "সাপে কাটলে ক্ষত হালকা পরিষ্কার করতে কী ব্যবহার করা যায়?",
+    "options": [
+      "শক্ত গিঁট দিয়ে রক্ত বন্ধ করা",
+      "মুখ দিয়ে বিষ চুষে বের করা",
+      "বরফ দিয়ে ঠান্ডা করে রাখা",
+      "হালকা সাবান-জল দিয়ে পরিষ্কার করা"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "মাঠে সহকর্মী বিদ্যুৎস্পৃষ্ট হয়েছে—স্পর্শের আগে প্রথম কাজ?",
+    "options": [
+      "পাওয়ার অফ নিশ্চিত করে তারপর সাহায্য করা",
+      "দ্রুত ধরে টেনে নিরাপদ জায়গায় নিয়ে যাওয়া",
+      "গোবর বা ছাই মাখিয়ে আরাম দেওয়া",
+      "ঠান্ডা জল দিয়ে ধুয়ে বাড়িতে নিয়ে যাওয়া"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "বিদ্যুৎস্পৃষ্ট হলে বাইরে ছোট পোড়ার দাগ দেখলেও কী করবেন?",
+    "options": [
+      "বাড়িতে বিশ্রাম নিয়ে পরের দিন দেখাবেন",
+      "দ্রুত ডাক্তারের কাছে নিয়ে যাবেন",
+      "গোবর মাখিয়ে ঘরে শুয়ে থাকবেন",
+      "শুধু ব্যান্ডেজ দিয়ে কাজ চালিয়ে যাবেন"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "গরমে পোলে কাজ—তেষ্টা না পেলেও কতক্ষণ পর জল বা ওআরএস?",
+    "options": [
+      "শুধু খাবারের সময় পান করা",
+      "দুপুরে একবার বড় বোতল জল খাওয়া",
+      "প্রতি ২০–৩০ মিনিটে নিয়মিত পান করা",
+      "রাতে বাড়ি গিয়ে একসাথে অনেক জল খাওয়া"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "গরমে সহকর্মীর মুখ লাল ও উল্টোপাল্টা কথা বলছে—আপনি?",
+    "options": [
+      "কাজ চালিয়ে যাবেন—সন্ধ্যায় বিশ্রাম",
+      "ঠান্ডা পানীয় দিয়ে আবার কাজে লাগাবেন",
+      "বরফ দিয়ে শরীর ঠান্ডা করে রাখবেন",
+      "ছায়ায় নিয়ে গিয়ে বিশ্রাম ও জল দেবেন"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "জরুরি অ্যাম্বুলেন্স বা সাহায্যের জন্য ফোনে কোন নম্বর সেভ রাখা উচিত?",
+    "options": [
+      "১০২, ১০৮ ও ১১২",
+      "শুধু অফিসের অভিযোগ নম্বর",
+      "শুধু সহকর্মীর ব্যক্তিগত নম্বর",
+      "শুধু গ্রাহক সেবার হেল্পলাইন"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "ভারী ট্রান্সফরমার বা কিটবক্স তুলতে সঠিক পদ্ধতি?",
+    "options": [
+      "কোমর বাঁকিয়ে হাত দিয়ে তুলে ফেলা",
+      "হাঁটু ভেঙে পিঠ সোজা রেখে তোলা",
+      "এক হাতে ঝুলিয়ে দ্রুত তুলে নেওয়া",
+      "পিঠে নিয়ে দুজনে একসাথে হাঁটা"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "কেউ বলে ‘সাপে কাটলে ওঝার কাছে গেলেই যথেষ্ট’—এটি?",
+    "options": [
+      "সঠিক—ওঝাই সবচেয়ে দ্রুত সমাধান",
+      "শুধু গ্রামের বাইরে প্রযোজ্য নয়",
+      "ভুল—সময় নষ্ট না করে হাসপাতালে যাওয়া উচিত",
+      "শুধু রাতে প্রযোজ্য, দিনে হাসপাতাল"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "বিদ্যুৎস্পৃষ্ট পোড়ায় গোবর বা ছাই মাখার পরামর্শ দিলে?",
+    "options": [
+      "মাখলে দ্রুত আরাম হয়—তাই করবেন",
+      "শুধু ছোট পোড়ায় করবেন, বড় পোড়ায় নয়",
+      "গ্রামের পুরনো নিয়ম—নিরাপদ",
+      "ভুল—ঠান্ডা জল, পরিষ্কার কাপড় ও দ্রুত চিকিৎসা"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "সাপে কামড়ানো সহকর্মী দৌড়াতে চাইছে—আপনি কী করবেন?",
+    "options": [
+      "শান্ত করে শুইয়ে দিয়ে স্থির রাখবেন",
+      "দৌড়ে হাসপাতালে নিয়ে যাবেন",
+      "ওঝার কাছে দ্রুত নিয়ে যাবেন",
+      "বরফ দিয়ে ঠান্ডা করে দৌড়াবেন"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "সাপে কাটলে মুখ দিয়ে বিষ চোষা কেন বিপজ্জনক?",
+    "options": [
+      "চামড়া শুকিয়ে যায়—তাই",
+      "আপনার মুখেও ক্ষতি ও সংক্রমণ হতে পারে",
+      "সাপ আবার আক্রমণ করে—তাই",
+      "হাসপাতালে সময় বাঁচে—তাই"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "সাপে কাটলে খুব শক্ত গিঁট দিলে কী সমস্যা?",
+    "options": [
+      "বিষ দ্রুত শোষিত হয়",
+      "রক্ত চলাচল বাড়ে—ভালো হয়",
+      "চামড়া ক্ষতি বাড়ে ও চিকিৎসায় দেরি হয়",
+      "হাসপাতালে যাওয়ার সময় কমে"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "সাপে কাটলে বরফ দিলে কী হতে পারে?",
+    "options": [
+      "বিষ দ্রুত বের হয়",
+      "হাসপাতালে যাওয়া সহজ হয়",
+      "রক্ত চলাচল বাড়ে—ভালো",
+      "চামড়া ক্ষতি বাড়ে ও চিকিৎসায় দেরি"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "লাইভ লাইনের কাছে সহকর্মী বিদ্যুৎস্পৃষ্ট—আপনি প্রথমে?",
+    "options": [
+      "লাইন অফ নিশ্চিত করে তারপর সাহায্য",
+      "দ্রুত ধরে টেনে নিরাপদ জায়গায় নেওয়া",
+      "ঠান্ডা জল দিয়ে ধুয়ে দেওয়া",
+      "গোবর মাখিয়ে আরাম দেওয়া"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "বিদ্যুৎস্পৃষ্ট হলে বাইরে ছোট দাগ থাকলেও ভেতরে কী হতে পারে?",
+    "options": [
+      "শুধু ত্বকের হালকা লালচে ভাব",
+      "হৃদযন্ত্রসহ ভেতরের অঙ্গে বড় ক্ষতি",
+      "শুধু হাতে সামান্য ব্যথা",
+      "কিছুই হয় না—বিশ্রামেই সেরে যায়"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "গরমে মাঠে কাজ—ওআরএস বা জল নিয়মিত না খেলে?",
+    "options": [
+      "শুধু কাজ একটু দেরি হয়",
+      "শরীরে শক্তি বাড়ে",
+      "নুন-জল কমে—মাথা ঘোরা ও পেশিতে টান",
+      "রাতে ভালো ঘুম হয়"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "প্রাথমিক চিকিৎসার কিট কোথায় রাখা উচিত?",
+    "options": [
+      "শুধু অফিসের আলমারিতে",
+      "শুধু বাড়িতে",
+      "সহকর্মীর ব্যক্তিগত ব্যাগে",
+      "গাড়ি বা টুলে সহজে পাওয়া জায়গায়"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "সাপে কাটলে হুড়োহুড়ি বা দৌড়ালে কী হয়?",
+    "options": [
+      "বিষ দ্রুত শরীরে ছড়িয়ে পড়তে পারে",
+      "হাসপাতালে দ্রুত পৌঁছানো যায়",
+      "ওঝার কাছে সময় বাঁচে",
+      "রক্ত চলাচল কমে—ভালো"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "বিদ্যুৎস্পৃষ্ট পোড়ায় প্রথম সাহায্যে কী দেবেন?",
+    "options": [
+      "গোবর বা ছাই মাখিয়ে ঢেকে দেওয়া",
+      "ঠান্ডা জল দিয়ে পরিষ্কার কাপড় দিয়ে ঢাকা",
+      "শক্ত গিঁট দিয়ে পোড়া জায়গা বেঁধে ফেলা",
+      "বরফ সরাসরি পোড়া জায়গায় রাখা"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "গরমে তেষ্টা না পেলেও জল পান না করলে মাঠে কী ঝুঁকি?",
+    "options": [
+      "শুধু কাজ একটু ধীর হয়",
+      "রাতে ভালো ঘুম হয়",
+      "হিটস্ট্রোক ও দুর্ঘটনার সম্ভাবনা বাড়ে",
+      "শরীরে শক্তি বাড়ে"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "সাপে কাটলে ওঝার কাছে গেলে মূল সমস্যা কী?",
+    "options": [
+      "ওঝা সবসময় ভুল চিকিৎসা দেন",
+      "হাসপাতালে ভর্তি করা যায় না",
+      "বরফ দিলে দ্রুত সেরে যায়",
+      "সময় নষ্ট হয়—হাসপাতালে সঠিক ওষুধ পাওয়া যায়"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "মাঠে দুর্ঘটনায় ১০৮ নম্বরে ফোন করলে কী পাওয়া যায়?",
+    "options": [
+      "জরুরি অ্যাম্বুলেন্স সেবা",
+      "শুধু বিদ্যুৎ অভিযোগ নথিভুক্ত",
+      "অফিসের শিফট রিপোর্ট",
+      "গ্রাহকের মিটার রিডিং"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "ভারী কিটবক্স তুলতে পিঠ সোজা রেখে হাঁটু ভাঙার কারণ?",
+    "options": [
+      "কাজ দ্রুত শেষ হয়",
+      "পিঠের চোট ও দীর্ঘমেয়াদি ব্যথা কমে",
+      "গ্রাহক খুশি হয়",
+      "অফিসের নিয়ম মেনে চলা"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "সাপে কামড়ানো সহকর্মীকে হাসপাতালে নিয়ে যাওয়ার আগে?",
+    "options": [
+      "দৌড়ে নিয়ে যাওয়া—সময় বাঁচে",
+      "ওঝার কাছে ঝাড়ফুঁক করানো",
+      "শান্ত করে শুইয়ে স্থির রেখে নিয়ে যাওয়া",
+      "বরফ দিয়ে ঠান্ডা করে দৌড়ানো"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "বিদ্যুৎস্পৃষ্ট হলে গোবর মাখলে কী হতে পারে?",
+    "options": [
+      "দ্রুত আরাম হয়",
+      "বাইরের দাগ মুছে যায়",
+      "হাসপাতালে যাওয়া সহজ হয়",
+      "সংক্রমণ বাড়ে—ঠান্ডা জল ও ডাক্তার ভালো"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "গরমে পোলে কাজ—বোতলে জল বা ওআরএস কোথায় রাখবেন?",
+    "options": [
+      "টুল বা গাড়িতে সহজে পাওয়া জায়গায়",
+      "শুধু অফিসে রেখে আসা",
+      "শুধু বাড়িতে রেখে আসা",
+      "সহকর্মীর কাছে রেখে নিজে খালি হাতে কাজ"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "সাপে কাটলে সাবান-জল দিয়ে হালকা পরিষ্কার করলে কী সুবিধা?",
+    "options": [
+      "বিষ দ্রুত বের হয়",
+      "ক্ষত পরিষ্কার—চিকিৎসায় সাহায্য",
+      "রক্ত চলাচল বন্ধ হয়",
+      "ওঝার দরকার পড়ে না"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "বিদ্যুৎস্পৃষ্ট সহকর্মীকে ধরার আগে লাইন অফ নিশ্চিত না করলে?",
+    "options": [
+      "দ্রুত সাহায্য হয়",
+      "গোবর মাখলে নিরাপদ",
+      "আপনিও বিদ্যুৎস্পৃষ্ট হতে পারেন",
+      "ছোট দাগ থাকলে ঝুঁকি নেই"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "গরমে সহকর্মী বিভ্রান্ত কথা বলছে—প্রথম পদক্ষেপ?",
+    "options": [
+      "কাজ চালিয়ে যাওয়া—সন্ধ্যায় বিশ্রাম",
+      "ঠান্ডা পানীয় দিয়ে আবার কাজে লাগানো",
+      "বরফ দিয়ে শরীর ঠান্ডা করা",
+      "ছায়ায় নিয়ে গিয়ে বিশ্রাম ও জল দেওয়া"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "মাঠে দুর্ঘটনায় ১১২ নম্বর কিসের জন্য?",
+    "options": [
+      "জরুরি সাহায্য ও অ্যাম্বুলেন্স",
+      "শুধু বিদ্যুৎ বিল জিজ্ঞাসা",
+      "অফিসের শিফট পরিবর্তন",
+      "গ্রাহকের মিটার রিডিং"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "সাপে কাটলে কামড়ানো পা উপরে তুলে দৌড়ালে?",
+    "options": [
+      "হাসপাতালে দ্রুত পৌঁছানো যায়",
+      "বিষ দ্রুত ছড়িয়ে পড়তে পারে—শান্ত থাকা ভালো",
+      "ওঝার কাছে সময় বাঁচে",
+      "রক্ত চলাচল কমে—নিরাপদ"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "বিদ্যুৎস্পৃষ্ট হলে বাইরে ছোট দাগ দেখে বাড়িতে বিশ্রাম নিলে?",
+    "options": [
+      "সবসময় সেরে যায়—ঝুঁকি নেই",
+      "গোবর মাখলে যথেষ্ট",
+      "ভেতরের ক্ষতি লুকিয়ে থাকতে পারে—ডাক্তার দরকার",
+      "শুধু ব্যান্ডেজ দিলেই চলে"
+    ],
+    "correctAnswerIndex": 2
+  }
+];
+
+    render(QUIZ_DATA);
+  </script>
+</body>
+</html>

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LS04 Quiz Preview — কর্মক্ষেত্রে শিষ্টাচার</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --card: #fff;
+      --line: #cbd5e1;
+      --ok: #15803d;
+      --ok-bg: #f0fdf4;
+      --warn-bg: #fffbeb;
+      --warn: #92400e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans Bengali", "Hind Siliguri", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--card);
+      border-bottom: 2px solid var(--ink);
+      padding: 0.85rem 1.1rem;
+    }
+    header h1 { margin: 0 0 0.25rem; font-size: 1.15rem; }
+    header p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.75rem;
+    }
+    .toolbar input[type="search"] {
+      flex: 1 1 220px;
+      min-width: 180px;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid var(--line);
+      font: inherit;
+    }
+    .toolbar label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.85rem;
+      user-select: none;
+    }
+    .toolbar button {
+      font: inherit;
+      padding: 0.4rem 0.65rem;
+      border: 1px solid var(--ink);
+      background: #fff;
+      cursor: pointer;
+    }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.6rem;
+    }
+    .tag {
+      font-size: 0.75rem;
+      background: #f1f5f9;
+      border: 1px solid var(--line);
+      padding: 0.15rem 0.45rem;
+    }
+    main { max-width: 880px; margin: 0 auto; padding: 1rem; }
+    .card {
+      background: var(--card);
+      border: 2px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .card.hidden { display: none; }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.55rem;
+      font-size: 0.75rem;
+    }
+    h2 {
+      margin: 0 0 0.7rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .opt {
+      border: 1px solid var(--line);
+      padding: 0.55rem 0.65rem;
+      margin: 0.4rem 0;
+      display: flex;
+      gap: 0.55rem;
+      align-items: flex-start;
+    }
+    .opt .letter {
+      flex: 0 0 auto;
+      font-weight: 700;
+      min-width: 1.4rem;
+    }
+    .opt .body { flex: 1; }
+    .opt .len {
+      flex: 0 0 auto;
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .opt.ok {
+      border-color: var(--ok);
+      background: var(--ok-bg);
+    }
+    .hide-answers .opt.ok {
+      border-color: var(--line);
+      background: transparent;
+    }
+    .hide-answers .opt.ok .mark,
+    .hide-answers .answer-line { display: none; }
+    .mark {
+      color: var(--ok);
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .answer-line {
+      margin: 0.55rem 0 0;
+      font-size: 0.88rem;
+      color: var(--warn);
+      background: var(--warn-bg);
+      padding: 0.45rem 0.55rem;
+    }
+    .nav {
+      position: fixed;
+      right: 0.75rem;
+      bottom: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .nav a, .nav button {
+      font: inherit;
+      text-decoration: none;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--ink);
+      padding: 0.35rem 0.55rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-align: center;
+    }
+    @media print {
+      header { position: static; }
+      .toolbar, .nav { display: none !important; }
+      .card { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>LS04 Quiz Preview — কর্মক্ষেত্রে শিষ্টাচার</h1>
+    <p>Embedded snapshot of <code>questions_supp_10_4.json</code> · open this file directly · App picks 10 random per attempt</p>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search question or option…" />
+      <label><input id="hideAnswers" type="checkbox" /> Hide answers</label>
+      <label><input id="showLen" type="checkbox" checked /> Show option length</label>
+      <button type="button" id="expandAll">Show all</button>
+      <button type="button" id="printBtn">Print</button>
+      <a href="./ls_quiz_preview_index.html" style="font:inherit;padding:0.4rem 0.65rem;border:1px solid var(--ink);background:#fff;text-decoration:none;color:inherit;">All LS</a>
+    </div>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <main id="list"><p>Loading…</p></main>
+
+  <div class="nav">
+    <a href="#top" id="topLink">Top</a>
+    <button type="button" id="toQ1">Q1</button>
+  </div>
+
+  <script>
+    document.body.id = 'top';
+    const LETTERS = ['A', 'B', 'C', 'D'];
+    const listEl = document.getElementById('list');
+    const statsEl = document.getElementById('stats');
+    const searchEl = document.getElementById('search');
+    const hideAnswersEl = document.getElementById('hideAnswers');
+    const showLenEl = document.getElementById('showLen');
+
+    function optionLen(text) {
+      return [...String(text || '')].length;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(s) {
+      return escapeHtml(s).toLowerCase();
+    }
+
+    function render(questions) {
+      const indexDist = [0, 0, 0, 0];
+      questions.forEach((q) => {
+        if (q.correctAnswerIndex >= 0 && q.correctAnswerIndex < 4) {
+          indexDist[q.correctAnswerIndex] += 1;
+        }
+      });
+
+      statsEl.innerHTML = [
+        '<span class="tag">Total: ' + questions.length + '</span>',
+        '<span class="tag">Correct @ A/B/C/D: ' + indexDist.join(' / ') + '</span>',
+        '<span class="tag">Tip: green = correct</span>'
+      ].join('');
+
+      listEl.innerHTML = questions.map((q, i) => {
+        const opts = Array.isArray(q.options) ? q.options : [];
+        const correct = q.correctAnswerIndex;
+        const optHtml = opts.map((opt, oi) => {
+          const isOk = oi === correct;
+          return (
+            '<div class="opt ' + (isOk ? 'ok' : '') + '">' +
+              '<span class="letter">' + LETTERS[oi] + '.</span>' +
+              '<span class="body">' + escapeHtml(opt) + (isOk ? ' <span class="mark">✓ correct</span>' : '') + '</span>' +
+              '<span class="len" data-len>' + optionLen(opt) + ' ch</span>' +
+            '</div>'
+          );
+        }).join('');
+
+        const correctText = opts[correct] != null
+          ? LETTERS[correct] + '. ' + escapeHtml(opts[correct])
+          : '(missing)';
+
+        return (
+          '<article class="card" id="q-' + (i + 1) + '" data-search="' +
+            escapeAttr((q.questionText || '') + ' ' + opts.join(' ')) + '">' +
+            '<div class="meta">' +
+              '<span class="tag">Q' + (i + 1) + '</span>' +
+              '<span class="tag">correctAnswerIndex: ' + correct + '</span>' +
+            '</div>' +
+            '<h2>' + escapeHtml(q.questionText || '') + '</h2>' +
+            optHtml +
+            '<p class="answer-line"><strong>Answer:</strong> ' + correctText + '</p>' +
+          '</article>'
+        );
+      }).join('');
+
+      applyLenVisibility();
+      applyFilter();
+    }
+
+    function applyFilter() {
+      const q = (searchEl.value || '').trim().toLowerCase();
+      let visible = 0;
+      document.querySelectorAll('.card').forEach((card) => {
+        const hit = !q || (card.getAttribute('data-search') || '').includes(q);
+        card.classList.toggle('hidden', !hit);
+        if (hit) visible += 1;
+      });
+      const old = statsEl.querySelector('[data-visible]');
+      if (old) old.remove();
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.dataset.visible = '1';
+      tag.textContent = q ? ('Showing: ' + visible) : 'Showing: all';
+      statsEl.appendChild(tag);
+    }
+
+    function applyLenVisibility() {
+      document.querySelectorAll('[data-len]').forEach((el) => {
+        el.style.display = showLenEl.checked ? '' : 'none';
+      });
+    }
+
+    hideAnswersEl.addEventListener('change', () => {
+      document.body.classList.toggle('hide-answers', hideAnswersEl.checked);
+    });
+    showLenEl.addEventListener('change', applyLenVisibility);
+    searchEl.addEventListener('input', applyFilter);
+    document.getElementById('expandAll').addEventListener('click', () => {
+      searchEl.value = '';
+      applyFilter();
+    });
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+    document.getElementById('toQ1').addEventListener('click', () => {
+      document.getElementById('q-1')?.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    const QUIZ_DATA = [
+  {
+    "questionText": "সাবস্টেশনে সহকর্মী বলল ‘সুইচ অফ করছি’—আপনার প্রথম সঠিক প্রতিক্রিয়া কী?",
+    "options": [
+      "নিজের মুখে বলে নিশ্চিত করা—‘হ্যাঁ, সুইচ অফ হচ্ছে’",
+      "মাথা নেড়ে চুপচাপ কাজ শুরু করে দেওয়া",
+      "গ্রাহককে বলে দেওয়া যে কাজ শেষ হয়ে গেছে",
+      "ফোনে অফিসে খবর দিয়ে পরে নিশ্চিত করা"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "গ্রামের বাড়িতে বিদ্যুৎ নেই বলে গ্রাহক চিৎকার করছেন—আপনি কীভাবে শুরু করবেন?",
+    "options": [
+      "তার চিৎকারের সঙ্গে পাল্টা জোরে কথা বলা",
+      "শান্ত কণ্ঠে বলা—‘আপনার অসুবিধা বুঝতে পারছি’",
+      "কাজের জায়গা ছেড়ে দ্রুত চলে যাওয়া",
+      "অন্য সহকর্মীর ওপর দোষ চাপিয়ে দেওয়া"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "পোলে ত্রুটি ঠিক করতে দুই ঘণ্টা লাগতে পারে—গ্রাহক জিজ্ঞেস করল ‘কতক্ষণ?’",
+    "options": [
+      "পাঁচ মিনিট বলে পরে সময় টেনে নেওয়া",
+      "কিছু বলবেন না, শুধু কাজ করতে থাকা",
+      "যতটা জানেন সৎভাবে বলে দেওয়া—প্রায় দুই ঘণ্টা",
+      "আজই হবে না বলে কাজ পিছিয়ে দেওয়া"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "বাড়ির গেট দিয়ে পোলের পাশে যেতে হবে—আপনার সঠিক পদক্ষেপ কী?",
+    "options": [
+      "গেট খুলে সরাসরি ঢুকে পড়া",
+      "রাত হলে অনুমতি ছাড়াই দ্রুত কাজ করা",
+      "সহকর্মীকে বলে দিয়ে নিজে বাইরে থাকা",
+      "বাড়ির লোকের কাছে অনুমতি নিয়ে তারপর ঢোকা"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "মাঠে গ্রাহকের সামনে দাঁড়ালে আস্থা বাড়াতে কী সাথে রাখা উচিত?",
+    "options": [
+      "ইউনিফর্ম ও আইডি কার্ড স্পষ্টভাবে দেখানো",
+      "শুধু ব্যক্তিগত ফোন হাতে রেখে কথা বলা",
+      "কাজের টুল ছাড়া খালি হাতে দাঁড়ানো",
+      "অফিসের কাগজপত্র বাড়ির ভেতরে রেখে আসা"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "কেউ বলে ‘আমি শুধু টেকনিশিয়ান—ভালো ব্যবহার আমার কাজ নয়’—এটি কী?",
+    "options": [
+      "মাঠের কাজের সঠিক দৃষ্টিভঙ্গি",
+      "ভুল ধারণা; গ্রাহক-সহকর্মীর সঙ্গে ভালো ব্যবহার কাজের অংশ",
+      "শুধু অফিস স্টাফের জন্য প্রযোজ্য নিয়ম",
+      "জুনিয়রদের জন্য শুধু পরামর্শ, বাধ্যতামূলক নয়"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "লাইন অফ করার নির্দেশ একবার শুনেই কাজ শুরু করলে কী ঝুঁকি?",
+    "options": [
+      "শুধু কাজ একটু দেরি হওয়ার সম্ভাবনা",
+      "গ্রাহকের সঙ্গে কথা কম হওয়া",
+      "ভুল বোঝায় লাইন চার্জ থেকে বড় দুর্ঘটনা",
+      "শিফট রিপোর্টে ছোটখাটো ভুল লেখা"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "বাগান পেরিয়ে মিটার বক্সে যেতে হবে—কাজ শেষে কী করবেন?",
+    "options": [
+      "তারের টুকরো বাগানে ফেলে রেখে চলে যাওয়া",
+      "ময়লা ফেলে দিয়ে পরের দলের ওপর ছেড়ে দেওয়া",
+      "গ্রাহককে বলে দিয়ে পরিষ্কার করানো",
+      "তারের টুকরো ও ময়লা তুলে নিয়ে পরিষ্কার রেখে আসা"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "সিনিয়র বলল ‘ফিডার বন্ধ’—আপনি কাজ শুরুর আগে কী করবেন?",
+    "options": [
+      "নিজের মুখে বলে নিশ্চিত করা—‘ফিডার বন্ধ হচ্ছে, ঠিক আছে?’",
+      "মাথা নেড়ে সঙ্গে সঙ্গে পোলে ওঠা",
+      "গ্রাহককে জানিয়ে কাজ শেষ করা",
+      "ফোনে ছবি তুলে অফিসে পাঠানো"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "দীর্ঘক্ষণ অপেক্ষায় রেগে গ্রাহক তীব্র কণ্ঠে কথা বলছেন—আপনি কী করবেন?",
+    "options": [
+      "তার সঙ্গে তর্ক করে নিজের পক্ষ জোরালো করা",
+      "তার কথা শেষ হতে দিয়ে শান্তভাবে শোনা",
+      "কাজ বন্ধ করে গাড়িতে চলে যাওয়া",
+      "অফিসে ফোন করে গ্রাহককে চুপ করানো"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "তুফানের পর ক্ষতি দেখে গ্রাহক জিজ্ঞেস করল ‘আজই ঠিক হবে?’—আপনি কী বলবেন?",
+    "options": [
+      "নিশ্চয়ই আজই শেষ বলে আশ্বাস দেওয়া",
+      "কিছু বলবেন না, শুধু কাজ করতে থাকবেন",
+      "পরিস্থিতি দেখে যতটা জানেন সৎভাবে সময় বলা",
+      "আগামী সপ্তাহে হবে বলে কাজ পিছিয়ে দেওয়া"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "বাড়ির চত্বরে কাজ শেষ—সেখানে ছোট তারের টুকরো পড়ে আছে।",
+    "options": [
+      "টুকরো ফেলে রেখে যাওয়া—বাড়ির লোক দেখবে",
+      "টুকরো পায়ে চাপ দিয়ে মাটিতে ঢুকিয়ে দেওয়া",
+      "সহকর্মীকে বলে দিয়ে নিজে চলে যাওয়া",
+      "টুকরো তুলে নিয়ে চত্বর পরিষ্কার রেখে আসা"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "নতুন জুনিয়র সহকর্মী আপনার সঙ্গে মাঠে গেছে—আপনি কীভাবে আচরণ করবেন?",
+    "options": [
+      "শান্ত কথা, অনুমতি ও পরিষ্কারতার উদাহরণ দেখানো",
+      "জুনিয়রকে দূরে রেখে একাই সব কাজ করা",
+      "গ্রাহকের সামনে জুনিয়রকে তিরস্কার করা",
+      "কাজ শেষে শুধু রিপোর্ট লিখে দেওয়া"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "গ্রাহককে সাহায্য চাইতে বলার সময় কোন কথা ঝামেলা কমায়?",
+    "options": [
+      "তাড়াতাড়ি করো—আমার সময় নেই",
+      "‘দয়া করে’ ও ‘ধন্যবাদ’ বলে অনুরোধ করা",
+      "চুপ থাকা—কথা বললে সময় নষ্ট",
+      "অন্যের নাম নিয়ে দোষ চাপানো"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "গুরুত্বপূর্ণ নির্দেশ ‘আবার বলার’ প্রধান কারণ কী?",
+    "options": [
+      "অফিসে রেকর্ড রাখার জন্য",
+      "গ্রাহককে দেখাতে যে আপনি মনোযোগী",
+      "অস্পষ্ট কথায় ভুল বোঝাবুঝি ও দুর্ঘটনা কমানো",
+      "শিফট শেষে মিটিংয়ে আলোচনার জন্য"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "রেগে থাকা গ্রাহকের সামনে পাল্টা চিৎকার করলে কী হয়?",
+    "options": [
+      "কাজ দ্রুত শেষ হয়",
+      "গ্রাহক শান্ত হয়ে যায়",
+      "অফিস আপনার পক্ষে দাঁড়ায়",
+      "তর্ক বাড়ে, সময় নষ্ট ও মনোযোগ ভেঙে যায়"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "লাইভ লাইনের কাছে কাজ—সহকর্মী বলল ‘আমি আইসোলেট করছি’। আপনি?",
+    "options": [
+      "বলে নিশ্চিত করা—‘আইসোলেট হচ্ছে, আমি অপেক্ষা করছি’",
+      "বিশ্বাস করে সঙ্গে সঙ্গে হাত দিয়ে কাজ করা",
+      "গ্রাহককে বলে দেওয়া যে লাইন বন্ধ",
+      "ফোনে ভিডিও কল করে দেখানো"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "মিথ্যা সময় বলে গ্রাহককে আশ্বাস দিলে পরে কী হতে পারে?",
+    "options": [
+      "গ্রাহকের আস্থা বাড়ে",
+      "ক্ষোভ বাড়ে ও বিশ্বাস কমে",
+      "কাজ দ্রুত শেষ হয়",
+      "অফিস থেকে পুরস্কার মিলে"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "বাড়ির সামনে গেট লাগানো—মিটার বদলাতে ভেতরে যাওয়ার আগে?",
+    "options": [
+      "সহকর্মীর সঙ্গে দ্রুত ঢুকে কাজ শেষ করা",
+      "রাত হলে গেট খুলে নিজেই ঢোকা",
+      "বাড়ির লোকের অনুমতি নিয়ে তারপর ঢোকা",
+      "গেটের ওপর দিয়ে লাফ দিয়ে ঢোকা"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "কেউ বলে ‘নির্দেশ একবার শুনলেই যথেষ্ট’—এটি সম্পর্কে সঠিক বক্তব্য?",
+    "options": [
+      "সঠিক—অভিজ্ঞ হলে আবার বলার দরকার নেই",
+      "শুধু নতুনদের জন্য প্রযোজ্য",
+      "অফিসের নিয়ম, মাঠে প্রযোজ্য নয়",
+      "ভুল—গুরুত্বপূর্ণ নির্দেশ আবার বললে ভুল কমে"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "গ্রামের পোলে কাজ শেষ—চত্বরে ছোট খণ্ড তার পড়ে আছে।",
+    "options": [
+      "তার তুলে নিয়ে পরিষ্কার রেখে আসা",
+      "মাটিতে ঢুকিয়ে পরের বৃষ্টিতে ঢেকে দেওয়া",
+      "গ্রাহককে বলে দিয়ে নিজে চলে যাওয়া",
+      "টুকরো ফেলে রেখে যাওয়া"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "সিনিয়রের অভিজ্ঞতা থেকে জুনিয়র কীভাবে শিখবে?",
+    "options": [
+      "শুধু বই পড়ে নিয়ম মুখস্থ করা",
+      "মাঠে দেখে ও শান্তভাবে পরামর্শ নিয়ে শেখা",
+      "সিনিয়রকে এড়িয়ে একাই সব করার চেষ্টা",
+      "শুধু অফিসে ক্লাসে বসে শোনা"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "গ্রাহক রেগে বলছেন ‘তোমরা কখনো সময় মেনে চলো না’—আপনি কী করবেন?",
+    "options": [
+      "তার সঙ্গে তর্ক করে নিজের পক্ষ সঠিক প্রমাণ",
+      "চুপ থাকা—কিছু বলবেন না",
+      "শান্তভাবে শুনে অসুবিধা বুঝতে পারছি বলা",
+      "অফিসে ফোন করে গ্রাহককে চুপ করানো"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "মাঠে গ্রাহক জিজ্ঞেস করল ‘আপনি কে?’—সঠিক প্রতিক্রিয়া?",
+    "options": [
+      "নাম না বলে সরাসরি কাজ করা",
+      "শুধু বলা ‘লাইনম্যান’—আইডি দেখানো নয়",
+      "অন্য সহকর্মীর নাম বলে দেওয়া",
+      "ইউনিফর্ম ও আইডি কার্ড দেখিয়ে পরিচয় দেওয়া"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "সহকর্মী বলল ‘আগে লাইন টেস্ট করব’—আপনি কাজের আগে?",
+    "options": [
+      "বলে নিশ্চিত করা—‘লাইন টেস্ট করছ, আমি অপেক্ষা করছি’",
+      "মাথা নেড়ে সঙ্গে সঙ্গে হাত দিয়ে কাজ",
+      "গ্রাহককে বলে দেওয়া যে নিরাপদ",
+      "ফোনে ছবি তুলে রাখা"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "কাজের অগ্রগতি গ্রাহক জানতে চাইল—আপনি কী করবেন?",
+    "options": [
+      "কিছু বলবেন না—কাজ করতে থাকবেন",
+      "যতটা জানেন স্পষ্ট করে বলবেন",
+      "সবসময় ‘আজই হবে’ বলে আশ্বাস দেবেন",
+      "অন্য দলের ওপর দোষ চাপাবেন"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "বাগানের ফুলের কাছ দিয়ে তার টেনে যেতে হবে—প্রথমে?",
+    "options": [
+      "রাতে গিয়ে অনুমতি ছাড়াই কাজ করা",
+      "সরাসরি ঢুকে তার টেনে কাজ শেষ করা",
+      "বাড়ির লোকের অনুমতি নিয়ে সাবধানে কাজ",
+      "বাগান এড়িয়ে অন্য রাস্তায় যাওয়া"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "‘আমি শুধু তার কাটি—কথা বলা আমার কাজ নয়’—এই ভাবনার ফল?",
+    "options": [
+      "কাজ দ্রুত ও সুন্দরভাবে শেষ হয়",
+      "অফিস থেকে পুরস্কার পাওয়া যায়",
+      "জুনিয়রদের জন্য ভালো উদাহরণ হয়",
+      "গ্রাহক-সহকর্মীর সঙ্গে ভুল বোঝা ও ঝামেলা বাড়ে"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "কাজ শেষে গ্রাহককে ধন্যবাদ জানালে কী সুবিধা?",
+    "options": [
+      "ছোট কথায় বড় ঝামেলা কমে, সম্পর্ক ভালো থাকে",
+      "শুধু ফরমালিটি—কোনো লাভ নেই",
+      "অফিসের রিপোর্ট ভালো দেখায়",
+      "কাজের সময় কম লাগে"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "ফিডার অফের নির্দেশ শুনে আপনি কী করবেন?",
+    "options": [
+      "মাথা নেড়ে সঙ্গে সঙ্গে কাজ শুরু",
+      "নিজের মুখে বলে নিশ্চিত করা—‘ফিডার অফ, ঠিক আছে?’",
+      "গ্রাহককে জানিয়ে কাজ শেষ",
+      "ফোনে অফিসে খবর দিয়ে পরে কাজ"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "গ্রাহক তীব্র স্বরে অভিযোগ করছেন—আপনি কথা বলার আগে?",
+    "options": [
+      "তার সঙ্গে একই জোরে কথা বলা",
+      "কাজ বন্ধ করে চলে যাওয়া",
+      "তার কথা শেষ হতে দিয়ে শান্তভাবে শোনা",
+      "অফিসে ফোন করে অভিযোগ তুলে ধরা"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "পোল মেরামতের সময় গ্রাহক বারবার জিজ্ঞেস করছে ‘কতক্ষণ?’",
+    "options": [
+      "প্রতিবার ‘পাঁচ মিনিট’ বলে আশ্বাস দেওয়া",
+      "কিছু বলবেন না, শুধু কাজ করবেন",
+      "পরিস্থিতি দেখে যতটা জানেন সৎভাবে বলবেন",
+      "আগামীকাল হবে বলে কাজ পিছিয়ে দেবেন"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "বাড়ির চত্বরে কাজ—ময়লা ও ছোট তারের টুকরো ফেলে রেখে গেলে?",
+    "options": [
+      "গ্রাহক খুশি হবে—কাজ হয়েছে",
+      "পরের দলের কাজ সহজ হবে",
+      "কোম্পানির সুনাম ভালো থাকবে",
+      "সম্পত্তির ক্ষতি ও কোম্পানির দুর্নাম বাড়তে পারে"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "জুনিয়র সহকর্মীর সামনে গ্রাহকের সঙ্গে আপনি কীভাবে কথা বলবেন?",
+    "options": [
+      "শান্ত ও সম্মানজনকভাবে—উদাহরণ হিসেবে",
+      "জুনিয়রকে দেখিয়ে তিরস্কার করা",
+      "গ্রাহককে এড়িয়ে শুধু কাজ করা",
+      "জুনিয়রকে দূরে রেখে একাই কথা বলা"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "গুরুত্বপূর্ণ নির্দেশ শুনে আবার বলার সঠিক উদাহরণ কোনটি?",
+    "options": [
+      "মাথা নেড়ে চুপ থাকা",
+      "ফোনে অফিসে খবর দেওয়া",
+      "‘সুইচ অফ’ শুনে বলা—‘হ্যাঁ, সুইচ অফ হচ্ছে’",
+      "গ্রাহককে বলে দেওয়া যে কাজ শুরু"
+    ],
+    "correctAnswerIndex": 2
+  }
+];
+
+    render(QUIZ_DATA);
+  </script>
+</body>
+</html>

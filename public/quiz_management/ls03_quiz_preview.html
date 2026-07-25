@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LS03 Quiz Preview — মোবাইল ও টাকা সুরক্ষা</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --card: #fff;
+      --line: #cbd5e1;
+      --ok: #15803d;
+      --ok-bg: #f0fdf4;
+      --warn-bg: #fffbeb;
+      --warn: #92400e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans Bengali", "Hind Siliguri", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--card);
+      border-bottom: 2px solid var(--ink);
+      padding: 0.85rem 1.1rem;
+    }
+    header h1 { margin: 0 0 0.25rem; font-size: 1.15rem; }
+    header p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.75rem;
+    }
+    .toolbar input[type="search"] {
+      flex: 1 1 220px;
+      min-width: 180px;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid var(--line);
+      font: inherit;
+    }
+    .toolbar label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.85rem;
+      user-select: none;
+    }
+    .toolbar button {
+      font: inherit;
+      padding: 0.4rem 0.65rem;
+      border: 1px solid var(--ink);
+      background: #fff;
+      cursor: pointer;
+    }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.6rem;
+    }
+    .tag {
+      font-size: 0.75rem;
+      background: #f1f5f9;
+      border: 1px solid var(--line);
+      padding: 0.15rem 0.45rem;
+    }
+    main { max-width: 880px; margin: 0 auto; padding: 1rem; }
+    .card {
+      background: var(--card);
+      border: 2px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .card.hidden { display: none; }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.55rem;
+      font-size: 0.75rem;
+    }
+    h2 {
+      margin: 0 0 0.7rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .opt {
+      border: 1px solid var(--line);
+      padding: 0.55rem 0.65rem;
+      margin: 0.4rem 0;
+      display: flex;
+      gap: 0.55rem;
+      align-items: flex-start;
+    }
+    .opt .letter {
+      flex: 0 0 auto;
+      font-weight: 700;
+      min-width: 1.4rem;
+    }
+    .opt .body { flex: 1; }
+    .opt .len {
+      flex: 0 0 auto;
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .opt.ok {
+      border-color: var(--ok);
+      background: var(--ok-bg);
+    }
+    .hide-answers .opt.ok {
+      border-color: var(--line);
+      background: transparent;
+    }
+    .hide-answers .opt.ok .mark,
+    .hide-answers .answer-line { display: none; }
+    .mark {
+      color: var(--ok);
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .answer-line {
+      margin: 0.55rem 0 0;
+      font-size: 0.88rem;
+      color: var(--warn);
+      background: var(--warn-bg);
+      padding: 0.45rem 0.55rem;
+    }
+    .nav {
+      position: fixed;
+      right: 0.75rem;
+      bottom: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .nav a, .nav button {
+      font: inherit;
+      text-decoration: none;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--ink);
+      padding: 0.35rem 0.55rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-align: center;
+    }
+    @media print {
+      header { position: static; }
+      .toolbar, .nav { display: none !important; }
+      .card { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>LS03 Quiz Preview — মোবাইল ও টাকা সুরক্ষা</h1>
+    <p>Embedded snapshot of <code>questions_supp_10_3.json</code> · open this file directly · App picks 10 random per attempt</p>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search question or option…" />
+      <label><input id="hideAnswers" type="checkbox" /> Hide answers</label>
+      <label><input id="showLen" type="checkbox" checked /> Show option length</label>
+      <button type="button" id="expandAll">Show all</button>
+      <button type="button" id="printBtn">Print</button>
+      <a href="./ls_quiz_preview_index.html" style="font:inherit;padding:0.4rem 0.65rem;border:1px solid var(--ink);background:#fff;text-decoration:none;color:inherit;">All LS</a>
+    </div>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <main id="list"><p>Loading…</p></main>
+
+  <div class="nav">
+    <a href="#top" id="topLink">Top</a>
+    <button type="button" id="toQ1">Q1</button>
+  </div>
+
+  <script>
+    document.body.id = 'top';
+    const LETTERS = ['A', 'B', 'C', 'D'];
+    const listEl = document.getElementById('list');
+    const statsEl = document.getElementById('stats');
+    const searchEl = document.getElementById('search');
+    const hideAnswersEl = document.getElementById('hideAnswers');
+    const showLenEl = document.getElementById('showLen');
+
+    function optionLen(text) {
+      return [...String(text || '')].length;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(s) {
+      return escapeHtml(s).toLowerCase();
+    }
+
+    function render(questions) {
+      const indexDist = [0, 0, 0, 0];
+      questions.forEach((q) => {
+        if (q.correctAnswerIndex >= 0 && q.correctAnswerIndex < 4) {
+          indexDist[q.correctAnswerIndex] += 1;
+        }
+      });
+
+      statsEl.innerHTML = [
+        '<span class="tag">Total: ' + questions.length + '</span>',
+        '<span class="tag">Correct @ A/B/C/D: ' + indexDist.join(' / ') + '</span>',
+        '<span class="tag">Tip: green = correct</span>'
+      ].join('');
+
+      listEl.innerHTML = questions.map((q, i) => {
+        const opts = Array.isArray(q.options) ? q.options : [];
+        const correct = q.correctAnswerIndex;
+        const optHtml = opts.map((opt, oi) => {
+          const isOk = oi === correct;
+          return (
+            '<div class="opt ' + (isOk ? 'ok' : '') + '">' +
+              '<span class="letter">' + LETTERS[oi] + '.</span>' +
+              '<span class="body">' + escapeHtml(opt) + (isOk ? ' <span class="mark">✓ correct</span>' : '') + '</span>' +
+              '<span class="len" data-len>' + optionLen(opt) + ' ch</span>' +
+            '</div>'
+          );
+        }).join('');
+
+        const correctText = opts[correct] != null
+          ? LETTERS[correct] + '. ' + escapeHtml(opts[correct])
+          : '(missing)';
+
+        return (
+          '<article class="card" id="q-' + (i + 1) + '" data-search="' +
+            escapeAttr((q.questionText || '') + ' ' + opts.join(' ')) + '">' +
+            '<div class="meta">' +
+              '<span class="tag">Q' + (i + 1) + '</span>' +
+              '<span class="tag">correctAnswerIndex: ' + correct + '</span>' +
+            '</div>' +
+            '<h2>' + escapeHtml(q.questionText || '') + '</h2>' +
+            optHtml +
+            '<p class="answer-line"><strong>Answer:</strong> ' + correctText + '</p>' +
+          '</article>'
+        );
+      }).join('');
+
+      applyLenVisibility();
+      applyFilter();
+    }
+
+    function applyFilter() {
+      const q = (searchEl.value || '').trim().toLowerCase();
+      let visible = 0;
+      document.querySelectorAll('.card').forEach((card) => {
+        const hit = !q || (card.getAttribute('data-search') || '').includes(q);
+        card.classList.toggle('hidden', !hit);
+        if (hit) visible += 1;
+      });
+      const old = statsEl.querySelector('[data-visible]');
+      if (old) old.remove();
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.dataset.visible = '1';
+      tag.textContent = q ? ('Showing: ' + visible) : 'Showing: all';
+      statsEl.appendChild(tag);
+    }
+
+    function applyLenVisibility() {
+      document.querySelectorAll('[data-len]').forEach((el) => {
+        el.style.display = showLenEl.checked ? '' : 'none';
+      });
+    }
+
+    hideAnswersEl.addEventListener('change', () => {
+      document.body.classList.toggle('hide-answers', hideAnswersEl.checked);
+    });
+    showLenEl.addEventListener('change', applyLenVisibility);
+    searchEl.addEventListener('input', applyFilter);
+    document.getElementById('expandAll').addEventListener('click', () => {
+      searchEl.value = '';
+      applyFilter();
+    });
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+    document.getElementById('toQ1').addEventListener('click', () => {
+      document.getElementById('q-1')?.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    const QUIZ_DATA = [
+  {
+    "questionText": "লাইভ লাইনের কাছে পোলে ওঠার আগে ফোন কীভাবে রাখা উচিত?",
+    "options": [
+      "সাইলেন্ট বা কম্পন মোডে পকেটে রাখা",
+      "জোরে রিংটোন চালিয়ে কানে ধরে ওঠা",
+      "ভিডিও কল চালু রেখে এক হাতে ওঠা",
+      "স্পিকারে গান চালিয়ে কাজ করা"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "‘ব্যাংক অফিসার’ পরিচয় দিয়ে কেউ ফোনে ওটিপি চাইল—কী করবেন?",
+    "options": [
+      "বড় পদমর্যাদা বললে ওটিপি দিয়ে দেবেন",
+      "কখনোই ওটিপি, এটিএম পিন বা ইউপিআই পিন দেবেন না",
+      "সন্দেহ থাকলেও একবার দিয়ে দেখবেন",
+      "শুধু পরিবারের নাম বললে দিয়ে দেবেন"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "ভিডিও কলে ‘পুলিশ’ বা ‘সিবিআই’ পরিচয় দিয়ে টাকা চাইলে সঠিক কাজ কোনটি?",
+    "options": [
+      "ভয়ে সঙ্গে সঙ্গে টাকা পাঠানো",
+      "ওটিপি মেসেজে পাঠিয়ে সাহায্য করা",
+      "কল কেটে দেওয়া, কাউকে টাকা না দেওয়া",
+      "স্ক্রিন শেয়ার অ্যাপ ইনস্টল করা"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "+৯২ বা +৮৪ কোডের অজানা হোয়াটসঅ্যাপ কল এলে কী করবেন?",
+    "options": [
+      "সঙ্গে সঙ্গে কল ধরে কথা বলবেন",
+      "লটারি জিতেছেন বলে লিংক খুলবেন",
+      "আধার কার্ডের ছবি পাঠিয়ে দেবেন",
+      "কল ধরবেন না, অজানা লিংক খুলবেন না"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "অনলাইনে টাকা কেটে গেলে প্রথম এক ঘণ্টার মধ্যে কী করা উচিত?",
+    "options": [
+      "এক মাস পরে খোঁজ নেওয়া",
+      "১৯৩০ নম্বরে কল করে অভিযোগ জানানো",
+      "কিছু না করে অপেক্ষা করা",
+      "প্রতারককে আরও টাকা পাঠানো"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "‘ব্যাংক চেক’ বলে স্ক্রিন শেয়ার অ্যাপ ইনস্টল করতে বলল—কী করবেন?",
+    "options": [
+      "অ্যাপ ইনস্টল করে স্ক্রিন শেয়ার চালু করা",
+      "রাজি না হয়ে ফোন কেটে দেওয়া",
+      "ওটিপি দিয়ে অ্যাকাউন্ট খোলা",
+      "এটিএম পিন ফোনে বলে দেওয়া"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "পোলে ওঠার সময় কানে ফোন ধরে কথা বললে সবচেয়ে বড় ঝুঁকি কী?",
+    "options": [
+      "শুধু ফোনের ব্যাটারি দ্রুত শেষ হয়",
+      "শুধু নেটওয়ার্ক সিগন্যাল কমে যায়",
+      "চমকে হাত ফসকে দুর্ঘটনার সম্ভাবনা বাড়ে",
+      "শুধু গ্রাহকের ফোন মিস হয়"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "‘ভিডিও কলে পুলিশ বলেছে জেল—টাকা দাও’—এই কথা কেন ভুয়া?",
+    "options": [
+      "আসল পুলিশ ভিডিও কলে গ্রেপ্তার বা টাকা চায় না",
+      "আসল পুলিশ শুধু মেসেজে টাকা চায়",
+      "আসল পুলিশ শুধু ইউনিফর্মের রং দেখায়",
+      "আসল পুলিশ শুধু পোলের উচ্চতা মাপে"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "‘ব্যাংক থেকে কল—ওটিপি দিলে অ্যাকাউন্ট সেফ হবে’—এটা কেন ভুল?",
+    "options": [
+      "ব্যাংক ফোনে ওটিপি চায়, তাই দিতে হয়",
+      "ওটিপি দিলেই টাকা কেটে যেতে পারে — ব্যাংক ফোনে চায় না",
+      "ওটিপি দিলে শুধু বিল কমে যায়",
+      "ওটিপি দিলে শুধু নেটওয়ার্ক বাড়ে"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "‘টাকা জিতেছেন’ বলে অজানা এসএমএসের লিংক এল—কী করবেন?",
+    "options": [
+      "লিংকে ক্লিক করে ফর্ম পূরণ করা",
+      "লিংক খুলবেন না, সন্দেহ হলে সহকর্মীকে দেখানো",
+      "আধার ও প্যান কার্ডের ছবি পাঠানো",
+      "নিজের ইউপিআই পিন লিংকে লিখে দেওয়া"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "স্ক্রিন শেয়ার চালু থাকলে প্রতারক কী করতে পারে?",
+    "options": [
+      "শুধু ফোনের ওয়ালপেপার বদলাতে পারে",
+      "শুধু রিংটোনের গান বদলাতে পারে",
+      "আপনার ফোন দেখে টাকা তুলতে বা লেনদেন করতে পারে",
+      "শুধু পোলের উচ্চতা মাপতে পারে"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "উঁচুতে কাজের আগে ফোন সাইলেন্ট করার মূল কারণ কী?",
+    "options": [
+      "একটি কল বা নোটিফিকেশনে চমকে হাত ফসকানোর ঝুঁকি কমানো",
+      "শুধু ব্যাটারি একটু বেশি দিন চালানো",
+      "শুধু গ্রাহকের ফোন এড়ানো",
+      "শুধু অফিসের হাজিরা খাতা সাজানো"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "এটিএম পিন কাউকে দেওয়া যাবে কি, এমনকি ‘ব্যাংক’ বললেও?",
+    "options": [
+      "ব্যাংক বললে দিয়ে দেওয়া যায়",
+      "শুধু সহকর্মীকে বললে দেওয়া যায়",
+      "কখনোই কাউকে বলবেন না — এটিএম পিন ব্যক্তিগত",
+      "শুধু পরিবারের গ্রুপ চ্যাটে পাঠালে চলে"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "ডিজিটাল গ্রেপ্তার বলে ভিডিও কলে ভয় দেখিয়ে টাকা চাইলে কী করবেন?",
+    "options": [
+      "ভয়ে টাকা পাঠাবেন",
+      "কল কেটে পরিবার বা ১৯৩০-এ জানাবেন",
+      "ওটিপি দিয়ে সমস্যা মেটাবেন",
+      "স্ক্রিন শেয়ার চালু রেখে কথা বলবেন"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "ফোনে ইউপিআই পিন চাইলে কার কথায় দেওয়া যাবে?",
+    "options": [
+      "বড় অফিসার বললে দেওয়া যাবে",
+      "পরিচিত বন্ধু বললে দেওয়া যাবে",
+      "কখনোই দেওয়া যাবে না — পিন শুধু আপনার",
+      "সন্দেহ থাকলেও একবার দেওয়া যায়"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "অচেনা লিংক থেকে অ্যাপ ডাউনলোড করলে কী হতে পারে?",
+    "options": [
+      "শুধু ফোন দ্রুত চার্জ হবে",
+      "শুধু স্ক্রিনের রং বদলাবে",
+      "শুধু রিংটোন জোরে হবে",
+      "ফোন বা অ্যাকাউন্ট প্রতারণায় পড়তে পারে"
+    ],
+    "correctAnswerIndex": 3
+  },
+  {
+    "questionText": "লাইভ লাইন মেরামতের আগে ফোন পকেটে রাখার সঠিক কারণ কোনটি?",
+    "options": [
+      "পিপিই-র মতো ফোনও নিয়ম করে রাখা — মনোযোগ কাজে",
+      "শুধু ফোনের কভার পরিষ্কার রাখা",
+      "শুধু গ্রাহকের কল মিস না করা",
+      "শুধু সোশ্যাল মিডিয়া আপডেট রাখা"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "ওটিপি মেসেজে কাউকে পাঠানো যাবে কি?",
+    "options": [
+      "আত্মীয় চাইলে পাঠিয়ে দেওয়া যায়",
+      "কখনোই পাঠাবেন না — ওটিপি মানে সিন্দুকের চাবি",
+      "শুধু সহকর্মী গ্রুপে পাঠালে চলে",
+      "শুধু রাতে পাঠালে নিরাপদ"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "টাকা কেটে গেলে দ্রুত ১৯৩০-এ জানালে কী সুবিধা হতে পারে?",
+    "options": [
+      "শুধু ফোনের রিংটোন বদলায়",
+      "শুধু ইউনিফর্ম পরিষ্কার হয়",
+      "ব্যাংক অ্যাকাউন্ট আটকানোর সুযোগ বাড়তে পারে",
+      "শুধু পোলের উচ্চতা কমে যায়"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "ইউনিফর্ম বা অফিস আইডি কার্ডের ছবি সোশ্যাল মিডিয়ায় দেওয়া উচিত কি?",
+    "options": [
+      "বন্ধু বললে দিয়ে দেওয়া যায়",
+      "দেবেন না — প্রতারক পরিচয় নকল করতে পারে",
+      "শুধু গ্রুপ চ্যাটে দিলে নিরাপদ",
+      "শুধু রাতে পোস্ট দিলে নিরাপদ"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "ব্যাংক বা ইউপিআই অ্যাপে দুই ধাপের লক মানে কী?",
+    "options": [
+      "শুধু একটা পাসওয়ার্ড — বাকি সব খোলা",
+      "ফোন লক ও অ্যাপ পিন/ওটিপি — দুটো স্তরে সুরক্ষা",
+      "শুধু ওয়ালপেপার লক — বেশি নিরাপদ",
+      "শুধু রিংটোন বদল — সুরক্ষা বাড়ে"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "অচেনা কেউ ওটিপি চাইলে প্রথম সিদ্ধান্ত কী হওয়া উচিত?",
+    "options": [
+      "সঙ্গে সঙ্গে ফোন কেটে দেওয়া",
+      "ওটিপি দিয়ে ‘সাহায্য’ করা",
+      "স্ক্রিন শেয়ার চালু করে দেখানো",
+      "পিন বলে দিয়ে বিশ্বাসযোগ্যতা প্রমাণ"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "‘অ্যাকাউন্ট খুলুন’ বলে অচেনা অ্যাপ ইনস্টল করতে বলল—কী করবেন?",
+    "options": [
+      "অ্যাপ ইনস্টল করে সব তথ্য দেওয়া",
+      "রাজি না হয়ে ফোন কেটে দেওয়া",
+      "ওটিপি দিয়ে অ্যাকাউন্ট যাচাই করা",
+      "স্ক্রিন শেয়ার দিয়ে ব্যাংক দেখানো"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "বিদেশি কোডের অজানা নম্বর থেকে কল এলে কেন ধরবেন না?",
+    "options": [
+      "শুধু কল চার্জ বেশি লাগতে পারে",
+      "শুধু ফোন গরম হতে পারে",
+      "প্রায়ই প্রতারণা — এক ক্লিকেই বিপদ হতে পারে",
+      "শুধু রিংটোন বদলাতে পারে"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "ফোনের কন্টাক্টে ১৯৩০ সেভ রাখার সুবিধা কী?",
+    "options": [
+      "জরুরি সময় দ্রুত সাইবার হেল্পলাইনে কল করা",
+      "শুধু ফোনের স্টোরেজ বাড়ানো",
+      "শুধু রিংটোনের তালিকা সাজানো",
+      "শুধু গ্রাহকের নম্বর মুছে ফেলা"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "শুধু পরিচিত অ্যাপ খোলার নিয়ম কেন গুরুত্বপূর্ণ?",
+    "options": [
+      "অচেনা লিংকের অ্যাপে প্রতারণার ঝুঁকি বেশি",
+      "পরিচিত অ্যাপে শুধু ব্যাটারি কম লাগে",
+      "অচেনা অ্যাপে শুধু গান বেশি পাওয়া যায়",
+      "পরিচিত অ্যাপে শুধু পোলের নম্বর দেখায়"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "পোলে ওঠার সময় নোটিফিকেশনে চমকালে কী ধরনের দুর্ঘটনা হতে পারে?",
+    "options": [
+      "শুধু ফোনের স্ক্রিন ভেঙে যাওয়া",
+      "হাত ফসকে পড়া বা লাইভ লাইনে স্পর্শ",
+      "শুধু রিংটোনের ভলিউম কমে যাওয়া",
+      "শুধু গ্রাহকের মেসেজ মিস হওয়া"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "সিবিআই পরিচয় দিয়ে ভিডিও কলে তদন্তের নামে টাকা চাইলে কী করবেন?",
+    "options": [
+      "টাকা পাঠিয়ে সমস্যা মেটাবেন",
+      "কল কেটে দেবেন, টাকা দেবেন না",
+      "ওটিপি দিয়ে যাচাই করবেন",
+      "স্ক্রিন শেয়ার চালু রাখবেন"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "লেনদেনের বিবরণ রেখে ১৯৩০-এ জানানো কেন দরকার?",
+    "options": [
+      "দ্রুত তদন্তে সাহায্য করে, সময় নষ্ট হয় না",
+      "শুধু ফোনের মেমোরি খালি করে",
+      "শুধু রিংটোন বদলাতে সাহায্য করে",
+      "শুধু পোলের উচ্চতা মাপতে সাহায্য করে"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "বাবা-মা বা সন্তানদের কোন সতর্কবার্তা জানানো উচিত?",
+    "options": [
+      "ওটিপি কাউকে দেবেন না, ভুয়া পুলিশ কলে টাকা দেবেন না",
+      "অচেনা লিংকে ক্লিক করলে লটারি জিতবেন",
+      "ভিডিও কলে পুলিশ বললে টাকা দিন",
+      "স্ক্রিন শেয়ার দিলে ব্যাংক সেফ হয়"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "কাজে ফোন কানে ধরে পোলে ওঠা কেন বিপজ্জনক?",
+    "options": [
+      "শুধু কানে ব্যথা হতে পারে",
+      "এক হাত ব্যস্ত — ভারসাম্য ও মনোযোগ কমে",
+      "শুধু নেটওয়ার্ক দুর্বল হতে পারে",
+      "শুধু ব্যাটারি দ্রুত শেষ হয়"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "questionText": "অজানা লিংক খোলার আগে সহকর্মীকে দেখানো কেন ভালো?",
+    "options": [
+      "লিংকে ভাইরাস বা প্রতারণা থাকতে পারে",
+      "লিংক খুললে শুধু গান বাজে",
+      "লিংক খুললে শুধু ফোন চার্জ হয়",
+      "লিংক খুললে শুধু ইউনিফর্ম পরিষ্কার হয়"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "‘ব্যাংক যাচাই’ বলে রিমোট অ্যাপ ইনস্টল করতে বলল—এটা কী?",
+    "options": [
+      "সরকারি ব্যাংকের নিয়মিত সেবা",
+      "শুধু ফোনের সফটওয়্যার আপডেট",
+      "প্রায়ই প্রতারণা — স্ক্রিন দেখে টাকা তোলা",
+      "শুধু মোবাইল রিচার্জের অফার"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "questionText": "দুই ধাপের লক ছাড়া ইউপিআই ব্যবহারের ঝুঁকি কী?",
+    "options": [
+      "ফোন হারালে বা চুরি গেলে সহজে টাকা যেতে পারে",
+      "শুধু রিংটোন বদলাতে পারে",
+      "শুধু স্ক্রিনের রং বদলাতে পারে",
+      "শুধু পোলের উচ্চতা মাপতে পারে"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "questionText": "প্রতারণায় টাকা গেলে cybercrime.gov.in-এও অভিযোগ করা যায়—তবু প্রথম কাজ কী?",
+    "options": [
+      "এক সপ্তাহ পরে অনলাইন ফর্ম পূরণ",
+      "প্রথম এক ঘণ্টায় ১৯৩০-এ কল করা",
+      "প্রতারককে আরও টাকা পাঠানো",
+      "সব কথা লুকিয়ে রাখা"
+    ],
+    "correctAnswerIndex": 1
+  }
+];
+
+    render(QUIZ_DATA);
+  </script>
+</body>
+</html>
