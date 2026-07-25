@@ -1990,27 +1990,29 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                                         </div>
                                                     )}
                                                     {point.importance && (
-                                                        <div className="bg-gradient-to-br from-amber-50 to-amber-50/50 dark:from-amber-950/20 dark:to-amber-900/10 p-5 rounded-2xl border-2 border-amber-200 dark:border-amber-900/30 hover:border-amber-300 dark:hover:border-amber-800 transition-colors">
-                                                            <div className="flex items-center gap-2 mb-3">
-                                                                <span className="text-amber-500 text-lg">💡</span>
-                                                                <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-                                                                    {language === 'en' ? 'Key Point' : 'মূল বিষয়'}
-                                                                </p>
+                                                        <div className="overflow-hidden rounded-2xl border-2 border-amber-200 dark:border-amber-900/30 bg-gradient-to-br from-amber-50 to-amber-50/50 dark:from-amber-950/20 dark:to-amber-900/10 hover:border-amber-300 dark:hover:border-amber-800 transition-colors">
+                                                            <div
+                                                                className="flex h-9 items-center justify-end bg-gradient-to-l from-amber-100/90 to-transparent px-3 dark:from-amber-900/40"
+                                                                title={language === 'en' ? 'Why it matters' : 'কেন জরুরি'}
+                                                                aria-label={language === 'en' ? 'Why it matters' : 'কেন জরুরি'}
+                                                            >
+                                                                <span className="material-symbols-outlined text-[20px] text-amber-600 dark:text-amber-300" aria-hidden>lightbulb</span>
                                                             </div>
-                                                            <p className="text-base text-slate-800 dark:text-slate-200 reading-content leading-relaxed font-semibold whitespace-pre-line">
+                                                            <p className="px-5 pb-5 pt-3 text-base text-slate-800 dark:text-slate-200 reading-content leading-relaxed font-semibold whitespace-pre-line">
                                                                 {point.importance}
                                                             </p>
                                                         </div>
                                                     )}
                                                     {point.daily_check && (
-                                                        <div className="bg-gradient-to-br from-emerald-50 to-emerald-50/50 dark:from-emerald-950/20 dark:to-emerald-900/10 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/30 hover:border-emerald-200 dark:hover:border-emerald-800 transition-colors">
-                                                            <div className="flex items-center gap-2 mb-3">
-                                                                <span className="text-emerald-500 text-lg">✓</span>
-                                                                <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                                                                    {language === 'en' ? 'Quick Tip' : 'পরামর্শ'}
-                                                                </p>
+                                                        <div className="overflow-hidden rounded-2xl border border-emerald-100 dark:border-emerald-900/30 bg-gradient-to-br from-emerald-50 to-emerald-50/50 dark:from-emerald-950/20 dark:to-emerald-900/10 hover:border-emerald-200 dark:hover:border-emerald-800 transition-colors">
+                                                            <div
+                                                                className="flex h-9 items-center justify-end bg-gradient-to-l from-emerald-100/90 to-transparent px-3 dark:from-emerald-900/40"
+                                                                title={language === 'en' ? 'Check yourself' : 'নিজে দেখুন'}
+                                                                aria-label={language === 'en' ? 'Check yourself' : 'নিজে দেখুন'}
+                                                            >
+                                                                <span className="material-symbols-outlined text-[20px] text-emerald-600 dark:text-emerald-300" aria-hidden>help</span>
                                                             </div>
-                                                            <p className="text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed whitespace-pre-line">
+                                                            <p className="px-5 pb-5 pt-3 text-base text-slate-700 dark:text-slate-300 reading-content leading-relaxed whitespace-pre-line">
                                                                 {point.daily_check}
                                                             </p>
                                                         </div>

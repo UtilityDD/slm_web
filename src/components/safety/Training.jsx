@@ -1044,21 +1044,29 @@ function SectionPointFullCard({
 
                         <div className={`space-y-4 ${readingComfort ? 'sm:space-y-6 md:space-y-7' : 'sm:space-y-5'}`}>
                             {point.importance && (
-                                <div className="rounded-2xl border border-blue-100/90 bg-blue-50/70 px-4 py-3.5 sm:px-5 sm:py-4">
-                                    <p className={`mb-2 text-[11px] font-bold text-blue-700 sm:text-xs ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-wide'}`}>
-                                        {language === 'en' ? 'Strategy' : 'কৌশল'}
-                                    </p>
-                                    <div className={boxBody}>
+                                <div className="overflow-hidden rounded-2xl border border-blue-100/90 bg-blue-50/70">
+                                    <div
+                                        className="flex h-8 items-center justify-end bg-gradient-to-l from-blue-100/90 to-transparent px-3"
+                                        title={language === 'en' ? 'Why it matters' : 'কেন জরুরি'}
+                                        aria-label={language === 'en' ? 'Why it matters' : 'কেন জরুরি'}
+                                    >
+                                        <span className="material-symbols-outlined text-[18px] text-blue-600" aria-hidden>lightbulb</span>
+                                    </div>
+                                    <div className={`${boxBody} px-4 py-3 sm:px-5 sm:py-3.5`}>
                                         {renderTextWithImages(point.importance)}
                                     </div>
                                 </div>
                             )}
                             {point.daily_check && (
-                                <div className="rounded-2xl border border-emerald-100/90 bg-emerald-50/70 px-4 py-3.5 sm:px-5 sm:py-4">
-                                    <p className={`mb-2 text-[11px] font-bold text-emerald-700 sm:text-xs ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-wide'}`}>
-                                        {language === 'en' ? 'Action Plan' : 'কর্মপরিকল্পনা'}
-                                    </p>
-                                    <div className={boxBody}>
+                                <div className="overflow-hidden rounded-2xl border border-emerald-100/90 bg-emerald-50/70">
+                                    <div
+                                        className="flex h-8 items-center justify-end bg-gradient-to-l from-emerald-100/90 to-transparent px-3"
+                                        title={language === 'en' ? 'Check yourself' : 'নিজে দেখুন'}
+                                        aria-label={language === 'en' ? 'Check yourself' : 'নিজে দেখুন'}
+                                    >
+                                        <span className="material-symbols-outlined text-[18px] text-emerald-600" aria-hidden>help</span>
+                                    </div>
+                                    <div className={`${boxBody} px-4 py-3 sm:px-5 sm:py-3.5`}>
                                         {renderTextWithImages(point.daily_check)}
                                     </div>
                                 </div>
