@@ -39,7 +39,6 @@ import {
     formatHourlyAvgPerDay,
     formatLeaderboardNumber,
     getHourlyAvgPerDay,
-    getRankMedal,
     isPrizeSuperseded,
     isPrizeRecipient,
     PRIZE_STATUS,
@@ -53,6 +52,8 @@ import {
 } from '../utils/hallOfFamePrizes';
 import HallOfFameWinnerCard from './HallOfFameWinnerCard';
 import HallOfFameUserPrizesView from './HallOfFameUserPrizesView';
+import LeaderboardRankChip from './LeaderboardRankChip';
+import ReadingLevelAvatarFrame from './ReadingLevelAvatarFrame';
 import LeaderboardUserSheet from './LeaderboardUserSheet';
 
 const LiveIndicator = () => (
@@ -2153,7 +2154,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                             </div>
                         ) : (leaderboardTab === 'all-time' ? fullLeaderboard : activeMonthlyList).length > 0 ? (
                             <>
-                                {/* Top 3 celebration stage — avatars + names only; details live in the list */}
+                                {/* Top 3 — compact strip on monthly; tall podium on all-time */}
                                 {(() => {
                                     const list = leaderboardTab === 'all-time' ? fullLeaderboard : monthlyPodiumList;
                                     let topPlayers = [];
@@ -2165,6 +2166,74 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                         topPlayers = [list[1], list[0], list[2]];
                                     }
 
+                                    const resolveRank = (idx) => (
+                                        topPlayers.length === 1
+                                            ? 1
+                                            : (topPlayers.length === 2 ? (idx === 0 ? 2 : 1) : (idx === 0 ? 2 : idx === 1 ? 1 : 3))
+                                    );
+
+                                    // --- Monthly: compact Top 3 strip ---
+                                    if (leaderboardTab === 'monthly') {
+                                        return (
+                                            <div className="mb-3 animate-fade-in overflow-visible rounded-2xl border border-orange-200/70 bg-gradient-to-b from-amber-50/90 via-[#fffdf7] to-white px-3 py-3.5 shadow-md shadow-orange-500/10 sm:mb-4 sm:px-5 sm:py-4">
+                                                <div className="grid grid-cols-3 items-end gap-2 sm:gap-3">
+                                                    {topPlayers.map((player, idx) => {
+                                                        const rank = resolveRank(idx);
+                                                        const isWinner = topPlayers.length === 1 ? true : idx === 1;
+                                                        const superseded = isPrizeSuperseded(player);
+                                                        const displayName = (player.full_name || '').trim().includes('@')
+                                                            ? (player.full_name || '').split('@')[0]
+                                                            : (player.full_name || '');
+                                                        const avatarSize = isWinner
+                                                            ? 'h-14 w-14 sm:h-16 sm:w-16'
+                                                            : 'h-12 w-12 sm:h-14 sm:w-14';
+
+                                                        return (
+                                                            <div
+                                                                key={player.user_id}
+                                                                role="button"
+                                                                tabIndex={0}
+                                                                onClick={() => openUserProgress(player.user_id, player, rank)}
+                                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') openUserProgress(player.user_id, player, rank); }}
+                                                                className={`flex min-h-[7.25rem] flex-col items-center justify-end cursor-pointer transition-transform active:scale-[0.97] sm:min-h-[8rem] ${isWinner && !superseded ? '-translate-y-0.5' : ''} ${superseded ? 'opacity-70' : ''}`}
+                                                            >
+                                                                <div className="relative mb-1.5 shrink-0">
+                                                                    <ReadingLevelAvatarFrame
+                                                                        level={player.training_level || 0}
+                                                                        readingPoints={player.all_time_reading_points !== undefined ? player.all_time_reading_points : (player.reading_points || 0)}
+                                                                        language={language}
+                                                                        sizeClass={avatarSize}
+                                                                        avatarUrl={player.avatar_url}
+                                                                        fallbackLetter={displayName?.[0] || '?'}
+                                                                        faded={superseded}
+                                                                        onAvatarClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            if (player.avatar_url) setMaximizedAvatar(player.avatar_url);
+                                                                        }}
+                                                                        cornerSlot={(
+                                                                            <LeaderboardRankChip
+                                                                                rank={rank}
+                                                                                superseded={superseded}
+                                                                                size="sm"
+                                                                                className="absolute -left-1 -top-0.5 z-10 rounded bg-white/95 px-1 py-0.5 shadow-sm"
+                                                                            />
+                                                                        )}
+                                                                    />
+                                                                </div>
+                                                                <p className={`max-w-full px-0.5 text-center text-[11px] font-black leading-tight sm:text-xs ${
+                                                                    superseded ? 'text-slate-400 line-through' : 'text-slate-900'
+                                                                } ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                    <span className="block truncate">{displayName}</span>
+                                                                </p>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+
+                                    // --- All-time: existing tall podium ---
                                     const rankRing = {
                                         1: 'ring-[3px] ring-amber-400 shadow-[0_0_32px_rgba(251,191,36,0.45)]',
                                         2: 'ring-[3px] ring-slate-300 shadow-[0_0_20px_rgba(148,163,184,0.4)]',
@@ -2178,7 +2247,6 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
                                     return (
                                         <div className="leaderboard-podium-stage relative mb-5 overflow-visible rounded-3xl border border-orange-200/70 bg-gradient-to-b from-amber-50 via-orange-50/50 to-white px-2 pb-2 pt-11 shadow-lg shadow-orange-500/10 sm:mb-6 sm:px-5 sm:pb-3 sm:pt-12">
-                                            {/* Clip decorative blurs only — keep crown outside overflow so it is never covered */}
                                             <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl" aria-hidden>
                                                 <div className="absolute -left-8 top-0 h-36 w-36 rounded-full bg-amber-300/35 blur-3xl" />
                                                 <div className="absolute -right-10 top-6 h-32 w-32 rounded-full bg-orange-400/25 blur-3xl" />
@@ -2187,8 +2255,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             <div className="relative z-10 grid grid-cols-3 items-end gap-2 sm:gap-4">
                                             {topPlayers.map((player, idx) => {
                                                 const isWinner = topPlayers.length === 1 ? true : (topPlayers.length === 2 ? idx === 1 : idx === 1);
-                                                const rank = topPlayers.length === 1 ? 1 : (topPlayers.length === 2 ? (idx === 0 ? 2 : 1) : (idx === 0 ? 2 : idx === 1 ? 1 : 3));
-                                                const superseded = leaderboardTab === 'monthly' && isPrizeSuperseded(player);
+                                                const rank = resolveRank(idx);
+                                                const superseded = false;
                                                 const displayName = (player.full_name || '').trim().includes('@')
                                                     ? (player.full_name || '').split('@')[0]
                                                     : (player.full_name || '');
@@ -2200,10 +2268,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                         tabIndex={0}
                                                         onClick={() => openUserProgress(player.user_id, player, rank)}
                                                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') openUserProgress(player.user_id, player, rank); }}
-                                                        className={`flex flex-col items-center cursor-pointer transition-transform active:scale-[0.97] ${isWinner && !superseded ? '-translate-y-1.5' : ''} ${superseded ? 'opacity-70' : ''}`}
+                                                        className={`flex flex-col items-center cursor-pointer transition-transform active:scale-[0.97] ${isWinner ? '-translate-y-1.5' : ''}`}
                                                     >
                                                         <div className="relative mb-2.5 flex flex-col items-center">
-                                                            {rank === 1 && !superseded && (
+                                                            {rank === 1 && (
                                                                 <span className="pointer-events-none absolute -top-9 left-1/2 z-30 -translate-x-1/2 sm:-top-10" aria-hidden>
                                                                     <span className="animate-crown block text-2xl leading-none sm:text-3xl">👑</span>
                                                                 </span>
@@ -2214,7 +2282,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                                         e.stopPropagation();
                                                                         if (player.avatar_url) setMaximizedAvatar(player.avatar_url);
                                                                     }}
-                                                                    className={`absolute inset-0 cursor-zoom-in overflow-hidden rounded-full border-[3px] border-white bg-white transition-transform active:scale-95 sm:border-4 ${rankRing[rank] || ''} ${superseded ? 'grayscale opacity-50' : ''}`}
+                                                                    className={`absolute inset-0 cursor-zoom-in overflow-hidden rounded-full border-[3px] border-white bg-white transition-transform active:scale-95 sm:border-4 ${rankRing[rank] || ''}`}
                                                                 >
                                                                     {player.avatar_url ? (
                                                                         <img src={player.avatar_url} className="h-full w-full object-cover" alt="" />
@@ -2227,14 +2295,12 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             </div>
                                                         </div>
 
-                                                        <p className={`mb-2 max-w-full px-0.5 text-center text-xs font-black leading-snug sm:text-sm ${
-                                                            superseded ? 'text-slate-400 line-through' : 'text-slate-900'
-                                                        } ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                        <p className={`mb-2 max-w-full px-0.5 text-center text-xs font-black leading-snug text-slate-900 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                             <span className="line-clamp-2">{displayName}</span>
                                                         </p>
 
                                                         <div
-                                                            className={`flex w-full items-start justify-center rounded-t-2xl pt-1.5 shadow-inner ${pedestalClass[rank]} ${superseded ? 'grayscale opacity-50' : ''}`}
+                                                            className={`flex w-full items-start justify-center rounded-t-2xl pt-1.5 shadow-inner ${pedestalClass[rank]}`}
                                                             aria-hidden
                                                         >
                                                             <span className="text-sm font-black text-white drop-shadow-sm sm:text-base">
@@ -2249,8 +2315,8 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                     );
                                 })()}
 
-                                {/* List View for others */}
-                                <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-md shadow-slate-900/5">
+                                {/* List View */}
+                                <div className={`overflow-visible rounded-2xl border border-slate-200/80 bg-white shadow-md shadow-slate-900/5 ${leaderboardTab === 'monthly' ? 'animate-fade-in' : 'overflow-hidden'}`}>
                                     {(leaderboardTab === 'all-time' ? fullLeaderboard : activeMonthlyList).map((item, idx) => {
                                         const superseded = leaderboardTab === 'monthly' && isPrizeSuperseded(item);
                                         const prizeRecipient = leaderboardTab === 'monthly' && isPrizeRecipient(item);
@@ -2258,108 +2324,96 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                             ? item.standing_rank
                                             : idx + 1;
                                         const isTopThree = Number(rankLabel) >= 1 && Number(rankLabel) <= 3;
+                                        const isMonthly = leaderboardTab === 'monthly';
+                                        const isYou = !!(user?.id && item.user_id === user.id);
 
                                         return (
                                         <div 
                                             key={`${item.user_id}-${item.prize_status || 'row'}-${idx}`}
                                             onClick={() => openUserProgress(item.user_id, item, rankLabel)}
-                                            className={`flex items-center gap-2 border-b border-slate-100 p-2.5 transition-colors last:border-b-0 group cursor-pointer active:bg-orange-50/60 sm:gap-4 sm:p-4 ${
+                                            className={`flex items-center gap-2 border-b border-slate-100 transition-colors last:border-b-0 last:rounded-b-2xl group cursor-pointer active:bg-orange-50/60 first:rounded-t-2xl sm:gap-3 ${
+                                                isMonthly ? 'min-h-[52px] px-2.5 py-2.5 pr-3 sm:px-4 sm:py-3' : 'p-2.5 sm:gap-4 sm:p-4'
+                                            } ${
                                                 superseded
                                                     ? 'bg-slate-100 hover:bg-slate-200/50'
-                                                    : isTopThree
-                                                        ? 'bg-gradient-to-r from-amber-50/90 via-orange-50/40 to-transparent hover:from-amber-50'
-                                                        : prizeRecipient
-                                                            ? 'bg-orange-50 hover:bg-orange-100/70'
-                                                            : 'bg-white hover:bg-orange-50/40'
+                                                    : isYou && isMonthly
+                                                        ? 'border-l-[3px] border-l-orange-500 bg-orange-50/70 hover:bg-orange-50'
+                                                        : isMonthly && Number(rankLabel) === 1
+                                                            ? 'bg-amber-50/50 hover:bg-amber-50/80'
+                                                            : prizeRecipient
+                                                                ? 'bg-orange-50 hover:bg-orange-100/70'
+                                                                : !isMonthly && isTopThree
+                                                                    ? 'bg-gradient-to-r from-amber-50/90 via-orange-50/40 to-transparent hover:from-amber-50'
+                                                                    : 'bg-white hover:bg-orange-50/40'
                                             }`}
                                         >
-                                            <div className={`flex w-7 shrink-0 items-center justify-center sm:w-9 ${
-                                                superseded ? 'text-slate-400 opacity-60' : isTopThree ? 'text-amber-600' : 'text-slate-600 group-hover:text-orange-600'
-                                            }`}>
-                                                {isTopThree && !superseded ? (
-                                                    <span className="text-base leading-none sm:text-lg" aria-hidden>
-                                                        {rankLabel === 1 ? '🥇' : rankLabel === 2 ? '🥈' : '🥉'}
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-center text-xs font-black tabular-nums sm:text-sm">{rankLabel}</span>
-                                                )}
+                                            <div className="flex w-5 shrink-0 items-center justify-center sm:w-6">
+                                                <LeaderboardRankChip
+                                                    rank={rankLabel}
+                                                    superseded={superseded}
+                                                    size="sm"
+                                                />
                                             </div>
-                                            <div
-                                                className={`relative h-9 w-9 shrink-0 sm:h-10 sm:w-10 ${superseded ? 'opacity-40 grayscale' : ''}`}
-                                            >
-                                                <div
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        if (item.avatar_url) setMaximizedAvatar(item.avatar_url);
-                                                    }}
-                                                    className={`h-full w-full cursor-zoom-in overflow-hidden rounded-full border-2 border-white bg-white shadow-sm transition-transform active:scale-95 ${
-                                                        isTopThree && !superseded
-                                                            ? 'ring-2 ring-amber-400/70 shadow-md shadow-amber-500/20'
-                                                            : 'ring-1 ring-slate-200/80'
-                                                    }`}
-                                                >
-                                                    {item.avatar_url ? <img src={item.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{item.full_name?.[0]}</div>}
-                                                </div>
-
-                                                {/* Status Indicator in Corner — sibling of the clipped avatar so it isn't cropped by rounded-full overflow */}
-                                                {leaderboardTab === 'monthly' && (item.last_active || item.last_login_at) && (() => {
+                                            {(() => {
+                                                const readingPts = item.all_time_reading_points !== undefined ? item.all_time_reading_points : (item.reading_points || 0);
+                                                const onlineSlot = leaderboardTab === 'monthly' && (item.last_active || item.last_login_at) && (() => {
                                                     const lastActiveDate = item.last_active || item.last_login_at;
                                                     const date = new Date(lastActiveDate);
                                                     const now = new Date();
                                                     const diffInSeconds = Math.floor((now - date) / 1000);
                                                     const isOnline = diffInSeconds < 300;
                                                     const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-                                                    
                                                     if (!isToday) return null;
-
                                                     return (
-                                                        <span className="absolute bottom-0 right-0 flex h-2.5 w-2.5 z-10">
-                                                            {isOnline && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>}
-                                                            <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isOnline ? 'bg-green-500' : 'bg-green-500/60'} border-2 border-white dark:border-slate-900`}></span>
+                                                        <span className="absolute -right-0.5 -top-0.5 z-10 flex h-2.5 w-2.5">
+                                                            {isOnline && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />}
+                                                            <span className={`relative inline-flex h-2.5 w-2.5 rounded-full border-2 border-white ${isOnline ? 'bg-green-500' : 'bg-green-500/60'}`} />
                                                         </span>
                                                     );
-                                                })()}
-                                            </div>
+                                                })();
+
+                                                return (
+                                                    <ReadingLevelAvatarFrame
+                                                        level={item.training_level || 0}
+                                                        readingPoints={readingPts}
+                                                        language={language}
+                                                        sizeClass={isMonthly ? 'h-9 w-9' : 'h-9 w-9 sm:h-10 sm:w-10'}
+                                                        avatarUrl={item.avatar_url}
+                                                        fallbackLetter={item.full_name?.[0] || '?'}
+                                                        faded={superseded}
+                                                        onAvatarClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (item.avatar_url) setMaximizedAvatar(item.avatar_url);
+                                                        }}
+                                                        onlineSlot={onlineSlot || null}
+                                                    />
+                                                );
+                                            })()}
                                             <div className="flex-1 min-w-0">
-                                                <div className="flex flex-col mb-0.5">
-                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                        <p className={`text-sm font-black truncate ${
+                                                <div className="flex flex-col">
+                                                    <div className="flex items-center gap-1.5 min-w-0">
+                                                        <p className={`truncate text-sm font-black leading-tight ${
                                                             superseded
                                                                 ? 'text-slate-400 line-through decoration-slate-300'
                                                                 : 'text-slate-900'
                                                         }`}>{item.full_name}</p>
+                                                        {isYou && isMonthly && (
+                                                            <span className={`shrink-0 rounded-full bg-orange-500 px-1.5 py-0.5 text-[8px] font-black uppercase text-white ${language === 'bn' ? 'font-bengali normal-case' : ''}`}>
+                                                                {language === 'en' ? 'You' : 'আপনি'}
+                                                            </span>
+                                                        )}
                                                         {superseded && (
-                                                            <span className={`inline-block uppercase tracking-wider font-extrabold text-[8px] text-red-600 dark:text-red-500 border-2 border-red-600 dark:border-red-500 rounded px-1.5 py-0.5 bg-white/95 dark:bg-slate-900/95 shadow-[0_1px_3px_rgba(220,38,38,0.15)] transform -rotate-[3deg] ml-1 origin-center shrink-0 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            <span className={`inline-block shrink-0 uppercase tracking-wider font-extrabold text-[7px] leading-none text-red-600 border border-red-600 rounded px-1 py-0.5 bg-white/95 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                                 {encouragementCopy.prizeSuperseded}
                                                             </span>
                                                         )}
                                                         {item.prize_status === PRIZE_STATUS.REPLACEMENT && (
-                                                            <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                            <span className={`shrink-0 text-[7px] leading-none px-1 py-0.5 rounded font-bold bg-orange-100 text-orange-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                                 {encouragementCopy.prizeReplacement} · #{item.prize_rank}
                                                             </span>
                                                         )}
-                                                        <div className={superseded ? 'opacity-40 grayscale scale-[0.85] origin-left flex items-center gap-1' : 'flex items-center gap-1'}>
-                                                            {(() => {
-                                                            const badge = getBadgeByLevel(
-                                                                item.training_level || 0, 
-                                                                item.all_time_reading_points !== undefined ? item.all_time_reading_points : (item.reading_points || 0)
-                                                            );
-                                                            return badge && (
-                                                                <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black tracking-tight sm:text-[11px] ${badge.color} ${language === 'bn' ? 'font-bengali' : 'uppercase'}`}>
-                                                                    {language === 'en' ? badge.en : badge.bn}
-                                                                </span>
-                                                            );
-                                                        })()}
-                                                        </div>
                                                     </div>
-                                                    {leaderboardTab === 'monthly' && item.eligibility_note && (
-                                                        <p className="text-[9px] font-medium text-amber-600 dark:text-amber-400 mt-0.5">
-                                                            {item.eligibility_note}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                                <div className={`flex items-center gap-3 ${superseded ? 'opacity-40' : ''}`}>
-                                                    <div className="flex items-center gap-1.5 shrink-0">
+                                                    <div className={`mt-0.5 flex items-center gap-1.5 min-w-0 ${superseded ? 'opacity-40' : ''}`}>
                                                         {leaderboardTab === 'all-time' ? (
                                                             formatLeaderboardDistrict(item.district) && (
                                                                 <span className={`text-[10px] font-bold text-slate-500 truncate max-w-[9rem] ${language === 'bn' ? 'font-bengali' : ''}`}>
@@ -2376,30 +2430,35 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                                             const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
                                                             
                                                             return (
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <span className={`text-[10px] font-bold uppercase tracking-tight ${isOnline ? 'text-green-600 dark:text-green-400' : isToday ? 'text-green-600/70 dark:text-green-400/70' : 'text-slate-400'}`}>
-                                                                        {isOnline 
-                                                                            ? (language === 'en' ? 'Online' : 'অনলাইন') 
-                                                                            : formatLastActive(lastActiveDate, language)
-                                                                        }
-                                                                    </span>
-                                                                </div>
+                                                                <span className={`text-[9px] font-bold uppercase tracking-tight sm:text-[10px] ${isOnline ? 'text-green-600' : isToday ? 'text-green-600/70' : 'text-slate-400'}`}>
+                                                                    {isOnline 
+                                                                        ? (language === 'en' ? 'Online' : 'অনলাইন') 
+                                                                        : formatLastActive(lastActiveDate, language)
+                                                                    }
+                                                                </span>
                                                             );
                                                         })()
                                                         )}
+                                                        {leaderboardTab === 'all-time' && (
+                                                            <div className="flex shrink-0 items-center gap-1 rounded-full border border-orange-100 bg-orange-50 px-1.5 py-0.5 text-[9px] font-black text-orange-800 shadow-sm">
+                                                                <span className="text-[9px]">📖</span>
+                                                                <span className="text-[9px] font-black tabular-nums">
+                                                                    {formatLeaderboardNumber(item.reading_points || 0)}
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    {leaderboardTab === 'all-time' && (
-                                                        <div className="flex shrink-0 items-center gap-1 rounded-full border border-orange-100 bg-orange-50 px-1.5 py-0.5 text-[9px] font-black text-orange-800 shadow-sm">
-                                                            <span className="text-[9px]">📖</span>
-                                                            <span className="text-[9px] font-black tabular-nums">
-                                                                {formatLeaderboardNumber(item.reading_points || 0)}
-                                                            </span>
-                                                        </div>
+                                                    {leaderboardTab === 'monthly' && item.eligibility_note && (
+                                                        <p className="mt-0.5 text-[9px] font-medium text-amber-600 line-clamp-1">
+                                                            {item.eligibility_note}
+                                                        </p>
                                                     )}
                                                 </div>
                                             </div>
-                                            <div className="text-right shrink-0">
-                                                <p className={`text-sm font-black tabular-nums ${
+                                            <div className="text-right shrink-0 pl-1">
+                                                <p className={`font-black tabular-nums leading-none ${
+                                                    isMonthly ? 'text-[15px] sm:text-base' : 'text-sm'
+                                                } ${
                                                     superseded ? 'text-slate-400 opacity-60' : 'text-orange-700'
                                                 }`}>
                                                     {leaderboardTab === 'monthly'
