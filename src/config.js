@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.75";
+export const CURRENT_APP_VERSION = "1.3.76";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Cleaner monthly leaderboard — reading level on your avatar.",
-  bn: "মাসিক লিডারবোর্ড আরও পরিষ্কার — পড়ার স্তর এখন অবতার ফ্রেমে।",
+  en: "Lessons 1.2 & 1.5 — discharge rod ratings and PVC jugaad warning.",
+  bn: "পাঠ ১.২ ও ১.৫ — ডিসচার্জ রডের রেটিং ও পিভিসি জুগাড় সতর্কতা।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 export const SUPPORT_EMAIL = "support@smartlineman.in";
