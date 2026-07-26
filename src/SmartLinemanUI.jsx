@@ -16,7 +16,7 @@ import WeatherAlertBanner from "./components/WeatherAlertBanner";
 import { useWeatherAlert } from "./hooks/useWeatherAlert";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
 import { UserIcon } from "./components/icons";
-import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from "./config";
+import { APP_NAME, CURRENT_APP_VERSION, CURRENT_APP_RELEASE_NOTES, WEBSITE_URL, SUPPORT_EMAIL } from "./config";
 import { preloadSafetyLibraryAssets } from "./utils/assetPreloader";
 import { leaderboardService } from "./utils/leaderboardService";
 import { invalidateLeaderboardCaches } from "./utils/leaderboardCacheKeys";
@@ -226,7 +226,11 @@ export default function SmartLinemanUI() {
         try {
           const seenBuild = localStorage.getItem(BUILD_VERSION_KEY);
           if (seenBuild && seenBuild !== CURRENT_APP_VERSION) {
-            setUpdateInfo({ version_name: CURRENT_APP_VERSION, update_url: '#' });
+            setUpdateInfo({
+              version_name: CURRENT_APP_VERSION,
+              update_url: '#',
+              release_notes: CURRENT_APP_RELEASE_NOTES,
+            });
             setIsForceUpdate(true);
             setShowUpdateModal(true);
           } else if (!seenBuild) {
@@ -245,7 +249,11 @@ export default function SmartLinemanUI() {
             const newWorker = registration.installing;
             newWorker.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                setUpdateInfo({ version_name: 'Latest', update_url: '#' });
+                setUpdateInfo({
+                  version_name: CURRENT_APP_VERSION,
+                  update_url: '#',
+                  release_notes: CURRENT_APP_RELEASE_NOTES,
+                });
                 setIsForceUpdate(false);
                 setShowUpdateModal(true);
               }
@@ -1510,6 +1518,13 @@ export default function SmartLinemanUI() {
                     <p className={`mt-1 text-sm font-semibold leading-snug text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
                       {isForceUpdate ? (language === 'en' ? `A critical update (v${updateInfo.version_name}) is required to continue using the app.` : `পরবর্তী ধাপের জন্য একটি গুরুত্বপূর্ণ আপডেট (v${updateInfo.version_name}) প্রয়োজন।`) : (language === 'en' ? `A new version is available. Please refresh to apply the latest updates.` : `একটি নতুন সংস্করণ এসেছে। সর্বশেষ আপডেটগুলি পেতে দয়া করে রিফ্রেশ করুন।`)}
                     </p>
+                    {updateInfo.release_notes && (
+                      <p className={`mt-2 rounded-xl bg-orange-50 px-3 py-2 text-sm font-bold leading-snug text-orange-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        {language === 'en'
+                          ? (updateInfo.release_notes.en || updateInfo.release_notes)
+                          : (updateInfo.release_notes.bn || updateInfo.release_notes.en || updateInfo.release_notes)}
+                      </p>
+                    )}
                       </div>
                     </div>
 
