@@ -1866,37 +1866,25 @@ export default function Training({
         return { items, height, maxPath, nodeVerticalGap, journeyChapters };
     }, [trainingChapters, completedLessons, isLessonUnlocked]);
 
-    /** Completion page strip: completed + unlocked lessons (current counts as done for next unlock). */
+    /**
+     * Completion page strip: real completed + really unlocked lessons only.
+     * Never pretends the current unread lesson is done — that used to unlock
+     * the next lesson before quiz pass and let users skip the chain (e.g. miss 1.1).
+     */
     const completionNavLessons = useMemo(() => {
         if (!trainingContent || trainingContent.isSupplementary || !trainingChapters?.length) return [];
         const currentId = String(trainingContent.level_id || '');
         if (!currentId || !currentId.includes('.')) return [];
 
-        const virtualDone = new Set(filterCoreCompletedLessonIds(completedLessons).map(String));
-        virtualDone.add(currentId);
-
-        const unlockWithVirtual = (chapterNum, subchapterNum) => {
-            if (profile?.role === 'admin') return true;
-            if (chapterNum === 1 && subchapterNum === 1) return true;
-            for (let c = 1; c < chapterNum; c++) {
-                const chapter = trainingChapters.find((ch) => ch.number === c);
-                if (!chapter) return false;
-                for (let i = 1; i <= chapter.count; i++) {
-                    if (!virtualDone.has(`${c}.${i}`)) return false;
-                }
-            }
-            for (let i = 1; i < subchapterNum; i++) {
-                if (!virtualDone.has(`${chapterNum}.${i}`)) return false;
-            }
-            return true;
-        };
+        const done = new Set(filterCoreCompletedLessonIds(completedLessons).map(String));
 
         const items = [];
         for (const chapter of trainingChapters.filter((c) => c.number !== 10)) {
             for (let i = 1; i <= chapter.count; i++) {
                 const id = `${chapter.number}.${i}`;
-                const isUnlocked = unlockWithVirtual(chapter.number, i);
-                const isCompleted = virtualDone.has(id);
+                const isCurrent = id === currentId;
+                const isCompleted = done.has(id);
+                const isUnlocked = isCurrent || isLessonUnlocked(chapter.number, i);
                 if (!isUnlocked && !isCompleted) continue;
                 items.push({
                     id,
@@ -1904,13 +1892,15 @@ export default function Training({
                     lessonNumber: i,
                     isCompleted,
                     isUnlocked,
-                    isCurrent: id === currentId,
+                    isCurrent,
                     isNext: false,
                 });
             }
         }
 
-        const nextIdx = items.findIndex((item) => item.isUnlocked && !item.isCurrent && item.id !== currentId && !completedLessons.includes(item.id));
+        const nextIdx = items.findIndex(
+            (item) => item.isUnlocked && !item.isCurrent && !done.has(item.id)
+        );
         // Prefer the first lesson after current that is unlocked; else first unlocked unread
         let marked = false;
         for (let i = 0; i < items.length; i++) {
@@ -1930,7 +1920,7 @@ export default function Training({
         }
 
         return items;
-    }, [trainingContent, trainingChapters, completedLessons, profile?.role]);
+    }, [trainingContent, trainingChapters, completedLessons, isLessonUnlocked]);
 
     const openLifeSkillModule = useCallback(
         (module) => {
@@ -2625,6 +2615,30 @@ export default function Training({
             }
         }
 
+        // Hard gate: never open a locked core lesson (completion strip used to bypass this).
+        // Completed lessons stay open for re-read / monthly score even if the chain has gaps.
+        if (
+            targetLessonNum != null &&
+            chapter?.number != null &&
+            chapter.number !== 10 &&
+            profile?.role !== 'admin'
+        ) {
+            const targetId = `${chapter.number}.${targetLessonNum}`;
+            const alreadyDone =
+                Array.isArray(completedLessons) && completedLessons.includes(targetId);
+            if (!alreadyDone && !isLessonUnlocked(chapter.number, targetLessonNum)) {
+                if (typeof showNotification === 'function') {
+                    showNotification(
+                        language === 'en'
+                            ? `Lesson ${targetId} is locked. Finish the previous lesson quiz first.`
+                            : `পাঠ ${targetId} লক আছে। আগে আগের পাঠের কুইজ শেষ করুন।`,
+                        'info'
+                    );
+                }
+                return;
+            }
+        }
+
         const currentBadge = getRoadmapBadgeByLevel(chapter.number);
 
         const openLessonTarget = (lesson) => {
@@ -2810,13 +2824,31 @@ export default function Training({
     };
 
     const openLessonFromCompletionStrip = useCallback(async (lessonItem) => {
-        if (!lessonItem?.isUnlocked || !lessonItem?.chapterNumber || !lessonItem?.lessonNumber) return;
+        if (!lessonItem?.chapterNumber || !lessonItem?.lessonNumber) return;
         const currentId = String(trainingContent?.level_id || '');
         if (String(lessonItem.id) === currentId) {
             setActiveSectionIndex(0);
             requestAnimationFrame(() => {
                 lessonScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
             });
+            return;
+        }
+        // Strip UI can be stale; re-check real unlock before navigating.
+        const alreadyDone =
+            Array.isArray(completedLessons) && completedLessons.includes(String(lessonItem.id));
+        if (
+            profile?.role !== 'admin' &&
+            !alreadyDone &&
+            !isLessonUnlocked(lessonItem.chapterNumber, lessonItem.lessonNumber)
+        ) {
+            if (typeof showNotification === 'function') {
+                showNotification(
+                    language === 'en'
+                        ? `Lesson ${lessonItem.id} is locked. Pass this lesson's quiz to unlock the next one.`
+                        : `পাঠ ${lessonItem.id} লক আছে। পরের পাঠ খুলতে এই পাঠের কুইজ পাস করুন।`,
+                    'info'
+                );
+            }
             return;
         }
         const chapter = trainingChapters.find((c) => c.number === lessonItem.chapterNumber);
@@ -2828,7 +2860,17 @@ export default function Training({
         } finally {
             setCompletionStripOpeningId(null);
         }
-    }, [trainingContent?.level_id, trainingChapters, stop, handleChapterClick]);
+    }, [
+        trainingContent?.level_id,
+        trainingChapters,
+        stop,
+        handleChapterClick,
+        isLessonUnlocked,
+        completedLessons,
+        profile?.role,
+        language,
+        showNotification,
+    ]);
 
     useEffect(() => {
         if (!user?.id || !trainingChapters?.length) return;
@@ -3327,6 +3369,14 @@ export default function Training({
         if (!alreadyCompleted) {
             const bonusPoints = 20;
             let pointsAwarded = false;
+            let progressSynced = false;
+
+            // Always mark the lesson complete on quiz pass so the next lesson can unlock.
+            // Points award is best-effort and must not block the unlock chain.
+            setCompletedLessons(updated);
+            if (user) {
+                storageUtils.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
+            }
 
             if (user) {
                 try {
@@ -3338,11 +3388,13 @@ export default function Training({
 
                     if (rpcError) {
                         console.error('Error awarding lesson bonus:', rpcError);
-                        if (!gateUnlock) {
-                            if (typeof showNotification === 'function') {
-                                showNotification(language === 'en' ? 'Error saving points' : 'পয়েন্ট সেভ করতে ত্রুটি', 'error');
-                            }
-                            return;
+                        if (typeof showNotification === 'function') {
+                            showNotification(
+                                language === 'en'
+                                    ? 'Lesson progress saved, but points could not be awarded. Try again later if points are missing.'
+                                    : 'পাঠের অগ্রগতি সেভ হয়েছে, কিন্তু পয়েন্ট যোগ হয়নি। পয়েন্ট না থাকলে পরে আবার চেষ্টা করুন।',
+                                'info'
+                            );
                         }
                     } else {
                         pointsAwarded = true;
@@ -3359,22 +3411,8 @@ export default function Training({
                         }
                     }
 
-                    if (pointsAwarded || gateUnlock) {
-                        logReadingHabitCompletion(user.id, lessonId, profile);
-                        if (gateUnlock && !pointsAwarded && typeof showNotification === 'function') {
-                            showNotification(
-                                language === 'en'
-                                    ? 'Lesson saved — hourly quiz unlocked.'
-                                    : 'পাঠ সংরক্ষিত — ঘণ্টাভিত্তিক কুইজ খোলা হয়েছে।',
-                                'success'
-                            );
-                        }
-                    }
-                } catch (err) {
-                    console.error('Critical error in point awarding:', err);
-                    if (!gateUnlock) return;
                     logReadingHabitCompletion(user.id, lessonId, profile);
-                    if (typeof showNotification === 'function') {
+                    if (gateUnlock && !pointsAwarded && typeof showNotification === 'function') {
                         showNotification(
                             language === 'en'
                                 ? 'Lesson saved — hourly quiz unlocked.'
@@ -3382,54 +3420,65 @@ export default function Training({
                             'success'
                         );
                     }
+                } catch (err) {
+                    console.error('Critical error in point awarding:', err);
+                    logReadingHabitCompletion(user.id, lessonId, profile);
+                    if (typeof showNotification === 'function') {
+                        showNotification(
+                            language === 'en'
+                                ? 'Lesson progress saved, but points could not be awarded. Try again later if points are missing.'
+                                : 'পাঠের অগ্রগতি সেভ হয়েছে, কিন্তু পয়েন্ট যোগ হয়নি। পয়েন্ট না থাকলে পরে আবার চেষ্টা করুন।',
+                            'info'
+                        );
+                    }
                 }
 
-                if (pointsAwarded) {
-                    setCompletedLessons(updated);
-                    storageUtils.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
+                const newLevel = calculateLevelFromProgress(updated, trainingChapters);
+                const currentStoredLevel = profile?.training_level || 0;
+                const updatePayload = {
+                    completed_lessons: updated
+                };
 
-                    const newLevel = calculateLevelFromProgress(updated, trainingChapters);
-                    const currentStoredLevel = profile?.training_level || 0;
-                    const updatePayload = {
-                        completed_lessons: updated
-                    };
+                if (newLevel > currentStoredLevel) {
+                    updatePayload.training_level = newLevel;
+                }
 
-                    if (newLevel > currentStoredLevel) {
-                        updatePayload.training_level = newLevel;
+                console.log('📝 Syncing progress to Supabase...', updatePayload);
+                let updateError = null;
+                for (let attempt = 1; attempt <= 3; attempt++) {
+                    const { error } = await supabase
+                        .from('profiles')
+                        .update(updatePayload)
+                        .eq('id', user.id);
+                    if (!error) {
+                        updateError = null;
+                        progressSynced = true;
+                        console.log('✅ Progress synced successfully!');
+                        break;
                     }
+                    updateError = error;
+                    console.warn(`Profile sync attempt ${attempt}/3 failed:`, error);
+                    await new Promise((r) => setTimeout(r, 350 * attempt));
+                }
 
-                    console.log('📝 Syncing progress to Supabase...', updatePayload);
-                    let updateError = null;
-                    for (let attempt = 1; attempt <= 3; attempt++) {
-                        const { error } = await supabase
-                            .from('profiles')
-                            .update(updatePayload)
-                            .eq('id', user.id);
-                        if (!error) {
-                            updateError = null;
-                            console.log('✅ Progress synced successfully!');
-                            break;
-                        }
-                        updateError = error;
-                        console.warn(`Profile sync attempt ${attempt}/3 failed:`, error);
-                        await new Promise((r) => setTimeout(r, 350 * attempt));
-                    }
-
-                    if (updateError) {
-                        console.error('❌ Failed to sync progress to Supabase after retries:', updateError);
-                        if (typeof showNotification === 'function') {
-                            showNotification(
-                                language === 'en'
-                                    ? 'Points were saved but lesson progress did not sync. Refresh the app or try again; contact support if this continues.'
-                                    : 'পয়েন্ট সেভ হয়েছে কিন্তু পাঠের অগ্রগতি সার্ভারে যায়নি। অ্যাপ রিফ্রেশ করুন বা আবার চেষ্টা করুন।',
-                                'error'
-                            );
-                        }
+                if (updateError) {
+                    console.error('❌ Failed to sync progress to Supabase after retries:', updateError);
+                    if (typeof showNotification === 'function') {
+                        showNotification(
+                            language === 'en'
+                                ? 'Lesson marked complete on this device, but server sync failed. Keep the app open and try again; contact support if this continues.'
+                                : 'এই ডিভাইসে পাঠ সম্পন্ন দেখানো হয়েছে, কিন্তু সার্ভারে সেভ হয়নি। অ্যাপ খোলা রাখুন এবং আবার চেষ্টা করুন।',
+                            'error'
+                        );
                     }
                 }
             }
-            if (pointsAwarded && onProgressUpdate) {
+            // Only force-refresh parent profile after a successful server write — otherwise
+            // a stale fetch can wipe the local completed_lessons we just set.
+            if (progressSynced && onProgressUpdate) {
                 onProgressUpdate(updated, true);
+            } else if (!user && onProgressUpdate) {
+                onProgressUpdate(updated, false);
             }
         } else if (gateUnlock) {
             logReadingHabitReview(user.id, lessonId, profile);

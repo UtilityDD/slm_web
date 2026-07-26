@@ -720,10 +720,16 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         const alreadyCompleted = completedLessons.includes(lessonId);
 
         if (!alreadyCompleted) {
-            // First time completion bonus
+            // First time completion bonus — progress unlock must not depend on points RPC.
             const bonusPoints = 20;
+            let pointsAwarded = false;
+
+            const updated = filterCoreCompletedLessonIds([...completedLessons, lessonId]);
+            setCompletedLessons(updated);
 
             if (user) {
+                localStorage.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
+
                 try {
                     const { error: rpcError } = await supabase.rpc('award_training_points', {
                         input_quiz_id: `lesson_bonus_${lessonId}`,
@@ -733,31 +739,21 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
 
                     if (rpcError) {
                         console.error('Error awarding lesson bonus:', rpcError);
-                        setShowQuizModal(false);
-                        setPendingLessonId(null);
-                        return;
+                    } else {
+                        pointsAwarded = true;
+                        invalidateLeaderboardCaches(user.id);
+                        cacheHelper.clear(`profile_${user.id}`);
+                        logReadingHabitCompletion(user.id, lessonId, userProfile);
+                        setRecentReward(bonusPoints);
+                        setTimeout(() => setRecentReward(null), 5000);
                     }
-
-                    invalidateLeaderboardCaches(user.id);
-                    cacheHelper.clear(`profile_${user.id}`);
-                    logReadingHabitCompletion(user.id, lessonId, userProfile);
-
-                    setRecentReward(bonusPoints);
-                    // Clear reward message after 5 seconds
-                    setTimeout(() => setRecentReward(null), 5000);
                 } catch (err) {
                     console.error('Error awarding lesson bonus:', err);
-                    setShowQuizModal(false);
-                    setPendingLessonId(null);
-                    return;
                 }
-            }
 
-            const updated = filterCoreCompletedLessonIds([...completedLessons, lessonId]);
-            setCompletedLessons(updated);
-
-            if (user) {
-                localStorage.setItem(`training_progress_${user.id}`, JSON.stringify(updated));
+                if (!pointsAwarded) {
+                    logReadingHabitCompletion(user.id, lessonId, userProfile);
+                }
 
                 // Sync to Supabase (match Training.jsx: retry so reading_points RPC is not orphaned)
                 const newLevel = calculateLevelFromProgress(updated);
@@ -780,7 +776,7 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                     await new Promise((r) => setTimeout(r, 350 * attempt));
                 }
                 if (updateError) {
-                    console.error('SafetyHub: failed to persist completed_lessons after bonus RPC:', updateError);
+                    console.error('SafetyHub: failed to persist completed_lessons:', updateError);
                 }
             }
             if (onProgressUpdate) {
