@@ -269,10 +269,17 @@ function AnimatedNumber({ value, loading }) {
   return <span>{formatCount(display)}</span>;
 }
 
+function landingGivenName(fullName) {
+  const trimmed = String(fullName || '').trim();
+  if (!trimmed || trimmed === '—') return '—';
+  if (trimmed.includes('@')) return trimmed.split('@')[0] || '—';
+  return trimmed.split(/\s+/)[0] || '—';
+}
+
 function mapLandingPlayer(row) {
   return {
     id: row.user_id || row.id || row.name,
-    name: row.full_name || row.name || '—',
+    name: landingGivenName(row.full_name || row.name),
     points: Number(row.points ?? row.score) || 0,
     district: row.district || '',
     avatarUrl: row.avatar_url || row.profile_image_url || row.photo_url || '',
