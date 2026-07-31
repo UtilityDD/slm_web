@@ -1528,6 +1528,22 @@ body,
     box-shadow: 0 -12px 32px rgba(15, 23, 42, 0.1);
   }
 
+  .landing-install-fab {
+    right: max(0.75rem, env(safe-area-inset-right, 0px));
+    bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Landing keeps a sticky login bar on mobile — clear it. */
+  .landing-install-fab--above-cta {
+    bottom: calc(6.75rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  @media (min-width: 640px) {
+    .landing-install-fab--above-cta {
+      bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+    }
+  }
+
   .landing-footer-modern {
     border-radius: 1rem;
     margin-left: 0;

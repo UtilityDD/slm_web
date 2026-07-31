@@ -5,6 +5,7 @@ import { DotLottiePlayer } from '@dotlottie/react-player';
 import noInternetLottie from '../assets/no_internet.lottie';
 import { SUPPORT_EMAIL } from '../config';
 import { EMOTIONAL_IMAGE_FOCUS } from '../data/awarenessStories';
+import PwaInstallFab from './PwaInstallFab';
 
 /**
  * Single-device session: generate a unique id for this device, persist it
@@ -86,6 +87,8 @@ function LoginPageShell({
     animate = 'animate-fadeIn',
     onOpenAwarenessStories,
     onGoHome,
+    language = 'en',
+    onInstallModalOpenChange,
 }) {
     return (
         <div className="landing-modern relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-[#fffdf7] px-4 py-6 text-slate-900 touch-manipulation safe-area-inset-top safe-area-inset-bottom">
@@ -125,6 +128,8 @@ function LoginPageShell({
                 {children}
                 {footer}
             </div>
+
+            <PwaInstallFab language={language} onOpenChange={onInstallModalOpenChange} />
         </div>
     );
 }
@@ -134,7 +139,7 @@ const loginShellNav = (setCurrentView) => ({
     onOpenAwarenessStories: () => setCurrentView('accident-stories'),
 });
 
-export default function Login({ onLogin, showNotification, setCurrentView }) {
+export default function Login({ onLogin, showNotification, setCurrentView, language = 'en', onInstallModalOpenChange }) {
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -145,6 +150,12 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
     const [showPassword, setShowPassword] = useState(false);
     const [emotionalImageIndex, setEmotionalImageIndex] = useState(0);
     const [connectionError, setConnectionError] = useState(false);
+
+    const shellProps = {
+        ...loginShellNav(setCurrentView),
+        language,
+        onInstallModalOpenChange,
+    };
 
     const emotionalImages = [
         '/assets/emotional/lineman.webp',
@@ -348,7 +359,7 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                 emotionalImageIndex={emotionalImageIndex}
                 emotionalImages={emotionalImages}
                 animate="animate-slideUp"
-                {...loginShellNav(setCurrentView)}
+                {...shellProps}
             >
                 <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
                     <div className="mb-8 text-center">
@@ -410,7 +421,7 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
                 emotionalImageIndex={emotionalImageIndex}
                 emotionalImages={emotionalImages}
                 animate="animate-slideUp"
-                {...loginShellNav(setCurrentView)}
+                {...shellProps}
             >
                 <div className="rounded-2xl border border-slate-200/80 bg-white p-8 text-center shadow-sm sm:p-10">
                     <div className="mb-6 inline-flex rounded-2xl border border-orange-100 bg-orange-50 p-4 shadow-sm">
@@ -450,7 +461,7 @@ export default function Login({ onLogin, showNotification, setCurrentView }) {
         <LoginPageShell
             emotionalImageIndex={emotionalImageIndex}
             emotionalImages={emotionalImages}
-            {...loginShellNav(setCurrentView)}
+            {...shellProps}
             footer={(
                 <a
                     href={`mailto:${SUPPORT_EMAIL}`}

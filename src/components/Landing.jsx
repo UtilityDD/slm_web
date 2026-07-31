@@ -8,6 +8,7 @@ import LandingSponsorsScroll from './LandingSponsorsScroll';
 import LandingSupportContact from './LandingSupportContact';
 import LandingVisitCounter from './LandingVisitCounter';
 import LandingNonprofitLineman from './LandingNonprofitLineman';
+import PwaInstallFab from './PwaInstallFab';
 import { fetchVisitCount } from '../utils/landingVisitService';
 import { fetchRegisteredUserCount } from '../utils/landingStatsService';
 
@@ -386,7 +387,7 @@ function SlimStat({ label, value, suffix = '', loading, bnFont }) {
   );
 }
 
-export default function Landing({ language, onLanguageChange, setCurrentView }) {
+export default function Landing({ language, onLanguageChange, setCurrentView, onInstallModalOpenChange }) {
   const t = copy[language] || copy.en;
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -798,6 +799,11 @@ export default function Landing({ language, onLanguageChange, setCurrentView }) 
         </button>
       </div>
 
+      <PwaInstallFab
+        language={language}
+        aboveStickyCta
+        onOpenChange={onInstallModalOpenChange}
+      />
     </div>
   );
 }

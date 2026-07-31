@@ -14,7 +14,6 @@ import Sidebar from "./components/Sidebar";
 import NetworkStatusListener from "./components/NetworkStatusListener";
 import WeatherAlertBanner from "./components/WeatherAlertBanner";
 import { useWeatherAlert } from "./hooks/useWeatherAlert";
-import PwaInstallPrompt from "./components/PwaInstallPrompt";
 import { UserIcon } from "./components/icons";
 import { APP_NAME, CURRENT_APP_VERSION, CURRENT_APP_RELEASE_NOTES, WEBSITE_URL, SUPPORT_EMAIL } from "./config";
 import { preloadSafetyLibraryAssets } from "./utils/assetPreloader";
@@ -165,6 +164,7 @@ export default function SmartLinemanUI() {
   const [sponsorAdPreview, setSponsorAdPreview] = useState(null);
   const [adContactOpen, setAdContactOpen] = useState(false);
   const [sponsorAdOpen, setSponsorAdOpen] = useState(false);
+  const [installPromptOpen, setInstallPromptOpen] = useState(false);
   const forumActivityTimerRef = useRef(null);
 
   const weatherDistrict = userProfile?.district || null;
@@ -1162,6 +1162,7 @@ export default function SmartLinemanUI() {
             onLanguageChange={handleLanguageSelect}
             setCurrentView={setCurrentView}
             user={user}
+            onInstallModalOpenChange={setInstallPromptOpen}
           />
         );
       }
@@ -1169,6 +1170,8 @@ export default function SmartLinemanUI() {
       if (currentView === 'login' || (currentView === 'update-password' && !user)) {
         return <Login
           initialView={currentView === 'update-password' ? 'update' : 'login'}
+          language={language}
+          onInstallModalOpenChange={setInstallPromptOpen}
           onLogin={(u) => {
             setUser(u);
             // Force a fresh read so the just-claimed session id is authoritative
@@ -1374,6 +1377,7 @@ export default function SmartLinemanUI() {
     isRetiring ||
     showSessionEndedModal ||
     profileNudgeOpen ||
+    installPromptOpen ||
     sidebarOpen ||
     currentView === 'accident-stories' ||
     currentView === 'verify' ||
@@ -1388,15 +1392,12 @@ export default function SmartLinemanUI() {
   const profileNudgeBlocked =
     overlayBlocked ||
     sidebarOpen ||
+    sponsorAdOpen ||
     ['login', 'verify', 'landing', 'update-password', 'accident-stories'].includes(currentView);
 
   return (
     <Suspense fallback={<PageLoader />}>
       <>
-      <PwaInstallPrompt
-        language={language}
-        offsetForBottomNav={!appLoading && !!user && !['login', 'verify', 'landing'].includes(currentView)}
-      />
       {appLoading ? (
         <PageLoader />
       ) : (
