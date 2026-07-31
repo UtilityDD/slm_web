@@ -611,14 +611,14 @@ export default function Landing({ language, onLanguageChange, setCurrentView, on
               <button
                 type="button"
                 onClick={() => setCurrentView('login')}
-                className="inline-flex min-h-[32px] items-center rounded-full bg-orange-500 px-3 py-1 text-[11px] font-bold text-white shadow-md shadow-orange-500/25 touch-manipulation transition-all active:scale-95 sm:hidden"
+                className={`inline-flex min-h-[32px] items-center rounded-full bg-orange-500 px-3 py-1 text-[11px] font-bold text-white shadow-md shadow-orange-500/25 touch-manipulation transition-all active:scale-95 sm:hidden ${bnFont ? 'font-bengali' : ''}`}
               >
                 {t.login}
               </button>
               <button
                 type="button"
                 onClick={() => setCurrentView('login')}
-                className="hidden items-center rounded-full bg-orange-500 px-5 py-2 text-sm font-bold text-white shadow-md shadow-orange-500/25 transition-all hover:bg-orange-600 active:scale-95 sm:inline-flex"
+                className={`hidden items-center rounded-full bg-orange-500 px-5 py-2 text-sm font-bold text-white shadow-md shadow-orange-500/25 transition-all hover:bg-orange-600 active:scale-95 sm:inline-flex ${bnFont ? 'font-bengali' : ''}`}
               >
                 {t.login}
               </button>
@@ -669,7 +669,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, on
               onClick={() => contactFormRef.current?.openWithTopic('join')}
               className="landing-join-cta touch-manipulation"
             >
-              <span className={bnFont ? 'landing-bn-ui' : ''}>{t.joinCta}</span>
+              <span className={bnFont ? 'font-bengali' : ''}>{t.joinCta}</span>
               <svg
                 className="landing-join-cta__tap"
                 viewBox="0 0 24 24"
@@ -817,7 +817,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, on
         <button
           type="button"
           onClick={() => setCurrentView('login')}
-          className="min-h-[52px] w-full rounded-full bg-orange-500 py-3.5 text-base font-black text-white shadow-lg shadow-orange-500/30 touch-manipulation transition-all active:scale-[0.98]"
+          className={`min-h-[52px] w-full rounded-full bg-orange-500 py-3.5 text-base font-black text-white shadow-lg shadow-orange-500/30 touch-manipulation transition-all active:scale-[0.98] ${bnFont ? 'font-bengali' : ''}`}
         >
           {t.login}
         </button>

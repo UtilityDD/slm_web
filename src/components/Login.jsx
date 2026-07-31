@@ -36,9 +36,18 @@ async function claimDeviceSession(userId) {
 
 function LoginLogo() {
     return (
-        <div className="flex select-none items-baseline justify-center gap-1.5">
-            <span className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">SmartLineMan</span>
-            <span className="shrink-0 rounded-full bg-orange-500 px-1.5 py-0.5 text-[10px] font-black text-white shadow-sm">.in</span>
+        <div className="flex select-none items-center justify-center gap-2.5 sm:gap-3">
+            <img
+                src="/icon-192.png"
+                alt=""
+                width={40}
+                height={40}
+                className="h-9 w-9 shrink-0 rounded-[0.65rem] object-cover shadow-sm ring-1 ring-slate-900/10 sm:h-10 sm:w-10 sm:rounded-xl"
+                decoding="async"
+            />
+            <span className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
+                SmartLineMan
+            </span>
         </div>
     );
 }

@@ -212,9 +212,6 @@ export default function MorePage({
                 : 'Share with linemen you know — learn through play, earn prizes, become smarter.'}
             </span>
           </span>
-          <span className={`mt-1 shrink-0 rounded-full bg-[#25D366] px-2.5 py-1 text-[10px] font-black text-white ${bn ? 'font-bengali' : ''}`}>
-            {bn ? 'শেয়ার' : 'Share'}
-          </span>
         </button>
 
         {sections.map((section) => {
