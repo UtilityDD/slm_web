@@ -35,8 +35,7 @@ const copy = {
     sponsorsTitle: 'Our sponsors',
     engageSupportBtn: 'How can you support us?',
     engageContactBtn: 'Contact us',
-    joinCta: 'Join SmartLineman',
-    joinHint: 'Are you a lineman? Join free.',
+    joinCta: 'Join',
     login: 'Login',
     language: 'Language',
     loading: 'Loading…',
@@ -63,8 +62,7 @@ const copy = {
     sponsorsTitle: 'যাঁরা পাশে দাঁড়িয়েছেন',
     engageSupportBtn: 'কীভাবে সাহায্য করবেন?',
     engageContactBtn: 'যোগাযোগ করুন',
-    joinCta: 'স্মার্ট লাইনম্যানে যোগ দিন',
-    joinHint: 'আপনি কি লাইনম্যান? যোগ দিন বিনামূল্যে।',
+    joinCta: 'যোগ দিন',
     login: 'লগ ইন করুন',
     language: 'ভাষা',
     loading: 'একটু অপেক্ষা করুন…',
@@ -650,15 +648,25 @@ export default function Landing({ language, onLanguageChange, setCurrentView, on
             )}
           </p>
           <div className="landing-join-block">
-            <p className={`landing-join-hint ${bnFont ? 'landing-bn-ui' : ''}`}>{t.joinHint}</p>
             <button
               type="button"
               onClick={() => contactFormRef.current?.openWithTopic('join')}
               className="landing-join-cta touch-manipulation"
             >
-              <span className={bnFont ? 'font-bengali' : ''}>{t.joinCta}</span>
-              <svg className="landing-join-cta__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 6l6 6-6 6" />
+              <span className={bnFont ? 'landing-bn-ui' : ''}>{t.joinCta}</span>
+              <svg
+                className="landing-join-cta__tap"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M10 10V4.5a1.75 1.75 0 0 1 3.5 0V12" />
+                <path d="M13.5 10.5a1.75 1.75 0 0 1 3.5 0V12" />
+                <path d="M17 11a1.75 1.75 0 0 1 3.5 0v4a6.5 6.5 0 0 1-6.5 6.5h-1.5a6 6 0 0 1-4.24-1.76l-3.6-3.6a1.75 1.75 0 0 1 2.48-2.48L10 15.5" />
               </svg>
             </button>
           </div>
