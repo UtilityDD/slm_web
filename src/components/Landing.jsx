@@ -63,7 +63,7 @@ const copy = {
     engageSupportBtn: 'কীভাবে সাহায্য করবেন?',
     engageContactBtn: 'যোগাযোগ করুন',
     joinCta: 'যোগ দিন',
-    login: 'লগ ইন করুন',
+    login: 'লগ ইন',
     language: 'ভাষা',
     loading: 'একটু অপেক্ষা করুন…',
     pts: 'পয়েন্ট',
@@ -566,9 +566,18 @@ export default function Landing({ language, onLanguageChange, setCurrentView, on
       <div className="landing-header-bar sticky top-0 z-20 safe-area-inset-top">
         <div className="mx-auto max-w-5xl px-3 sm:px-6">
           <div className="flex h-12 items-center justify-between gap-2 sm:h-14 sm:gap-3">
-            <div className="flex min-w-0 select-none items-baseline gap-1.5">
-              <span className="truncate text-sm font-black tracking-tight text-slate-900 sm:text-xl">SmartLineMan</span>
-              <span className="shrink-0 rounded-full bg-orange-500 px-1.5 py-0.5 text-[8px] font-black text-white shadow-sm sm:text-[10px]">.in</span>
+            <div className="flex min-w-0 select-none items-center gap-2 sm:gap-2.5">
+              <img
+                src="/icon-192.png"
+                alt=""
+                width={32}
+                height={32}
+                className="h-7 w-7 shrink-0 rounded-lg object-cover shadow-sm ring-1 ring-slate-900/10 sm:h-8 sm:w-8 sm:rounded-[0.6rem]"
+                decoding="async"
+              />
+              <span className="truncate text-sm font-black tracking-tight text-slate-900 sm:text-xl">
+                SmartLineMan
+              </span>
             </div>
 
             <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
