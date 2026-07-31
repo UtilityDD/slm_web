@@ -1,6 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 
-const STORAGE_DONE = 'slm_pwa_install_done';
+/**
+ * Older builds cached "installed" in localStorage, which survived an uninstall
+ * and left the button stuck on "already installed". Detection is live now, so
+ * these are only cleared.
+ */
+const LEGACY_KEYS = ['slm_pwa_install_done', 'slm_pwa_install_snooze_until'];
+
+function clearLegacyInstallFlags() {
+  try {
+    LEGACY_KEYS.forEach((key) => localStorage.removeItem(key));
+  } catch {
+    /* ignore */
+  }
+}
 
 export function isStandaloneDisplay() {
   if (typeof window === 'undefined') return true;
@@ -22,12 +35,10 @@ export function isIos() {
   return iOsDevice || iPadOs;
 }
 
-export function markInstallDone() {
-  try {
-    localStorage.setItem(STORAGE_DONE, '1');
-  } catch {
-    /* ignore */
-  }
+/** True only while actually running as the installed app. */
+function isRunningInstalled() {
+  if (typeof window === 'undefined') return false;
+  return Boolean(window.Capacitor) || isStandaloneDisplay();
 }
 
 function getDeferredPrompt() {
@@ -35,56 +46,77 @@ function getDeferredPrompt() {
   return (window.__pwaInstall && window.__pwaInstall.deferred) || null;
 }
 
+/** Chromium can tell us whether this PWA is installed right now. */
+async function hasInstalledRelatedApp() {
+  try {
+    if (typeof navigator === 'undefined' || !navigator.getInstalledRelatedApps) return false;
+    const apps = await navigator.getInstalledRelatedApps();
+    return Array.isArray(apps) && apps.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Landing-page install helpers.
- * `alreadyInstalled` — running as installed app / Capacitor / prior success.
- * `promptInstall` — native Chromium prompt, or `'manual'` when steps are needed.
+ * Live install state for the Install button.
+ * `alreadyInstalled` is re-checked when the tab regains focus so uninstalling
+ * on the device is picked up without a hard reload.
  */
 export function usePwaInstall() {
-  const [alreadyInstalled, setAlreadyInstalled] = useState(false);
-  const [, setPromptReady] = useState(0);
+  const [alreadyInstalled, setAlreadyInstalled] = useState(isRunningInstalled);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
+    clearLegacyInstallFlags();
 
-    const sync = () => {
-      const done =
-        Boolean(window.Capacitor) ||
-        isStandaloneDisplay() ||
-        Boolean(window.__pwaInstall?.installed) ||
-        (() => {
-          try {
-            return localStorage.getItem(STORAGE_DONE) === '1';
-          } catch {
-            return false;
-          }
-        })();
-      setAlreadyInstalled(done);
-      setPromptReady((n) => n + 1);
+    let cancelled = false;
+
+    const refresh = async () => {
+      if (isRunningInstalled()) {
+        if (!cancelled) setAlreadyInstalled(true);
+        return;
+      }
+      // A pending install prompt is proof the app is not installed.
+      if (getDeferredPrompt()) {
+        if (!cancelled) setAlreadyInstalled(false);
+        return;
+      }
+      const installed = await hasInstalledRelatedApp();
+      if (!cancelled) setAlreadyInstalled(installed);
     };
 
-    sync();
+    refresh();
 
     const onBeforeInstallPrompt = (e) => {
       e.preventDefault();
       if (window.__pwaInstall) window.__pwaInstall.deferred = e;
-      sync();
+      if (!cancelled) setAlreadyInstalled(false);
     };
 
     const onAppInstalled = () => {
-      markInstallDone();
       if (window.__pwaInstall) window.__pwaInstall.deferred = null;
-      setAlreadyInstalled(true);
+      if (!cancelled) setAlreadyInstalled(true);
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') refresh();
     };
 
     window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
     window.addEventListener('appinstalled', onAppInstalled);
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', onVisibility);
+
     return () => {
+      cancelled = true;
       window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
       window.removeEventListener('appinstalled', onAppInstalled);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, []);
 
+  /** Resolves to 'installed', 'dismissed', or 'manual' when steps are needed. */
   const promptInstall = useCallback(async () => {
     const ev = getDeferredPrompt();
     if (!ev?.prompt) return 'manual';
@@ -93,7 +125,6 @@ export function usePwaInstall() {
       await ev.prompt();
       const choice = await ev.userChoice;
       if (choice?.outcome === 'accepted') {
-        markInstallDone();
         setAlreadyInstalled(true);
         return 'installed';
       }
