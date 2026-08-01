@@ -625,7 +625,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             searchProceed: "Proceed",
             noDistrict: "No Update",
             leaderboardTimeInfo:
-                "The server uses one time zone and your phone uses another, so “This month” here can look a little different from your calendar. All points still count—nothing is removed, and the contest stays fair."
+                "This month follows India time (IST). Hourly scores shown are after wrong-answer penalties — same rule as the monthly board."
         },
         bn: {
             title: "প্রতিযোগিতা",
@@ -687,7 +687,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
             searchProceed: "সার্চ করুন",
             noDistrict: "তথ্য নেই",
             leaderboardTimeInfo:
-                "সার্ভার ও আপনার ফোনের সময়ের পার্থক্যের কারণে ‘এই মাসের’ পয়েন্টে সামান্য অমিল লাগতে পারে। তবে আপনার সব পয়েন্টই সঠিকভাবে যোগ হচ্ছে, নিশ্চিন্তে খেলে যান! 💪"
+                "এই মাস ভারতীয় সময় (IST) অনুযায়ী গণনা হয়। ঘণ্টার কুইজে দেখানো স্কোর ভুল উত্তরের পেনাল্টি বাদ দিয়ে — মাসিক বোর্ডের মতোই।"
         }
     }[language];
 
@@ -913,7 +913,10 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
         return slots.reverse();
     };
 
-    const getTodayScore = () => todayAttempts.reduce((sum, a) => sum + (a.score || 0), 0);
+    const getTodayNetScore = () => todayAttempts.reduce(
+        (sum, attempt) => sum + (Number(attempt.score) || 0) - (Number(attempt.penalty) || 0),
+        0
+    );
 
     const getStreak = (slots) => {
         const now = getIstDate(getSyncedTime());
@@ -1513,7 +1516,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
 
     const fetchHallOfFameGallery = async (forceRefresh = false) => {
         const hasCurrentBoards = hallOfFameData.length > 0
-            && hallOfFameData[0]?.boardsVersion === 8;
+            && hallOfFameData[0]?.boardsVersion === 9;
         if (!forceRefresh && hasCurrentBoards) return;
         
         setLoadingGallery(true);
@@ -2649,9 +2652,14 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                                 <p className="text-base font-black tabular-nums leading-none text-slate-900 sm:text-xl">{formatLeaderboardNumber(userRank?.score)}</p>
                             </div>
                             <div className="bg-orange-50 px-1.5 py-2 text-center sm:px-3 sm:py-3">
-                                <p className="mb-0.5 text-[8px] font-bold uppercase tracking-[0.06em] text-orange-700 sm:mb-1 sm:text-[9px]">{language === 'en' ? 'Today' : 'আজ'}</p>
+                                <p className="mb-0.5 text-[8px] font-bold uppercase tracking-[0.06em] text-orange-700 sm:mb-1 sm:text-[9px]">
+                                    {language === 'en' ? 'Today · Net' : 'আজ · নেট'}
+                                </p>
                                 <p className="text-base font-black tabular-nums leading-none text-orange-600 sm:text-xl">
-                                    +<CountUpNumber value={getTodayScore()} format={(n) => formatLeaderboardNumber(n)} />
+                                    <CountUpNumber
+                                        value={getTodayNetScore()}
+                                        format={(n) => `${n > 0 ? '+' : ''}${formatLeaderboardNumber(n)}`}
+                                    />
                                 </p>
                             </div>
                             <div className="bg-amber-50 px-1.5 py-2 text-center sm:px-3 sm:py-3">

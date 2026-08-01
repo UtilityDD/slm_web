@@ -400,11 +400,12 @@ export function mapMonthlyRow(item, year, month) {
     };
 }
 
+/** Month runs on the IST calendar players compete in, expressed as UTC instants. */
 function monthBounds(year, month) {
-    const start = `${year}-${String(month).padStart(2, '0')}-01T00:00:00`;
     const endMonth = month === 12 ? 1 : month + 1;
     const endYear = month === 12 ? year + 1 : year;
-    const end = `${endYear}-${String(endMonth).padStart(2, '0')}-01T00:00:00`;
+    const start = new Date(`${year}-${String(month).padStart(2, '0')}-01T00:00:00+05:30`).toISOString();
+    const end = new Date(`${endYear}-${String(endMonth).padStart(2, '0')}-01T00:00:00+05:30`).toISOString();
     return { start, end };
 }
 

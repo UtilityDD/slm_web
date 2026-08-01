@@ -47,6 +47,15 @@ function slotTimeParts(hour) {
     return { hour12, period };
 }
 
+function getSlotNetScore(slot) {
+    return (Number(slot?.score) || 0) - (Number(slot?.penalty) || 0);
+}
+
+function formatSignedScore(value) {
+    if (value > 0) return `+${value}`;
+    return String(value);
+}
+
 function HourlyTimeBadge({ hour, variant = 'default', className = '' }) {
     const { hour12, period } = slotTimeParts(hour);
     const variants = {
@@ -143,16 +152,19 @@ function RingCenterFocus({ activeSlot, language, timeLeft, labels, hourlyQuizRef
     }
 
     if (activeSlot.status === 'played') {
+        const netScore = getSlotNetScore(activeSlot);
         return (
             <div className="flex flex-col items-center justify-center text-center">
                 <span className="mb-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-600">
-                    {bn ? 'সম্পন্ন' : 'Done'}
+                    {bn ? 'নেট স্কোর' : 'Net score'}
                 </span>
                 <p className="text-3xl font-black tabular-nums leading-none text-emerald-600 sm:text-4xl">
-                    +{activeSlot.score}
+                    {formatSignedScore(netScore)}
                 </p>
                 {activeSlot.penalty > 0 && (
-                    <p className="mt-1 text-[11px] font-bold text-red-500">−{activeSlot.penalty}</p>
+                    <p className="mt-1 text-[11px] font-bold text-red-500">
+                        {bn ? 'পেনাল্টি' : 'Penalty'} −{activeSlot.penalty}
+                    </p>
                 )}
             </div>
         );
@@ -451,9 +463,11 @@ export default function HourlyDayRing({
                                     {language === 'en' ? 'Completed' : 'সম্পন্ন'}
                                 </p>
                                 <ScoreBlock
-                                    label={language === 'en' ? 'Score' : 'স্কোর'}
-                                    value={`+${activeSlot.score}`}
-                                    suffix={activeSlot.penalty > 0 ? `−${activeSlot.penalty}` : null}
+                                    label={language === 'en' ? 'Net score' : 'নেট স্কোর'}
+                                    value={formatSignedScore(getSlotNetScore(activeSlot))}
+                                    suffix={activeSlot.penalty > 0
+                                        ? `${language === 'en' ? 'Penalty ' : 'পেনাল্টি '}−${activeSlot.penalty}`
+                                        : null}
                                     accent="emerald"
                                 />
                             </div>

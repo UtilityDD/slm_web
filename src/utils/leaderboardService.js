@@ -10,6 +10,181 @@ import {
     monthBounds,
 } from "./monthlyEncouragementBoards";
 
+const IST_OFFSET_MS = 330 * 60 * 1000;
+
+function utcMonthStart(year, month) {
+    return new Date(Date.UTC(year, month - 1, 1));
+}
+
+/** Calendar year-month key in Asia/Kolkata (e.g. "2026-8"). */
+function istYearMonthKey(iso) {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: 'numeric',
+    }).formatToParts(new Date(iso));
+    const y = parts.find((p) => p.type === 'year')?.value;
+    const m = parts.find((p) => p.type === 'month')?.value;
+    return `${Number(y)}-${Number(m)}`;
+}
+
+/**
+ * monthly_leaderboard_view groups attempts by UTC month, but players compete on the IST
+ * calendar. Only these two 5.5h spans fall in different months under the two clocks, so a
+ * month can be re-attributed by moving them instead of re-aggregating every attempt.
+ */
+function istBoundaryWindows(year, month) {
+    const startUtc = utcMonthStart(year, month);
+    const endUtc = utcMonthStart(month === 12 ? year + 1 : year, month === 12 ? 1 : month + 1);
+    return {
+        leading: { start: new Date(startUtc.getTime() - IST_OFFSET_MS), end: startUtc },
+        trailing: { start: new Date(endUtc.getTime() - IST_OFFSET_MS), end: endUtc },
+    };
+}
+
+async function fetchAttemptsBetween(start, end) {
+    const pageSize = 1000;
+    let offset = 0;
+    const all = [];
+
+    while (true) {
+        const { data, error } = await supabase
+            .from('quiz_attempts')
+            .select('user_id, quiz_id, score, penalty')
+            .gte('created_at', start.toISOString())
+            .lt('created_at', end.toISOString())
+            .range(offset, offset + pageSize - 1);
+
+        if (error) throw error;
+        if (!data?.length) break;
+        all.push(...data);
+        if (data.length < pageSize) break;
+        offset += pageSize;
+    }
+
+    return all;
+}
+
+function accumulateIstDeltas(deltas, rows, sign) {
+    for (const row of rows || []) {
+        if (!row.user_id) continue;
+        const score = Number(row.score) || 0;
+        const penalty = Number(row.penalty) || 0;
+        const entry = deltas.get(row.user_id) || { points: 0, reading_points: 0, total_penalties: 0 };
+        entry.points += sign * (score - penalty);
+        entry.total_penalties += sign * penalty;
+        if (String(row.quiz_id || '').startsWith('lesson_bonus')) {
+            entry.reading_points += sign * score;
+        }
+        deltas.set(row.user_id, entry);
+    }
+}
+
+/** Per-user corrections that turn a UTC-bucketed month row into an IST month row. */
+async function fetchIstMonthDeltas(year, month) {
+    try {
+        const { leading, trailing } = istBoundaryWindows(year, month);
+        const [leadingRows, trailingRows] = await Promise.all([
+            fetchAttemptsBetween(leading.start, leading.end),
+            fetchAttemptsBetween(trailing.start, trailing.end),
+        ]);
+
+        const deltas = new Map();
+        accumulateIstDeltas(deltas, leadingRows, 1);
+        accumulateIstDeltas(deltas, trailingRows, -1);
+
+        for (const [userId, delta] of deltas) {
+            if (delta.points === 0 && delta.reading_points === 0 && delta.total_penalties === 0) {
+                deltas.delete(userId);
+            }
+        }
+        return deltas;
+    } catch (err) {
+        console.warn('[leaderboard] IST month correction failed:', err?.message || err);
+        return new Map();
+    }
+}
+
+async function fetchProfilesForIds(userIds) {
+    const unique = [...new Set((userIds || []).filter(Boolean))];
+    if (unique.length === 0) return {};
+
+    const byId = {};
+    const chunkSize = 80;
+
+    for (let i = 0; i < unique.length; i += chunkSize) {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('id, full_name, avatar_url, district, training_level, slm_id, created_at, reading_points')
+            .in('id', unique.slice(i, i + chunkSize));
+
+        if (error) {
+            console.warn('[leaderboard] profile lookup failed:', error.message);
+            continue;
+        }
+        for (const row of data || []) byId[row.id] = row;
+    }
+
+    return byId;
+}
+
+/** Players whose only attempts sit inside a boundary window have no view row for the month. */
+function buildBoundaryOnlyRow(userId, delta, profile) {
+    return {
+        user_id: userId,
+        full_name: profile.full_name,
+        avatar_url: profile.avatar_url ?? null,
+        district: profile.district ?? null,
+        training_level: profile.training_level ?? 0,
+        points: delta.points,
+        reading_points: delta.reading_points,
+        quiz_points: delta.points - delta.reading_points,
+        total_penalties: delta.total_penalties,
+        profiles: {
+            reading_points: profile.reading_points ?? 0,
+            district: profile.district ?? null,
+            created_at: profile.created_at ?? null,
+            slm_id: profile.slm_id ?? null,
+        },
+    };
+}
+
+function applyIstDeltasToRows(rows, deltas, profileById = {}) {
+    if (!deltas || deltas.size === 0) return rows || [];
+
+    const adjusted = (rows || []).map((row) => {
+        const delta = deltas.get(row.user_id);
+        if (!delta) return row;
+
+        const points = (Number(row.points) || 0) + delta.points;
+        const readingPoints = (Number(row.reading_points) || 0) + delta.reading_points;
+        return {
+            ...row,
+            points,
+            reading_points: readingPoints,
+            quiz_points: points - readingPoints,
+            total_penalties: (Number(row.total_penalties) || 0) + delta.total_penalties,
+        };
+    });
+
+    const present = new Set(adjusted.map((row) => row.user_id));
+    for (const [userId, delta] of deltas) {
+        if (present.has(userId)) continue;
+        const profile = profileById[userId];
+        if (!profile) continue;
+        adjusted.push(buildBoundaryOnlyRow(userId, delta, profile));
+    }
+
+    return adjusted
+        .filter((row) => (Number(row.points) || 0) !== 0 || (Number(row.total_penalties) || 0) !== 0)
+        .sort((a, b) => (Number(b.points) || 0) - (Number(a.points) || 0));
+}
+
+function missingDeltaUserIds(rows, deltas) {
+    const present = new Set((rows || []).map((row) => row.user_id));
+    return [...deltas.keys()].filter((userId) => !present.has(userId));
+}
+
 /** Paginate quiz_attempts — PostgREST defaults to 1000 rows max per request. */
 async function fetchMonthlyActivityAttempts(start, end) {
     const pageSize = 1000;
@@ -186,24 +361,30 @@ export const leaderboardService = {
         const now = new Date();
         const m = now.getMonth() + 1;
         const y = now.getFullYear();
-        const cacheKey = `leaderboard_monthly_${y}_${m}`;
+        const cacheKey = `leaderboard_monthly_ist_${y}_${m}`;
 
         return requestManager.fetch(
             cacheKey,
             async () => {
-                const { data, error } = await supabase
-                    .from('monthly_leaderboard_view')
-                    .select('*, profiles(reading_points, district, created_at)')
-                    .eq('month_num', m)
-                    .eq('year_num', y)
-                    .order('points', { ascending: false })
-                    .limit(50);
+                const [viewRes, deltas] = await Promise.all([
+                    supabase
+                        .from('monthly_leaderboard_view')
+                        .select('*, profiles(reading_points, district, created_at)')
+                        .eq('month_num', m)
+                        .eq('year_num', y)
+                        .order('points', { ascending: false })
+                        .limit(100),
+                    fetchIstMonthDeltas(y, m),
+                ]);
 
-                if (error) throw error;
+                if (viewRes.error) throw viewRes.error;
 
-                // Process data for display. DB view buckets by server/session month on created_at;
-                // lesson_bonus rows can land in an adjacent month vs the client's local "this month"
-                // filter, so points can under-count reading while profiles.reading_points is correct.
+                const profileById = await fetchProfilesForIds(missingDeltaUserIds(viewRes.data, deltas));
+                const data = applyIstDeltasToRows(viewRes.data, deltas, profileById).slice(0, 50);
+
+                // Process data for display. The view buckets by UTC month on created_at, so the
+                // deltas above re-attribute the IST boundary hours; lesson_bonus rows can still land
+                // in an adjacent month, leaving points under-counted while profiles.reading_points is correct.
                 const startOfMonth = new Date(y, m - 1, 1).getTime();
 
                 const rows = data.map(item => {
@@ -239,7 +420,7 @@ export const leaderboardService = {
      * Fetch Hall of Fame Gallery — past months from March 2026, all board types (top 3 each).
      */
     fetchHallOfFame: async (forceRefresh = false) => {
-        const cacheKey = 'hall_of_fame_gallery_v8';
+        const cacheKey = 'hall_of_fame_gallery_v9';
         return requestManager.fetch(
             cacheKey,
             async () => {
@@ -259,7 +440,7 @@ export const leaderboardService = {
                     supabase
                         .from('quiz_attempts')
                         .select('user_id, quiz_id, score, created_at')
-                        .gte('created_at', '2026-03-01T00:00:00')
+                        .gte('created_at', '2026-02-28T18:30:00.000Z') // IST 2026-03-01 00:00
                         .or('quiz_id.like.hourly-challenge-%,quiz_id.like.lesson_bonus%'),
                 ]);
 
@@ -267,7 +448,27 @@ export const leaderboardService = {
                 if (activityRes.error) throw activityRes.error;
 
                 const monthlyRows = monthlyRes.data || [];
-                const userIds = [...new Set(monthlyRows.map((r) => r.user_id).filter(Boolean))];
+
+                const monthKeysInView = [
+                    ...new Set(monthlyRows.map((row) => `${row.year_num}-${row.month_num}`)),
+                ];
+                const deltasByMonth = Object.fromEntries(
+                    await Promise.all(
+                        monthKeysInView.map(async (key) => {
+                            const [ky, km] = key.split('-').map(Number);
+                            return [key, await fetchIstMonthDeltas(ky, km)];
+                        })
+                    )
+                );
+
+                const userIds = [
+                    ...new Set(
+                        [
+                            ...monthlyRows.map((r) => r.user_id),
+                            ...Object.values(deltasByMonth).flatMap((deltas) => [...deltas.keys()]),
+                        ].filter(Boolean)
+                    ),
+                ];
                 let profileRows = [];
                 if (userIds.length > 0) {
                     const { data: profilesData, error: profilesError } = await supabase
@@ -303,15 +504,16 @@ export const leaderboardService = {
                 }
                 for (const key of Object.keys(byMonth)) {
                     const [y, m] = key.split('-').map(Number);
-                    byMonth[key].sort(
-                        (a, b) => mapMonthlyRow(b, y, m).points - mapMonthlyRow(a, y, m).points
-                    );
+                    byMonth[key] = applyIstDeltasToRows(
+                        byMonth[key],
+                        deltasByMonth[key] || new Map(),
+                        profileById
+                    ).sort((a, b) => mapMonthlyRow(b, y, m).points - mapMonthlyRow(a, y, m).points);
                 }
 
                 const activityByMonth = {};
                 for (const row of activityRes.data || []) {
-                    const d = new Date(row.created_at);
-                    const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
+                    const key = istYearMonthKey(row.created_at);
                     if (!activityByMonth[key]) activityByMonth[key] = [];
                     activityByMonth[key].push(row);
                 }
@@ -352,7 +554,7 @@ export const leaderboardService = {
                         month: m,
                         year: y,
                         boards,
-                        boardsVersion: 8,
+                        boardsVersion: 9,
                         prizeWinners: encouragement.prizeWinners,
                         winners: championWinners,
                     };
@@ -372,7 +574,7 @@ export const leaderboardService = {
         const y = now.getFullYear();
         const prevM = m === 1 ? 12 : m - 1;
         const prevY = m === 1 ? y - 1 : y;
-        const cacheKey = `leaderboard_encouragement_${y}_${m}_${language}`;
+        const cacheKey = `leaderboard_encouragement_ist_${y}_${m}_${language}`;
 
         return requestManager.fetch(
             cacheKey,
@@ -380,7 +582,7 @@ export const leaderboardService = {
                 const cutoff = getNewPlayerCutoff(y, m);
                 const { start, end } = monthBounds(y, m);
 
-                const [currentRes, prevRes, joinersRes, activityRows] = await Promise.all([
+                const [currentRes, prevRes, joinersRes, activityRows, currentDeltas, prevDeltas] = await Promise.all([
                     supabase
                         .from('monthly_leaderboard_view')
                         .select('*, profiles(reading_points, district, created_at, slm_id)')
@@ -400,6 +602,8 @@ export const leaderboardService = {
                         .select('id, full_name, avatar_url, district, training_level, slm_id, created_at, reading_points')
                         .gte('created_at', cutoff.toISOString()),
                     fetchMonthlyActivityAttempts(start, end),
+                    fetchIstMonthDeltas(y, m),
+                    fetchIstMonthDeltas(prevY, prevM),
                 ]);
 
                 if (currentRes.error) throw currentRes.error;
@@ -408,9 +612,14 @@ export const leaderboardService = {
 
                 const activity = aggregateActivityAttempts(activityRows);
 
+                const boundaryProfiles = await fetchProfilesForIds([
+                    ...missingDeltaUserIds(currentRes.data, currentDeltas),
+                    ...missingDeltaUserIds(prevRes.data, prevDeltas),
+                ]);
+
                 const encouragement = buildEncouragementBoards({
-                    currentRows: currentRes.data || [],
-                    previousRows: prevRes.data || [],
+                    currentRows: applyIstDeltasToRows(currentRes.data, currentDeltas, boundaryProfiles),
+                    previousRows: applyIstDeltasToRows(prevRes.data, prevDeltas, boundaryProfiles),
                     joinerProfiles: joinersRes.data || [],
                     activity,
                     year: y,

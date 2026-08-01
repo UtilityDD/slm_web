@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.76";
+export const CURRENT_APP_VERSION = "1.3.77";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Lessons 1.2 & 1.5 — discharge rod ratings and PVC jugaad warning.",
-  bn: "পাঠ ১.২ ও ১.৫ — ডিসচার্জ রডের রেটিং ও পিভিসি জুগাড় সতর্কতা।",
+  en: "Some users reported a monthly score mismatch — that’s fixed. Plays between 12:00 AM and 5:30 AM IST were counted in the previous month; they now count in the correct India-time month. Some scores may go up or down.",
+  bn: "কিছু ব্যবহারকারীর মাসিক স্কোর মিলছিল না — সেই সমস্যা ঠিক করা হয়েছে। আগে রাত ১২টা থেকে সকাল ৫:৩০ (IST) এর মধ্যে খেলা পয়েন্ট আগের মাসে চলে যেত; এখন ভারতীয় সময় অনুযায়ী সঠিক মাসে যোগ হবে। এজন্য কিছুজনের স্কোর বাড়তে বা কমতে পারে।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 export const SUPPORT_EMAIL = "support@smartlineman.in";
