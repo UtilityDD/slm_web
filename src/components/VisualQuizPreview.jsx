@@ -16,6 +16,7 @@ import {
     VISUAL_QUIZ_LADDER_PREVIEW_URL,
     VISUAL_QUIZ_TRANSFORMER_TROUBLESHOOTING_PREVIEW_URL,
     VISUAL_QUIZ_SWITCHYARD_PREVIEW_URL,
+    VISUAL_QUIZ_PTR_PARTS_PREVIEW_URL,
     VISUAL_QUIZ_LIVE_CSV_URL,
     parseVisualQuizCSV,
     rowsToVisualQuestions,
@@ -74,6 +75,13 @@ const SOURCES = {
         labelEn: 'Draft: Switchyard safe work',
         url: VISUAL_QUIZ_SWITCHYARD_PREVIEW_URL,
     },
+    ptrPartsPreview: {
+        id: 'ptrPartsPreview',
+        labelBn: 'Draft: PTR parts identification',
+        labelEn: 'Draft: PTR parts identification',
+        url: VISUAL_QUIZ_PTR_PARTS_PREVIEW_URL,
+    },
+
     batch02: { id: 'batch02', labelBn: 'Draft: Batch 02 (vq-120+)', labelEn: 'Draft: Batch 02 (vq-120+)', url: VISUAL_QUIZ_BATCH_02_URL },
     batch03: { id: 'batch03', labelBn: 'Draft: Batch 03 — TCEE Unit 3 Symbols (vq-138+)', labelEn: 'Draft: Batch 03 — TCEE Unit 3 Symbols (vq-138+)', url: VISUAL_QUIZ_BATCH_03_URL },
     batch04: { id: 'batch04', labelBn: 'Draft: Batch 04 — Lineman Hand Tools (vq-162+)', labelEn: 'Draft: Batch 04 — Lineman Hand Tools (vq-162+)', url: VISUAL_QUIZ_BATCH_04_URL },

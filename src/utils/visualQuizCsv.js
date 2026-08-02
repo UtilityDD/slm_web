@@ -21,6 +21,8 @@ export const VISUAL_QUIZ_TRANSFORMER_TROUBLESHOOTING_PREVIEW_URL =
     '/quiz_management/visual_quiz_batch_transformer_troubleshooting_preview.csv';
 export const VISUAL_QUIZ_SWITCHYARD_PREVIEW_URL =
     '/quiz_management/visual_quiz_batch_switchyard_preview.csv';
+export const VISUAL_QUIZ_PTR_PARTS_PREVIEW_URL =
+    '/quiz_management/visual_quiz_batch_ptr_parts_preview.csv';
 
 const splitCSVLine = (line) => {
     const result = [];
