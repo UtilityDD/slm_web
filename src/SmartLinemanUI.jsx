@@ -26,12 +26,14 @@ import { LifeSkillRadioProvider, RadioScrollPaddingBridge, RadioSafetyGuard } fr
 import IdleStoryReminder from "./components/IdleStoryReminder";
 import SponsorAdOverlay from "./components/SponsorAdOverlay";
 import ProfileFieldNudge from "./components/ProfileFieldNudge";
+import PushOptInPrompt from "./components/PushOptInPrompt";
 import LandingSupportContact from "./components/LandingSupportContact";
 import { libraryService } from "./utils/libraryService";
 import { trackAppVisit } from "./utils/landingVisitService";
 import PageLoader from "./components/loaders/PageLoader";
 import GuestPreviewBanner from "./components/GuestPreviewBanner";
 import { isGuestUser, sanitizeGuestProfileForDisplay } from "./utils/guestPreview";
+import { isNativeCapacitorPlatform, syncWebPushSubscription } from "./utils/webPush";
 
 // Lazy load heavy components for code splitting
 const Competitions = lazy(() => import("./components/Competitions"));
@@ -160,6 +162,7 @@ export default function SmartLinemanUI() {
   const [forumPendingQuestionId, setForumPendingQuestionId] = useState(null);
   const [profileNudgeOpen, setProfileNudgeOpen] = useState(false);
   const [profileNudgePreview, setProfileNudgePreview] = useState(null);
+  const [pushOptInOpen, setPushOptInOpen] = useState(false);
   const [idleStoryPreview, setIdleStoryPreview] = useState(null);
   const [sponsorAdPreview, setSponsorAdPreview] = useState(null);
   const [adContactOpen, setAdContactOpen] = useState(false);
@@ -330,6 +333,15 @@ export default function SmartLinemanUI() {
       return () => clearTimeout(timer);
     }
   }, [user]);
+
+  // Silent Web Push sync when permission already granted (no prompt, no existing-flow changes).
+  useEffect(() => {
+    if (!user?.id || isNativeCapacitorPlatform()) return undefined;
+    const timer = setTimeout(() => {
+      syncWebPushSubscription(user.id).catch(() => {});
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [user?.id]);
 
   // Scroll to Top on View Change
   useEffect(() => {
@@ -1362,7 +1374,7 @@ export default function SmartLinemanUI() {
     currentView === 'verify' ||
     (currentView === 'update-password' && !user);
 
-  const idleReminderBlocked = overlayBlocked || profileNudgeOpen;
+  const idleReminderBlocked = overlayBlocked || profileNudgeOpen || pushOptInOpen;
 
   // Logged-out: allow on landing/login (with dwell delay in overlay).
   // Do not reuse overlayBlocked wholesale — that always blocks `landing`.
@@ -1377,6 +1389,7 @@ export default function SmartLinemanUI() {
     isRetiring ||
     showSessionEndedModal ||
     profileNudgeOpen ||
+    pushOptInOpen ||
     installPromptOpen ||
     sidebarOpen ||
     currentView === 'accident-stories' ||
@@ -1393,6 +1406,14 @@ export default function SmartLinemanUI() {
     overlayBlocked ||
     sidebarOpen ||
     sponsorAdOpen ||
+    pushOptInOpen ||
+    ['login', 'verify', 'landing', 'update-password', 'accident-stories'].includes(currentView);
+
+  const pushOptInBlocked =
+    overlayBlocked ||
+    sidebarOpen ||
+    sponsorAdOpen ||
+    profileNudgeOpen ||
     ['login', 'verify', 'landing', 'update-password', 'accident-stories'].includes(currentView);
 
   return (
@@ -1749,6 +1770,14 @@ export default function SmartLinemanUI() {
                 onPreviewClose={() => setProfileNudgePreview(null)}
                 onOpenChange={setProfileNudgeOpen}
                 onSaved={() => fetchProfile(user, true)}
+              />
+            )}
+            {user && !isGuestUser(userProfile) && (
+              <PushOptInPrompt
+                user={user}
+                language={language}
+                blocked={pushOptInBlocked}
+                onOpenChange={setPushOptInOpen}
               />
             )}
             {user &&

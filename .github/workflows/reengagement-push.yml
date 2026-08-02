@@ -1,0 +1,40 @@
+# Daily inactive-user Web Push (PWA re-engagement).
+# Does not touch app DB schema — only invokes the Edge Function.
+#
+# Required GitHub secrets:
+#   SUPABASE_URL
+#   SUPABASE_ANON_KEY          (satisfies Edge Function JWT verification)
+#   REENGAGEMENT_CRON_SECRET   (same value as the Edge Function secret)
+#
+# Optional: set repository variable REENGAGEMENT_INACTIVE_DAYS (default 7)
+
+name: Reengagement Push
+
+on:
+  schedule:
+    # 11:30 UTC ≈ 17:00 IST
+    - cron: "30 11 * * *"
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call send-reengagement-push
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          CRON_SECRET: ${{ secrets.REENGAGEMENT_CRON_SECRET }}
+          INACTIVE_DAYS: ${{ vars.REENGAGEMENT_INACTIVE_DAYS }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ] || [ -z "$CRON_SECRET" ]; then
+            echo "Missing SUPABASE_URL, SUPABASE_ANON_KEY or REENGAGEMENT_CRON_SECRET secrets"
+            exit 1
+          fi
+          DAYS="${INACTIVE_DAYS:-7}"
+          curl -fsS -X POST \
+            "${SUPABASE_URL}/functions/v1/send-reengagement-push" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "x-reengagement-secret: ${CRON_SECRET}" \
+            -H "Content-Type: application/json" \
+            -d "{\"inactiveDays\": ${DAYS}, \"cooldownDays\": 7}"

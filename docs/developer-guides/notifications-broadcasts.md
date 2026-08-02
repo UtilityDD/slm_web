@@ -50,6 +50,7 @@ Important:
 
 - This is **in-app modal delivery**, not OS push notification.
 - Users see it when they open/reload/login to the app.
+- For closed-app prize reminders (PWA Web Push), see `docs/developer-guides/web-push-reengagement.md`.
 
 ### Realtime
 

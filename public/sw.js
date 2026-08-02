@@ -1,4 +1,4 @@
-const CACHE_NAME = 'suraksha-sathi-v30-1.3.77';
+const CACHE_NAME = 'suraksha-sathi-v30-1.3.78-push';
 const LOADER_IMAGES = [
   '/images/loader/helmet.webp',
   '/images/loader/goggles.webp',
@@ -100,5 +100,69 @@ self.addEventListener('fetch', (event) => {
     fetch(event.request).catch(() => {
       return caches.match(event.request);
     })
+  );
+});
+
+// --- Web Push (re-engagement). Additive; does not change cache/fetch behaviour. ---
+self.addEventListener('push', (event) => {
+  let payload = {
+    title: 'SmartLineman',
+    body: 'এই মাসের পুরস্কার মিস করবেন না — আজই খেলুন।',
+    url: '/',
+  };
+
+  try {
+    if (event.data) {
+      const data = event.data.json();
+      payload = { ...payload, ...data };
+    }
+  } catch {
+    try {
+      const text = event.data && event.data.text();
+      if (text) payload.body = text;
+    } catch {
+      /* use defaults */
+    }
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(payload.title || 'SmartLineman', {
+      body: payload.body || '',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      data: { url: payload.url || '/' },
+      tag: payload.tag || 'slm-reengagement',
+      renotify: true,
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/';
+
+  event.waitUntil(
+    (async () => {
+      const allClients = await self.clients.matchAll({
+        type: 'window',
+        includeUncontrolled: true,
+      });
+      for (const client of allClients) {
+        if ('focus' in client) {
+          await client.focus();
+          if ('navigate' in client && targetUrl) {
+            try {
+              await client.navigate(targetUrl);
+            } catch {
+              /* ignore navigate failures */
+            }
+          }
+          return;
+        }
+      }
+      if (self.clients.openWindow) {
+        await self.clients.openWindow(targetUrl);
+      }
+    })()
   );
 });

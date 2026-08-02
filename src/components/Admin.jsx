@@ -18,6 +18,19 @@ import AdminAnalytics from './AdminAnalytics';
 import DeleteUserConfirmationModal from './DeleteUserConfirmationModal';
 import MyPPE from './safety/MyPPE';
 import MyTools from './safety/MyTools';
+import {
+  describeUserAgent,
+  describeWebPushBlockReason,
+  enableWebPush,
+  fetchAdminPushDevices,
+  fetchAdminPushStats,
+  getNotificationPermission,
+  getVapidPublicKey,
+  getWebPushBlockReason,
+  isWebPushSupported,
+  previewLocalPushNotification,
+  sendAdminTestPush,
+} from '../utils/webPush';
 
 const ADMIN_THEME = {
   shell: 'min-h-full bg-[#fffdf7] text-slate-900',
@@ -861,6 +874,13 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
   const [passwordResetResult, setPasswordResetResult] = useState(null); // { name, phone, password }
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showNoticesSection, setShowNoticesSection] = useState(false);
+  const [showPushTestSection, setShowPushTestSection] = useState(false);
+  const [pushStats, setPushStats] = useState(null);
+  const [pushStatsError, setPushStatsError] = useState(null);
+  const [pushDevices, setPushDevices] = useState(null);
+  const [pushTestBusy, setPushTestBusy] = useState(null); // 'enable' | 'local' | 'remote' | 'stats' | null
+  const [pushTestMessage, setPushTestMessage] = useState(null);
+  const [pushTestTargetPhone, setPushTestTargetPhone] = useState('');
   const [showSystemCheckSection, setShowSystemCheckSection] = useState(false);
   const [showProfileNudgePreviewSection, setShowProfileNudgePreviewSection] = useState(false);
   const [nudgePreviewRequireMode, setNudgePreviewRequireMode] = useState(false);
@@ -1192,6 +1212,151 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
     } catch (err) {
       console.error(err);
       alert(err.message || 'Failed to delete notice');
+    }
+  };
+
+  const loadPushStats = async () => {
+    if (!user?.id || userProfile?.role !== 'admin') return;
+    setPushTestBusy('stats');
+    setPushStatsError(null);
+    try {
+      const result = await fetchAdminPushStats(user.id);
+      if (!result.success) {
+        setPushStats(null);
+        setPushStatsError(result.error || 'Failed to load stats');
+        return;
+      }
+      setPushStats(result.data);
+    } finally {
+      setPushTestBusy(null);
+    }
+  };
+
+  const loadPushDevices = async (targetUserId = null) => {
+    if (!user?.id || userProfile?.role !== 'admin') return;
+    setPushTestBusy('devices');
+    try {
+      const result = await fetchAdminPushDevices(user.id, targetUserId);
+      if (!result.success) {
+        setPushDevices(null);
+        setPushStatsError(result.error || 'Failed to load devices');
+        return;
+      }
+      setPushDevices(result.devices);
+    } finally {
+      setPushTestBusy(null);
+    }
+  };
+
+  const resolvePushTestTargetUserId = () => {
+    const phone = String(pushTestTargetPhone || '').replace(/\D/g, '');
+    if (!phone) return user.id;
+    const match = users.find((u) => {
+      const p = String(u.phone_number || u.phone || '').replace(/\D/g, '');
+      return p === phone || p.endsWith(phone) || phone.endsWith(p);
+    });
+    return match?.id || null;
+  };
+
+  const handlePushEnableThisDevice = async () => {
+    if (!user?.id) return;
+    const en = language === 'en';
+    setPushTestBusy('enable');
+    setPushTestMessage(null);
+    try {
+      const result = await enableWebPush(user.id);
+      if (!result.success) {
+        let text = result.error || 'Failed';
+        if (result.blockedInBrowser) {
+          text = en
+            ? result.error
+            : 'এই সাইটে নোটিফিকেশন ব্লক করা আছে। অ্যাড্রেস বারের বাঁ দিকের আইকন → Site settings → Notifications → Allow করে পেজ রিলোড করুন।';
+        } else if (result.denied) {
+          text = en
+            ? 'Notification permission was not granted.'
+            : 'নোটিফিকেশন অনুমতি দেওয়া হয়নি।';
+        }
+        setPushTestMessage({ type: 'error', text });
+        return;
+      }
+      setPushTestMessage({
+        type: 'ok',
+        text: en
+          ? 'This device is subscribed for Web Push.'
+          : 'এই ডিভাইস Web Push-এর জন্য সাবস্ক্রাইব হয়েছে।',
+      });
+      await loadPushStats();
+    } finally {
+      setPushTestBusy(null);
+    }
+  };
+
+  const handlePushLocalPreview = async () => {
+    const en = language === 'en';
+    setPushTestBusy('local');
+    setPushTestMessage(null);
+    try {
+      const result = await previewLocalPushNotification({
+        title: en ? 'SmartLineman (local test)' : 'SmartLineman (লোকাল টেস্ট)',
+        body: en
+          ? 'Local preview OK — service worker can show notifications.'
+          : 'লোকাল প্রিভিউ ঠিক আছে — সার্ভিস ওয়ার্কার নোটিফিকেশন দেখাতে পারে।',
+      });
+      if (!result.success) {
+        setPushTestMessage({ type: 'error', text: result.error || 'Failed' });
+        return;
+      }
+      setPushTestMessage({
+        type: 'ok',
+        text: en ? 'Local notification shown.' : 'লোকাল নোটিফিকেশন দেখানো হয়েছে।',
+      });
+    } finally {
+      setPushTestBusy(null);
+    }
+  };
+
+  const handlePushRemoteTest = async () => {
+    if (!user?.id) return;
+    const en = language === 'en';
+    setPushTestBusy('remote');
+    setPushTestMessage(null);
+    try {
+      const targetUserId = resolvePushTestTargetUserId();
+      if (!targetUserId) {
+        setPushTestMessage({
+          type: 'error',
+          text: en
+            ? 'No user found for that phone on this page. Clear the field to test yourself, or search the team first.'
+            : 'এই ফোনের ইউজার এই পেজে নেই। নিজের টেস্টে ফিল্ড খালি রাখুন, অথবা আগে টিম সার্চ করুন।',
+        });
+        return;
+      }
+      const result = await sendAdminTestPush({
+        callerId: user.id,
+        targetUserId,
+        title: en ? 'SmartLineman (admin test)' : 'SmartLineman (অ্যাডমিন টেস্ট)',
+        body: en
+          ? 'Test push OK — if you see this, re-engagement delivery works.'
+          : 'টেস্ট পুশ ঠিক আছে — এটি দেখলে রি-এনগেজমেন্ট ডেলিভারি কাজ করছে।',
+      });
+      if (!result.success) {
+        setPushTestMessage({
+          type: 'error',
+          text: result.error || 'Failed',
+        });
+        return;
+      }
+      const sent = result.data?.sent ?? 0;
+      setPushTestMessage({
+        type: 'ok',
+        text: en
+          ? `Real Web Push sent to ${sent} device(s). See the device list below.`
+          : `আসল Web Push ${sent}টি ডিভাইসে পাঠানো হয়েছে। নিচের ডিভাইস তালিকা দেখুন।`,
+      });
+      await loadPushStats();
+      await loadPushDevices(targetUserId);
+    } finally {
+      setPushTestBusy(null);
     }
   };
 
@@ -2025,6 +2190,212 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                   })}
                 </ul>
               )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Admin: Web Push re-engagement test */}
+      {isAdmin && !showAnalytics && showManageMenu && (
+        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+          <button
+            type="button"
+            onClick={() => {
+              setShowPushTestSection((v) => {
+                const next = !v;
+                if (next && !pushStats && !pushStatsError) loadPushStats();
+                return next;
+              });
+            }}
+            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+          >
+            <span className="font-semibold text-slate-800 text-sm">
+              🔔 {isEn ? 'Push reminder test' : 'পুশ রিমাইন্ডার টেস্ট'}
+              {pushStats?.mine != null && (
+                <span className="ml-2 text-xs font-normal text-slate-400">
+                  ({isEn ? 'my devices' : 'আমার'}: {pushStats.mine})
+                </span>
+              )}
+            </span>
+            <span className="text-slate-400 text-xs">{showPushTestSection ? '▲' : '▼'}</span>
+          </button>
+          {showPushTestSection && (
+            <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-3">
+              <p className="text-xs text-slate-500">
+                {isEn
+                  ? 'Test closed-app prize reminders. Does not change in-app notices or scores.'
+                  : 'বন্ধ অ্যাপের পুরস্কার রিমাইন্ডার টেস্ট। ইন-অ্যাপ বিজ্ঞপ্তি বা স্কোর বদলায় না।'}
+              </p>
+
+              <div className={`rounded-lg px-3 py-2 text-xs ${ADMIN_THEME.inset}`}>
+                {!isWebPushSupported() ? (
+                  <div className="text-amber-800">
+                    <p className="font-semibold">
+                      {isEn ? 'Web Push unavailable here' : 'এখানে Web Push নেই'}
+                    </p>
+                    <p className="mt-1">
+                      {describeWebPushBlockReason(getWebPushBlockReason(), isEn)}
+                    </p>
+                  </div>
+                ) : !getVapidPublicKey() ? (
+                  <p className="text-amber-800">
+                    {isEn
+                      ? 'Missing VITE_VAPID_PUBLIC_KEY in env — add it and rebuild.'
+                      : 'VITE_VAPID_PUBLIC_KEY নেই — এনভে যোগ করে রিবিল্ড করুন।'}
+                  </p>
+                ) : (
+                  <p className="text-slate-600">
+                    {isEn ? 'Permission' : 'অনুমতি'}:{' '}
+                    <span className="font-semibold">{getNotificationPermission()}</span>
+                    {' · '}
+                    {isEn ? 'Subscribers' : 'সাবস্ক্রাইবার'}:{' '}
+                    <span className="font-semibold">
+                      {pushTestBusy === 'stats'
+                        ? '…'
+                        : pushStats
+                          ? `${pushStats.unique_users ?? 0} users / ${pushStats.total_subscriptions ?? 0} devices`
+                          : '—'}
+                    </span>
+                  </p>
+                )}
+                {pushStatsError && (
+                  <p className="mt-1 text-amber-800">{pushStatsError}</p>
+                )}
+                <p className="mt-2 border-t border-slate-200/70 pt-2 font-mono text-[10px] leading-relaxed text-slate-500">
+                  origin={typeof window !== 'undefined' ? window.location.origin : '—'}
+                  {' · '}secure={String(typeof window !== 'undefined' && window.isSecureContext)}
+                  {' · '}sw={String(typeof navigator !== 'undefined' && 'serviceWorker' in navigator)}
+                  {' · '}push={String(typeof window !== 'undefined' && 'PushManager' in window)}
+                  {' · '}key={getVapidPublicKey() ? 'set' : 'missing'}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={!!pushTestBusy || !isWebPushSupported() || !getVapidPublicKey()}
+                  onClick={handlePushEnableThisDevice}
+                  className="rounded-full border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-bold text-orange-800 disabled:opacity-50"
+                >
+                  {pushTestBusy === 'enable'
+                    ? '…'
+                    : isEn
+                      ? '1. Enable on this device'
+                      : '১. এই ডিভাইসে চালু'}
+                </button>
+                <button
+                  type="button"
+                  disabled={!!pushTestBusy || !isWebPushSupported()}
+                  onClick={handlePushLocalPreview}
+                  className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-800 disabled:opacity-50"
+                >
+                  {pushTestBusy === 'local'
+                    ? '…'
+                    : isEn
+                      ? '2. Local preview'
+                      : '২. লোকাল প্রিভিউ'}
+                </button>
+                <button
+                  type="button"
+                  disabled={!!pushTestBusy}
+                  onClick={handlePushRemoteTest}
+                  className="rounded-full border border-slate-200 bg-slate-900 px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
+                >
+                  {pushTestBusy === 'remote'
+                    ? '…'
+                    : isEn
+                      ? '3. Send real test push'
+                      : '৩. আসল টেস্ট পুশ'}
+                </button>
+                <button
+                  type="button"
+                  disabled={!!pushTestBusy}
+                  onClick={loadPushStats}
+                  className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 disabled:opacity-50"
+                >
+                  {isEn ? 'Refresh stats' : 'স্ট্যাটস রিফ্রেশ'}
+                </button>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-[11px] font-semibold text-slate-600">
+                  {isEn
+                    ? 'Optional: send real push to another user (phone on this page)'
+                    : 'ঐচ্ছিক: অন্য ইউজারকে পাঠান (এই পেজের ফোন)'}
+                </label>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  value={pushTestTargetPhone}
+                  onChange={(e) => setPushTestTargetPhone(e.target.value)}
+                  placeholder={isEn ? 'Leave empty = me' : 'খালি = আমি'}
+                  className={`${ADMIN_THEME.input} px-3 py-2 min-h-[40px] text-xs`}
+                />
+              </div>
+
+              {pushTestMessage && (
+                <p
+                  className={`rounded-lg px-3 py-2 text-xs font-medium ${
+                    pushTestMessage.type === 'ok'
+                      ? 'bg-emerald-50 text-emerald-800'
+                      : 'bg-rose-50 text-rose-800'
+                  }`}
+                >
+                  {pushTestMessage.text}
+                </p>
+              )}
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-600">
+                    {isEn ? 'Subscribed devices' : 'সাবস্ক্রাইব করা ডিভাইস'}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={!!pushTestBusy}
+                    onClick={() => loadPushDevices(resolvePushTestTargetUserId())}
+                    className="text-[11px] font-semibold text-orange-600 disabled:opacity-50"
+                  >
+                    {pushTestBusy === 'devices'
+                      ? '…'
+                      : isEn
+                        ? 'Show devices'
+                        : 'ডিভাইস দেখুন'}
+                  </button>
+                </div>
+
+                {pushDevices && pushDevices.length === 0 && (
+                  <p className="text-[11px] text-slate-500">
+                    {isEn ? 'No devices subscribed for this user.' : 'এই ইউজারের কোনো ডিভাইস নেই।'}
+                  </p>
+                )}
+
+                {pushDevices && pushDevices.length > 0 && (
+                  <ul className="space-y-2">
+                    {pushDevices.map((d) => (
+                      <li key={d.id} className={`px-3 py-2 text-[11px] ${ADMIN_THEME.inset}`}>
+                        <p className="font-semibold text-slate-800">{describeUserAgent(d.user_agent)}</p>
+                        <p className="mt-0.5 font-mono text-[10px] text-slate-500">
+                          {d.provider} · …{d.endpoint_tail}
+                        </p>
+                        <p className="mt-0.5 text-slate-500">
+                          {isEn ? 'Added' : 'যোগ'}:{' '}
+                          {d.created_at ? new Date(d.created_at).toLocaleString() : '—'}
+                          {' · '}
+                          {isEn ? 'Last push' : 'শেষ পুশ'}:{' '}
+                          {d.last_pushed_at ? new Date(d.last_pushed_at).toLocaleString() : '—'}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <p className="text-[11px] text-slate-400">
+                {isEn
+                  ? 'Each browser and origin counts as its own device, so localhost and the live site appear separately. Step 3 needs the Edge Function deployed with VAPID secrets.'
+                  : 'প্রতিটি ব্রাউজার ও অরিজিন আলাদা ডিভাইস, তাই localhost ও লাইভ সাইট আলাদা দেখাবে। ধাপ ৩-এর জন্য Edge Function + VAPID সিক্রেট লাগবে।'}
+              </p>
             </div>
           )}
         </div>

@@ -1,0 +1,3 @@
+# JWT verification stays on: callers send the Supabase anon key as Authorization.
+# The cron blast additionally requires the x-reengagement-secret header.
+verify_jwt = true
