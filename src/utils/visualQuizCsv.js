@@ -25,6 +25,8 @@ export const VISUAL_QUIZ_PTR_PARTS_PREVIEW_URL =
     '/quiz_management/visual_quiz_batch_ptr_parts_preview.csv';
 export const VISUAL_QUIZ_VCB_PARTS_PREVIEW_URL =
     '/quiz_management/visual_quiz_batch_vcb_parts_preview.csv';
+export const VISUAL_QUIZ_SWY33_PARTS_PREVIEW_URL =
+    '/quiz_management/visual_quiz_batch_swy33_parts_preview.csv';
 
 const splitCSVLine = (line) => {
     const result = [];

@@ -149,12 +149,15 @@ Same spirit as Life Skills quizzes: **do not** let UI patterns reveal the answer
 | `quiz_management/visual_quiz_batch_vcb_parts_preview.csv` | Draft CSV for **11kV indoor VCB parts** (lineman points) |
 | `quiz_management/visual_quiz_vcb_parts_preview.html` | Static HTML review for VCB parts draft |
 | `public/images/quizzes/vcb_part_*.webp` | VCB part-pointing illustration assets |
+| `quiz_management/visual_quiz_batch_swy33_parts_preview.csv` | Draft CSV for **33kV outdoor switchyard parts** (WB style) |
+| `quiz_management/visual_quiz_swy33_parts_preview.html` | Static HTML review for 33kV switchyard draft |
+| `public/images/quizzes/swy33_part_*.webp` | 33kV switchyard part-pointing illustration assets |
 
 Regenerate HTML after CSV edits (or edit HTML by hand for tiny drafts). With dev server:
 
 `http://localhost:5173/quiz_management/visual_quiz_mistake_preview.html`
 
-Admin → **Quiz Preview** → **Draft: Spot-the-mistake preview**, **Draft: Material identification**, **Draft: Procedure / workflow**, **Draft: PTR parts identification**, or **Draft: VCB 11kV indoor parts**.
+Admin → **Quiz Preview** → **Draft: Spot-the-mistake preview**, **Draft: Material identification**, **Draft: Procedure / workflow**, **Draft: PTR parts identification**, **Draft: VCB 11kV indoor parts**, or **Draft: 33kV outdoor switchyard parts**.
 
 ---
 

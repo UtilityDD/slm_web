@@ -18,6 +18,7 @@ import {
     VISUAL_QUIZ_SWITCHYARD_PREVIEW_URL,
     VISUAL_QUIZ_PTR_PARTS_PREVIEW_URL,
     VISUAL_QUIZ_VCB_PARTS_PREVIEW_URL,
+    VISUAL_QUIZ_SWY33_PARTS_PREVIEW_URL,
     VISUAL_QUIZ_LIVE_CSV_URL,
     parseVisualQuizCSV,
     rowsToVisualQuestions,
@@ -87,6 +88,12 @@ const SOURCES = {
         labelBn: 'Draft: VCB 11kV indoor parts',
         labelEn: 'Draft: VCB 11kV indoor parts',
         url: VISUAL_QUIZ_VCB_PARTS_PREVIEW_URL,
+    },
+    swy33PartsPreview: {
+        id: 'swy33PartsPreview',
+        labelBn: 'Draft: 33kV outdoor switchyard parts',
+        labelEn: 'Draft: 33kV outdoor switchyard parts',
+        url: VISUAL_QUIZ_SWY33_PARTS_PREVIEW_URL,
     },
 
     batch02: { id: 'batch02', labelBn: 'Draft: Batch 02 (vq-120+)', labelEn: 'Draft: Batch 02 (vq-120+)', url: VISUAL_QUIZ_BATCH_02_URL },
