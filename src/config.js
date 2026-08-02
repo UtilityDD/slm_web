@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.77";
+export const CURRENT_APP_VERSION = "1.3.78";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Some users reported a monthly score mismatch — that’s fixed. Plays between 12:00 AM and 5:30 AM IST were counted in the previous month; they now count in the correct India-time month. Some scores may go up or down.",
-  bn: "কিছু ব্যবহারকারীর মাসিক স্কোর মিলছিল না — সেই সমস্যা ঠিক করা হয়েছে। আগে রাত ১২টা থেকে সকাল ৫:৩০ (IST) এর মধ্যে খেলা পয়েন্ট আগের মাসে চলে যেত; এখন ভারতীয় সময় অনুযায়ী সঠিক মাসে যোগ হবে। এজন্য কিছুজনের স্কোর বাড়তে বা কমতে পারে।",
+  en: "Lessons 1.5 and 8.5 now include brass/copper shorting chain use with the discharge rod — throw-over method, plus clear do’s and don’ts.",
+  bn: "পাঠ ১.৫ ও ৮.৫-এ ডিসচার্জ রডের সঙ্গে ব্রাস/কপার শর্টিং চেইনের ব্যবহার যোগ হয়েছে — চেইন ছোড়ার কায়দা এবং করণীয় ও বারণীয়।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 export const SUPPORT_EMAIL = "support@smartlineman.in";
