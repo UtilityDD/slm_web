@@ -299,19 +299,39 @@ export default function SponsorAdOverlay({
                 label: ad.contact_email,
                 icon: 'M3 5h18a1 1 0 011 1v12a1 1 0 01-1 1H3a1 1 0 01-1-1V6a1 1 0 011-1zm0 2v.5l9 5.5 9-5.5V7l-9 5.5L3 7z',
             },
-        ad.contact_phone && {
-            key: 'phone',
-            href: `tel:${ad.contact_phone}`,
-            label: ad.contact_phone,
-            icon: 'M2.5 5.5A2.5 2.5 0 015 3h1.3a1 1 0 01.95.68l1 3a1 1 0 01-.25 1L7.6 9.1a12 12 0 005.3 5.3l1.42-1.4a1 1 0 011-.25l3 1a1 1 0 01.68.95V16a2.5 2.5 0 01-2.5 2.5A13.5 13.5 0 012.5 5.5z',
-        },
+        ...String(ad.contact_phone || '')
+            .split(/[|,;/]+/)
+            .map((raw) => raw.trim())
+            .filter(Boolean)
+            .map((phone, idx) => {
+                const digits = phone.replace(/\D/g, '');
+                const pretty =
+                    digits.length === 10
+                        ? `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}`
+                        : phone;
+                return {
+                    key: `phone-${idx}-${digits || phone}`,
+                    href: `tel:${digits || phone}`,
+                    label: pretty,
+                    emphasize: true,
+                    icon: 'M2.5 5.5A2.5 2.5 0 015 3h1.3a1 1 0 01.95.68l1 3a1 1 0 01-.25 1L7.6 9.1a12 12 0 005.3 5.3l1.42-1.4a1 1 0 011-.25l3 1a1 1 0 01.68.95V16a2.5 2.5 0 01-2.5 2.5A13.5 13.5 0 012.5 5.5z',
+                };
+            }),
         !isAdAsk &&
             ad.contact_url && {
                 key: 'url',
                 href: webHref,
-                label: ad.contact_url.replace(/^https?:\/\//i, ''),
-                icon: 'M3.9 12a5 5 0 015-5h3v2h-3a3 3 0 000 6h3v2h-3a5 5 0 01-5-5zm6-1h4v2h-4v-2zm2.1-4h3a5 5 0 010 10h-3v-2h3a3 3 0 000-6h-3V7z',
+                label: /wa\.me|whatsapp/i.test(String(ad.contact_url))
+                    ? isEn
+                        ? 'WhatsApp'
+                        : 'WhatsApp'
+                    : ad.contact_url.replace(/^https?:\/\//i, ''),
+                icon: /wa\.me|whatsapp/i.test(String(ad.contact_url))
+                    ? 'M12.04 2a9.84 9.84 0 0 0-8.52 14.76L2 22l5.39-1.42A9.94 9.94 0 1 0 12.04 2Zm0 17.99a8.15 8.15 0 0 1-4.15-1.14l-.3-.18-3.2.84.85-3.12-.2-.32A8.15 8.15 0 1 1 12.04 20Zm4.47-6.1c-.24-.12-1.45-.72-1.68-.8-.22-.08-.38-.12-.55.12-.16.25-.63.8-.77.97-.14.16-.28.18-.53.06-.24-.12-1.03-.38-1.96-1.21a7.35 7.35 0 0 1-1.36-1.7c-.14-.24-.02-.37.1-.49.11-.11.25-.28.37-.42.12-.14.16-.24.24-.4.08-.17.04-.31-.02-.43-.06-.12-.55-1.32-.75-1.8-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.3-.22.25-.85.83-.85 2.02s.87 2.34.99 2.5c.12.17 1.71 2.61 4.14 3.66.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.45-.6 1.66-1.17.2-.58.2-1.07.14-1.17-.06-.1-.22-.16-.47-.28Z'
+                    : 'M3.9 12a5 5 0 015-5h3v2h-3a3 3 0 000 6h3v2h-3a5 5 0 01-5-5zm6-1h4v2h-4v-2zm2.1-4h3a5 5 0 010 10h-3v-2h3a3 3 0 000-6h-3V7z',
                 external: true,
+                emphasize: /wa\.me|whatsapp/i.test(String(ad.contact_url)),
+                whatsapp: /wa\.me|whatsapp/i.test(String(ad.contact_url)),
             },
     ].filter(Boolean);
 
@@ -375,6 +395,15 @@ export default function SponsorAdOverlay({
                     </div>
                 )}
 
+                {ad.sponsor_name && (
+                    <div className={`sponsor-ad-brand ${anim(1)}`}>
+                        <p className="sponsor-ad-name">{ad.sponsor_name}</p>
+                        {!isAdAsk && (
+                            <span className="sponsor-ad-brand-rule" aria-hidden />
+                        )}
+                    </div>
+                )}
+
                 {ad.image_url && (
                     <div className={`sponsor-ad-product ${anim(2)}`}>
                         <div className="sponsor-ad-product-glow" aria-hidden />
@@ -384,10 +413,6 @@ export default function SponsorAdOverlay({
                             className={reduceMotion ? '' : 'sponsor-ad-product-float'}
                         />
                     </div>
-                )}
-
-                {ad.sponsor_name && (
-                    <p className={`sponsor-ad-name ${anim(3)}`}>{ad.sponsor_name}</p>
                 )}
 
                 {headlineWords.length > 0 && (
@@ -478,7 +503,7 @@ export default function SponsorAdOverlay({
                                     href={item.href}
                                     target={item.external ? '_blank' : undefined}
                                     rel={item.external ? 'noopener noreferrer' : undefined}
-                                    className="sponsor-ad-contact"
+                                    className={`sponsor-ad-contact${item.emphasize ? ' sponsor-ad-contact--hot' : ''}${item.whatsapp ? ' sponsor-ad-contact--wa' : ''}`}
                                 >
                                     <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                                         <path d={item.icon} />

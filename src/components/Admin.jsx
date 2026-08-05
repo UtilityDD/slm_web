@@ -84,7 +84,31 @@ const SPONSOR_ASK_PRESET = {
   is_active: false,
 };
 
-/** Local demo (preview only, not saved) — same content as the preset. */
+/**
+ * Real sponsor: Das Enterprise (Gangarampur) — on-grid rooftop solar.
+ * Close-up solar visual + short professional copy (not the print flyer).
+ */
+const DAS_ENTERPRISE_PRESET = {
+  ...EMPTY_SPONSOR_FORM,
+  headline: 'ছাদে সোলার · বিল কমান',
+  headlines_text:
+    'ছাদে সোলার · বিল কমান\nঅন-গ্রিড সোলার সলিউশন\nপিএম সূর্য ঘর ভর্তুকি\n২৫ বছর ওয়ারেন্টি',
+  subtext: 'WBSEDCL নিবন্ধিত ভেন্ডর · কোড ৫১২৩৯৯ · Gangarampur, Dakshin Dinajpur',
+  sponsor_name: 'DAS ENTERPRISE',
+  image_url: '/images/sponsor/das_enterprise_solar.webp',
+  logo_url: '',
+  contact_phone: '9593500500|9593300300',
+  contact_email: '',
+  contact_url: 'https://wa.me/919593500500',
+  cta_label: 'এখনই যোগাযোগ করুন',
+  theme: 'light',
+  display_seconds: 10,
+  allow_skip: true,
+  contact_safety_mitra: false,
+  is_active: true,
+};
+
+/** Local demo (preview only, not saved) — same content as the ask preset. */
 const DEMO_SPONSOR_FORM = { ...SPONSOR_ASK_PRESET };
 
 // Convert a timestamptz from Supabase to a value usable by <input type="datetime-local">.
@@ -1561,6 +1585,12 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
     handlePreviewSponsorForm(DEMO_SPONSOR_FORM);
   };
 
+  const handleDemoDasEnterprisePreview = () => {
+    setSponsorEditingId(null);
+    setSponsorForm({ ...DAS_ENTERPRISE_PRESET });
+    handlePreviewSponsorForm(DAS_ENTERPRISE_PRESET);
+  };
+
 
   const formatPhone = (value) => {
     // Remove all non-digits
@@ -2596,19 +2626,44 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
               </p>
               <p className="text-[11px] text-slate-500 rounded-lg border border-slate-200 bg-white px-3 py-2">
                 {isEn
-                  ? 'Preview: click “Demo” for the full Bangla ad, or “Load preset” → check Safety Mitra / no-money → Preview. The highlighted “We do not take any money” line is not typed in Subtext — it appears on the ad when that option is on.'
-                  : 'প্রিভিউ: পুরো বাংলা অ্যাডের জন্য “ডেমো” চাপুন, অথবা “প্রিসেট লোড” → সেফটি মিত্র / টাকা নিই না টিক → প্রিভিউ। হাইলাইট “আমরা কোনো টাকা নিই না” সাবটেক্সটে লিখতে হয় না — অপশন চালু থাকলে অ্যাডে দেখায়।'}
+                  ? 'Das Enterprise: Preview or Load form → Create (enabled). Sponsor-wanted: Load preset → Safety Mitra option → Preview/Save. Phone + WhatsApp open from the ad footer/CTA.'
+                  : 'Das Enterprise: প্রিভিউ বা ফর্ম লোড → তৈরি (চালু)। স্পনসর চাই: প্রিসেট লোড → সেফটি মিত্র → প্রিভিউ/সেভ। ফোন ও WhatsApp অ্যাডের ফুটার/CTA থেকে খোলে।'}
               </p>
 
               {typeof onPreviewSponsorAd === 'function' && (
-                <button
-                  type="button"
-                  onClick={handleDemoSponsorPreview}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-900 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-slate-800 active:scale-[0.99]"
-                >
-                  {isEn ? '▶ Demo: Bangla ad ask (admin only)' : '▶ ডেমো: বাংলা বিজ্ঞাপন অনুরোধ (শুধু অ্যাডমিন)'}
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={handleDemoDasEnterprisePreview}
+                    className="w-full rounded-xl border border-emerald-300 bg-emerald-700 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-emerald-800 active:scale-[0.99]"
+                  >
+                    {isEn
+                      ? '▶ Preview: Das Enterprise solar ad'
+                      : '▶ প্রিভিউ: Das Enterprise সোলার অ্যাড'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDemoSponsorPreview}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-900 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-slate-800 active:scale-[0.99]"
+                  >
+                    {isEn ? '▶ Demo: Bangla ad ask (admin only)' : '▶ ডেমো: বাংলা বিজ্ঞাপন অনুরোধ (শুধু অ্যাডমিন)'}
+                  </button>
+                </>
               )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSponsorEditingId(null);
+                  setSponsorForm({ ...DAS_ENTERPRISE_PRESET });
+                  setShowSponsorAdSection(true);
+                }}
+                className="w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-bold text-emerald-800 transition-all hover:bg-emerald-100 active:scale-[0.99]"
+              >
+                {isEn
+                  ? '↧ Load Das Enterprise solar ad into form'
+                  : '↧ ফর্মে Das Enterprise সোলার অ্যাড লোড করুন'}
+              </button>
 
               <button
                 type="button"
@@ -2703,10 +2758,10 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                 {/* Contact */}
                 <div className="grid grid-cols-1 gap-2">
                   <input
-                    type="tel"
+                    type="text"
                     value={sponsorForm.contact_phone}
                     onChange={(e) => setSponsorForm((p) => ({ ...p, contact_phone: e.target.value }))}
-                    placeholder={isEn ? 'Contact phone' : 'যোগাযোগ ফোন'}
+                    placeholder={isEn ? 'Phone (use | for two numbers)' : 'ফোন (| দিয়ে দুটি নম্বর)'}
                     className={ADMIN_THEME.input}
                   />
                   <input
@@ -2720,7 +2775,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                     type="text"
                     value={sponsorForm.contact_url}
                     onChange={(e) => setSponsorForm((p) => ({ ...p, contact_url: e.target.value }))}
-                    placeholder={isEn ? 'Website / link' : 'ওয়েবসাইট / লিঙ্ক'}
+                    placeholder={isEn ? 'Website / WhatsApp link' : 'ওয়েবসাইট / WhatsApp লিঙ্ক'}
                     className={ADMIN_THEME.input}
                   />
                   <input
