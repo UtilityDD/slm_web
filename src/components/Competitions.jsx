@@ -24,6 +24,7 @@ import HourlyPenaltyInfoModal from './HourlyPenaltyInfoModal';
 import HourlyDayRing from './HourlyDayRing';
 import { MonthlyBoardHeader } from './MonthlyEncouragementBoards';
 import MonthlyBoardInfoModal from './MonthlyBoardInfoModal';
+import MonthWinnersReveal from './MonthWinnersReveal';
 import { checkReadingGate } from '../utils/readingHabitGate';
 import { filterCoreCompletedLessonIds } from '../utils/trainingLessonIds';
 import ReadingGateModal from './ReadingGateModal';
@@ -303,7 +304,7 @@ const getIstDate = (date) => {
     return new Date(d.getTime() + (5.5 * 60 * 60 * 1000));
 };
 
-export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile, onOpenUserProgress, showNotification }) {
+export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile, onOpenUserProgress, showNotification, sponsorAdOpen = false }) {
     const [loading, setLoading] = useState(true);
     const [activeQuiz, setActiveQuiz] = useState(null);
     const [quizQuestions, setQuizQuestions] = useState([]);
@@ -2602,6 +2603,20 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 }}
                 encouragementBoards={encouragementBoards}
                 onClose={() => setLeaderboardUserSheet(null)}
+            />
+
+            <MonthWinnersReveal
+                language={language}
+                hallOfFameData={hallOfFameData}
+                ready={!loadingGallery && !loadingMonthly && hallOfFameData.length > 0}
+                active={
+                    leaderboardTab === 'monthly'
+                    && !showHallOfFame
+                    && !leaderboardUserSheet
+                    && !showMonthlyBoardInfoModal
+                }
+                blocked={Boolean(sponsorAdOpen)}
+                isAdmin={userProfile?.role === 'admin'}
             />
         </main>
         );

@@ -119,6 +119,12 @@ export default function HallOfFameUserPrizesView({
                                             </p>
                                             <p className={`mt-1 text-sm font-black leading-snug text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                 {win.prize.title}
+                                                {win.prize.caution ? (
+                                                    <>
+                                                        {' '}
+                                                        <span className="font-bold text-red-600">({win.prize.caution})</span>
+                                                    </>
+                                                ) : null}
                                             </p>
                                             {win.prize.sponsor && (
                                                 <p className={`mt-0.5 truncate text-xs font-semibold text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>

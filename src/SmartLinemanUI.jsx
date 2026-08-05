@@ -1198,9 +1198,9 @@ export default function SmartLinemanUI() {
 
       switch (currentView) {
         case 'competitions':
-          return <Competitions language={language} user={user} setCurrentView={setCurrentView} userProfile={userProfile} refreshProfile={fetchProfile} showNotification={showNotification} />;
+          return <Competitions language={language} user={user} setCurrentView={setCurrentView} userProfile={userProfile} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} />;
         case 'leaderboard':
-          return <Competitions language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} isFullLeaderboard={true} onOpenUserProgress={(userId) => { setSelectedProgressUserId(userId || user?.id || null); setCurrentView('my-progress'); }} refreshProfile={fetchProfile} showNotification={showNotification} />;
+          return <Competitions language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} isFullLeaderboard={true} onOpenUserProgress={(userId) => { setSelectedProgressUserId(userId || user?.id || null); setCurrentView('my-progress'); }} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} />;
         case 'my-progress':
           return <MyProgress language={language} user={user} targetUserId={selectedProgressUserId || user?.id} setCurrentView={setCurrentView} returnView="leaderboard" />;
         case 'community':

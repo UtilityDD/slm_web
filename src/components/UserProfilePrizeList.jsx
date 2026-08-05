@@ -110,6 +110,12 @@ export default function UserProfilePrizeList({ userId, language = 'bn' }) {
                                     </p>
                                     <p className={`mt-1 text-sm font-black leading-snug text-slate-900 dark:text-slate-100 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {win.prize.title}
+                                        {win.prize.caution ? (
+                                            <>
+                                                {' '}
+                                                <span className="font-bold text-red-600 dark:text-red-400">({win.prize.caution})</span>
+                                            </>
+                                        ) : null}
                                     </p>
                                     {win.prize.imageAlt && (
                                         <p className={`mt-1 text-[11px] font-medium leading-relaxed text-slate-600 dark:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>

@@ -105,6 +105,12 @@ function PrizeFocusCard({
                 {prize.title && (
                     <h4 className={`text-sm font-black leading-snug text-slate-900 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
                         {prize.title}
+                        {prize.caution ? (
+                            <>
+                                {' '}
+                                <span className="font-bold text-red-600">({prize.caution})</span>
+                            </>
+                        ) : null}
                     </h4>
                 )}
 

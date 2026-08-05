@@ -570,6 +570,12 @@ export default function LeaderboardUserSheet({
                                             </p>
                                             <p className={`mt-0.5 text-sm font-black leading-snug text-slate-800 ${bn ? 'font-bengali' : ''}`}>
                                                 {win.prize.title}
+                                                {win.prize.caution ? (
+                                                    <>
+                                                        {' '}
+                                                        <span className="font-bold text-red-600">({win.prize.caution})</span>
+                                                    </>
+                                                ) : null}
                                             </p>
                                         </div>
                                     </li>

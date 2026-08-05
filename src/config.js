@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.78";
+export const CURRENT_APP_VERSION = "1.3.79";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Lessons 1.5 and 8.5 now include brass/copper shorting chain use with the discharge rod — throw-over method, plus clear do’s and don’ts.",
-  bn: "পাঠ ১.৫ ও ৮.৫-এ ডিসচার্জ রডের সঙ্গে ব্রাস/কপার শর্টিং চেইনের ব্যবহার যোগ হয়েছে — চেইন ছোড়ার কায়দা এবং করণীয় ও বারণীয়।",
+  en: "July 2026 prizes are live — see winners, prizes, and sponsors. Open the monthly leaderboard for a short winners celebration (once per month).",
+  bn: "জুলাই ২০২৬-এর পুরস্কার যোগ হয়েছে — বিজয়ী, পুরস্কার ও স্পনসর দেখুন। মাসিক লিডারবোর্ডে সংক্ষিপ্ত বিজয়ী উদযাপন (মাসে একবার)।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 export const SUPPORT_EMAIL = "support@smartlineman.in";

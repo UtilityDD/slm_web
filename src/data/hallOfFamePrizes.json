@@ -1,477 +1,359 @@
 {
-
   "prizes": [
-
     {
-
       "year": 2026,
-
       "month": 3,
-
       "boardId": "main_champion",
-
       "prizeRank": 1,
-
       "title_bn": "নন-কন্টাক্ট ভোল্টেজ টেস্টার (৭০ভি–১০০০ভি)",
-
       "title_en": "Non-Contact Voltage Tester (70V–1000V)",
-
       "sponsor_bn": "অরিত্র ব্যানার্জী, রায়গঞ্জ",
-
       "sponsor_en": "Aritra Banerjee, Raiganj",
-
       "imageUrl": "/prizes/2026-03-champion-1",
-
       "imageAlt_bn": "লাইনে স্পর্শ না করেই ভোল্টেজ যাচাইয়ের টুল",
-
       "imageAlt_en": "Detect voltage safely without touching the line"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 3,
-
       "boardId": "main_champion",
-
       "prizeRank": 2,
-
       "title_bn": "হেলমেট মাউন্টেড লাইট",
-
       "title_en": "Helmet Mounted Light",
-
       "sponsor_bn": "অরিত্র ব্যানার্জী, রায়গঞ্জ",
-
       "sponsor_en": "Aritra Banerjee, Raiganj",
-
       "imageUrl": "/prizes/2026-03-champion-2.jpg",
-
       "imageAlt_bn": "রাতের কাজে হ্যান্ডস-ফ্রি লাইট",
-
       "imageAlt_en": "Hands-free light for night and low-light work"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 3,
-
       "boardId": "main_champion",
-
       "prizeRank": 3,
-
       "title_bn": "কাট-রেজিস্ট্যান্ট হ্যান্ড গ্লাভস (২ জোড়া)",
-
       "title_en": "Cut-Resistant Hand Gloves (2 pairs)",
-
       "sponsor_bn": "অরিত্র ব্যানার্জী, রায়গঞ্জ",
-
       "sponsor_en": "Aritra Banerjee, Raiganj",
-
       "imageUrl": "/prizes/2026-03-champion-3.png",
-
       "imageAlt_bn": "কন্ডাক্টর, কেবল ও ধারালো মেটাল হ্যান্ডেল থেকে হাত সুরক্ষা",
-
       "imageAlt_en": "Hand protection when handling conductors, cable and sharp metal"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 4,
-
       "boardId": "main_champion",
-
       "prizeRank": 1,
-
       "title_bn": "MECO 27-Auto ডিজিটাল ক্ল্যাম্প মিটার (টং টেস্টার)",
-
       "title_en": "MECO 27-Auto Digital Clamp Meter (Tong Tester)",
-
       "sponsor_bn": "প্রভাত কুমার দাস, Assistant Cash Officer, Berhampore Zonal Office, WBSEDCL",
-
       "sponsor_en": "Prabhat Kumar Das, Assistant Cash Officer, Berhampore Zonal Office, WBSEDCL",
-
       "imageUrl": "/prizes/2026-04-champion-1.jpg",
-
       "imageAlt_bn": "লাইভ লাইনে কন্ডাক্টর না কেটেই কারেন্ট মাপার টুল",
-
       "imageAlt_en": "Measure current on live lines without cutting the conductor"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 4,
-
       "boardId": "main_champion",
-
       "prizeRank": 2,
-
       "title_bn": "সেলফ অ্যাডজাস্টিং ওয়্যার স্ট্রিপার (৩-ইন-১ টুল)",
-
       "title_en": "Self Adjusting Wire Stripper (3-in-1 Tool)",
-
       "sponsor_bn": "প্রভাত কুমার দাস, Assistant Cash Officer, Berhampore Zonal Office, WBSEDCL",
-
       "sponsor_en": "Prabhat Kumar Das, Assistant Cash Officer, Berhampore Zonal Office, WBSEDCL",
-
       "imageUrl": "/prizes/2026-04-champion-2.png",
-
       "imageAlt_bn": "১০–২৪ AWG তার কাটিং, স্ট্রিপিং ও ক্রিম্পিং একসাথে",
-
       "imageAlt_en": "Cut, strip and crimp 10–24 AWG wire in one tool"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 4,
-
       "boardId": "main_champion",
-
       "prizeRank": 3,
-
       "title_bn": "Eveready DL89 রিচার্জেবল হেডল্যাম্প",
-
       "title_en": "Eveready DL89 Rechargeable Headlamp",
-
       "sponsor_bn": "প্রভাত কুমার দাস, Assistant Cash Officer, Berhampore Zonal Office, WBSEDCL",
-
       "sponsor_en": "Prabhat Kumar Das, Assistant Cash Officer, Berhampore Zonal Office, WBSEDCL",
-
       "imageUrl": "/prizes/2026-04-champion-3.jpg",
-
       "imageAlt_bn": "৯০° টিল্ট ও হ্যান্ডস-ফ্রি লাইট — হেলমেট ছাড়াও ব্যবহারযোগ্য",
-
       "imageAlt_en": "90° tilt headlamp — usable with or without a helmet"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 5,
-
       "boardId": "main_champion",
-
       "prizeRank": 1,
-
       "title_bn": "FOSTER FHT-905 হ্যান্ড টুল কিট (৮২ টুল — ইলেকট্রিশিয়ান ও প্লাম্বার)",
-
       "title_en": "FOSTER FHT-905 Hand Tool Kit (82 Tools — Electrician & Plumber)",
-
       "sponsor_bn": "পার্বতী চরণ ব্যানার্জী, Assistant Manager (O.O), Bidhannagar-I Division, WBSEDCL",
-
       "sponsor_en": "Parbati Charan Banerjee, Assistant Manager (O.O), Bidhannagar-I Division, WBSEDCL",
-
       "imageUrl": "/prizes/2026-05-champion-1",
-
       "imageAlt_bn": "১৫০ পিস কম্বো কিট — মাঠের কাজে দরকারি স্ক্রুড্রাইভার, র‍্যাচেট ও হ্যান্ড টুল একসাথে",
-
       "imageAlt_en": "150-piece combo kit with ratchet screwdrivers and essential field tools"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 5,
-
       "boardId": "main_champion",
-
       "prizeRank": 2,
-
       "title_bn": "IBELL HT17-30 হ্যান্ড টুল কিট (১৪ পিস)",
-
       "title_en": "IBELL HT17-30 Hand Tool Kit (14 Pieces)",
-
       "sponsor_bn": "পার্বতী চরণ ব্যানার্জী, Assistant Manager (O.O), Bidhannagar-I Division, WBSEDCL",
-
       "sponsor_en": "Parbati Charan Banerjee, Assistant Manager (O.O), Bidhannagar-I Division, WBSEDCL",
-
       "imageUrl": "/prizes/2026-05-champion-2",
-
       "imageAlt_bn": "১৪ পিসের কমপ্যাক্ট টুল কিট — দৈনন্দিন মেরামত ও লাইন কাজে সহজে নেওয়া যায়",
-
       "imageAlt_en": "Compact 14-piece kit for everyday repairs and line work"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 5,
-
       "boardId": "main_champion",
-
       "prizeRank": 3,
-
       "title_bn": "Purvish হাই কোয়ালিটি ২০ পিস কম্বো হ্যান্ড টুল কিট",
-
       "title_en": "Purvish High Quality 20 Piece Combo Hand Tool Kit",
-
       "sponsor_bn": "পার্বতী চরণ ব্যানার্জী, Assistant Manager (O.O), Bidhannagar-I Division, WBSEDCL",
-
       "sponsor_en": "Parbati Charan Banerjee, Assistant Manager (O.O), Bidhannagar-I Division, WBSEDCL",
-
       "imageUrl": "/prizes/2026-05-champion-3",
-
       "imageAlt_bn": "২০ পিসের কম্বিনেশন টুল কিট — বাড়ি ও ক্ষেতের ছোটখাটো কাজের জন্য উপযোগী",
-
       "imageAlt_en": "20-piece combination tool kit for home and field tasks"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 6,
-
       "boardId": "main_champion",
-
       "prizeRank": 1,
-
       "title_bn": "Pigeon ২ লিটার অ্যালুমিনিয়াম প্রেশার কুকার (ইন্ডাকশন বেস)",
-
       "title_en": "Pigeon 2 Litre Aluminium Pressure Cooker (Induction Base)",
-
       "sponsor_bn": "জাহাঙ্গীর আলম, জুনিয়র ম্যানেজার (HR&A), বুনিয়াদপুর ডিভিশন",
-
       "sponsor_en": "Jahangir Alam, Junior Manager (HR&A), Buniadpur Division",
-
       "imageUrl": "/prizes/2026-06-champion-1",
-
       "imageAlt_bn": "BIS সার্টিফাইড ইন্ডাকশন-সামঞ্জস্য প্রেশার কুকার — রান্নাঘরে দৈনন্দিন ব্যবহারের জন্য",
-
       "imageAlt_en": "BIS certified induction-base pressure cooker for everyday cooking"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 6,
-
       "boardId": "main_champion",
-
       "prizeRank": 2,
-
       "title_bn": "Milton Pro লাঞ্চ বক্স সেট (স্টিল কন্টেইনার + বোতল)",
-
       "title_en": "Milton Pro Lunch Box Set (Steel Containers + Bottle)",
-
       "sponsor_bn": "জাহাঙ্গীর আলম, জুনিয়র ম্যানেজার (HR&A), বুনিয়াদপুর ডিভিশন",
-
       "sponsor_en": "Jahangir Alam, Junior Manager (HR&A), Buniadpur Division",
-
       "imageUrl": "/prizes/2026-06-champion-2",
-
       "imageAlt_bn": "৩টি স্টিল কন্টেইনার, চাটনি ডাবা ও ৭৫০ মিলি বোতল — অফিস টিফিনের জন্য",
-
       "imageAlt_en": "Three steel containers, chutney dabba and 750 ml bottle — office tiffin set"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 6,
-
       "boardId": "main_champion",
-
       "prizeRank": 3,
-
       "title_bn": "Eveready Searchlite DL95 রিচার্জেবল টর্চ",
-
       "title_en": "Eveready Searchlite DL95 Rechargeable Torch",
-
       "sponsor_bn": "জাহাঙ্গীর আলম, জুনিয়র ম্যানেজার (HR&A), বুনিয়াদপুর ডিভিশন",
-
       "sponsor_en": "Jahangir Alam, Junior Manager (HR&A), Buniadpur Division",
-
       "imageUrl": "/prizes/2026-06-champion-3",
-
       "imageAlt_bn": "৪W টর্চ + ৪W ইমার্জেন্সি সাইডলাইট, Type-C ফাস্ট চার্জিং",
-
       "imageAlt_en": "4W torch plus 4W emergency sidelight with Type-C fast charging"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 6,
-
       "boardId": "new_player",
-
       "prizeRank": 1,
-
       "title_bn": "Clay Craft সিরামিক কফি কাপ সেট (৬ পিস)",
-
       "title_en": "Clay Craft Ceramic Coffee Cup Set (6 pcs)",
-
       "sponsor_bn": "সুব্রত সরকার, সিনিয়র অফিস এক্সিকিউটিভ, গঙ্গারামপুর CCC",
-
       "sponsor_en": "Subrata Sarkar, Senior Office Executive, Gangarampur CCC",
-
       "imageUrl": "/prizes/2026-06-new_player-1",
-
       "imageAlt_bn": "মাল্টিকালার সিরামিক কফি কাপ — ২০০ মিলি, ৬টি একসাথে",
-
       "imageAlt_en": "Multicolour ceramic coffee cups — 200 ml, set of 6"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 6,
-
       "boardId": "new_player",
-
       "prizeRank": 2,
-
       "title_bn": "Perwal Supreme ৪-পিস টুল কম্বো সেট",
-
       "title_en": "Perwal Supreme 4-Piece Tool Combo Set",
-
       "sponsor_bn": "সুব্রত সরকার, সিনিয়র অফিস এক্সিকিউটিভ, গঙ্গারামপুর CCC",
-
       "sponsor_en": "Subrata Sarkar, Senior Office Executive, Gangarampur CCC",
-
       "imageUrl": "/prizes/2026-06-new_player-2",
-
       "imageAlt_bn": "কম্বিনেশন প্লায়ার, ওয়্যার স্ট্রিপার, লাইন টেস্টার ও ২-ইন-১ স্ক্রুড্রাইভার",
-
       "imageAlt_en": "Combination plier, wire stripper, line tester and 2-in-1 screwdriver"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 6,
-
       "boardId": "new_player",
-
       "prizeRank": 3,
-
       "title_bn": "Duracell LED টর্চ লাইট",
-
       "title_en": "Duracell LED Torch Light",
-
       "sponsor_bn": "সুব্রত সরকার, সিনিয়র অফিস এক্সিকিউটিভ, গঙ্গারামপুর CCC",
-
       "sponsor_en": "Subrata Sarkar, Senior Office Executive, Gangarampur CCC",
-
       "imageUrl": "/prizes/2026-06-new_player-3",
-
       "imageAlt_bn": "সুপার ব্রাইট ১২০০০ LUX টর্চ — ৩টি AA ব্যাটারি ফ্রি",
-
       "imageAlt_en": "Super bright 12000 LUX torch — 3 AA batteries included"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 6,
-
       "boardId": "most_improved",
-
       "prizeRank": 1,
-
       "title_bn": "Clay Craft সিরামিক কফি কাপ সেট (৬ পিস)",
-
       "title_en": "Clay Craft Ceramic Coffee Cup Set (6 pcs)",
-
       "sponsor_bn": "নীলকান্ত কোনার, অ্যাসিস্ট্যান্ট ম্যানেজার (F&A), বুনিয়াদপুর ডিভিশন",
-
       "sponsor_en": "Nilkanth Konar, Assistant Manager (F&A), Buniadpur Division",
-
       "imageUrl": "/prizes/2026-06-most_improved-1",
-
       "imageAlt_bn": "মাল্টিকালার সিরামিক কফি কাপ — ২০০ মিলি, ৬টি একসাথে",
-
       "imageAlt_en": "Multicolour ceramic coffee cups — 200 ml, set of 6"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 6,
-
       "boardId": "most_improved",
-
       "prizeRank": 2,
-
       "title_bn": "Perwal Supreme ৪-পিস টুল কম্বো সেট",
-
       "title_en": "Perwal Supreme 4-Piece Tool Combo Set",
-
       "sponsor_bn": "নীলকান্ত কোনার, অ্যাসিস্ট্যান্ট ম্যানেজার (F&A), বুনিয়াদপুর ডিভিশন",
-
       "sponsor_en": "Nilkanth Konar, Assistant Manager (F&A), Buniadpur Division",
-
       "imageUrl": "/prizes/2026-06-most_improved-2",
-
       "imageAlt_bn": "কম্বিনেশন প্লায়ার, ওয়্যার স্ট্রিপার, লাইন টেস্টার ও ২-ইন-১ স্ক্রুড্রাইভার",
-
       "imageAlt_en": "Combination plier, wire stripper, line tester and 2-in-1 screwdriver"
-
     },
-
     {
-
       "year": 2026,
-
       "month": 6,
-
       "boardId": "most_improved",
-
       "prizeRank": 3,
-
       "title_bn": "Duracell LED টর্চ লাইট",
-
       "title_en": "Duracell LED Torch Light",
-
       "sponsor_bn": "নীলকান্ত কোনার, অ্যাসিস্ট্যান্ট ম্যানেজার (F&A), বুনিয়াদপুর ডিভিশন",
-
       "sponsor_en": "Nilkanth Konar, Assistant Manager (F&A), Buniadpur Division",
-
       "imageUrl": "/prizes/2026-06-most_improved-3",
-
       "imageAlt_bn": "সুপার ব্রাইট ১২০০০ LUX টর্চ — ৩টি AA ব্যাটারি ফ্রি",
-
       "imageAlt_en": "Super bright 12000 LUX torch — 3 AA batteries included"
-
+    },
+    {
+      "year": 2026,
+      "month": 7,
+      "boardId": "main_champion",
+      "prizeRank": 1,
+      "title_bn": "MECO DMM-830L ডিজিটাল মাল্টিমিটার",
+      "title_en": "MECO DMM-830L Digital Multimeter",
+      "sponsor_bn": "উজ্জ্বল কর্মকার, Dy.CE, মালদা জোন",
+      "sponsor_en": "Ujjwal Karmakar, Dy.CE, Malda Zone",
+      "imageUrl": "/prizes/2026-07-champion-1",
+      "imageAlt_bn": "লাইনে ভোল্টেজ, কারেন্ট ও রেজিস্ট্যান্স মাপার ডিজিটাল মাল্টিমিটার",
+      "imageAlt_en": "Digital multimeter for voltage, current and resistance checks"
+    },
+    {
+      "year": 2026,
+      "month": 7,
+      "boardId": "main_champion",
+      "prizeRank": 2,
+      "title_bn": "Pigeon আউটার লিড প্রেশার কুকার (৩ লিটার)",
+      "title_en": "Pigeon Outer Lid Pressure Cooker (3 Litres)",
+      "sponsor_bn": "উজ্জ্বল কর্মকার, Dy.CE, মালদা জোন",
+      "sponsor_en": "Ujjwal Karmakar, Dy.CE, Malda Zone",
+      "imageUrl": "/prizes/2026-07-champion-2",
+      "imageAlt_bn": "৩ লিটার আউটার লিড প্রেশার কুকার — রান্নাঘরের দৈনন্দিন ব্যবহারের জন্য",
+      "imageAlt_en": "3-litre outer-lid pressure cooker for everyday cooking"
+    },
+    {
+      "year": 2026,
+      "month": 7,
+      "boardId": "main_champion",
+      "prizeRank": 3,
+      "title_bn": "AmazonBasics ৫১-পিস প্রিসিশন স্ক্রুড্রাইভার বিট সেট",
+      "title_en": "AmazonBasics 51-Piece Precision Screwdriver Bit Set",
+      "sponsor_bn": "উজ্জ্বল কর্মকার, Dy.CE, মালদা জোন",
+      "sponsor_en": "Ujjwal Karmakar, Dy.CE, Malda Zone",
+      "imageUrl": "/prizes/2026-07-champion-3",
+      "imageAlt_bn": "৫১ পিসের প্রিসিশন বিট সেট — ছোট স্ক্রু ও ইলেকট্রনিক্স কাজে",
+      "imageAlt_en": "51-piece precision bit set for fine screws and electronics work"
+    },
+    {
+      "year": 2026,
+      "month": 7,
+      "boardId": "new_player",
+      "prizeRank": 1,
+      "title_bn": "Taparia টুল বেল্ট (হলুদ, চামড়া)",
+      "title_en": "Taparia Tool Belt (Yellow, Leather)",
+      "sponsor_bn": "হেমন্ত কুমার দাস, Sr. Mgr(F&A), মালদা জোন",
+      "sponsor_en": "Hemanta Kumar Das, Sr. Mgr(F&A), Malda Zone",
+      "imageUrl": "/prizes/2026-07-new_player-1",
+      "imageAlt_bn": "হলুদ চামড়ার টুল বেল্ট — মাঠের কাজে টুল সহজে বহন",
+      "imageAlt_en": "Yellow leather tool belt for carrying tools on the job"
+    },
+    {
+      "year": 2026,
+      "month": 7,
+      "boardId": "new_player",
+      "prizeRank": 2,
+      "title_bn": "Taparia স্ক্রু-ড্রাইভার সেট (নীল কেস)",
+      "title_en": "Taparia Screwdriver Set (Blue Case)",
+      "sponsor_bn": "হেমন্ত কুমার দাস, Sr. Mgr(F&A), মালদা জোন",
+      "sponsor_en": "Hemanta Kumar Das, Sr. Mgr(F&A), Malda Zone",
+      "imageUrl": "/prizes/2026-07-new_player-2",
+      "imageAlt_bn": "নীল কেসের Taparia স্ক্রুড্রাইভার সেট — দৈনন্দিন মেরামতের কাজের জন্য",
+      "imageAlt_en": "Taparia screwdriver set in blue case for everyday repair work"
+    },
+    {
+      "year": 2026,
+      "month": 7,
+      "boardId": "new_player",
+      "prizeRank": 3,
+      "title_bn": "Karam নিরাপত্তা গ্লাভস",
+      "title_en": "Karam Safety Gloves",
+      "caution_bn": "বৈদ্যুতিক নিরাপত্তার জন্য নয়",
+      "caution_en": "Not for electrical safety",
+      "sponsor_bn": "হেমন্ত কুমার দাস, Sr. Mgr(F&A), মালদা জোন",
+      "sponsor_en": "Hemanta Kumar Das, Sr. Mgr(F&A), Malda Zone",
+      "imageUrl": "/prizes/2026-07-new_player-3",
+      "imageAlt_bn": "তার টানা, স্টে বাঁধা ও অন্য কাজে হাতের ঘষা–আঘাত থেকে সুরক্ষা",
+      "imageAlt_en": "Protects hands from scrapes during wire pulling, stay tying and similar work"
+    },
+    {
+      "year": 2026,
+      "month": 7,
+      "boardId": "most_improved",
+      "prizeRank": 1,
+      "title_bn": "Taparia টুল বেল্ট (হলুদ, চামড়া)",
+      "title_en": "Taparia Tool Belt (Yellow, Leather)",
+      "sponsor_bn": "হেমন্ত কুমার দাস, Sr. Mgr(F&A), মালদা জোন",
+      "sponsor_en": "Hemanta Kumar Das, Sr. Mgr(F&A), Malda Zone",
+      "imageUrl": "/prizes/2026-07-most_improved-1",
+      "imageAlt_bn": "হলুদ চামড়ার টুল বেল্ট — মাঠের কাজে টুল সহজে বহন",
+      "imageAlt_en": "Yellow leather tool belt for carrying tools on the job"
+    },
+    {
+      "year": 2026,
+      "month": 7,
+      "boardId": "most_improved",
+      "prizeRank": 2,
+      "title_bn": "Taparia স্ক্রু-ড্রাইভার সেট (নীল কেস)",
+      "title_en": "Taparia Screwdriver Set (Blue Case)",
+      "sponsor_bn": "হেমন্ত কুমার দাস, Sr. Mgr(F&A), মালদা জোন",
+      "sponsor_en": "Hemanta Kumar Das, Sr. Mgr(F&A), Malda Zone",
+      "imageUrl": "/prizes/2026-07-most_improved-2",
+      "imageAlt_bn": "নীল কেসের Taparia স্ক্রুড্রাইভার সেট — দৈনন্দিন মেরামতের কাজের জন্য",
+      "imageAlt_en": "Taparia screwdriver set in blue case for everyday repair work"
+    },
+    {
+      "year": 2026,
+      "month": 7,
+      "boardId": "most_improved",
+      "prizeRank": 3,
+      "title_bn": "Karam নিরাপত্তা গ্লাভস",
+      "title_en": "Karam Safety Gloves",
+      "caution_bn": "বৈদ্যুতিক নিরাপত্তার জন্য নয়",
+      "caution_en": "Not for electrical safety",
+      "sponsor_bn": "হেমন্ত কুমার দাস, Sr. Mgr(F&A), মালদা জোন",
+      "sponsor_en": "Hemanta Kumar Das, Sr. Mgr(F&A), Malda Zone",
+      "imageUrl": "/prizes/2026-07-most_improved-3",
+      "imageAlt_bn": "তার টানা, স্টে বাঁধা ও অন্য কাজে হাতের ঘষা–আঘাত থেকে সুরক্ষা",
+      "imageAlt_en": "Protects hands from scrapes during wire pulling, stay tying and similar work"
     }
-
   ]
-
 }
-
-

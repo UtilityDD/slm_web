@@ -73,6 +73,7 @@ export function resolvePrizeDisplay(prize, language = 'bn') {
     if (!prize) return null;
     const isBn = language === 'bn';
     const title = (isBn ? prize.title_bn : prize.title_en)?.trim() || '';
+    const caution = (isBn ? prize.caution_bn : prize.caution_en)?.trim() || '';
     const sponsor = (isBn ? prize.sponsor_bn : prize.sponsor_en)?.trim() || '';
     const imageUrl = prize.imageUrl?.trim() || '';
     const imageCandidates = getPrizeImageCandidates(imageUrl);
@@ -82,6 +83,7 @@ export function resolvePrizeDisplay(prize, language = 'bn') {
 
     return {
         title,
+        caution,
         sponsor,
         imageUrl: imageCandidates[0] || null,
         imageCandidates,
@@ -239,6 +241,8 @@ const SPONSOR_PHOTO_STEMS = {
     jahangir: ['jahangir'],
     subrata: ['subrata'],
     nilkanth: ['nilkanta', 'nilkanth'],
+    ujjwal: ['ujjwal'],
+    hemanta: ['hemanta'],
 };
 
 /** Gender for missing-photo smile avatar — default man. */
@@ -249,6 +253,8 @@ const SPONSOR_GENDER = {
     jahangir: 'man',
     subrata: 'man',
     nilkanth: 'man',
+    ujjwal: 'man',
+    hemanta: 'man',
 };
 
 function sponsorFirstToken(englishName = '') {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'suraksha-sathi-v30-1.3.78-brass-chain';
+const CACHE_NAME = 'suraksha-sathi-v30-1.3.79-july-prizes';
 const LOADER_IMAGES = [
   '/images/loader/helmet.webp',
   '/images/loader/goggles.webp',
