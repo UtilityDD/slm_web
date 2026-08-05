@@ -167,6 +167,7 @@ export default function SmartLinemanUI() {
   const [sponsorAdPreview, setSponsorAdPreview] = useState(null);
   const [adContactOpen, setAdContactOpen] = useState(false);
   const [sponsorAdOpen, setSponsorAdOpen] = useState(false);
+  const [monthWinnersRevealOpen, setMonthWinnersRevealOpen] = useState(false);
   const [installPromptOpen, setInstallPromptOpen] = useState(false);
   const forumActivityTimerRef = useRef(null);
 
@@ -1198,9 +1199,9 @@ export default function SmartLinemanUI() {
 
       switch (currentView) {
         case 'competitions':
-          return <Competitions language={language} user={user} setCurrentView={setCurrentView} userProfile={userProfile} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} />;
+          return <Competitions language={language} user={user} setCurrentView={setCurrentView} userProfile={userProfile} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
         case 'leaderboard':
-          return <Competitions language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} isFullLeaderboard={true} onOpenUserProgress={(userId) => { setSelectedProgressUserId(userId || user?.id || null); setCurrentView('my-progress'); }} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} />;
+          return <Competitions language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} isFullLeaderboard={true} onOpenUserProgress={(userId) => { setSelectedProgressUserId(userId || user?.id || null); setCurrentView('my-progress'); }} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
         case 'my-progress':
           return <MyProgress language={language} user={user} targetUserId={selectedProgressUserId || user?.id} setCurrentView={setCurrentView} returnView="leaderboard" />;
         case 'community':
@@ -1392,6 +1393,7 @@ export default function SmartLinemanUI() {
     pushOptInOpen ||
     installPromptOpen ||
     sidebarOpen ||
+    monthWinnersRevealOpen ||
     currentView === 'accident-stories' ||
     currentView === 'verify' ||
     (currentView === 'update-password' && !user) ||

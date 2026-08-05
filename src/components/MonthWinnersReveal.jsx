@@ -194,6 +194,7 @@ export default function MonthWinnersReveal({
     active = false,
     blocked = false,
     isAdmin = false,
+    onOpenChange,
 }) {
     const isBn = language === 'bn';
     const [open, setOpen] = useState(false);
@@ -206,6 +207,15 @@ export default function MonthWinnersReveal({
     const monthRef = useRef(null); // { year, month }
     const timersRef = useRef([]);
     const startedKeyRef = useRef(null);
+    const onOpenChangeRef = useRef(onOpenChange);
+    onOpenChangeRef.current = onOpenChange;
+
+    useEffect(() => {
+        onOpenChangeRef.current?.(open);
+        return () => {
+            if (open) onOpenChangeRef.current?.(false);
+        };
+    }, [open]);
 
     const clearTimers = useCallback(() => {
         timersRef.current.forEach((t) => clearTimeout(t));

@@ -304,7 +304,7 @@ const getIstDate = (date) => {
     return new Date(d.getTime() + (5.5 * 60 * 60 * 1000));
 };
 
-export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile, onOpenUserProgress, showNotification, sponsorAdOpen = false }) {
+export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile, onOpenUserProgress, showNotification, sponsorAdOpen = false, onMonthWinnersRevealOpenChange }) {
     const [loading, setLoading] = useState(true);
     const [activeQuiz, setActiveQuiz] = useState(null);
     const [quizQuestions, setQuizQuestions] = useState([]);
@@ -2617,6 +2617,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                 }
                 blocked={Boolean(sponsorAdOpen)}
                 isAdmin={userProfile?.role === 'admin'}
+                onOpenChange={onMonthWinnersRevealOpenChange}
             />
         </main>
         );
