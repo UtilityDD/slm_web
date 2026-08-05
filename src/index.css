@@ -5563,6 +5563,175 @@ body,
   animation: sponsorProductFloat 4.5s ease-in-out infinite;
 }
 
+.sponsor-ad-product--morph {
+  width: min(100%, 20rem);
+}
+.sponsor-ad-product--morph .sponsor-ad-product-glow {
+  inset: 8% 12%;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.28), transparent 72%);
+}
+.sponsor-ad-light .sponsor-ad-product--morph .sponsor-ad-product-glow {
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.22), transparent 72%);
+}
+
+.sponsor-solar-morph {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+}
+.sponsor-solar-morph__frame,
+.sponsor-solar-story__frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 320 / 150;
+  max-height: clamp(8rem, 28dvh, 14rem);
+  overflow: visible;
+}
+.sponsor-ad-ready .sponsor-solar-morph__frame,
+.sponsor-ad-ready .sponsor-solar-story__frame {
+  max-height: clamp(6.5rem, 22dvh, 11rem);
+}
+
+.sponsor-solar-story__bg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.sponsor-solar-story__wire {
+  transition: opacity 0.15s ease;
+  filter: drop-shadow(0 1px 0 rgba(127, 29, 29, 0.25));
+}
+.sponsor-solar-story__energy {
+  pointer-events: none;
+}
+
+/* Bottom of rail = SVG black walk line (y=128 / 150) */
+.sponsor-solar-story__rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(128 / 150 * 100%);
+  height: 0;
+  z-index: 3;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.sponsor-solar-story__ladder {
+  position: absolute;
+  left: 84%;
+  bottom: 0;
+  width: 1.2rem;
+  height: 4.15rem;
+  z-index: 2;
+  transform-origin: center bottom;
+  pointer-events: none;
+}
+.sponsor-solar-story__ladder svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(1px 2px 0 rgba(15, 23, 42, 0.12));
+}
+
+.sponsor-solar-story__walker {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 2.75rem;
+  height: 3.5rem;
+  transform: translateX(-50%);
+  transform-origin: center bottom;
+  z-index: 3;
+  overflow: visible;
+}
+
+.sponsor-solar-story__bill {
+  position: absolute;
+  left: 50%;
+  top: 6%;
+  z-index: 5;
+  transform: translateX(-50%) scale(0.55);
+  transform-origin: center bottom;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 16px rgba(15, 23, 42, 0.22));
+}
+.sponsor-solar-story__bill svg {
+  display: block;
+}
+
+.sponsor-solar-story__man {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 6px 8px rgba(15, 23, 42, 0.18));
+}
+.sponsor-solar-story__man .landing-nonprofit-lineman__limb {
+  fill: none;
+  stroke: #0f172a;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sponsor-solar-story__man .landing-nonprofit-lineman__shin {
+  stroke-linecap: butt;
+}
+.sponsor-solar-story__man .landing-nonprofit-lineman__foot {
+  stroke-width: 1.6;
+  stroke-linecap: butt;
+}
+.sponsor-solar-story__man .landing-nonprofit-lineman__pouch {
+  fill: #fff7ed;
+  stroke: #0f172a;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+
+.sponsor-solar-morph__caption {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(15, 23, 42, 0.62);
+  text-align: center;
+}
+.sponsor-ad-dark .sponsor-solar-morph__caption {
+  color: rgba(248, 250, 252, 0.72);
+}
+.sponsor-solar-morph__dots {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  justify-content: center;
+}
+.sponsor-solar-morph__dot {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.22);
+  transition: background 0.45s ease, transform 0.45s ease;
+}
+.sponsor-ad-dark .sponsor-solar-morph__dot {
+  background: rgba(248, 250, 252, 0.28);
+}
+.sponsor-solar-morph__dot.is-on {
+  background: #ea580c;
+  transform: scale(1.25);
+}
+
+.sponsor-ad-reduce .sponsor-solar-story__walker {
+  will-change: auto;
+}
+
 .sponsor-ad-root.font-bengali .sponsor-ad-name {
   font-family: Inter, system-ui, sans-serif;
   letter-spacing: 0.12em;

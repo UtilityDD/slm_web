@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { fetchActiveSponsorAd, hasSeenSponsorAd, markSponsorAdSeen } from '../utils/sponsorAdService';
+import SponsorSolarStoryMorph, { SOLAR_STORY_MORPH_IMAGE } from './SponsorSolarStoryMorph';
 
 /**
  * Full-screen sponsor interstitial — typography-led, staged motion,
@@ -405,13 +406,17 @@ export default function SponsorAdOverlay({
                 )}
 
                 {ad.image_url && (
-                    <div className={`sponsor-ad-product ${anim(2)}`}>
+                    <div className={`sponsor-ad-product ${anim(2)}${ad.image_url === SOLAR_STORY_MORPH_IMAGE ? ' sponsor-ad-product--morph' : ''}`}>
                         <div className="sponsor-ad-product-glow" aria-hidden />
-                        <img
-                            src={ad.image_url}
-                            alt={ad.headline || ad.sponsor_name || ''}
-                            className={reduceMotion ? '' : 'sponsor-ad-product-float'}
-                        />
+                        {ad.image_url === SOLAR_STORY_MORPH_IMAGE ? (
+                            <SponsorSolarStoryMorph reduceMotion={reduceMotion} />
+                        ) : (
+                            <img
+                                src={ad.image_url}
+                                alt={ad.headline || ad.sponsor_name || ''}
+                                className={reduceMotion ? '' : 'sponsor-ad-product-float'}
+                            />
+                        )}
                     </div>
                 )}
 
