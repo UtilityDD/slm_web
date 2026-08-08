@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.79";
+export const CURRENT_APP_VERSION = "1.3.80";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "July 2026 prizes are live — see winners, prizes, and sponsors. Open the monthly leaderboard for a short winners celebration (once per month).",
-  bn: "জুলাই ২০২৬-এর পুরস্কার যোগ হয়েছে — বিজয়ী, পুরস্কার ও স্পনসর দেখুন। মাসিক লিডারবোর্ডে সংক্ষিপ্ত বিজয়ী উদযাপন (মাসে একবার)।",
+  en: "New Home dashboard: see your next step, jump to Training or hourly quiz, and open Progress, Rank, or PPE in one tap. Menus use clearer names, and the hourly quiz lock appears when you start play—not before the page opens.",
+  bn: "নতুন হোম ড্যাশবোর্ড: পরের ধাপ দেখুন, প্রশিক্ষণ বা ঘণ্টার কুইজে যান, এবং এক ট্যাপে অগ্রগতি, র‍্যাঙ্ক বা পিপিই খুলুন। মেনুতে স্পষ্ট নাম, আর ঘণ্টার কুইজ লক শুরু করতে চাপলেই দেখাবে—পৃষ্ঠা খোলার আগে নয়।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 export const SUPPORT_EMAIL = "support@smartlineman.in";

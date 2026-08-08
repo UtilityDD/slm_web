@@ -1,4 +1,4 @@
-const CACHE_NAME = 'suraksha-sathi-v30-1.3.79-july-prizes';
+const CACHE_NAME = 'suraksha-sathi-v30-1.3.80-home-dashboard';
 const LOADER_IMAGES = [
   '/images/loader/helmet.webp',
   '/images/loader/goggles.webp',

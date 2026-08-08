@@ -43,7 +43,6 @@ import {
     CORE_LESSON_MONTHLY_BONUS_POINTS,
 } from '../../utils/trainingLessonIds';
 import { logReadingHabitCompletion, logReadingHabitReview } from '../../utils/readingHabitLog';
-import { checkReadingGate } from '../../utils/readingHabitGate';
 import {
     consumeGateNavigation,
     consumeGateReviewTarget,
@@ -51,11 +50,8 @@ import {
     peekGateUnlockPending,
     parseCoreLessonId as parseGateLessonId,
 } from '../../utils/readingGateStorage';
-import ReadingGateModal from '../ReadingGateModal';
 import { pickSupplementaryListenSrc } from '../../utils/supplementaryAudioUrl';
 import { useLifeSkillRadio } from '../../context/LifeSkillRadioContext';
-import { getLifetimePoints } from '../../utils/hourlyDifficulty';
-import HourlyPenaltyInfoModal from '../HourlyPenaltyInfoModal';
 import { blockGuestWrite, isGuestUser, guestPreviewText } from '../../utils/guestPreview';
 import {
     FAQ_GROUPS,
@@ -65,8 +61,6 @@ import {
     getFaqResultSummary,
     normalizeFaqTitle,
 } from '../../utils/faqFilters';
-
-const HOURLY_PENALTY_MODAL_SKIP_KEY = 'slm_hourly_penalty_info_skip';
 
 const LOADING_TIPS = {
     en: [
@@ -1321,7 +1315,6 @@ export default function Training({
     const [isAudioPlaying, setIsAudioPlaying] = useState(false);
     const [activeAudioChapter, setActiveAudioChapter] = useState(null);
     const [isHourlyPending, setIsHourlyPending] = useState(false);
-    const [readingGateBlock, setReadingGateBlock] = useState(null);
     const [gateFocusTick, setGateFocusTick] = useState(0);
     const gateFocusPending = useMemo(
         () => (user?.id ? peekGateUnlockPending(user.id) : null),
@@ -1339,8 +1332,6 @@ export default function Training({
             'info'
         );
     }, [gateFocusPending?.lessonId, language, showNotification]);
-    const [showHourlyPenaltyModal, setShowHourlyPenaltyModal] = useState(false);
-    const [hourlyPenaltyDontShowAgain, setHourlyPenaltyDontShowAgain] = useState(false);
     const [userRank, setUserRank] = useState(null);
     const [showLessonIndex, setShowLessonIndex] = useState(false);
     const [expandedChapterIndex, setExpandedChapterIndex] = useState(null);
@@ -1543,37 +1534,12 @@ export default function Training({
         return firstName ? `Welcome, ${firstName}` : 'Welcome';
     }, [profile?.full_name, language]);
 
-    const hourlyLifetimePoints = useMemo(
-        () => getLifetimePoints(profile, userRank),
-        [profile, userRank]
-    );
-    const handleHourlyChallengeClick = useCallback(async () => {
+    const handleHourlyChallengeClick = useCallback(() => {
+        // Navigate first (same as Home). Reading-gate / lock modal is shown
+        // on the competitions page when the user tries to start the quiz.
         if (!user?.id) return;
-        const gate = await checkReadingGate({
-            userId: user.id,
-            completedLessons,
-            trainingChapters,
-            guestPreview: isGuestUser(profile),
-        });
-        if (!gate.allowed) {
-            setReadingGateBlock({ ...gate, userId: user.id });
-            return;
-        }
-        if (!storageUtils.getItem(`${HOURLY_PENALTY_MODAL_SKIP_KEY}_${user.id}`)) {
-            setHourlyPenaltyDontShowAgain(false);
-            setShowHourlyPenaltyModal(true);
-            return;
-        }
         setCurrentView('competitions');
-    }, [user?.id, completedLessons, trainingChapters, setCurrentView]);
-
-    const closeHourlyPenaltyModalAndGo = useCallback(() => {
-        if (hourlyPenaltyDontShowAgain && user?.id) {
-            storageUtils.setItem(`${HOURLY_PENALTY_MODAL_SKIP_KEY}_${user.id}`, '1');
-        }
-        setShowHourlyPenaltyModal(false);
-        setCurrentView('competitions');
-    }, [hourlyPenaltyDontShowAgain, user?.id, setCurrentView]);
+    }, [user?.id, setCurrentView]);
 
     useEffect(() => {
         if (trainingTab !== 'supplementary') return;
@@ -2897,19 +2863,7 @@ export default function Training({
         handleChapterClick(chapter, nav.lessonNum, { autoStartReading: true });
     }, [user?.id, trainingChapters, trainingContent?.level_id, selectedLesson, selectedChapter]);
 
-    // Opens the gated lesson directly when the reading-gate modal is confirmed
-    // from the Training page (where a view switch to 'training' is a no-op).
-    const handleGateContinue = () => {
-        if (!user?.id || !trainingChapters?.length) return;
-        const pending = peekGateUnlockPending(user.id);
-        if (!pending?.lessonId) return;
-        const parsed = parseGateLessonId(pending.lessonId);
-        if (!parsed) return;
-        const chapter = trainingChapters.find((c) => c.number === parsed.chapterNum);
-        if (!chapter) return;
-        gateOpenAttemptRef.current = pending.lessonId;
-        handleChapterClick(chapter, parsed.lessonNum, { autoStartReading: true });
-    };
+    // Gate lesson open is handled by consumeGateNavigation / unlock-pending effects above.
 
     useEffect(() => {
         const openFaqIfRequested = () => {
@@ -4791,24 +4745,6 @@ export default function Training({
                 </div>
             ) : null
             }
-
-            <HourlyPenaltyInfoModal
-                open={showHourlyPenaltyModal}
-                language={language}
-                lifetimePoints={hourlyLifetimePoints}
-                onClose={closeHourlyPenaltyModalAndGo}
-                showDontShowAgain
-                dontShowAgain={hourlyPenaltyDontShowAgain}
-                onDontShowAgainChange={setHourlyPenaltyDontShowAgain}
-            />
-
-            <ReadingGateModal
-                block={readingGateBlock}
-                language={language}
-                onClose={() => setReadingGateBlock(null)}
-                setCurrentView={setCurrentView}
-                onContinue={handleGateContinue}
-            />
 
             {showDailyBrief && trainingTab === 'core' && !trainingLoading && !showOnboarding && !selectedChapter && !trainingContent && createPortal(
                 <div

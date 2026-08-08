@@ -680,7 +680,7 @@ export default function SmartLinemanUI() {
   // Authenticated users should not stay on the public landing screen
   useEffect(() => {
     if (!appLoading && user && currentView === 'landing') {
-      setCurrentView('training');
+      setCurrentView('home');
     }
   }, [appLoading, user, currentView]);
 
@@ -996,7 +996,7 @@ export default function SmartLinemanUI() {
   useEffect(() => {
     const updateStatusBar = async () => {
       const isDark = theme === 'dark';
-      const bgColor = isDark ? '#0F172A' : (currentView === 'home' ? '#0F172A' : '#F8FAFC');
+      const bgColor = isDark ? '#0F172A' : (currentView === 'home' ? '#fffdf7' : '#F8FAFC');
       
       // 1. Handle Web/PWA Theme Color
       let metaThemeColor = document.querySelector('meta[name="theme-color"]');
@@ -1015,13 +1015,8 @@ export default function SmartLinemanUI() {
             await StatusBar.setStyle({ style: Style.Dark });
             await StatusBar.setBackgroundColor({ color: bgColor });
           } else {
-            if (currentView === 'home') {
-              await StatusBar.setStyle({ style: Style.Dark });
-              await StatusBar.setBackgroundColor({ color: bgColor });
-            } else {
-              await StatusBar.setStyle({ style: Style.Light });
-              await StatusBar.setBackgroundColor({ color: bgColor });
-            }
+            await StatusBar.setStyle({ style: Style.Light });
+            await StatusBar.setBackgroundColor({ color: bgColor });
           }
         } catch (err) {
           console.warn('Native StatusBar update failed:', err);
@@ -1180,7 +1175,7 @@ export default function SmartLinemanUI() {
             // Force a fresh read so the just-claimed session id is authoritative
             // and a stale cached profile can't trigger a false self-logout.
             fetchProfile(u, true);
-            setCurrentView('training');
+            setCurrentView('home');
           }}
           showNotification={showNotification}
           setCurrentView={setCurrentView}
@@ -1308,7 +1303,16 @@ export default function SmartLinemanUI() {
           return <SafetyHero language={language} user={user} onBack={() => setCurrentView('home')} />; */
         case 'home':
         default:
-          return <Home setCurrentView={setCurrentView} language={language} t={t} user={user} userProfile={userProfile} refreshProfile={fetchProfile} />;
+          return (
+            <Home
+              setCurrentView={setCurrentView}
+              language={language}
+              t={t}
+              user={user}
+              userProfile={userProfile}
+              completedLessons={completedLessons}
+            />
+          );
       }
     })();
 

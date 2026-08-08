@@ -29,7 +29,8 @@ export default function Sidebar({
       id: 'learn',
       title: bn ? 'শেখা' : 'Learn',
       items: [
-        { id: 'training', label: bn ? '৯০ দিনের প্রশিক্ষণ' : '90 Days Training', icon: '📚', tint: 'bg-orange-100 text-orange-700', show: true },
+        { id: 'home', label: bn ? 'হোম' : 'Home', icon: '🏠', tint: 'bg-orange-100 text-orange-700', show: true },
+        { id: 'training', label: bn ? 'প্রশিক্ষণ' : 'Training', icon: '📚', tint: 'bg-orange-100 text-orange-700', show: true },
         { id: 'video-guide', label: bn ? 'ভিডিও গাইড' : 'Video Guide', icon: '📺', tint: 'bg-sky-100 text-sky-700', show: true },
         { id: 'aro-janun', label: bn ? 'আরো জানুন' : 'Know More', icon: '🧰', tint: 'bg-violet-100 text-violet-700', show: true },
         { id: 'training-faq', label: bn ? FAQ_PAGE_TITLE.bn : FAQ_PAGE_TITLE.en, icon: '💡', tint: 'bg-yellow-100 text-yellow-700', show: true, redirectTo: 'training', tab: 'faq' },
@@ -40,8 +41,8 @@ export default function Sidebar({
       id: 'compete',
       title: bn ? 'প্রতিযোগিতা' : 'Compete',
       items: [
-        { id: 'competitions', label: bn ? 'প্রতিযোগিতা' : 'Competitions', icon: '🎯', tint: 'bg-rose-100 text-rose-700', show: true },
-        { id: 'leaderboard', label: bn ? 'লিডারবোর্ড' : 'Leaderboard', icon: '🏆', tint: 'bg-amber-100 text-amber-700', show: true },
+        { id: 'competitions', label: bn ? 'খেলুন' : 'Play', icon: '🎯', tint: 'bg-rose-100 text-rose-700', show: true },
+        { id: 'leaderboard', label: bn ? 'র‍্যাঙ্ক' : 'Rank', icon: '🏆', tint: 'bg-amber-100 text-amber-700', show: true },
       ],
     },
     {
@@ -49,7 +50,7 @@ export default function Sidebar({
       title: bn ? 'সুরক্ষা' : 'Safety',
       items: [
         { id: 'safety-library', label: bn ? 'সুরক্ষা লাইব্রেরি' : 'Safety Library', icon: '🛡️', tint: 'bg-teal-100 text-teal-700', show: true },
-        { id: 'sops', label: bn ? 'এসওপি' : 'SOP', icon: '📋', tint: 'bg-indigo-100 text-indigo-700', show: true },
+        { id: 'sops', label: bn ? 'সুরক্ষা সাথী' : 'Suraksha Sathi', icon: '📋', tint: 'bg-indigo-100 text-indigo-700', show: true },
         { id: 'my_ppe', label: bn ? 'আমার পিপিই' : 'My PPE', icon: '👷', tint: 'bg-orange-100 text-orange-700', show: true },
         { id: 'my_tools', label: bn ? 'আমার সরঞ্জাম' : 'My Tools', icon: '🔧', tint: 'bg-slate-200 text-slate-700', show: true },
         { id: 'emergency', label: bn ? 'জরুরি' : 'Emergency', icon: '🚨', tint: 'bg-red-100 text-red-700', show: true, danger: true },
@@ -115,14 +116,13 @@ export default function Sidebar({
     }
     if (item.redirectTo && item.tab) {
       window.location.hash = `/${item.redirectTo}?tab=${item.tab}`;
-    } else if (item.id === 'my-progress' && setCurrentView) {
-      setCurrentView('my-progress');
+    } else if ((item.id === 'home' || item.id === 'my-progress') && setCurrentView) {
+      setCurrentView(item.id);
     } else {
       window.location.hash = `/${item.id}`;
     }
     onClose();
   };
-
   return (
     <>
       {isOpen && (

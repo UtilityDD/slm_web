@@ -7,7 +7,7 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
 
   const navItems = [
     {
-      id: 'training',
+      id: 'home',
       label: language === 'en' ? 'Home' : 'হোম',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
@@ -65,12 +65,11 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
 
   const isViewingOthersProgress = currentView === 'my-progress' && selectedProgressUserId && selectedProgressUserId !== userId;
 
-  const moreViews = ['menu', 'sops', 'emergency', 'video-guide', 'aro-janun', 'training-faq', 'notifications', 'admin', 'guide', 'admin-services'];
+  const moreViews = ['menu', 'sops', 'emergency', 'video-guide', 'aro-janun', 'training-faq', 'notifications', 'admin', 'guide', 'admin-services', 'competitions', 'training', 'my-progress'];
 
   const isItemActive = (item) =>
     (currentView === item.id && !isViewingOthersProgress) ||
     (item.id === 'my_ppe' && ['safety-library', 'my_ppe', 'my_tools'].includes(currentView)) ||
-    (item.id === 'training' && (currentView === 'home' || currentView === 'competitions')) ||
     (item.id === 'leaderboard' && (currentView === 'leaderboard' || isViewingOthersProgress)) ||
     (item.id === 'menu' && moreViews.includes(currentView));
 
