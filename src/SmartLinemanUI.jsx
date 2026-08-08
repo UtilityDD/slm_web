@@ -34,6 +34,11 @@ import PageLoader from "./components/loaders/PageLoader";
 import GuestPreviewBanner from "./components/GuestPreviewBanner";
 import { isGuestUser, sanitizeGuestProfileForDisplay } from "./utils/guestPreview";
 import { isNativeCapacitorPlatform, syncWebPushSubscription } from "./utils/webPush";
+import {
+  pickActiveOverlay,
+  shouldSuppressOverlay,
+  isShellInterruptBusy,
+} from "./utils/overlayQueue";
 
 // Lazy load heavy components for code splitting
 const Competitions = lazy(() => import("./components/Competitions"));
@@ -1184,9 +1189,9 @@ export default function SmartLinemanUI() {
 
       switch (currentView) {
         case 'competitions':
-          return <Competitions language={language} user={user} setCurrentView={setCurrentView} userProfile={userProfile} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
+          return <Competitions language={language} user={user} setCurrentView={setCurrentView} userProfile={userProfile} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
         case 'leaderboard':
-          return <Competitions language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} isFullLeaderboard={true} onOpenUserProgress={(userId) => { setSelectedProgressUserId(userId || user?.id || null); setCurrentView('my-progress'); }} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
+          return <Competitions language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} isFullLeaderboard={true} onOpenUserProgress={(userId) => { setSelectedProgressUserId(userId || user?.id || null); setCurrentView('my-progress'); }} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
         case 'my-progress':
           return <MyProgress language={language} user={user} targetUserId={selectedProgressUserId || user?.id} setCurrentView={setCurrentView} returnView="leaderboard" />;
         case 'community':
@@ -1221,6 +1226,7 @@ export default function SmartLinemanUI() {
             user={user} 
             userProfile={userProfile}
             showNotification={showNotification}
+            shellInterruptBusy={shellInterruptBusy}
             onProgressUpdate={(newProgress, forceRefresh = false) => { 
               if (isGuestUser(userProfile)) return;
               const coreProgress = filterCoreCompletedLessonIds(Array.isArray(newProgress) ? newProgress : []);
@@ -1369,7 +1375,28 @@ export default function SmartLinemanUI() {
     currentView === 'verify' ||
     (currentView === 'update-password' && !user);
 
-  const idleReminderBlocked = overlayBlocked || profileNudgeOpen || pushOptInOpen;
+  const activeShellOverlay = pickActiveOverlay({
+    sessionEnded: showSessionEndedModal,
+    logout: showLogoutModal,
+    language: showLanguageModal,
+    update: showUpdateModal,
+    broadcast: showActiveBroadcastModal,
+    pushBanner: !!pushNotification,
+    adContact: adContactOpen,
+    profileNudge: profileNudgeOpen,
+    pushOptIn: pushOptInOpen,
+    monthWinners: monthWinnersRevealOpen,
+    sponsor: sponsorAdOpen,
+    install: installPromptOpen,
+  });
+
+  const shellInterruptBusy = isShellInterruptBusy(activeShellOverlay);
+
+  const idleReminderBlocked =
+    overlayBlocked ||
+    profileNudgeOpen ||
+    pushOptInOpen ||
+    shellInterruptBusy;
 
   // Logged-out: allow on landing/login (with dwell delay in overlay).
   // Do not reuse overlayBlocked wholesale — that always blocks `landing`.
@@ -1388,6 +1415,8 @@ export default function SmartLinemanUI() {
     installPromptOpen ||
     sidebarOpen ||
     monthWinnersRevealOpen ||
+    adContactOpen ||
+    shouldSuppressOverlay('sponsor', activeShellOverlay) ||
     currentView === 'accident-stories' ||
     currentView === 'verify' ||
     (currentView === 'update-password' && !user) ||
@@ -1403,6 +1432,7 @@ export default function SmartLinemanUI() {
     sidebarOpen ||
     sponsorAdOpen ||
     pushOptInOpen ||
+    shouldSuppressOverlay('profileNudge', activeShellOverlay) ||
     ['login', 'verify', 'landing', 'update-password', 'accident-stories'].includes(currentView);
 
   const pushOptInBlocked =
@@ -1410,7 +1440,12 @@ export default function SmartLinemanUI() {
     sidebarOpen ||
     sponsorAdOpen ||
     profileNudgeOpen ||
+    shouldSuppressOverlay('pushOptIn', activeShellOverlay) ||
     ['login', 'verify', 'landing', 'update-password', 'accident-stories'].includes(currentView);
+
+  const monthWinnersBlocked =
+    Boolean(sponsorAdOpen) ||
+    shouldSuppressOverlay('monthWinners', activeShellOverlay);
 
   return (
     <Suspense fallback={<PageLoader />}>
@@ -1448,11 +1483,11 @@ export default function SmartLinemanUI() {
             {isGuestUser(userProfile) && (
               <GuestPreviewBanner language={language} />
             )}
-            {showLogoutModal && (
+            {showLogoutModal && activeShellOverlay === 'logout' && (
               <LogoutConfirmationModal onConfirm={() => confirmLogout(false)} onCancel={cancelLogout} language={language} loading={isLoggingOut} />
             )}
 
-            {showSessionEndedModal && (
+            {showSessionEndedModal && activeShellOverlay === 'sessionEnded' && (
               <div className="fixed inset-0 z-[400] bg-slate-900/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="session-ended-title">
                 <div className="w-full sm:max-w-sm animate-slide-up-sheet sm:animate-scale-in">
                   <div className="relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
@@ -1490,7 +1525,7 @@ export default function SmartLinemanUI() {
               </div>
             )}
 
-            {showActiveBroadcastModal && activeBroadcastNotice && (
+            {showActiveBroadcastModal && activeShellOverlay === 'broadcast' && activeBroadcastNotice && (
               <div className="fixed inset-0 z-[210] bg-slate-900/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
                 <div className="w-full sm:max-w-md max-h-[85vh] flex flex-col animate-slide-up-sheet sm:animate-scale-in">
                   <div className="relative flex max-h-[85vh] min-h-0 flex-col overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
@@ -1524,7 +1559,7 @@ export default function SmartLinemanUI() {
               </div>
             )}
 
-            {showUpdateModal && updateInfo && (
+            {showUpdateModal && activeShellOverlay === 'update' && updateInfo && (
               <div className="fixed inset-0 z-[200] bg-slate-900/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
                 <div className="w-full sm:max-w-md animate-slide-up-sheet sm:animate-scale-in">
                   <div className="relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
@@ -1635,7 +1670,7 @@ export default function SmartLinemanUI() {
                 document.body
               )}
 
-            {pushNotification && (
+            {pushNotification && activeShellOverlay === 'pushBanner' && (
               <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[110] w-[calc(100%-2rem)] max-w-md animate-bounce-in">
                 <div className={`relative p-4 sm:p-5 rounded-2xl shadow-2xl border-2 flex gap-3 sm:gap-4 items-start ${pushNotification.type === 'alert' ? 'bg-red-50 border-red-500 dark:bg-red-900/20' : pushNotification.type === 'warning' ? 'bg-orange-50 border-orange-500 dark:bg-orange-900/20' : pushNotification.type === 'update' ? 'bg-green-50 border-green-500 dark:bg-green-900/20' : 'bg-orange-50 border-orange-500 dark:bg-orange-900/20'}`}>
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0 ${pushNotification.type === 'alert' ? 'bg-red-100 text-red-600' : pushNotification.type === 'warning' ? 'bg-orange-100 text-orange-600' : pushNotification.type === 'update' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'}`}>
@@ -1733,7 +1768,7 @@ export default function SmartLinemanUI() {
               }}
             />
 
-            {adContactOpen &&
+            {adContactOpen && activeShellOverlay === 'adContact' &&
               createPortal(
                 <div
                   className="fixed inset-0 z-[240] flex items-end justify-center bg-slate-950/55 p-3 backdrop-blur-[2px] sm:items-center sm:p-6"
@@ -1810,7 +1845,7 @@ export default function SmartLinemanUI() {
               />
             )}
 
-            {showLanguageModal && (
+            {showLanguageModal && activeShellOverlay === 'language' && (
               <div
                 className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/55 animate-fade-in"
                 role="presentation"

@@ -1189,6 +1189,7 @@ export default function Training({
     onProgressUpdate,
     onOpenUserProgress,
     setCurrentView,
+    shellInterruptBusy = false,
 }) {
     const [showOnboarding, setShowOnboarding] = useState(() => !hasCompletedOnboarding());
     const [showDailyBrief, setShowDailyBrief] = useState(() => !isDailyBriefDismissedToday());
@@ -4746,7 +4747,7 @@ export default function Training({
             ) : null
             }
 
-            {showDailyBrief && trainingTab === 'core' && !trainingLoading && !showOnboarding && !selectedChapter && !trainingContent && createPortal(
+            {showDailyBrief && !shellInterruptBusy && trainingTab === 'core' && !trainingLoading && !showOnboarding && !selectedChapter && !trainingContent && createPortal(
                 <div
                     className="fixed inset-0 z-[118] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-[2px] animate-fade-in"
                     onClick={dismissDailyBrief}
@@ -5837,7 +5838,7 @@ export default function Training({
                 )
             }
             {
-                showOnboarding && (
+                showOnboarding && !shellInterruptBusy && (
                     <OnboardingSequence
                         language={language}
                         onComplete={() => {

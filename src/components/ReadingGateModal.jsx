@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { setGateNavigation, setGateReviewTarget, setGateUnlockPending } from '../utils/readingGateStorage';
 
@@ -9,8 +9,15 @@ export default function ReadingGateModal({
     setCurrentView,
     onContinue,
 }) {
+    const [showDetails, setShowDetails] = useState(false);
+
+    useEffect(() => {
+        setShowDetails(false);
+    }, [block?.lessonId, block?.mode]);
+
     if (!block) return null;
 
+    const bn = language === 'bn';
     const isReview = block.mode === 'review';
     const lessonLabel = block.lessonId || '';
 
@@ -35,6 +42,26 @@ export default function ReadingGateModal({
         }
     };
 
+    const headline = isReview
+        ? (bn ? 'একটি পাঠ রিভিউ করুন' : 'Review one lesson')
+        : (bn ? 'আজকের পাঠ শেষ করুন' : 'Finish today’s reading');
+
+    const outcome = isReview
+        ? (bn
+            ? 'রিভিউ শেষ হলে ঘণ্টার কুইজ খুলবে।'
+            : 'Finish the review to unlock the hourly quiz.')
+        : (bn
+            ? 'পাঠ শেষ করলে ঘণ্টার কুইজ খুলবে।'
+            : 'Finish the lesson to unlock the hourly quiz.');
+
+    const details = isReview
+        ? (bn
+            ? 'প্রতি ২ দিনে একটি পাঠ রিভিউ করতে হয়। রিভিউতে অতিরিক্ত পয়েন্ট নেই।'
+            : 'Complete one lesson review every 2 days. Reviews do not add extra points.')
+        : (bn
+            ? 'ঘণ্টার কুইজ খুলতে প্রতি ২ দিনে অন্তত একটি প্রশিক্ষণ পাঠ শেষ করুন।'
+            : 'Finish at least one training lesson every 2 days to keep the hourly quiz unlocked.');
+
     return createPortal(
         <div className="fixed inset-0 z-[220] flex items-center justify-center bg-slate-900/45 p-4">
             <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-[#fffdf7] p-6 text-left shadow-xl">
@@ -43,59 +70,63 @@ export default function ReadingGateModal({
                     aria-hidden="true"
                 />
                 <div className="relative pt-2">
-                    <p className={`mb-1 text-xs font-bold text-orange-600 ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-wider'}`}>
-                        {language === 'en' ? 'Hourly quiz locked' : 'ঘণ্টাভিত্তিক কুইজ লক'}
+                    <p className={`mb-1 text-xs font-bold text-orange-600 ${bn ? 'font-bengali' : 'uppercase tracking-wider'}`}>
+                        {bn ? 'ঘণ্টার কুইজ লক' : 'Hourly quiz locked'}
                     </p>
-                    <h2 className={`mb-2 text-xl font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        {isReview
-                            ? (language === 'en' ? 'Refresh your knowledge' : 'জ্ঞান রিফ্রেশ করুন')
-                            : (language === 'en' ? 'Reading first' : 'প্রথমে পড়ুন')}
+                    <h2 className={`mb-2 text-xl font-black text-slate-900 ${bn ? 'font-bengali' : ''}`}>
+                        {headline}
                     </h2>
-                    <p className={`mb-4 text-sm font-semibold leading-relaxed text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        {isReview
-                            ? (language === 'en'
-                                ? 'Complete one lesson review every 2 days to unlock the hourly quiz. No extra points for reviews.'
-                                : 'ঘণ্টাভিত্তিক কুইজ খুলতে প্রতি ২ দিনে একটি পাঠ রিভিউ শেষ করুন। রিভিউতে অতিরিক্ত পয়েন্ট নেই।')
-                            : (language === 'en'
-                                ? 'Finish at least one training lesson every 2 days to unlock the hourly quiz.'
-                                : 'ঘণ্টাভিত্তিক কুইজ খুলতে প্রতি ২ দিনে অন্তত একটি প্রশিক্ষণ পাঠ শেষ করুন।')}
+                    <p className={`mb-4 text-sm font-semibold leading-relaxed text-slate-600 ${bn ? 'font-bengali' : ''}`}>
+                        {outcome}
                     </p>
 
-                    <div className="mb-5 rounded-2xl border border-orange-100 bg-orange-50 px-3.5 py-3">
-                        <p className={`text-sm font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                    <div className="mb-3 rounded-2xl border border-orange-100 bg-orange-50 px-3.5 py-3">
+                        <p className={`text-sm font-black text-slate-900 ${bn ? 'font-bengali' : ''}`}>
                             {isReview
-                                ? (language === 'en'
-                                    ? `Review lesson: ${lessonLabel}`
-                                    : `রিভিউ পাঠ: ${lessonLabel}`)
-                                : (language === 'en'
-                                    ? `Your next lesson: ${lessonLabel}`
-                                    : `আপনার পরের পাঠ: ${lessonLabel}`)}
+                                ? (bn ? `রিভিউ পাঠ: ${lessonLabel}` : `Review lesson: ${lessonLabel}`)
+                                : (bn ? `পরের পাঠ: ${lessonLabel}` : `Next lesson: ${lessonLabel}`)}
                         </p>
                         {isReview && block.reviewIndex != null && block.reviewTotal != null && (
-                            <p className={`mt-1 text-xs font-semibold text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                {language === 'en'
-                                    ? `${block.reviewIndex} of ${block.reviewTotal} in this review cycle`
-                                    : `এই রিভিউ চক্রে ${block.reviewIndex} / ${block.reviewTotal}`}
+                            <p className={`mt-1 text-xs font-semibold text-slate-600 ${bn ? 'font-bengali' : ''}`}>
+                                {bn
+                                    ? `এই রিভিউ চক্রে ${block.reviewIndex} / ${block.reviewTotal}`
+                                    : `${block.reviewIndex} of ${block.reviewTotal} in this review cycle`}
                             </p>
                         )}
                     </div>
+
+                    <button
+                        type="button"
+                        onClick={() => setShowDetails((v) => !v)}
+                        className={`mb-4 text-left text-xs font-bold text-orange-700 underline-offset-2 hover:underline ${bn ? 'font-bengali' : ''}`}
+                        aria-expanded={showDetails}
+                    >
+                        {showDetails
+                            ? (bn ? 'বিস্তারিত লুকান' : 'Hide details')
+                            : (bn ? 'বিস্তারিত' : 'How it works')}
+                    </button>
+                    {showDetails && (
+                        <p className={`-mt-2 mb-4 text-xs font-medium leading-relaxed text-slate-500 ${bn ? 'font-bengali' : ''}`}>
+                            {details}
+                        </p>
+                    )}
 
                     <div className="flex flex-col gap-2">
                         <button
                             type="button"
                             onClick={handleContinue}
-                            className={`min-h-[48px] w-full rounded-full bg-orange-500 py-3 text-sm font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}
+                            className={`min-h-[48px] w-full rounded-full bg-orange-500 py-3 text-sm font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] ${bn ? 'font-bengali' : ''}`}
                         >
                             {isReview
-                                ? (language === 'en' ? 'Open assigned lesson →' : 'নির্ধারিত পাঠ খুলুন →')
-                                : (language === 'en' ? 'Open your next lesson →' : 'পরের পাঠ খুলুন →')}
+                                ? (bn ? 'রিভিউ পাঠ খুলুন →' : 'Open review lesson →')
+                                : (bn ? 'পাঠ খুলুন →' : 'Open lesson →')}
                         </button>
                         <button
                             type="button"
                             onClick={onClose}
-                            className={`min-h-[44px] w-full rounded-full border border-slate-200/80 bg-white py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}
+                            className={`min-h-[44px] w-full rounded-full border border-slate-200/80 bg-white py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-[0.98] ${bn ? 'font-bengali' : ''}`}
                         >
-                            {language === 'en' ? 'Not now' : 'এখন নয়'}
+                            {bn ? 'এখন নয়' : 'Not now'}
                         </button>
                     </div>
                 </div>

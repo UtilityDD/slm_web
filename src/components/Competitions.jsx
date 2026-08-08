@@ -304,7 +304,7 @@ const getIstDate = (date) => {
     return new Date(d.getTime() + (5.5 * 60 * 60 * 1000));
 };
 
-export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile, onOpenUserProgress, showNotification, sponsorAdOpen = false, onMonthWinnersRevealOpenChange }) {
+export default function Competitions({ language = 'bn', user, setCurrentView, isFullLeaderboard = false, userProfile, refreshProfile, onOpenUserProgress, showNotification, sponsorAdOpen = false, monthWinnersBlocked = false, onMonthWinnersRevealOpenChange }) {
     const [loading, setLoading] = useState(true);
     const [activeQuiz, setActiveQuiz] = useState(null);
     const [quizQuestions, setQuizQuestions] = useState([]);
@@ -2615,7 +2615,7 @@ export default function Competitions({ language = 'bn', user, setCurrentView, is
                     && !leaderboardUserSheet
                     && !showMonthlyBoardInfoModal
                 }
-                blocked={Boolean(sponsorAdOpen)}
+                blocked={Boolean(sponsorAdOpen) || Boolean(monthWinnersBlocked)}
                 isAdmin={userProfile?.role === 'admin'}
                 onOpenChange={onMonthWinnersRevealOpenChange}
             />
