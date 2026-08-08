@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { fetchActiveSponsorAd, hasSeenSponsorAd, markSponsorAdSeen } from '../utils/sponsorAdService';
-import SponsorSolarStoryMorph, { SOLAR_STORY_MORPH_IMAGE } from './SponsorSolarStoryMorph';
+import SponsorSolarStoryMorph, { SOLAR_STORY_MORPH_IMAGE, SOLAR_STORY_DURATION_SEC } from './SponsorSolarStoryMorph';
 
 /**
  * Full-screen sponsor interstitial — typography-led, staged motion,
@@ -105,7 +105,11 @@ export default function SponsorAdOverlay({
             if (!row) return;
             clearTimers();
             previewModeRef.current = isPreview;
-            const seconds = Math.max(2, Math.min(30, Number(row.display_seconds) || 5));
+            let seconds = Math.max(2, Math.min(30, Number(row.display_seconds) || 5));
+            // Morph story finishes in ~7s — don't hold the close control longer than that.
+            if (row.image_url === SOLAR_STORY_MORPH_IMAGE) {
+                seconds = Math.min(seconds, SOLAR_STORY_DURATION_SEC);
+            }
             setAd(row);
             setOpen(true);
             setTimeDone(false);
@@ -257,7 +261,13 @@ export default function SponsorAdOverlay({
         : isEn
           ? 'Sponsored'
           : 'স্পনসর্ড';
-    const durationSec = Math.max(2, Math.min(30, Number(ad.display_seconds) || 5));
+    const durationSec = (() => {
+        let sec = Math.max(2, Math.min(30, Number(ad.display_seconds) || 5));
+        if (ad.image_url === SOLAR_STORY_MORPH_IMAGE) {
+            sec = Math.min(sec, SOLAR_STORY_DURATION_SEC);
+        }
+        return sec;
+    })();
     const progressPct = timeDone
         ? 100
         : visible

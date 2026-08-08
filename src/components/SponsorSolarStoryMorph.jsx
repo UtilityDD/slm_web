@@ -16,7 +16,10 @@ import {
 /** Sentinel path: overlay renders this story instead of a photo. */
 export const SOLAR_STORY_MORPH_IMAGE = '/images/sponsor/morph:solar-story';
 
-const CYCLE_MS = 18000;
+/** Full story length in ms — keep in sync with DAS_ENTERPRISE_PRESET display_seconds. */
+export const SOLAR_STORY_DURATION_MS = 7000;
+export const SOLAR_STORY_DURATION_SEC = SOLAR_STORY_DURATION_MS / 1000;
+const CYCLE_MS = SOLAR_STORY_DURATION_MS;
 const TAU = Math.PI * 2;
 /** Climb height (rem) — feet stay on ground line via translateY, same as landing. */
 const CLIMB_REM = 4.15;
@@ -102,17 +105,18 @@ function sampleSolarStory(elapsedMs) {
   let handLift = 0;
   let holdingWire = false;
 
-  // 0–2.0: enter from RIGHT, walk to ladder
-  if (t < 2.0) {
-    const u = easeInOutCubic(clamp01(t / 2.0));
+  // Compressed 7s story (was 18s). Beats stay readable but snappy.
+  // 0–0.8: enter from RIGHT, walk to ladder
+  if (t < 0.8) {
+    const u = easeInOutCubic(clamp01(t / 0.8));
     xPct = lerp(112, LADDER_LEFT_PCT, u);
     facing = -1;
     yRem = 0;
-    pose = walkPose(t * 1.5, { lean: 5, armAmp: 12, legAmp: 15 });
+    pose = walkPose(t * 2.4, { lean: 5, armAmp: 12, legAmp: 15 });
     pose.armRU = -35;
     pose.armRL = -12;
-    if (u > 0.5) {
-      const lu = easeOutBack(clamp01((u - 0.5) / 0.5));
+    if (u > 0.45) {
+      const lu = easeOutBack(clamp01((u - 0.45) / 0.55));
       ladder = {
         ...ladder,
         opacity: clamp01(lu * 1.35),
@@ -121,21 +125,20 @@ function sampleSolarStory(elapsedMs) {
       };
     }
   }
-  // 2.0–3.7: FAST climb UP (no wire) → at top, pull wire from the sun
-  else if (t < 3.7) {
-    const u = clamp01((t - 2.0) / 1.7);
+  // 0.8–1.7: climb UP → pull wire from the sun
+  else if (t < 1.7) {
+    const u = clamp01((t - 0.8) / 0.9);
     xPct = LADDER_LEFT_PCT;
     facing = 1;
     yRem = lerp(0, -CLIMB_REM, easeInOutCubic(u));
-    pose = landingClimbPose(u, 3.6);
+    pose = landingClimbPose(u, 3.2);
     ladder = { ...ladder, opacity: 1, scaleY: 1, rot: 1 };
-    handLift = clamp01((u - 0.7) / 0.3);
-    // No wire while climbing — only appear when hooked from the sun
-    if (u < 0.72) {
+    handLift = clamp01((u - 0.65) / 0.35);
+    if (u < 0.68) {
       wireMode = 'none';
       holdingWire = false;
     } else {
-      sunHooked = clamp01((u - 0.72) / 0.28);
+      sunHooked = clamp01((u - 0.68) / 0.32);
       wireMode = 'hang';
       holdingWire = true;
       wireSag = 0.45;
@@ -144,13 +147,13 @@ function sampleSolarStory(elapsedMs) {
       pose.headRot = lerp(2, -10, sunHooked);
     }
   }
-  // 3.7–5.3: FAST climb DOWN with wire (~1.6s)
-  else if (t < 5.3) {
-    const u = clamp01((t - 3.7) / 1.6);
+  // 1.7–2.5: climb DOWN with wire
+  else if (t < 2.5) {
+    const u = clamp01((t - 1.7) / 0.8);
     xPct = LADDER_LEFT_PCT;
     facing = -1;
     yRem = lerp(-CLIMB_REM, 0, easeInOutCubic(u));
-    pose = landingClimbPose(1 - u, 3.6);
+    pose = landingClimbPose(1 - u, 3.2);
     pose.armRU = lerp(pose.armRU, -55, 0.55);
     pose.armRL = lerp(pose.armRL, -22, 0.55);
     ladder = { ...ladder, opacity: 1, scaleY: 1, rot: 1 };
@@ -160,13 +163,13 @@ function sampleSolarStory(elapsedMs) {
     wireSag = lerp(0.5, 0.85, u);
     handLift = 0.4;
   }
-  // 5.3–6.0: ladder falls
-  else if (t < 6.0) {
-    const u = easeInCubic(clamp01((t - 5.3) / 0.7));
+  // 2.5–2.9: ladder falls
+  else if (t < 2.9) {
+    const u = easeInCubic(clamp01((t - 2.5) / 0.4));
     xPct = lerp(LADDER_LEFT_PCT, 76, easeInOutQuad(u));
     yRem = 0;
     facing = -1;
-    pose = walkPose(t * 1.2, { lean: 4, armAmp: 10, legAmp: 13 });
+    pose = walkPose(t * 1.8, { lean: 4, armAmp: 10, legAmp: 13 });
     pose.armRU = -50;
     pose.armRL = -18;
     ladder = {
@@ -180,13 +183,13 @@ function sampleSolarStory(elapsedMs) {
     holdingWire = true;
     wireSag = 0.8;
   }
-  // 6.0–8.6: walk to panel, connect wire to solar plate
-  else if (t < 8.6) {
-    const u = clamp01((t - 6.0) / 2.6);
+  // 2.9–4.2: walk to panel, connect wire
+  else if (t < 4.2) {
+    const u = clamp01((t - 2.9) / 1.3);
     xPct = lerp(76, 20, easeInOutCubic(u));
     yRem = 0;
     facing = -1;
-    pose = walkPose(t * 1.25, { lean: 4, armAmp: 10, legAmp: 14 });
+    pose = walkPose(t * 1.9, { lean: 4, armAmp: 10, legAmp: 14 });
     pose.armRU = lerp(-50, -95, u);
     pose.armRL = lerp(-18, -30, u);
     ladder = { ...ladder, opacity: 0, scaleY: 0.2, rot: 78 };
@@ -194,9 +197,8 @@ function sampleSolarStory(elapsedMs) {
     holdingWire = true;
     wireMode = 'hang';
     wireSag = lerp(0.8, 0.45, u);
-    panelHooked = clamp01((u - 0.7) / 0.3);
-    if (u > 0.82) {
-      // Snap onto plate — release next beat
+    panelHooked = clamp01((u - 0.65) / 0.35);
+    if (u > 0.78) {
       wireMode = 'panel';
       holdingWire = false;
       pose.armRU = -100;
@@ -204,14 +206,13 @@ function sampleSolarStory(elapsedMs) {
       handLift = 0.3;
     }
   }
-  // 8.6–11.5: free hands, walk to center, strong glow
-  else if (t < 11.5) {
-    const u = clamp01((t - 8.6) / 2.9);
+  // 4.2–5.4: walk to center, house lights up
+  else if (t < 5.4) {
+    const u = clamp01((t - 4.2) / 1.2);
     xPct = lerp(20, 50, easeInOutCubic(u));
     yRem = 0;
     facing = 1;
-    pose = walkPose(t * 1.1, { lean: 4, armAmp: 14, legAmp: 14 });
-    // Free hands — natural swing
+    pose = walkPose(t * 1.6, { lean: 4, armAmp: 14, legAmp: 14 });
     ladder = { ...ladder, opacity: 0 };
     sunHooked = 1;
     panelHooked = 1;
@@ -219,12 +220,12 @@ function sampleSolarStory(elapsedMs) {
     holdingWire = false;
     wireSag = 0.4;
     energyFlow = easeOutCubic(u);
-    homeLit = easeInOutCubic(Math.min(1, u * 1.25));
-    smile = clamp01((u - 0.3) / 0.4);
+    homeLit = easeInOutCubic(Math.min(1, u * 1.35));
+    smile = clamp01((u - 0.2) / 0.45);
   }
-  // 11.5–18: center, Electric Bill ₹0
+  // 5.4–7.0: center, Electric Bill ₹0
   else {
-    const u = clamp01((t - 11.5) / 6.5);
+    const u = clamp01((t - 5.4) / 1.6);
     xPct = 50;
     yRem = 0;
     facing = 1;
@@ -232,13 +233,13 @@ function sampleSolarStory(elapsedMs) {
     pose.legLU = 5;
     pose.legRU = -4;
     pose.chestRot = -3;
-    pose.headRot = lerp(8, -8, easeOutCubic(clamp01(u * 1.4)));
+    pose.headRot = lerp(8, -8, easeOutCubic(clamp01(u * 1.6)));
     pose.armRU = 12;
     pose.armRL = -6;
-    pose.armLU = lerp(22, -105, easeOutBack(clamp01(u * 1.5)));
+    pose.armLU = lerp(22, -105, easeOutBack(clamp01(u * 1.8)));
     pose.armLL = lerp(8, -15, u);
     smile = 1;
-    billShow = easeOutBack(clamp01((u - 0.08) / 0.4));
+    billShow = easeOutBack(clamp01((u - 0.05) / 0.35));
     ladder = { ...ladder, opacity: 0 };
     sunHooked = 1;
     panelHooked = 1;
@@ -391,7 +392,7 @@ export default function SponsorSolarStoryMorph({ reduceMotion = false }) {
     };
 
     if (reduceMotion) {
-      const scene = sampleSolarStory(15000);
+      const scene = sampleSolarStory(6200);
       applyPoseToJoints(joints, scene.pose);
       applyWorld({ xPct: 50, yRem: 0, facing: 1, rot: 0 });
       applyLadder({ ...scene.ladder, opacity: 0 });
