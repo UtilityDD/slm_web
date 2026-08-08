@@ -39,7 +39,6 @@ export default function MorePage({
       title: bn ? 'সুরক্ষা' : 'Safety',
       items: [
         { id: 'safety-library', label: bn ? 'সুরক্ষা লাইব্রেরি' : 'Safety Library', icon: '🛡️', tint: 'bg-teal-100 text-teal-700', show: true },
-        { id: 'sops', label: bn ? 'এসওপি' : 'SOP', icon: '📋', tint: 'bg-indigo-100 text-indigo-700', show: true },
         { id: 'my_ppe', label: bn ? 'আমার পিপিই' : 'My PPE', icon: '👷', tint: 'bg-orange-100 text-orange-700', show: true },
         { id: 'my_tools', label: bn ? 'আমার সরঞ্জাম' : 'My Tools', icon: '🔧', tint: 'bg-slate-200 text-slate-700', show: true },
         { id: 'emergency', label: bn ? 'জরুরি' : 'Emergency', icon: '🚨', tint: 'bg-red-100 text-red-700', show: true, danger: true },
@@ -162,6 +161,34 @@ export default function MorePage({
       </header>
 
       <div className="mx-auto max-w-lg px-4 py-4">
+        {/* Suraksha Sathi — highlighted (moved from floating FAB) */}
+        <button
+          type="button"
+          onClick={() => {
+            if (navigator.vibrate) navigator.vibrate(5);
+            if (setCurrentView) setCurrentView('sops');
+            else window.location.hash = '/sops';
+          }}
+          className="mb-3 flex w-full items-center gap-3 rounded-2xl border border-emerald-300/80 bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3.5 text-left text-white shadow-md shadow-emerald-600/25 ring-2 ring-emerald-400/40 transition-all hover:shadow-lg active:scale-[0.99]"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/20 shadow-inner" aria-hidden>
+            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className={`block text-sm font-black leading-tight ${bn ? 'font-bengali' : ''}`}>
+              {bn ? 'সুরক্ষা সাথী' : 'Suraksha Sathi'}
+            </span>
+            <span className={`mt-0.5 block text-[11px] font-semibold leading-snug text-emerald-50/95 ${bn ? 'font-bengali' : ''}`}>
+              {bn ? 'পিটিডব্লিউ ও লাইন ক্লিয়ারেন্স গাইড' : 'PTW & line clearance guide'}
+            </span>
+          </span>
+          <svg className="h-4 w-4 shrink-0 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
         {/* SLM Radio CTA */}
         <button
           type="button"

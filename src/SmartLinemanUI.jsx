@@ -102,7 +102,6 @@ export default function SmartLinemanUI() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
-  const [isSathiExpanded, setIsSathiExpanded] = useState(true);
 
   // Handle initial routing - convert clean URLs to hash URLs for consistency
   const getInitialView = () => {
@@ -308,15 +307,6 @@ export default function SmartLinemanUI() {
       }
     };
   }, []);
-
-  // Suraksha Sathi: expanded on each view, then auto-collapse after a longer pause
-  useEffect(() => {
-    setIsSathiExpanded(true);
-    const timer = setTimeout(() => {
-      setIsSathiExpanded(false);
-    }, 14000);
-    return () => clearTimeout(timer);
-  }, [currentView]);
 
   // Background Pre-fetching for Leaderboard & Monthly Stars
   // Warm-cache only — Competitions / Training rank still fetch when opened.
@@ -1782,33 +1772,6 @@ export default function SmartLinemanUI() {
                 onOpenChange={setPushOptInOpen}
               />
             )}
-            {user &&
-              !sidebarOpen &&
-              !sponsorAdOpen &&
-              !['login', 'verify', 'update-password'].includes(currentView) &&
-              currentView !== 'sops' &&
-              currentView !== 'training' &&
-              currentView !== 'community' && (
-              <div className="fixed left-0 z-[250] animate-slide-up bottom-[calc(8rem+env(safe-area-inset-bottom))]">
-                 <button
-                    type="button"
-                    onClick={() => setCurrentView('sops')}
-                    onMouseEnter={() => setIsSathiExpanded(true)}
-                    onMouseLeave={() => setIsSathiExpanded(false)}
-                    className={`flex items-center bg-emerald-600/90 backdrop-blur-md text-white p-2 rounded-r-full shadow-2xl transition-all duration-500 group border-y border-r border-white/20 active:scale-95 ${isSathiExpanded ? 'pl-2 pr-4' : 'pl-2 pr-2'}`}
-                 >
-                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center shrink-0 shadow-inner">
-                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                       </svg>
-                    </div>
-                    <span className={`text-[12px] font-black uppercase tracking-tighter transition-all duration-500 overflow-hidden whitespace-nowrap ${isSathiExpanded ? 'max-w-[100px] ml-2 opacity-100' : 'max-w-0 ml-0 opacity-0'}`}>
-                      সুরক্ষা সাথী
-                    </span>
-                 </button>
-              </div>
-            )}
-
             <NetworkStatusListener language={language} />
             {showWeatherBanner && (
               <WeatherAlertBanner
