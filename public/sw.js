@@ -1,4 +1,4 @@
-const CACHE_NAME = 'suraksha-sathi-v30-1.3.83-rank-rules-header';
+const CACHE_NAME = 'suraksha-sathi-v30-1.3.84-progress-hub';
 const LOADER_IMAGES = [
   '/images/loader/helmet.webp',
   '/images/loader/goggles.webp',

@@ -10,6 +10,8 @@ import { lessonIdFromCoreLessonBonusQuizId } from '../utils/trainingLessonIds';
 import UserProfilePrizeList from './UserProfilePrizeList';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+/** Approximate core lesson count from training chapter defaults (display only). */
+const APPROX_CORE_LESSON_TOTAL = 91;
 
 const formatDate = (value, language = 'bn') => {
     if (!value) return language === 'en' ? 'Not available' : 'পাওয়া যায়নি';
@@ -47,31 +49,47 @@ const safePhone = (profile) => profile?.phone_number || profile?.phone || '';
 
 const parseLessonId = (quizId = '') => lessonIdFromCoreLessonBonusQuizId(quizId);
 
-const getActivityLabel = (quizId = '', language = 'bn') => {
-    if (quizId.startsWith('lesson_bonus_')) return language === 'en' ? 'Lesson' : 'পাঠ';
-    if (quizId.startsWith('hourly-challenge')) return language === 'en' ? 'Hourly Challenge' : 'ঘণ্টাভিত্তিক চ্যালেঞ্জ';
-    return language === 'en' ? 'Quiz' : 'কুইজ';
-};
-
-const MetricCard = ({ label, value, hint, accent = 'slate' }) => {
+const MetricCard = ({ label, value, hint, accent = 'orange', compact = false }) => {
     const accents = {
-        slate: 'from-slate-500/10 to-slate-500/5 border-slate-200 dark:border-slate-700',
-        orange: 'from-orange-500/10 to-orange-500/5 border-orange-200 dark:border-orange-800/50',
-        emerald: 'from-emerald-500/10 to-emerald-500/5 border-emerald-200 dark:border-emerald-800/50',
-        blue: 'from-blue-500/10 to-blue-500/5 border-blue-200 dark:border-blue-800/50',
-        rose: 'from-rose-500/10 to-rose-500/5 border-rose-200 dark:border-rose-800/50'
+        slate: 'border-slate-200/90',
+        orange: 'border-orange-200/90',
+        emerald: 'border-emerald-200/90',
+        blue: 'border-sky-200/90',
+        rose: 'border-rose-200/90',
+    };
+    const valueTints = {
+        slate: 'text-slate-900',
+        orange: 'text-orange-800',
+        emerald: 'text-emerald-800',
+        blue: 'text-sky-800',
+        rose: 'text-rose-800',
     };
 
     return (
-        <div className={`rounded-2xl border bg-gradient-to-br ${accents[accent] || accents.slate} p-4 sm:p-5 shadow-sm`}>
-            <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-2">{label}</p>
-            <div className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100 tabular-nums">{value}</div>
-            {hint && <p className="mt-2 text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 leading-snug">{hint}</p>}
+        <div className={`rounded-2xl border bg-white shadow-sm ${accents[accent] || accents.orange} ${compact ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'}`}>
+            <p className={`mb-1 font-bold text-slate-500 ${compact ? 'text-[10px]' : 'text-[10px] sm:text-[11px]'}`}>{label}</p>
+            <div className={`font-black tracking-tight tabular-nums ${valueTints[accent] || valueTints.orange} ${compact ? 'text-xl sm:text-2xl' : 'text-2xl sm:text-3xl'}`}>{value}</div>
+            {hint && <p className="mt-1.5 text-[11px] font-medium leading-snug text-slate-500">{hint}</p>}
         </div>
     );
 };
 
-export default function MyProgress({ language = 'bn', user, targetUserId, setCurrentView, returnView = 'leaderboard' }) {
+function getBackLabel(returnView, language = 'bn') {
+    const bn = language === 'bn';
+    switch (returnView) {
+        case 'leaderboard':
+            return bn ? 'র‍্যাঙ্ক' : 'Rank';
+        case 'prizes':
+            return bn ? 'পুরস্কার' : 'Prizes';
+        case 'training':
+            return bn ? 'প্রশিক্ষণ' : 'Training';
+        case 'home':
+        default:
+            return bn ? 'হোম' : 'Home';
+    }
+}
+
+export default function MyProgress({ language = 'bn', user, targetUserId, setCurrentView, returnView = 'home' }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [profile, setProfile] = useState(null);
@@ -79,18 +97,18 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
     const [reportGeneratedAt] = useState(() => new Date());
     const [isDownloading, setIsDownloading] = useState(false);
     const certRef = useRef(null);
+    const bn = language === 'bn';
 
     const handleDownloadPNG = async () => {
         const downloadEl = document.getElementById('landscape-certificate-download');
         if (!downloadEl) return;
-        
+
         setIsDownloading(true);
         try {
-            // Force it to be visible during capture but keep it off-screen
             downloadEl.style.display = 'block';
-            
+
             const canvas = await html2canvas(downloadEl, {
-                scale: 2, // High resolution enough for 1400px content
+                scale: 2,
                 useCORS: true,
                 backgroundColor: '#ffffff',
                 logging: false,
@@ -98,7 +116,6 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                 height: 1000
             });
 
-            // Hide it again
             downloadEl.style.display = 'none';
 
             const link = document.createElement('a');
@@ -108,7 +125,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
             link.click();
         } catch (err) {
             console.error('Download failed:', err);
-            alert(language === 'en' ? 'Download failed. Please try again.' : 'ডাউনলোড ব্যর্থ হয়েছে। আবার চেষ্টা করুন।');
+            alert(bn ? 'ডাউনলোড ব্যর্থ হয়েছে। আবার চেষ্টা করুন।' : 'Download failed. Please try again.');
         } finally {
             setIsDownloading(false);
         }
@@ -116,42 +133,39 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
 
     const certId = useMemo(() => {
         if (!profile?.id) return '';
-        // Use static identity factors (ID and created_at) to make the serial number permanent.
         const raw = `${profile.id}-${profile.created_at}`;
         return CryptoJS.MD5(raw).toString().substring(0, 12).toUpperCase();
     }, [profile]);
 
     const verificationUrl = useMemo(() => {
-        // In local development, we stick to the hash for safety.
-        // In production (Vercel), we use the clean clean 'verify/[ID]' route.
-        const origin = window.location.hostname === 'localhost' || window.location.hostname.startsWith('192.') 
-            ? `${window.location.origin}/#` 
+        const origin = window.location.hostname === 'localhost' || window.location.hostname.startsWith('192.')
+            ? `${window.location.origin}/#`
             : WEBSITE_URL;
         return `${origin}/verify/${profile?.id}`;
     }, [profile?.id]);
 
     const resolvedUserId = targetUserId || user?.id;
     const isCurrentUser = user?.id === resolvedUserId;
-
-    const backLabel = language === 'en' ? 'Back to leaderboard' : 'লিডারবোর্ডে ফিরুন';
+    const backLabel = getBackLabel(returnView, language);
 
     const handleBack = () => {
         if (typeof setCurrentView === 'function') {
-            setCurrentView(returnView);
+            setCurrentView(returnView || 'home');
         }
     };
 
     const renderBackButton = () => (
-        !isCurrentUser ? (
-            <button
-                type="button"
-                onClick={handleBack}
-                className={`inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 ${language === 'bn' ? 'font-bengali' : ''}`}
-            >
-                <span aria-hidden>←</span>
-                {backLabel}
-            </button>
-        ) : null
+        <button
+            type="button"
+            onClick={handleBack}
+            aria-label={backLabel}
+            title={backLabel}
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700 active:scale-95"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden>
+                <path d="m15 18-6-6 6-6" />
+            </svg>
+        </button>
     );
 
     useEffect(() => {
@@ -248,11 +262,10 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
 
         const totalAttempts = attempts.length;
         const totalPenaltySum = attempts.reduce((sum, item) => sum + (Number(item.penalty) || 0), 0);
-        const averagePenalty = totalAttempts > 0 ? totalPenaltySum / totalAttempts : 0;
 
         const paceSource = hasRewardTimestamps
-            ? (language === 'en' ? 'Derived from lesson reward timestamps' : 'পাঠের পুরস্কারের সময় ধরে হিসাব করা হয়েছে')
-            : (language === 'en' ? 'Estimated fallback' : 'আনুমানিক হিসাব');
+            ? (bn ? 'পাঠের পুরস্কারের সময় ধরে হিসাব করা হয়েছে' : 'Derived from lesson reward timestamps')
+            : (bn ? 'আনুমানিক হিসাব' : 'Estimated fallback');
 
         return {
             completedLessons: lessonIds.length,
@@ -264,7 +277,6 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
             daysPerLesson,
             daysPerChapter,
             avgScorePerAttempt,
-            averagePenalty,
             totalPenaltySum,
             paceSource,
             chapterBreakdown: Array.from(chapterMap.entries())
@@ -272,40 +284,46 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                 .sort((a, b) => Number(a.chapter) - Number(b.chapter)),
             lessonIds
         };
-    }, [attempts, profile]);
+    }, [attempts, profile, bn]);
 
     const badge = getBadgeByLevel(profile?.training_level || 0, profile?.reading_points || 0);
     const phone = safePhone(profile);
     const joinedDate = formatDate(profile?.created_at, language);
     const lastActive = formatDate(profile?.last_login_at, language);
-
+    const trainingLevel = profile?.training_level || 1;
+    const progressPct = Math.min(100, Math.round((stats.completedLessons / APPROX_CORE_LESSON_TOTAL) * 100));
+    const hasStarted = stats.completedLessons > 0;
+    const badgeLabel = badge ? (bn ? badge.bn : badge.en) : (bn ? 'ট্রেইনি' : 'Trainee');
 
     const labels = {
-        title: language === 'en' ? 'My Progress' : 'আমার শেখার অগ্রগতি',
-        subtitle: language === 'en' ? 'Learning summary and history' : 'শেখার সারাংশ ও ইতিহাস',
-        back: backLabel,
-        joined: language === 'en' ? 'Date of joining' : 'কবে যোগ দিয়েছেন',
-        contact: language === 'en' ? 'Contact number' : 'ফোন নম্বর',
-        district: language === 'en' ? 'District' : 'জেলা',
-        block: language === 'en' ? 'Block' : 'ব্লক',
-        bloodGroup: language === 'en' ? 'Blood group' : 'রক্তের গ্রুপ',
-        badge: language === 'en' ? 'Present reading stage' : 'বর্তমান পড়ার ধাপ',
-        learningPace: language === 'en' ? 'Learning pace' : 'শেখার গতি',
-        chapterBreakdown: language === 'en' ? 'Chapter breakdown' : 'অধ্যায়ভিত্তিক ছক',
-        noData: language === 'en' ? 'No data available yet.' : 'এখনও কোনো তথ্য পাওয়া যায়নি।'
+        title: bn ? 'আমার অগ্রগতি' : 'My Progress',
+        joined: bn ? 'কবে যোগ দিয়েছেন' : 'Date of joining',
+        contact: bn ? 'ফোন নম্বর' : 'Contact number',
+        district: bn ? 'জেলা' : 'District',
+        block: bn ? 'ব্লক' : 'Block',
+        bloodGroup: bn ? 'রক্তের গ্রুপ' : 'Blood group',
+        badge: bn ? 'বর্তমান পড়ার ধাপ' : 'Present reading stage',
+        learningPace: bn ? 'শেখার গতি' : 'Learning pace',
+        chapterBreakdown: bn ? 'অধ্যায়ভিত্তিক ছক' : 'Chapter breakdown',
+        noData: bn ? 'এখনও কোনো তথ্য পাওয়া যায়নি।' : 'No data available yet.'
     };
+
+    const pageShell = 'min-h-screen bg-[#fffdf7] text-slate-900';
 
     if (loading) {
         return (
-            <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-4 sm:px-6 py-6 sm:py-8">
-                <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
+            <main className={pageShell}>
+                <div className="h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden />
+                <div className="mx-auto max-w-lg space-y-4 px-4 py-4 sm:max-w-6xl sm:px-6 sm:py-6">
                     {renderBackButton()}
-                    <div className="animate-pulse space-y-4 sm:space-y-6">
-                    <div className="h-44 rounded-[2rem] bg-slate-200 dark:bg-slate-800" />
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {Array.from({ length: 4 }).map((_, idx) => <div key={idx} className="h-28 rounded-2xl bg-slate-200 dark:bg-slate-800" />)}
-                    </div>
-                    <div className="h-80 rounded-[2rem] bg-slate-200 dark:bg-slate-800" />
+                    <div className="animate-pulse space-y-4">
+                        <div className="h-40 rounded-2xl bg-orange-100/80" />
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                            {Array.from({ length: 4 }).map((_, idx) => (
+                                <div key={idx} className="h-20 rounded-2xl bg-slate-200/80" />
+                            ))}
+                        </div>
+                        <div className="h-64 rounded-2xl bg-slate-200/70" />
                     </div>
                 </div>
             </main>
@@ -314,306 +332,353 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
 
     if (error || !profile) {
         return (
-            <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-4 sm:px-6 py-8">
-                <div className="max-w-3xl mx-auto space-y-4">
+            <main className={pageShell}>
+                <div className="h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden />
+                <div className="mx-auto max-w-lg space-y-4 px-4 py-6 sm:max-w-3xl sm:px-6">
                     {renderBackButton()}
-                <div className="rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl p-6 sm:p-8 text-center">
-                    <div className="text-5xl mb-4">📊</div>
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-2">{labels.title}</h1>
-                    <p className="text-slate-500 dark:text-slate-400">{labels.noData}</p>
-                    <button
-                        onClick={isCurrentUser ? () => setCurrentView('home') : handleBack}
-                        className="mt-6 px-5 py-3 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors"
-                    >
-                        {isCurrentUser
-                            ? (language === 'en' ? 'Back to Home' : 'হোমে ফিরুন')
-                            : backLabel}
-                    </button>
-                </div>
+                    <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8">
+                        <h1 className={`text-xl font-black text-slate-900 sm:text-2xl ${bn ? 'font-bengali' : ''}`}>{labels.title}</h1>
+                        <p className={`mt-2 text-slate-500 ${bn ? 'font-bengali' : ''}`}>{labels.noData}</p>
+                        <button
+                            type="button"
+                            onClick={handleBack}
+                            className={`mt-6 rounded-xl bg-orange-600 px-5 py-3 text-sm font-bold text-white hover:bg-orange-700 ${bn ? 'font-bengali' : ''}`}
+                        >
+                            {bn ? 'ফিরে যান' : 'Go back'}
+                        </button>
+                    </div>
                 </div>
             </main>
         );
     }
 
     return (
-        <main className="relative min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50/40 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-4 sm:px-6 py-4 sm:py-8">
-            <div className="pointer-events-none fixed bottom-4 right-4 z-0" aria-hidden="true">
-                <img
-                    src="/icons/logo.png"
-                    alt=""
-                    className="w-40 sm:w-48 object-contain opacity-[0.25] select-none drop-shadow-lg"
-                />
-            </div>
+        <main className={`relative ${pageShell} px-4 pb-28 pt-0 sm:px-6 sm:pb-10`}>
+            <div className="h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden />
 
-            <div className="relative z-10 max-w-6xl mx-auto space-y-5 sm:space-y-6">
-                <div className="flex items-center justify-between gap-4">
-                    {renderBackButton() || <div className="flex-1" />}
-
-                    {isCurrentUser && (
-                        <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold uppercase tracking-widest">
-                            {language === 'en' ? 'Your account' : 'আপনার অ্যাকাউন্ট'}
-                        </div>
-                    )}
+            <div className="relative z-10 mx-auto max-w-lg space-y-4 pt-4 sm:max-w-6xl sm:space-y-6 sm:pt-6">
+                <div className="flex items-center justify-between gap-3">
+                    {renderBackButton()}
+                    <h1 className={`min-w-0 flex-1 truncate text-center text-base font-black text-slate-900 sm:text-lg ${bn ? 'font-bengali' : ''}`}>
+                        {isCurrentUser ? labels.title : (bn ? 'শেখার অগ্রগতি' : 'Learning progress')}
+                    </h1>
+                    <div className="h-9 w-9 shrink-0" aria-hidden />
                 </div>
 
-                {/* Certificate Section - Only renders when profile data (specifically ID) is ready */}
-                {profile && profile.id && (
-                    <section 
-                        id="progress-report-content" 
-                        ref={certRef}
-                        className={`relative rounded-[2.5rem] overflow-hidden ${isCurrentUser ? 'certificate-frame' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 pt-10'}`}
-                    >
+                {/* Story hub — primary for self; compact summary for others */}
+                <section className="rounded-2xl border border-orange-200/80 bg-gradient-to-br from-orange-50 via-amber-50/70 to-white p-4 shadow-sm sm:p-5">
+                    <div className="flex items-start gap-3">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-orange-200 bg-orange-400 text-lg font-black text-slate-900">
+                            {(profile.full_name || '?').trim().charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className={`truncate text-lg font-black text-slate-900 sm:text-xl ${bn ? 'font-bengali' : ''}`}>
+                                {profile.full_name || (bn ? 'শিক্ষার্থী' : 'Learner')}
+                            </p>
+                            <p className={`mt-0.5 text-xs font-semibold text-orange-800 ${bn ? 'font-bengali' : ''}`}>
+                                {badgeLabel} · Lv {trainingLevel}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="mt-4">
+                        <div className="mb-1.5 flex items-center justify-between gap-2 text-[11px] font-bold text-slate-600">
+                            <span className={bn ? 'font-bengali' : ''}>
+                                {bn
+                                    ? `${formatNumber(stats.completedLessons)} / ~${APPROX_CORE_LESSON_TOTAL} পাঠ`
+                                    : `${formatNumber(stats.completedLessons)} / ~${APPROX_CORE_LESSON_TOTAL} lessons`}
+                            </span>
+                            <span className="tabular-nums">{progressPct}%</span>
+                        </div>
+                        <div className="h-2.5 overflow-hidden rounded-full bg-white/90 border border-orange-100">
+                            <div
+                                className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-400"
+                                style={{ width: `${progressPct}%` }}
+                            />
+                        </div>
+                    </div>
+
                     {isCurrentUser && (
-                        <>
-                            <div className="certificate-pattern pointer-events-none" />
-                            <div className="certificate-security-watermark overflow-hidden pointer-events-none" aria-hidden="true" />
-                        </>
+                        <button
+                            type="button"
+                            onClick={() => setCurrentView('training')}
+                            className={`mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-orange-300/80 bg-gradient-to-r from-orange-600 to-amber-500 px-4 py-3.5 text-sm font-black text-white shadow-md shadow-orange-600/20 transition-all hover:shadow-lg active:scale-[0.99] sm:py-4 ${bn ? 'font-bengali' : ''}`}
+                        >
+                            {hasStarted
+                                ? (bn ? 'প্রশিক্ষণ চালিয়ে যান' : 'Continue Training')
+                                : (bn ? 'প্রশিক্ষণ শুরু করুন' : 'Start Training')}
+                        </button>
                     )}
-                    
-                    <div className="relative z-20 flex flex-col items-center text-center">
-                        {/* Certificate Header Text */}
-                        {isCurrentUser && (
-                            <>
-                                <div className="mb-6">
-                                    <h2 className="font-bengali text-2xl sm:text-3xl font-black text-amber-800 dark:text-amber-500 uppercase tracking-[0.2em] mb-1">
-                                        {language === 'en' ? 'Certificate of Achievement' : 'সাফল্যের স্বীকৃতিপত্র'}
-                                    </h2>
-                                    <div className="w-48 h-1 bg-gradient-to-r from-amber-200 via-amber-500 to-amber-200 mx-auto mt-2 rounded-full" />
-                                </div>
-
-                                <p className="font-bengali text-slate-500 dark:text-slate-400 italic mb-8 max-w-lg leading-relaxed">
-                                    {language === 'en' 
-                                        ? 'This certifies the academic progress and technical proficiency of the following individual in the SmartLineman education program.'
-                                        : 'এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, স্মার্টলাইনম্যান শিক্ষা কার্যক্রমে নিম্নলিখিত শিক্ষার্থী তাঁর শিক্ষা ও কারিগরি দক্ষতায় সাফল্য অর্জন করেছেন।'}
-                                </p>
-                            </>
-                        )}
-
-                        {/* Name Section */}
-                        <div className="mb-10 w-full max-w-2xl px-4">
-                            <h1 className="font-bengali text-4xl sm:text-6xl font-black tracking-tight text-slate-900 dark:text-slate-50 mb-4 drop-shadow-sm">
-                                {profile.full_name || 'Anonymous'}
-                            </h1>
-                            <div className="w-full border-b-2 border-slate-200 dark:border-slate-800 relative">
-                                <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 bg-white dark:bg-slate-950 text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400">
-                                    {language === 'en' ? 'Learner Name' : 'শিক্ষার্থীর নাম'}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Seal & Badge */}
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-12 sm:gap-24 mb-12">
-                            <div className="flex flex-col items-center">
-                                <div className="gold-seal mb-4">
-                                    <span className="text-4xl">🏅</span>
-                                </div>
-                                <p className="font-black text-amber-700 dark:text-amber-500 text-sm uppercase tracking-widest">
-                                    {badge ? (language === 'en' ? badge.en : badge.bn) : (language === 'en' ? 'Trainee' : 'ট্রেইনি')}
-                                </p>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">
-                                    {language === 'en' ? 'Reading Stage' : 'পড়ার ধাপ'}
-                                </p>
-                            </div>
-
-                            <div className="flex flex-col items-center">
-                                <div className="text-5xl sm:text-7xl font-black text-slate-800 dark:text-slate-100 tabular-nums mb-2 tracking-tighter">
-                                    {formatNumber(profile.points)}
-                                </div>
-                                <p className="font-black text-slate-500 dark:text-slate-400 text-sm uppercase tracking-widest">
-                                    {language === 'en' ? 'Total Credits' : 'মোট ক্রেডিট'}
-                                </p>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">
-                                    {language === 'en' ? 'Learning Points' : 'শিক্ষা পয়েন্ট'}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Signatures */}
-                        {isCurrentUser && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 sm:gap-40 w-full max-w-4xl px-8 mt-4">
-                                <div className="flex flex-col items-center">
-                                    <div className="signature-line mb-3 font-bengali text-slate-400 dark:text-slate-600 h-10 flex items-center justify-center overflow-visible">
-                                        <img 
-                                            src="/signature.png" 
-                                            alt="Official Signature" 
-                                            className="h-14 sm:h-16 w-auto object-contain mix-blend-multiply dark:invert dark:brightness-200 opacity-90 transition-all"
-                                            onError={(e) => e.target.style.display = 'none'}
-                                        />
-                                    </div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                                        {language === 'en' ? 'Authority, SmartLineman.in' : 'কর্তৃপক্ষ, স্মার্টলাইনম্যান.ইন'}
-                                    </p>
-                                </div>
-                                <div className="flex flex-col items-center">
-                                    <div className="signature-line mb-3 font-bengali text-slate-400 dark:text-slate-600 h-10 flex items-center justify-center text-xl italic font-bold text-slate-800 dark:text-slate-200">
-                                        {(() => {
-                                            const d = reportGeneratedAt;
-                                            const day = String(d.getDate()).padStart(2, '0');
-                                            const month = String(d.getMonth() + 1).padStart(2, '0');
-                                            const year = d.getFullYear();
-                                            return `${day}/${month}/${year}`;
-                                        })()}
-                                    </div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                                        {language === 'en' ? 'Date Issued' : 'ইস্যুর তারিখ'}
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Security Footer */}
-                        {isCurrentUser && (
-                            <div className="mt-12 w-full flex flex-col sm:flex-row items-center justify-between border-t border-slate-200 dark:border-slate-800/60 pt-6 gap-6 sm:gap-4 opacity-80">
-                                <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
-                                    <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-400 mb-1">
-                                        {language === 'en' ? 'Certificate Serial Number' : 'সার্টিফিকেট সিরিয়াল নম্বর'}
-                                    </p>
-                                    <p className="cert-serial text-[11px] sm:text-xs">
-                                        SLM-CERT-{certId.split('').map((c, i) => i > 0 && i % 4 === 0 ? `-${c}` : c).join('')}
-                                    </p>
-                                    <p className="mt-2 text-[9px] font-bold text-slate-400 max-w-[180px] leading-tight">
-                                        {language === 'en' 
-                                            ? 'Scan QR code or visit smartlineman.in/verify to authenticate this document.' 
-                                            : 'এই নথির সত্যতা যাচাই করতে QR কোড স্ক্যান করুন বা smartlineman.in/verify ভিজিট করুন।'}
-                                    </p>
-                                </div>
-                                
-                                <div className="flex flex-col items-center sm:items-end gap-3">
-                                    <div className="relative group">
-                                        <div className="absolute -inset-2 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        <a 
-                                            href={verificationUrl} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            title={language === 'en' ? 'Open Verification Page' : 'ভেরিফিকেশন পেজ খুলুন'}
-                                            className="relative block p-2 bg-white rounded-lg shadow-sm border border-slate-100 ring-4 ring-slate-50 dark:ring-slate-900/50 cursor-pointer active:scale-95 transition-transform"
-                                        >
-                                            <QRCodeCanvas 
-                                                value={verificationUrl || ""} 
-                                                size={80} 
-                                                level="M"
-                                                includeMargin={true}
-                                                imageSettings={{
-                                                    src: "/icons/logo.png",
-                                                    height: 16,
-                                                    width: 16,
-                                                    excavate: true,
-                                                }}
-                                            />
-                                        </a>
-                                    </div>
-                                    <div className="flex flex-col gap-3 items-center sm:items-end">
-                                        <button 
-                                            onClick={handleDownloadPNG}
-                                            disabled={isDownloading}
-                                            className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-slate-800 dark:hover:bg-slate-600 transition-all disabled:opacity-50"
-                                        >
-                                            {isDownloading ? (
-                                                <>
-                                                    <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                                    {language === 'en' ? 'Preparing...' : 'প্রস্তুত হচ্ছে...'}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <span>📸</span> {language === 'en' ? 'Download PNG' : 'PNG ডাউনলোড করুন'}
-                                                </>
-                                            )}
-                                        </button>
-
-                                        <button 
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(verificationUrl);
-                                                alert(language === 'en' ? 'Link copied to clipboard!' : 'লিঙ্ক কপি করা হয়েছে!');
-                                            }}
-                                            className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest hover:underline flex items-center gap-1 active:opacity-60"
-                                        >
-                                            <span>🔗</span> {language === 'en' ? 'Copy Link' : 'লিঙ্ক কপি করুন'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="absolute top-8 right-8 w-24 sm:w-32 opacity-10 dark:opacity-20 pointer-events-none grayscale contrast-125">
-                        <img src="/icons/logo.png" alt="" className="w-full h-full object-contain" />
-                    </div>
-
-                    {/* Secondary Metrics (Integrated into certificate bottom) */}
-                    <div className="px-5 sm:px-8 py-5 sm:py-6 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 bg-slate-50/70 dark:bg-slate-900/40 border-t border-slate-200 dark:border-slate-800">
-                        <MetricCard label={language === 'en' ? 'Rank Stage' : 'পড়ার ধাপ'} value={`Lv ${profile.training_level || 1}`} hint={labels.badge} accent="orange" />
-                        <MetricCard label={language === 'en' ? 'Reading Points' : 'পড়ার পয়েন্ট'} value={formatNumber(profile.reading_points)} hint={language === 'en' ? 'Lesson rewards' : 'পাঠ থেকে পাওয়া পয়েন্ট'} accent="emerald" />
-                        <MetricCard label={language === 'en' ? 'Quiz Points' : 'কুইজ পয়েন্ট'} value={formatNumber(profile.quiz_points)} hint={language === 'en' ? 'Challenge rewards' : 'চ্যালেঞ্জ থেকে পাওয়া পয়েন্ট'} accent="blue" />
-                        <MetricCard label={language === 'en' ? 'Penalties' : 'কাটা পয়েন্ট'} value={formatNumber(stats.totalPenaltySum)} hint={language === 'en' ? 'Sum from all quiz attempts' : 'সব চেষ্টা থেকে মোট'} accent="rose" />
-                        <MetricCard label={language === 'en' ? 'Lessons Read' : 'পড়া পাঠ'} value={formatNumber(stats.completedLessons)} hint={language === 'en' ? 'Unique lessons completed' : 'যতগুলো পাঠ শেষ করেছেন'} accent="slate" />
-                        <MetricCard label={language === 'en' ? 'Chapters Read' : 'পড়া অধ্যায়'} value={formatNumber(stats.chaptersRead)} hint={language === 'en' ? 'Distinct chapters reached' : 'যেসব অধ্যায় পর্যন্ত এগিয়েছেন'} accent="orange" />
-                    </div>
                 </section>
-                )}
+
+                {/* Compact metrics */}
+                <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
+                    <MetricCard
+                        compact
+                        label={bn ? 'পাঠ' : 'Lessons'}
+                        value={formatNumber(stats.completedLessons)}
+                        accent="orange"
+                    />
+                    <MetricCard
+                        compact
+                        label={bn ? 'ঘণ্টার কুইজ' : 'Hourlies'}
+                        value={formatNumber(stats.hourlyAttempts)}
+                        accent="rose"
+                    />
+                    <MetricCard
+                        compact
+                        label={bn ? 'সক্রিয় দিন' : 'Active days'}
+                        value={formatNumber(stats.readingDays)}
+                        accent="emerald"
+                    />
+                    <MetricCard
+                        compact
+                        label={bn ? 'পয়েন্ট' : 'Points'}
+                        value={formatNumber(profile.points)}
+                        accent="blue"
+                    />
+                </section>
 
                 {profile?.id && (
                     <UserProfilePrizeList userId={profile.id} language={language} />
                 )}
 
-                <section className="grid lg:grid-cols-[1.15fr_0.85fr] gap-5 sm:gap-6">
-                    <div className="space-y-5 sm:space-y-6">
-                        <div className="rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-5 sm:p-6">
-                            <div className="flex items-center justify-between gap-3 mb-4">
+                {/* Certificate — secondary */}
+                {profile.id && (
+                    <section
+                        id="progress-report-content"
+                        ref={certRef}
+                        className={`relative overflow-hidden rounded-2xl border border-amber-200/80 bg-[#fffbf5] shadow-sm ${isCurrentUser ? 'certificate-frame certificate-frame--cream' : 'pt-8'}`}
+                    >
+                        {isCurrentUser && (
+                            <>
+                                <div className="certificate-pattern pointer-events-none" />
+                                <div className="certificate-security-watermark overflow-hidden pointer-events-none" aria-hidden="true" />
+                            </>
+                        )}
+
+                        <div className="relative z-20 flex flex-col items-center px-4 pb-6 pt-6 text-center sm:px-8 sm:pb-8 sm:pt-8">
+                            {isCurrentUser && (
+                                <>
+                                    <h2 className={`mb-1 text-lg font-black uppercase tracking-[0.15em] text-amber-800 sm:text-2xl ${bn ? 'font-bengali' : ''}`}>
+                                        {bn ? 'সাফল্যের স্বীকৃতিপত্র' : 'Certificate of Achievement'}
+                                    </h2>
+                                    <div className="mx-auto mb-5 h-1 w-40 rounded-full bg-gradient-to-r from-amber-200 via-amber-500 to-amber-200" />
+                                    <p className={`mb-6 max-w-lg text-sm italic leading-relaxed text-slate-500 ${bn ? 'font-bengali' : ''}`}>
+                                        {bn
+                                            ? 'এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, স্মার্টলাইনম্যান শিক্ষা কার্যক্রমে নিম্নলিখিত শিক্ষার্থী তাঁর শিক্ষা ও কারিগরি দক্ষতায় সাফল্য অর্জন করেছেন।'
+                                            : 'This certifies the academic progress and technical proficiency of the following individual in the SmartLineman education program.'}
+                                    </p>
+                                </>
+                            )}
+
+                            <div className="mb-8 w-full max-w-2xl px-2">
+                                <h3 className={`mb-3 text-3xl font-black tracking-tight text-slate-900 sm:text-5xl ${bn ? 'font-bengali' : ''}`}>
+                                    {profile.full_name || 'Anonymous'}
+                                </h3>
+                                <div className="relative w-full border-b-2 border-slate-200">
+                                    <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-white px-3 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
+                                        {bn ? 'শিক্ষার্থীর নাম' : 'Learner Name'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="mb-8 flex flex-col items-center justify-center gap-10 sm:flex-row sm:gap-20">
+                                <div className="flex flex-col items-center">
+                                    <div className="gold-seal mb-3">
+                                        <span className="text-4xl">🏅</span>
+                                    </div>
+                                    <p className="text-sm font-black uppercase tracking-widest text-amber-700">{badgeLabel}</p>
+                                    <p className="mt-1 text-[10px] font-bold uppercase text-slate-400">
+                                        {bn ? 'পড়ার ধাপ' : 'Reading Stage'}
+                                    </p>
+                                </div>
+
+                                <div className="flex flex-col items-center">
+                                    <div className="mb-2 text-5xl font-black tracking-tighter text-slate-800 tabular-nums sm:text-6xl">
+                                        {formatNumber(profile.points)}
+                                    </div>
+                                    <p className="text-sm font-black uppercase tracking-widest text-slate-500">
+                                        {bn ? 'মোট পয়েন্ট' : 'Total Points'}
+                                    </p>
+                                    <p className="mt-1 text-[10px] font-bold uppercase text-slate-400">
+                                        {bn ? 'শিক্ষা পয়েন্ট' : 'Learning points'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {isCurrentUser && (
+                                <>
+                                    <div className="mt-2 grid w-full max-w-4xl grid-cols-1 gap-10 px-4 sm:grid-cols-2 sm:gap-32">
+                                        <div className="flex flex-col items-center">
+                                            <div className="signature-line mb-3 flex h-10 items-center justify-center overflow-visible text-slate-400">
+                                                <img
+                                                    src="/signature.png"
+                                                    alt="Official Signature"
+                                                    className="h-14 w-auto object-contain opacity-90 mix-blend-multiply sm:h-16"
+                                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                                />
+                                            </div>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                                {bn ? 'কর্তৃপক্ষ, স্মার্টলাইনম্যান.ইন' : 'Authority, SmartLineman.in'}
+                                            </p>
+                                        </div>
+                                        <div className="flex flex-col items-center">
+                                            <div className="signature-line mb-3 flex h-10 items-center justify-center text-xl font-bold italic text-slate-800">
+                                                {(() => {
+                                                    const d = reportGeneratedAt;
+                                                    const day = String(d.getDate()).padStart(2, '0');
+                                                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                                                    const year = d.getFullYear();
+                                                    return `${day}/${month}/${year}`;
+                                                })()}
+                                            </div>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                                {bn ? 'ইস্যুর তারিখ' : 'Date Issued'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-10 flex w-full flex-col items-center justify-between gap-6 border-t border-slate-200 pt-6 opacity-90 sm:flex-row sm:gap-4">
+                                        <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
+                                            <p className="mb-1 text-[8px] font-black uppercase tracking-[0.3em] text-slate-400">
+                                                {bn ? 'সার্টিফিকেট সিরিয়াল নম্বর' : 'Certificate Serial Number'}
+                                            </p>
+                                            <p className="cert-serial text-[11px] sm:text-xs">
+                                                SLM-CERT-{certId.split('').map((c, i) => (i > 0 && i % 4 === 0 ? `-${c}` : c)).join('')}
+                                            </p>
+                                            <p className="mt-2 max-w-[180px] text-[9px] font-bold leading-tight text-slate-400">
+                                                {bn
+                                                    ? 'এই নথির সত্যতা যাচাই করতে QR কোড স্ক্যান করুন বা smartlineman.in/verify ভিজিট করুন।'
+                                                    : 'Scan QR code or visit smartlineman.in/verify to authenticate this document.'}
+                                            </p>
+                                        </div>
+
+                                        <div className="flex flex-col items-center gap-3 sm:items-end">
+                                            <a
+                                                href={verificationUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                title={bn ? 'ভেরিফিকেশন পেজ খুলুন' : 'Open Verification Page'}
+                                                className="block rounded-lg border border-slate-100 bg-white p-2 shadow-sm ring-4 ring-slate-50 transition-transform active:scale-95"
+                                            >
+                                                <QRCodeCanvas
+                                                    value={verificationUrl || ''}
+                                                    size={80}
+                                                    level="M"
+                                                    includeMargin
+                                                    imageSettings={{
+                                                        src: '/icons/logo.png',
+                                                        height: 16,
+                                                        width: 16,
+                                                        excavate: true,
+                                                    }}
+                                                />
+                                            </a>
+                                            <button
+                                                type="button"
+                                                onClick={handleDownloadPNG}
+                                                disabled={isDownloading}
+                                                className={`flex items-center gap-2 rounded-xl bg-orange-600 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white transition-all hover:bg-orange-700 disabled:opacity-50 ${bn ? 'font-bengali normal-case tracking-normal' : ''}`}
+                                            >
+                                                {isDownloading
+                                                    ? (bn ? 'প্রস্তুত হচ্ছে...' : 'Preparing...')
+                                                    : (bn ? 'PNG ডাউনলোড' : 'Download PNG')}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(verificationUrl);
+                                                    alert(bn ? 'লিঙ্ক কপি করা হয়েছে!' : 'Link copied to clipboard!');
+                                                }}
+                                                className={`text-[10px] font-bold text-orange-600 hover:underline active:opacity-60 ${bn ? 'font-bengali' : 'uppercase tracking-widest'}`}
+                                            >
+                                                {bn ? 'লিঙ্ক কপি করুন' : 'Copy Link'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        <div className="absolute right-6 top-6 w-20 opacity-10 pointer-events-none grayscale contrast-125 sm:w-28">
+                            <img src="/icons/logo.png" alt="" className="h-full w-full object-contain" />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2.5 border-t border-amber-100 bg-white/80 px-4 py-4 sm:grid-cols-3 sm:gap-3 sm:px-6 md:grid-cols-6">
+                            <MetricCard compact label={bn ? 'পড়ার ধাপ' : 'Level'} value={`Lv ${trainingLevel}`} accent="orange" />
+                            <MetricCard compact label={bn ? 'পড়ার পয়েন্ট' : 'Reading'} value={formatNumber(profile.reading_points)} accent="emerald" />
+                            <MetricCard compact label={bn ? 'কুইজ পয়েন্ট' : 'Quiz'} value={formatNumber(profile.quiz_points)} accent="blue" />
+                            <MetricCard compact label={bn ? 'কাটা পয়েন্ট' : 'Penalties'} value={formatNumber(stats.totalPenaltySum)} accent="rose" />
+                            <MetricCard compact label={bn ? 'পড়া পাঠ' : 'Lessons'} value={formatNumber(stats.completedLessons)} accent="slate" />
+                            <MetricCard compact label={bn ? 'পড়া অধ্যায়' : 'Chapters'} value={formatNumber(stats.chaptersRead)} accent="orange" />
+                        </div>
+                    </section>
+                )}
+
+                <section className="grid gap-4 sm:gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+                    <div className="space-y-4 sm:space-y-5">
+                        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                            <div className="mb-4 flex items-center justify-between gap-3">
                                 <div>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500">{labels.learningPace}</p>
-                                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 mt-1">{language === 'en' ? 'How the learner is progressing' : 'অগ্রগতি কেমন চলছে'}</h2>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{labels.learningPace}</p>
+                                    <h2 className={`mt-1 text-lg font-black text-slate-900 sm:text-xl ${bn ? 'font-bengali' : ''}`}>
+                                        {bn ? 'অগ্রগতি কেমন চলছে' : 'How the learner is progressing'}
+                                    </h2>
                                 </div>
-                                <div className="px-3 py-1.5 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 border border-orange-100 dark:border-orange-800 text-xs font-bold">
-                                    {stats.hourlyAttempts} {language === 'en' ? 'hourly' : 'বার'}
+                                <div className={`rounded-full border border-orange-100 bg-orange-50 px-2.5 py-1 text-[11px] font-bold text-orange-700 ${bn ? 'font-bengali' : ''}`}>
+                                    {stats.hourlyAttempts} {bn ? 'বার' : 'hourly'}
                                 </div>
                             </div>
 
-                            <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
-                                <MetricCard label={language === 'en' ? 'Lessons / Active Day' : 'সক্রিয় দিনে গড় পাঠ'} value={stats.lessonsPerActiveDay ? stats.lessonsPerActiveDay.toFixed(1) : '—'} hint={stats.paceSource} accent="emerald" />
-                                <MetricCard label={language === 'en' ? 'Days / Lesson' : 'একটি পাঠ শেষ করতে গড় দিন'} value={stats.daysPerLesson ? stats.daysPerLesson.toFixed(1) : '—'} hint={stats.paceSource} accent="blue" />
-                                <MetricCard label={language === 'en' ? 'Days / Chapter' : 'একটি অধ্যায় শেষ করতে গড় দিন'} value={stats.daysPerChapter ? stats.daysPerChapter.toFixed(1) : '—'} hint={stats.paceSource} accent="orange" />
-                                <MetricCard label={language === 'en' ? 'Hourly Challenges' : 'ঘণ্টাভিত্তিক চ্যালেঞ্জ'} value={formatNumber(stats.hourlyAttempts)} hint={language === 'en' ? 'Attempts attended' : 'যতবার অংশ নিয়েছেন'} accent="rose" />
+                            <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4 sm:gap-3">
+                                <MetricCard compact label={bn ? 'সক্রিয় দিনে গড় পাঠ' : 'Lessons / active day'} value={stats.lessonsPerActiveDay ? stats.lessonsPerActiveDay.toFixed(1) : '—'} hint={stats.paceSource} accent="emerald" />
+                                <MetricCard compact label={bn ? 'পাঠে গড় দিন' : 'Days / lesson'} value={stats.daysPerLesson ? stats.daysPerLesson.toFixed(1) : '—'} hint={stats.paceSource} accent="blue" />
+                                <MetricCard compact label={bn ? 'অধ্যায়ে গড় দিন' : 'Days / chapter'} value={stats.daysPerChapter ? stats.daysPerChapter.toFixed(1) : '—'} hint={stats.paceSource} accent="orange" />
+                                <MetricCard compact label={bn ? 'ঘণ্টার কুইজ' : 'Hourly challenges'} value={formatNumber(stats.hourlyAttempts)} accent="rose" />
                             </div>
 
-                            <div className="mt-5 grid sm:grid-cols-3 gap-3">
-                                <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 p-4">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">{language === 'en' ? 'Lesson attempts' : 'পাঠে অংশ নেওয়া বার'}</p>
-                                    <p className="text-2xl font-black text-slate-900 dark:text-slate-100 tabular-nums">{formatNumber(stats.lessonAttempts)}</p>
+                            <div className="mt-4 grid gap-2.5 sm:grid-cols-3">
+                                <div className="rounded-xl border border-orange-100 bg-orange-50/40 p-3">
+                                    <p className="mb-1 text-[10px] font-bold text-slate-500">{bn ? 'পাঠে অংশ' : 'Lesson attempts'}</p>
+                                    <p className="text-xl font-black tabular-nums text-slate-900">{formatNumber(stats.lessonAttempts)}</p>
                                 </div>
-                                <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 p-4">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">{language === 'en' ? 'Active reading days' : 'পড়ায় সক্রিয় দিন'}</p>
-                                    <p className="text-2xl font-black text-slate-900 dark:text-slate-100 tabular-nums">{formatNumber(stats.readingDays)}</p>
+                                <div className="rounded-xl border border-orange-100 bg-orange-50/40 p-3">
+                                    <p className="mb-1 text-[10px] font-bold text-slate-500">{bn ? 'সক্রিয় দিন' : 'Active days'}</p>
+                                    <p className="text-xl font-black tabular-nums text-slate-900">{formatNumber(stats.readingDays)}</p>
                                 </div>
-                                <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 p-4">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">{language === 'en' ? 'Avg. score / attempt' : 'প্রতি চেষ্টার গড় স্কোর'}</p>
-                                    <p className="text-2xl font-black text-slate-900 dark:text-slate-100 tabular-nums">{stats.avgScorePerAttempt.toFixed(1)}</p>
+                                <div className="rounded-xl border border-orange-100 bg-orange-50/40 p-3">
+                                    <p className="mb-1 text-[10px] font-bold text-slate-500">{bn ? 'গড় স্কোর' : 'Avg. score'}</p>
+                                    <p className="text-xl font-black tabular-nums text-slate-900">{stats.avgScorePerAttempt.toFixed(1)}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-5 sm:p-6">
-                            <div className="flex items-center justify-between gap-3 mb-4">
+                        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                            <div className="mb-4 flex items-center justify-between gap-3">
                                 <div>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500">{labels.chapterBreakdown}</p>
-                                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 mt-1">{language === 'en' ? 'Learning distribution' : 'অধ্যায়ভিত্তিক অগ্রগতি'}</h2>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{labels.chapterBreakdown}</p>
+                                    <h2 className={`mt-1 text-lg font-black text-slate-900 sm:text-xl ${bn ? 'font-bengali' : ''}`}>
+                                        {bn ? 'অধ্যায়ভিত্তিক অগ্রগতি' : 'Learning distribution'}
+                                    </h2>
                                 </div>
-                                <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                                    {stats.chapterBreakdown.length} {language === 'en' ? 'chapters' : 'টি অধ্যায়'}
+                                <div className="text-xs font-bold text-slate-500">
+                                    {stats.chapterBreakdown.length} {bn ? 'টি অধ্যায়' : 'chapters'}
                                 </div>
                             </div>
 
                             {stats.chapterBreakdown.length > 0 ? (
                                 <div className="space-y-3">
                                     {stats.chapterBreakdown.map((item) => {
-                                        const maxCount = Math.max(...stats.chapterBreakdown.map(row => row.count), 1);
+                                        const maxCount = Math.max(...stats.chapterBreakdown.map((row) => row.count), 1);
                                         const width = Math.max(8, (item.count / maxCount) * 100);
                                         return (
                                             <div key={item.chapter} className="space-y-1.5">
-                                                <div className="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
-                                                    <span>{language === 'en' ? 'Chapter' : 'অধ্যায়'} {item.chapter}</span>
-                                                    <span>{formatNumber(item.count)} {language === 'en' ? 'lessons' : 'টি পাঠ'}</span>
+                                                <div className="flex items-center justify-between text-xs font-bold text-slate-600">
+                                                    <span>{bn ? 'অধ্যায়' : 'Chapter'} {item.chapter}</span>
+                                                    <span>{formatNumber(item.count)} {bn ? 'টি পাঠ' : 'lessons'}</span>
                                                 </div>
-                                                <div className="h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700">
+                                                <div className="h-2.5 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
                                                     <div className="h-full rounded-full bg-gradient-to-r from-orange-500 to-rose-500" style={{ width: `${width}%` }} />
                                                 </div>
                                             </div>
@@ -621,83 +686,67 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                                     })}
                                 </div>
                             ) : (
-                                <p className="text-sm text-slate-500 dark:text-slate-400">{labels.noData}</p>
+                                <p className={`text-sm text-slate-500 ${bn ? 'font-bengali' : ''}`}>{labels.noData}</p>
                             )}
                         </div>
                     </div>
 
-                    <div className="space-y-5 sm:space-y-6">
-                        <div className="rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-5 sm:p-6">
-                            <div className="flex items-center justify-between gap-3 mb-4">
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500">{language === 'en' ? 'Profile details' : 'প্রোফাইলের তথ্য'}</p>
-                                    <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-1">{language === 'en' ? 'Identity & contact' : 'পরিচয় ও যোগাযোগের তথ্য'}</h2>
-                                </div>
-                            </div>
-
+                    <div className="space-y-4 sm:space-y-5">
+                        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{bn ? 'প্রোফাইলের তথ্য' : 'Profile details'}</p>
+                            <h2 className={`mt-1 mb-4 text-lg font-black text-slate-900 ${bn ? 'font-bengali' : ''}`}>
+                                {bn ? 'পরিচয় ও যোগাযোগ' : 'Identity & contact'}
+                            </h2>
                             <div className="space-y-3 text-sm">
-                                <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-3">
-                                    <span className="text-slate-500 dark:text-slate-400 font-medium">{labels.district}</span>
-                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-right">{profile.district || '—'}</span>
-                                </div>
-                                <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-3">
-                                    <span className="text-slate-500 dark:text-slate-400 font-medium">{labels.block}</span>
-                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-right">{profile.block || '—'}</span>
-                                </div>
-                                <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-3">
-                                    <span className="text-slate-500 dark:text-slate-400 font-medium">{labels.bloodGroup}</span>
-                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-right">{profile.blood_group || '—'}</span>
-                                </div>
-                                <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-3">
-                                    <span className="text-slate-500 dark:text-slate-400 font-medium">{labels.contact}</span>
-                                    <a href={phone ? `tel:${phone}` : undefined} className="font-bold text-orange-600 dark:text-orange-400 text-right">{phone || '—'}</a>
-                                </div>
-                                <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-3">
-                                    <span className="text-slate-500 dark:text-slate-400 font-medium">{labels.joined}</span>
-                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-right">{joinedDate}</span>
-                                </div>
+                                {[
+                                    [labels.district, profile.district || '—'],
+                                    [labels.block, profile.block || '—'],
+                                    [labels.bloodGroup, profile.blood_group || '—'],
+                                    [labels.joined, joinedDate],
+                                    [bn ? 'সর্বশেষ সক্রিয়' : 'Last active', lastActive],
+                                ].map(([label, value]) => (
+                                    <div key={label} className="flex items-start justify-between gap-4 border-b border-slate-100 pb-3 last:border-0 last:pb-0">
+                                        <span className={`font-medium text-slate-500 ${bn ? 'font-bengali' : ''}`}>{label}</span>
+                                        <span className="text-right font-bold text-slate-900">{value}</span>
+                                    </div>
+                                ))}
                                 <div className="flex items-start justify-between gap-4">
-                                    <span className="text-slate-500 dark:text-slate-400 font-medium">{language === 'en' ? 'Last active' : 'সর্বশেষ সক্রিয়'}</span>
-                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-right">{lastActive}</span>
+                                    <span className={`font-medium text-slate-500 ${bn ? 'font-bengali' : ''}`}>{labels.contact}</span>
+                                    <a href={phone ? `tel:${phone}` : undefined} className="text-right font-bold text-orange-600">{phone || '—'}</a>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-5 sm:p-6">
-                            <div className="flex items-center justify-between gap-3 mb-4">
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500">{language === 'en' ? 'Highlights' : 'দেখে নিন'}</p>
-                                    <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-1">{language === 'en' ? 'Score composition' : 'স্কোরের ভাগ'}</h2>
-                                </div>
-                            </div>
-
+                        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{bn ? 'দেখে নিন' : 'Highlights'}</p>
+                            <h2 className={`mt-1 mb-4 text-lg font-black text-slate-900 ${bn ? 'font-bengali' : ''}`}>
+                                {bn ? 'স্কোরের ভাগ' : 'Score composition'}
+                            </h2>
                             <div className="space-y-4">
                                 <div>
-                                    <div className="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
-                                        <span>{language === 'en' ? 'Reading' : 'পড়ার অংশ'}</span>
+                                    <div className="mb-2 flex justify-between text-xs font-bold text-slate-500">
+                                        <span>{bn ? 'পড়ার অংশ' : 'Reading'}</span>
                                         <span>{formatNumber(profile.reading_points)} / {formatNumber(profile.points)}</span>
                                     </div>
-                                    <div className="h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700">
+                                    <div className="h-2.5 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
                                         <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500" style={{ width: `${profile.points ? Math.min(100, (profile.reading_points / Math.max(profile.points, 1)) * 100) : 0}%` }} />
                                     </div>
                                 </div>
-
                                 <div>
-                                    <div className="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
-                                        <span>{language === 'en' ? 'Quiz' : 'কুইজের অংশ'}</span>
+                                    <div className="mb-2 flex justify-between text-xs font-bold text-slate-500">
+                                        <span>{bn ? 'কুইজের অংশ' : 'Quiz'}</span>
                                         <span>{formatNumber(profile.quiz_points)} / {formatNumber(profile.points)}</span>
                                     </div>
-                                    <div className="h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700">
+                                    <div className="h-2.5 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
                                         <div className="h-full rounded-full bg-gradient-to-r from-orange-500 to-rose-500" style={{ width: `${profile.points ? Math.min(100, (profile.quiz_points / Math.max(profile.points, 1)) * 100) : 0}%` }} />
                                     </div>
                                 </div>
-
                                 <div>
-                                    <div className="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
-                                        <span>{language === 'en' ? 'Penalty load' : 'কাটা পয়েন্ট'}</span>
+                                    <div className="mb-2 flex justify-between text-xs font-bold text-slate-500">
+                                        <span>{bn ? 'কাটা পয়েন্ট' : 'Penalty load'}</span>
                                         <span>{formatNumber(stats.totalPenaltySum)}</span>
                                     </div>
-                                    <div className="h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700">
+                                    <div className="h-2.5 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
                                         <div className="h-full rounded-full bg-gradient-to-r from-red-500 to-rose-600" style={{ width: `${stats.totalPenaltySum ? Math.min(100, (stats.totalPenaltySum / Math.max(profile.points + stats.totalPenaltySum, 1)) * 100) : 0}%` }} />
                                     </div>
                                 </div>
@@ -706,93 +755,84 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                     </div>
                 </section>
 
-                <footer className="flex items-center justify-between gap-3 border-t border-slate-200/70 dark:border-slate-800/70 pt-4 px-1 sm:px-2 pb-1 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
+                <footer className="flex items-center justify-between gap-3 border-t border-slate-200/70 px-1 pb-1 pt-3 text-[11px] font-medium text-slate-500 sm:text-xs">
                     <span>SmartLineman.in</span>
-                    <span>Generated on {formatDateTime(reportGeneratedAt, language)}</span>
+                    <span>{formatDateTime(reportGeneratedAt, language)}</span>
                 </footer>
 
-                {/* HIDDEN LANDSCAPE CERTIFICATE FOR DOWNLOADS */}
-                <div 
-                    id="landscape-certificate-download" 
-                    style={{ 
-                        display: 'none', 
-                        width: '1400px', 
-                        height: '1000px', 
-                        padding: '60px', 
+                {/* Hidden landscape certificate for PNG download — structure preserved */}
+                <div
+                    id="landscape-certificate-download"
+                    style={{
+                        display: 'none',
+                        width: '1400px',
+                        height: '1000px',
+                        padding: '60px',
                         background: '#ffffff',
                         position: 'fixed',
                         top: 0,
                         left: '-2000px'
                     }}
                 >
-                    <div className="w-full h-full border-[20px] border-double border-amber-600/30 p-16 relative flex flex-col items-center bg-[#faf9f6]">
-                        {/* Background Watermarks */}
-                        <div className="absolute inset-0 opacity-[0.03] pointer-events-none grayscale contrast-125 flex items-center justify-center">
+                    <div className="relative flex h-full w-full flex-col items-center border-[20px] border-double border-amber-600/30 bg-[#faf9f6] p-16">
+                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.03] grayscale contrast-125">
                             <img src="/icons/logo.png" alt="" className="w-1/2 object-contain" />
                         </div>
 
-                        {/* Header */}
                         <div className="mb-10 text-center">
-                            <h2 className="text-4xl font-black text-amber-800 uppercase tracking-[0.2em] mb-4">
-                                {language === 'en' ? 'Certificate of Achievement' : 'সাফল্যের স্বীকৃতিপত্র'}
+                            <h2 className="mb-4 text-4xl font-black uppercase tracking-[0.2em] text-amber-800">
+                                {bn ? 'সাফল্যের স্বীকৃতিপত্র' : 'Certificate of Achievement'}
                             </h2>
-                            <div className="w-64 h-1.5 bg-gradient-to-r from-amber-200 via-amber-500 to-amber-200 mx-auto rounded-full" />
+                            <div className="mx-auto h-1.5 w-64 rounded-full bg-gradient-to-r from-amber-200 via-amber-500 to-amber-200" />
                         </div>
 
-                        <p className="text-xl text-slate-500 italic mb-12 max-w-2xl text-center leading-relaxed font-serif">
-                            {language === 'en' 
-                                ? 'This certifies the academic progress and technical proficiency of the following individual in the SmartLineman education program.'
-                                : 'এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, স্মার্টলাইনম্যান শিক্ষা কার্যক্রমে নিম্নলিখিত শিক্ষার্থী তাঁর শিক্ষা ও কারিগরি দক্ষতায় সাফল্য অর্জন করেছেন।'}
+                        <p className="mb-12 max-w-2xl text-center font-serif text-xl italic leading-relaxed text-slate-500">
+                            {bn
+                                ? 'এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, স্মার্টলাইনম্যান শিক্ষা কার্যক্রমে নিম্নলিখিত শিক্ষার্থী তাঁর শিক্ষা ও কারিগরি দক্ষতায় সাফল্য অর্জন করেছেন।'
+                                : 'This certifies the academic progress and technical proficiency of the following individual in the SmartLineman education program.'}
                         </p>
 
-                        {/* Recipient Name */}
                         <div className="mb-16 w-full text-center">
-                            <h1 className="text-7xl font-black tracking-tight text-slate-900 mb-6 font-serif">
+                            <h1 className="mb-6 font-serif text-7xl font-black tracking-tight text-slate-900">
                                 {profile?.full_name || 'Valued Learner'}
                             </h1>
-                            <div className="w-3/4 mx-auto border-b-4 border-slate-200" />
+                            <div className="mx-auto w-3/4 border-b-4 border-slate-200" />
                             <p className="mt-4 text-sm font-bold uppercase tracking-[0.4em] text-slate-400">
-                                {language === 'en' ? 'Learner Name' : 'শিক্ষার্থীর নাম'}
+                                {bn ? 'শিক্ষার্থীর নাম' : 'Learner Name'}
                             </p>
                         </div>
 
-                        {/* Footer Section: Seal, Signature, and QR */}
-                        <div className="mt-auto w-full grid grid-cols-3 items-end gap-12">
-                            {/* Left: Gold Seal */}
+                        <div className="mt-auto grid w-full grid-cols-3 items-end gap-12">
                             <div className="flex flex-col items-center">
-                                <div className="w-24 h-24 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center shadow-lg border-4 border-amber-200 mb-4 scale-125">
+                                <div className="mb-4 flex h-24 w-24 scale-125 items-center justify-center rounded-full border-4 border-amber-200 bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg">
                                     <span className="text-5xl">🏅</span>
                                 </div>
-                                <p className="font-black text-amber-800 text-lg uppercase tracking-widest">{badge ? (language === 'en' ? badge.en : badge.bn) : 'Trainee'}</p>
-                                <p className="text-xs font-bold text-slate-400 uppercase mt-1">Reading Stage</p>
+                                <p className="text-lg font-black uppercase tracking-widest text-amber-800">{badgeLabel}</p>
+                                <p className="mt-1 text-xs font-bold uppercase text-slate-400">{bn ? 'পড়ার ধাপ' : 'Reading Stage'}</p>
                             </div>
 
-                            {/* Center: Live Signature & Points */}
                             <div className="flex flex-col items-center">
-                                <div className="text-5xl font-black text-slate-800 tabular-nums mb-4 tracking-tighter">
+                                <div className="mb-4 text-5xl font-black tracking-tighter text-slate-800 tabular-nums">
                                     {profile?.points?.toLocaleString() || '0'}
-                                    <span className="text-sm font-black text-slate-400 uppercase tracking-widest ml-2">Credits</span>
+                                    <span className="ml-2 text-sm font-black uppercase tracking-widest text-slate-400">
+                                        {bn ? 'পয়েন্ট' : 'Points'}
+                                    </span>
                                 </div>
-                                <div className="flex items-center justify-center gap-8 w-full border-t-2 border-slate-200 pt-4">
-                                    {/* Signature */}
+                                <div className="flex w-full items-center justify-center gap-8 border-t-2 border-slate-200 pt-4">
                                     <div className="flex flex-col items-center">
-                                        <img 
-                                            src="/signature.png" 
-                                            alt="Signature" 
-                                            className="h-14 w-auto object-contain mix-blend-multiply opacity-90 mb-1"
-                                            onError={(e) => e.target.style.display = 'none'}
+                                        <img
+                                            src="/signature.png"
+                                            alt="Signature"
+                                            className="mb-1 h-14 w-auto object-contain opacity-90 mix-blend-multiply"
+                                            onError={(e) => { e.target.style.display = 'none'; }}
                                         />
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
                                             Authority, SmartLineman.in
                                         </p>
                                     </div>
-
-                                    {/* Divider */}
-                                    <div className="w-px h-12 bg-slate-200" />
-
-                                    {/* Date */}
+                                    <div className="h-12 w-px bg-slate-200" />
                                     <div className="flex flex-col items-center">
-                                        <p className="text-xl font-serif italic text-slate-800 tracking-wide leading-none mb-3">
+                                        <p className="mb-3 font-serif text-xl italic leading-none tracking-wide text-slate-800">
                                             {(() => {
                                                 const d = reportGeneratedAt;
                                                 const day = String(d.getDate()).padStart(2, '0');
@@ -802,22 +842,21 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                                             })()}
                                         </p>
                                         <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                                            {language === 'en' ? 'Date Issued' : 'ইস্যুর তারিখ'}
+                                            {bn ? 'ইস্যুর তারিখ' : 'Date Issued'}
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Right: QR Code & Serial */}
                             <div className="flex flex-col items-end">
-                                <div className="p-2 bg-white rounded-xl shadow-sm border border-slate-100 ring-8 ring-slate-50 mb-6">
-                                    <QRCodeCanvas 
-                                        value={verificationUrl || ""} 
-                                        size={120} 
+                                <div className="mb-6 rounded-xl border border-slate-100 bg-white p-2 shadow-sm ring-8 ring-slate-50">
+                                    <QRCodeCanvas
+                                        value={verificationUrl || ''}
+                                        size={120}
                                         level="H"
-                                        includeMargin={true}
+                                        includeMargin
                                         imageSettings={{
-                                            src: "/icons/logo.png",
+                                            src: '/icons/logo.png',
                                             height: 24,
                                             width: 24,
                                             excavate: true,
@@ -825,9 +864,9 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                                     />
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-1">Certificate Serial Number</p>
-                                    <p className="text-[11px] font-bold text-slate-600 font-mono">
-                                        SLM-CERT-{certId?.split('')?.map((c, i) => i > 0 && i % 4 === 0 ? `-${c}` : c)?.join('')}
+                                    <p className="mb-1 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Certificate Serial Number</p>
+                                    <p className="font-mono text-[11px] font-bold text-slate-600">
+                                        SLM-CERT-{certId?.split('')?.map((c, i) => (i > 0 && i % 4 === 0 ? `-${c}` : c))?.join('')}
                                     </p>
                                 </div>
                             </div>

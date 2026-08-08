@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.83";
+export const CURRENT_APP_VERSION = "1.3.84";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Rank header is clearer: a short summary plus a Rules button, with full board eligibility details in the info popup.",
-  bn: "র‍্যাঙ্ক হেডার স্পষ্ট: সংক্ষিপ্ত সারাংশ ও নিয়ম বোতাম; পুরো যোগ্যতার বিবরণ তথ্য পপআপে।",
+  en: "My Progress is now a learning hub: see your path, continue training, and go back to the screen you came from—Home, Rank, Prizes, or Training.",
+  bn: "আমার অগ্রগতি এখন শেখার হাব: পথ দেখুন, প্রশিক্ষণ চালিয়ে যান, এবং যেখান থেকে এসেছেন সেখানে ফিরুন—হোম, র‍্যাঙ্ক, পুরস্কার বা প্রশিক্ষণ।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 export const SUPPORT_EMAIL = "support@smartlineman.in";

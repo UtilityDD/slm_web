@@ -161,6 +161,8 @@ export default function SmartLinemanUI() {
   const [updateInfo, setUpdateInfo] = useState(null);
   const [isForceUpdate, setIsForceUpdate] = useState(false);
   const [selectedProgressUserId, setSelectedProgressUserId] = useState(null);
+  /** Where My Progress should return: home | leaderboard | prizes | training */
+  const [progressReturnView, setProgressReturnView] = useState('home');
   const [awarenessOpenStoryId, setAwarenessOpenStoryId] = useState(null);
   const [forumActivityToast, setForumActivityToast] = useState(null);
   const [forumPendingQuestionId, setForumPendingQuestionId] = useState(null);
@@ -1001,7 +1003,8 @@ export default function SmartLinemanUI() {
   useEffect(() => {
     const updateStatusBar = async () => {
       const isDark = theme === 'dark';
-      const bgColor = isDark ? '#0F172A' : (currentView === 'home' ? '#fffdf7' : '#F8FAFC');
+      const creamViews = ['home', 'my-progress', 'leaderboard', 'prizes', 'training', 'competitions', 'menu'];
+      const bgColor = isDark ? '#0F172A' : (creamViews.includes(currentView) ? '#fffdf7' : '#F8FAFC');
       
       // 1. Handle Web/PWA Theme Color
       let metaThemeColor = document.querySelector('meta[name="theme-color"]');
@@ -1138,6 +1141,12 @@ export default function SmartLinemanUI() {
 
   const t = translations[language];
 
+  const openMyProgress = (userId, returnView = 'home') => {
+    setSelectedProgressUserId(userId || user?.id || null);
+    setProgressReturnView(returnView || 'home');
+    setCurrentView('my-progress');
+  };
+
   const renderContent = () => {
     const publicViews = ['landing', 'login', 'update-password', 'verify', 'accident-stories', 'video-guide', 'aro-janun', 'sops', 'weather-alert-demo'];
     const isPublic = publicViews.includes(currentView);
@@ -1191,11 +1200,11 @@ export default function SmartLinemanUI() {
         case 'competitions':
           return <Competitions language={language} user={user} setCurrentView={setCurrentView} surface="play" userProfile={userProfile} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
         case 'leaderboard':
-          return <Competitions language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} surface="rank" isFullLeaderboard={true} onOpenUserProgress={(userId) => { setSelectedProgressUserId(userId || user?.id || null); setCurrentView('my-progress'); }} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
+          return <Competitions language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} surface="rank" isFullLeaderboard={true} onOpenUserProgress={(userId) => openMyProgress(userId, 'leaderboard')} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
         case 'prizes':
-          return <Competitions language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} surface="prizes" isFullLeaderboard={true} onOpenUserProgress={(userId) => { setSelectedProgressUserId(userId || user?.id || null); setCurrentView('my-progress'); }} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
+          return <Competitions language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} surface="prizes" isFullLeaderboard={true} onOpenUserProgress={(userId) => openMyProgress(userId, 'prizes')} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
         case 'my-progress':
-          return <MyProgress language={language} user={user} targetUserId={selectedProgressUserId || user?.id} setCurrentView={setCurrentView} returnView="leaderboard" />;
+          return <MyProgress language={language} user={user} targetUserId={selectedProgressUserId || user?.id} setCurrentView={setCurrentView} returnView={progressReturnView} />;
         case 'community':
           return (
             <Community
@@ -1236,7 +1245,7 @@ export default function SmartLinemanUI() {
               setUserProfile(prev => prev ? { ...prev, completed_lessons: coreProgress, training_level: Math.max(1, calculateLevelFromProgress(coreProgress)) } : null); 
               setTimeout(() => fetchProfile(user, forceRefresh), 1000); 
             }} 
-            onOpenUserProgress={() => { setSelectedProgressUserId(user?.id || null); setCurrentView('my-progress'); }} 
+            onOpenUserProgress={() => openMyProgress(user?.id, 'training')}
             setCurrentView={setCurrentView}
           />;
         case 'admin':
@@ -1280,7 +1289,10 @@ export default function SmartLinemanUI() {
             <MorePage
               currentView={currentView}
               setCurrentView={(view) => {
-                if (view === 'my-progress') setSelectedProgressUserId(user?.id || null);
+                if (view === 'my-progress') {
+                  openMyProgress(user?.id, 'home');
+                  return;
+                }
                 setCurrentView(view);
               }}
               userProfile={userProfile}
@@ -1313,7 +1325,13 @@ export default function SmartLinemanUI() {
         default:
           return (
             <Home
-              setCurrentView={setCurrentView}
+              setCurrentView={(view) => {
+                if (view === 'my-progress') {
+                  openMyProgress(user?.id, 'home');
+                  return;
+                }
+                setCurrentView(view);
+              }}
               language={language}
               t={t}
               user={user}
@@ -1468,7 +1486,10 @@ export default function SmartLinemanUI() {
               onClose={() => setSidebarOpen(false)}
               currentView={currentView}
               setCurrentView={(view) => {
-                if (view === 'my-progress') setSelectedProgressUserId(user?.id || null);
+                if (view === 'my-progress') {
+                  openMyProgress(user?.id, 'home');
+                  return;
+                }
                 setCurrentView(view);
               }}
               userProfile={userProfile}
@@ -1725,12 +1746,12 @@ export default function SmartLinemanUI() {
                   : user
                     ? 'pb-20 md:pb-0'
                     : 'pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:pb-0'
-              } ${['accident-stories', 'leaderboard', 'training', 'competitions', 'video-guide', 'aro-janun', 'admin', 'my_ppe', 'safety-library', 'menu', 'community'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
+              } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
             >
               <div
                 className={`h-full relative z-10 w-full view-transition ${
                   ['my_ppe', 'safety-library'].includes(currentView) ? 'overflow-hidden flex flex-col min-h-0' : 'min-h-full'
-                } ${['accident-stories', 'leaderboard', 'training', 'competitions', 'video-guide', 'aro-janun', 'admin', 'my_ppe', 'safety-library', 'menu', 'community'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
+                } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
                 key={['my_ppe', 'safety-library'].includes(currentView) ? 'safety-tabs' : currentView}
               >
                 {renderContent()}
