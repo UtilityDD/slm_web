@@ -2838,6 +2838,65 @@ body,
     animation: hofBannerIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
+  /* Rank page → Prizes CTA (text-only) */
+  .rank-prize-btn {
+    position: relative;
+    isolation: isolate;
+    overflow: visible;
+  }
+
+  .rank-prize-btn__glow {
+    position: absolute;
+    inset: -3px;
+    border-radius: 9999px;
+    background: radial-gradient(circle at 30% 20%, rgba(251, 191, 36, 0.55), rgba(249, 115, 22, 0.2) 55%, transparent 70%);
+    opacity: 0.55;
+    animation: rankPrizeGlow 2.4s ease-in-out infinite;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  @keyframes rankPrizeGlow {
+    0%,
+    100% {
+      opacity: 0.35;
+      transform: scale(0.96);
+    }
+    50% {
+      opacity: 0.75;
+      transform: scale(1.06);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rank-prize-btn__glow {
+      animation: none !important;
+      opacity: 0.45;
+    }
+  }
+
+  /* Home safety tip — soft entrance only */
+  .home-safety-tip {
+    animation: homeTipIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes homeTipIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-safety-tip {
+      animation: none !important;
+    }
+  }
+
   @keyframes hofBannerIn {
     from {
       opacity: 0;

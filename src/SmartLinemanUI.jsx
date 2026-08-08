@@ -1189,9 +1189,11 @@ export default function SmartLinemanUI() {
 
       switch (currentView) {
         case 'competitions':
-          return <Competitions language={language} user={user} setCurrentView={setCurrentView} userProfile={userProfile} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
+          return <Competitions language={language} user={user} setCurrentView={setCurrentView} surface="play" userProfile={userProfile} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
         case 'leaderboard':
-          return <Competitions language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} isFullLeaderboard={true} onOpenUserProgress={(userId) => { setSelectedProgressUserId(userId || user?.id || null); setCurrentView('my-progress'); }} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
+          return <Competitions language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} surface="rank" isFullLeaderboard={true} onOpenUserProgress={(userId) => { setSelectedProgressUserId(userId || user?.id || null); setCurrentView('my-progress'); }} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
+        case 'prizes':
+          return <Competitions language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} surface="prizes" isFullLeaderboard={true} onOpenUserProgress={(userId) => { setSelectedProgressUserId(userId || user?.id || null); setCurrentView('my-progress'); }} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
         case 'my-progress':
           return <MyProgress language={language} user={user} targetUserId={selectedProgressUserId || user?.id} setCurrentView={setCurrentView} returnView="leaderboard" />;
         case 'community':

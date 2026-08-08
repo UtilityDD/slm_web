@@ -43,6 +43,7 @@ export default function Sidebar({
       items: [
         { id: 'competitions', label: bn ? 'খেলুন' : 'Play', icon: '🎯', tint: 'bg-rose-100 text-rose-700', show: true },
         { id: 'leaderboard', label: bn ? 'র‍্যাঙ্ক' : 'Rank', icon: '🏆', tint: 'bg-amber-100 text-amber-700', show: true },
+        { id: 'prizes', label: bn ? 'পুরস্কার' : 'Prizes', icon: '🎁', tint: 'bg-orange-100 text-orange-700', show: true },
       ],
     },
     {

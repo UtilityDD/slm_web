@@ -97,6 +97,13 @@ export function getEncouragementCopy(language = 'bn') {
             [BOARD_IDS.MOST_IMPROVED]: en ? 'Improved' : 'সবচেয়ে এগিয়ে',
             [BOARD_IDS.TOP_LEARNER]: en ? 'Learner' : 'পড়াশোনা',
         },
+        /** Compact labels for Rank sticky tabs on small screens */
+        monthlyTabsShort: {
+            champion: en ? 'Top' : 'সেরা',
+            [BOARD_IDS.NEW_PLAYER]: en ? 'New' : 'নতুন',
+            [BOARD_IDS.MOST_IMPROVED]: en ? 'Rise' : 'এগিয়ে',
+            [BOARD_IDS.TOP_LEARNER]: en ? 'Learn' : 'পড়া',
+        },
     };
 }
 

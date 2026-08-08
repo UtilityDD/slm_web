@@ -70,7 +70,7 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
   const isItemActive = (item) =>
     (currentView === item.id && !isViewingOthersProgress) ||
     (item.id === 'my_ppe' && ['safety-library', 'my_ppe', 'my_tools'].includes(currentView)) ||
-    (item.id === 'leaderboard' && (currentView === 'leaderboard' || isViewingOthersProgress)) ||
+    (item.id === 'leaderboard' && (currentView === 'leaderboard' || currentView === 'prizes' || isViewingOthersProgress)) ||
     (item.id === 'menu' && moreViews.includes(currentView));
 
   return (

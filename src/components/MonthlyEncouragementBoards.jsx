@@ -41,7 +41,7 @@ export function MonthlyBoardHeader({
     const isChampion = monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION;
 
     return (
-        <div className="px-1 py-0.5 text-center space-y-1">
+        <div className="py-0.5 text-left">
             <p className={`text-[11px] leading-snug text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
                 {isChampion ? (
                     language === 'en' ? (
@@ -54,7 +54,7 @@ export function MonthlyBoardHeader({
                         </>
                     )
                 ) : (
-                    <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
+                    <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
                         <span>{meta?.logic}</span>
                         {meta && onInfoClick && (
                             <button

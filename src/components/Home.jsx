@@ -4,13 +4,40 @@ import { UserIcon } from './icons';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 import { filterCoreCompletedLessonIds } from '../utils/trainingLessonIds';
 import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
+import { supabase } from '../supabaseClient';
 
 /** Approximate core lesson count from training chapter defaults (display only). */
 const APPROX_CORE_LESSON_TOTAL = 91;
+const LAST_TIP_INDEX_KEY = 'slm_home_tip_last_index';
 
-function tipStorageKey() {
-  const now = new Date();
-  return `slm_home_tip_${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+function pickRandomTip(rules) {
+  if (!Array.isArray(rules) || rules.length === 0) return '';
+  if (rules.length === 1) return rules[0];
+
+  let lastIndex = -1;
+  try {
+    const raw = localStorage.getItem(LAST_TIP_INDEX_KEY);
+    if (raw != null) lastIndex = Number.parseInt(raw, 10);
+  } catch {
+    // ignore
+  }
+
+  let nextIndex = Math.floor(Math.random() * rules.length);
+  if (Number.isFinite(lastIndex) && rules.length > 1) {
+    let guard = 0;
+    while (nextIndex === lastIndex && guard < 6) {
+      nextIndex = Math.floor(Math.random() * rules.length);
+      guard += 1;
+    }
+  }
+
+  try {
+    localStorage.setItem(LAST_TIP_INDEX_KEY, String(nextIndex));
+  } catch {
+    // ignore
+  }
+
+  return rules[nextIndex];
 }
 
 export default function Home({
@@ -22,8 +49,8 @@ export default function Home({
 }) {
   const bn = language === 'bn';
   const [loading, setLoading] = useState(!userProfile && !!user);
-  const [dailyTip, setDailyTip] = useState('');
-  const [tipVisible, setTipVisible] = useState(false);
+  const [homeTip, setHomeTip] = useState('');
+  const [isHourlyPending, setIsHourlyPending] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -34,11 +61,7 @@ export default function Home({
     let cancelled = false;
 
     const loadTip = async () => {
-      if (typeof localStorage !== 'undefined' && localStorage.getItem(tipStorageKey()) === '1') {
-        return;
-      }
-
-      let tip = bn
+      const fallback = bn
         ? 'যেকোনো কন্ডাক্টর স্পর্শ করার আগে সর্বদা ভোল্টেজ পরীক্ষা করুন।'
         : 'Always test for voltage before touching any conductor.';
 
@@ -46,23 +69,10 @@ export default function Home({
         const response = await fetch('/quizzes/carousol.json');
         const data = await response.json();
         const rules = data.rules || [];
-        if (rules.length > 0) {
-          const now = new Date();
-          const dateStr = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-          let hash = 0;
-          for (let i = 0; i < dateStr.length; i++) {
-            hash = ((hash << 5) - hash) + dateStr.charCodeAt(i);
-            hash |= 0;
-          }
-          tip = rules[Math.abs(hash) % rules.length];
-        }
+        const tip = pickRandomTip(rules) || fallback;
+        if (!cancelled) setHomeTip(tip);
       } catch {
-        // Keep fallback tip
-      }
-
-      if (!cancelled) {
-        setDailyTip(tip);
-        setTipVisible(true);
+        if (!cancelled) setHomeTip(fallback);
       }
     };
 
@@ -71,6 +81,47 @@ export default function Home({
       cancelled = true;
     };
   }, [bn]);
+
+  // Same read-only check as Training: green dot when this hour's quiz is still available.
+  useEffect(() => {
+    if (!user?.id) {
+      setIsHourlyPending(false);
+      return undefined;
+    }
+
+    let cancelled = false;
+    const checkHourlyEligibility = async () => {
+      try {
+        const nowRaw = new Date();
+        const now = new Date(nowRaw.getTime() + (5.5 * 60 * 60 * 1000));
+        const year = now.getUTCFullYear();
+        const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(now.getUTCDate()).padStart(2, '0');
+        const hour = String(now.getUTCHours()).padStart(2, '0');
+        const quizId = `hourly-challenge-${year}-${month}-${day}-${hour}`;
+
+        const { data, error } = await supabase
+          .from('quiz_attempts')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('quiz_id', quizId)
+          .limit(1);
+
+        if (!cancelled && !error) {
+          setIsHourlyPending((data || []).length === 0);
+        }
+      } catch (err) {
+        console.error('Error checking hourly challenge:', err);
+      }
+    };
+
+    checkHourlyEligibility();
+    const intervalId = setInterval(checkHourlyEligibility, 5 * 60 * 1000);
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [user?.id]);
 
   const coreLessons = useMemo(() => {
     const fromProp = Array.isArray(completedLessonsProp) ? completedLessonsProp : [];
@@ -93,32 +144,20 @@ export default function Home({
         : 'Friend';
 
   const hasStarted = lessonCount > 0;
-  const primaryCta = {
-    view: 'training',
-    label: hasStarted
-      ? bn
-        ? 'প্রশিক্ষণ চালিয়ে যান'
-        : 'Continue Training'
-      : bn
-        ? 'প্রশিক্ষণ শুরু করুন'
-        : 'Start Training',
-    hint: hasStarted
-      ? bn
-        ? `${lessonCount} পাঠ সম্পন্ন · Lv ${trainingLevel}`
-        : `${lessonCount} lessons done · Lv ${trainingLevel}`
-      : bn
-        ? '৯০ দিনের নিরাপত্তা পাঠ'
-        : '90-day safety reading path',
-  };
-
-  const dismissTip = () => {
-    setTipVisible(false);
-    try {
-      localStorage.setItem(tipStorageKey(), '1');
-    } catch {
-      // ignore
-    }
-  };
+  const primaryLabel = hasStarted
+    ? bn
+      ? 'প্রশিক্ষণ চালিয়ে যান'
+      : 'Continue Training'
+    : bn
+      ? 'প্রশিক্ষণ শুরু করুন'
+      : 'Start Training';
+  const primaryHint = hasStarted
+    ? bn
+      ? `${lessonCount} পাঠ · Lv ${trainingLevel}`
+      : `${lessonCount} lessons · Lv ${trainingLevel}`
+    : bn
+      ? '৯০ দিনের নিরাপত্তা পাঠ'
+      : '90-day safety path';
 
   const go = (view) => {
     if (navigator.vibrate) navigator.vibrate(5);
@@ -141,7 +180,6 @@ export default function Home({
       id: 'progress',
       label: bn ? 'অগ্রগতি' : 'Progress',
       value: `${progressPct}%`,
-      hint: bn ? `${lessonCount} / ~${APPROX_CORE_LESSON_TOTAL} পাঠ` : `${lessonCount} / ~${APPROX_CORE_LESSON_TOTAL} lessons`,
       onClick: () => go('my-progress'),
       accent: 'border-orange-200 bg-orange-50/80 text-orange-800',
       iconWrap: 'bg-white/80 text-orange-600 border-orange-200/70',
@@ -156,7 +194,6 @@ export default function Home({
       id: 'rank',
       label: bn ? 'র‍্যাঙ্ক' : 'Rank',
       value: bn ? 'দেখুন' : 'View',
-      hint: bn ? 'মাসিক বোর্ড' : 'Monthly board',
       onClick: () => go('leaderboard'),
       accent: 'border-amber-200 bg-amber-50/80 text-amber-900',
       iconWrap: 'bg-white/80 text-amber-600 border-amber-200/70',
@@ -173,9 +210,8 @@ export default function Home({
     },
     {
       id: 'safety',
-      label: bn ? 'সুরক্ষা' : 'Safety',
-      value: bn ? 'পিপিই' : 'PPE',
-      hint: bn ? 'জরুরি সহায়তা' : 'Tools & emergency',
+      label: bn ? 'পিপিই' : 'PPE',
+      value: bn ? 'সুরক্ষা' : 'Safety',
       onClick: () => go('my_ppe'),
       accent: 'border-teal-200 bg-teal-50/80 text-teal-900',
       iconWrap: 'bg-white/80 text-teal-600 border-teal-200/70',
@@ -195,15 +231,15 @@ export default function Home({
         aria-hidden="true"
       />
 
-      <div className="mx-auto max-w-lg px-4 pt-5">
-        <header className="mb-5 flex items-center gap-3">
+      <div className="mx-auto max-w-lg px-4 pt-4 sm:pt-5">
+        <header className="mb-4 flex items-center gap-3 sm:mb-5">
           <button
             type="button"
             onClick={() => go('admin')}
             className="relative shrink-0 rounded-full transition-transform active:scale-95"
             aria-label={bn ? 'প্রোফাইল' : 'Profile'}
           >
-            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-orange-200/80 bg-orange-400 text-slate-900 shadow-sm">
+            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-orange-200/80 bg-orange-400 text-slate-900 shadow-sm sm:h-12 sm:w-12">
               {userProfile?.avatar_url ? (
                 <img src={userProfile.avatar_url} alt="" className="h-full w-full object-cover" />
               ) : (
@@ -219,10 +255,10 @@ export default function Home({
           </button>
 
           <div className="min-w-0 flex-1">
-            <h1 className={`truncate text-2xl font-black leading-tight text-slate-900 ${bn ? 'font-bengali' : ''}`}>
+            <h1 className={`truncate text-xl font-black leading-tight text-slate-900 sm:text-2xl ${bn ? 'font-bengali' : ''}`}>
               {bn ? `নমস্কার, ${displayName}` : `Hello, ${displayName}`}
             </h1>
-            <p className={`mt-1 text-sm font-medium text-slate-600 ${bn ? 'font-bengali' : ''}`}>
+            <p className={`mt-0.5 hidden text-sm font-medium text-slate-600 sm:block ${bn ? 'font-bengali' : ''}`}>
               {bn
                 ? `${badge.bn} · একটা ধাপ এগোন—পড়ুন বা খেলুন।`
                 : `${badge.en} · One clear next step—read or play.`}
@@ -230,14 +266,35 @@ export default function Home({
           </div>
         </header>
 
+        {/* Safety tip — attention-first, random each visit */}
+        {homeTip && (
+          <div className="home-safety-tip mb-4 rounded-2xl border border-orange-200/90 bg-gradient-to-br from-orange-50 via-amber-50/80 to-white px-3.5 py-3.5 shadow-sm sm:mb-5 sm:px-4">
+            <div className="mb-1.5 flex items-center gap-2">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center text-orange-600" aria-hidden>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                  <path d="M12 9v4" />
+                  <path d="M12 17h.01" />
+                </svg>
+              </span>
+              <p className={`text-[10px] font-bold text-orange-700 ${bn ? 'font-bengali' : 'uppercase tracking-wider'}`}>
+                {bn ? 'সুরক্ষা টিপ' : 'Safety tip'}
+              </p>
+            </div>
+            <p className="font-bengali text-sm font-semibold leading-relaxed text-slate-800 sm:text-[15px]">
+              {homeTip}
+            </p>
+          </div>
+        )}
+
         {/* Primary next action */}
         <button
           type="button"
-          onClick={() => go(primaryCta.view)}
-          className="mb-3 flex w-full items-center gap-3 rounded-2xl border border-orange-300/80 bg-gradient-to-r from-orange-600 to-amber-500 px-4 py-4 text-left text-white shadow-md shadow-orange-600/25 transition-all hover:shadow-lg active:scale-[0.99]"
+          onClick={() => go('training')}
+          className="mb-2.5 flex w-full items-center gap-3 rounded-2xl border border-orange-300/80 bg-gradient-to-r from-orange-600 to-amber-500 px-4 py-3.5 text-left text-white shadow-md shadow-orange-600/25 transition-all hover:shadow-lg active:scale-[0.99] sm:mb-3 sm:py-4"
         >
           <span
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/20"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/20 sm:h-11 sm:w-11"
             aria-hidden
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -245,11 +302,11 @@ export default function Home({
             </svg>
           </span>
           <span className="min-w-0 flex-1">
-            <span className={`block text-base font-black leading-tight ${bn ? 'font-bengali' : ''}`}>
-              {primaryCta.label}
+            <span className={`block text-[15px] font-black leading-tight sm:text-base ${bn ? 'font-bengali' : ''}`}>
+              {primaryLabel}
             </span>
-            <span className={`mt-0.5 block text-[11px] font-semibold text-orange-50/95 ${bn ? 'font-bengali' : ''}`}>
-              {primaryCta.hint}
+            <span className={`mt-0.5 hidden text-[11px] font-semibold text-orange-50/95 sm:block ${bn ? 'font-bengali' : ''}`}>
+              {primaryHint}
             </span>
           </span>
           <svg className="h-4 w-4 shrink-0 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -257,64 +314,63 @@ export default function Home({
           </svg>
         </button>
 
-        {/* Secondary: play quiz — navigate only, no scoring logic */}
+        {/* Secondary: play quiz */}
         <button
           type="button"
           onClick={() => go('competitions')}
-          className="mb-5 flex w-full items-center gap-3 rounded-2xl border border-slate-200/90 bg-white px-4 py-3.5 text-left shadow-sm transition-all hover:border-rose-200 hover:bg-rose-50/40 active:scale-[0.99]"
+          className="mb-4 flex w-full items-center gap-3 rounded-2xl border border-slate-200/90 bg-white px-4 py-3 text-left shadow-sm transition-all hover:border-rose-200 hover:bg-rose-50/40 active:scale-[0.99] sm:mb-5 sm:py-3.5"
         >
           <span
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-rose-100 bg-rose-50 text-rose-700"
+            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-rose-100 bg-rose-50 text-rose-700 sm:h-10 sm:w-10"
             aria-hidden
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
+            {isHourlyPending && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5 sm:h-3 sm:w-3">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+                <span className="relative inline-flex h-full w-full rounded-full border border-white bg-emerald-500 shadow-sm" />
+              </span>
+            )}
           </span>
-          <span className="min-w-0 flex-1">
-            <span className={`block text-sm font-black text-slate-900 ${bn ? 'font-bengali' : ''}`}>
-              {bn ? 'ঘণ্টার কুইজ খেলুন' : 'Play hourly quiz'}
-            </span>
-            <span className={`mt-0.5 block text-[11px] font-medium text-slate-500 ${bn ? 'font-bengali' : ''}`}>
-              {bn ? 'প্রতিযোগিতায় যোগ দিন' : 'Join today’s competition'}
-            </span>
+          <span className={`min-w-0 flex-1 text-sm font-black text-slate-900 ${bn ? 'font-bengali' : ''}`}>
+            {bn ? 'ঘণ্টার কুইজ' : 'Hourly quiz'}
           </span>
           <svg className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
           </svg>
         </button>
 
-        {/* Snapshots — display-only + navigation */}
-        <div className="mb-5 grid grid-cols-3 gap-2.5">
+        {/* Snapshots — icon + short value only on mobile */}
+        <div className="mb-4 grid grid-cols-3 gap-2 sm:mb-5 sm:gap-2.5">
           {snapshotCards.map((card) => (
             <button
               key={card.id}
               type="button"
               onClick={card.onClick}
-              className={`rounded-2xl border px-2.5 py-3 text-left shadow-sm transition-all active:scale-[0.98] ${card.accent}`}
+              className={`flex flex-col items-center rounded-2xl border px-2 py-2.5 text-center shadow-sm transition-all active:scale-[0.98] sm:items-start sm:px-2.5 sm:py-3 sm:text-left ${card.accent}`}
             >
               <span
-                className={`mb-2 flex h-8 w-8 items-center justify-center rounded-full border ${card.iconWrap}`}
+                className={`mb-1.5 flex h-8 w-8 items-center justify-center rounded-full border ${card.iconWrap}`}
                 aria-hidden
               >
                 {card.icon}
               </span>
-              <p className={`text-[10px] font-bold opacity-80 ${bn ? 'font-bengali' : 'uppercase tracking-wide'}`}>
+              <p className={`hidden text-[10px] font-bold opacity-80 sm:block ${bn ? 'font-bengali' : 'uppercase tracking-wide'}`}>
                 {card.label}
               </p>
-              <p className={`mt-1 text-lg font-black tabular-nums leading-none ${bn ? 'font-bengali' : ''}`}>
-                {card.value}
-              </p>
-              <p className={`mt-1.5 text-[10px] font-semibold leading-snug opacity-75 ${bn ? 'font-bengali' : ''}`}>
-                {card.hint}
+              <p className={`mt-0.5 text-sm font-black tabular-nums leading-none sm:mt-1 sm:text-lg ${bn ? 'font-bengali' : ''}`}>
+                <span className="sm:hidden">{card.id === 'progress' ? card.value : card.label}</span>
+                <span className="hidden sm:inline">{card.value}</span>
               </p>
             </button>
           ))}
         </div>
 
-        {/* Reading progress bar (local display only) */}
-        <div className="mb-5 rounded-2xl border border-slate-200/80 bg-white px-4 py-3.5 shadow-sm">
+        {/* Progress detail — desktop / larger phones only */}
+        <div className="mb-4 hidden rounded-2xl border border-slate-200/80 bg-white px-4 py-3.5 shadow-sm sm:mb-5 sm:block">
           <div className="mb-2 flex items-center justify-between gap-2">
             <p className={`text-xs font-bold text-slate-700 ${bn ? 'font-bengali' : ''}`}>
               {bn ? 'পড়ার অগ্রগতি' : 'Reading progress'}
@@ -329,36 +385,15 @@ export default function Home({
           </div>
         </div>
 
-        {/* Inline daily tip — no modal interrupt */}
-        {tipVisible && dailyTip && (
-          <div className="mb-5 rounded-2xl border border-slate-200/80 bg-white px-4 py-3.5 shadow-sm">
-            <div className="mb-1.5 flex items-start justify-between gap-2">
-              <p className={`text-[10px] font-bold text-orange-600 ${bn ? 'font-bengali' : 'uppercase tracking-wider'}`}>
-                {bn ? 'আজকের টিপ' : 'Today’s tip'}
-              </p>
-              <button
-                type="button"
-                onClick={dismissTip}
-                className="rounded-full px-2 py-0.5 text-[10px] font-bold text-slate-400 hover:bg-slate-50 hover:text-slate-600"
-                aria-label={bn ? 'বন্ধ করুন' : 'Dismiss'}
-              >
-                {bn ? 'ঠিক আছে' : 'Got it'}
-              </button>
-            </div>
-            <p className={`text-sm font-medium leading-relaxed text-slate-700 ${bn ? 'font-bengali' : ''}`}>
-              {dailyTip}
-            </p>
-          </div>
-        )}
-
-        {/* Emergency + invite row */}
+        {/* Emergency + invite */}
         <div className="grid grid-cols-2 gap-2.5">
           <button
             type="button"
             onClick={() => go('emergency')}
-            className="flex items-center gap-2 rounded-2xl border border-red-200/90 bg-red-50 px-3 py-3 text-left transition-all active:scale-[0.99]"
+            className="flex items-center justify-center gap-2 rounded-2xl border border-red-200/90 bg-red-50 px-3 py-3 transition-all active:scale-[0.99] sm:justify-start"
+            aria-label={bn ? 'জরুরি' : 'Emergency'}
           >
-            <span className="text-lg" aria-hidden>
+            <span className="text-lg leading-none" aria-hidden>
               🚨
             </span>
             <span className={`text-xs font-black text-red-800 ${bn ? 'font-bengali' : ''}`}>
@@ -371,7 +406,8 @@ export default function Home({
               if (navigator.vibrate) navigator.vibrate(5);
               openLinemanInviteWhatsApp(language);
             }}
-            className="flex items-center gap-2 rounded-2xl border border-emerald-200/90 bg-emerald-50 px-3 py-3 text-left transition-all active:scale-[0.99]"
+            className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-200/90 bg-emerald-50 px-3 py-3 transition-all active:scale-[0.99] sm:justify-start"
+            aria-label={bn ? 'শেয়ার' : 'Invite'}
           >
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white" aria-hidden>
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
