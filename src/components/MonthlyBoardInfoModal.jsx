@@ -66,6 +66,11 @@ export default function MonthlyBoardInfoModal({
                         <p className={`text-[10px] font-black uppercase tracking-widest text-slate-400 ${bn ? 'font-bengali normal-case' : ''}`}>
                             {bn ? 'কীভাবে কাজ করে' : 'Rules'}
                         </p>
+                        {meta?.logic && (
+                            <p className={`mt-1 text-xs leading-relaxed text-slate-700 dark:text-slate-200 ${bn ? 'font-bengali' : ''}`}>
+                                {meta.logic}
+                            </p>
+                        )}
                         <p className={`mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-300 ${bn ? 'font-bengali' : ''}`}>
                             {copy.prizeRule}
                         </p>

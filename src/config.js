@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.82";
+export const CURRENT_APP_VERSION = "1.3.83";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Play, Rank, and Prizes are separate screens. Rank is cleaner on phones, and Home shows a rotating safety tip plus a green dot when this hour’s quiz is still open.",
-  bn: "খেলুন, র‍্যাঙ্ক ও পুরস্কার এখন আলাদা পৃষ্ঠা। র‍্যাঙ্ক মোবাইলে সহজ, আর হোমে ঘুরে ফিরে নিরাপত্তা টিপ ও এই ঘণ্টার কুইজ খোলা থাকলে সবুজ ডট দেখাবে।",
+  en: "Rank header is clearer: a short summary plus a Rules button, with full board eligibility details in the info popup.",
+  bn: "র‍্যাঙ্ক হেডার স্পষ্ট: সংক্ষিপ্ত সারাংশ ও নিয়ম বোতাম; পুরো যোগ্যতার বিবরণ তথ্য পপআপে।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 export const SUPPORT_EMAIL = "support@smartlineman.in";

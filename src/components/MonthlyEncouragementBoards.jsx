@@ -29,7 +29,26 @@ function AllTimeLink({ language, onAllTimeClick, className = '' }) {
     );
 }
 
-/** Compact note above the podium — champion shows month scope; other tabs keep board logic. */
+function BoardRulesButton({ language, onClick }) {
+    const bn = language === 'bn';
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className={`inline-flex shrink-0 items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold text-slate-600 shadow-sm transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700 active:scale-95 ${bn ? 'font-bengali' : ''}`}
+            aria-label={bn ? 'তালিকার নিয়ম' : 'Board rules'}
+        >
+            <svg className="h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                <circle cx="12" cy="12" r="10" />
+                <path strokeLinecap="round" d="M12 11v5" />
+                <circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none" />
+            </svg>
+            <span>{bn ? 'নিয়ম' : 'Rules'}</span>
+        </button>
+    );
+}
+
+/** Compact note above the podium — short summary only; full rules open in the info modal. */
 export function MonthlyBoardHeader({
     meta,
     language = 'bn',
@@ -39,57 +58,29 @@ export function MonthlyBoardHeader({
 }) {
     const monthLabel = getCurrentMonthLabel(language);
     const isChampion = monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION;
+    const bn = language === 'bn';
+
+    const summary = isChampion
+        ? (bn
+            ? <>শুধু <span className="font-semibold text-slate-800">{monthLabel}</span> মাসের পয়েন্ট</>
+            : <><span className="font-semibold text-slate-800">{monthLabel}</span> scores only</>)
+        : (meta?.rankBy || meta?.prize || '');
 
     return (
-        <div className="py-0.5 text-left">
-            <p className={`text-[11px] leading-snug text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                {isChampion ? (
-                    language === 'en' ? (
-                        <>
-                            <span className="font-semibold text-slate-800">{monthLabel}</span> scores only.{' '}
-                        </>
-                    ) : (
-                        <>
-                            শুধু <span className="font-semibold text-slate-800">{monthLabel}</span> মাসের পয়েন্ট।{' '}
-                        </>
-                    )
-                ) : (
-                    <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
-                        <span>{meta?.logic}</span>
-                        {meta && onInfoClick && (
-                            <button
-                                type="button"
-                                onClick={onInfoClick}
-                                className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-orange-50 hover:text-orange-600"
-                                aria-label={language === 'en' ? 'Board rules' : 'তালিকার নিয়ম'}
-                            >
-                                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-                                    <circle cx="12" cy="12" r="10" />
-                                    <path strokeLinecap="round" d="M12 11v5" />
-                                    <circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none" />
-                                </svg>
-                            </button>
-                        )}
-                    </span>
+        <div className="min-w-0 space-y-1.5">
+            <div className="flex items-center gap-2">
+                <p className={`min-w-0 flex-1 truncate text-[11px] leading-snug text-slate-600 sm:text-xs ${bn ? 'font-bengali' : ''}`}>
+                    {summary}
+                </p>
+                {meta && onInfoClick && (
+                    <BoardRulesButton language={language} onClick={onInfoClick} />
                 )}
-                {isChampion && (
+            </div>
+            {isChampion && onAllTimeClick && (
+                <p className={`text-[10px] leading-snug text-slate-500 sm:text-[11px] ${bn ? 'font-bengali' : ''}`}>
                     <AllTimeLink language={language} onAllTimeClick={onAllTimeClick} />
-                )}
-                {isChampion && meta && onInfoClick && (
-                    <button
-                        type="button"
-                        onClick={onInfoClick}
-                        className="ml-1.5 inline-flex h-4 w-4 shrink-0 items-center justify-center align-middle rounded-full text-slate-400 hover:bg-orange-50 hover:text-orange-600"
-                        aria-label={language === 'en' ? 'Board rules' : 'তালিকার নিয়ম'}
-                    >
-                        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-                            <circle cx="12" cy="12" r="10" />
-                            <path strokeLinecap="round" d="M12 11v5" />
-                            <circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none" />
-                        </svg>
-                    </button>
-                )}
-            </p>
+                </p>
+            )}
         </div>
     );
 }

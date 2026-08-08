@@ -2179,7 +2179,7 @@ export default function Competitions({
                     <>
                     <div className={`max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-3 ${leaderboardTab === 'all-time' ? 'pb-48 md:pb-56' : 'pb-24 md:pb-28'}`}>
                     {leaderboardTab === 'monthly' && (
-                        <div className="mx-auto mb-1 flex max-w-2xl items-start gap-2 px-2 sm:mb-2 sm:gap-3">
+                        <div className="mx-auto mb-1 flex max-w-2xl items-start gap-2 px-2 sm:mb-2 sm:items-center sm:gap-3">
                             <div className="min-w-0 flex-1">
                                 {!loadingMonthly && monthlyBoardMeta ? (
                                     <MonthlyBoardHeader
@@ -2190,7 +2190,7 @@ export default function Competitions({
                                         onAllTimeClick={switchToAllTimeLeaderboard}
                                     />
                                 ) : (
-                                    <div className="h-5" aria-hidden />
+                                    <div className="h-8" aria-hidden />
                                 )}
                             </div>
                             <RankPrizeButton language={language} onClick={goToPrizes} />
