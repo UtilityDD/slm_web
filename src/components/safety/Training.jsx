@@ -1336,6 +1336,9 @@ export default function Training({
     const [userRank, setUserRank] = useState(null);
     const [showLessonIndex, setShowLessonIndex] = useState(false);
     const [expandedChapterIndex, setExpandedChapterIndex] = useState(null);
+    /** lessonId → display title for Learning Index (from badge catalog B1–B9). */
+    const [indexLessonTitles, setIndexLessonTitles] = useState(() => ({}));
+    const indexLessonTitlesLoadedRef = useRef(false);
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(
         () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
     );
@@ -1358,6 +1361,52 @@ export default function Training({
         mq.addEventListener('change', onChange);
         return () => mq.removeEventListener('change', onChange);
     }, []);
+
+    // Load lesson names for Learning Index (B1–B9 catalogs) once when opened.
+    useEffect(() => {
+        if (!showLessonIndex || indexLessonTitlesLoadedRef.current) return undefined;
+
+        let cancelled = false;
+        (async () => {
+            try {
+                const titles = await requestManager.fetch(
+                    'training_index_lesson_titles',
+                    async () => {
+                        const maps = await Promise.all(
+                            Array.from({ length: 9 }, (_, i) => {
+                                const n = i + 1;
+                                return fetch(`/quizzes/B${n}.json`)
+                                    .then((r) => (r.ok ? r.json() : null))
+                                    .catch(() => null);
+                            })
+                        );
+                        const byId = {};
+                        for (const badge of maps) {
+                            if (!badge?.levels) continue;
+                            for (const level of badge.levels) {
+                                if (level?.level_id && level?.level_title) {
+                                    byId[level.level_id] = level.level_title;
+                                }
+                            }
+                        }
+                        return byId;
+                    },
+                    { ttl: 3600, swr: true, forceRefresh: false }
+                );
+                if (cancelled) return;
+                if (titles && typeof titles === 'object' && Object.keys(titles).length > 0) {
+                    indexLessonTitlesLoadedRef.current = true;
+                    setIndexLessonTitles(titles);
+                }
+            } catch (err) {
+                console.warn('Could not load lesson index titles:', err);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [showLessonIndex]);
 
     // Warm the lesson cover art so it is ready when a path lesson opens.
     useEffect(() => {
@@ -5946,15 +5995,17 @@ export default function Training({
 
                                     {/* Lessons list */}
                                     {isExpanded && (
-                                        <div className="animate-fade-in border-t border-slate-200 bg-[#fffdf7] px-3 py-2 sm:px-4">
+                                        <div className="animate-fade-in border-t border-slate-200 bg-[#fffdf7] px-2 py-1.5 sm:px-3">
                                             {Array.from({ length: chapter.count }, (_, i) => {
                                                 const lessonNum = i + 1;
                                                 const lessonId = `${chapter.number}.${lessonNum}`;
                                                 const isDone = completedLessons.includes(lessonId);
                                                 const isLessonUnl = isLessonUnlocked(chapter.number, lessonNum);
-                                                const lessonLabel = language === 'en'
-                                                    ? `Lesson ${lessonId}`
-                                                    : `পাঠ ${toBengaliNumber(lessonId, language)}`;
+                                                const lessonTitle = indexLessonTitles[lessonId];
+                                                const lessonLabel = lessonTitle
+                                                    || (language === 'en'
+                                                        ? `Lesson ${lessonId}`
+                                                        : `পাঠ ${toBengaliNumber(lessonId, language)}`);
 
                                                 return (
                                                     <button
@@ -5965,40 +6016,39 @@ export default function Training({
                                                             setShowLessonIndex(false);
                                                             handleChapterClick(chapter, lessonNum);
                                                         }}
-                                                        className={`flex w-full items-center gap-3 border-b border-slate-100 px-2 py-3 text-left transition-colors last:border-b-0 sm:gap-4 sm:px-3 sm:py-3.5 ${
+                                                        className={`flex w-full items-center gap-2.5 border-b border-slate-100/80 px-2 py-2 text-left transition-colors last:border-b-0 sm:gap-3 sm:px-2.5 sm:py-2.5 ${
                                                             isDone
                                                                 ? 'hover:bg-emerald-50/60'
                                                                 : isLessonUnl
                                                                     ? 'hover:bg-orange-50/60'
                                                                     : 'cursor-not-allowed opacity-50'
                                                         }`}
+                                                        aria-label={
+                                                            language === 'en'
+                                                                ? `${lessonId}: ${lessonLabel}${isDone ? ', done' : isLessonUnl ? '' : ', locked'}`
+                                                                : `${toBengaliNumber(lessonId, language)}: ${lessonLabel}${isDone ? ', সম্পন্ন' : isLessonUnl ? '' : ', লক'}`
+                                                        }
                                                     >
-                                                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-xs font-black tabular-nums ${
+                                                        <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[11px] font-black tabular-nums ${
                                                             isDone
                                                                 ? 'bg-emerald-500 text-white'
                                                                 : isLessonUnl
                                                                     ? 'bg-orange-100 text-orange-800'
                                                                     : 'bg-slate-100 text-slate-400'
                                                         }`}>
-                                                            {isDone ? '✓' : (language === 'bn' ? toBengaliNumber(lessonNum, language) : lessonNum)}
+                                                            {language === 'bn' ? toBengaliNumber(lessonNum, language) : lessonNum}
                                                         </span>
-                                                        <span className={`min-w-0 flex-1 text-sm font-semibold leading-snug sm:text-base ${
+                                                        <span className={`min-w-0 flex-1 text-[13px] font-semibold leading-snug sm:text-sm ${
                                                             isDone
-                                                                ? 'text-emerald-900'
+                                                                ? 'text-emerald-800'
                                                                 : isLessonUnl
-                                                                    ? 'text-slate-900'
+                                                                    ? 'text-slate-800'
                                                                     : 'text-slate-400'
-                                                        } ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                        } ${language === 'bn' || lessonTitle ? 'font-bengali' : ''}`}>
                                                             {lessonLabel}
                                                         </span>
-                                                        {isDone ? (
-                                                            <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-emerald-600 nb-mono">
-                                                                {language === 'en' ? 'Done' : 'সম্পন্ন'}
-                                                            </span>
-                                                        ) : isLessonUnl ? (
-                                                            <span className="shrink-0 text-slate-400" aria-hidden>→</span>
-                                                        ) : (
-                                                            <span className="shrink-0 text-sm text-slate-400" aria-hidden>🔒</span>
+                                                        {!isDone && !isLessonUnl && (
+                                                            <span className="shrink-0 text-xs text-slate-400" aria-hidden>🔒</span>
                                                         )}
                                                     </button>
                                                 );
