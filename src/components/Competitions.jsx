@@ -12,6 +12,7 @@ import {
     isImageOption,
     toDisplayImageUrl,
 } from '../utils/visualQuizImageUtils';
+import { openExternalUrl } from '../utils/nativeAndroidUx';
 import {
     filterQuestionsForTier,
     getHourlyStakesUi,
@@ -1121,7 +1122,7 @@ export default function Competitions({
         if (searchCount < MAX_SEARCH_QUOTA) {
             setSearchCount(prev => prev + 1);
             const query = encodeURIComponent(hourlySearchText);
-            window.open(`https://www.google.com/search?q=${query}`, '_blank');
+            void openExternalUrl(`https://www.google.com/search?q=${query}`);
             setShowSearchModal(false);
         }
     };

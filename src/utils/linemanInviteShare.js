@@ -129,7 +129,14 @@ async function shareTextFallback(language, text, title) {
   }
 
   const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-  window.open(waUrl, '_blank', 'noopener,noreferrer');
+  try {
+    const { openExternalUrl } = await import('./nativeAndroidUx');
+    await openExternalUrl(waUrl);
+  } catch {
+    if (typeof window !== 'undefined') {
+      window.open(waUrl, '_blank', 'noopener,noreferrer');
+    }
+  }
 }
 
 /**

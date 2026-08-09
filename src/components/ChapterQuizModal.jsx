@@ -6,6 +6,7 @@ import { useTextToSpeech } from '../hooks/useTextToSpeech';
 import { buildChapterQuizSpeechScript } from '../utils/chapterQuizReadAloud';
 import clockLottie from '../assets/clock.lottie';
 import { guestPreviewText } from '../utils/guestPreview';
+import { pushNativeBackHandler, hapticImpact, hapticNotification, openExternalUrl } from '../utils/nativeAndroidUx';
 
 /** Fisher–Yates shuffle (unbiased). Returns a new array. */
 function shuffleArray(items) {
@@ -440,8 +441,18 @@ const ChapterQuizModal = ({
         });
     };
 
+    useEffect(() => {
+        if (!isOpen) return undefined;
+        return pushNativeBackHandler(() => {
+            onClose();
+            void hapticImpact('Light');
+            return true;
+        });
+    }, [isOpen, onClose]);
+
     const handleOptionSelect = (optionIndex) => {
         playUiSfx('select');
+        void hapticImpact('Light');
         setUserAnswers(prev => ({
             ...prev,
             [currentQuestionIndex]: optionIndex
@@ -467,6 +478,8 @@ const ChapterQuizModal = ({
         });
         setScore(calculatedScore);
         setShowResult(true);
+        const passed = calculatedScore >= Math.ceil(shuffledQuestions.length * LESSON_QUIZ_PASS_RATE);
+        void hapticNotification(passed ? 'Success' : 'Warning');
     };
 
     const handleFinish = () => {
@@ -563,7 +576,7 @@ const ChapterQuizModal = ({
             } catch (shareError) {
                 await navigator.clipboard.writeText(reportContent);
                 alert(t.reportCopiedAlert ?? 'Report copied to clipboard.');
-                window.open(waGroupLink, '_blank');
+                void openExternalUrl(waGroupLink);
             }
             
             setShowReportModal(false);
@@ -584,7 +597,7 @@ const ChapterQuizModal = ({
         if (searchCount < MAX_SEARCH_QUOTA) {
             setSearchCount(prev => prev + 1);
             const query = encodeURIComponent(searchText);
-            window.open(`https://www.google.com/search?q=${query}`, '_blank');
+            void openExternalUrl(`https://www.google.com/search?q=${query}`);
             setShowSearchModal(false);
         }
     };

@@ -1,9 +1,17 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
-import { SplashScreen } from '@capacitor/splash-screen';
-import { Browser } from '@capacitor/browser';
-import { StatusBar, Style } from '@capacitor/status-bar';
+import { App as CapApp } from '@capacitor/app';
 import { supabase } from "./supabaseClient";
+import {
+  pushNativeBackHandler,
+  consumeDoubleBackExit,
+  resetDoubleBackExit,
+  syncNativeSystemBars,
+  hideNativeSplash,
+  hapticImpact,
+  openExternalUrl,
+} from "./utils/nativeAndroidUx";
+import NativeSheetHandle from "./components/NativeSheetHandle";
 import { getBadgeByLevel, calculateLevelFromProgress } from './utils/badgeUtils';
 import { filterCoreCompletedLessonIds } from './utils/trainingLessonIds';
 import { cacheHelper } from './utils/cacheHelper';
@@ -176,6 +184,11 @@ export default function SmartLinemanUI() {
   const [sponsorAdOpen, setSponsorAdOpen] = useState(false);
   const [monthWinnersRevealOpen, setMonthWinnersRevealOpen] = useState(false);
   const forumActivityTimerRef = useRef(null);
+  const viewHistoryRef = useRef([]);
+  const prevViewForHistoryRef = useRef(null);
+  const skippingViewHistoryRef = useRef(false);
+  const [nativeExitHint, setNativeExitHint] = useState(false);
+  const nativeExitHintTimerRef = useRef(null);
 
   const weatherDistrict = userProfile?.district || null;
   const { alert: weatherAlert, visible: weatherVisible, isReminder: weatherIsReminder, dismiss: dismissWeather, refresh: refreshWeather, loading: weatherLoading } =
@@ -277,14 +290,147 @@ export default function SmartLinemanUI() {
   }, []);
 
   useEffect(() => {
-    // Hide native splash screen when app is ready
-    if (window.Capacitor) {
-      setTimeout(() => {
-        SplashScreen.hide({
-          fadeOutDuration: 500
-        });
-      }, 500); // Give React 500ms to settle
+    // Hide native splash only after auth/bootstrap finishes (avoids blank WebView flash).
+    if (!isNativeCapacitorPlatform() || appLoading) return undefined;
+    const t = setTimeout(() => {
+      hideNativeSplash(400);
+    }, 80);
+    return () => clearTimeout(t);
+  }, [appLoading]);
+
+  // Track view history for Android system Back (skip when we ourselves pop history).
+  useEffect(() => {
+    const prev = prevViewForHistoryRef.current;
+    if (skippingViewHistoryRef.current) {
+      skippingViewHistoryRef.current = false;
+      prevViewForHistoryRef.current = currentView;
+      return undefined;
     }
+    if (prev && prev !== currentView) {
+      viewHistoryRef.current = [...viewHistoryRef.current, prev].slice(-24);
+      resetDoubleBackExit();
+    }
+    prevViewForHistoryRef.current = currentView;
+    return undefined;
+  }, [currentView]);
+
+  // Android system Back: overlays → sidebar → view stack → home → double-back exit.
+  useEffect(() => {
+    if (!isNativeCapacitorPlatform()) return undefined;
+
+    const closeShellOverlay = () => {
+      if (showSessionEndedModal) return true; // cannot dismiss via back
+      if (showUpdateModal && isForceUpdate) return true; // require update action
+      if (showUpdateModal) {
+        setShowUpdateModal(false);
+        return true;
+      }
+      if (showLogoutModal) {
+        setShowLogoutModal(false);
+        return true;
+      }
+      if (showLanguageModal) {
+        setShowLanguageModal(false);
+        return true;
+      }
+      if (showActiveBroadcastModal) {
+        setShowActiveBroadcastModal(false);
+        return true;
+      }
+      if (pushNotification) {
+        setPushNotification(null);
+        return true;
+      }
+      if (adContactOpen) {
+        setAdContactOpen(false);
+        return true;
+      }
+      if (profileNudgeOpen) {
+        setProfileNudgeOpen(false);
+        return true;
+      }
+      if (pushOptInOpen) {
+        setPushOptInOpen(false);
+        return true;
+      }
+      if (monthWinnersRevealOpen) {
+        setMonthWinnersRevealOpen(false);
+        return true;
+      }
+      if (sponsorAdOpen) {
+        setSponsorAdOpen(false);
+        return true;
+      }
+      return false;
+    };
+
+    return pushNativeBackHandler(() => {
+      if (closeShellOverlay()) {
+        hapticImpact('Light');
+        return true;
+      }
+      if (sidebarOpen) {
+        setSidebarOpen(false);
+        hapticImpact('Light');
+        return true;
+      }
+
+      const stack = viewHistoryRef.current;
+      if (stack.length > 0) {
+        const prev = stack[stack.length - 1];
+        viewHistoryRef.current = stack.slice(0, -1);
+        skippingViewHistoryRef.current = true;
+        setCurrentView(prev);
+        hapticImpact('Light');
+        return true;
+      }
+
+      if (user && currentView !== 'home') {
+        skippingViewHistoryRef.current = true;
+        setCurrentView('home');
+        hapticImpact('Light');
+        return true;
+      }
+
+      if (!user && currentView !== 'landing' && currentView !== 'login') {
+        skippingViewHistoryRef.current = true;
+        setCurrentView('landing');
+        hapticImpact('Light');
+        return true;
+      }
+
+      if (consumeDoubleBackExit(2000)) {
+        setNativeExitHint(true);
+        if (nativeExitHintTimerRef.current) clearTimeout(nativeExitHintTimerRef.current);
+        nativeExitHintTimerRef.current = setTimeout(() => setNativeExitHint(false), 2000);
+        hapticImpact('Medium');
+        return true;
+      }
+
+      setNativeExitHint(false);
+      CapApp.minimizeApp().catch(() => CapApp.exitApp());
+      return true;
+    });
+  }, [
+    sidebarOpen,
+    showUpdateModal,
+    isForceUpdate,
+    showLogoutModal,
+    showLanguageModal,
+    showActiveBroadcastModal,
+    showSessionEndedModal,
+    pushNotification,
+    adContactOpen,
+    profileNudgeOpen,
+    pushOptInOpen,
+    monthWinnersRevealOpen,
+    sponsorAdOpen,
+    user,
+    currentView,
+  ]);
+
+  useEffect(() => () => {
+    if (nativeExitHintTimerRef.current) clearTimeout(nativeExitHintTimerRef.current);
   }, []);
 
   // Background Preloading for Safety Library (Drive images) — far after first paint
@@ -1013,19 +1159,12 @@ export default function SmartLinemanUI() {
       metaThemeColor.setAttribute('content', bgColor);
       document.documentElement.style.setProperty('--slm-status-bg', bgColor);
 
-      // 2. Handle Native Capacitor StatusBar (do not overlay content)
+      // 2. Native status bar (nav bar color comes from Android styles)
       if (isNativeCapacitorPlatform()) {
-        try {
-          await StatusBar.setOverlaysWebView({ overlay: false });
-          if (isDark) {
-            await StatusBar.setStyle({ style: Style.Dark });
-          } else {
-            await StatusBar.setStyle({ style: Style.Light });
-          }
-          await StatusBar.setBackgroundColor({ color: bgColor });
-        } catch (err) {
-          console.warn('Native StatusBar update failed:', err);
-        }
+        await syncNativeSystemBars({
+          backgroundColor: bgColor,
+          darkContent: !isDark,
+        });
       }
     };
 
@@ -1485,12 +1624,13 @@ export default function SmartLinemanUI() {
             )}
 
             {showSessionEndedModal && activeShellOverlay === 'sessionEnded' && (
-              <div className="fixed inset-0 z-[400] bg-slate-900/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="session-ended-title">
-                <div className="w-full sm:max-w-sm animate-slide-up-sheet sm:animate-scale-in">
-                  <div className="relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
+              <div className="native-sheet-scrim fixed inset-0 z-[400] bg-slate-900/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="session-ended-title">
+                <div className="native-sheet-panel w-full sm:max-w-sm animate-slide-up-sheet sm:animate-scale-in">
+                  <div className="native-sheet-card relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
+                    <NativeSheetHandle />
                     <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden="true" />
 
-                    <div className="flex items-start gap-3.5 p-6 pt-7 sm:p-7 text-left">
+                    <div className="flex items-start gap-3.5 px-6 pb-6 pt-2 sm:p-7 sm:pt-7 text-left">
                       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 shadow-sm" aria-hidden="true">
                         <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1523,12 +1663,13 @@ export default function SmartLinemanUI() {
             )}
 
             {showActiveBroadcastModal && activeShellOverlay === 'broadcast' && activeBroadcastNotice && (
-              <div className="fixed inset-0 z-[210] bg-slate-900/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
-                <div className="w-full sm:max-w-md max-h-[85vh] flex flex-col animate-slide-up-sheet sm:animate-scale-in">
-                  <div className="relative flex max-h-[85vh] min-h-0 flex-col overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
+              <div className="native-sheet-scrim fixed inset-0 z-[210] bg-slate-900/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+                <div className="native-sheet-panel w-full sm:max-w-md max-h-[85vh] flex flex-col animate-slide-up-sheet sm:animate-scale-in">
+                  <div className="native-sheet-card relative flex max-h-[85vh] min-h-0 flex-col overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
+                    <NativeSheetHandle />
                     <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden="true" />
 
-                    <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-6 pt-7 text-left sm:p-7">
+                    <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-6 pb-6 pt-2 text-left sm:p-7 sm:pt-7">
                       <div className="flex shrink-0 items-start gap-3.5">
                         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-xl leading-none shadow-sm" aria-hidden="true">
                           {activeBroadcastNotice.type === 'alert' ? '🚨' : activeBroadcastNotice.type === 'warning' ? '⚠️' : activeBroadcastNotice.type === 'update' ? '✅' : '📢'}
@@ -1557,11 +1698,12 @@ export default function SmartLinemanUI() {
             )}
 
             {showUpdateModal && activeShellOverlay === 'update' && updateInfo && (
-              <div className="fixed inset-0 z-[200] bg-slate-900/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
-                <div className="w-full sm:max-w-md animate-slide-up-sheet sm:animate-scale-in">
-                  <div className="relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
+              <div className="native-sheet-scrim fixed inset-0 z-[200] bg-slate-900/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+                <div className="native-sheet-panel w-full sm:max-w-md animate-slide-up-sheet sm:animate-scale-in">
+                  <div className="native-sheet-card relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
+                    <NativeSheetHandle />
                     <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden="true" />
-                    <div className="flex items-start gap-3.5 p-6 pt-7 text-left sm:p-7">
+                    <div className="flex items-start gap-3.5 px-6 pb-6 pt-2 text-left sm:p-7 sm:pt-7">
                       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-2xl leading-none shadow-sm" aria-hidden="true">🚀</span>
                       <div className="min-w-0 flex-1">
                     <h2 className={`text-lg sm:text-xl font-black leading-tight text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>{language === 'en' ? 'Update Available' : 'নতুন সংস্করণ উপলব্ধ'}</h2>
@@ -1583,7 +1725,7 @@ export default function SmartLinemanUI() {
                         onClick={() => {
                           const hasDownloadUrl = updateInfo.update_url && updateInfo.update_url !== '#';
                           if (hasDownloadUrl) {
-                            Browser.open({ url: updateInfo.update_url });
+                            openExternalUrl(updateInfo.update_url);
                             return;
                           }
                           applyAppRefresh();
@@ -1823,6 +1965,17 @@ export default function SmartLinemanUI() {
               />
             )}
             <NetworkStatusListener language={language} />
+            {nativeExitHint && (
+              <div
+                className="pointer-events-none fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] left-0 right-0 z-[300] flex justify-center px-4 md:bottom-8"
+                role="status"
+                aria-live="polite"
+              >
+                <div className={`rounded-full bg-slate-900/90 px-4 py-2 text-sm font-semibold text-white shadow-lg ${language === 'bn' ? 'font-bengali' : ''}`}>
+                  {language === 'en' ? 'Press back again to exit' : 'বের হতে আবার ব্যাক চাপুন'}
+                </div>
+              </div>
+            )}
             {showWeatherBanner && (
               <WeatherAlertBanner
                 alert={weatherAlert}
@@ -1858,24 +2011,25 @@ export default function SmartLinemanUI() {
 
             {showLanguageModal && activeShellOverlay === 'language' && (
               <div
-                className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/55 animate-fade-in"
+                className="native-sheet-scrim fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/55 animate-fade-in"
                 role="presentation"
                 onClick={() => setShowLanguageModal(false)}
               >
                 <div
-                  className="w-full sm:max-w-sm animate-slide-up-sheet sm:animate-scale-in"
+                  className="native-sheet-panel w-full sm:max-w-sm animate-slide-up-sheet sm:animate-scale-in"
                   role="dialog"
                   aria-modal="true"
                   aria-labelledby="language-modal-title"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
+                  <div className="native-sheet-card relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
+                    <NativeSheetHandle />
                     <div
                       className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
                       aria-hidden="true"
                     />
 
-                    <div className="flex items-start gap-3.5 p-6 pt-7 sm:p-7 text-left">
+                    <div className="flex items-start gap-3.5 px-6 pb-4 pt-2 sm:p-7 sm:pt-7 text-left">
                       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-xl leading-none shadow-sm" aria-hidden="true">🌐</span>
                       <div className="min-w-0 flex-1">
                         <h3 id="language-modal-title" className="text-lg sm:text-xl font-black leading-tight text-slate-900">Choose Language</h3>

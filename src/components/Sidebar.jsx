@@ -3,6 +3,7 @@ import { UserIcon } from './icons';
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../config';
 import { useLifeSkillRadio } from '../context/LifeSkillRadioContext';
 import { FAQ_PAGE_TITLE } from '../utils/faqFilters';
+import { openExternalUrl } from '../utils/nativeAndroidUx';
 
 const FACEBOOK_PAGE_URL = 'https://www.facebook.com/smartlineman';
 const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t';
@@ -111,7 +112,7 @@ export default function Sidebar({
       return;
     }
     if (item.url) {
-      window.open(item.url, '_system');
+      void openExternalUrl(item.url);
       onClose();
       return;
     }

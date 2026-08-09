@@ -69,9 +69,24 @@ Installed apps open the update modal when remote `version_code` > installed buil
 - **Do** use the **same keystore** for every release (`android/key.properties` → `smartlineman-release.jks`).
 - **Do** run `npm run android:sync` (build → slim → `cap sync`) before generating a signed APK.
 - **Do** keep first-paint essentials in `scripts/android-slim-dist.mjs` `KEEP_PACKED` (and matching entries in `nativeRemoteAssets.js`).
-- **Do** test on a real phone: cold start, landing sticky CTA, login, training image load (online), visit count, status bar clearance.
+- **Do** test on a real phone: cold start, landing sticky CTA, login, training image load (online), visit count, status bar clearance, **system Back**, keyboard on login, bottom-nav haptics.
 - **Do** host media on `smartlineman.in` — APK depends on it for images/audio.
-- **Do** keep secrets out of git (`key.properties`, `*.jks`, APK binaries).
+- **Do** keep secrets out of git (`key.properties`, `*.jks`; only track `public/downloads/smartlineman.apk` for hosting).
+
+## Native UX (Phase A + B)
+
+| Behavior | Implementation |
+|----------|----------------|
+| System Back | `src/utils/nativeAndroidUx.js` LIFO handlers + shell in `SmartLinemanUI.jsx` |
+| Soft keyboard | `@capacitor/keyboard` → `--keyboard-height` + `.native-keyboard-pad` |
+| Haptics | `@capacitor/haptics` on nav / quiz (no-ops on web) |
+| Splash | Hide after `appLoading` clears (`hideNativeSplash`) |
+| Status / nav bars | Dynamic status via Capacitor; nav bar colors in `android/.../styles.xml` |
+| Bottom sheets | `.native-sheet-scrim/panel/card` + `NativeSheetHandle` (forced bottom on native) |
+| Touch polish | No tap flash, overscroll contained, `touch-action: manipulation` |
+| Offline (native) | Media-aware banner in `NetworkStatusListener` |
+| External links | `openExternalUrl()` → Custom Tabs / Browser plugin |
+| Share | `shareContent()` + More page system share on native |
 
 ## Don’t
 

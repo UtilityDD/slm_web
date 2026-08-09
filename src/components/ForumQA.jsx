@@ -7,6 +7,7 @@ import {
     fetchForumThread,
     markForumSolved,
 } from '../utils/forumService';
+import { openExternalUrl } from '../utils/nativeAndroidUx';
 
 const MAX_BODY = 500;
 
@@ -274,7 +275,7 @@ function WaHeader({ title, channelButtons, onChannelUnavailable }) {
                             title={btn.title}
                             aria-label={btn.title}
                             onClick={() => {
-                                if (btn.url) window.open(btn.url, '_blank', 'noopener,noreferrer');
+                                if (btn.url) void openExternalUrl(btn.url);
                                 else onChannelUnavailable?.();
                             }}
                             className="flex h-9 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white px-3 text-slate-700 shadow-sm transition hover:bg-orange-50 active:scale-95"

@@ -141,7 +141,7 @@ export default function PinGate({ open, gate, language = 'bn', onSuccess, onCanc
         : t('This confirms you are authorising this action.', 'এটি নিশ্চিত করে আপনি এই কাজ অনুমোদন করছেন।');
 
     return (
-        <div className="fixed inset-0 z-[500] flex flex-col bg-slate-900/95 backdrop-blur-sm text-white">
+        <div className="fixed inset-0 z-[500] flex flex-col bg-slate-900/95 backdrop-blur-sm text-white native-keyboard-pad">
             <div className="flex-1 flex flex-col items-center justify-center p-6 pt-[env(safe-area-inset-top)] max-w-md mx-auto w-full">
                 <div className="text-5xl mb-4">🔐</div>
                 <h2 className="text-xl font-black text-center leading-tight">{title}</h2>

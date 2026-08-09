@@ -1,4 +1,5 @@
 import React from 'react';
+import { hapticImpact } from '../utils/nativeAndroidUx';
 
 const iconClass = 'h-[21px] w-[21px]';
 
@@ -89,6 +90,7 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
               aria-label={item.label}
               aria-current={isActive ? 'page' : undefined}
               onClick={() => {
+                void hapticImpact('Light');
                 if (navigator.vibrate) navigator.vibrate(5);
                 if (onMenuClick) onMenuClick(false);
                 setCurrentView(item.id);

@@ -2519,6 +2519,49 @@ body,
     padding-bottom: env(safe-area-inset-bottom);
   }
 
+  /* Native Android: lift forms above the soft keyboard */
+  html.native-android .native-keyboard-pad {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--keyboard-height, 0px));
+    transition: padding-bottom 160ms ease-out;
+  }
+
+  html.native-android {
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+    touch-action: manipulation;
+  }
+
+  html.native-android body {
+    overscroll-behavior-y: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  html.native-android input,
+  html.native-android textarea,
+  html.native-android [contenteditable='true'] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  /* Force Material-style bottom sheets on native (ignore sm: centered dialog). */
+  html.native-android .native-sheet-scrim {
+    align-items: flex-end !important;
+    justify-content: center !important;
+    padding: 0 !important;
+  }
+
+  html.native-android .native-sheet-panel {
+    width: 100% !important;
+    max-width: none !important;
+    animation: none;
+  }
+
+  html.native-android .native-sheet-card {
+    border-radius: 1.5rem 1.5rem 0 0 !important;
+    border-bottom: none !important;
+  }
+
   .logo-text {
     @apply font-black tracking-tighter italic pr-1;
     -webkit-background-clip: text;

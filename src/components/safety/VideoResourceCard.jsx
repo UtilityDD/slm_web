@@ -1,4 +1,5 @@
 import React from 'react';
+import { openExternalUrl } from '../../utils/nativeAndroidUx';
 
 const VideoResourceCard = ({ video, language, onClick }) => {
     // Extract YouTube video ID for thumbnail
@@ -13,13 +14,9 @@ const VideoResourceCard = ({ video, language, onClick }) => {
         ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
         : '/assets/video-placeholder.png';
 
-    const handlePlay = async () => {
-        if (window.Capacitor) {
-            const { Browser } = await import('@capacitor/browser');
-            await Browser.open({ url: video.url });
-        } else {
-            window.open(video.url, '_blank');
-        }
+    const handlePlay = () => {
+        void openExternalUrl(video.url);
+        if (typeof onClick === 'function') onClick(video);
     };
 
     return (

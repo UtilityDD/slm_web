@@ -1,4 +1,5 @@
 import React from "react";
+import NativeSheetHandle from "./NativeSheetHandle";
 
 export default function LogoutConfirmationModal({ onConfirm, onCancel, language, loading }) {
   const translations = {
@@ -22,24 +23,25 @@ export default function LogoutConfirmationModal({ onConfirm, onCancel, language,
 
   return (
     <div
-      className="fixed inset-0 bg-slate-900/55 flex items-end sm:items-center justify-center z-[1000] p-0 sm:p-4 animate-fade-in"
+      className="native-sheet-scrim fixed inset-0 bg-slate-900/55 flex items-end sm:items-center justify-center z-[1000] p-0 sm:p-4 animate-fade-in"
       role="presentation"
       onClick={loading ? undefined : onCancel}
     >
       <div
-        className="w-full sm:max-w-sm animate-slide-up-sheet sm:animate-scale-in"
+        className="native-sheet-panel w-full sm:max-w-sm animate-slide-up-sheet sm:animate-scale-in"
         role="dialog"
         aria-modal="true"
         aria-labelledby="logout-modal-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
+        <div className="native-sheet-card relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
+          <NativeSheetHandle />
           <div
             className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
             aria-hidden="true"
           />
 
-          <div className="flex items-start gap-3.5 p-6 pt-7 sm:p-7 text-left">
+          <div className="flex items-start gap-3.5 px-6 pb-6 pt-2 sm:p-7 sm:pt-7 text-left">
             <span
               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600 shadow-sm"
               aria-hidden="true"
@@ -82,7 +84,7 @@ export default function LogoutConfirmationModal({ onConfirm, onCancel, language,
               type="button"
               onClick={onCancel}
               disabled={loading}
-              className={`order-2 min-h-[48px] w-full rounded-full border border-slate-200/80 bg-white py-3 text-base font-bold text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-[0.98] disabled:opacity-50 sm:order-1 sm:flex-1 ${language === 'bn' ? 'font-bengali' : ''}`}
+              className={`order-2 flex min-h-[48px] w-full items-center justify-center rounded-full border border-slate-200 bg-white py-3 text-base font-black text-slate-700 transition-all active:scale-[0.98] disabled:opacity-60 sm:order-1 sm:flex-1 ${language === 'bn' ? 'font-bengali' : ''}`}
             >
               {t.cancel}
             </button>

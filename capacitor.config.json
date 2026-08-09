@@ -17,6 +17,10 @@
       "overlaysWebView": false,
       "style": "DARK"
     },
+    "Keyboard": {
+      "resize": "body",
+      "resizeOnFullScreen": true
+    },
     "CapacitorHttp": {
       "enabled": true
     }
