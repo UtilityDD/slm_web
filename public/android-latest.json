@@ -1,12 +1,12 @@
 {
-  "version_name": "1.3.86",
-  "version_code": 86,
+  "version_name": "1.3.87",
+  "version_code": 87,
   "apk_url": "https://smartlineman.in/downloads/smartlineman.apk",
   "download_page": "https://smartlineman.in/download",
   "force_update": false,
   "min_supported_version_code": 68,
   "release_notes": {
-    "en": "v1.3.86 — Calmer cream cold start with SmartLineMan wordmark, consistent native top bar, no ads while logging in or typing, welcome pass polish.",
-    "bn": "v1.3.86 — ক্রিম কোল্ড স্টার্ট ও SmartLineMan ওয়ার্ডমার্ক, একরকম নেটিভ টপ বার, লগইন/টাইপিং-এ বিজ্ঞাপন নেই, ওয়েলকাম পাস উন্নত।"
+    "en": "v1.3.87 — Rank nav icon stays clear when selected; full-screen lessons and quizzes clear the Android status bar.",
+    "bn": "v1.3.87 — Rank নেভ আইকন সিলেক্টে ঠিক থাকে; ফুল-স্ক্রিন পাঠ ও কুইজ অ্যান্ড্রয়েড স্ট্যাটাস বারের নিচে।"
   }
 }

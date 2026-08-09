@@ -4859,6 +4859,12 @@ body,
   }
 }
 
+/* Full-screen lesson reader is portaled to body — keep clear of Android status icons */
+html.native-android .lesson-reader-root {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Desktop lesson reader — open book on a warm desk (not a dark modal) */
 .lesson-reader-desk {
   position: absolute;

@@ -4,14 +4,16 @@ import { isNativeCapacitorPlatform } from '../utils/webPush';
 
 const iconClass = 'h-[22px] w-[22px]';
 
-function NavIcon({ active, children }) {
+function NavIcon({ active, fillOnActive = true, children }) {
+  // Stroke-drawn icons (e.g. trophy) look broken if we zero stroke + fill on select.
+  const filled = Boolean(active && fillOnActive);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      fill={active ? 'currentColor' : 'none'}
+      fill={filled ? 'currentColor' : 'none'}
       stroke="currentColor"
-      strokeWidth={active ? '0' : '2'}
+      strokeWidth={filled ? '0' : '2'}
       strokeLinecap="round"
       strokeLinejoin="round"
       className={iconClass}
@@ -67,7 +69,7 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
       id: 'leaderboard',
       label: language === 'en' ? 'Rank' : 'র‍্যাঙ্ক',
       paths: (active) => (
-        <NavIcon active={active}>
+        <NavIcon active={active} fillOnActive={false}>
           <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
           <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
           <path d="M4 22h16" />

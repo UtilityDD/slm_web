@@ -604,7 +604,7 @@ const ChapterQuizModal = ({
 
     return createPortal(
         <>
-            <div className={`fixed inset-0 z-[200] animate-fade-in ${isFullscreenScreen ? 'bg-[#fffdf7]' : 'flex items-end justify-center bg-slate-900/55 p-0 sm:items-center sm:p-4'}`}>
+            <div className={`fixed inset-0 z-[200] animate-fade-in ${isFullscreenScreen ? 'bg-[#fffdf7] safe-area-inset-top safe-area-inset-bottom' : 'flex items-end justify-center bg-slate-900/55 p-0 sm:items-center sm:p-4'}`}>
             <div className={`overflow-hidden animate-slide-up-sheet sm:animate-scale-in ${isFullscreenScreen ? 'flex h-full w-full flex-col border-0 bg-[#fffdf7]' : 'flex max-h-[95vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl'}`}>
                 {!isFullscreenScreen && (
                     <div className="hidden justify-center pt-3 pb-1 sm:flex">

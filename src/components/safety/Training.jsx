@@ -4906,7 +4906,7 @@ export default function Training({
             {/* Safety Journal UI - Immersive Slide-based Experience */}
             {
                 trainingContent && createPortal(
-                    <div className={`lesson-reader-root fixed inset-x-0 bottom-0 top-0 z-[120] flex animate-fade-in-up flex-col overflow-hidden bg-[#fffdf7] md:top-14 lg:items-center lg:justify-center lg:bg-transparent ${
+                    <div className={`lesson-reader-root fixed inset-x-0 bottom-0 top-0 z-[120] flex animate-fade-in-up flex-col overflow-hidden bg-[#fffdf7] safe-area-inset-top safe-area-inset-bottom md:top-14 md:pt-0 lg:items-center lg:justify-center lg:bg-transparent ${
                         lifeSkillScoreGateActive || supplementaryRadioOverlayOpen ? 'pointer-events-none' : ''
                     }`}>
                         {/* Desktop desk atmosphere (replaces dark modal dim) */}
@@ -5900,7 +5900,7 @@ export default function Training({
             }
             {/* Lessons Index Modal */}
             {showLessonIndex && createPortal(
-                <div className="fixed inset-0 z-[120] flex animate-slide-in-right flex-col overflow-hidden bg-[#fffdf7] mobile-safe-area">
+                <div className="fixed inset-0 z-[120] flex animate-slide-in-right flex-col overflow-hidden bg-[#fffdf7] safe-area-inset-top safe-area-inset-bottom">
                     {/* Header */}
                     <div className="h-1 w-full shrink-0 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden="true" />
                     <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 bg-white p-6">
