@@ -8,6 +8,7 @@ export default function ReadingGateModal({
     onClose,
     setCurrentView,
     onContinue,
+    onAdminPreview,
 }) {
     const [showDetails, setShowDetails] = useState(false);
 
@@ -121,6 +122,15 @@ export default function ReadingGateModal({
                                 ? (bn ? 'রিভিউ পাঠ খুলুন →' : 'Open review lesson →')
                                 : (bn ? 'পাঠ খুলুন →' : 'Open lesson →')}
                         </button>
+                        {typeof onAdminPreview === 'function' && (
+                            <button
+                                type="button"
+                                onClick={onAdminPreview}
+                                className={`min-h-[44px] w-full rounded-full border border-amber-300 bg-amber-50 py-2.5 text-sm font-bold text-amber-900 shadow-sm transition-all hover:bg-amber-100 active:scale-[0.98] ${bn ? 'font-bengali' : ''}`}
+                            >
+                                {bn ? 'অ্যাডমিন প্রিভিউ (লক ছাড়া)' : 'Admin preview (skip lock)'}
+                            </button>
+                        )}
                         <button
                             type="button"
                             onClick={onClose}

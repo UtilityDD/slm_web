@@ -527,8 +527,9 @@ export default function HourlyDayRing({
             {reviewTarget?.quizId && typeof onReview === 'function' && (
                 <button
                     type="button"
+                    id="hourly-review-last"
                     onClick={() => onReview(reviewTarget.quizId)}
-                    className={`mt-2.5 flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-emerald-200 bg-white px-4 py-2.5 text-sm font-bold text-emerald-700 shadow-sm transition-all hover:border-emerald-300 hover:bg-emerald-50 active:scale-[0.99] ${contentWidth} ${language === 'bn' ? 'font-bengali' : ''}`}
+                    className={`mt-2 flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm font-bold text-emerald-700 shadow-sm transition-all hover:border-emerald-300 hover:bg-emerald-50 active:scale-[0.99] ${contentWidth} ${language === 'bn' ? 'font-bengali' : ''}`}
                 >
                     <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24" aria-hidden>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v14l-4-2-4 2-4-2-4 2V6a2 2 0 012-2z" />

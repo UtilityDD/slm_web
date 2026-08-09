@@ -2,7 +2,9 @@
 
 export const HOURLY_TIER_THRESHOLDS = [10000, 30000, 50000];
 
-const PENALTY_PER_WRONG = [0, 12, 20, 28];
+const PENALTY_PER_WRONG = [0, 6, 8, 10];
+/** Soft cap so a long makeup set cannot wipe the whole attempt. */
+export const HOURLY_PENALTY_ATTEMPT_CAP = 20;
 
 const ALLOWED_DIFFICULTIES = [
     ['easy'],
@@ -45,6 +47,12 @@ export function getPenaltyPerWrong(tier) {
 
 export function getPenaltyPerWrongForLifetime(lifetimePoints) {
     return getPenaltyPerWrong(getHourlyTier(lifetimePoints));
+}
+
+/** Apply per-wrong penalty with a soft attempt cap (integer). */
+export function capHourlyAttemptPenalty(rawPenalty) {
+    const p = Math.max(0, Math.round(Number(rawPenalty) || 0));
+    return Math.min(p, HOURLY_PENALTY_ATTEMPT_CAP);
 }
 
 export function hasHourlyPenalties(lifetimePoints) {
@@ -142,21 +150,27 @@ export function getHourlyPenaltyModalCopy(lifetimePoints, language = 'en') {
 
     const tiers = bn
         ? [
-            '১০,০০০+ পয়েন্ট: ভুল উত্তরে −১২',
-            '৩০,০০০+ পয়েন্ট: ভুল উত্তরে −২০',
-            '৫০,০০০+ পয়েন্ট: ভুল উত্তরে −২৮'
+            '১০,০০০+ পয়েন্ট: ভুল উত্তরে −৬',
+            '৩০,০০০+ পয়েন্ট: ভুল উত্তরে −৮',
+            '৫০,০০০+ পয়েন্ট: ভুল উত্তরে −১০',
+            `একবার খেলায় সর্বোচ্চ ${HOURLY_PENALTY_ATTEMPT_CAP} পয়েন্ট কাটা যাবে`,
           ]
-        : ['10,000+ pts: −12 / wrong', '30,000+ pts: −20 / wrong', '50,000+ pts: −28 / wrong'];
+        : [
+            '10,000+ pts: −6 / wrong',
+            '30,000+ pts: −8 / wrong',
+            '50,000+ pts: −10 / wrong',
+            `In one play, at most ${HOURLY_PENALTY_ATTEMPT_CAP} points can be cut`,
+          ];
 
     if (!penalty) {
         return {
             title: bn ? 'কুইজের নিয়ম' : 'Quiz rules',
             intro: bn
-                ? 'প্রতি ঘণ্টায় একবার · মিস থাকলে এখন বড় কুইজ'
-                : 'Once per hour · bigger live quiz if you missed recent hours',
+                ? 'প্রতি সেটে সবুজ সময় · সময়ে শেষ = পুরো, পরে = অর্ধেক'
+                : 'Per set: green time · on time = full, late = half',
             body: bn
-                ? 'আপনার মোট পয়েন্ট ১০,০০০-এর কম, তাই ভুল উত্তরে পয়েন্ট কাটা যাবে না। মিস ঘণ্টা রিং-এ মিসই থাকবে; বাড়তি পয়েন্ট শুধু এই ঘণ্টার স্কোরে যোগ হয়।'
-                : 'Your total points are under 10,000, so no points will be deducted for wrong answers. Missed hours stay missed on the ring; extra points only count on this hour.',
+                ? 'আপনার মোট পয়েন্ট ১০,০০০-এর কম, তাই ভুল উত্তরে পয়েন্ট কাটা যাবে না। সবুজ সময়ের মধ্যে সেট শেষ করলে পুরো পয়েন্ট; পরে সেটের পয়েন্ট অর্ধেক।'
+                : 'Your total points are under 10,000, so wrong answers do not deduct points. Finish each set in green time for full points; late sets score half.',
             tiersLabel: bn ? 'মোট পয়েন্ট অনুযায়ী পেনাল্টি:' : 'Penalty by total points:',
             tiers,
         };
@@ -165,11 +179,11 @@ export function getHourlyPenaltyModalCopy(lifetimePoints, language = 'en') {
     return {
         title: bn ? 'কুইজের নিয়ম' : 'Quiz rules',
         intro: bn
-            ? 'প্রতি ঘণ্টায় একবার · মিস থাকলে এখন বড় কুইজ'
-            : 'Once per hour · bigger live quiz if you missed recent hours',
+            ? 'প্রতি সেটে সবুজ সময় · সময়ে শেষ = পুরো, পরে = অর্ধেক'
+            : 'Per set: green time · on time = full, late = half',
         body: bn
-            ? `প্রতি ভুল উত্তরে ${penalty} পয়েন্ট কাটা যাবে। মিস ঘণ্টা রিং-এ মিসই থাকবে; বাড়তি পয়েন্ট শুধু এই ঘণ্টার স্কোরে যোগ হয়।`
-            : `Each wrong answer will cost you ${penalty} points. Missed hours stay missed on the ring; extra points only count on this hour.`,
+            ? `প্রতি ভুল উত্তরে ${penalty} পয়েন্ট কাটা যেতে পারে। একবার খেলায় সর্বোচ্চ ${HOURLY_PENALTY_ATTEMPT_CAP} পয়েন্ট কাটা যাবে। সবুজ সময়ে সেট শেষ করলে পুরো পয়েন্ট; পরে অর্ধেক।`
+            : `Each wrong answer may cost ${penalty} points. In one play, at most ${HOURLY_PENALTY_ATTEMPT_CAP} points can be cut. Finish each set in green time for full points; late sets score half.`,
         tiersLabel: bn ? 'মোট পয়েন্ট অনুযায়ী পেনাল্টি:' : 'Penalty by total points:',
         tiers,
     };

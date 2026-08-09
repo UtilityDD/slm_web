@@ -19,13 +19,23 @@ import {
     getHourlyTier,
     getLifetimePoints,
     getPenaltyPerWrongForLifetime,
+    capHourlyAttemptPenalty,
     pickQuestionsByDifficultyMix
 } from '../utils/hourlyDifficulty';
 import {
     buildMakeupSession,
     countRecentMissedHours,
     getMakeupCopy,
+    HOURLY_QUESTIONS_PER_PACK,
 } from '../utils/hourlyMakeup';
+import {
+    estimateAccuracyFromAttempts,
+    getPackTimerCopy,
+    isPackOnTime,
+    packIndexForQuestion,
+    resolveGreenSeconds,
+    scoreQuestionsWithPackTimers,
+} from '../utils/hourlyTiming';
 import HourlyPenaltyInfoModal from './HourlyPenaltyInfoModal';
 import HourlyDayRing from './HourlyDayRing';
 import { MonthlyBoardHeader } from './MonthlyEncouragementBoards';
@@ -365,6 +375,12 @@ export default function Competitions({
     const [score, setScore] = useState(0);
     const [quizResults, setQuizResults] = useState(null);
     const [submitRejected, setSubmitRejected] = useState(null); // { type: 'time' | 'other', message }
+    /** Per-set green timer (full vs half points). */
+    const [packGreenSeconds, setPackGreenSeconds] = useState(120);
+    const [packStartTimes, setPackStartTimes] = useState([]); // ms epoch per pack index
+    const [packOnTimeFlags, setPackOnTimeFlags] = useState([]); // boolean per pack
+    const [packTimerTick, setPackTimerTick] = useState(0);
+    const packTimingRef = React.useRef({ greenSeconds: 120, starts: [], onTime: [] });
     const [leaderboard, setLeaderboard] = useState([]);
     const [hourlyQuiz, setHourlyQuiz] = useState(null);
     const hourlyQuizRef = React.useRef(null);
@@ -574,6 +590,9 @@ export default function Competitions({
             points_reward: activeQuiz.points_reward,
             makeupPacks: activeQuiz.makeupPacks,
             makeupMissed: activeQuiz.makeupMissed,
+            packGreenSeconds,
+            packStartTimes,
+            packOnTimeFlags,
             questions: quizQuestions,
             currentIndex: currentQuestionIndex,
             answers: userAnswers,
@@ -581,7 +600,7 @@ export default function Competitions({
             timestamp: Date.now()
         };
         storageUtils.setItem('slm_hourly_active_quiz_state', state);
-    }, [activeQuiz, quizQuestions, currentQuestionIndex, userAnswers, hintViewedQuestions, quizSubmitted]);
+    }, [activeQuiz, quizQuestions, currentQuestionIndex, userAnswers, hintViewedQuestions, quizSubmitted, packGreenSeconds, packStartTimes, packOnTimeFlags]);
 
     useEffect(() => {
         const checkResumption = () => {
@@ -601,6 +620,13 @@ export default function Competitions({
                     setCurrentQuestionIndex(savedState.currentIndex);
                     setUserAnswers(savedState.answers);
                     setHintViewedQuestions(new Set(savedState.hints || []));
+                    const green = savedState.packGreenSeconds || 120;
+                    const starts = Array.isArray(savedState.packStartTimes) ? savedState.packStartTimes : [];
+                    const onTime = Array.isArray(savedState.packOnTimeFlags) ? savedState.packOnTimeFlags : [];
+                    setPackGreenSeconds(green);
+                    setPackStartTimes(starts);
+                    setPackOnTimeFlags(onTime);
+                    packTimingRef.current = { greenSeconds: green, starts, onTime };
                     setActiveQuiz({
                         ...hourlyQuiz,
                         points_reward: savedState.points_reward ?? hourlyQuiz.points_reward ?? 50,
@@ -1032,6 +1058,31 @@ export default function Competitions({
         return buildMakeupSession(makeupMissed);
     };
 
+    const syncPackTimingRef = (patch) => {
+        packTimingRef.current = { ...packTimingRef.current, ...patch };
+    };
+
+    const ensurePackTimerStarted = (packIdx, greenOverride = null) => {
+        const green = greenOverride ?? packTimingRef.current.greenSeconds ?? packGreenSeconds;
+        const starts = [...(packTimingRef.current.starts || [])];
+        if (!starts[packIdx]) {
+            starts[packIdx] = Date.now();
+            setPackStartTimes(starts);
+            syncPackTimingRef({ starts, greenSeconds: green });
+        }
+    };
+
+    const finalizePackTimer = (packIdx) => {
+        const { greenSeconds, starts, onTime } = packTimingRef.current;
+        const flags = [...(onTime || [])];
+        if (flags[packIdx] !== undefined) return flags;
+        const start = starts?.[packIdx];
+        flags[packIdx] = start ? isPackOnTime(start, greenSeconds, Date.now()) : true;
+        setPackOnTimeFlags(flags);
+        syncPackTimingRef({ onTime: flags });
+        return flags;
+    };
+
     const hourlyChaseMessage = useMemo(() => {
         if (isFullLeaderboard || !user || loading || !userRank) return null;
         const hoursLeft = buildHourlySlots().filter((slot) => (
@@ -1339,7 +1390,7 @@ export default function Competitions({
                     if (mergedQuestions.length > 0) {
                         return {
                             id: `hourly-challenge-${hourId}`, // Ensure this ID format is consistent
-                            title: language === 'en' ? 'Hourly Safety Challenge' : 'প্রতি ঘণ্টার সুরক্ষা চ্যালেঞ্জ',
+                            title: language === 'en' ? 'Hourly quiz' : 'ঘণ্টার কুইজ',
                             description: language === 'en' ? 'Test your safety knowledge! New questions every hour.' : 'নিরাপত্তা জ্ঞান পরীক্ষা করুন! প্রতি ঘণ্টায় নতুন প্রশ্ন।',
                             duration_minutes: 5,
                             points_reward: 50,
@@ -1364,25 +1415,37 @@ export default function Competitions({
     };
 
     /** Ensures hourly payload matches the current clock hour (fixes stale quiz after hour rollover). */
-    const beginHourlyQuiz = async () => {
+    const beginHourlyQuiz = async (options = {}) => {
         if (isFullLeaderboard) return;
         if (!user) {
             setCurrentView('login');
             return;
         }
-        const completedLessons = filterCoreCompletedLessonIds(
-            Array.isArray(userProfile?.completed_lessons) ? userProfile.completed_lessons : []
-        );
-        const gate = await checkReadingGate({
-            userId: user.id,
-            completedLessons,
-            trainingChapters: null,
-            guestPreview: isGuestUser(userProfile),
-        });
-        if (!gate.allowed) {
-            setReadingGateBlock({ ...gate, userId: user.id });
-            return;
+        const isAdmin = userProfile?.role === 'admin';
+        const bypassReadingGate = Boolean(options.bypassReadingGate) && isAdmin;
+
+        if (!bypassReadingGate) {
+            const completedLessons = filterCoreCompletedLessonIds(
+                Array.isArray(userProfile?.completed_lessons) ? userProfile.completed_lessons : []
+            );
+            const gate = await checkReadingGate({
+                userId: user.id,
+                completedLessons,
+                trainingChapters: null,
+                guestPreview: isGuestUser(userProfile),
+            });
+            if (!gate.allowed) {
+                setReadingGateBlock({
+                    ...gate,
+                    userId: user.id,
+                    canAdminPreview: isAdmin,
+                });
+                return;
+            }
+        } else {
+            setReadingGateBlock(null);
         }
+
         setHourlyQuizRefreshBusy(true);
         try {
             let quiz = hourlyQuizRef.current;
@@ -1703,11 +1766,48 @@ export default function Competitions({
         // Freeze makeup at Play: missed hours stay missed; live quiz grows by packs.
         const makeup = getLiveMakeupPreview();
         const questionTotal = makeup.questionCount;
+        const lifetimePoints = getLifetimePoints(userProfile, userRank);
+
+        let recentAccuracy = null;
+        let accuracySamples = 0;
+        try {
+            const { data: recentAttempts } = await supabase
+                .from('quiz_attempts')
+                .select('score, penalty')
+                .eq('user_id', user.id)
+                .like('quiz_id', 'hourly-challenge-%')
+                .order('created_at', { ascending: false })
+                .limit(20);
+            const est = estimateAccuracyFromAttempts(recentAttempts || []);
+            recentAccuracy = est.accuracy;
+            accuracySamples = est.sampleSize;
+        } catch (err) {
+            console.warn('Hourly accuracy preview failed:', err);
+        }
+
+        const greenSeconds = resolveGreenSeconds({
+            accuracy: recentAccuracy,
+            sampleSize: accuracySamples,
+            lifetimePoints,
+        });
+        const packCount = Math.max(1, Math.ceil(questionTotal / HOURLY_QUESTIONS_PER_PACK));
+        const initialStarts = Array.from({ length: packCount }, () => null);
+        initialStarts[0] = Date.now();
+        setPackGreenSeconds(greenSeconds);
+        setPackStartTimes(initialStarts);
+        setPackOnTimeFlags([]);
+        packTimingRef.current = {
+            greenSeconds,
+            starts: initialStarts,
+            onTime: [],
+        };
+
         const sessionQuiz = {
             ...quiz,
             points_reward: makeup.pointsReward,
             makeupPacks: makeup.packs,
             makeupMissed: makeup.makeupMissed,
+            packGreenSeconds: greenSeconds,
         };
         setActiveQuiz(sessionQuiz);
         setSearchCount(0);
@@ -1725,7 +1825,6 @@ export default function Competitions({
                 return idA.localeCompare(idB);
             });
 
-            const lifetimePoints = getLifetimePoints(userProfile, userRank);
             const tier = getHourlyTier(lifetimePoints);
             const eligibleForBand = filterQuestionsForTier(baseQuestions, tier, questionTotal);
             const selectionPool = eligibleForBand.length >= questionTotal ? eligibleForBand : baseQuestions;
@@ -1799,6 +1898,26 @@ export default function Competitions({
         setHintViewedQuestions(new Set());
     };
 
+    // Per-set green timer: finalize previous pack when moving forward; start timer on new pack.
+    useEffect(() => {
+        if (!activeQuiz || quizSubmitted || reviewMode) return undefined;
+        const packIdx = packIndexForQuestion(currentQuestionIndex);
+        const prevPack = packTimingRef.current._uiPack;
+        if (prevPack !== undefined && packIdx > prevPack) {
+            for (let p = prevPack; p < packIdx; p += 1) finalizePackTimer(p);
+        }
+        ensurePackTimerStarted(packIdx);
+        packTimingRef.current._uiPack = packIdx;
+        return undefined;
+    }, [activeQuiz, quizSubmitted, reviewMode, currentQuestionIndex]);
+
+    useEffect(() => {
+        if (!activeQuiz || quizSubmitted || reviewMode) return undefined;
+        setPackTimerTick((n) => n + 1);
+        const id = window.setInterval(() => setPackTimerTick((n) => n + 1), 1000);
+        return () => window.clearInterval(id);
+    }, [activeQuiz, quizSubmitted, reviewMode, packStartTimes, packGreenSeconds]);
+
     const handleAbortQuiz = () => {
         if (activeQuiz && !quizSubmitted && !reviewMode) {
             setShowAbortWarningModal(true);
@@ -1857,7 +1976,7 @@ export default function Competitions({
 
         setActiveQuiz({
             id,
-            title: language === 'en' ? 'Hourly Safety Challenge' : 'প্রতি ঘণ্টার সুরক্ষা চ্যালেঞ্জ',
+            title: language === 'en' ? 'Hourly quiz' : 'ঘণ্টার কুইজ',
             description: language === 'en' ? 'Review mode' : 'রিভিউ মোড',
             duration_minutes: 5,
             points_reward: 50,
@@ -1880,7 +1999,7 @@ export default function Competitions({
             Number(answers[String(q.id)]) !== Number(q.correct_option_index)
         ).length;
 
-        return wrongCount * perWrong;
+        return capHourlyAttemptPenalty(wrongCount * perWrong);
     };
 
     const handleAnswerSelect = (questionId, optionIndex) => {
@@ -1898,24 +2017,26 @@ export default function Competitions({
 
         const isGuest = isGuestUser(userProfile);
 
-        let calculatedScore = 0;
-        let correctCount = 0;
-        let wrongCount = 0;
-
-        quizQuestions.forEach(q => {
-            if (userAnswers[q.id] === q.correct_option_index) {
-                correctCount++;
-            } else {
-                wrongCount++;
+        // Finalize every pack timer before scoring (current pack included).
+        const packCount = Math.max(1, Math.ceil(quizQuestions.length / HOURLY_QUESTIONS_PER_PACK));
+        let flags = [...(packTimingRef.current.onTime || [])];
+        for (let p = 0; p < packCount; p += 1) {
+            if (flags[p] === undefined) {
+                flags = finalizePackTimer(p) || flags;
             }
-        });
+        }
+        // Re-read after finalize
+        flags = [...(packTimingRef.current.onTime || [])];
+        for (let p = 0; p < packCount; p += 1) {
+            if (flags[p] === undefined) flags[p] = true;
+        }
 
-        // Makeup packs: always 10 pts per correct (50 per pack). Do not dilute if pool was short.
-        const pointsPerQuestion = 10;
-        calculatedScore = correctCount * pointsPerQuestion;
+        const timed = scoreQuestionsWithPackTimers(quizQuestions, userAnswers, flags);
+        const calculatedScore = timed.timedScore;
+        const correctCount = timed.correct;
 
         const perWrong = getPenaltyPerWrongForLifetime(getLifetimePoints(userProfile, userRank));
-        const penalty = perWrong
+        const rawPenalty = perWrong
             ? quizQuestions.reduce((acc, q) => {
                 const answer = userAnswers[String(q.id)];
                 if (answer === undefined || Number(answer) !== Number(q.correct_option_index)) {
@@ -1924,6 +2045,7 @@ export default function Competitions({
                 return acc;
             }, 0)
             : 0;
+        const penalty = capHourlyAttemptPenalty(rawPenalty);
         
         // Final score for UI display
         const netScore = Math.max(0, calculatedScore - penalty);
@@ -1932,11 +2054,13 @@ export default function Competitions({
 
         setQuizResults({
             correct: correctCount,
-            wrong: quizQuestions.filter(q => userAnswers[q.id] !== undefined && userAnswers[q.id] !== q.correct_option_index).length,
+            wrong: timed.wrong,
             skipped: quizQuestions.filter(q => userAnswers[q.id] === undefined).length,
             penalty: penalty,
             score: netScore,
-            pointsEarned: correctCount * pointsPerQuestion,
+            pointsEarned: calculatedScore,
+            fullRaw: timed.fullRaw,
+            latePacks: timed.latePacks,
             makeupMissed: activeQuiz?.makeupMissed || 0,
             makeupPacks: activeQuiz?.makeupPacks || 1,
             quizId: activeQuiz?.id || null,
@@ -1956,6 +2080,7 @@ export default function Competitions({
             penalty: penalty,
             makeupMissed: activeQuiz?.makeupMissed || 0,
             makeupPacks: activeQuiz?.makeupPacks || 1,
+            latePacks: timed.latePacks,
         };
         storageUtils.setItem(`review_${activeQuiz.id}`, JSON.stringify(attemptData));
 
@@ -1966,7 +2091,7 @@ export default function Competitions({
         }
 
         if (user) {
-            // Send base score and penalty separately to RPC (which handles the math)
+            // Send time-adjusted score and penalty separately to RPC (which handles the math)
             await submitHourlyQuiz(calculatedScore, penalty, activeQuiz.id);
         }
     };
@@ -1978,6 +2103,22 @@ export default function Competitions({
     const hourlyCurrentAnswered =
         reviewMode ||
         !!(hourlyCurrentQuestion && userAnswers[String(hourlyCurrentQuestion.id)] !== undefined);
+
+    const currentPackIdx = packIndexForQuestion(currentQuestionIndex);
+    const packTimerUi = (() => {
+        void packTimerTick;
+        if (!activeQuiz || quizSubmitted || reviewMode) return null;
+        const start = packStartTimes[currentPackIdx] || packTimingRef.current.starts?.[currentPackIdx];
+        const green = packGreenSeconds || packTimingRef.current.greenSeconds || 120;
+        if (!start) {
+            return getPackTimerCopy(language, { remainingSec: green, onTime: true, greenSeconds: green });
+        }
+        const finalized = packOnTimeFlags[currentPackIdx];
+        const elapsed = (Date.now() - start) / 1000;
+        const onTime = finalized === false ? false : elapsed <= green;
+        const remainingSec = Math.max(0, Math.ceil(green - elapsed));
+        return getPackTimerCopy(language, { remainingSec, onTime, greenSeconds: green });
+    })();
 
     if (showFullBoards) {
         return (
@@ -2724,7 +2865,7 @@ export default function Competitions({
     }
 
     return (
-        <div className="max-w-md mx-auto relative bg-[#fffdf7] text-slate-900 md:min-h-screen md:pb-24">
+        <div className="max-w-md mx-auto relative bg-[#fffdf7] text-slate-900 min-h-[100dvh] pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] md:min-h-screen md:pb-28">
             {/* 1. STICKY SCOREBOARD HEADER */}
             <div className="sticky top-0 z-30 shrink-0 border-b border-slate-200/80 bg-[#fffdf7]/95 backdrop-blur">
                 <div className="px-3 py-2 sm:px-4 sm:py-3">
@@ -2816,7 +2957,7 @@ export default function Competitions({
             </div>
 
             {/* 2. 24-HOUR DAY RING */}
-            <div className="relative flex flex-col items-center px-3 py-3 sm:px-4 sm:py-5" ref={ladderRef}>
+            <div className="relative flex flex-col items-center px-3 pb-2 pt-3 sm:px-4 sm:pb-3 sm:pt-5" ref={ladderRef}>
                 {loading ? (
                     <div
                         className="flex min-h-[min(70vh,520px)] w-full flex-col items-center justify-center py-8"
@@ -2850,6 +2991,18 @@ export default function Competitions({
                         onPlayLive={beginHourlyQuiz}
                         onReview={startReview}
                     />
+                )}
+                {userProfile?.role === 'admin' && !loading && (
+                    <button
+                        type="button"
+                        disabled={hourlyQuizRefreshBusy}
+                        onClick={() => { void beginHourlyQuiz({ bypassReadingGate: true }); }}
+                        className={`mt-1.5 text-center text-[10px] font-bold text-slate-500 underline-offset-2 hover:text-orange-600 hover:underline disabled:opacity-50 ${language === 'bn' ? 'font-bengali' : ''}`}
+                    >
+                        {language === 'bn'
+                            ? 'অ্যাডমিন: রিডিং লক ছাড়া প্রিভিউ'
+                            : 'Admin: preview without reading lock'}
+                    </button>
                 )}
             </div>
 
@@ -2910,33 +3063,67 @@ export default function Competitions({
                         <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-[#fffdf7] shadow-xl max-h-[90vh] flex flex-col">
                                                     {!quizSubmitted ? (
                             <>
-                                <div className="flex justify-between items-center p-4 sm:p-6 border-b border-slate-200/80 bg-white shrink-0">
-                                    <div>
-                                        <h3 className="text-lg font-black text-slate-900">{activeQuiz.title}</h3>
-                                        <div className="flex items-center gap-2 text-xs text-slate-600">
-                                            <span>{t.questions} {currentQuestionIndex + 1} / {quizQuestions.length}</span>
+                                <div className="flex items-center gap-2 border-b border-slate-200/80 bg-white px-3 py-2.5 sm:gap-3 sm:px-5 sm:py-3 shrink-0">
+                                    <div className="min-w-0 flex-1">
+                                        <h3 className={`truncate text-base font-black leading-tight text-slate-900 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {language === 'bn' ? 'ঘণ্টার কুইজ' : 'Hourly quiz'}
+                                        </h3>
+                                        <div className={`mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] font-bold tabular-nums text-slate-500 sm:text-xs ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            <span>{currentQuestionIndex + 1}/{quizQuestions.length}</span>
                                             {(activeQuiz?.makeupPacks || 1) > 1 && (
-                                                <span className={`text-orange-600 font-bold tabular-nums before:content-['·'] before:mx-1 before:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                    {language === 'en'
+                                                <span className="text-orange-600">
+                                                    · {language === 'en'
                                                         ? `Set ${Math.min(activeQuiz.makeupPacks, Math.floor(currentQuestionIndex / 5) + 1)}/${activeQuiz.makeupPacks}`
                                                         : `সেট ${Math.min(activeQuiz.makeupPacks, Math.floor(currentQuestionIndex / 5) + 1)}/${activeQuiz.makeupPacks}`}
                                                 </span>
                                             )}
                                             {hourlyStakesUi.quizHint && (
-                                                <span className="text-slate-500 tabular-nums before:content-['·'] before:mx-1">
-                                                    {hourlyStakesUi.quizHint}
-                                                </span>
+                                                <span className="text-slate-400">· {hourlyStakesUi.quizHint}</span>
                                             )}
                                         </div>
                                     </div>
-                                    <button type="button" onClick={handleAbortQuiz} className="w-8 h-8 flex items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-sm hover:bg-orange-50 transition-colors">✕</button>
+                                    <div className="flex shrink-0 items-center gap-1.5">
+                                        {packTimerUi && (
+                                            <div
+                                                role="status"
+                                                aria-live="polite"
+                                                aria-label={packTimerUi.ariaLabel}
+                                                className={`flex items-center gap-1 rounded-full border px-2 py-1 shadow-sm ${
+                                                    packTimerUi.tone === 'green'
+                                                        ? 'border-emerald-300 bg-emerald-500 text-white'
+                                                        : 'border-amber-300 bg-amber-500 text-white'
+                                                }`}
+                                            >
+                                                <svg className="h-3.5 w-3.5 opacity-95" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                                                    <circle cx="12" cy="12" r="9" />
+                                                    <path strokeLinecap="round" d="M12 7v5l3 2" />
+                                                </svg>
+                                                <span className="text-sm font-black tabular-nums leading-none tracking-tight">
+                                                    {packTimerUi.tone === 'green' ? packTimerUi.badge : packTimerUi.pointsMark}
+                                                </span>
+                                                {packTimerUi.tone === 'green' && (
+                                                    <span className="text-[11px] font-black leading-none opacity-95" aria-hidden>
+                                                        {packTimerUi.pointsMark}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={handleAbortQuiz}
+                                            className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-sm hover:bg-orange-50 transition-colors"
+                                            aria-label={language === 'bn' ? 'বন্ধ' : 'Close'}
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div className="mb-0 overflow-y-auto flex-1 p-4 sm:p-6 text-slate-900">
-                                    <div className="w-full bg-slate-200 rounded-full h-2 mb-6 overflow-hidden">
-                                        <div className="bg-orange-600 h-full transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}></div>
+                                <div className="mb-0 overflow-y-auto flex-1 p-3 sm:p-5 text-slate-900">
+                                    <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 sm:mb-4">
+                                        <div className="h-full bg-orange-600 transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}></div>
                                     </div>
-                                    <div className="flex justify-between items-start gap-4 mb-6">
+                                    <div className="flex justify-between items-start gap-3 mb-4 sm:mb-6">
                                         <div className="flex-1 min-w-0">
                                             {quizQuestions[currentQuestionIndex]?.question_image_url && (
                                                 <div className="mb-4 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
@@ -3204,13 +3391,20 @@ export default function Competitions({
                                 )}
 
                                 {(quizResults?.makeupMissed || 0) > 0 && (
-                                    <p className={`mx-auto mb-6 max-w-md text-center text-xs leading-relaxed text-slate-600 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <p className={`mx-auto mb-4 max-w-md text-center text-xs leading-relaxed text-slate-600 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {getMakeupCopy(
                                             language,
                                             quizResults.makeupMissed,
                                             quizResults.makeupPacks,
                                             (quizResults.makeupPacks || 1) * 50
                                         ).resultsNote}
+                                    </p>
+                                )}
+                                {(quizResults?.latePacks || 0) > 0 && (
+                                    <p className={`mx-auto mb-6 max-w-md text-center text-xs leading-relaxed text-amber-700 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en'
+                                            ? `${quizResults.latePacks} set(s) finished after green time → those points are half.`
+                                            : `${quizResults.latePacks}টি সেট সবুজ সময়ের পরে শেষ — সেগুলোর পয়েন্ট অর্ধেক।`}
                                     </p>
                                 )}
 
@@ -3351,6 +3545,14 @@ export default function Competitions({
                 language={language}
                 onClose={() => setReadingGateBlock(null)}
                 setCurrentView={setCurrentView}
+                onAdminPreview={
+                    readingGateBlock?.canAdminPreview
+                        ? () => {
+                            setReadingGateBlock(null);
+                            void beginHourlyQuiz({ bypassReadingGate: true });
+                        }
+                        : undefined
+                }
             />
             <MonthlyBoardInfoModal
                 open={showMonthlyBoardInfoModal}
