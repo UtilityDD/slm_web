@@ -25,7 +25,7 @@ Native loads those from `https://smartlineman.in`. A small first-paint kit stays
 | `src/utils/androidAppUpdate.js` | Compares installed build to live `android-latest.json` |
 | `public/android-latest.json` | Live APK update channel (must be deployed) |
 | `public/download/index.html` | Simple download page |
-| `public/downloads/smartlineman.apk` | Hosted APK artifact (gitignored `*.apk`) |
+| `public/downloads/smartlineman.apk` | Hosted sideload APK (tracked so Vercel/Git can serve it; other `*.apk` stay ignored) |
 | `src/config.js` | `CURRENT_APP_VERSION`, `ANDROID_VERSION_CODE`, download URLs |
 
 ## Release checklist (every APK + web ship)
@@ -79,7 +79,7 @@ Installed apps open the update modal when remote `version_code` > installed buil
 - **Don’t** point native fetches at relative `/api/...` without a live absolute origin (Capacitor origin is localhost).
 - **Don’t** pack the whole `public/images` tree into the APK (huge). Only the listed first-paint files.
 - **Don’t** delete Vite-hashed `dist/assets/*.js|*.css` during slim — only media folders listed in the slim script.
-- **Don’t** commit `public/downloads/*.apk` or signing passwords.
+- **Don’t** commit extra APK/AAB builds or signing passwords — only replace `public/downloads/smartlineman.apk` when shipping.
 - **Don’t** change `applicationId` (`com.smartlineman.app`) unless you intentionally break update-over-install.
 - **Don’t** set `StatusBar.overlaysWebView: true` / immersive splash without re-testing every screen’s top bar.
 - **Don’t** assume Play Store rules apply — this is sideload distribution; guide users to allow unknown apps.

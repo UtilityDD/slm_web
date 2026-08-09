@@ -42,6 +42,9 @@ scratch/
 public/smartlineman.apk
 public/downloads/*.apk
 public/downloads/*.aab
+# Hosted sideload APK for Vercel/Git deploy (keep filename in sync with android-latest.json)
+!public/downloads/smartlineman.apk
 
 # Supabase CLI local state
 supabase/.temp/
+.vercel
