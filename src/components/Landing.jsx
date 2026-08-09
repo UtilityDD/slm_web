@@ -395,7 +395,7 @@ function SlimStat({ label, value, suffix = '', loading, bnFont }) {
   );
 }
 
-export default function Landing({ language, onLanguageChange, setCurrentView }) {
+export default function Landing({ language, onLanguageChange, setCurrentView, motionReady = true }) {
   const t = copy[language] || copy.en;
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -408,6 +408,22 @@ export default function Landing({ language, onLanguageChange, setCurrentView }) 
   const [visitCount, setVisitCount] = useState(null);
   const [visitLoading, setVisitLoading] = useState(true);
   const contactFormRef = useRef(null);
+  // Native cold start: skip simultaneous hero entrance animations under the splash fade.
+  const calmEntrance = isNativeCapacitorPlatform();
+  const [ambientOn, setAmbientOn] = useState(!calmEntrance);
+
+  useEffect(() => {
+    if (!calmEntrance) {
+      setAmbientOn(true);
+      return undefined;
+    }
+    if (!motionReady) {
+      setAmbientOn(false);
+      return undefined;
+    }
+    const t = window.setTimeout(() => setAmbientOn(true), 700);
+    return () => window.clearTimeout(t);
+  }, [calmEntrance, motionReady]);
 
   // Landing is always shown in light theme, regardless of global app theme.
   useEffect(() => {
@@ -566,7 +582,9 @@ export default function Landing({ language, onLanguageChange, setCurrentView }) 
 
   return (
     <div
-      className={`landing-page-light landing-modern min-h-full bg-[#fffdf7] text-slate-900 pb-[calc(9.5rem+env(safe-area-inset-bottom,0px))] sm:pb-16 ${bnFont ? 'lang-bn' : 'font-sans'}`}
+      className={`landing-page-light landing-modern min-h-full bg-[#fffdf7] text-slate-900 pb-[calc(9.5rem+env(safe-area-inset-bottom,0px))] sm:pb-16 ${bnFont ? 'lang-bn' : 'font-sans'}${
+        calmEntrance ? ' landing-skip-entrance' : ''
+      }${!ambientOn ? ' landing-hold-ambient' : ''}`}
     >
       <div
         className="h-1 w-full shrink-0 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
@@ -694,7 +712,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView }) 
 
         {/* Non-profit / volunteer highlight */}
         <aside className="landing-nonprofit-strip relative z-20 mb-6 sm:mb-8" aria-label={t.nonprofitTitle}>
-          <LandingNonprofitLineman />
+          <LandingNonprofitLineman active={ambientOn} />
           <SectionIconBadge name="sparkles" tone="emerald" className="relative z-[1] h-9 w-9 shrink-0 sm:h-10 sm:w-10" />
           <div className="relative z-[1] min-w-0">
             <p className={`text-sm font-black leading-snug text-slate-900 sm:text-base ${bnFont ? 'font-bengali' : ''}`}>

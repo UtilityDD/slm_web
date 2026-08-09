@@ -2,9 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import HomeSkeleton from './loaders/HomeSkeleton';
 import { UserIcon } from './icons';
 import { getBadgeByLevel } from '../utils/badgeUtils';
-import { filterCoreCompletedLessonIds } from '../utils/trainingLessonIds';
+import { mergeCoreLessonProgressIds } from '../utils/trainingLessonIds';
 import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
 import { supabase } from '../supabaseClient';
+import { requestManager } from '../utils/requestManager';
 
 /** Approximate core lesson count from training chapter defaults (display only). */
 const APPROX_CORE_LESSON_TOTAL = 91;
@@ -51,11 +52,45 @@ export default function Home({
   const [loading, setLoading] = useState(!userProfile && !!user);
   const [homeTip, setHomeTip] = useState('');
   const [isHourlyPending, setIsHourlyPending] = useState(false);
+  const [lessonBonusAttempts, setLessonBonusAttempts] = useState([]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
     setLoading(false);
   }, [userProfile, user]);
+
+  // Same source as My Progress: profiles.completed_lessons ∪ lesson_bonus_* awards.
+  useEffect(() => {
+    if (!user?.id) {
+      setLessonBonusAttempts([]);
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const attempts = await requestManager.fetch(
+          `my_progress_attempts_${user.id}`,
+          async () => {
+            const { data, error } = await supabase
+              .from('quiz_attempts')
+              .select('quiz_id, score, penalty, created_at')
+              .eq('user_id', user.id)
+              .order('created_at', { ascending: true });
+            if (error) throw error;
+            return data || [];
+          },
+          { ttl: 5, swr: true }
+        );
+        if (!cancelled) setLessonBonusAttempts(Array.isArray(attempts) ? attempts : []);
+      } catch (err) {
+        console.warn('Home lesson progress fetch failed:', err);
+        if (!cancelled) setLessonBonusAttempts([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -128,9 +163,9 @@ export default function Home({
     const fromProfile = Array.isArray(userProfile?.completed_lessons)
       ? userProfile.completed_lessons
       : [];
-    const merged = fromProp.length >= fromProfile.length ? fromProp : fromProfile;
-    return filterCoreCompletedLessonIds(merged);
-  }, [completedLessonsProp, userProfile?.completed_lessons]);
+    const profileOrProp = fromProp.length >= fromProfile.length ? fromProp : fromProfile;
+    return mergeCoreLessonProgressIds(profileOrProp, lessonBonusAttempts);
+  }, [completedLessonsProp, userProfile?.completed_lessons, lessonBonusAttempts]);
 
   const lessonCount = coreLessons.length;
   const progressPct = Math.min(100, Math.round((lessonCount / APPROX_CORE_LESSON_TOTAL) * 100));

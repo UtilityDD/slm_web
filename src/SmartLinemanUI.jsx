@@ -7,7 +7,6 @@ import {
   consumeDoubleBackExit,
   resetDoubleBackExit,
   syncNativeSystemBars,
-  hideNativeSplash,
   hapticImpact,
   openExternalUrl,
 } from "./utils/nativeAndroidUx";
@@ -28,12 +27,15 @@ import { preloadSafetyLibraryAssets } from "./utils/assetPreloader";
 import { leaderboardService } from "./utils/leaderboardService";
 import { invalidateLeaderboardCaches } from "./utils/leaderboardCacheKeys";
 import BottomNavigation from "./components/BottomNavigation";
+import NativeAppTopBar, { getNativeTopBarTitle } from "./components/NativeAppTopBar";
 import RadioMiniPlayer from "./components/RadioMiniPlayer";
 import RadioDesktopLaunch from "./components/RadioDesktopLaunch";
 import { LifeSkillRadioProvider, RadioScrollPaddingBridge, RadioSafetyGuard } from "./context/LifeSkillRadioContext";
 import IdleStoryReminder from "./components/IdleStoryReminder";
 import SponsorAdOverlay from "./components/SponsorAdOverlay";
 import ProfileFieldNudge from "./components/ProfileFieldNudge";
+import OnboardingSequence from "./components/safety/OnboardingSequence";
+import AppBootSplash from "./components/AppBootSplash";
 import PushOptInPrompt from "./components/PushOptInPrompt";
 import LandingSupportContact from "./components/LandingSupportContact";
 import { libraryService } from "./utils/libraryService";
@@ -113,6 +115,11 @@ export default function SmartLinemanUI() {
 
   const [globalLoading, setGlobalLoading] = useState(false);
   const [appLoading, setAppLoading] = useState(true);
+  const [nativeBootSplash, setNativeBootSplash] = useState(() => isNativeCapacitorPlatform());
+  const [nativeBootExiting, setNativeBootExiting] = useState(false);
+  const nativeBootShownAtRef = useRef(
+    typeof performance !== 'undefined' ? performance.now() : Date.now()
+  );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
@@ -146,7 +153,8 @@ export default function SmartLinemanUI() {
 
   const [language, setLanguage] = useState(() => storageUtils.getItem('appLanguage') || 'bn');
   const [theme, setTheme] = useState(() => {
-    // Default to dark unless user has an explicit preference
+    // Native APK stays light/cream to match top bar + landing surfaces.
+    if (isNativeCapacitorPlatform()) return 'light';
     return storageUtils.getItem('appTheme') || 'dark';
   });
   const [showLanguageModal, setShowLanguageModal] = useState(false);
@@ -179,10 +187,13 @@ export default function SmartLinemanUI() {
   const [profileNudgePreview, setProfileNudgePreview] = useState(null);
   const [pushOptInOpen, setPushOptInOpen] = useState(false);
   const [idleStoryPreview, setIdleStoryPreview] = useState(null);
+  const [onboardingPreview, setOnboardingPreview] = useState(null);
   const [sponsorAdPreview, setSponsorAdPreview] = useState(null);
   const [adContactOpen, setAdContactOpen] = useState(false);
   const [sponsorAdOpen, setSponsorAdOpen] = useState(false);
   const [monthWinnersRevealOpen, setMonthWinnersRevealOpen] = useState(false);
+  /** True while a text field is focused — never interrupt with ads/nudges. */
+  const [userTyping, setUserTyping] = useState(false);
   const forumActivityTimerRef = useRef(null);
   const viewHistoryRef = useRef([]);
   const prevViewForHistoryRef = useRef(null);
@@ -290,13 +301,43 @@ export default function SmartLinemanUI() {
   }, []);
 
   useEffect(() => {
-    // Hide native splash only after auth/bootstrap finishes (avoids blank WebView flash).
+    // Native: auth ready → soft opacity fade (min hold so it never flash-cuts).
     if (!isNativeCapacitorPlatform() || appLoading) return undefined;
-    const t = setTimeout(() => {
-      hideNativeSplash(400);
-    }, 80);
-    return () => clearTimeout(t);
-  }, [appLoading]);
+    if (!nativeBootSplash || nativeBootExiting) return undefined;
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const elapsed = now - nativeBootShownAtRef.current;
+    const wait = Math.max(0, 480 - elapsed);
+    const t = window.setTimeout(() => setNativeBootExiting(true), wait);
+    return () => window.clearTimeout(t);
+  }, [appLoading, nativeBootSplash, nativeBootExiting]);
+
+  // Never show ads / soft interrupts while the user is typing (phone, PIN, forms).
+  useEffect(() => {
+    const isTextField = (el) => {
+      if (!el || el.nodeType !== 1) return false;
+      const tag = el.tagName;
+      if (tag === 'TEXTAREA' || tag === 'SELECT') return true;
+      if (tag === 'INPUT') {
+        const type = (el.getAttribute('type') || 'text').toLowerCase();
+        return !['button', 'checkbox', 'radio', 'submit', 'reset', 'file', 'hidden', 'range', 'color', 'image'].includes(type);
+      }
+      return Boolean(el.isContentEditable);
+    };
+    const sync = () => setUserTyping(isTextField(document.activeElement));
+    const onFocusIn = (e) => {
+      if (isTextField(e.target)) setUserTyping(true);
+    };
+    const onFocusOut = () => {
+      window.requestAnimationFrame(sync);
+    };
+    document.addEventListener('focusin', onFocusIn);
+    document.addEventListener('focusout', onFocusOut);
+    sync();
+    return () => {
+      document.removeEventListener('focusin', onFocusIn);
+      document.removeEventListener('focusout', onFocusOut);
+    };
+  }, []);
 
   // Track view history for Android system Back (skip when we ourselves pop history).
   useEffect(() => {
@@ -1146,10 +1187,28 @@ export default function SmartLinemanUI() {
   useEffect(() => {
     const updateStatusBar = async () => {
       const isDark = theme === 'dark';
-      const creamViews = ['home', 'my-progress', 'leaderboard', 'prizes', 'training', 'competitions', 'menu', 'landing', 'login'];
-      const bgColor = isDark ? '#0F172A' : (creamViews.includes(currentView) ? '#fffdf7' : '#F8FAFC');
-      
-      // 1. Handle Web/PWA Theme Color
+      const native = isNativeCapacitorPlatform();
+      // Native chrome (safe-area + top title bar) is always cream — dark theme
+      // was painting a navy strip above the cream NativeAppTopBar.
+      const creamChromeViews = [
+        'home', 'my-progress', 'leaderboard', 'prizes', 'training', 'competitions',
+        'menu', 'landing', 'login', 'community', 'my_ppe', 'safety-library', 'my_tools',
+        'sops', 'notifications', 'emergency', 'video-guide', 'aro-janun', 'admin',
+        'accident-stories',
+      ];
+      let bgColor;
+      let darkContent;
+      if (native) {
+        bgColor = '#fffdf7';
+        darkContent = true;
+      } else if (isDark) {
+        bgColor = '#0F172A';
+        darkContent = false;
+      } else {
+        bgColor = creamChromeViews.includes(currentView) ? '#fffdf7' : '#F8FAFC';
+        darkContent = true;
+      }
+
       let metaThemeColor = document.querySelector('meta[name="theme-color"]');
       if (!metaThemeColor) {
         metaThemeColor = document.createElement('meta');
@@ -1159,11 +1218,10 @@ export default function SmartLinemanUI() {
       metaThemeColor.setAttribute('content', bgColor);
       document.documentElement.style.setProperty('--slm-status-bg', bgColor);
 
-      // 2. Native status bar (nav bar color comes from Android styles)
-      if (isNativeCapacitorPlatform()) {
+      if (native) {
         await syncNativeSystemBars({
           backgroundColor: bgColor,
-          darkContent: !isDark,
+          darkContent,
         });
       }
     };
@@ -1173,6 +1231,11 @@ export default function SmartLinemanUI() {
 
   // Redundancy check for Theme
   useEffect(() => {
+    if (isNativeCapacitorPlatform()) {
+      setTheme('light');
+      document.documentElement.classList.remove('dark');
+      return;
+    }
     const currentTheme = storageUtils.getItem('appTheme') || 'dark';
     setTheme(currentTheme);
     if (currentTheme === 'dark') {
@@ -1290,12 +1353,13 @@ export default function SmartLinemanUI() {
     if (!user && !isPublic && !appLoading) {
       return (
         <Suspense fallback={<PageLoader />}>
-          <div className="flex-1 flex flex-col min-h-0 w-full animate-slide-up-fade">
+          <div className="flex-1 flex flex-col min-h-0 w-full">
             <Landing
               language={language}
               onLanguageChange={handleLanguageSelect}
               setCurrentView={setCurrentView}
               user={user}
+              motionReady={!nativeBootSplash}
             />
           </div>
         </Suspense>
@@ -1310,6 +1374,7 @@ export default function SmartLinemanUI() {
             onLanguageChange={handleLanguageSelect}
             setCurrentView={setCurrentView}
             user={user}
+            motionReady={!nativeBootSplash}
           />
         );
       }
@@ -1396,6 +1461,9 @@ export default function SmartLinemanUI() {
                   storyId: opts.storyId || undefined,
                   key: Date.now(),
                 })
+              }
+              onPreviewOnboarding={() =>
+                setOnboardingPreview({ key: Date.now() })
               }
               onPreviewSponsorAd={(adRow) =>
                 setSponsorAdPreview({ ad: adRow, key: Date.now() })
@@ -1488,6 +1556,9 @@ export default function SmartLinemanUI() {
     );
   };
 
+  const authFlowViews = ['login', 'update-password', 'verify'];
+  const onAuthFlow = authFlowViews.includes(currentView);
+
   const overlayBlocked =
     appLoading ||
     globalLoading ||
@@ -1497,10 +1568,10 @@ export default function SmartLinemanUI() {
     showActiveBroadcastModal ||
     showUpdateModal ||
     showSessionEndedModal ||
+    userTyping ||
+    onAuthFlow ||
     currentView === 'accident-stories' ||
-    currentView === 'landing' ||
-    currentView === 'verify' ||
-    (currentView === 'update-password' && !user);
+    currentView === 'landing';
 
   const activeShellOverlay = pickActiveOverlay({
     sessionEnded: showSessionEndedModal,
@@ -1524,8 +1595,7 @@ export default function SmartLinemanUI() {
     pushOptInOpen ||
     shellInterruptBusy;
 
-  // Logged-out: allow on landing/login (with dwell delay in overlay).
-  // Do not reuse overlayBlocked wholesale — that always blocks `landing`.
+  // Soft ads: landing only for guests; never during login/PIN/typing or other critical flows.
   const sponsorAdBlocked =
     appLoading ||
     globalLoading ||
@@ -1540,13 +1610,13 @@ export default function SmartLinemanUI() {
     sidebarOpen ||
     monthWinnersRevealOpen ||
     adContactOpen ||
+    userTyping ||
+    onAuthFlow ||
     shouldSuppressOverlay('sponsor', activeShellOverlay) ||
     currentView === 'accident-stories' ||
-    currentView === 'verify' ||
-    (currentView === 'update-password' && !user) ||
     (user
       ? ['login', 'verify', 'landing', 'update-password'].includes(currentView)
-      : !['landing', 'login'].includes(currentView));
+      : currentView !== 'landing');
 
   // Give Training / first Supabase lesson path time before full-screen ad.
   const sponsorAdMinDwellMs = 12000;
@@ -1557,7 +1627,7 @@ export default function SmartLinemanUI() {
     sponsorAdOpen ||
     pushOptInOpen ||
     shouldSuppressOverlay('profileNudge', activeShellOverlay) ||
-    ['login', 'verify', 'landing', 'update-password', 'accident-stories'].includes(currentView);
+    authFlowViews.concat(['landing', 'accident-stories']).includes(currentView);
 
   const pushOptInBlocked =
     overlayBlocked ||
@@ -1565,7 +1635,7 @@ export default function SmartLinemanUI() {
     sponsorAdOpen ||
     profileNudgeOpen ||
     shouldSuppressOverlay('pushOptIn', activeShellOverlay) ||
-    ['login', 'verify', 'landing', 'update-password', 'accident-stories'].includes(currentView);
+    authFlowViews.concat(['landing', 'accident-stories']).includes(currentView);
 
   const monthWinnersBlocked =
     Boolean(sponsorAdOpen) ||
@@ -1574,12 +1644,19 @@ export default function SmartLinemanUI() {
   return (
     <Suspense fallback={<PageLoader />}>
       <>
-      {appLoading ? (
+      {appLoading && !isNativeCapacitorPlatform() ? (
         <PageLoader />
-      ) : (
+      ) : null}
+      {!appLoading ? (
         <LifeSkillRadioProvider language={language} enabled={!!user}>
         <div
-          className={`h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-300 font-sans flex flex-col ${language === 'bn' ? 'font-bengali' : ''}`}
+          className={`h-screen overflow-hidden font-sans flex flex-col ${language === 'bn' ? 'font-bengali' : ''} ${
+            isNativeCapacitorPlatform()
+              ? 'bg-[#fffdf7]'
+              : 'bg-slate-50 dark:bg-slate-900 transition-colors duration-300'
+          } ${
+            isNativeCapacitorPlatform() && nativeBootExiting ? 'slm-app-reveal' : ''
+          }`}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -1866,6 +1943,13 @@ export default function SmartLinemanUI() {
               </header>
             )}
 
+            {user && !['login', 'verify', 'landing', 'update-password', 'accident-stories'].includes(currentView) && (
+              <NativeAppTopBar
+                title={getNativeTopBarTitle(currentView, language)}
+                language={language}
+              />
+            )}
+
             <div
               id="main-scroll-container"
               className={`flex-1 overflow-y-auto overflow-x-hidden relative ${
@@ -1876,12 +1960,12 @@ export default function SmartLinemanUI() {
                   : user
                     ? 'pb-20 md:pb-0'
                     : 'pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:pb-0'
-              } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
+              } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home', 'notifications', 'emergency', 'sops', 'my_tools'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
             >
               <div
                 className={`h-full relative z-10 w-full view-transition ${
                   ['my_ppe', 'safety-library'].includes(currentView) ? 'overflow-hidden flex flex-col min-h-0' : 'min-h-full'
-                } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
+                } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home', 'notifications', 'emergency', 'sops', 'my_tools'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
                 key={['my_ppe', 'safety-library'].includes(currentView) ? 'safety-tabs' : currentView}
               >
                 {renderContent()}
@@ -1954,6 +2038,14 @@ export default function SmartLinemanUI() {
                 onPreviewClose={() => setProfileNudgePreview(null)}
                 onOpenChange={setProfileNudgeOpen}
                 onSaved={() => fetchProfile(user, true)}
+              />
+            )}
+            {onboardingPreview && (
+              <OnboardingSequence
+                key={onboardingPreview.key}
+                language={language}
+                preview
+                onComplete={() => setOnboardingPreview(null)}
               />
             )}
             {user && !isGuestUser(userProfile) && (
@@ -2078,7 +2170,14 @@ export default function SmartLinemanUI() {
           </div>
         </div>
         </LifeSkillRadioProvider>
-      )}
+      ) : null}
+      {nativeBootSplash ? (
+        <AppBootSplash
+          language={language}
+          exiting={nativeBootExiting}
+          onExitComplete={() => setNativeBootSplash(false)}
+        />
+      ) : null}
       </>
     </Suspense>
   );

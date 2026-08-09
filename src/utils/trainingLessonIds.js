@@ -122,6 +122,28 @@ export function filterCoreCompletedLessonIds(ids) {
     );
 }
 
+/**
+ * Core lesson ids inferred from quiz_attempts lesson_bonus_* rows (score > 0).
+ * Used so Home / My Progress stay in sync when profiles.completed_lessons is stale.
+ */
+export function coreLessonIdsFromBonusAttempts(attempts) {
+    if (!Array.isArray(attempts) || attempts.length === 0) return [];
+    const ids = attempts
+        .filter((row) => String(row?.quiz_id || '').startsWith('lesson_bonus_') && Number(row?.score || 0) > 0)
+        .map((row) => lessonIdFromCoreLessonBonusQuizId(row.quiz_id))
+        .filter(Boolean);
+    return filterCoreCompletedLessonIds(ids);
+}
+
+/** Union of profile completed_lessons + lesson_bonus attempt ids (core only). */
+export function mergeCoreLessonProgressIds(completedLessons, attempts) {
+    const fromProfile = filterCoreCompletedLessonIds(
+        Array.isArray(completedLessons) ? completedLessons.filter(Boolean) : []
+    );
+    const fromAttempts = coreLessonIdsFromBonusAttempts(attempts);
+    return [...new Set([...fromProfile, ...fromAttempts])];
+}
+
 /** Same rolling window as Life Skills — reused for core lesson re-claims. */
 export const CORE_LESSON_SCORE_COOLDOWN_MS = LIFE_SKILL_SCORE_COOLDOWN_MS;
 

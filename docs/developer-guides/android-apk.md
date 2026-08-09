@@ -87,6 +87,7 @@ Installed apps open the update modal when remote `version_code` > installed buil
 | Offline (native) | Media-aware banner in `NetworkStatusListener` |
 | External links | `openExternalUrl()` → Custom Tabs / Browser plugin |
 | Share | `shareContent()` + More page system share on native |
+| Top bar + M3 nav | `NativeAppTopBar` (APK only) + filled active bottom-nav icons |
 
 ## Don’t
 

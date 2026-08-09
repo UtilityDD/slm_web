@@ -30,6 +30,7 @@ export default function SponsorAdOverlay({
     const [reduceMotion, setReduceMotion] = useState(false);
 
     const previewModeRef = useRef(false);
+    const blockedRef = useRef(blocked);
     const holdTimerRef = useRef(null);
     const tickTimerRef = useRef(null);
     const fadeTimerRef = useRef(null);
@@ -163,6 +164,10 @@ export default function SponsorAdOverlay({
     );
 
     useEffect(() => {
+        blockedRef.current = blocked;
+    }, [blocked]);
+
+    useEffect(() => {
         if (!preview?.key) return;
         const row = preview.ad;
         if (!row) return;
@@ -176,8 +181,9 @@ export default function SponsorAdOverlay({
         let dwellTimer = null;
 
         const tryShow = () => {
+            if (cancelled || blockedRef.current) return;
             fetchActiveSponsorAd().then((row) => {
-                if (cancelled || !row?.id) return;
+                if (cancelled || blockedRef.current || !row?.id) return;
                 if (hasSeenSponsorAd(row.id)) return;
                 startShow(row, { isPreview: false });
             });

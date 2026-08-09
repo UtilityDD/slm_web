@@ -119,7 +119,7 @@ const JOINT_NAMES = [
  * Ambient stick-figure lineman on the nonprofit strip top border.
  * Same gag story — skeletal rAF acting (walk, idle, helmet, fall, recover).
  */
-export default function LandingNonprofitLineman() {
+export default function LandingNonprofitLineman({ active = true }) {
   const rootRef = useRef(null);
   const walkerRef = useRef(null);
   const capFlyRef = useRef(null);
@@ -142,7 +142,7 @@ export default function LandingNonprofitLineman() {
       typeof window !== 'undefined' &&
       window.matchMedia &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce) return undefined;
+    if (reduce || !active) return undefined;
 
     const joints = jointsRef.current;
     const walker = walkerRef.current;
@@ -231,7 +231,7 @@ export default function LandingNonprofitLineman() {
       io?.disconnect();
       document.querySelector('.landing-join-cta')?.classList.remove('landing-join-cta--hotstick');
     };
-  }, []);
+  }, [active]);
 
   return (
     <div ref={rootRef} className="landing-nonprofit-lineman" aria-hidden="true">

@@ -36,6 +36,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
 requestAnimationFrame(() => {
   requestAnimationFrame(() => {
+    // Native: keep the cream static hold until AppBootSplash takes over.
+    if (Capacitor?.isNativePlatform?.()) return
     if (typeof window.__hideStaticShell === 'function') {
       window.__hideStaticShell()
     }

@@ -835,7 +835,7 @@ function UserProfileCard({
   );
 }
 
-export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge, onPreviewIdleStory, onPreviewSponsorAd }) {
+export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge, onPreviewIdleStory, onPreviewOnboarding, onPreviewSponsorAd }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
@@ -909,6 +909,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
   const [showProfileNudgePreviewSection, setShowProfileNudgePreviewSection] = useState(false);
   const [nudgePreviewRequireMode, setNudgePreviewRequireMode] = useState(false);
   const [showIdleStoryPreviewSection, setShowIdleStoryPreviewSection] = useState(false);
+  const [showOnboardingPreviewSection, setShowOnboardingPreviewSection] = useState(false);
   const [showSponsorAdSection, setShowSponsorAdSection] = useState(false);
   const [sponsorAds, setSponsorAds] = useState([]);
   const [sponsorAdsLoading, setSponsorAdsLoading] = useState(false);
@@ -2551,6 +2552,38 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                 {isEn
                   ? 'Preview only — Save / Not now will not change your profile.'
                   : 'শুধু প্রিভিউ — Save / Not now আপনার প্রোফাইল বদলাবে না।'}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Admin: preview first-login welcome pass (4 steps) */}
+      {isAdmin && !showAnalytics && showManageMenu && typeof onPreviewOnboarding === 'function' && (
+        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+          <button
+            type="button"
+            onClick={() => setShowOnboardingPreviewSection((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+          >
+            <span className="font-semibold text-slate-800 text-sm">
+              🎫 {isEn ? 'Preview welcome pass' : 'ওয়েলকাম পাস প্রিভিউ'}
+            </span>
+            <span className="text-slate-400 text-xs">{showOnboardingPreviewSection ? '▲' : '▼'}</span>
+          </button>
+          {showOnboardingPreviewSection && (
+            <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-3">
+              <button
+                type="button"
+                onClick={() => onPreviewOnboarding()}
+                className="rounded-full border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-bold text-orange-800 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-100"
+              >
+                {isEn ? 'Open 4-step welcome' : '৪-ধাপ ওয়েলকাম খুলুন'}
+              </button>
+              <p className="text-[11px] text-slate-400">
+                {isEn
+                  ? 'Preview only — Skip / Let’s go will not mark onboarding complete for real users.'
+                  : 'শুধু প্রিভিউ — Skip / শুরু করুন আসল ইউজারের অনবোর্ডিং সম্পন্ন করবে না।'}
               </p>
             </div>
           )}

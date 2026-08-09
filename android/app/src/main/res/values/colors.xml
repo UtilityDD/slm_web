@@ -3,7 +3,8 @@
     <color name="colorPrimary">#EA580C</color>
     <color name="colorPrimaryDark">#C2410C</color>
     <color name="colorAccent">#F97316</color>
-    <color name="splash_background">#0F172A</color>
+    <!-- Match app cream surfaces — cold start must not flash navy then landing. -->
+    <color name="splash_background">#FFFDF7</color>
     <color name="nav_bar_light">#FFFDF7</color>
     <color name="nav_bar_dark">#0F172A</color>
 </resources>

@@ -6,7 +6,7 @@ import { supabase } from '../supabaseClient';
 import { getBadgeByLevel } from '../utils/badgeUtils';
 import { requestManager } from '../utils/requestManager';
 import { WEBSITE_URL } from '../config';
-import { lessonIdFromCoreLessonBonusQuizId } from '../utils/trainingLessonIds';
+import { mergeCoreLessonProgressIds } from '../utils/trainingLessonIds';
 import UserProfilePrizeList from './UserProfilePrizeList';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -46,8 +46,6 @@ const getDaysBetween = (startValue, endValue) => {
 };
 
 const safePhone = (profile) => profile?.phone_number || profile?.phone || '';
-
-const parseLessonId = (quizId = '') => lessonIdFromCoreLessonBonusQuizId(quizId);
 
 const MetricCard = ({ label, value, hint, accent = 'orange', compact = false }) => {
     const accents = {
@@ -229,11 +227,9 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
     }, [resolvedUserId]);
 
     const stats = useMemo(() => {
-        const completedLessons = Array.isArray(profile?.completed_lessons) ? profile.completed_lessons.filter(Boolean) : [];
+        const lessonIds = mergeCoreLessonProgressIds(profile?.completed_lessons, attempts);
         const lessonAttempts = attempts.filter(item => item.quiz_id?.startsWith('lesson_bonus_') && Number(item.score || 0) > 0);
         const hourlyAttempts = attempts.filter(item => item.quiz_id?.startsWith('hourly-challenge'));
-        const lessonAttemptIds = [...new Set(lessonAttempts.map(item => parseLessonId(item.quiz_id)).filter(Boolean))];
-        const lessonIds = [...new Set([...completedLessons, ...lessonAttemptIds])];
 
         const hasRewardTimestamps = lessonAttempts.length > 0;
         const now = new Date();

@@ -104,6 +104,21 @@ export function getNextNudgeField(profile, nudgeState) {
   return null;
 }
 
+/** How many nudge fields are already filled (for ID-card progress UI). */
+export function countFilledNudgeFields(profile, nudgeState) {
+  if (!profile) return { filled: 0, total: PROFILE_NUDGE_FIELD_ORDER.length };
+  const answered = normalizeNudgeState(nudgeState).answered;
+  let filled = 0;
+  for (const field of PROFILE_NUDGE_FIELD_ORDER) {
+    if (field === 'is_donor') {
+      if (profile.is_donor === true || answered.is_donor) filled += 1;
+      continue;
+    }
+    if (isProfileFieldFilled(profile[field])) filled += 1;
+  }
+  return { filled, total: PROFILE_NUDGE_FIELD_ORDER.length };
+}
+
 /** Columns needed to decide / show the next nudge field. */
 export const PROFILE_NUDGE_SELECT =
   'avatar_url, district, block, job, dob, education, blood_group, is_donor, profile_nudge_state';
