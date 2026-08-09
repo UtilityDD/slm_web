@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { BrutalLoaderContent } from './loaders/PageLoader';
+import { getMakeupCopy } from '../utils/hourlyMakeup';
 
 const CX = 140;
 const CY = 140;
@@ -206,7 +207,18 @@ export default function HourlyDayRing({
     labels,
     onPlayLive,
     onReview,
+    makeupPreview = null,
 }) {
+    const makeupCopy = useMemo(() => {
+        if (!makeupPreview) return null;
+        return getMakeupCopy(
+            language,
+            makeupPreview.makeupMissed,
+            makeupPreview.packs,
+            makeupPreview.pointsReward
+        );
+    }, [language, makeupPreview]);
+
     const liveSlot = slots.find((s) => s.status === 'live');
     const nextSlot = slots.find((s) => s.status === 'upcoming-next');
     const defaultHour = liveSlot?.hour ?? nextSlot?.hour ?? slots.find((s) => s.status === 'played')?.hour ?? 12;
@@ -410,11 +422,17 @@ export default function HourlyDayRing({
                             <div className="flex min-w-0 flex-1 items-center justify-between gap-2 px-3 py-2.5">
                                 <div className="min-w-0">
                                     <p className={`text-sm font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {language === 'en' ? 'Play now' : 'এখন খেলুন'}
+                                        {makeupCopy?.playTitle || (language === 'en' ? 'Play now' : 'এখন খেলুন')}
                                     </p>
                                     <p className={`mt-0.5 text-[11px] font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {labels.liveNow}
-                                        {timeLeft ? ` · ${timeLeft}` : ''}
+                                        {(makeupPreview?.makeupMissed || 0) > 0 && makeupCopy?.playSubtitle
+                                            ? makeupCopy.playSubtitle
+                                            : (
+                                                <>
+                                                    {labels.liveNow}
+                                                    {timeLeft ? ` · ${timeLeft}` : ''}
+                                                </>
+                                            )}
                                     </p>
                                 </div>
                                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-orange-500 text-white shadow-md shadow-orange-500/35 transition-transform group-hover:scale-105">

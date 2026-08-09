@@ -21,6 +21,11 @@ import {
     getPenaltyPerWrongForLifetime,
     pickQuestionsByDifficultyMix
 } from '../utils/hourlyDifficulty';
+import {
+    buildMakeupSession,
+    countRecentMissedHours,
+    getMakeupCopy,
+} from '../utils/hourlyMakeup';
 import HourlyPenaltyInfoModal from './HourlyPenaltyInfoModal';
 import HourlyDayRing from './HourlyDayRing';
 import { MonthlyBoardHeader } from './MonthlyEncouragementBoards';
@@ -566,6 +571,9 @@ export default function Competitions({
 
         const state = {
             quizId: activeQuiz.id,
+            points_reward: activeQuiz.points_reward,
+            makeupPacks: activeQuiz.makeupPacks,
+            makeupMissed: activeQuiz.makeupMissed,
             questions: quizQuestions,
             currentIndex: currentQuestionIndex,
             answers: userAnswers,
@@ -593,7 +601,12 @@ export default function Competitions({
                     setCurrentQuestionIndex(savedState.currentIndex);
                     setUserAnswers(savedState.answers);
                     setHintViewedQuestions(new Set(savedState.hints || []));
-                    setActiveQuiz(hourlyQuiz);
+                    setActiveQuiz({
+                        ...hourlyQuiz,
+                        points_reward: savedState.points_reward ?? hourlyQuiz.points_reward ?? 50,
+                        makeupPacks: savedState.makeupPacks ?? 1,
+                        makeupMissed: savedState.makeupMissed ?? 0,
+                    });
                     setQuizSubmitted(false);
                     console.log('Restored quiz state for anti-cheat protection');
                 } else {
@@ -663,6 +676,7 @@ export default function Competitions({
             viewAll: "View All",
             antiCheatExitTitle: "Exit Quiz?",
             antiCheatExitDesc: "Exiting now will submit this hourly challenge with 0 points.",
+            antiCheatExitMakeup: "This also cancels every set in this quiz.",
             antiCheatExitPenalty: "This is an anti-cheating safeguard and cannot be undone.",
             antiCheatStay: "Continue Quiz",
             antiCheatExitConfirm: "Exit with 0 Points",
@@ -725,6 +739,7 @@ export default function Competitions({
             viewAll: "সব দেখুন",
             antiCheatExitTitle: "কুইজ থেকে বের হবেন?",
             antiCheatExitDesc: "এখন বের হলে এই কুইজে ০ পয়েন্ট পাবেন।",
+            antiCheatExitMakeup: "বেরোলে এই কুইজের সব সেটের পয়েন্টই যাবে।",
             antiCheatExitPenalty: "নকল ঠেকাতে এই নিয়মটি এড়ানো যাবে না।",
             antiCheatStay: "কুইজ খেলতে থাকুন",
             antiCheatExitConfirm: "বের হয়ে যান (০ পয়েন্ট)",
@@ -995,11 +1010,38 @@ export default function Competitions({
         return streak;
     };
 
+    const getLiveMakeupPreview = () => {
+        const now = getIstDate(getSyncedTime());
+        const currentHour = now.getUTCHours();
+        const playedHours = new Set();
+        todayAttempts.forEach((a) => {
+            const hour = parseInt(String(a.quiz_id).split('-').pop(), 10);
+            if (!Number.isNaN(hour)) playedHours.add(hour);
+        });
+        if (lastAttemptTime) {
+            const last = getIstDate(new Date(lastAttemptTime));
+            if (
+                last.getUTCFullYear() === now.getUTCFullYear() &&
+                last.getUTCMonth() === now.getUTCMonth() &&
+                last.getUTCDate() === now.getUTCDate()
+            ) {
+                playedHours.add(last.getUTCHours());
+            }
+        }
+        const makeupMissed = countRecentMissedHours(currentHour, playedHours);
+        return buildMakeupSession(makeupMissed);
+    };
+
     const hourlyChaseMessage = useMemo(() => {
         if (isFullLeaderboard || !user || loading || !userRank) return null;
         const hoursLeft = buildHourlySlots().filter((slot) => (
             slot.status === 'live' || slot.status === 'upcoming' || slot.status === 'upcoming-next'
         )).length;
+        const makeup = getLiveMakeupPreview();
+        const makeupCopy = getMakeupCopy(language, makeup.makeupMissed, makeup.packs, makeup.pointsReward);
+        if (makeupCopy.chaseHint && makeup.makeupMissed > 0) {
+            return makeupCopy.chaseHint;
+        }
         return buildHourlyChaseMessage({ language, userRank, hoursLeft });
     }, [isFullLeaderboard, user, loading, language, userRank, todayAttempts, lastAttemptTime, serverTimeOffset]);
 
@@ -1008,8 +1050,9 @@ export default function Competitions({
      * Direct submission logic for Hourly Quiz
      * No background queues. No complex retries.
      * Simple: Try -> Success (Lock) OR Fail (Show Error)
+     * quizIdOverride freezes the hour started (makeup session must not hop on rollover).
      */
-    const submitHourlyQuiz = async (score, penalty) => {
+    const submitHourlyQuiz = async (score, penalty, quizIdOverride = null) => {
         if (blockGuestWrite(userProfile, showNotification, language)) {
             return;
         }
@@ -1018,8 +1061,8 @@ export default function Competitions({
         setSyncErrorMessage(null);
         setSubmitRejected(null);
 
-        // 1. Strict ID for the current hour
-        const quizId = getHourlyQuizId();
+        // Prefer the hour frozen at Play (active session); never invent a past makeup id.
+        const quizId = quizIdOverride || activeQuiz?.id || getHourlyQuizId();
 
         // 2. Sanitize Inputs (Postgres expects Integers)
         const cleanScore = Math.round(Number(score)) || 0;
@@ -1067,12 +1110,6 @@ export default function Competitions({
             const now = getSyncedTime();
             setLastAttemptTime(now.toISOString());
             setLastAttemptPenalty(penalty);
-
-            // Update cache to prevent stale reads on reload
-            const cacheKey = `last_attempt_${user.id}_${hourlyQuiz?.id}`; // Keep using hourlyQuiz.id for cache key consistency if needed, OR switch to strict ID. 
-            // Better to use the strict ID for cache to avoid ambiguity? 
-            // actually, hourlyQuiz.id in state currently comes from fetchHourlyQuiz which uses YYYYMMDDHH. 
-            // Let's stick to updating the state that drives the UI.
 
             // Also refresh leaderboard and attempts for immediate feedback
             const mockAttempt = {
@@ -1274,8 +1311,8 @@ export default function Competitions({
                     const [{ data, error }, visualQuestions] = await Promise.all([
                         supabase.rpc('get_random_hourly_questions', {
                             lang: 'bn',
-                            // Larger pool for difficulty-tagged selection (5 shown per user).
-                            limit_count: 50
+                            // Larger pool for difficulty mix + up to 6 makeup packs (30 Q).
+                            limit_count: 80
                         }),
                         visualQuizService.fetchVisualQuestions({ language: 'bn', hourId })
                     ]);
@@ -1663,7 +1700,16 @@ export default function Competitions({
             }
         }
 
-        setActiveQuiz(quiz);
+        // Freeze makeup at Play: missed hours stay missed; live quiz grows by packs.
+        const makeup = getLiveMakeupPreview();
+        const questionTotal = makeup.questionCount;
+        const sessionQuiz = {
+            ...quiz,
+            points_reward: makeup.pointsReward,
+            makeupPacks: makeup.packs,
+            makeupMissed: makeup.makeupMissed,
+        };
+        setActiveQuiz(sessionQuiz);
         setSearchCount(0);
 
         // Seeded Randomization for Anti-Cheat: User-specific and Hour-specific
@@ -1681,8 +1727,8 @@ export default function Competitions({
 
             const lifetimePoints = getLifetimePoints(userProfile, userRank);
             const tier = getHourlyTier(lifetimePoints);
-            const eligibleForBand = filterQuestionsForTier(baseQuestions, tier);
-            const selectionPool = eligibleForBand.length >= 5 ? eligibleForBand : baseQuestions;
+            const eligibleForBand = filterQuestionsForTier(baseQuestions, tier, questionTotal);
+            const selectionPool = eligibleForBand.length >= questionTotal ? eligibleForBand : baseQuestions;
 
             const shuffledQuestions = shuffleArray(selectionPool, rng);
             const recentImageSet = getRecentImageSet();
@@ -1692,25 +1738,26 @@ export default function Competitions({
                 if (aHasRecent === bHasRecent) return 0;
                 return aHasRecent ? 1 : -1; // non-recent visuals first
             });
-            const picked = pickQuestionsByDifficultyMix(freshnessSorted, lifetimePoints, 5);
+            const picked = pickQuestionsByDifficultyMix(freshnessSorted, lifetimePoints, questionTotal);
 
             // Ensure at least 1 visual question when available in the pool.
             const hasVisualInPool = freshnessSorted.some((q) => isVisualQuestion(q));
             const hasVisualInPicked = picked.some((q) => isVisualQuestion(q));
             if (hasVisualInPool && !hasVisualInPicked) {
-                const fallbackVisual = freshnessSorted.slice(5).find((q) => isVisualQuestion(q));
+                const fallbackVisual = freshnessSorted.slice(questionTotal).find((q) => isVisualQuestion(q));
                 if (fallbackVisual) {
                     picked[picked.length - 1] = fallbackVisual;
                 }
             }
 
-            // Cap visual questions to max 2 when possible.
+            // Cap visual questions to max 2 when possible (or packs, whichever is higher up to 4).
+            const maxVisual = Math.min(4, Math.max(2, makeup.packs));
             const getVisualCount = (arr) => arr.filter((q) => isVisualQuestion(q)).length;
             let visualCount = getVisualCount(picked);
-            if (visualCount > 2) {
-                const remainingPool = freshnessSorted.slice(5);
+            if (visualCount > maxVisual) {
+                const remainingPool = freshnessSorted.slice(questionTotal);
                 const pickedIds = () => new Set(picked.map((q) => String(q?.id || '')));
-                for (let i = 0; i < picked.length && visualCount > 2; i++) {
+                for (let i = 0; i < picked.length && visualCount > maxVisual; i++) {
                     if (!isVisualQuestion(picked[i])) continue;
                     const used = pickedIds();
                     const replacement = remainingPool.find(
@@ -1767,8 +1814,8 @@ export default function Competitions({
             setShowAbortWarningModal(false);
             return;
         }
-        // Submit with 0 score and max penalty rules applied in backend logic
-        submitHourlyQuiz(0, 0);
+        // Submit with 0 score — locks this live hour (makeup packs included).
+        submitHourlyQuiz(0, 0, activeQuiz?.id || null);
         setActiveQuiz(null);
         storageUtils.removeItem('slm_hourly_active_quiz_state');
         setShowAbortWarningModal(false);
@@ -1863,10 +1910,8 @@ export default function Competitions({
             }
         });
 
-        let pointsPerQuestion = 10;
-        if (activeQuiz && activeQuiz.points_reward && quizQuestions.length > 0) {
-            pointsPerQuestion = Math.floor(activeQuiz.points_reward / quizQuestions.length);
-        }
+        // Makeup packs: always 10 pts per correct (50 per pack). Do not dilute if pool was short.
+        const pointsPerQuestion = 10;
         calculatedScore = correctCount * pointsPerQuestion;
 
         const perWrong = getPenaltyPerWrongForLifetime(getLifetimePoints(userProfile, userRank));
@@ -1891,7 +1936,10 @@ export default function Competitions({
             skipped: quizQuestions.filter(q => userAnswers[q.id] === undefined).length,
             penalty: penalty,
             score: netScore,
-            pointsEarned: correctCount * pointsPerQuestion
+            pointsEarned: correctCount * pointsPerQuestion,
+            makeupMissed: activeQuiz?.makeupMissed || 0,
+            makeupPacks: activeQuiz?.makeupPacks || 1,
+            quizId: activeQuiz?.id || null,
         });
         setQuizSubmitted(true);
 
@@ -1905,7 +1953,9 @@ export default function Competitions({
             questions: quizQuestions,
             answers: userAnswers,
             score: netScore, // User sees net score in review
-            penalty: penalty
+            penalty: penalty,
+            makeupMissed: activeQuiz?.makeupMissed || 0,
+            makeupPacks: activeQuiz?.makeupPacks || 1,
         };
         storageUtils.setItem(`review_${activeQuiz.id}`, JSON.stringify(attemptData));
 
@@ -1917,7 +1967,7 @@ export default function Competitions({
 
         if (user) {
             // Send base score and penalty separately to RPC (which handles the math)
-            await submitHourlyQuiz(calculatedScore, penalty);
+            await submitHourlyQuiz(calculatedScore, penalty, activeQuiz.id);
         }
     };
 
@@ -2786,6 +2836,7 @@ export default function Competitions({
                         timeLeft={timeLeft}
                         loading={false}
                         hourlyQuizRefreshBusy={hourlyQuizRefreshBusy}
+                        makeupPreview={getLiveMakeupPreview()}
                         labels={{
                             liveNow: t.liveNow,
                             nextChallengeLabel: t.nextChallengeLabel,
@@ -2820,6 +2871,11 @@ export default function Competitions({
                                 <p className={`text-sm sm:text-base font-semibold text-slate-800 leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {t.antiCheatExitDesc}
                                 </p>
+                                {(activeQuiz?.makeupMissed || 0) > 0 && (
+                                    <p className={`text-xs sm:text-sm text-orange-700 font-bold ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {t.antiCheatExitMakeup}
+                                    </p>
+                                )}
                                 <p className={`text-xs sm:text-sm text-red-600 font-bold ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {t.antiCheatExitPenalty}
                                 </p>
@@ -2859,6 +2915,13 @@ export default function Competitions({
                                         <h3 className="text-lg font-black text-slate-900">{activeQuiz.title}</h3>
                                         <div className="flex items-center gap-2 text-xs text-slate-600">
                                             <span>{t.questions} {currentQuestionIndex + 1} / {quizQuestions.length}</span>
+                                            {(activeQuiz?.makeupPacks || 1) > 1 && (
+                                                <span className={`text-orange-600 font-bold tabular-nums before:content-['·'] before:mx-1 before:text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    {language === 'en'
+                                                        ? `Set ${Math.min(activeQuiz.makeupPacks, Math.floor(currentQuestionIndex / 5) + 1)}/${activeQuiz.makeupPacks}`
+                                                        : `সেট ${Math.min(activeQuiz.makeupPacks, Math.floor(currentQuestionIndex / 5) + 1)}/${activeQuiz.makeupPacks}`}
+                                                </span>
+                                            )}
                                             {hourlyStakesUi.quizHint && (
                                                 <span className="text-slate-500 tabular-nums before:content-['·'] before:mx-1">
                                                     {hourlyStakesUi.quizHint}
@@ -3140,6 +3203,17 @@ export default function Competitions({
                                     </div>
                                 )}
 
+                                {(quizResults?.makeupMissed || 0) > 0 && (
+                                    <p className={`mx-auto mb-6 max-w-md text-center text-xs leading-relaxed text-slate-600 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {getMakeupCopy(
+                                            language,
+                                            quizResults.makeupMissed,
+                                            quizResults.makeupPacks,
+                                            (quizResults.makeupPacks || 1) * 50
+                                        ).resultsNote}
+                                    </p>
+                                )}
+
                                 <div className={`mx-auto mb-8 grid max-w-md gap-3 ${(quizResults?.penalty || 0) > 0 ? 'grid-cols-2' : 'grid-cols-1 max-w-xs'}`}>
                                     <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 shadow-sm">
                                         <div className="text-[10px] font-bold text-green-600 uppercase tracking-tighter mb-1">
@@ -3187,7 +3261,11 @@ export default function Competitions({
                                                 </div>
                                                 <button
                                                     type="button"
-                                                    onClick={() => submitHourlyQuiz(quizResults?.pointsEarned, quizResults?.penalty)}
+                                                    onClick={() => submitHourlyQuiz(
+                                                        quizResults?.pointsEarned,
+                                                        quizResults?.penalty,
+                                                        quizResults?.quizId || activeQuiz?.id || null
+                                                    )}
                                                     className="px-3 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold uppercase text-[10px] shadow-sm active:scale-95"
                                                 >
                                                     {language === 'en' ? 'Retry Save' : 'পুনরায় চেষ্টা করুন'}

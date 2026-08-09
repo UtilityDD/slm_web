@@ -59,12 +59,13 @@ export function getQuestionDifficulty(tags) {
     return 'easy';
 }
 
-export function filterQuestionsForTier(questions, tier) {
+export function filterQuestionsForTier(questions, tier, minCount = 5) {
     const allowed = new Set(ALLOWED_DIFFICULTIES[tier] || ['easy']);
     const filtered = (questions || []).filter((q) =>
         allowed.has(getQuestionDifficulty(q.tags))
     );
-    if (filtered.length >= 5) return filtered;
+    const need = Math.max(1, Number(minCount) || 5);
+    if (filtered.length >= need) return filtered;
     return questions || [];
 }
 
@@ -150,10 +151,12 @@ export function getHourlyPenaltyModalCopy(lifetimePoints, language = 'en') {
     if (!penalty) {
         return {
             title: bn ? 'কুইজের নিয়ম' : 'Quiz rules',
-            intro: bn ? 'প্রতি ঘণ্টায় ১ বার • ৫টি প্রশ্ন' : 'Once per hour • 5 questions',
+            intro: bn
+                ? 'প্রতি ঘণ্টায় একবার · মিস থাকলে এখন বড় কুইজ'
+                : 'Once per hour · bigger live quiz if you missed recent hours',
             body: bn
-                ? 'আপনার মোট পয়েন্ট ১০,০০০-এর কম, তাই ভুল উত্তরের জন্য কোনো পয়েন্ট কাটা যাবে না।'
-                : 'Your total points are under 10,000, so no points will be deducted for wrong answers.',
+                ? 'আপনার মোট পয়েন্ট ১০,০০০-এর কম, তাই ভুল উত্তরে পয়েন্ট কাটা যাবে না। মিস ঘণ্টা রিং-এ মিসই থাকবে; বাড়তি পয়েন্ট শুধু এই ঘণ্টার স্কোরে যোগ হয়।'
+                : 'Your total points are under 10,000, so no points will be deducted for wrong answers. Missed hours stay missed on the ring; extra points only count on this hour.',
             tiersLabel: bn ? 'মোট পয়েন্ট অনুযায়ী পেনাল্টি:' : 'Penalty by total points:',
             tiers,
         };
@@ -161,10 +164,12 @@ export function getHourlyPenaltyModalCopy(lifetimePoints, language = 'en') {
 
     return {
         title: bn ? 'কুইজের নিয়ম' : 'Quiz rules',
-        intro: bn ? 'প্রতি ঘণ্টায় ১ বার • ৫টি প্রশ্ন' : 'Once per hour • 5 questions',
+        intro: bn
+            ? 'প্রতি ঘণ্টায় একবার · মিস থাকলে এখন বড় কুইজ'
+            : 'Once per hour · bigger live quiz if you missed recent hours',
         body: bn
-            ? `প্রতিটি ভুল উত্তরের জন্য আপনার ${penalty} পয়েন্ট কাটা যাবে।`
-            : `Each wrong answer will cost you ${penalty} points.`,
+            ? `প্রতি ভুল উত্তরে ${penalty} পয়েন্ট কাটা যাবে। মিস ঘণ্টা রিং-এ মিসই থাকবে; বাড়তি পয়েন্ট শুধু এই ঘণ্টার স্কোরে যোগ হয়।`
+            : `Each wrong answer will cost you ${penalty} points. Missed hours stay missed on the ring; extra points only count on this hour.`,
         tiersLabel: bn ? 'মোট পয়েন্ট অনুযায়ী পেনাল্টি:' : 'Penalty by total points:',
         tiers,
     };

@@ -6,6 +6,13 @@ import { mergeCoreLessonProgressIds } from '../utils/trainingLessonIds';
 import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
 import { supabase } from '../supabaseClient';
 import { requestManager } from '../utils/requestManager';
+import {
+  buildMakeupSession,
+  countRecentMissedHours,
+  formatMakeupMaxPoints,
+  getMakeupCopy,
+  HOURLY_POINTS_PER_PACK,
+} from '../utils/hourlyMakeup';
 
 /** Approximate core lesson count from training chapter defaults (display only). */
 const APPROX_CORE_LESSON_TOTAL = 91;
@@ -52,6 +59,7 @@ export default function Home({
   const [loading, setLoading] = useState(!userProfile && !!user);
   const [homeTip, setHomeTip] = useState('');
   const [isHourlyPending, setIsHourlyPending] = useState(false);
+  const [hourlyMaxPoints, setHourlyMaxPoints] = useState(HOURLY_POINTS_PER_PACK);
   const [lessonBonusAttempts, setLessonBonusAttempts] = useState([]);
 
   useEffect(() => {
@@ -117,10 +125,11 @@ export default function Home({
     };
   }, [bn]);
 
-  // Same read-only check as Training: green dot when this hour's quiz is still available.
+  // Green dot + max points (+50 / +100 / …) when this hour's quiz is still open.
   useEffect(() => {
     if (!user?.id) {
       setIsHourlyPending(false);
+      setHourlyMaxPoints(HOURLY_POINTS_PER_PACK);
       return undefined;
     }
 
@@ -132,19 +141,44 @@ export default function Home({
         const year = now.getUTCFullYear();
         const month = String(now.getUTCMonth() + 1).padStart(2, '0');
         const day = String(now.getUTCDate()).padStart(2, '0');
-        const hour = String(now.getUTCHours()).padStart(2, '0');
+        const currentHour = now.getUTCHours();
+        const hour = String(currentHour).padStart(2, '0');
         const quizId = `hourly-challenge-${year}-${month}-${day}-${hour}`;
+        const dayPrefix = `hourly-challenge-${year}-${month}-${day}-`;
 
-        const { data, error } = await supabase
-          .from('quiz_attempts')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('quiz_id', quizId)
-          .limit(1);
+        const [{ data: liveRows, error: liveError }, { data: dayRows, error: dayError }] = await Promise.all([
+          supabase
+            .from('quiz_attempts')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('quiz_id', quizId)
+            .limit(1),
+          supabase
+            .from('quiz_attempts')
+            .select('quiz_id')
+            .eq('user_id', user.id)
+            .like('quiz_id', `${dayPrefix}%`),
+        ]);
 
-        if (!cancelled && !error) {
-          setIsHourlyPending((data || []).length === 0);
+        if (cancelled || liveError) return;
+
+        const pending = (liveRows || []).length === 0;
+        setIsHourlyPending(pending);
+
+        if (!pending) {
+          setHourlyMaxPoints(HOURLY_POINTS_PER_PACK);
+          return;
         }
+
+        const playedHours = new Set();
+        if (!dayError && Array.isArray(dayRows)) {
+          dayRows.forEach((row) => {
+            const h = parseInt(String(row.quiz_id).split('-').pop(), 10);
+            if (!Number.isNaN(h)) playedHours.add(h);
+          });
+        }
+        const makeup = buildMakeupSession(countRecentMissedHours(currentHour, playedHours));
+        setHourlyMaxPoints(makeup.pointsReward);
       } catch (err) {
         console.error('Error checking hourly challenge:', err);
       }
@@ -158,6 +192,11 @@ export default function Home({
     };
   }, [user?.id]);
 
+  const hourlyHomeCopy = useMemo(() => {
+    const packs = Math.max(1, Math.round(hourlyMaxPoints / HOURLY_POINTS_PER_PACK));
+    const missed = Math.max(0, packs - 1);
+    return getMakeupCopy(language, missed, packs, hourlyMaxPoints);
+  }, [language, hourlyMaxPoints]);
   const coreLessons = useMemo(() => {
     const fromProp = Array.isArray(completedLessonsProp) ? completedLessonsProp : [];
     const fromProfile = Array.isArray(userProfile?.completed_lessons)
@@ -370,8 +409,20 @@ export default function Home({
               </span>
             )}
           </span>
-          <span className={`min-w-0 flex-1 text-sm font-black text-slate-900 ${bn ? 'font-bengali' : ''}`}>
-            {bn ? 'ঘণ্টার কুইজ' : 'Hourly quiz'}
+          <span className="min-w-0 flex-1">
+            <span className={`flex flex-wrap items-center gap-2 text-sm font-black text-slate-900 ${bn ? 'font-bengali' : ''}`}>
+              {bn ? 'ঘণ্টার কুইজ' : 'Hourly quiz'}
+              {isHourlyPending && (
+                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-black tabular-nums text-emerald-700 ring-1 ring-emerald-200/80">
+                  {formatMakeupMaxPoints(hourlyMaxPoints)}
+                </span>
+              )}
+            </span>
+            {isHourlyPending && (
+              <span className={`mt-0.5 block text-[11px] font-semibold text-slate-500 ${bn ? 'font-bengali' : ''}`}>
+                {hourlyHomeCopy.homeHint}
+              </span>
+            )}
           </span>
           <svg className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
