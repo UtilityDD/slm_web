@@ -1,3 +1,5 @@
+import { toNativeRemoteUrl } from './nativeRemoteAssets';
+
 const LOCAL_QUIZ_IMAGE_DIR = '/images/quizzes/';
 
 export const extractDriveFileId = (url) => {
@@ -18,13 +20,16 @@ export const extractDriveIdFromMediaRef = (ref) => {
 export const toLocalQuizImagePath = (ref) => {
     const trimmed = String(ref || '').trim();
     if (!trimmed) return '';
-    if (trimmed.startsWith(`${LOCAL_QUIZ_IMAGE_DIR}`)) return trimmed;
-    if (trimmed.startsWith('/')) return trimmed;
-    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
-        return `${LOCAL_QUIZ_IMAGE_DIR}${trimmed}`;
+    let path = '';
+    if (trimmed.startsWith(`${LOCAL_QUIZ_IMAGE_DIR}`)) path = trimmed;
+    else if (trimmed.startsWith('/')) path = trimmed;
+    else if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+        path = `${LOCAL_QUIZ_IMAGE_DIR}${trimmed}`;
+    } else {
+        const driveId = extractDriveIdFromMediaRef(trimmed);
+        path = driveId ? `${LOCAL_QUIZ_IMAGE_DIR}img_${driveId}.jpg` : '';
     }
-    const driveId = extractDriveIdFromMediaRef(trimmed);
-    return driveId ? `${LOCAL_QUIZ_IMAGE_DIR}img_${driveId}.jpg` : '';
+    return path ? toNativeRemoteUrl(path) : '';
 };
 
 /** Local file first, then Drive fallbacks — works for both img_* and Drive sheet cells. */

@@ -40,6 +40,8 @@ scratch/
 
 # Media and Large Files
 public/smartlineman.apk
+public/downloads/*.apk
+public/downloads/*.aab
 
 # Supabase CLI local state
 supabase/.temp/

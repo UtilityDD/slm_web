@@ -2,6 +2,8 @@
  * Training lesson media: JSON may reference /quizzes/ files or full URLs (e.g. Google Sheet → Drive links).
  * Mirrors SafetyLibrary / assetPreloader behaviour for Drive share links.
  */
+import { toNativeRemoteUrl } from './nativeRemoteAssets';
+
 export function getGoogleDriveDirectLink(url) {
     if (!url || typeof url !== 'string') return '';
     const trimmed = url.trim();
@@ -20,9 +22,9 @@ export function resolveTrainingMediaSrc(mediaRef) {
     if (!mediaRef || typeof mediaRef !== 'string') return '';
     const s = mediaRef.trim();
     if (/^https?:\/\//i.test(s)) return getGoogleDriveDirectLink(s);
-    if (s.startsWith('/')) return s;
-    if (s.startsWith('images/')) return `/${s}`;
-    return `/quizzes/${s.replace(/^\//, '')}`;
+    if (s.startsWith('/')) return toNativeRemoteUrl(s);
+    if (s.startsWith('images/')) return toNativeRemoteUrl(`/${s}`);
+    return toNativeRemoteUrl(`/quizzes/${s.replace(/^\//, '')}`);
 }
 
 /** True if reference should render as an image (file ext or Drive / Google image host). */

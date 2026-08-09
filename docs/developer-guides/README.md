@@ -23,6 +23,7 @@ This folder holds **maintainer-focused** documentation: architecture notes, inte
 | [Life Skills Quiz Generation](./life-skills-quiz-generation.md) | Standardized guide on authoring/maintaining Life Skills quiz files with anti-cheat/balancing rules |
 | [Audio Script Generation](./audio-script-generation.md) | "Smart Lineman Radio" standards, Google AI Studio optimization, JSON to script workflow |
 | [Broadcast notifications](./notifications-broadcasts.md) | `Admin.jsx`, `SmartLinemanUI.jsx`, notification RPCs, startup modal + admin controls |
+| [Android APK (Capacitor)](./android-apk.md) | Sideload APK vs PWA, version bump, slim sync, signing, update channel, dos/don’ts |
 
 ## Conventions for new guides
 

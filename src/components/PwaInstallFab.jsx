@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { APP_NAME } from '../config';
+import { APP_NAME, ANDROID_DOWNLOAD_PAGE_URL } from '../config';
 import { isIos, usePwaInstall } from '../utils/pwaInstall';
+import { isNativeCapacitorPlatform } from '../utils/webPush';
 
 /**
  * Always-visible Install FAB on the landing page.
@@ -12,10 +13,16 @@ export default function PwaInstallFab({ language = 'en', aboveStickyCta = false,
   const [open, setOpen] = useState(false);
   const [showSteps, setShowSteps] = useState(false);
   const [busy, setBusy] = useState(false);
+  const isNative = isNativeCapacitorPlatform();
 
   useEffect(() => {
+    if (isNative) {
+      onOpenChange?.(false);
+      return undefined;
+    }
     onOpenChange?.(open);
-  }, [open, onOpenChange]);
+    return undefined;
+  }, [open, onOpenChange, isNative]);
 
   const close = useCallback(() => {
     setOpen(false);
@@ -70,6 +77,7 @@ export default function PwaInstallFab({ language = 'en', aboveStickyCta = false,
           '"Install app" বা "Add to Home screen" বেছে নিন।',
           'নিশ্চিত করুন।',
         ],
+        androidApk: 'অ্যান্ড্রয়েড APK',
       }
     : {
         fab: 'Install',
@@ -92,6 +100,7 @@ export default function PwaInstallFab({ language = 'en', aboveStickyCta = false,
           'Choose "Install app" or "Add to Home screen".',
           'Confirm to finish.',
         ],
+        androidApk: 'Android APK',
       };
 
   const steps = isIos() ? copy.iosSteps : copy.genericSteps;
@@ -159,7 +168,7 @@ export default function PwaInstallFab({ language = 'en', aboveStickyCta = false,
                   </ol>
                 ) : null}
 
-                <div className="flex flex-col gap-3 border-t border-slate-200/80 bg-white/60 p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:flex-row sm:p-5 sm:pb-5">
+                <div className="flex flex-col gap-3 border-t border-slate-200/80 bg-white/60 p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:flex-row sm:flex-wrap sm:p-5 sm:pb-5">
                   {mode === 'ask' ? (
                     <>
                       <button
@@ -192,6 +201,16 @@ export default function PwaInstallFab({ language = 'en', aboveStickyCta = false,
                       {copy.gotIt}
                     </button>
                   )}
+                  {!isIos() && !isNativeCapacitorPlatform() ? (
+                    <a
+                      href={ANDROID_DOWNLOAD_PAGE_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`order-3 w-full text-center text-sm font-bold text-emerald-700 underline-offset-2 hover:underline sm:basis-full ${fontClass}`}
+                    >
+                      {copy.androidApk}
+                    </a>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -199,6 +218,8 @@ export default function PwaInstallFab({ language = 'en', aboveStickyCta = false,
           document.body
         )
       : null;
+
+  if (isNative) return null;
 
   return (
     <>

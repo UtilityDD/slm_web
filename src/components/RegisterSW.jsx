@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { storageUtils } from '../utils/storageUtils';
+import { isNativeCapacitorPlatform } from '../utils/webPush';
 
 const UPDATE_CHECK_MS = 60 * 1000;
 
@@ -33,7 +34,7 @@ const RegisterSW = () => {
   }, []);
 
   useEffect(() => {
-    if (!('serviceWorker' in navigator) || window.Capacitor) return undefined;
+    if (!('serviceWorker' in navigator) || isNativeCapacitorPlatform()) return undefined;
 
     let cancelled = false;
     let updateTimer;

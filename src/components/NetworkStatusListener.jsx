@@ -98,7 +98,7 @@ const NetworkStatusListener = ({ language = 'en' }) => {
     if (!showWarning && !showRestored) return null;
 
     return createPortal(
-        <div className="fixed top-0 left-0 right-0 z-[10000] flex flex-col items-center pointer-events-none">
+        <div className="fixed top-0 left-0 right-0 z-[10000] flex flex-col items-center pointer-events-none pt-[env(safe-area-inset-top,0px)]">
             {/* Offline/Weak Signal Warning Banner */}
             {showWarning && (
                 <div className={`${isOnline ? 'bg-orange-500' : 'bg-red-500'} w-full text-white px-4 py-2 shadow-lg flex items-center justify-center gap-2 animate-slide-down pointer-events-auto`}>

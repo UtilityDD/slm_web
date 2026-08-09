@@ -1,0 +1,4 @@
+storeFile=C:\\Users\\rouma\\keystores\\my-release-key.jks
+storePassword=REPLACE_ME
+keyAlias=REPLACE_ME
+keyPassword=REPLACE_ME

@@ -5,7 +5,6 @@ import { DotLottiePlayer } from '@dotlottie/react-player';
 import noInternetLottie from '../assets/no_internet.lottie';
 import { SUPPORT_EMAIL } from '../config';
 import { EMOTIONAL_IMAGE_FOCUS } from '../data/awarenessStories';
-import PwaInstallFab from './PwaInstallFab';
 
 /**
  * Single-device session: generate a unique id for this device, persist it
@@ -97,10 +96,9 @@ function LoginPageShell({
     onOpenAwarenessStories,
     onGoHome,
     language = 'en',
-    onInstallModalOpenChange,
 }) {
     return (
-        <div className="landing-modern relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-[#fffdf7] px-4 py-6 text-slate-900 touch-manipulation safe-area-inset-top safe-area-inset-bottom">
+        <div className="landing-modern relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-[#fffdf7] px-4 py-6 text-slate-900 touch-manipulation safe-area-inset-bottom">
             <div
                 className="absolute inset-x-0 top-0 z-20 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
                 aria-hidden="true"
@@ -137,8 +135,6 @@ function LoginPageShell({
                 {children}
                 {footer}
             </div>
-
-            <PwaInstallFab language={language} onOpenChange={onInstallModalOpenChange} />
         </div>
     );
 }
@@ -148,7 +144,7 @@ const loginShellNav = (setCurrentView) => ({
     onOpenAwarenessStories: () => setCurrentView('accident-stories'),
 });
 
-export default function Login({ onLogin, showNotification, setCurrentView, language = 'en', onInstallModalOpenChange }) {
+export default function Login({ onLogin, showNotification, setCurrentView, language = 'en' }) {
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -163,7 +159,6 @@ export default function Login({ onLogin, showNotification, setCurrentView, langu
     const shellProps = {
         ...loginShellNav(setCurrentView),
         language,
-        onInstallModalOpenChange,
     };
 
     const emotionalImages = [

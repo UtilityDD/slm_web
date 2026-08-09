@@ -29,7 +29,7 @@ export default function WeatherAlertBanner({
       : '';
 
   return createPortal(
-    <div className="fixed top-0 left-0 right-0 z-[9998] flex flex-col items-center pointer-events-none">
+    <div className="fixed top-0 left-0 right-0 z-[9998] flex flex-col items-center pointer-events-none pt-[env(safe-area-inset-top,0px)]">
       <div
         role="alert"
         aria-live="assertive"

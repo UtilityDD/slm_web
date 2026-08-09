@@ -8,9 +8,10 @@ import LandingSponsorsScroll from './LandingSponsorsScroll';
 import LandingSupportContact from './LandingSupportContact';
 import LandingVisitCounter from './LandingVisitCounter';
 import LandingNonprofitLineman from './LandingNonprofitLineman';
-import PwaInstallFab from './PwaInstallFab';
 import { fetchVisitCount } from '../utils/landingVisitService';
 import { fetchRegisteredUserCount } from '../utils/landingStatsService';
+import { isNativeCapacitorPlatform } from '../utils/webPush';
+import { ANDROID_DOWNLOAD_PAGE_URL } from '../config';
 
 /** Community proof figures shown on landing (marketing display). */
 const LANDING_MEMBERS_DISPLAY = 500;
@@ -37,6 +38,7 @@ const copy = {
     engageContactBtn: 'Contact us',
     joinCta: 'Join',
     login: 'Login',
+    downloadAndroid: 'Download Android App',
     language: 'Language',
     loading: 'Loading…',
     pts: 'pts',
@@ -64,6 +66,7 @@ const copy = {
     engageContactBtn: 'যোগাযোগ করুন',
     joinCta: 'যোগ দিন',
     login: 'লগ ইন',
+    downloadAndroid: 'অ্যান্ড্রয়েড অ্যাপ ডাউনলোড',
     language: 'ভাষা',
     loading: 'একটু অপেক্ষা করুন…',
     pts: 'পয়েন্ট',
@@ -392,7 +395,7 @@ function SlimStat({ label, value, suffix = '', loading, bnFont }) {
   );
 }
 
-export default function Landing({ language, onLanguageChange, setCurrentView, onInstallModalOpenChange }) {
+export default function Landing({ language, onLanguageChange, setCurrentView }) {
   const t = copy[language] || copy.en;
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -542,6 +545,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, on
   }, []);
 
   const bnFont = language === 'bn';
+  const isNativeApp = isNativeCapacitorPlatform();
 
   const scrollToSection = (id) => {
     const section = document.getElementById(id);
@@ -570,7 +574,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, on
       />
 
       {/* Top bar */}
-      <div className="landing-header-bar sticky top-0 z-20 safe-area-inset-top">
+      <div className="landing-header-bar sticky top-0 z-20">
         <div className="mx-auto max-w-5xl px-3 sm:px-6">
           <div className="flex h-12 items-center justify-between gap-2 sm:h-14 sm:gap-3">
             <div className="flex min-w-0 select-none items-center gap-2 sm:gap-2.5">
@@ -802,7 +806,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, on
         </footer>
       </div>
 
-      {/* Mobile sticky visit counter + Login CTA */}
+      {/* Mobile sticky CTA: PWA pushes APK download; native app keeps Login */}
       <div className="landing-sticky-cta fixed inset-x-0 bottom-0 z-30 px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:hidden">
         {(visitLoading || visitCount != null) && (
           <div className="mb-2 flex justify-center">
@@ -814,20 +818,25 @@ export default function Landing({ language, onLanguageChange, setCurrentView, on
             />
           </div>
         )}
-        <button
-          type="button"
-          onClick={() => setCurrentView('login')}
-          className={`min-h-[52px] w-full rounded-full bg-orange-500 py-3.5 text-base font-black text-white shadow-lg shadow-orange-500/30 touch-manipulation transition-all active:scale-[0.98] ${bnFont ? 'font-bengali' : ''}`}
-        >
-          {t.login}
-        </button>
+        {isNativeApp ? (
+          <button
+            type="button"
+            onClick={() => setCurrentView('login')}
+            className={`min-h-[52px] w-full rounded-full bg-orange-500 py-3.5 text-base font-black text-white shadow-lg shadow-orange-500/30 touch-manipulation transition-all active:scale-[0.98] ${bnFont ? 'font-bengali' : ''}`}
+          >
+            {t.login}
+          </button>
+        ) : (
+          <a
+            href={ANDROID_DOWNLOAD_PAGE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`flex min-h-[52px] w-full items-center justify-center rounded-full bg-gradient-to-r from-orange-600 to-orange-500 py-3.5 text-base font-black text-white shadow-lg shadow-orange-500/40 ring-2 ring-orange-300/80 touch-manipulation transition-all active:scale-[0.98] ${bnFont ? 'font-bengali' : ''}`}
+          >
+            {t.downloadAndroid}
+          </a>
+        )}
       </div>
-
-      <PwaInstallFab
-        language={language}
-        aboveStickyCta
-        onOpenChange={onInstallModalOpenChange}
-      />
     </div>
   );
 }

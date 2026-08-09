@@ -4,6 +4,7 @@ import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../co
 import { useLifeSkillRadio } from '../context/LifeSkillRadioContext';
 import { FAQ_PAGE_TITLE } from '../utils/faqFilters';
 import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
+import AndroidAppDownloadCta from './AndroidAppDownloadCta';
 
 const FACEBOOK_PAGE_URL = 'https://www.facebook.com/smartlineman';
 const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t';
@@ -299,6 +300,10 @@ export default function MorePage({
             </section>
           );
         })}
+
+        <section className="mb-5">
+          <AndroidAppDownloadCta language={language} />
+        </section>
 
         {/* Footer */}
         <div className="mt-6 border-t border-slate-200/80 pt-4">

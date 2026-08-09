@@ -34,6 +34,7 @@ import PageLoader from "./components/loaders/PageLoader";
 import GuestPreviewBanner from "./components/GuestPreviewBanner";
 import { isGuestUser, sanitizeGuestProfileForDisplay } from "./utils/guestPreview";
 import { isNativeCapacitorPlatform, syncWebPushSubscription } from "./utils/webPush";
+import { checkNativeAndroidUpdate } from "./utils/androidAppUpdate";
 import {
   pickActiveOverlay,
   shouldSuppressOverlay,
@@ -174,7 +175,6 @@ export default function SmartLinemanUI() {
   const [adContactOpen, setAdContactOpen] = useState(false);
   const [sponsorAdOpen, setSponsorAdOpen] = useState(false);
   const [monthWinnersRevealOpen, setMonthWinnersRevealOpen] = useState(false);
-  const [installPromptOpen, setInstallPromptOpen] = useState(false);
   const forumActivityTimerRef = useRef(null);
 
   const weatherDistrict = userProfile?.district || null;
@@ -185,21 +185,8 @@ export default function SmartLinemanUI() {
     weatherDistrict &&
     !['login', 'verify', 'landing', 'update-password'].includes(currentView);
 
-  // Version Comparison Helper
-  const isVersionOlder = (current, min) => {
-    if (!current || !min) return false;
-    const v1 = current.split('.').map(Number);
-    const v2 = min.split('.').map(Number);
-    for (let i = 0; i < Math.max(v1.length, v2.length); i++) {
-      const num1 = v1[i] || 0;
-      const num2 = v2[i] || 0;
-      if (num1 < num2) return true;
-      if (num1 > num2) return false;
-    }
-    return false;
-  };
-
-  const [isRetiring, setIsRetiring] = useState(false); // To force PWA transition
+  // Version Comparison Helper — kept for future native/web version gates if needed.
+  // (Native APK updates use version_code via checkNativeAndroidUpdate.)
 
   const BUILD_VERSION_KEY = 'slm_build_version';
 
@@ -219,20 +206,27 @@ export default function SmartLinemanUI() {
     }
   };
 
-  // Check for App Updates (Native & PWA)
+  // Parallel update channels: native APK (sideload) vs web/PWA refresh — do not mix them.
   useEffect(() => {
+    let swInterval = null;
+    let cancelled = false;
+
     const checkForUpdates = async () => {
       try {
-        // 1. Force PWA Transition for APK users
-        // Only retire if we are DEFINITELY inside a native shell (android/ios)
-        const isNative = window.Capacitor && window.Capacitor.getPlatform && window.Capacitor.getPlatform() !== 'web';
-        
-        if (isNative) {
-          setIsRetiring(true);
+        if (isNativeCapacitorPlatform()) {
+          const nativeUpdate = await checkNativeAndroidUpdate();
+          if (cancelled || !nativeUpdate) return;
+          setUpdateInfo({
+            version_name: nativeUpdate.version_name,
+            update_url: nativeUpdate.update_url,
+            release_notes: nativeUpdate.release_notes,
+          });
+          setIsForceUpdate(Boolean(nativeUpdate.forceUpdate));
+          setShowUpdateModal(true);
           return;
         }
 
-        // 2. Web build version — when CURRENT_APP_VERSION bumps, stale clients must refresh
+        // Web/PWA build version — when CURRENT_APP_VERSION bumps, stale clients must refresh
         try {
           const seenBuild = localStorage.getItem(BUILD_VERSION_KEY);
           if (seenBuild && seenBuild !== CURRENT_APP_VERSION) {
@@ -250,10 +244,10 @@ export default function SmartLinemanUI() {
           /* storage unavailable */
         }
 
-        // 3. Service Worker Update Listener (PWA)
-        if ('serviceWorker' in navigator && !window.Capacitor) {
+        // Service Worker Update Listener (PWA only)
+        if ('serviceWorker' in navigator && !isNativeCapacitorPlatform()) {
           const registration = await navigator.serviceWorker.ready;
-          const interval = setInterval(() => registration.update(), 60 * 60 * 1000);
+          swInterval = setInterval(() => registration.update(), 60 * 60 * 1000);
 
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
@@ -269,14 +263,17 @@ export default function SmartLinemanUI() {
               }
             });
           });
-
-          return () => clearInterval(interval);
         }
       } catch (err) {
         console.error('Update check failed:', err);
       }
     };
+
     checkForUpdates();
+    return () => {
+      cancelled = true;
+      if (swInterval) clearInterval(swInterval);
+    };
   }, []);
 
   useEffect(() => {
@@ -1003,7 +1000,7 @@ export default function SmartLinemanUI() {
   useEffect(() => {
     const updateStatusBar = async () => {
       const isDark = theme === 'dark';
-      const creamViews = ['home', 'my-progress', 'leaderboard', 'prizes', 'training', 'competitions', 'menu'];
+      const creamViews = ['home', 'my-progress', 'leaderboard', 'prizes', 'training', 'competitions', 'menu', 'landing', 'login'];
       const bgColor = isDark ? '#0F172A' : (creamViews.includes(currentView) ? '#fffdf7' : '#F8FAFC');
       
       // 1. Handle Web/PWA Theme Color
@@ -1014,18 +1011,18 @@ export default function SmartLinemanUI() {
         document.head.appendChild(metaThemeColor);
       }
       metaThemeColor.setAttribute('content', bgColor);
-      // console.log(`[Status Bar] Theme: ${theme}, View: ${currentView}, Color: ${bgColor}`);
+      document.documentElement.style.setProperty('--slm-status-bg', bgColor);
 
-      // 2. Handle Native Capacitor StatusBar
-      if (window.Capacitor) {
+      // 2. Handle Native Capacitor StatusBar (do not overlay content)
+      if (isNativeCapacitorPlatform()) {
         try {
+          await StatusBar.setOverlaysWebView({ overlay: false });
           if (isDark) {
             await StatusBar.setStyle({ style: Style.Dark });
-            await StatusBar.setBackgroundColor({ color: bgColor });
           } else {
             await StatusBar.setStyle({ style: Style.Light });
-            await StatusBar.setBackgroundColor({ color: bgColor });
           }
+          await StatusBar.setBackgroundColor({ color: bgColor });
         } catch (err) {
           console.warn('Native StatusBar update failed:', err);
         }
@@ -1174,7 +1171,6 @@ export default function SmartLinemanUI() {
             onLanguageChange={handleLanguageSelect}
             setCurrentView={setCurrentView}
             user={user}
-            onInstallModalOpenChange={setInstallPromptOpen}
           />
         );
       }
@@ -1183,7 +1179,6 @@ export default function SmartLinemanUI() {
         return <Login
           initialView={currentView === 'update-password' ? 'update' : 'login'}
           language={language}
-          onInstallModalOpenChange={setInstallPromptOpen}
           onLogin={(u) => {
             setUser(u);
             // Force a fresh read so the just-claimed session id is authoritative
@@ -1354,32 +1349,6 @@ export default function SmartLinemanUI() {
     );
   };
 
-  if (isRetiring) {
-    return (
-      <div className="fixed inset-0 z-[9999] bg-slate-900 flex items-center justify-center p-6 text-center text-white">
-        <div className="max-w-md w-full space-y-8 animate-fadeIn">
-          <div className="w-24 h-24 bg-orange-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-            <span className="text-5xl">📲</span>
-          </div>
-          <div className="space-y-4">
-            <h1 className="text-3xl font-black leading-tight">{language === 'bn' ? 'এই অ্যাপটি বন্ধ করা হয়েছে' : 'App Retired'}</h1>
-            <p className="text-slate-400 text-lg leading-relaxed text-center">
-              {language === 'bn' ? 'আরও উন্নত ফিচারের জন্য আমরা এখন শুধুমাত্র ওয়েব অ্যাপ (PWA) ব্যবহার করছি। দয়া করে নিচের বাটনে ক্লিক করে নতুন অ্যাপটি ব্যবহার করুন।' : 'For a better experience, we have moved to our official Web App. Please use the button below to switch.'}
-            </p>
-          </div>
-          <div className="pt-8">
-            <button onClick={() => window.open('https://slm-web.vercel.app', '_blank')} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-5 rounded-2xl shadow-2xl shadow-orange-900/40 transition-all active:scale-95 text-xl tracking-wide uppercase">
-              {language === 'bn' ? 'ওয়েব অ্যাপ ওপেন করুন' : 'Open Web App'}
-            </button>
-          </div>
-          <p className="text-slate-500 text-sm mt-8 border-t border-slate-800 pt-6">
-            {language === 'bn' ? 'Chrome ব্রাউজারে গিয়ে "Add to Home Screen" অপশনটি সিলেক্ট করুন।' : 'Tip: Select "Add to Home Screen" from Chrome menu for easy access.'}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   const overlayBlocked =
     appLoading ||
     globalLoading ||
@@ -1388,7 +1357,6 @@ export default function SmartLinemanUI() {
     !!pushNotification ||
     showActiveBroadcastModal ||
     showUpdateModal ||
-    isRetiring ||
     showSessionEndedModal ||
     currentView === 'accident-stories' ||
     currentView === 'landing' ||
@@ -1407,7 +1375,6 @@ export default function SmartLinemanUI() {
     pushOptIn: pushOptInOpen,
     monthWinners: monthWinnersRevealOpen,
     sponsor: sponsorAdOpen,
-    install: installPromptOpen,
   });
 
   const shellInterruptBusy = isShellInterruptBusy(activeShellOverlay);
@@ -1428,11 +1395,9 @@ export default function SmartLinemanUI() {
     !!pushNotification ||
     showActiveBroadcastModal ||
     showUpdateModal ||
-    isRetiring ||
     showSessionEndedModal ||
     profileNudgeOpen ||
     pushOptInOpen ||
-    installPromptOpen ||
     sidebarOpen ||
     monthWinnersRevealOpen ||
     adContactOpen ||
@@ -1480,6 +1445,15 @@ export default function SmartLinemanUI() {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
+          {/* Mobile: push ALL screens below the system status bar (landing already had this; shell pages did not). */}
+          <div
+            className="shrink-0 md:hidden"
+            style={{
+              height: 'env(safe-area-inset-top, 0px)',
+              background: 'var(--slm-status-bg, #fffdf7)',
+            }}
+            aria-hidden
+          />
           {user && (
             <Sidebar
               isOpen={sidebarOpen}
@@ -1605,8 +1579,22 @@ export default function SmartLinemanUI() {
                     </div>
 
                     <div className="flex flex-col gap-3 border-t border-slate-200/80 bg-white/60 p-4 sm:p-5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-5">
-                      <button onClick={() => { if (isForceUpdate && updateInfo.update_url && updateInfo.update_url !== '#') { Browser.open({ url: updateInfo.update_url }); } else { applyAppRefresh(); } }} className={`w-full min-h-[48px] rounded-full bg-orange-500 py-3 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        {isForceUpdate ? (language === 'en' ? 'Update Now' : 'এখনই আপডেট করুন') : (language === 'en' ? 'Refresh Now' : 'এখনই রিফ্রেশ করুন')}
+                      <button
+                        onClick={() => {
+                          const hasDownloadUrl = updateInfo.update_url && updateInfo.update_url !== '#';
+                          if (hasDownloadUrl) {
+                            Browser.open({ url: updateInfo.update_url });
+                            return;
+                          }
+                          applyAppRefresh();
+                        }}
+                        className={`w-full min-h-[48px] rounded-full bg-orange-500 py-3 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}
+                      >
+                        {updateInfo.update_url && updateInfo.update_url !== '#'
+                          ? (language === 'en' ? 'Download Update' : 'আপডেট ডাউনলোড করুন')
+                          : (isForceUpdate
+                            ? (language === 'en' ? 'Update Now' : 'এখনই আপডেট করুন')
+                            : (language === 'en' ? 'Refresh Now' : 'এখনই রিফ্রেশ করুন'))}
                       </button>
                       {!isForceUpdate && (
                         <button onClick={() => setShowUpdateModal(false)} className={`w-full min-h-[48px] rounded-full border border-slate-200/80 bg-white py-3 text-base font-bold text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}>
