@@ -109,7 +109,7 @@ Installed apps open the update modal when remote `version_code` > installed buil
 | Landing sticky CTA | **Download Android App** (highlighted) | **Login** |
 | Floating PWA Install FAB | Removed | N/A |
 | More → Android button | Shown | Hidden |
-| Update modal | Refresh / SW | Open APK download URL |
+| Update modal | Refresh / SW | In-app APK download + system installer (`ApkInstaller`) |
 
 ## Signing
 

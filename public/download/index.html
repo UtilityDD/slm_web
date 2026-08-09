@@ -10,36 +10,53 @@
       margin: 0;
       min-height: 100vh;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background: #0f172a;
-      color: #f8fafc;
+      background: #fffdf7;
+      color: #0f172a;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 24px;
     }
     .wrap { width: 100%; max-width: 360px; text-align: center; }
-    h1 { margin: 0 0 20px; font-size: 1.35rem; }
+    h1 { margin: 0 0 8px; font-size: 1.35rem; font-weight: 900; letter-spacing: -0.03em; }
+    .sub { margin: 0 0 20px; font-size: 0.9rem; color: #475569; line-height: 1.45; }
     .btn {
       display: block;
       width: 100%;
+      box-sizing: border-box;
       text-decoration: none;
-      background: #f97316;
+      background: #ea580c;
       color: #fff;
       font-weight: 800;
       border-radius: 999px;
       padding: 14px 16px;
     }
     .meta { margin-top: 14px; font-size: .85rem; color: #64748b; }
+    .hint {
+      margin-top: 18px;
+      text-align: left;
+      font-size: 0.8rem;
+      color: #475569;
+      line-height: 1.45;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
   </style>
 </head>
 <body>
   <main class="wrap">
     <h1>SmartLineman</h1>
-    <a class="btn" id="apkLink" href="/downloads/smartlineman.apk">Download APK</a>
+    <p class="sub">Official Android APK. After download, open the file and allow install if asked.</p>
+    <a class="btn" id="apkLink" href="https://www.smartlineman.in/downloads/smartlineman.apk" download="smartlineman.apk">Download APK</a>
     <p class="meta" id="versionMeta"></p>
+    <div class="hint">
+      If Chrome blocks the file: tap the download notification → Open → allow “Install unknown apps” for your browser or Files app, then install.
+    </div>
   </main>
   <script>
-    fetch('/android-latest.json', { cache: 'no-store' })
+    fetch('https://www.smartlineman.in/android-latest.json', { cache: 'no-store' })
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
         if (!data) return;
