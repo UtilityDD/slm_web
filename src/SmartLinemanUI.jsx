@@ -1787,8 +1787,8 @@ export default function SmartLinemanUI() {
               </div>
             )}
 
-            {showUpdateModal && activeShellOverlay === 'update' && updateInfo && (
-              <div className="native-sheet-scrim fixed inset-0 z-[200] bg-slate-900/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+            {showUpdateModal && activeShellOverlay === 'update' && updateInfo && createPortal(
+              <div className="native-sheet-scrim fixed inset-0 z-[450] bg-slate-900/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
                 <div className="native-sheet-panel w-full sm:max-w-md animate-slide-up-sheet sm:animate-scale-in">
                   <div className="native-sheet-card relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
                     <NativeSheetHandle />
@@ -1932,7 +1932,8 @@ export default function SmartLinemanUI() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div>,
+              document.body
             )}
 
             <div className={`refresh-indicator ${isRefreshing || pullDistance > 20 ? 'visible' : ''}`} style={{ transform: isRefreshing ? 'translateY(0)' : `translateY(${Math.min(pullDistance - 60, 0)}px)`, opacity: Math.min(pullDistance / 60, 1) }}>
@@ -2056,6 +2057,27 @@ export default function SmartLinemanUI() {
               <NativeAppTopBar
                 title={getNativeTopBarTitle(currentView, language)}
                 language={language}
+                trailing={
+                  currentView === 'home' ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void hapticImpact('Light');
+                        setCurrentView('menu');
+                      }}
+                      className={`inline-flex items-center gap-1.5 rounded-full border border-slate-200/90 bg-white px-3 py-1.5 text-xs font-black text-slate-800 shadow-sm transition-all active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
+                      aria-label={language === 'bn' ? 'আরও' : 'More'}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5" aria-hidden>
+                        <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                        <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                        <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                        <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                      </svg>
+                      {language === 'bn' ? 'আরও' : 'More'}
+                    </button>
+                  ) : null
+                }
               />
             )}
 
@@ -2193,7 +2215,11 @@ export default function SmartLinemanUI() {
             {user && <RadioSafetyGuard currentView={currentView} />}
 
             {user && !['login', 'verify', 'sops'].includes(currentView) && (
-              <RadioMiniPlayer language={language} currentView={currentView} />
+              <RadioMiniPlayer
+                language={language}
+                currentView={currentView}
+                suppressChrome={showUpdateModal}
+              />
             )}
 
             {user && !['login', 'verify', 'sops'].includes(currentView) && (

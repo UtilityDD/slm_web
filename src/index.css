@@ -3015,25 +3015,85 @@ body,
     }
   }
 
-  /* Home safety tip — soft entrance only */
+  /* Home field tip — soft enter/exit + dwell progress rail */
   .home-safety-tip {
+    position: relative;
+    padding-bottom: 0.95rem;
+  }
+
+  .home-safety-tip__body--in {
     animation: homeTipIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .home-safety-tip__body--out {
+    animation: homeTipOut 0.32s cubic-bezier(0.4, 0, 1, 1) both;
   }
 
   @keyframes homeTipIn {
     from {
       opacity: 0;
-      transform: translateY(8px);
+      transform: translateY(10px);
+      filter: blur(1.5px);
     }
     to {
       opacity: 1;
       transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+
+  @keyframes homeTipOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-8px);
+      filter: blur(1.5px);
+    }
+  }
+
+  .home-safety-tip__rail {
+    position: absolute;
+    left: 0.9rem;
+    right: 0.9rem;
+    bottom: 0.45rem;
+    height: 2px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgb(253 186 116 / 0.35);
+  }
+
+  .home-safety-tip__rail-fill {
+    display: block;
+    height: 100%;
+    width: 100%;
+    transform-origin: left center;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #ea580c, #f59e0b);
+    animation: homeTipRail 32s linear both; /* duration overridden inline to match JS */
+  }
+
+  @keyframes homeTipRail {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .home-safety-tip {
+    .home-safety-tip__body--in,
+    .home-safety-tip__body--out,
+    .home-safety-tip__rail-fill {
       animation: none !important;
+    }
+
+    .home-safety-tip__rail {
+      display: none;
     }
   }
 

@@ -194,8 +194,8 @@ function RadioExpandedSheet({ language, title, track, audioRef, onMinimize, togg
   );
 }
 
-export default function RadioMiniPlayer({ language, currentView }) {
-  const hideChrome = currentView === 'community' || currentView === 'sops';
+export default function RadioMiniPlayer({ language, currentView, suppressChrome = false }) {
+  const hideChrome = suppressChrome || currentView === 'community' || currentView === 'sops';
   const {
     audioRef,
     bgAudioRef,

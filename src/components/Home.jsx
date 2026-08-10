@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import HomeSkeleton from './loaders/HomeSkeleton';
 import { UserIcon } from './icons';
 import { getBadgeByLevel } from '../utils/badgeUtils';
@@ -17,35 +17,67 @@ import {
 /** Approximate core lesson count from training chapter defaults (display only). */
 const APPROX_CORE_LESSON_TOTAL = 91;
 const LAST_TIP_INDEX_KEY = 'slm_home_tip_last_index';
+/** How long a tip stays before rotating while user remains on Home.
+ *  Longer dwell for field users who read slowly / in Bangla. */
+const HOME_TIP_ROTATE_MS = 32000;
+/** Match CSS exit duration before swapping content. */
+const HOME_TIP_EXIT_MS = 320;
 
-function pickRandomTip(rules) {
-  if (!Array.isArray(rules) || rules.length === 0) return '';
-  if (rules.length === 1) return rules[0];
-
-  let lastIndex = -1;
-  try {
-    const raw = localStorage.getItem(LAST_TIP_INDEX_KEY);
-    if (raw != null) lastIndex = Number.parseInt(raw, 10);
-  } catch {
-    // ignore
+function normalizeHomeTip(tip, bn) {
+  const fallbackTitle = bn ? 'মনে রাখবেন' : 'Remember';
+  if (!tip) return null;
+  if (typeof tip === 'string') {
+    const text = tip.trim();
+    return text ? { title: fallbackTitle, text } : null;
   }
+  if (typeof tip === 'object') {
+    const text = String(tip.text || tip.rule || '').trim();
+    if (!text) return null;
+    const title = String(tip.title || '').trim() || fallbackTitle;
+    return { title, text };
+  }
+  return null;
+}
 
-  let nextIndex = Math.floor(Math.random() * rules.length);
-  if (Number.isFinite(lastIndex) && rules.length > 1) {
+function pickRandomTipIndex(rulesLength, lastIndex) {
+  if (rulesLength <= 0) return -1;
+  if (rulesLength === 1) return 0;
+
+  let nextIndex = Math.floor(Math.random() * rulesLength);
+  if (Number.isFinite(lastIndex) && rulesLength > 1) {
     let guard = 0;
-    while (nextIndex === lastIndex && guard < 6) {
-      nextIndex = Math.floor(Math.random() * rules.length);
+    while (nextIndex === lastIndex && guard < 8) {
+      nextIndex = Math.floor(Math.random() * rulesLength);
       guard += 1;
     }
   }
+  return nextIndex;
+}
 
+function readLastTipIndex() {
   try {
-    localStorage.setItem(LAST_TIP_INDEX_KEY, String(nextIndex));
+    const raw = localStorage.getItem(LAST_TIP_INDEX_KEY);
+    if (raw != null) return Number.parseInt(raw, 10);
   } catch {
     // ignore
   }
+  return -1;
+}
 
-  return rules[nextIndex];
+function writeLastTipIndex(index) {
+  try {
+    localStorage.setItem(LAST_TIP_INDEX_KEY, String(index));
+  } catch {
+    // ignore
+  }
+}
+
+function prefersReducedMotion() {
+  try {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch {
+    return false;
+  }
 }
 
 export default function Home({
@@ -57,7 +89,11 @@ export default function Home({
 }) {
   const bn = language === 'bn';
   const [loading, setLoading] = useState(!userProfile && !!user);
-  const [homeTip, setHomeTip] = useState('');
+  const [homeTip, setHomeTip] = useState(null);
+  const [tipAnim, setTipAnim] = useState('in'); // 'in' | 'out'
+  const [tipRules, setTipRules] = useState([]);
+  const tipIndexRef = useRef(-1);
+  const tipSwapTimerRef = useRef(null);
   const [isHourlyPending, setIsHourlyPending] = useState(false);
   const [hourlyMaxPoints, setHourlyMaxPoints] = useState(HOURLY_POINTS_PER_PACK);
   const [lessonBonusAttempts, setLessonBonusAttempts] = useState([]);
@@ -103,27 +139,114 @@ export default function Home({
   useEffect(() => {
     let cancelled = false;
 
-    const loadTip = async () => {
-      const fallback = bn
-        ? 'যেকোনো কন্ডাক্টর স্পর্শ করার আগে সর্বদা ভোল্টেজ পরীক্ষা করুন।'
-        : 'Always test for voltage before touching any conductor.';
+    const fallback = normalizeHomeTip(
+      bn
+        ? { title: 'ভুলবেন না', text: 'যেকোনো কন্ডাক্টর স্পর্শ করার আগে সর্বদা ভোল্টেজ পরীক্ষা করুন।' }
+        : { title: 'Remember', text: 'Always test for voltage before touching any conductor.' },
+      bn
+    );
 
+    const loadTip = async () => {
       try {
         const response = await fetch('/quizzes/carousol.json');
         const data = await response.json();
-        const rules = data.rules || [];
-        const tip = pickRandomTip(rules) || fallback;
-        if (!cancelled) setHomeTip(tip);
+        const rules = Array.isArray(data.rules) ? data.rules : [];
+        const nextIndex = pickRandomTipIndex(rules.length, readLastTipIndex());
+        const tip =
+          nextIndex >= 0
+            ? normalizeHomeTip(rules[nextIndex], bn)
+            : null;
+
+        if (cancelled) return;
+        setTipRules(rules);
+        tipIndexRef.current = nextIndex;
+        if (nextIndex >= 0) writeLastTipIndex(nextIndex);
+        setTipAnim('in');
+        setHomeTip(tip || fallback);
       } catch {
-        if (!cancelled) setHomeTip(fallback);
+        if (cancelled) return;
+        setTipRules([]);
+        tipIndexRef.current = -1;
+        setTipAnim('in');
+        setHomeTip(fallback);
       }
     };
 
     loadTip();
     return () => {
       cancelled = true;
+      if (tipSwapTimerRef.current) {
+        clearTimeout(tipSwapTimerRef.current);
+        tipSwapTimerRef.current = null;
+      }
     };
   }, [bn]);
+
+  // Rotate tip while user stays on Home (pause when tab hidden).
+  useEffect(() => {
+    if (tipRules.length < 2) return undefined;
+
+    let rotateTimer = null;
+    let cancelled = false;
+
+    const clearSwap = () => {
+      if (tipSwapTimerRef.current) {
+        clearTimeout(tipSwapTimerRef.current);
+        tipSwapTimerRef.current = null;
+      }
+    };
+
+    const showNextTip = () => {
+      if (cancelled || document.visibilityState === 'hidden') return;
+
+      const nextIndex = pickRandomTipIndex(tipRules.length, tipIndexRef.current);
+      if (nextIndex < 0) return;
+      const nextTip = normalizeHomeTip(tipRules[nextIndex], bn);
+      if (!nextTip) return;
+
+      const applyNext = () => {
+        if (cancelled) return;
+        tipIndexRef.current = nextIndex;
+        writeLastTipIndex(nextIndex);
+        setHomeTip(nextTip);
+        setTipAnim('in');
+      };
+
+      if (prefersReducedMotion()) {
+        applyNext();
+        return;
+      }
+
+      setTipAnim('out');
+      clearSwap();
+      tipSwapTimerRef.current = setTimeout(applyNext, HOME_TIP_EXIT_MS);
+    };
+
+    const startRotate = () => {
+      if (rotateTimer) clearInterval(rotateTimer);
+      rotateTimer = setInterval(showNextTip, HOME_TIP_ROTATE_MS);
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        if (rotateTimer) clearInterval(rotateTimer);
+        rotateTimer = null;
+        clearSwap();
+        return;
+      }
+      startRotate();
+    };
+
+    if (document.visibilityState !== 'hidden') startRotate();
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      cancelled = true;
+      if (rotateTimer) clearInterval(rotateTimer);
+      clearSwap();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [tipRules, bn]);
 
   // Green dot + max points (+50 / +100 / …) when this hour's quiz is still open.
   useEffect(() => {
@@ -220,10 +343,10 @@ export default function Home({
   const hasStarted = lessonCount > 0;
   const primaryLabel = hasStarted
     ? bn
-      ? 'প্রশিক্ষণ চালিয়ে যান'
+      ? 'শিখতে থাকুন'
       : 'Continue Training'
     : bn
-      ? 'প্রশিক্ষণ শুরু করুন'
+      ? 'শিখা শুরু করুন'
       : 'Start Training';
   const primaryHint = hasStarted
     ? bn
@@ -340,24 +463,40 @@ export default function Home({
           </div>
         </header>
 
-        {/* Safety tip — attention-first, random each visit */}
-        {homeTip && (
-          <div className="home-safety-tip mb-4 rounded-2xl border border-orange-200/90 bg-gradient-to-br from-orange-50 via-amber-50/80 to-white px-3.5 py-3.5 shadow-sm sm:mb-5 sm:px-4">
-            <div className="mb-1.5 flex items-center gap-2">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center text-orange-600" aria-hidden>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-                  <path d="M12 9v4" />
-                  <path d="M12 17h.01" />
-                </svg>
-              </span>
-              <p className={`text-[10px] font-bold text-orange-700 ${bn ? 'font-bengali' : 'uppercase tracking-wider'}`}>
-                {bn ? 'সুরক্ষা টিপ' : 'Safety tip'}
+        {/* Field tip — rotates while user stays on Home */}
+        {homeTip?.text && (
+          <div
+            className="home-safety-tip mb-4 overflow-hidden rounded-2xl border border-orange-200/90 bg-gradient-to-br from-orange-50 via-amber-50/80 to-white px-3.5 py-3.5 shadow-sm sm:mb-5 sm:px-4"
+            aria-live="polite"
+          >
+            <div
+              key={`${homeTip.title}|${homeTip.text}`}
+              className={`home-safety-tip__body home-safety-tip__body--${tipAnim}`}
+            >
+              <div className="mb-1.5 flex items-center gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center text-orange-600" aria-hidden>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                    <path d="M12 9v4" />
+                    <path d="M12 17h.01" />
+                  </svg>
+                </span>
+                <p className="font-bengali text-[10px] font-bold text-orange-700">
+                  {homeTip.title}
+                </p>
+              </div>
+              <p className="font-bengali text-sm font-semibold leading-relaxed text-slate-800 sm:text-[15px]">
+                {homeTip.text}
               </p>
             </div>
-            <p className="font-bengali text-sm font-semibold leading-relaxed text-slate-800 sm:text-[15px]">
-              {homeTip}
-            </p>
+            {tipRules.length > 1 && tipAnim === 'in' && (
+              <div className="home-safety-tip__rail" aria-hidden>
+                <span
+                  className="home-safety-tip__rail-fill"
+                  style={{ animationDuration: `${HOME_TIP_ROTATE_MS}ms` }}
+                />
+              </div>
+            )}
           </div>
         )}
 
@@ -454,6 +593,36 @@ export default function Home({
             </button>
           ))}
         </div>
+
+        {/* More hub — replaces bottom-nav More tab */}
+        <button
+          type="button"
+          onClick={() => go('menu')}
+          className="mb-4 flex w-full items-center gap-3 rounded-2xl border border-slate-200/90 bg-white px-4 py-3.5 text-left shadow-sm transition-all hover:border-orange-200 hover:bg-orange-50/50 active:scale-[0.99] sm:mb-5"
+        >
+          <span
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-slate-50 text-slate-700 sm:h-11 sm:w-11"
+            aria-hidden
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="14" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            </svg>
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className={`block text-sm font-black text-slate-900 sm:text-[15px] ${bn ? 'font-bengali' : ''}`}>
+              {bn ? 'আরও' : 'More'}
+            </span>
+            <span className={`mt-0.5 block text-[11px] font-semibold text-slate-500 ${bn ? 'font-bengali' : ''}`}>
+              {bn ? 'প্রশিক্ষণ, প্রোফাইল, জরুরি ও অন্যান্য' : 'Training, profile, emergency & more'}
+            </span>
+          </span>
+          <svg className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
 
         {/* Progress detail — desktop / larger phones only */}
         <div className="mb-4 hidden rounded-2xl border border-slate-200/80 bg-white px-4 py-3.5 shadow-sm sm:mb-5 sm:block">

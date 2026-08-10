@@ -88,29 +88,14 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
         </NavIcon>
       ),
     },
-    {
-      id: 'menu',
-      label: language === 'en' ? 'More' : 'আরও',
-      paths: (active) => (
-        <NavIcon active={active}>
-          <rect x="3" y="3" width="7" height="7" rx="1.5" />
-          <rect x="14" y="3" width="7" height="7" rx="1.5" />
-          <rect x="14" y="14" width="7" height="7" rx="1.5" />
-          <rect x="3" y="14" width="7" height="7" rx="1.5" />
-        </NavIcon>
-      ),
-    },
   ];
 
   const isViewingOthersProgress = currentView === 'my-progress' && selectedProgressUserId && selectedProgressUserId !== userId;
 
-  const moreViews = ['menu', 'sops', 'emergency', 'video-guide', 'aro-janun', 'training-faq', 'notifications', 'admin', 'guide', 'admin-services', 'competitions', 'training', 'my-progress'];
-
   const isItemActive = (item) =>
     (currentView === item.id && !isViewingOthersProgress) ||
     (item.id === 'my_ppe' && ['safety-library', 'my_ppe', 'my_tools'].includes(currentView)) ||
-    (item.id === 'leaderboard' && (currentView === 'leaderboard' || currentView === 'prizes' || isViewingOthersProgress)) ||
-    (item.id === 'menu' && moreViews.includes(currentView));
+    (item.id === 'leaderboard' && (currentView === 'leaderboard' || currentView === 'prizes' || isViewingOthersProgress));
 
   return (
     <nav

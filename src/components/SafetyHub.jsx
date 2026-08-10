@@ -884,7 +884,15 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         }
     ];
 
-    const activeRules = carouselData?.rules || SAFETY_RULES.map(r => r.rule);
+    const activeRules = (carouselData?.rules || SAFETY_RULES.map(r => r.rule)).map((r) => {
+        if (typeof r === 'string') return r;
+        if (r && typeof r === 'object') {
+            const text = String(r.text || r.rule || '').trim();
+            const title = String(r.title || '').trim();
+            return title && text ? `${title} — ${text}` : text;
+        }
+        return '';
+    }).filter(Boolean);
 
     useEffect(() => {
         const timer = setInterval(() => {

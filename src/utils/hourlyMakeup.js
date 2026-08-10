@@ -1,7 +1,10 @@
 /**
- * Live-hour makeup packs: missed hours stay missed on the ring, but the
- * current-hour quiz grows by one 5-question / 50-pt pack per recent miss.
- * No past quiz_id submits — catch-up is scored only on the live hour.
+ * Live-hour makeup packs: the current-hour quiz grows by one 5-question / 50-pt
+ * pack per *consecutive* missed hour immediately before the live hour.
+ *
+ * Missed hours can still show as Missed on the day ring (no past quiz_id writes),
+ * but once the live hour is played they no longer inflate the next hour’s packs
+ * (lookback stops at the most recent played hour).
  */
 
 export const HOURLY_QUESTIONS_PER_PACK = 5;
@@ -9,8 +12,9 @@ export const HOURLY_POINTS_PER_PACK = 50;
 export const HOURLY_MAX_MAKEUP_HOURS = 5;
 
 /**
- * Count unplayed hours in the lookback window before the live hour.
- * Same calendar day only (hours &lt; 0 stop the window).
+ * Count consecutive unplayed hours immediately before the live hour (same day).
+ * Stops at the first already-played hour so a completed multi-set session does
+ * not keep offering 6→5→4→3 packs for the same night of misses.
  *
  * @param {number} currentHour IST hour 0–23
  * @param {Set<number>|number[]} playedHours hours that already have an attempt
@@ -33,7 +37,9 @@ export function countRecentMissedHours(
     for (let i = 1; i <= lookback; i += 1) {
         const hour = live - i;
         if (hour < 0) break;
-        if (!played.has(hour)) missed += 1;
+        // Gap closed: a played hour ends the consecutive-miss streak.
+        if (played.has(hour)) break;
+        missed += 1;
     }
     return missed;
 }
@@ -93,8 +99,8 @@ export function getMakeupCopy(language, makeupMissed, packs, pointsReward) {
             ? `${packCount} সেট কুইজ · সর্বোচ্চ ${maxLabel}`
             : `${packCount} sets · up to ${maxLabel}`,
         resultsNote: bn
-            ? `${packCount} সেট খেলে সর্বোচ্চ ${maxLabel} পর্যন্ত যোগ হতে পারে। আগের মিস ঘণ্টাগুলো রিং-এ মিসই থাকবে।`
-            : `Up to ${maxLabel} from ${packCount} sets this hour. Earlier misses stay Missed on your ring.`,
+            ? `${packCount} সেট খেলে সর্বোচ্চ ${maxLabel} পর্যন্ত যোগ হতে পারে। রিং-এ আগের ঘণ্টা মিস দেখাবে, কিন্তু পরের ঘণ্টায় আবার একই মিসের জন্য অতিরিক্ত সেট আসবে না।`
+            : `Up to ${maxLabel} from ${packCount} sets this hour. The ring may still show earlier hours as Missed, but those same misses won’t keep adding sets next hour.`,
         abortExtra: bn
             ? 'বেরোলে এই ঘণ্টার পুরো কুইজ ০ পয়েন্ট হবে।'
             : 'Exiting scores 0 for this whole hour (all sets).',
