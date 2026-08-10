@@ -47,7 +47,7 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
     },
     {
       id: 'my_ppe',
-      label: language === 'en' ? 'Safety' : 'সুরক্ষা',
+      label: language === 'en' ? 'Suraksha' : 'সুরক্ষা',
       paths: (active) => (
         <NavIcon active={active}>
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />

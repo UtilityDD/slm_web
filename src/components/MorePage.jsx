@@ -51,7 +51,7 @@ export default function MorePage({
       items: [
         { id: 'safety-library', label: bn ? 'সুরক্ষা লাইব্রেরি' : 'Safety Library', icon: '🛡️', tint: 'bg-teal-100 text-teal-700', show: true },
         { id: 'sops', label: bn ? 'সুরক্ষা সাথী' : 'Suraksha Sathi', icon: '📋', tint: 'bg-indigo-100 text-indigo-700', show: true },
-        { id: 'my_ppe', label: bn ? 'আমার পিপিই' : 'My PPE', icon: '👷', tint: 'bg-orange-100 text-orange-700', show: true },
+        { id: 'my_ppe', label: bn ? 'সুরক্ষা' : 'Suraksha', icon: '👷', tint: 'bg-orange-100 text-orange-700', show: true },
         { id: 'my_tools', label: bn ? 'আমার সরঞ্জাম' : 'My Tools', icon: '🔧', tint: 'bg-slate-200 text-slate-700', show: true },
         { id: 'emergency', label: bn ? 'জরুরি' : 'Emergency', icon: '🚨', tint: 'bg-red-100 text-red-700', show: true, danger: true },
       ],
@@ -125,7 +125,7 @@ export default function MorePage({
           </div>
 
           <div className="min-w-0 flex-1">
-            <p className={`truncate text-sm font-black leading-tight text-slate-900 ${bn ? 'font-bengali' : ''}`}>
+            <p className={`truncate font-black leading-tight text-slate-900 ${bn ? 'font-bengali text-base' : 'text-sm'}`}>
               {displayName}
             </p>
             <div className="mt-0.5 flex items-center gap-2 text-[10px] font-bold text-slate-500">
@@ -189,10 +189,10 @@ export default function MorePage({
             </svg>
           </span>
           <span className="min-w-0 flex-1">
-            <span className={`block text-sm font-black leading-tight ${bn ? 'font-bengali' : ''}`}>
+            <span className={`block font-black leading-tight ${bn ? 'font-bengali text-base' : 'text-sm'}`}>
               {bn ? 'সুরক্ষা সাথী' : 'Suraksha Sathi'}
             </span>
-            <span className={`mt-0.5 block text-[11px] font-semibold leading-snug text-emerald-50/95 ${bn ? 'font-bengali' : ''}`}>
+            <span className={`mt-0.5 block font-semibold leading-snug text-emerald-50/95 ${bn ? 'font-bengali text-sm' : 'text-[11px]'}`}>
               {bn ? 'পিটিডব্লিউ ও লাইন ক্লিয়ারেন্স গাইড' : 'PTW & line clearance guide'}
             </span>
           </span>
@@ -214,10 +214,10 @@ export default function MorePage({
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white text-lg leading-none text-indigo-600 shadow-sm" aria-hidden>
             📻
           </span>
-          <span className={`flex-1 text-sm font-black leading-tight ${bn ? 'font-bengali' : ''}`}>
+          <span className={`flex-1 font-black leading-tight ${bn ? 'font-bengali text-base' : 'text-sm'}`}>
             {bn ? 'SLM রেডিও শুনুন' : 'Listen to SLM Radio'}
           </span>
-          <span className={`shrink-0 rounded-full border border-white/50 bg-white/95 px-2 py-0.5 text-[9px] font-black text-indigo-700 ${bn ? 'font-bengali' : 'uppercase'}`}>
+          <span className={`shrink-0 rounded-full border border-white/50 bg-white/95 px-2 py-0.5 font-black text-indigo-700 ${bn ? 'font-bengali text-[11px]' : 'text-[9px] uppercase'}`}>
             {bn ? 'লাইভ' : 'Live'}
           </span>
         </button>
@@ -270,7 +270,7 @@ export default function MorePage({
           if (items.length === 0) return null;
           return (
             <section key={section.id} className="mb-5">
-              <h2 className={`mb-2 flex items-center gap-2 px-0.5 text-[11px] font-bold text-slate-500 ${bn ? 'font-bengali' : 'uppercase tracking-wider'}`}>
+              <h2 className={`mb-2 flex items-center gap-2 px-0.5 font-bold text-slate-500 ${bn ? 'font-bengali text-sm' : 'text-[11px] uppercase tracking-wider'}`}>
                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange-500" aria-hidden />
                 {section.title}
               </h2>
@@ -294,12 +294,12 @@ export default function MorePage({
                         {item.icon}
                       </span>
                       <span
-                        className={`min-w-0 flex-1 truncate text-sm font-bold leading-tight ${item.danger ? 'text-red-700' : 'text-slate-800'} ${bn ? 'font-bengali' : ''}`}
+                        className={`min-w-0 flex-1 truncate font-bold leading-tight ${item.danger ? 'text-red-700' : 'text-slate-800'} ${bn ? 'font-bengali text-base' : 'text-sm'}`}
                       >
                         {item.label}
                       </span>
                       {isActive ? (
-                        <span className={`shrink-0 rounded-full bg-orange-500 px-2 py-0.5 text-[9px] font-black text-white shadow-sm ${bn ? 'font-bengali' : 'uppercase'}`}>
+                        <span className={`shrink-0 rounded-full bg-orange-500 px-2 py-0.5 font-black text-white shadow-sm ${bn ? 'font-bengali text-[11px]' : 'text-[9px] uppercase'}`}>
                           {bn ? 'এখন' : 'Now'}
                         </span>
                       ) : (

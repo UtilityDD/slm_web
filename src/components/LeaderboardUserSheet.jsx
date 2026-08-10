@@ -389,7 +389,7 @@ export default function LeaderboardUserSheet({
                             )}
                             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                                 {badge && (
-                                    <span className={`rounded-full border border-slate-200/80 px-2 py-0.5 text-[11px] font-black shadow-sm sm:text-xs ${badge.color}`}>
+                                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-black shadow-sm sm:text-xs ${badge.color}`}>
                                         {bn ? badge.bn : badge.en}
                                     </span>
                                 )}

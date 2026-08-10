@@ -1,31 +1,84 @@
 import { filterCoreCompletedLessonIds } from './trainingLessonIds';
 
-/** Learning-path milestone badges (medal + ribbon on Training roadmap). */
+/**
+ * Learning-path milestone badges (medal + ribbon on Training roadmap).
+ * Solid mid-tones paired with dark text (Training nodes force text-slate-900).
+ */
 export const roadmapBadgeLevels = [
-    { level: 1, en: 'Trainee', bn: 'ট্রেইনি', icon: '🌱', color: 'bg-slate-400', medalText: 'text-white' },
-    { level: 2, en: 'Junior', bn: 'জুনিয়র', icon: '⭐', color: 'bg-blue-500', medalText: 'text-white' },
-    { level: 3, en: 'Technician', bn: 'টেকনিশিয়ান', icon: '🔧', color: 'bg-cyan-500', medalText: 'text-white' },
-    { level: 4, en: 'Skilled', bn: 'স্কিলড', icon: '✅', color: 'bg-emerald-500', medalText: 'text-white' },
-    { level: 5, en: 'Advanced', bn: 'অ্যাডভান্সড', icon: '🚀', color: 'bg-indigo-500', medalText: 'text-white' },
-    { level: 6, en: 'Senior', bn: 'সিনিয়র', icon: '🏅', color: 'bg-violet-500', medalText: 'text-white' },
-    { level: 7, en: 'Supervisor', bn: 'সুপারভাইজার', icon: '👑', color: 'bg-purple-600', medalText: 'text-white' },
-    { level: 8, en: 'Specialist', bn: 'স্পেশালিস্ট', icon: '💎', color: 'bg-rose-500', medalText: 'text-white' },
-    { level: 9, en: 'Expert', bn: 'এক্সপার্ট', icon: '🏆', color: 'bg-orange-500', medalText: 'text-white' },
+    { level: 1, en: 'Trainee', bn: 'ট্রেইনি', icon: '🌱', color: 'bg-slate-300', medalText: 'text-slate-900' },
+    { level: 2, en: 'Junior', bn: 'জুনিয়র', icon: '⭐', color: 'bg-blue-300', medalText: 'text-slate-900' },
+    { level: 3, en: 'Technician', bn: 'টেকনিশিয়ান', icon: '🔧', color: 'bg-cyan-300', medalText: 'text-slate-900' },
+    { level: 4, en: 'Skilled', bn: 'স্কিলড', icon: '✅', color: 'bg-emerald-300', medalText: 'text-slate-900' },
+    { level: 5, en: 'Advanced', bn: 'অ্যাডভান্সড', icon: '🚀', color: 'bg-sky-300', medalText: 'text-slate-900' },
+    { level: 6, en: 'Senior', bn: 'সিনিয়র', icon: '🏅', color: 'bg-violet-300', medalText: 'text-slate-900' },
+    { level: 7, en: 'Supervisor', bn: 'সুপারভাইজার', icon: '👑', color: 'bg-fuchsia-300', medalText: 'text-slate-900' },
+    { level: 8, en: 'Specialist', bn: 'স্পেশালিস্ট', icon: '💎', color: 'bg-rose-300', medalText: 'text-slate-900' },
+    { level: 9, en: 'Expert', bn: 'এক্সপার্ট', icon: '🏆', color: 'bg-orange-400', medalText: 'text-slate-900' },
 ];
 
 export const getRoadmapBadgeByLevel = (level) =>
     roadmapBadgeLevels.find((b) => b.level === level) || roadmapBadgeLevels[0];
 
+/**
+ * Chip / pill badges for Home, progress, leaderboard.
+ * Tuned for cream app surfaces (#fffdf7): distinct hue per level,
+ * dark text on tinted fill, explicit border (never cream-on-cream).
+ */
 export const badgeLevels = [
-    { level: 1, en: "Trainee", bn: "ট্রেইনি", color: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700" },
-    { level: 2, en: "Junior", bn: "জুনিয়র", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800" },
-    { level: 3, en: "Technician", bn: "টেকনিশিয়ান", color: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800" },
-    { level: 4, en: "Skilled", bn: "স্কিলড", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" },
-    { level: 5, en: "Advanced", bn: "অ্যাডভান্সড", color: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-800" },
-    { level: 6, en: "Senior", bn: "সিনিয়র", color: "bg-[#fff7ed] text-[#ea580c] dark:bg-orange-900/20 dark:text-orange-400 border-orange-200 dark:border-orange-800" },
-    { level: 7, en: "Supervisor", bn: "সুপারভাইজার", color: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 border-rose-200 dark:border-rose-800" },
-    { level: 8, en: "Specialist", bn: "স্পেশালিস্ট", color: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 border-violet-200 dark:border-violet-800" },
-    { level: 9, en: "Expert", bn: "এক্সপার্ট", color: "bg-orange-600 text-white dark:bg-orange-700 border-orange-500 shadow-sm" }
+    {
+        level: 1,
+        en: 'Trainee',
+        bn: 'ট্রেইনি',
+        color: 'border border-slate-400 bg-slate-200 text-slate-900',
+    },
+    {
+        level: 2,
+        en: 'Junior',
+        bn: 'জুনিয়র',
+        color: 'border border-blue-400 bg-blue-100 text-blue-950',
+    },
+    {
+        level: 3,
+        en: 'Technician',
+        bn: 'টেকনিশিয়ান',
+        color: 'border border-cyan-500 bg-cyan-100 text-cyan-950',
+    },
+    {
+        level: 4,
+        en: 'Skilled',
+        bn: 'স্কিলড',
+        color: 'border border-emerald-500 bg-emerald-100 text-emerald-950',
+    },
+    {
+        level: 5,
+        en: 'Advanced',
+        bn: 'অ্যাডভান্সড',
+        color: 'border border-sky-500 bg-sky-100 text-sky-950',
+    },
+    {
+        level: 6,
+        en: 'Senior',
+        bn: 'সিনিয়র',
+        color: 'border border-violet-500 bg-violet-100 text-violet-950',
+    },
+    {
+        level: 7,
+        en: 'Supervisor',
+        bn: 'সুপারভাইজার',
+        color: 'border border-fuchsia-500 bg-fuchsia-100 text-fuchsia-950',
+    },
+    {
+        level: 8,
+        en: 'Specialist',
+        bn: 'স্পেশালিস্ট',
+        color: 'border border-rose-500 bg-rose-100 text-rose-950',
+    },
+    {
+        level: 9,
+        en: 'Expert',
+        bn: 'এক্সপার্ট',
+        color: 'border border-orange-700 bg-orange-500 text-white shadow-sm',
+    },
 ];
 
 export const getBadgeByLevel = (level, readingPoints = 0) => {
@@ -88,13 +141,13 @@ export const calculateLevelFromProgress = (completedLessons, trainingChapters) =
             currentLevel = chapterNum;
         } else {
             // STOP HERE: This is the critical sequential check.
-            // If any lesson in the CURRENT chapter is missing, 
+            // If any lesson in the CURRENT chapter is missing,
             // the user cannot earn this badge or any subsequent ones.
             break;
         }
     }
 
-    // Return the level the user is currently at. 
+    // Return the level the user is currently at.
     // If they finished Chapter N, they are now at Level N+1.
     // Max level is 9 (Expert).
     return Math.min(9, currentLevel + 1);

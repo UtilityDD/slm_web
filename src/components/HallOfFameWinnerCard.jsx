@@ -274,7 +274,7 @@ export default function HallOfFameWinnerCard({
                             return (
                                 <>
                                     <span className="text-slate-300" aria-hidden>·</span>
-                                    <span className={`hidden truncate rounded-full border border-slate-200/70 px-1.5 py-0.5 text-[11px] font-bold uppercase sm:inline ${badge.color}`}>
+                                    <span className={`hidden truncate rounded-full px-1.5 py-0.5 text-[11px] font-bold uppercase sm:inline ${badge.color}`}>
                                         {language === 'en' ? badge.en : badge.bn}
                                     </span>
                                 </>

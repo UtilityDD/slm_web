@@ -4,18 +4,11 @@ import { getBadgeByLevel } from '../utils/badgeUtils';
 /** Quiet metal rim — upgrades subtly with stage. */
 export function getReadingFrameRingClass(level) {
     const n = Number(level) || 1;
-    if (n >= 9) return 'ring-2 ring-amber-400';
-    if (n >= 7) return 'ring-2 ring-slate-300';
-    if (n >= 4) return 'ring-2 ring-orange-300';
+    if (n >= 9) return 'ring-2 ring-orange-400';
+    if (n >= 7) return 'ring-2 ring-fuchsia-300';
+    if (n >= 5) return 'ring-2 ring-sky-300';
+    if (n >= 3) return 'ring-2 ring-cyan-300';
     return 'ring-2 ring-slate-200';
-}
-
-function levelCaptionClass(level) {
-    const n = Number(level) || 1;
-    if (n >= 9) return 'bg-amber-400 text-slate-900 border-amber-500/30';
-    if (n >= 7) return 'bg-white text-slate-700 border-slate-300';
-    if (n >= 4) return 'bg-orange-50 text-orange-700 border-orange-200';
-    return 'bg-slate-50 text-slate-600 border-slate-200';
 }
 
 /**
@@ -85,7 +78,7 @@ export default function ReadingLevelAvatarFrame({
             {/* L# sits under the photo — never covers the face */}
             <button
                 type="button"
-                className={`z-20 -mt-1.5 flex h-[15px] min-w-[1.35rem] items-center justify-center rounded-full border px-1 text-[8px] font-black tabular-nums leading-none tracking-tight shadow-sm transition-transform active:scale-95 ${levelCaptionClass(stage)}`}
+                className={`z-20 -mt-1.5 flex h-[15px] min-w-[1.35rem] items-center justify-center rounded-full px-1 text-[8px] font-black tabular-nums leading-none tracking-tight shadow-sm transition-transform active:scale-95 ${badge.color}`}
                 aria-label={fullName || label}
                 aria-expanded={open}
                 aria-controls={open ? tipId : undefined}

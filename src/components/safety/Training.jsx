@@ -2916,9 +2916,18 @@ export default function Training({
     // Gate lesson open is handled by consumeGateNavigation / unlock-pending effects above.
 
     useEffect(() => {
-        const openFaqIfRequested = () => {
+        const openTabIfRequested = () => {
             const tabMatch = window.location.hash.match(/[?&]tab=([^&]*)/);
-            if (!tabMatch || decodeURIComponent(tabMatch[1]) !== 'faq') return;
+            if (!tabMatch) return;
+            const tab = decodeURIComponent(tabMatch[1]);
+
+            if (tab === 'supplementary' || tab === 'life-skill' || tab === 'lifeskill') {
+                window.history.replaceState(null, '', '#/training');
+                setTrainingTab('supplementary');
+                return;
+            }
+
+            if (tab !== 'faq') return;
             if (trainingChapters.length === 0) return;
 
             const faq = trainingChapters.find((c) => c.number === 10);
@@ -2928,9 +2937,9 @@ export default function Training({
             handleChapterClick(faq);
         };
 
-        openFaqIfRequested();
-        window.addEventListener('hashchange', openFaqIfRequested);
-        return () => window.removeEventListener('hashchange', openFaqIfRequested);
+        openTabIfRequested();
+        window.addEventListener('hashchange', openTabIfRequested);
+        return () => window.removeEventListener('hashchange', openTabIfRequested);
     }, [trainingChapters]);
 
     // TTS Logic: Compile full lesson text

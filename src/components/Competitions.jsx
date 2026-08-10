@@ -2893,7 +2893,7 @@ export default function Competitions({
                         </div>
                         {userRank && (
                             <div className="flex shrink-0 items-center gap-1.5">
-                                <span className={`hidden rounded-full border border-slate-200/80 bg-white px-2 py-0.5 text-[10px] font-bold shadow-sm sm:inline-flex ${currentUserBadge.color}`}>
+                                <span className={`hidden rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm sm:inline-flex ${currentUserBadge.color}`}>
                                     {language === 'en' ? currentUserBadge.en : currentUserBadge.bn}
                                 </span>
                                 <span className="rounded-full bg-orange-500 px-2 py-0.5 text-xs font-black text-white shadow-sm shadow-orange-500/30 sm:px-2.5 sm:py-1 sm:text-sm">#{userRank.rank}</span>

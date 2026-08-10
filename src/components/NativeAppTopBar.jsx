@@ -25,7 +25,7 @@ export default function NativeAppTopBar({
             {title}
           </h1>
           {subtitle ? (
-            <p className={`mt-1 truncate text-xs font-semibold text-slate-500 ${bn ? 'font-bengali' : ''}`}>
+            <p className={`mt-1 truncate font-semibold text-slate-500 ${bn ? 'font-bengali text-sm' : 'text-xs'}`}>
               {subtitle}
             </p>
           ) : null}
@@ -45,7 +45,7 @@ export function getNativeTopBarTitle(currentView, language = 'en') {
     case 'my_ppe':
     case 'safety-library':
     case 'my_tools':
-      return bn ? 'সুরক্ষা' : 'Safety';
+      return bn ? 'সুরক্ষা' : 'Suraksha';
     case 'leaderboard':
       return bn ? 'র‍্যাঙ্ক' : 'Rank';
     case 'prizes':

@@ -371,8 +371,11 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                             <p className={`truncate text-lg font-black text-slate-900 sm:text-xl ${bn ? 'font-bengali' : ''}`}>
                                 {profile.full_name || (bn ? 'শিক্ষার্থী' : 'Learner')}
                             </p>
-                            <p className={`mt-0.5 text-xs font-semibold text-orange-800 ${bn ? 'font-bengali' : ''}`}>
-                                {badgeLabel} · Lv {trainingLevel}
+                            <p className={`mt-0.5 text-xs font-semibold text-slate-600 ${bn ? 'font-bengali' : ''}`}>
+                                <span className={`mr-1.5 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-black leading-none ${badge.color}`}>
+                                    {badgeLabel}
+                                </span>
+                                Lv {trainingLevel}
                             </p>
                         </div>
                     </div>
@@ -484,7 +487,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                                     <div className="gold-seal mb-3">
                                         <span className="text-4xl">🏅</span>
                                     </div>
-                                    <p className="text-sm font-black uppercase tracking-widest text-amber-700">{badgeLabel}</p>
+                                    <p className={`rounded-full px-3 py-1 text-sm font-black uppercase tracking-wide ${badge.color}`}>{badgeLabel}</p>
                                     <p className="mt-1 text-[10px] font-bold uppercase text-slate-400">
                                         {bn ? 'পড়ার ধাপ' : 'Reading Stage'}
                                     </p>
@@ -803,7 +806,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                                 <div className="mb-4 flex h-24 w-24 scale-125 items-center justify-center rounded-full border-4 border-amber-200 bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg">
                                     <span className="text-5xl">🏅</span>
                                 </div>
-                                <p className="text-lg font-black uppercase tracking-widest text-amber-800">{badgeLabel}</p>
+                                <p className={`rounded-full px-3 py-1 text-lg font-black uppercase tracking-wide ${badge.color}`}>{badgeLabel}</p>
                                 <p className="mt-1 text-xs font-bold uppercase text-slate-400">{bn ? 'পড়ার ধাপ' : 'Reading Stage'}</p>
                             </div>
 
