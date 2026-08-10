@@ -126,8 +126,51 @@ Installed apps open the update modal when remote `version_code` > installed buil
 | Images missing in APK | Offline, or path not rewritten / not on live site |
 | Visit count stuck on Android | Client not calling live `/api/landing-visits` (fixed via CapacitorHttp + absolute URL) |
 | Status bar covers header | Overlay/immersive splash; keep overlay off + shell safe-area spacer |
-| “App not installed” on update | Different signing key than previous APK |
+| “App not installed” / **package conflicts** on update | Phone has a **different signature** than the new APK — usually Android Studio **Run (debug)** vs hosted **release** keystore |
 | Huge APK again | Slim step skipped — always use `npm run android:sync` |
+
+## Testing in-app updates on a USB phone
+
+In-app update only works when **all** of these are true:
+
+1. Phone app is a **release-signed** install (same `smartlineman-release.jks` as hosted APKs).
+2. Installed `versionCode` &lt; live `android-latest.json` → `version_code`.
+3. Live site has deployed the new `smartlineman.apk` + `android-latest.json`.
+
+### Do not use Android Studio Run for update tests
+
+`Run` installs a **debug-signed** build. Updating that with the hosted release APK fails with **package conflicts**. PWA refresh is unrelated.
+
+### Correct USB test recipe
+
+```powershell
+# 0) JDK 21 for Gradle (Java 25 breaks assembleRelease)
+$env:JAVA_HOME = "C:\Program Files\Microsoft\jdk-21.0.8.9-hotspot"
+$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+$adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
+
+# 1) Baseline: wipe debug install, put current RELEASE APK on the phone
+& $adb uninstall com.smartlineman.app
+& $adb install -r public\downloads\smartlineman.apk
+
+# 2) Bump versionCode (package.json, src/config.js, android/app/build.gradle, public/android-latest.json)
+
+# 3) Build + host
+npm run android:sync
+cd android; .\gradlew.bat assembleRelease; cd ..
+Copy-Item -Force android\app\build\outputs\apk\release\app-release.apk public\downloads\smartlineman.apk
+# commit + push so Vercel serves the new APK + android-latest.json
+
+# 4) On the phone: cold-start SmartLineman → Update Available → Download Update
+#    Allow “Install unknown apps” for SmartLineman if prompted, then confirm install.
+```
+
+### Verify signatures match (optional)
+
+```powershell
+$apksigner = "$env:LOCALAPPDATA\Android\Sdk\build-tools\36.0.0\apksigner.bat"
+# Phone APK SHA-1 must match release APK SHA-1 (CN=SmartLineman …), not "Android Debug"
+```
 
 ## Quick commands
 
