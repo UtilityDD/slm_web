@@ -13,13 +13,17 @@ const HomeSkeleton = () => {
       <Skeleton width="100%" height="72px" className="rounded-2xl" />
       <Skeleton width="100%" height="64px" className="rounded-2xl" />
 
-      <div className="grid grid-cols-3 gap-2.5">
-        <Skeleton width="100%" height="88px" className="rounded-2xl" />
-        <Skeleton width="100%" height="88px" className="rounded-2xl" />
-        <Skeleton width="100%" height="88px" className="rounded-2xl" />
+      <div className="grid grid-cols-2 gap-2.5">
+        <Skeleton width="100%" height="64px" className="rounded-2xl" />
+        <Skeleton width="100%" height="64px" className="rounded-2xl" />
+        <Skeleton width="100%" height="64px" className="rounded-2xl" />
+        <Skeleton width="100%" height="64px" className="rounded-2xl" />
       </div>
 
-      <Skeleton width="100%" height="64px" className="rounded-2xl" />
+      <div className="grid grid-cols-2 gap-2.5">
+        <Skeleton width="100%" height="52px" className="rounded-2xl" />
+        <Skeleton width="100%" height="52px" className="rounded-2xl" />
+      </div>
     </div>
   );
 };

@@ -511,7 +511,7 @@ export default function Home({
     );
   }
 
-  const iconClass = 'h-[18px] w-[18px]';
+  const iconClass = 'h-5 w-5';
   const snapshotCards = [
     {
       id: 'progress',
@@ -742,7 +742,7 @@ export default function Home({
                 </span>
                 <p
                   key={`t-${homeTip.title}`}
-                  className={`home-safety-tip__shine home-safety-tip__shine--title font-bold home-safety-tip__copy home-safety-tip__copy--${tipAnim} ${bn ? 'font-bengali text-xs sm:text-sm' : 'text-[10px]'}`}
+                  className={`font-bold text-orange-700 home-safety-tip__copy home-safety-tip__copy--${tipAnim} ${bn ? 'font-bengali text-xs' : 'text-[10px]'}`}
                 >
                   {homeTip.title}
                 </p>
@@ -771,30 +771,32 @@ export default function Home({
           onLearningClick={openLearningCard}
         />
 
-        {/* Shortcuts — compact tiles; More stays one cell (no extra hub card) */}
-        <div className="mb-4 grid grid-cols-3 gap-2 sm:mb-5 sm:gap-2.5">
+        {/* Shortcuts — old compact tiles in 2 columns */}
+        <div className="mb-4 grid grid-cols-2 gap-2.5 sm:mb-5 sm:gap-3">
           {snapshotCards.map((card) => (
             <button
               key={card.id}
               type="button"
               onClick={card.onClick}
               aria-label={card.ariaLabel || card.label}
-              className={`flex flex-col items-center rounded-2xl border text-center shadow-sm transition-all active:scale-[0.98] ${card.accent} ${bn ? 'px-1 py-2.5 sm:px-2 sm:py-3' : 'px-1 py-2 sm:px-2 sm:py-2.5'}`}
+              className={`flex items-center gap-3 rounded-2xl border text-left shadow-sm transition-all active:scale-[0.99] ${card.accent} ${bn ? 'px-3 py-3' : 'px-3 py-2.5'}`}
             >
               <span
-                className={`mb-1 flex h-7 w-7 items-center justify-center rounded-full border sm:mb-1.5 sm:h-8 sm:w-8 ${card.iconWrap}`}
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${card.iconWrap}`}
                 aria-hidden
               >
                 {card.icon}
               </span>
-              <p className={`font-black leading-snug ${bn ? 'font-bengali text-[13px] sm:text-sm' : 'text-[10px] sm:text-[11px]'}`}>
-                {card.label}
-              </p>
-              {card.value ? (
-                <p className={`mt-0.5 font-bold tabular-nums opacity-75 ${bn ? 'font-bengali text-xs' : 'text-[10px]'}`}>
-                  {card.value}
+              <span className="min-w-0 flex-1">
+                <p className={`leading-snug ${bn ? 'font-bengali font-bold text-[15px]' : 'font-black text-sm'}`}>
+                  {card.label}
                 </p>
-              ) : null}
+                {card.value ? (
+                  <p className={`mt-0.5 tabular-nums opacity-75 ${bn ? 'font-bengali font-bold text-xs' : 'font-bold text-[11px]'}`}>
+                    {card.value}
+                  </p>
+                ) : null}
+              </span>
             </button>
           ))}
         </div>
@@ -849,6 +851,7 @@ export default function Home({
             </span>
           </button>
         </div>
+
       </div>
     </div>
   );
