@@ -364,7 +364,7 @@ body,
     justify-content: center;
     gap: 0.55rem;
     min-height: 3rem;
-    padding: 0.7rem 1.45rem 0.7rem 1.55rem;
+    padding: 0.7rem 1.55rem;
     border: none;
     border-radius: 9999px;
     background: #ea580c;
@@ -379,39 +379,12 @@ body,
     transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
   }
 
-  .landing-join-cta__tap {
-    width: 2rem;
-    height: 2rem;
-    flex-shrink: 0;
-    margin: -0.2rem -0.15rem -0.35rem 0;
-    opacity: 0.95;
-    overflow: visible;
-    transition: transform 0.18s ease;
-    animation: landing-join-tap 2.4s ease-in-out infinite;
-  }
-
-  @keyframes landing-join-tap {
-    0%,
-    72%,
-    100% {
-      transform: translateY(0);
-    }
-    82% {
-      transform: translateY(2px) scale(0.94);
-    }
-  }
-
   @media (hover: hover) {
     .landing-join-cta:hover {
       background: #c2410c;
       box-shadow:
         0 1px 0 rgba(255, 255, 255, 0.22) inset,
         0 14px 28px -12px rgba(234, 88, 12, 0.7);
-    }
-
-    .landing-join-cta:hover .landing-join-cta__tap {
-      animation-play-state: paused;
-      transform: translateY(2px) scale(0.96);
     }
   }
 
@@ -459,8 +432,7 @@ body,
       animation: none;
     }
 
-    .landing-join-cta--hotstick,
-    .landing-join-cta__tap {
+    .landing-join-cta--hotstick {
       animation: none;
     }
   }
@@ -478,7 +450,6 @@ body,
     transform: none !important;
   }
 
-  .landing-page-light.landing-hold-ambient .landing-join-cta__tap,
   .landing-page-light.landing-hold-ambient .landing-join-cta--hotstick,
   .landing-page-light.landing-hold-ambient .landing-hero-badge-dot {
     animation: none !important;

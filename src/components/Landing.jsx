@@ -692,20 +692,6 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
               className="landing-join-cta touch-manipulation"
             >
               <span className={bnFont ? 'font-bengali' : ''}>{t.joinCta}</span>
-              <svg
-                className="landing-join-cta__tap"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <path d="M10 10V4.5a1.75 1.75 0 0 1 3.5 0V12" />
-                <path d="M13.5 10.5a1.75 1.75 0 0 1 3.5 0V12" />
-                <path d="M17 11a1.75 1.75 0 0 1 3.5 0v4a6.5 6.5 0 0 1-6.5 6.5h-1.5a6 6 0 0 1-4.24-1.76l-3.6-3.6a1.75 1.75 0 0 1 2.48-2.48L10 15.5" />
-              </svg>
             </button>
           </div>
         </section>
